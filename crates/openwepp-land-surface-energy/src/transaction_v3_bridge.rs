@@ -121,6 +121,7 @@ pub(crate) fn build_v3_potential_vegetation_operands(
     Ok(operands)
 }
 
+#[allow(clippy::too_many_lines)]
 pub(crate) fn build_complete_v3_final_candidate(
     phase: &V3CoveredPotentialPhase,
     accepted: &AcceptedV3CoveredSolve,

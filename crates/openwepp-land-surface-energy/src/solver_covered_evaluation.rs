@@ -91,6 +91,7 @@ fn exact_inactive_hydraulic_occupancy(
 }
 
 const LIQUID_VAPOR_PHASE_MINIMUM_K: f64 = 273.15;
+const STAGE3_COVERED_IDENTITY_TOLERANCE_K: f64 = 1.0e-9;
 
 /// Returns the representational temperature target for an energy coordinate
 /// whose physical component has exactly zero area (or is otherwise admitted
@@ -518,6 +519,47 @@ struct LeafGasEnvironment {
     ca_pa: f64,
 }
 
+#[cfg(test)]
+std::thread_local! {
+    static COVERED_LEAF_TRIAL_AUDIT: std::cell::Cell<Option<(u32, bool)>> = const { std::cell::Cell::new(None) };
+}
+
+#[cfg(test)]
+fn begin_covered_leaf_trial_audit(force_exhaustive_maximum: bool) {
+    COVERED_LEAF_TRIAL_AUDIT.with(|audit| audit.set(Some((0, force_exhaustive_maximum))));
+}
+
+#[cfg(test)]
+fn take_covered_leaf_trial_audit() -> u32 {
+    COVERED_LEAF_TRIAL_AUDIT.with(|audit| audit.take().map_or(0, |(count, _)| count))
+}
+
+#[cfg(test)]
+fn record_covered_leaf_trial_audit() {
+    COVERED_LEAF_TRIAL_AUDIT.with(|audit| {
+        if let Some((count, force_exhaustive)) = audit.get() {
+            audit.set(Some((count.saturating_add(1), force_exhaustive)));
+        }
+    });
+}
+
+#[cfg(not(test))]
+fn record_covered_leaf_trial_audit() {}
+
+#[cfg(test)]
+fn force_exhaustive_covered_leaf_maximum() -> bool {
+    COVERED_LEAF_TRIAL_AUDIT.with(|audit| {
+        audit
+            .get()
+            .is_some_and(|(_, force_exhaustive)| force_exhaustive)
+    })
+}
+
+#[cfg(not(test))]
+const fn force_exhaustive_covered_leaf_maximum() -> bool {
+    false
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct LeafCarbonState {
     ag: f64,
@@ -648,6 +690,7 @@ fn leaf_trial_state(
     g0_umol_m2_s: f64,
     medlyn_g1_kpa_sqrt: f64,
 ) -> Result<LeafTrialState, LandSurfaceEnergyError> {
+    record_covered_leaf_trial_audit();
     let vcmax_factor = peaked(
         temperature,
         p.ha_vcmax_j_mol,
@@ -924,6 +967,41 @@ fn leaf_trial_state(
     })
 }
 
+#[allow(clippy::too_many_arguments)]
+fn covered_maximum_leaf_trial_state(
+    current: LeafTrialState,
+    current_beta: f64,
+    inputs: LeafBiochemicalInputs,
+    p: BiochemicalConstants,
+    temperature: f64,
+    qcan: f64,
+    environment: LeafGasEnvironment,
+    gb_leaf: f64,
+    g0_umol_m2_s: f64,
+    medlyn_g1_kpa_sqrt: f64,
+) -> Result<LeafTrialState, LandSurfaceEnergyError> {
+    if !force_exhaustive_covered_leaf_maximum()
+        && (current_beta.to_bits() == 1.0_f64.to_bits()
+            || matches!(
+                current.gas_branch,
+                V10LeafGasBranch::Inactive | V10LeafGasBranch::ExactZeroPar
+            ))
+    {
+        return Ok(current);
+    }
+    leaf_trial_state(
+        inputs,
+        p,
+        temperature,
+        qcan,
+        1.0,
+        environment,
+        gb_leaf,
+        g0_umol_m2_s,
+        medlyn_g1_kpa_sqrt,
+    )
+}
+
 #[must_use]
 fn vulnerability(potential: f64, p50: f64, exponent: f64) -> f64 {
     2.0_f64.powf(-(potential / p50).powf(exponent))
@@ -978,103 +1056,27 @@ fn covered_wet_flux(
     ))
 }
 
-fn evaluate_covered_occupancy(
-    context: &CoveredOccupancyTrialContext<'_>,
+struct CoveredHydraulicEvaluation {
+    residuals: [f64; 6],
+    tolerances: [f64; 6],
+    source_water: Vec<SourceWaterFlux>,
+}
+
+#[allow(clippy::too_many_arguments)]
+fn evaluate_covered_hydraulics(
+    column: &CoveredColumnInputs,
+    caps: Option<&CoveredWaterCaps>,
+    frozen: Option<&CoveredFrozenBranches>,
     occupancy: &CoveredOccupancyInputs,
     block: &[f64],
-) -> Result<CoveredOccupancyEvaluation, LandSurfaceEnergyError> {
-    let column = context.column;
-    let canopy_air_temperature_k = context.canopy_air_temperature_k;
-    let canopy_air_q = context.canopy_air_q;
-    let component_longwave_w_m2 = context.component_longwave_w_m2;
-    if block.len() != 10 {
-        return Err(LandSurfaceEnergyError::topology_domain(
-            "covered_occupancy_trial",
-        ));
-    }
+    sun_e: f64,
+    shade_e: f64,
+    emax_sun_kg_m2_s: f64,
+    emax_shade_kg_m2_s: f64,
+    gas_branches: [V10LeafGasBranch; 2],
+) -> Result<CoveredHydraulicEvaluation, LandSurfaceEnergyError> {
     let (psi_sun, psi_shade, psi_stem, psi_root) = (block[0], block[1], block[2], block[3]);
     let (beta_sun, beta_shade) = (block[4], block[5]);
-    let (tsun, tshade, twet, tstem) = (block[6], block[7], block[8], block[9]);
-    let rho = column.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * canopy_air_temperature_k);
-    let wet_fraction = context.liquid.wet_fraction;
-    let dry_sun = occupancy.sun.leaf_area_m2_m2_tile * (1.0 - wet_fraction);
-    let dry_shade = occupancy.shade.leaf_area_m2_m2_tile * (1.0 - wet_fraction);
-    let wet_area = wet_fraction
-        * (occupancy.sun.leaf_area_m2_m2_tile
-            + occupancy.shade.leaf_area_m2_m2_tile
-            + occupancy.stem_area_m2_m2_tile);
-    let dry_stem = (1.0 - wet_fraction) * occupancy.stem_area_m2_m2_tile;
-    let leaf_gas_environment = LeafGasEnvironment {
-        authority: column.authority,
-        pressure_pa: column.pressure_pa,
-        ca_pa: column.ca_pa,
-    };
-    let sun = leaf_trial_state(
-        occupancy.sun,
-        occupancy.biochemical,
-        tsun,
-        canopy_air_q,
-        beta_sun,
-        leaf_gas_environment,
-        occupancy.gb_leaf_m_s,
-        occupancy.g0_umol_m2_s,
-        occupancy.medlyn_g1_kpa_sqrt,
-    )?;
-    let shade = leaf_trial_state(
-        occupancy.shade,
-        occupancy.biochemical,
-        tshade,
-        canopy_air_q,
-        beta_shade,
-        leaf_gas_environment,
-        occupancy.gb_leaf_m_s,
-        occupancy.g0_umol_m2_s,
-        occupancy.medlyn_g1_kpa_sqrt,
-    )?;
-    // V8 maximum demand is an internal beta=1 evaluation at the current
-    // leaf/canopy state. It is never a caller-configurable runtime operand.
-    let sun_maximum = leaf_trial_state(
-        occupancy.sun,
-        occupancy.biochemical,
-        tsun,
-        canopy_air_q,
-        1.0,
-        leaf_gas_environment,
-        occupancy.gb_leaf_m_s,
-        occupancy.g0_umol_m2_s,
-        occupancy.medlyn_g1_kpa_sqrt,
-    )?;
-    let shade_maximum = leaf_trial_state(
-        occupancy.shade,
-        occupancy.biochemical,
-        tshade,
-        canopy_air_q,
-        1.0,
-        leaf_gas_environment,
-        occupancy.gb_leaf_m_s,
-        occupancy.g0_umol_m2_s,
-        occupancy.medlyn_g1_kpa_sqrt,
-    )?;
-    let emax_sun_kg_m2_s = rho * (sun_maximum.surface_q - canopy_air_q)
-        / (1.0 / occupancy.gb_leaf_m_s + sun_maximum.rs_s_m)
-        * dry_sun;
-    let emax_shade_kg_m2_s = rho * (shade_maximum.surface_q - canopy_air_q)
-        / (1.0 / occupancy.gb_leaf_m_s + shade_maximum.rs_s_m)
-        * dry_shade;
-    let sun_e =
-        rho * (sun.surface_q - canopy_air_q) / (1.0 / occupancy.gb_leaf_m_s + sun.rs_s_m) * dry_sun;
-    let shade_e = rho * (shade.surface_q - canopy_air_q)
-        / (1.0 / occupancy.gb_leaf_m_s + shade.rs_s_m)
-        * dry_shade;
-    let (wet_e, wet_branch) = covered_wet_flux(
-        column,
-        occupancy,
-        context.liquid,
-        twet,
-        canopy_air_temperature_k,
-        canopy_air_q,
-        context.frozen,
-    )?;
     let q1sun = occupancy.k1_sun_max_s1
         * occupancy.sun.leaf_area_m2_m2_tile
         * vulnerability(
@@ -1127,7 +1129,7 @@ fn evaluate_covered_occupancy(
             0.0
         };
         let key = (occupancy.occupancy_id.clone(), layer.layer_id.clone());
-        let supplied = context.caps.and_then(|value| value.root.get(&key));
+        let supplied = caps.and_then(|value| value.root.get(&key));
         let cap_rate = supplied.map(|value| value.authorization_rate_kg_m2_tile_s);
         let natural_branch = if exact_inactive_hydraulics {
             WaterBranch::ConstitutiveLaw
@@ -1136,8 +1138,7 @@ fn evaluate_covered_occupancy(
         } else {
             WaterBranch::ConstitutiveLaw
         };
-        let branch = context
-            .frozen
+        let branch = frozen
             .and_then(|value| value.root.get(&key).copied())
             .unwrap_or(natural_branch);
         let final_flux = if branch == WaterBranch::AuthorizationActiveOrTie {
@@ -1174,6 +1175,192 @@ fn evaluate_covered_occupancy(
             branch,
         });
     }
+    let v10_nonpositive_sun = column.authority.admits_nonpositive_assimilation()
+        && matches!(
+            gas_branches[0],
+            V10LeafGasBranch::ExactZeroPar | V10LeafGasBranch::RespirationDominated
+        );
+    let v10_nonpositive_shade = column.authority.admits_nonpositive_assimilation()
+        && matches!(
+            gas_branches[1],
+            V10LeafGasBranch::ExactZeroPar | V10LeafGasBranch::RespirationDominated
+        );
+    let v10_inactive_sun = column.authority.admits_nonpositive_assimilation()
+        && occupancy.sun.leaf_area_m2_m2_tile == 0.0;
+    let v10_inactive_shade = column.authority.admits_nonpositive_assimilation()
+        && occupancy.shade.leaf_area_m2_m2_tile == 0.0;
+    let residuals = [
+        if v10_inactive_sun {
+            psi_sun - psi_stem
+        } else {
+            sun_e - q1sun
+        },
+        if v10_inactive_shade {
+            psi_shade - psi_stem
+        } else {
+            shade_e - q1shade
+        },
+        if v10_nonpositive_sun || v10_inactive_sun {
+            beta_sun - 1.0
+        } else {
+            sun_e
+                - emax_sun_kg_m2_s
+                    * vulnerability(
+                        psi_sun,
+                        occupancy.p50_leaf_mm,
+                        occupancy.vulnerability_exponent,
+                    )
+        },
+        if v10_nonpositive_shade || v10_inactive_shade {
+            beta_shade - 1.0
+        } else {
+            shade_e
+                - emax_shade_kg_m2_s
+                    * vulnerability(
+                        psi_shade,
+                        occupancy.p50_leaf_mm,
+                        occupancy.vulnerability_exponent,
+                    )
+        },
+        q1sun + q1shade - q2,
+        q2 - root_source_sum,
+    ];
+    let water_scale = emax_sun_kg_m2_s
+        .max(emax_shade_kg_m2_s)
+        .max(q1sun.abs())
+        .max(q1shade.abs())
+        .max(q2.abs())
+        .max(root_source_sum.abs());
+    let mut tolerances = [crate::physics::water_tolerance(water_scale); 6];
+    if v10_inactive_sun {
+        tolerances[0] = 1.0e-7;
+    }
+    if v10_inactive_shade {
+        tolerances[1] = 1.0e-7;
+    }
+    if v10_nonpositive_sun || v10_inactive_sun {
+        tolerances[2] = 1.0e-8;
+    }
+    if v10_nonpositive_shade || v10_inactive_shade {
+        tolerances[3] = 1.0e-8;
+    }
+    Ok(CoveredHydraulicEvaluation {
+        residuals,
+        tolerances,
+        source_water,
+    })
+}
+
+fn evaluate_covered_occupancy(
+    context: &CoveredOccupancyTrialContext<'_>,
+    occupancy: &CoveredOccupancyInputs,
+    block: &[f64],
+) -> Result<CoveredOccupancyEvaluation, LandSurfaceEnergyError> {
+    let column = context.column;
+    let canopy_air_temperature_k = context.canopy_air_temperature_k;
+    let canopy_air_q = context.canopy_air_q;
+    let component_longwave_w_m2 = context.component_longwave_w_m2;
+    if block.len() != 10 {
+        return Err(LandSurfaceEnergyError::topology_domain(
+            "covered_occupancy_trial",
+        ));
+    }
+    let (beta_sun, beta_shade) = (block[4], block[5]);
+    let (tsun, tshade, twet, tstem) = (block[6], block[7], block[8], block[9]);
+    let rho = column.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * canopy_air_temperature_k);
+    let wet_fraction = context.liquid.wet_fraction;
+    let dry_sun = occupancy.sun.leaf_area_m2_m2_tile * (1.0 - wet_fraction);
+    let dry_shade = occupancy.shade.leaf_area_m2_m2_tile * (1.0 - wet_fraction);
+    let wet_area = wet_fraction
+        * (occupancy.sun.leaf_area_m2_m2_tile
+            + occupancy.shade.leaf_area_m2_m2_tile
+            + occupancy.stem_area_m2_m2_tile);
+    let dry_stem = (1.0 - wet_fraction) * occupancy.stem_area_m2_m2_tile;
+    let leaf_gas_environment = LeafGasEnvironment {
+        authority: column.authority,
+        pressure_pa: column.pressure_pa,
+        ca_pa: column.ca_pa,
+    };
+    let sun = leaf_trial_state(
+        occupancy.sun,
+        occupancy.biochemical,
+        tsun,
+        canopy_air_q,
+        beta_sun,
+        leaf_gas_environment,
+        occupancy.gb_leaf_m_s,
+        occupancy.g0_umol_m2_s,
+        occupancy.medlyn_g1_kpa_sqrt,
+    )?;
+    let shade = leaf_trial_state(
+        occupancy.shade,
+        occupancy.biochemical,
+        tshade,
+        canopy_air_q,
+        beta_shade,
+        leaf_gas_environment,
+        occupancy.gb_leaf_m_s,
+        occupancy.g0_umol_m2_s,
+        occupancy.medlyn_g1_kpa_sqrt,
+    )?;
+    // V8 maximum demand is an internal beta=1 evaluation at the current
+    // leaf/canopy state. It is never a caller-configurable runtime operand.
+    let sun_maximum = covered_maximum_leaf_trial_state(
+        sun,
+        beta_sun,
+        occupancy.sun,
+        occupancy.biochemical,
+        tsun,
+        canopy_air_q,
+        leaf_gas_environment,
+        occupancy.gb_leaf_m_s,
+        occupancy.g0_umol_m2_s,
+        occupancy.medlyn_g1_kpa_sqrt,
+    )?;
+    let shade_maximum = covered_maximum_leaf_trial_state(
+        shade,
+        beta_shade,
+        occupancy.shade,
+        occupancy.biochemical,
+        tshade,
+        canopy_air_q,
+        leaf_gas_environment,
+        occupancy.gb_leaf_m_s,
+        occupancy.g0_umol_m2_s,
+        occupancy.medlyn_g1_kpa_sqrt,
+    )?;
+    let emax_sun_kg_m2_s = rho * (sun_maximum.surface_q - canopy_air_q)
+        / (1.0 / occupancy.gb_leaf_m_s + sun_maximum.rs_s_m)
+        * dry_sun;
+    let emax_shade_kg_m2_s = rho * (shade_maximum.surface_q - canopy_air_q)
+        / (1.0 / occupancy.gb_leaf_m_s + shade_maximum.rs_s_m)
+        * dry_shade;
+    let sun_e =
+        rho * (sun.surface_q - canopy_air_q) / (1.0 / occupancy.gb_leaf_m_s + sun.rs_s_m) * dry_sun;
+    let shade_e = rho * (shade.surface_q - canopy_air_q)
+        / (1.0 / occupancy.gb_leaf_m_s + shade.rs_s_m)
+        * dry_shade;
+    let (wet_e, wet_branch) = covered_wet_flux(
+        column,
+        occupancy,
+        context.liquid,
+        twet,
+        canopy_air_temperature_k,
+        canopy_air_q,
+        context.frozen,
+    )?;
+    let hydraulic = evaluate_covered_hydraulics(
+        column,
+        context.caps,
+        context.frozen,
+        occupancy,
+        block,
+        sun_e,
+        shade_e,
+        emax_sun_kg_m2_s,
+        emax_shade_kg_m2_s,
+        [sun.gas_branch, shade.gas_branch],
+    )?;
     let sun_h = rho
         * AIR_HEAT_CAPACITY_J_KG_K
         * occupancy.gb_leaf_m_s
@@ -1250,56 +1437,8 @@ fn evaluate_covered_occupancy(
             physical_energy_residuals[index]
         }
     });
-    let v10_inactive_sun = column.authority.admits_nonpositive_assimilation()
-        && occupancy.sun.leaf_area_m2_m2_tile == 0.0;
-    let v10_inactive_shade = column.authority.admits_nonpositive_assimilation()
-        && occupancy.shade.leaf_area_m2_m2_tile == 0.0;
-    let residuals = vec![
-        if v10_inactive_sun {
-            psi_sun - psi_stem
-        } else {
-            sun_e - q1sun
-        },
-        if v10_inactive_shade {
-            psi_shade - psi_stem
-        } else {
-            shade_e - q1shade
-        },
-        if v10_nonpositive_sun || v10_inactive_sun {
-            beta_sun - 1.0
-        } else {
-            sun_e
-                - emax_sun_kg_m2_s
-                    * vulnerability(
-                        psi_sun,
-                        occupancy.p50_leaf_mm,
-                        occupancy.vulnerability_exponent,
-                    )
-        },
-        if v10_nonpositive_shade || v10_inactive_shade {
-            beta_shade - 1.0
-        } else {
-            shade_e
-                - emax_shade_kg_m2_s
-                    * vulnerability(
-                        psi_shade,
-                        occupancy.p50_leaf_mm,
-                        occupancy.vulnerability_exponent,
-                    )
-        },
-        q1sun + q1shade - q2,
-        q2 - root_source_sum,
-        energy_residuals[0],
-        energy_residuals[1],
-        energy_residuals[2],
-        energy_residuals[3],
-    ];
-    let water_scale = emax_sun_kg_m2_s
-        .max(emax_shade_kg_m2_s)
-        .max(q1sun.abs())
-        .max(q1shade.abs())
-        .max(q2.abs())
-        .max(root_source_sum.abs());
+    let mut residuals = hydraulic.residuals.to_vec();
+    residuals.extend(energy_residuals);
     let component_operands = [
         occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction),
         occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction),
@@ -1323,19 +1462,7 @@ fn evaluate_covered_occupancy(
         column.latent_heat_j_kg * wet_e,
         0.0,
     ];
-    let mut tolerances = vec![crate::physics::water_tolerance(water_scale); 6];
-    if v10_inactive_sun {
-        tolerances[0] = 1.0e-7;
-    }
-    if v10_inactive_shade {
-        tolerances[1] = 1.0e-7;
-    }
-    if v10_nonpositive_sun || v10_inactive_sun {
-        tolerances[2] = 1.0e-8;
-    }
-    if v10_nonpositive_shade || v10_inactive_shade {
-        tolerances[3] = 1.0e-8;
-    }
+    let mut tolerances = hydraulic.tolerances.to_vec();
     tolerances.extend((0..4).map(|index| {
         if component_areas[index].to_bits() == 0.0_f64.to_bits() {
             crate::physics::energy_tolerance(1.0)
@@ -1387,7 +1514,7 @@ fn evaluate_covered_occupancy(
     Ok(CoveredOccupancyEvaluation {
         residuals,
         tolerances,
-        source_water,
+        source_water: hydraulic.source_water,
         canopy_sensible_w_m2: sensible.iter().sum(),
         canopy_vapor_kg_m2_s: vapor_flux.iter().sum(),
         wet_vapor_kg_m2_s: vapor_flux[2],
@@ -1452,6 +1579,7 @@ fn validate_covered_caps(
     column: &CoveredColumnInputs,
     caps: Option<&CoveredWaterCaps>,
 ) -> Result<(), LandSurfaceEnergyError> {
+    record_covered_caps_validation_audit();
     let Some(caps) = caps else {
         return Ok(());
     };
@@ -1664,6 +1792,145 @@ pub fn evaluate_covered_column(
     evaluate_covered_column_with_v3_litter(column, trial, caps, frozen, None)
 }
 
+#[cfg(test)]
+std::thread_local! {
+    static COVERED_EVALUATION_INPUT_VALIDATION_AUDIT: std::cell::Cell<Option<u32>> = const { std::cell::Cell::new(None) };
+    static COVERED_CAPS_VALIDATION_AUDIT: std::cell::Cell<Option<u32>> = const { std::cell::Cell::new(None) };
+}
+
+#[cfg(test)]
+fn begin_covered_evaluation_input_validation_audit() {
+    COVERED_EVALUATION_INPUT_VALIDATION_AUDIT.with(|audit| audit.set(Some(0)));
+    COVERED_CAPS_VALIDATION_AUDIT.with(|audit| audit.set(Some(0)));
+}
+
+#[cfg(test)]
+fn take_covered_evaluation_input_validation_audit() -> u32 {
+    COVERED_EVALUATION_INPUT_VALIDATION_AUDIT.with(|audit| audit.take().unwrap_or_default())
+}
+
+#[cfg(test)]
+fn take_covered_caps_validation_audit() -> u32 {
+    COVERED_CAPS_VALIDATION_AUDIT.with(|audit| audit.take().unwrap_or_default())
+}
+
+#[cfg(test)]
+fn record_covered_evaluation_input_validation_audit() {
+    COVERED_EVALUATION_INPUT_VALIDATION_AUDIT.with(|audit| {
+        if let Some(count) = audit.get() {
+            audit.set(Some(count.saturating_add(1)));
+        }
+    });
+}
+
+#[cfg(test)]
+fn record_covered_caps_validation_audit() {
+    COVERED_CAPS_VALIDATION_AUDIT.with(|audit| {
+        if let Some(count) = audit.get() {
+            audit.set(Some(count.saturating_add(1)));
+        }
+    });
+}
+
+#[cfg(not(test))]
+fn record_covered_evaluation_input_validation_audit() {}
+
+#[cfg(not(test))]
+fn record_covered_caps_validation_audit() {}
+
+/// Same-call proof that immutable covered-column inputs have passed every
+/// non-trial admission check. Private fields prevent construction outside the
+/// validator, and its borrows keep the inputs immutable through one solve.
+struct ValidatedCoveredEvaluationInputs<'a> {
+    column: &'a CoveredColumnInputs,
+    caps: Option<&'a CoveredWaterCaps>,
+    stage3_boundary: Option<&'a Stage3SnowCoveredLowerBoundary>,
+}
+
+impl<'a> ValidatedCoveredEvaluationInputs<'a> {
+    fn try_new(
+        column: &'a CoveredColumnInputs,
+        caps: Option<&'a CoveredWaterCaps>,
+    ) -> Result<Self, LandSurfaceEnergyError> {
+        if column.occupancies.is_empty() || column.ground.soil_nodes.is_empty() {
+            return Err(LandSurfaceEnergyError::topology_cardinality(
+                "covered_column",
+            ));
+        }
+        validate_covered_caps(column, caps)?;
+        Self::try_new_after_topology_and_caps_validated(column, caps)
+    }
+
+    fn try_new_after_caps_validated(
+        column: &'a CoveredColumnInputs,
+        caps: Option<&'a CoveredWaterCaps>,
+    ) -> Result<Self, LandSurfaceEnergyError> {
+        if column.occupancies.is_empty() || column.ground.soil_nodes.is_empty() {
+            return Err(LandSurfaceEnergyError::topology_cardinality(
+                "covered_column",
+            ));
+        }
+        Self::try_new_after_topology_and_caps_validated(column, caps)
+    }
+
+    fn try_new_after_topology_and_caps_validated(
+        column: &'a CoveredColumnInputs,
+        caps: Option<&'a CoveredWaterCaps>,
+    ) -> Result<Self, LandSurfaceEnergyError> {
+        validate_covered_shortwave_inputs(column)?;
+        let stage3_boundary =
+            if column.authority == CoveredColumnAuthority::V11SnowCovered {
+                let boundary = column.stage3_lower_boundary.as_ref().ok_or(
+                    LandSurfaceEnergyError::StateLineage(
+                        "missing Stage-3 covered lower boundary",
+                    ),
+                )?;
+                boundary.validate()?;
+                let optical = column.stage3_optical.as_ref().ok_or(
+                    LandSurfaceEnergyError::StateLineage(
+                        "missing Stage-3 snow optical boundary",
+                    ),
+                )?;
+                if optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
+                    || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
+                    || optical.stage3_albedo_state_sha256
+                        != boundary.stage3_albedo_state_sha256
+                    || optical.forcing_receipt_sha256 != boundary.forcing_receipt_sha256
+                {
+                    return Err(LandSurfaceEnergyError::StateLineage(
+                        "Stage-3 snow optical/lower-boundary identity",
+                    ));
+                }
+                Some(boundary)
+            } else {
+                None
+            };
+        record_covered_evaluation_input_validation_audit();
+        Ok(Self {
+            column,
+            caps,
+            stage3_boundary,
+        })
+    }
+
+    /// Returns the exact represented-snow identity anchor for a ground or
+    /// soil coordinate.  The matching residual has the same ordered index as
+    /// the coordinate; all other regimes and coordinates return `None`.
+    fn stage3_identity_anchor_k(&self, coordinate_index: usize) -> Option<f64> {
+        let boundary = self.stage3_boundary?;
+        let ground_index = 10 * self.column.occupancies.len() + 2;
+        if coordinate_index == ground_index {
+            return Some(boundary.snow_temperature_k);
+        }
+        let soil_index = coordinate_index.checked_sub(ground_index + 1)?;
+        self.column
+            .ground
+            .soil_nodes
+            .get(soil_index)
+            .map(|node| node.beginning_temperature_k)
+    }
+}
+
 fn evaluate_covered_column_with_v3_litter(
     column: &CoveredColumnInputs,
     trial: &[f64],
@@ -1671,39 +1938,19 @@ fn evaluate_covered_column_with_v3_litter(
     frozen: Option<&CoveredFrozenBranches>,
     v3_litter: Option<crate::V3LitterResidualContext>,
 ) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
-    if column.occupancies.is_empty() || column.ground.soil_nodes.is_empty() {
-        return Err(LandSurfaceEnergyError::topology_cardinality(
-            "covered_column",
-        ));
-    }
-    validate_covered_caps(column, caps)?;
-    validate_covered_shortwave_inputs(column)?;
-    let stage3_boundary =
-        if column.authority == CoveredColumnAuthority::V11SnowCovered {
-            let boundary = column.stage3_lower_boundary.as_ref().ok_or(
-                LandSurfaceEnergyError::StateLineage("missing Stage-3 covered lower boundary"),
-            )?;
-            boundary.validate()?;
-            let optical =
-                column
-                    .stage3_optical
-                    .as_ref()
-                    .ok_or(LandSurfaceEnergyError::StateLineage(
-                        "missing Stage-3 snow optical boundary",
-                    ))?;
-            if optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
-                || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
-                || optical.stage3_albedo_state_sha256 != boundary.stage3_albedo_state_sha256
-                || optical.forcing_receipt_sha256 != boundary.forcing_receipt_sha256
-            {
-                return Err(LandSurfaceEnergyError::StateLineage(
-                    "Stage-3 snow optical/lower-boundary identity",
-                ));
-            }
-            Some(boundary)
-        } else {
-            None
-        };
+    let validated = ValidatedCoveredEvaluationInputs::try_new(column, caps)?;
+    evaluate_covered_column_validated(&validated, trial, frozen, v3_litter)
+}
+
+fn evaluate_covered_column_validated(
+    validated: &ValidatedCoveredEvaluationInputs<'_>,
+    trial: &[f64],
+    frozen: Option<&CoveredFrozenBranches>,
+    v3_litter: Option<crate::V3LitterResidualContext>,
+) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
+    let column = validated.column;
+    let caps = validated.caps;
+    let stage3_boundary = validated.stage3_boundary;
     let expected = 10 * column.occupancies.len() + 3 + column.ground.soil_nodes.len();
     if trial.len() != expected
         || !covered_trial_is_valid(
@@ -2041,10 +2288,10 @@ fn evaluate_covered_column_with_v3_litter(
         };
     if let Some(boundary) = stage3_boundary {
         raw.push(ground_temperature - boundary.snow_temperature_k);
-        tolerances.push(1.0e-9);
+        tolerances.push(STAGE3_COVERED_IDENTITY_TOLERANCE_K);
         for (temperature, node) in soil_temperatures.iter().zip(&ground.soil_nodes) {
             raw.push(temperature - node.beginning_temperature_k);
-            tolerances.push(1.0e-9);
+            tolerances.push(STAGE3_COVERED_IDENTITY_TOLERANCE_K);
         }
     } else {
         let surface_operands = [

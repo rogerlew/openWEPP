@@ -44,10 +44,31 @@ impl Wb11HydrologyKernel {
         )
     }
 
-    pub(super) fn validate_stage3_layer(
+    pub(crate) fn validate_stage3_layer(
         phase_class: HillslopeKernelPhaseClass,
         layer: &DirectSnowLayerState,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        // These are exact constitutive domain caps. The generic range helper
+        // carries WB11_ZERO_THRESHOLD slack for conservation residuals, which
+        // must not admit a finite snow-state coordinate above either cap.
+        if layer.density_kg_m3 > SIMIMPL29_SNOW_DENSITY_CAP_KG_M3 {
+            return Err(Self::stage3_domain_error(
+                phase_class,
+                "snow.stage3_layer_density_kg_m3",
+                layer.density_kg_m3,
+                Some(0.0),
+                Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+            ));
+        }
+        if layer.temperature_c > 0.0 {
+            return Err(Self::stage3_domain_error(
+                phase_class,
+                "snow.stage3_layer_temperature_c",
+                layer.temperature_c,
+                None,
+                Some(0.0),
+            ));
+        }
         Self::require_direct_typed_snow_value_with(
             phase_class,
             || BoundarySymbol::from("snow.stage3_layer_mass_swe_m"),

@@ -429,35 +429,101 @@ fn object<const N: usize>(entries: [(&str, Node); N]) -> Node {
 }
 
 fn encode(value: &Node, path: &str, output: &mut Vec<u8>) {
+    let mut path = path.as_bytes().to_vec();
+    encode_with_path(value, &mut path, output);
+}
+
+fn encode_with_path(value: &Node, path: &mut Vec<u8>, output: &mut Vec<u8>) {
     match value {
         Node::Object(object) => {
-            emit(output, path, "object", &object.len().to_string());
+            emit_prefix(output, path, b"object");
+            append_decimal(output, object.len() as u128);
+            output.push(b'\n');
             for (key, child) in object {
-                encode(
-                    child,
-                    &format!("{path}/k{}:{}", key.len(), hex(key.as_bytes())),
-                    output,
-                );
+                let path_len = path.len();
+                path.extend_from_slice(b"/k");
+                append_decimal(path, key.len() as u128);
+                path.push(b':');
+                append_hex(path, key.as_bytes());
+                encode_with_path(child, path, output);
+                path.truncate(path_len);
             }
         }
         Node::Array(array) => {
-            emit(output, path, "array", &array.len().to_string());
+            emit_prefix(output, path, b"array");
+            append_decimal(output, array.len() as u128);
+            output.push(b'\n');
             for (index, child) in array.iter().enumerate() {
-                encode(child, &format!("{path}/i{index}"), output);
+                let path_len = path.len();
+                path.extend_from_slice(b"/i");
+                append_decimal(path, index as u128);
+                encode_with_path(child, path, output);
+                path.truncate(path_len);
             }
         }
-        Node::F64(value) => emit(output, path, "f64be", &format!("{:016x}", value.to_bits())),
-        Node::U128(value) => emit(output, path, "u128", &value.to_string()),
-        Node::String(value) => emit(
-            output,
-            path,
-            "string",
-            &format!("{}:{}", value.len(), hex(value.as_bytes())),
-        ),
-        Node::Null => emit(output, path, "null", ""),
+        Node::F64(value) => {
+            emit_prefix(output, path, b"f64be");
+            append_u64_hex_fixed(output, value.to_bits());
+            output.push(b'\n');
+        }
+        Node::U128(value) => {
+            emit_prefix(output, path, b"u128");
+            append_decimal(output, *value);
+            output.push(b'\n');
+        }
+        Node::String(value) => {
+            emit_prefix(output, path, b"string");
+            append_decimal(output, value.len() as u128);
+            output.push(b':');
+            append_hex(output, value.as_bytes());
+            output.push(b'\n');
+        }
+        Node::Null => {
+            emit_prefix(output, path, b"null");
+            output.push(b'\n');
+        }
     }
 }
 
+fn emit_prefix(output: &mut Vec<u8>, path: &[u8], kind: &[u8]) {
+    output.extend_from_slice(path);
+    output.push(b'\t');
+    output.extend_from_slice(kind);
+    output.push(b'\t');
+}
+
+fn append_decimal(output: &mut Vec<u8>, mut value: u128) {
+    if value == 0 {
+        output.push(b'0');
+        return;
+    }
+    let mut digits = [0_u8; 39];
+    let mut cursor = digits.len();
+    while value != 0 {
+        cursor -= 1;
+        digits[cursor] = b'0' + (value % 10) as u8;
+        value /= 10;
+    }
+    output.extend_from_slice(&digits[cursor..]);
+}
+
+fn append_u64_hex_fixed(output: &mut Vec<u8>, value: u64) {
+    const DIGITS: &[u8; 16] = b"0123456789abcdef";
+    for shift in (0..16).rev() {
+        output.push(DIGITS[((value >> (shift * 4)) & 0x0f) as usize]);
+    }
+}
+
+fn append_hex(output: &mut Vec<u8>, bytes: &[u8]) {
+    const DIGITS: &[u8; 16] = b"0123456789abcdef";
+    output.reserve(bytes.len() * 2);
+    for byte in bytes {
+        output.push(DIGITS[usize::from(byte >> 4)]);
+        output.push(DIGITS[usize::from(byte & 0x0f)]);
+    }
+}
+
+#[cfg(test)]
 fn emit(output: &mut Vec<u8>, path: &str, kind: &str, value: &str) {
     output.extend_from_slice(path.as_bytes());
     output.push(b'\t');
@@ -467,6 +533,7 @@ fn emit(output: &mut Vec<u8>, path: &str, kind: &str, value: &str) {
     output.push(b'\n');
 }
 
+#[cfg(test)]
 fn hex(bytes: &[u8]) -> String {
     const DIGITS: &[u8; 16] = b"0123456789abcdef";
     let mut output = String::with_capacity(bytes.len() * 2);

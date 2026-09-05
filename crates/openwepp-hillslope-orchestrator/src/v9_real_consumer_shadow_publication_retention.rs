@@ -228,7 +228,7 @@ impl PersistentCanonicalWb14ReplayV1 {
 /// Exact real-consumer operands for one accepted V11 support. This is an
 /// unpublished capability: downstream day owners may consume it only while
 /// constructing the staged complete-day candidate.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub(crate) struct Stage3AcceptedPublicationSupportV1 {
     day_index: usize,
     interval_index: usize,
@@ -263,6 +263,48 @@ pub(crate) struct Stage3AcceptedPublicationSupportV1 {
     wb14_child_receipt_set_sha256: Digest32,
     operands_sha256: Digest32,
     receipt_sha256: Digest32,
+}
+
+impl Clone for Stage3AcceptedPublicationSupportV1 {
+    fn clone(&self) -> Self {
+        #[cfg(test)]
+        accepted_publication_support_capability::record_support_payload_clone_v1();
+        Self {
+            day_index: self.day_index,
+            interval_index: self.interval_index,
+            parent_transaction_id: self.parent_transaction_id,
+            support: self.support,
+            accepted_slab_sha256: self.accepted_slab_sha256,
+            beginning_complete_owner_set_sha256: self.beginning_complete_owner_set_sha256,
+            ending_complete_owner_set_sha256: self.ending_complete_owner_set_sha256,
+            lse_support_receipt: self.lse_support_receipt.clone(),
+            lse_forcing: self.lse_forcing.clone(),
+            vegetation_forcing: self.vegetation_forcing.clone(),
+            wb14_parameters: self.wb14_parameters.clone(),
+            resource_debits: self.resource_debits.clone(),
+            material_transfers: self.material_transfers.clone(),
+            run_identity: self.run_identity,
+            beginning_lane_carries: self.beginning_lane_carries.clone(),
+            beginning_subsurface_layers_by_lane: self.beginning_subsurface_layers_by_lane.clone(),
+            ending_subsurface_layers_by_lane: self.ending_subsurface_layers_by_lane.clone(),
+            surface_beginning_state: self.surface_beginning_state.clone(),
+            surface_ending_state: self.surface_ending_state.clone(),
+            open_ingress_parcels: self.open_ingress_parcels.clone(),
+            ingress_receipts: self.ingress_receipts.clone(),
+            ingress_ledgers: self.ingress_ledgers.clone(),
+            accepted_snow_liquid_outputs: self.accepted_snow_liquid_outputs.clone(),
+            wb14_child_replay: self.wb14_child_replay.clone(),
+            wb14_parent_replay_bytes: self.wb14_parent_replay_bytes.clone(),
+            finalized_water_uses: self.finalized_water_uses.clone(),
+            condensation_credits: self.condensation_credits.clone(),
+            receiver_operands_sha256: self.receiver_operands_sha256,
+            rollback_hashes: self.rollback_hashes.clone(),
+            hydrology_transaction_id: self.hydrology_transaction_id,
+            wb14_child_receipt_set_sha256: self.wb14_child_receipt_set_sha256,
+            operands_sha256: self.operands_sha256,
+            receipt_sha256: self.receipt_sha256,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -316,7 +358,6 @@ impl Stage3AcceptedSnowLiquidOutputV1 {
             ));
         }
         value.receipt_sha256 = value.digest()?;
-        value.validate()?;
         Ok(value)
     }
 
@@ -453,6 +494,7 @@ struct AcceptedPublicationHistoryInnerV1 {
     wb14_replay_checkpoint: Option<PersistentCanonicalWb14ReplayV1>,
     last_child_replay_materialized: Option<std::sync::Arc<[u8]>>,
     tail_authority: AcceptedPublicationTailAuthorityV1,
+    live_revision: AcceptedPublicationHistoryLiveRevisionV1,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -467,9 +509,55 @@ struct AcceptedPublicationTailAuthorityV1 {
     last_accepted_slab_sha256: Option<Digest32>,
     traversed_ending_owner_sha256: Option<Digest32>,
     pending_pre_support_event: Option<(ParentTransactionId, openwepp_coupled_time::ModelTimeNs)>,
-    event_ids: BTreeSet<openwepp_coupled_time::ReceiptId>,
-    last_event_ordinal_by_parent: BTreeMap<ParentTransactionId, u32>,
+    #[serde(
+        serialize_with = "serialize_accepted_publication_event_ids_v1",
+        deserialize_with = "deserialize_accepted_publication_event_ids_v1"
+    )]
+    event_ids: std::sync::Arc<BTreeSet<openwepp_coupled_time::ReceiptId>>,
+    #[serde(
+        serialize_with = "serialize_accepted_publication_event_ordinals_v1",
+        deserialize_with = "deserialize_accepted_publication_event_ordinals_v1"
+    )]
+    last_event_ordinal_by_parent: std::sync::Arc<BTreeMap<ParentTransactionId, u32>>,
     aggregate_authority_sha256: Digest32,
+}
+
+fn serialize_accepted_publication_event_ids_v1<S>(
+    value: &std::sync::Arc<BTreeSet<openwepp_coupled_time::ReceiptId>>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    value.as_ref().serialize(serializer)
+}
+
+fn deserialize_accepted_publication_event_ids_v1<'de, D>(
+    deserializer: D,
+) -> Result<std::sync::Arc<BTreeSet<openwepp_coupled_time::ReceiptId>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    BTreeSet::deserialize(deserializer).map(std::sync::Arc::new)
+}
+
+fn serialize_accepted_publication_event_ordinals_v1<S>(
+    value: &std::sync::Arc<BTreeMap<ParentTransactionId, u32>>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    value.as_ref().serialize(serializer)
+}
+
+fn deserialize_accepted_publication_event_ordinals_v1<'de, D>(
+    deserializer: D,
+) -> Result<std::sync::Arc<BTreeMap<ParentTransactionId, u32>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    BTreeMap::deserialize(deserializer).map(std::sync::Arc::new)
 }
 
 struct RotationDayBoundaryV1 {
@@ -506,10 +594,15 @@ fn rotation_day_boundary_is_complete_v1(value: RotationDayBoundaryV1) -> bool {
 fn bounded_sealed_prefix_tail_v1(
     mut tail: AcceptedPublicationTailAuthorityV1,
 ) -> AcceptedPublicationTailAuthorityV1 {
-    tail.event_ids.clear();
+    tail.event_ids = std::sync::Arc::new(BTreeSet::new());
     let current_parent = tail.last_parent_transaction_id;
-    tail.last_event_ordinal_by_parent
-        .retain(|parent, _| Some(*parent) == current_parent);
+    let mut current_ordinal = BTreeMap::new();
+    if let Some(parent) = current_parent {
+        if let Some(ordinal) = tail.last_event_ordinal_by_parent.get(&parent) {
+            current_ordinal.insert(parent, *ordinal);
+        }
+    }
+    tail.last_event_ordinal_by_parent = std::sync::Arc::new(current_ordinal);
     tail
 }
 
@@ -525,8 +618,8 @@ impl Default for AcceptedPublicationTailAuthorityV1 {
             last_accepted_slab_sha256: None,
             traversed_ending_owner_sha256: None,
             pending_pre_support_event: None,
-            event_ids: BTreeSet::new(),
-            last_event_ordinal_by_parent: BTreeMap::new(),
+            event_ids: std::sync::Arc::new(BTreeSet::new()),
+            last_event_ordinal_by_parent: std::sync::Arc::new(BTreeMap::new()),
             aggregate_authority_sha256: digest_bytes(
                 b"OPENWEPP_ACCEPTED_PUBLICATION_INCREMENTAL_AUTHORITY_V1\0",
             ),
@@ -546,14 +639,24 @@ impl PartialEq for AcceptedPublicationHistoryInnerV1 {
 
 impl Default for AcceptedPublicationHistoryV1 {
     fn default() -> Self {
+        let tail_authority = AcceptedPublicationTailAuthorityV1::default();
+        let live_revision = AcceptedPublicationHistoryLiveRevisionV1::fresh(
+            &tail_authority,
+            &tail_authority,
+            0,
+            0,
+            None,
+            None,
+        );
         Self {
             inner: std::sync::Arc::new(AcceptedPublicationHistoryInnerV1 {
                 supports: Vec::new(),
                 event_handoffs: Vec::new(),
-                sealed_prefix_tail: AcceptedPublicationTailAuthorityV1::default(),
+                sealed_prefix_tail: tail_authority.clone(),
                 wb14_replay_checkpoint: None,
                 last_child_replay_materialized: None,
-                tail_authority: AcceptedPublicationTailAuthorityV1::default(),
+                tail_authority,
+                live_revision,
             }),
         }
     }
@@ -631,6 +734,7 @@ impl Clone for AcceptedPublicationHistoryV1 {
                         .last_child_replay_materialized
                         .clone(),
                     tail_authority: self.inner.tail_authority.clone(),
+                    live_revision: self.inner.live_revision.clone(),
                 }),
             };
         }
@@ -641,6 +745,10 @@ impl Clone for AcceptedPublicationHistoryV1 {
 }
 
 impl AcceptedPublicationHistoryV1 {
+    fn live_revision_v1(&self) -> AcceptedPublicationHistoryLiveRevisionV1 {
+        self.inner.live_revision.clone()
+    }
+
     fn supports(&self) -> &[std::sync::Arc<Stage3AcceptedPublicationSupportV1>] {
         &self.inner.supports
     }
@@ -649,41 +757,43 @@ impl AcceptedPublicationHistoryV1 {
         &self.inner.event_handoffs
     }
 
-    fn push_support(
+    #[cfg(any(
+        test,
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
+    fn push_untrusted_support(
         &mut self,
-        mut support: Stage3AcceptedPublicationSupportV1,
+        support: Stage3AcceptedPublicationSupportV1,
     ) -> Result<(), DirectV11RealConsumerError> {
-        let telemetry_started =
-            crate::snow_stage3_v11_attachment::adaptive_parent_telemetry_enabled_v1()
-                .then(std::time::Instant::now);
+        #[cfg(test)]
+        v11_covered::canonical_covered_final_validation_boundary_v1(
+            v11_covered::CanonicalCoveredFinalConstructorStageV1::RestartOwner,
+        );
         support.validate()?;
-        let next_tail = self.inner.tail_authority.accept_support(&support)?;
-        let current = support.wb14_child_replay.materialize_arc();
-        let previous_replay = self
-            .inner
-            .supports
-            .last()
-            .map(|support| support.wb14_child_replay.clone())
-            .or_else(|| self.inner.wb14_replay_checkpoint.clone());
-        let previous_bytes = self.inner.last_child_replay_materialized.clone();
-        if let (Some(previous_replay), Some(previous_bytes)) = (previous_replay, previous_bytes) {
-            support
-                .wb14_child_replay
-                .compact_against(&previous_replay, &previous_bytes, &current);
+        self.install_validated_support(support, false)
+    }
+
+    fn push_validated_support(
+        &mut self,
+        capability: ValidatedStage3AcceptedPublicationSupportV1,
+    ) -> Result<(), DirectV11RealConsumerError> {
+        #[cfg(test)]
+        let _trusted_append_audit_scope = accepted_publication_support_capability::
+            enter_trusted_accepted_publication_append_audit_scope_v1();
+        #[cfg(test)]
+        accepted_publication_support_capability::record_trusted_append_attempt_v1();
+        let (support, target_revision, support_receipt_sha256) = capability.into_parts();
+        if self.inner.live_revision != target_revision
+            || support.receipt_sha256 != support_receipt_sha256
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "accepted publication validated capability live revision",
+            ));
         }
-        let copied_on_write = std::sync::Arc::strong_count(&self.inner) > 1;
-        let inner = self.make_mut();
-        inner.supports.push(std::sync::Arc::new(support));
-        inner.last_child_replay_materialized = Some(current);
-        inner.tail_authority = next_tail;
-        self.validate_full_scan_when_forced()?;
-        if let Some(started) = telemetry_started {
-            crate::snow_stage3_v11_attachment::record_adaptive_parent_publication_append_v1(
-                started.elapsed(),
-                copied_on_write,
-            );
-        }
-        Ok(())
+        #[cfg(test)]
+        accepted_publication_support_capability::record_live_revision_join_v1();
+        self.install_validated_support(support, true)
     }
 
     fn push_event_handoff(
@@ -694,11 +804,38 @@ impl AcceptedPublicationHistoryV1 {
             crate::snow_stage3_v11_attachment::adaptive_parent_telemetry_enabled_v1()
                 .then(std::time::Instant::now);
         let next_tail = self.inner.tail_authority.accept_event(&event)?;
-        let copied_on_write = std::sync::Arc::strong_count(&self.inner) > 1;
-        let inner = self.make_mut();
-        inner.event_handoffs.push(event);
-        inner.tail_authority = next_tail;
-        self.validate_full_scan_when_forced()?;
+        let next_revision = self.inner.live_revision.successor(
+            &next_tail,
+            &self.inner.sealed_prefix_tail,
+            self.inner.supports.len(),
+            self.inner.event_handoffs.len().checked_add(1).ok_or(
+                DirectV11RealConsumerError::Identity(
+                    "accepted publication resident event-count overflow",
+                ),
+            )?,
+            self.inner.wb14_replay_checkpoint.as_ref(),
+            self.inner.supports.last().map(std::sync::Arc::as_ref),
+        )?;
+        #[cfg(test)]
+        let forced_full_scan =
+            FORCE_FULL_SCAN_ACCEPTED_PUBLICATION_HISTORY_V1.with(std::cell::Cell::get);
+        #[cfg(not(test))]
+        let forced_full_scan = false;
+        let copied_on_write = forced_full_scan || std::sync::Arc::strong_count(&self.inner) > 1;
+        if forced_full_scan {
+            let mut candidate = self.clone();
+            let inner = candidate.make_mut();
+            inner.event_handoffs.push(event);
+            inner.tail_authority = next_tail;
+            inner.live_revision = next_revision;
+            candidate.validate_cached_tail_against_full_scan()?;
+            *self = candidate;
+        } else {
+            let inner = self.make_mut();
+            inner.event_handoffs.push(event);
+            inner.tail_authority = next_tail;
+            inner.live_revision = next_revision;
+        }
         if let Some(started) = telemetry_started {
             crate::snow_stage3_v11_attachment::record_adaptive_parent_publication_append_v1(
                 started.elapsed(),
@@ -831,6 +968,14 @@ impl AcceptedPublicationHistoryV1 {
             ));
         }
         let bounded_tail = bounded_sealed_prefix_tail_v1(self.inner.tail_authority.clone());
+        let next_revision = self.inner.live_revision.successor(
+            &bounded_tail,
+            &bounded_tail,
+            0,
+            0,
+            Some(&checkpoint),
+            None,
+        )?;
         let inner = self.make_mut();
         inner.supports.clear();
         inner.event_handoffs.clear();
@@ -838,6 +983,7 @@ impl AcceptedPublicationHistoryV1 {
         inner.wb14_replay_checkpoint = Some(checkpoint);
         inner.last_child_replay_materialized = Some(materialized);
         inner.tail_authority = bounded_tail;
+        inner.live_revision = next_revision;
         self.validate_cached_tail_against_full_scan()?;
         Ok(())
     }
@@ -845,8 +991,11 @@ impl AcceptedPublicationHistoryV1 {
     fn retention_state(&self) -> Stage3AcceptedPublicationRetentionStateV1 {
         let tail = &self.inner.tail_authority;
         let prefix = &self.inner.sealed_prefix_tail;
-        let current_event_ordinal = tail
-            .last_parent_transaction_id
+        let current_event_parent = tail
+            .pending_pre_support_event
+            .map(|(parent, _)| parent)
+            .or(tail.last_parent_transaction_id);
+        let current_event_ordinal = current_event_parent
             .and_then(|parent| tail.last_event_ordinal_by_parent.get(&parent).copied());
         Stage3AcceptedPublicationRetentionStateV1 {
             sealed_support_count: prefix.support_count,
@@ -913,6 +1062,14 @@ impl AcceptedPublicationHistoryV1 {
         let checkpoint_bytes = checkpoint
             .as_ref()
             .map(PersistentCanonicalWb14ReplayV1::materialize_arc);
+        let live_revision = AcceptedPublicationHistoryLiveRevisionV1::fresh(
+            &prefix,
+            &prefix,
+            0,
+            0,
+            checkpoint.as_ref(),
+            None,
+        );
         let mut history = Self {
             inner: std::sync::Arc::new(AcceptedPublicationHistoryInnerV1 {
                 supports: Vec::new(),
@@ -921,6 +1078,7 @@ impl AcceptedPublicationHistoryV1 {
                 wb14_replay_checkpoint: checkpoint,
                 last_child_replay_materialized: checkpoint_bytes,
                 tail_authority: prefix.clone(),
+                live_revision,
             }),
         };
         let mut event_index = 0;
@@ -937,7 +1095,7 @@ impl AcceptedPublicationHistoryV1 {
                 }
             }
             let support_end = support.support.end_ns();
-            history.push_support(support)?;
+            history.push_untrusted_support(support)?;
             while wire
                 .resident_event_handoffs
                 .get(event_index)
@@ -973,30 +1131,30 @@ impl AcceptedPublicationHistoryV1 {
         supports: Vec<Stage3AcceptedPublicationSupportV1>,
         event_handoffs: &[AcceptedEventReceiptV1],
     ) -> Result<(), DirectV11RealConsumerError> {
-        *self = Self::default();
+        let mut restored = Self::default();
         let mut event_index = 0;
         for support in supports {
-            if self.inner.supports.is_empty() {
+            if restored.inner.supports.is_empty() {
                 while event_handoffs
                     .get(event_index)
                     .is_some_and(|event| event.tick() == support.support.start_ns())
                 {
-                    self.push_event_handoff(event_handoffs[event_index].clone())?;
+                    restored.push_event_handoff(event_handoffs[event_index].clone())?;
                     event_index += 1;
                 }
             }
             let support_end = support.support.end_ns();
-            self.push_support(support)?;
+            restored.push_untrusted_support(support)?;
             while event_handoffs
                 .get(event_index)
                 .is_some_and(|event| event.tick() == support_end)
             {
-                self.push_event_handoff(event_handoffs[event_index].clone())?;
+                restored.push_event_handoff(event_handoffs[event_index].clone())?;
                 event_index += 1;
             }
         }
         if event_index != event_handoffs.len()
-            || self
+            || restored
                 .inner
                 .tail_authority
                 .pending_pre_support_event
@@ -1006,7 +1164,8 @@ impl AcceptedPublicationHistoryV1 {
                 "accepted publication incremental restore chronology",
             ));
         }
-        self.validate_cached_tail_against_full_scan()?;
+        restored.validate_cached_tail_against_full_scan()?;
+        *self = restored;
         Ok(())
     }
 
@@ -1017,6 +1176,8 @@ impl AcceptedPublicationHistoryV1 {
     fn validate_cached_tail_against_full_scan(
         &self,
     ) -> Result<Option<Digest32>, DirectV11RealConsumerError> {
+        #[cfg(test)]
+        accepted_publication_support_capability::record_append_time_full_prefix_scan_v1();
         let telemetry_started =
             crate::snow_stage3_v11_attachment::adaptive_parent_telemetry_enabled_v1()
                 .then(std::time::Instant::now);
@@ -1067,14 +1228,6 @@ impl AcceptedPublicationHistoryV1 {
         }
         Ok(rebuilt.traversed_ending_owner_sha256)
     }
-
-    fn validate_full_scan_when_forced(&self) -> Result<(), DirectV11RealConsumerError> {
-        #[cfg(test)]
-        if FORCE_FULL_SCAN_ACCEPTED_PUBLICATION_HISTORY_V1.with(std::cell::Cell::get) {
-            self.validate_cached_tail_against_full_scan()?;
-        }
-        Ok(())
-    }
 }
 
 fn publication_rotation_v10_error(_: DirectV11RealConsumerError) -> DirectV10RealConsumerError {
@@ -1084,6 +1237,23 @@ fn publication_rotation_v10_error(_: DirectV11RealConsumerError) -> DirectV10Rea
 }
 
 impl DirectV10RealConsumerShadow {
+    pub(crate) fn accepted_publication_support_digests_v1(&self) -> Vec<Digest32> {
+        self.accepted_publication_history
+            .inner
+            .supports
+            .iter()
+            .map(|support| support.receipt_sha256)
+            .collect()
+    }
+
+    pub(crate) fn latest_accepted_publication_support_digest_v1(&self) -> Option<Digest32> {
+        self.accepted_publication_history
+            .inner
+            .supports
+            .last()
+            .map(|support| support.receipt_sha256)
+    }
+
     /// Seal one complete resident publication day without mutating retention.
     /// The returned value is the exact archive staging capability.
     pub(crate) fn seal_accepted_publication_day_evidence_v1(
@@ -1332,8 +1502,8 @@ impl AcceptedPublicationTailAuthorityV1 {
         }
         let mut next = self.clone();
         next.event_count += 1;
-        next.event_ids.insert(event.id());
-        next.last_event_ordinal_by_parent
+        std::sync::Arc::make_mut(&mut next.event_ids).insert(event.id());
+        std::sync::Arc::make_mut(&mut next.last_event_ordinal_by_parent)
             .insert(event.parent_transaction_id(), event.ordinal());
         next.traversed_ending_owner_sha256 = Some(event.ending_owner_set_digest());
         if self.last_parent_transaction_id != Some(event.parent_transaction_id()) {
@@ -1926,11 +2096,7 @@ mod accepted_publication_chronology_tests {
 #[cfg(test)]
 include!("v9_real_consumer_shadow_publication_rotation_tests.rs");
 
-#[cfg(any(
-    test,
-    feature = "restart-authority-evidence",
-    feature = "persisted-restart-v1"
-))]
+#[cfg(feature = "persisted-restart-v1")]
 fn validate_accepted_publication_authority(
     supports: &[std::sync::Arc<Stage3AcceptedPublicationSupportV1>],
     events: &[AcceptedEventReceiptV1],
@@ -2126,6 +2292,8 @@ impl From<Stage3PublicationSubsurfaceLayerWireV1> for crate::DirectSubsurfaceLay
 
 impl Stage3AcceptedPublicationSupportV1 {
     fn to_wire(&self) -> Stage3AcceptedPublicationSupportWireV1 {
+        #[cfg(test)]
+        accepted_publication_support_capability::record_append_time_serialization_v1();
         let project_layers = |lanes: &[Vec<crate::DirectSubsurfaceLayerState>]| {
             lanes
                 .iter()
@@ -2232,12 +2400,11 @@ impl Stage3AcceptedPublicationSupportV1 {
             operands_sha256: wire.operands_sha256,
             receipt_sha256: wire.receipt_sha256,
         };
-        value.validate()?;
         Ok(value)
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn try_new(
+    fn prepare(
         day_index: usize,
         interval_index: usize,
         input: &V11ImportedV10SegmentInput,
@@ -2252,7 +2419,7 @@ impl Stage3AcceptedPublicationSupportV1 {
         physical_outcome_ledgers: Option<
             &BTreeMap<u32, v11_covered::physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>,
         >,
-    ) -> Result<Self, DirectV11RealConsumerError> {
+    ) -> Result<PreparedStage3AcceptedPublicationSupportV1, DirectV11RealConsumerError> {
         #[cfg(test)]
         let capture_started = std::time::Instant::now();
         let beginning_states = input
@@ -2340,46 +2507,6 @@ impl Stage3AcceptedPublicationSupportV1 {
         let hydrology_transaction_id = hydrology.transaction_id();
         #[cfg(test)]
         let projection_finished = std::time::Instant::now();
-        let operands_sha256 = Self::operands_sha256(
-            &lse_support_receipt,
-            &lse_forcing,
-            &vegetation_forcing,
-            &wb14_parameters,
-            &resource_debits,
-            &material_transfers,
-            run_identity,
-            &beginning_lane_carries,
-            &beginning_subsurface_layers_by_lane,
-            &ending_subsurface_layers_by_lane,
-            &surface_beginning_state,
-            &surface_ending_state,
-            &open_ingress_parcels,
-            &ingress_receipts,
-            &ingress_ledgers,
-            &accepted_snow_liquid_outputs,
-            wb14_child_replay.canonical_sha256(),
-            wb14_parent_replay_bytes
-                .as_deref()
-                .map_or_else(|| digest_bytes(b"no-parent-replay"), digest_bytes),
-            &finalized_water_uses,
-            &condensation_credits,
-            receiver_operands_sha256,
-            &rollback_hashes,
-        )?;
-        #[cfg(test)]
-        let initial_seal_finished = std::time::Instant::now();
-        let receipt_sha256 = Self::reconstructed_receipt_sha256(
-            day_index,
-            interval_index,
-            input.parent_transaction_id,
-            input.support,
-            input.accepted_slab_receipt.slab_id().digest(),
-            beginning_complete_owner_set_sha256,
-            ending_complete_owner_set_sha256,
-            hydrology_transaction_id,
-            ingress_receipt_set,
-            operands_sha256,
-        )?;
         let value = Self {
             day_index,
             interval_index,
@@ -2412,26 +2539,49 @@ impl Stage3AcceptedPublicationSupportV1 {
             rollback_hashes,
             hydrology_transaction_id,
             wb14_child_receipt_set_sha256: ingress_receipt_set,
-            operands_sha256,
-            receipt_sha256,
+            operands_sha256: Digest32::zero(),
+            receipt_sha256: Digest32::zero(),
         };
-        value.validate()?;
+        let prepared = PreparedStage3AcceptedPublicationSupportV1::new(value);
         #[cfg(test)]
-        {
-            let validation_finished = std::time::Instant::now();
-            crate::snow_stage3_v11_attachment::record_accepted_publication_capture_audit(
-                crate::snow_stage3_v11_attachment::AcceptedPublicationCaptureAuditV1 {
-                    support: input.support,
-                    regime:
-                        crate::snow_stage3_v11_attachment::accepted_publication_capture_regime_v1(),
-                    projection_elapsed: projection_finished.duration_since(capture_started),
-                    initial_seal_elapsed: initial_seal_finished.duration_since(projection_finished),
-                    validation_elapsed: validation_finished.duration_since(initial_seal_finished),
-                    total_elapsed: validation_finished.duration_since(capture_started),
-                },
-            );
-        }
-        Ok(value)
+        let prepared =
+            prepared.with_projection_elapsed(projection_finished.duration_since(capture_started));
+        Ok(prepared)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn try_new(
+        day_index: usize,
+        interval_index: usize,
+        input: &V11ImportedV10SegmentInput,
+        ending_complete_owner_set_sha256: Digest32,
+        lse_support_receipt: LseSupportAdmissibilityReceiptV1,
+        lse_forcing: LandSurfaceForcing,
+        vegetation_forcing: SnowFreeForcing,
+        wb14_parameters: Vec<DirectOfeWb14Parameters>,
+        resource_debits: Vec<V11ResourceDebit>,
+        material_transfers: Vec<openwepp_vegetation::carbon_nitrogen::MaterialTransfer>,
+        hydrology: &crate::land_surface_energy_shadow::UnifiedRealHydrologyCandidate,
+        physical_outcome_ledgers: Option<
+            &BTreeMap<u32, v11_covered::physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>,
+        >,
+        target_revision: AcceptedPublicationHistoryLiveRevisionV1,
+    ) -> Result<ValidatedStage3AcceptedPublicationSupportV1, DirectV11RealConsumerError> {
+        Self::prepare(
+            day_index,
+            interval_index,
+            input,
+            ending_complete_owner_set_sha256,
+            lse_support_receipt,
+            lse_forcing,
+            vegetation_forcing,
+            wb14_parameters,
+            resource_debits,
+            material_transfers,
+            hydrology,
+            physical_outcome_ledgers,
+        )?
+        .validate_and_mint(target_revision)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -2447,6 +2597,8 @@ impl Stage3AcceptedPublicationSupportV1 {
         ingress_receipt_set: Digest32,
         operands_sha256: Digest32,
     ) -> Result<Digest32, DirectV11RealConsumerError> {
+        #[cfg(test)]
+        accepted_publication_support_capability::record_append_time_receipt_reconstruction_v1();
         let day_index_bytes = u64::try_from(day_index)
             .map_err(|_| DirectV11RealConsumerError::Identity("publication day index width"))?
             .to_be_bytes();
@@ -2542,6 +2694,8 @@ impl Stage3AcceptedPublicationSupportV1 {
         receiver_operands_sha256: Digest32,
         rollback_hashes: &[openwepp_land_surface_energy::OwnerRollbackHash],
     ) -> Result<Digest32, DirectV11RealConsumerError> {
+        #[cfg(test)]
+        accepted_publication_support_capability::record_append_time_operand_reconstruction_v1();
         let lse_receipt = Self::json_digest(lse_support_receipt)?;
         let lse = Self::json_digest(lse_forcing)?;
         let vegetation = Self::json_digest(vegetation_forcing)?;
@@ -2696,95 +2850,6 @@ impl Stage3AcceptedPublicationSupportV1 {
             }
         }
         Ok(digest_bytes(&bytes))
-    }
-
-    fn validate(&self) -> Result<(), DirectV11RealConsumerError> {
-        let ingress_receipt_set = self.wb14_child_receipt_set_sha256;
-        let operands_sha256 = Self::operands_sha256(
-            &self.lse_support_receipt,
-            &self.lse_forcing,
-            &self.vegetation_forcing,
-            &self.wb14_parameters,
-            &self.resource_debits,
-            &self.material_transfers,
-            self.run_identity,
-            &self.beginning_lane_carries,
-            &self.beginning_subsurface_layers_by_lane,
-            &self.ending_subsurface_layers_by_lane,
-            &self.surface_beginning_state,
-            &self.surface_ending_state,
-            &self.open_ingress_parcels,
-            &self.ingress_receipts,
-            &self.ingress_ledgers,
-            &self.accepted_snow_liquid_outputs,
-            self.wb14_child_replay.canonical_sha256(),
-            self.wb14_parent_replay_bytes
-                .as_deref()
-                .map_or_else(|| digest_bytes(b"no-parent-replay"), digest_bytes),
-            &self.finalized_water_uses,
-            &self.condensation_credits,
-            self.receiver_operands_sha256,
-            &self.rollback_hashes,
-        )?;
-        let receipt_sha256 = Self::reconstructed_receipt_sha256(
-            self.day_index,
-            self.interval_index,
-            self.parent_transaction_id,
-            self.support,
-            self.accepted_slab_sha256,
-            self.beginning_complete_owner_set_sha256,
-            self.ending_complete_owner_set_sha256,
-            self.hydrology_transaction_id,
-            ingress_receipt_set,
-            operands_sha256,
-        )?;
-        if self.support.duration_ns() == 0
-            || self.accepted_slab_sha256 == Digest32::zero()
-            || self.beginning_complete_owner_set_sha256 == Digest32::zero()
-            || self.ending_complete_owner_set_sha256 == Digest32::zero()
-            || self.wb14_child_receipt_set_sha256 != self.wb14_child_replay.canonical_sha256()
-            || self.operands_sha256 != operands_sha256
-            || self.receipt_sha256 != receipt_sha256
-            || self.receipt_sha256 == Digest32::zero()
-            || self.lse_forcing.transaction_id != self.hydrology_transaction_id
-            || self.lse_forcing.interval_s.to_bits() != self.support.duration_s_bits()
-            || self.wb14_parameters.is_empty()
-            || self.beginning_lane_carries.len() != self.run_identity.lane_count
-            || self
-                .beginning_lane_carries
-                .iter()
-                .enumerate()
-                .any(|(index, lane)| {
-                    u32::try_from(index + 1).ok() != Some(lane.lane_id)
-                        || !lane.upstream_area_ratio.is_finite()
-                        || lane.upstream_area_ratio < 0.0
-                        || !lane.upstream_flow_m.is_finite()
-                        || !lane.subsurface_input_m.is_finite()
-                        || lane
-                            .surface_carry_m
-                            .iter()
-                            .chain(&lane.surface_hourly_weights)
-                            .chain(&lane.lateral_carry_m)
-                            .any(|value| !value.is_finite() || *value < 0.0)
-                })
-            || self.resource_debits.iter().any(|debit| {
-                debit.parent_transaction_id != self.parent_transaction_id
-                    || debit.support != self.support
-            })
-            || self
-                .accepted_snow_liquid_outputs
-                .iter()
-                .any(|output| output.support != self.support || output.validate().is_err())
-            || self
-                .accepted_snow_liquid_outputs
-                .windows(2)
-                .any(|pair| pair[0].lane_id >= pair[1].lane_id)
-        {
-            return Err(DirectV11RealConsumerError::Identity(
-                "accepted publication support identity",
-            ));
-        }
-        Ok(())
     }
 
     #[must_use]

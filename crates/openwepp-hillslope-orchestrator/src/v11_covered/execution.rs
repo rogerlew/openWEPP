@@ -56,13 +56,15 @@ mod deferred_native_v2_snow_free_replay_tests {
         ];
         let before = poisons;
         for (candidate_start, candidate_end, input_start, input_end) in poisons {
-            assert!(deferred_native_v2_snow_free_temporal_posture_v1(
-                candidate_start,
-                candidate_end,
-                input_start,
-                input_end,
-            )
-            .is_err());
+            assert!(
+                deferred_native_v2_snow_free_temporal_posture_v1(
+                    candidate_start,
+                    candidate_end,
+                    input_start,
+                    input_end,
+                )
+                .is_err()
+            );
         }
         assert_eq!(poisons, before, "refusal must leave custody inputs exact");
     }
@@ -74,17 +76,22 @@ mod deferred_native_v2_snow_free_replay_tests {
             .rsplit("pub(crate) fn advance_snow_free_child")
             .next()
             .expect("snow-free child method")
-            .split("let original_start_ns")
+            .split("let original = if let Some(prior)")
             .next()
             .expect("same-support branch");
         assert!(body.contains("validate_terminal_operand_suffix"));
-        assert!(body.contains("Self::try_new(authoritative, self.candidate.clone(), Some(replay))"));
+        assert!(
+            body.contains("Self::try_new(authoritative, self.candidate.clone(), Some(replay))")
+        );
         for forbidden in [
             "prepare_next_soil_thermal_unpublished_continuation_v2",
             "advance_soil_thermal_unpublished_continuation_v2",
             "install_soil_thermal_accepted_v2",
         ] {
-            assert!(!body.contains(forbidden), "same-support replay used {forbidden}");
+            assert!(
+                !body.contains(forbidden),
+                "same-support replay used {forbidden}"
+            );
         }
     }
 }
@@ -99,14 +106,10 @@ impl DeferredNativeV2SoilCustodyV1 {
             DirectV11RealConsumerError::Identity("deferred native V2 soil candidate posture")
         })?;
         if let Some(continuation) = continuation.as_ref() {
-            let original = continuation.original_prepared();
-            let expected = authoritative
-                .prepare_next_soil_thermal_support_v2(
-                    original.beginning_owner().support_start_ns,
-                    original.beginning_owner().support_end_ns,
-                )
+            authoritative
+                .validate_soil_thermal_unpublished_continuation_custody_v2(continuation)
                 .map_err(DirectV11RealConsumerError::Runtime)?;
-            if continuation.physical_trial() != trial || &expected != original {
+            if continuation.physical_trial() != trial {
                 return Err(DirectV11RealConsumerError::Identity(
                     "deferred native V2 soil custody join",
                 ));
@@ -114,9 +117,7 @@ impl DeferredNativeV2SoilCustodyV1 {
         } else {
             openwepp_land_surface_energy::validate_soil_thermal_unpublished_trial_v2(trial)
                 .map_err(|_| {
-                    DirectV11RealConsumerError::Identity(
-                        "deferred native V2 base trial seal",
-                    )
+                    DirectV11RealConsumerError::Identity("deferred native V2 base trial seal")
                 })?;
             let prepared = authoritative
                 .prepare_next_soil_thermal_support_v2(
@@ -163,9 +164,7 @@ impl DeferredNativeV2SoilCustodyV1 {
         envelope: &UncommittedCoveredV8OwnerEnvelope,
     ) -> Result<Self, DirectV11RealConsumerError> {
         let trial = self.candidate.v2().map_err(|_| {
-            DirectV11RealConsumerError::Identity(
-                "deferred native V2 snow-free candidate posture",
-            )
+            DirectV11RealConsumerError::Identity("deferred native V2 snow-free candidate posture")
         })?;
         let input_start_ns = input.support.start_ns().get();
         let input_end_ns = input.support.end_ns().get();
@@ -239,23 +238,23 @@ impl DeferredNativeV2SoilCustodyV1 {
                 })?;
             return Self::try_new(authoritative, self.candidate.clone(), Some(replay));
         }
-        let original_start_ns = self.continuation.as_ref().map_or_else(
-            || {
-                authoritative
-                    .soil_thermal_v2()
-                    .map(|resident| resident.owner().support_start_ns)
-            },
-            |continuation| {
-                Ok(continuation
-                    .original_prepared()
-                    .beginning_owner()
-                    .support_start_ns)
-            },
-        )
-        .map_err(DirectV11RealConsumerError::Runtime)?;
-        let original = authoritative
-            .prepare_next_soil_thermal_support_v2(original_start_ns, input.support.end_ns().get())
-            .map_err(DirectV11RealConsumerError::Runtime)?;
+        let original = if let Some(prior) = self.continuation.as_ref() {
+            authoritative
+                .prepare_next_soil_thermal_unpublished_aggregate_support_v2(
+                    prior,
+                    input.support.start_ns().get(),
+                    input.support.end_ns().get(),
+                )
+                .map_err(DirectV11RealConsumerError::Runtime)?
+        } else {
+            authoritative
+                .prepare_base_soil_thermal_unpublished_aggregate_support_v2(
+                    &self.candidate,
+                    input.support.start_ns().get(),
+                    input.support.end_ns().get(),
+                )
+                .map_err(DirectV11RealConsumerError::Runtime)?
+        };
         let next = if let Some(prior) = self.continuation.as_ref() {
             authoritative.prepare_next_soil_thermal_unpublished_continuation_v2(
                 &original,
@@ -313,7 +312,6 @@ impl DeferredNativeV2SoilCustodyV1 {
     }
 }
 
-#[derive(Clone)]
 pub struct DirectV11RealConsumerStack<'a> {
     pub beginning: DirectV10RealConsumerShadow,
     pub interval: &'a DirectV9ShadowIntervalInput,
@@ -322,6 +320,8 @@ pub struct DirectV11RealConsumerStack<'a> {
     pub(super) finalize_wb14_parent_interval: bool,
     pub(super) wb14_coupled_child_binding:
         Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
+    pub(super) native_inactive_wb14_prefix:
+        Option<crate::direct_runtime::ValidatedNativeInactiveWb14PrefixV1>,
     pub(super) ending: Option<DirectV10RealConsumerShadow>,
     pub(super) last_support_receipt: Option<LseSupportAdmissibilityReceiptV1>,
     #[cfg(test)]
@@ -329,6 +329,10 @@ pub struct DirectV11RealConsumerStack<'a> {
         Option<crate::land_surface_energy_shadow::UnifiedRealHydrologyCandidate>,
     pub(super) ending_snow_owner_bytes: Option<Vec<u8>>,
     pub(super) deferred_native_v2_soil_custody: Option<DeferredNativeV2SoilCustodyV1>,
+    pub(super) snow_free_physical_reuse_pending:
+        Option<crate::v9_real_consumer_shadow::SnowFreePhysicalReusePendingV1>,
+    pub(super) snow_free_physical_reuse_seed:
+        Option<crate::v9_real_consumer_shadow::SnowFreePhysicalReuseSeedV1>,
 }
 
 #[derive(Clone)]
@@ -858,6 +862,11 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
 struct CoveredOrdinaryPhysicalReuseSeedV1 {
     physical_authority: CoveredOrdinaryPhysicalAuthorityV1,
     envelope: UncommittedCoveredV8OwnerEnvelope,
+    physical_ending: DirectV10RealConsumerShadow,
+    soil_candidate: DirectSoilThermalCandidate,
+    soil_continuation:
+        Option<crate::v9_real_consumer_shadow::DirectSoilThermalUnpublishedContinuationResultV2>,
+    soil_top_boundary_credits: Vec<SoilThermalTopBoundaryCreditV1>,
 }
 
 #[derive(Clone)]
@@ -968,9 +977,7 @@ fn precomputed_terminal_physical_authority_sha256_v1(
     carrier_chain_evidence.extend_from_slice(
         &u64::try_from(endpoint.carrier_phase_chain.len())
             .map_err(|_| {
-                DirectV11RealConsumerError::Identity(
-                    "terminal pre-event carrier-chain count width",
-                )
+                DirectV11RealConsumerError::Identity("terminal pre-event carrier-chain count width")
             })?
             .to_be_bytes(),
     );
@@ -979,11 +986,14 @@ fn precomputed_terminal_physical_authority_sha256_v1(
         carrier_chain_evidence.extend_from_slice(&support.start_ns().get().to_be_bytes());
         carrier_chain_evidence.extend_from_slice(&support.end_ns().get().to_be_bytes());
         carrier_chain_evidence.extend_from_slice(
-            phase.transition.probe_child_identity.receipt_sha256.as_bytes(),
+            phase
+                .transition
+                .probe_child_identity
+                .receipt_sha256
+                .as_bytes(),
         );
-        carrier_chain_evidence.extend_from_slice(
-            phase.ending_candidates.joint().receipt_sha256().as_bytes(),
-        );
+        carrier_chain_evidence
+            .extend_from_slice(phase.ending_candidates.joint().receipt_sha256().as_bytes());
         for (lane_id, set) in &phase.precipitation_sets {
             carrier_chain_evidence.extend_from_slice(&lane_id.to_be_bytes());
             carrier_chain_evidence.extend_from_slice(set.receipt_sha256.as_bytes());
@@ -1948,23 +1958,6 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         Ok(receipts)
     }
 
-    fn open_snow_boundaries_by_destination(
-        &self,
-        stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
-    ) -> Result<
-        (
-            BTreeMap<(OfeId, TileId), Digest32>,
-            BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-            BTreeMap<(OfeId, TileId), OpenSnowTileBoundaryCandidateV1>,
-        ),
-        DirectV11RealConsumerError,
-    > {
-        self.open_snow_boundaries_by_destination_with_beginning(
-            stage3_states,
-            &self.stage3_beginning_by_lane,
-        )
-    }
-
     fn open_snow_boundaries_by_destination_with_beginning(
         &self,
         stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
@@ -2125,43 +2118,6 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             candidates.insert(destination.clone(), candidate);
         }
         Ok((diagnostics, boundaries, candidates))
-    }
-
-    fn seal_final_open_snow_boundaries(
-        &self,
-        stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
-        ending_stage3_state_sha256: Digest32,
-    ) -> Result<
-        (
-            BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-            BTreeMap<(OfeId, TileId), FinalStage3OpenSnowBoundaryReceiptV1>,
-        ),
-        DirectV11RealConsumerError,
-    > {
-        let (_, mut boundaries, candidates) =
-            self.open_snow_boundaries_by_destination(stage3_states)?;
-        let receipts = candidates
-            .into_iter()
-            .map(|(destination, candidate)| {
-                let receipt = FinalStage3OpenSnowBoundaryReceiptV1::try_new(
-                    candidate,
-                    ending_stage3_state_sha256,
-                )?;
-                let boundary = boundaries.get_mut(&destination).ok_or(
-                    DirectV11RealConsumerError::Identity("final open-snow lower boundary"),
-                )?;
-                boundary.final_canopy_boundary_receipt_sha256 = Some(
-                    Sha256Digest::try_new(digest32_hex(receipt.receipt_sha256)).map_err(|_| {
-                        DirectV11RealConsumerError::Identity("final open-snow boundary receipt")
-                    })?,
-                );
-                boundary.validate().map_err(|_| {
-                    DirectV11RealConsumerError::Identity("sealed final open-snow lower boundary")
-                })?;
-                Ok((destination, receipt))
-            })
-            .collect::<Result<BTreeMap<_, _>, DirectV11RealConsumerError>>()?;
-        Ok((boundaries, receipts))
     }
 
     fn complete_final_boundary_receipts(
@@ -2350,30 +2306,6 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 .map(|(lane, (value, weight))| (lane, value / weight))
                 .collect(),
         ))
-    }
-
-    fn apply_lse_iteration_exchange(
-        &self,
-        boundaries: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-        states: &BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
-    ) -> Result<BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>, DirectV11RealConsumerError>
-    {
-        if boundaries.keys().collect::<BTreeSet<_>>() != states.keys().collect::<BTreeSet<_>>() {
-            return Err(DirectV11RealConsumerError::Identity(
-                "covered LSE iteration exchange destination set",
-            ));
-        }
-        let mut next = boundaries.clone();
-        for (destination, state) in states {
-            let boundary =
-                next.get_mut(destination)
-                    .ok_or(DirectV11RealConsumerError::Identity(
-                        "covered LSE iteration exchange destination",
-                    ))?;
-            boundary.sensible_to_canopy_air_w_m2 = state.snow_sensible_w_m2;
-            boundary.vapor_to_canopy_air_kg_m2_s = state.snow_vapor_kg_m2_s;
-        }
-        Ok(next)
     }
 
     fn seal_final_covered_boundaries(
@@ -2881,9 +2813,8 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
 
     pub(crate) fn last_snow_enthalpy_material_owner(
         &self,
-    ) -> Option<
-        &crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
-    > {
+    ) -> Option<&crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>
+    {
         self.last_snow_enthalpy_material_owner.as_ref()
     }
 

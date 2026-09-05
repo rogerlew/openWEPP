@@ -5,11 +5,121 @@ use std::collections::BTreeMap;
 use openwepp_kernel_contract::TransactionId;
 
 use super::{
-    DirectGroundIngressMode, DirectOfeWb14Parameters, DirectSurfaceLiquidErrorCode,
-    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidParcelKind, DirectSurfaceLiquidPhase,
-    INTERVAL_S, TimedParcel, execute_surface_liquid_ingress, initial_state, one_tile_configuration,
-    open_ingress, parameters, resource_candidate, route_runoff, routed_configuration,
+    DirectGroundIngressMode, DirectIngressAmount, DirectOfeWb14Parameters,
+    DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidIngressInput,
+    DirectSurfaceLiquidParcelKind, DirectSurfaceLiquidPhase, DirectTileGroundIngress,
+    DirectWb14CoupledChildBindingV1, INTERVAL_S, TimedParcel,
+    execute_surface_liquid_ingress,
+    execute_surface_liquid_ingress_with_parent_state_and_coupled_binding, initial_state,
+    liquid_specific_enthalpy, one_tile_configuration, open_ingress, parameters,
+    resource_candidate, route_runoff, routed_configuration,
 };
+
+fn exact_child_ingress(
+    record: &super::DirectSurfaceLiquidConfigurationRecord,
+    interval_s: f64,
+) -> DirectTileGroundIngress {
+    let temperature_k = 285.0;
+    DirectTileGroundIngress::OpenRawPrecipitation {
+        ofe_id: record.key.ofe_id.clone(),
+        tile_id: record.key.tile_id.clone(),
+        surface_id: record.key.surface_id.clone(),
+        raw_precipitation: DirectIngressAmount {
+            mass_kg_m2_tile_ground: 0.0,
+            temperature_k,
+            specific_liquid_enthalpy_j_kg: liquid_specific_enthalpy(temperature_k),
+            start_s: 0.0,
+            end_s: interval_s,
+        },
+    }
+}
+
+fn child_binding(
+    parent_start_ns: u128,
+    child_start_ns: u128,
+    child_end_ns: u128,
+    slab_byte: u8,
+) -> DirectWb14CoupledChildBindingV1 {
+    DirectWb14CoupledChildBindingV1 {
+        proposed_upper_bound_s_bits: 60.0_f64.to_bits(),
+        coupled_parent_transaction_sha256: [11; 32],
+        accepted_slab_sha256: [slab_byte; 32],
+        parent_beginning_complete_owner_set_sha256: [13; 32],
+        parent_support_start_ns: parent_start_ns,
+        parent_support_end_ns: parent_start_ns + 1_800_000_000_000,
+        child_support_start_ns: child_start_ns,
+        child_support_end_ns: child_end_ns,
+    }
+}
+
+#[test]
+fn coupled_child_requires_and_advances_exact_predecessor_parent_cursor() {
+    let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+    let persistent = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(9_201);
+    let parent_start_ns = 3_u128 * 48 * 1_800_000_000_000;
+    let first_end_ns = parent_start_ns + 60_000_000_000;
+    let second_end_ns = first_end_ns + 60_000_000_000;
+    let input = || DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: 60.0,
+        tile_ingress: vec![exact_child_ingress(&configuration.records[0], 60.0)],
+        wb14_parameters: parameters(&configuration),
+    };
+    let first_resource =
+        resource_candidate(&configuration, &persistent, transaction_id, None, &[]);
+    let first_binding = child_binding(parent_start_ns, parent_start_ns, first_end_ns, 17);
+    let first = execute_surface_liquid_ingress_with_parent_state_and_coupled_binding(
+        &configuration,
+        &first_resource,
+        &input(),
+        None,
+        false,
+        Some(first_binding),
+    )
+    .expect("first exact coupled child");
+    let first_parent = first.parent_working_state().expect("open parent custody");
+    let second_resource = resource_candidate(
+        &configuration,
+        first_parent.candidate_state(),
+        transaction_id,
+        None,
+        &[],
+    );
+    let second_binding = child_binding(parent_start_ns, first_end_ns, second_end_ns, 19);
+    let second = execute_surface_liquid_ingress_with_parent_state_and_coupled_binding(
+        &configuration,
+        &second_resource,
+        &input(),
+        Some(first_parent),
+        false,
+        Some(second_binding),
+    )
+    .expect("adjacent successor coupled child");
+    let second_parent = second.parent_working_state().expect("successor parent custody");
+    let restart: serde_json::Value = serde_json::from_slice(
+        &second_parent
+            .restart_bytes(&configuration)
+            .expect("canonical successor parent"),
+    )
+    .expect("successor parent JSON");
+    assert_eq!(restart["accepted_until_ns"], serde_json::json!(second_end_ns));
+
+    let before = second_resource.clone();
+    let error = execute_surface_liquid_ingress_with_parent_state_and_coupled_binding(
+        &configuration,
+        &second_resource,
+        &input(),
+        None,
+        false,
+        Some(second_binding),
+    )
+    .expect_err("successor without predecessor parent custody must fail closed");
+    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E008);
+    assert_eq!(second_resource, before);
+}
 
 #[test]
 fn finite_ingress_enthalpy_overflow_fails_before_candidate() {

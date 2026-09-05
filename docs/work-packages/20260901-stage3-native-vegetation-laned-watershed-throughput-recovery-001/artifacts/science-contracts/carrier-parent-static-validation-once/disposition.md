@@ -1,0 +1,29 @@
+# Carrier parent-static validation-once finding disposition
+
+Canonical contract:
+`docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md`
+
+Base commit under review:
+`a28c55c2d0f06e0c4aab58642f1009f70f82b3d3`
+
+Final ordered four-file contract/test manifest under review:
+`f6bd360c2711b5ec4fce212a56dd4dc1167567cfeca863fd4c156c1a33a748be`
+
+Evidence mode: `Static + Ran + Expected-red`
+
+| finding_id | source(agent_a/agent_b) | severity | decision | action_taken | artifact_ref | rationale |
+|---|---|---|---|---|---|---|
+| `CPSVO-A-001` | `agent_a` | `critical` | `accepted` | Distinguished structural V8 objects from resident V3/V2 objects; retained forcing-before-V8 and ingress-before-native order; sourced the borrowed native map proof from the exact resident validated revision. | `SC-LANDSURFACEENERGY-001.md#carrier-parent-static-and-same-map-validation-once-amendment`; `contract_ref.md#source-real-authority` | V8 cannot attest to resident objects it does not receive; existing validated-revision custody is the source-real authority. |
+| `CPSVO-A-002` | `agent_a` | `high` | `accepted` | Required ordinary execution to mint/consume zero resident proofs and execute zero native physics; native use is conditional on native regimes. | `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_is_bitwise_equal_for_every_role_path_and_regime` | The authentic ordinary path has no native V3 consumer. |
+| `CPSVO-A-003` | `agent_a` | `high` | `accepted` | Bound each regime to its explicit applicable role/path set and added adjacent competing poisons through carrier, forcing, V8, ingress, resident, proof, vegetation, surface, soil/hydrology, solver/residual, and output boundaries. | `SC-LANDSURFACEENERGY-001.md#carrier-parent-static-and-same-map-validation-once-amendment`; `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback` | Aggregate coverage and isolated poisons could not establish per-regime coverage or first-error precedence. |
+| `CPSVO-A-004` | `agent_a` | `high` | `accepted` | Expanded the supplemental guard to the intended owner and actual carrier/V8/native/resident seams; added derived/manual Clone/serde restrictions for ephemeral authority and executable transfer/reuse poisons. | `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_source_surface_forbids_dynamic_or_wire_caches` | The former scan omitted likely implementation files and missed derived traits. |
+| `CPSVO-A-005` | `agent_a` | `medium` | `accepted` | Recorded exact commands, evidence classifications, absence of retained logs, ordered manifest inputs, recipe, and digest. | `contract_ref.md#reproducible-validation`; `contract_ref.md#ordered-manifest` | Reproducible commands and an unambiguous digest recipe are required for auditable evidence. |
+| `CPSVO-A-006` | `agent_a` | `medium` | `accepted` | Removed detailed index-note assertions; registry tests now bind only identity, path, lifecycle, and date while detailed authority is read from the contract. | `land_surface_energy_balance_authority_contract.rs::assert_lse_registry_lifecycle` | Lifecycle registry prose is not canonical detailed authority. |
+| `B-01` | `agent_b` | `high` | `accepted` | Applied the A-001 object-lineage correction and added distinct structural/native configuration, state, and surface poisons. | `SC-LANDSURFACEENERGY-001.md#carrier-parent-static-and-same-map-validation-once-amendment`; `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback` | Native omission needs authority over the exact resident references, not structural V8 references. |
+| `B-02` | `agent_b` | `high` | `accepted` | Required lazy plan joins at the exact replaced checks after all earlier guards and added stale-plan/configuration competing-poison cases. | `SC-LANDSURFACEENERGY-001.md#carrier-parent-static-and-same-map-validation-once-amendment`; `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback` | Hoisting a plan join would change observable first-error precedence. |
+| `B-03` | `agent_b` | `medium` | `accepted` | Added distinct surface configuration/owner and structural/native state cases, revision/reuse/transfer/restart cases, later dynamic/solver/output poisons, authentic seam requirements, zero fallback/publication, and rollback assertions. | `SC-LANDSURFACEENERGY-001.md#obl-landsurfaceenergy-c-019`; `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback` | Every named custody boundary requires executable expected-red coverage. |
+| `B-04` | `agent_b` | `medium` | `accepted` | Applied the A-004 full-source-surface and trait-restriction correction while retaining source inspection as supplemental evidence only. | `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_source_surface_forbids_dynamic_or_wire_caches`; `readiness-matrix.md#obligation-to-test-binding` | Source guards must cover intended and actual seams without substituting for behavior. |
+| `B-FINAL-01` | `agent_b` | `medium` | `accepted` | Replaced the vegetation-to-soil jump with adjacent `DynamicVegetationState -> DynamicSurfaceState` and `DynamicSurfaceState -> DynamicSoilHydrologyState` pairs, continuing through solver/residual and output. | `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback`; `review_agent_b.md#focused-final-closure-re-review-b` | The independent surface poison did not prove precedence on either side of the dynamic-surface boundary. |
+
+All decisions are closed for contract-cycle purposes. Production implementation,
+performance retention, and independent verification remain separate gates.

@@ -169,11 +169,28 @@ impl PotentialWaterRequestBatch {
             requests,
             potential_signature_sha256,
         };
-        batch.validate()?;
+        batch.validate_contents()?;
         Ok(batch)
     }
 
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+        self.validate_contents()?;
+        let computed = canonical_digest(&PotentialSignature {
+            transaction_id: self.transaction_id,
+            beginning_lse_state_sha256: &self.beginning_lse_state_sha256,
+            requests: &self.requests,
+        })?;
+        if computed != self.potential_signature_sha256 {
+            return Err(LandSurfaceEnergyError::Identity {
+                field: "potential request batch digest",
+                expected: computed.to_string(),
+                found: self.potential_signature_sha256.to_string(),
+            });
+        }
+        Ok(())
+    }
+
+    fn validate_contents(&self) -> Result<(), LandSurfaceEnergyError> {
         if self.transaction_id.0 == 0 {
             return Err(LandSurfaceEnergyError::water_identity(
                 "empty or zero-transaction potential request batch",
@@ -203,18 +220,6 @@ impl PotentialWaterRequestBatch {
                 ));
             }
         }
-        let computed = canonical_digest(&PotentialSignature {
-            transaction_id: self.transaction_id,
-            beginning_lse_state_sha256: &self.beginning_lse_state_sha256,
-            requests: &self.requests,
-        })?;
-        if computed != self.potential_signature_sha256 {
-            return Err(LandSurfaceEnergyError::Identity {
-                field: "potential request batch digest",
-                expected: computed.to_string(),
-                found: self.potential_signature_sha256.to_string(),
-            });
-        }
         Ok(())
     }
 }
@@ -225,6 +230,14 @@ pub struct OpenPotentialPhase {
     beginning: OpenSurfaceProblem,
     pub accepted: AcceptedOpenSurface,
     pub request_batch: PotentialWaterRequestBatch,
+}
+
+#[cfg(any(test, feature = "test-support"))]
+impl OpenPotentialPhase {
+    #[must_use]
+    pub const fn test_support_beginning(&self) -> &OpenSurfaceProblem {
+        &self.beginning
+    }
 }
 
 pub fn solve_open_potential_phase(
@@ -263,18 +276,11 @@ pub fn solve_open_potential_phase(
         key: identity.ground_key(),
         amount_kg_m2_stand_ground: accepted.evaluation.water.request_kg_m2_stand_ground,
     }];
-    let signature = canonical_digest(&PotentialSignature {
-        transaction_id: identity.transaction_id,
-        beginning_lse_state_sha256: &identity.beginning_lse_state_sha256,
-        requests: &requests,
-    })?;
-    let request_batch = PotentialWaterRequestBatch {
-        transaction_id: identity.transaction_id,
-        beginning_lse_state_sha256: identity.beginning_lse_state_sha256.clone(),
+    let request_batch = PotentialWaterRequestBatch::try_new(
+        identity.transaction_id,
+        identity.beginning_lse_state_sha256.clone(),
         requests,
-        potential_signature_sha256: signature,
-    };
-    request_batch.validate()?;
+    )?;
     Ok(OpenPotentialPhase {
         identity,
         beginning: beginning.clone(),
@@ -303,6 +309,32 @@ impl CoveredPotentialPhase {
     #[must_use]
     pub const fn request_batch(&self) -> &PotentialWaterRequestBatch {
         &self.request_batch
+    }
+
+    #[cfg(any(test, feature = "test-support"))]
+    #[must_use]
+    pub const fn test_support_beginning(&self) -> &CoveredColumnInputs {
+        &self.beginning
+    }
+
+    #[cfg(any(test, feature = "test-support"))]
+    #[must_use]
+    pub fn test_support_accepted(&self) -> &CoveredColumnCandidate {
+        &self.accepted
+    }
+
+    #[cfg(any(test, feature = "test-support"))]
+    #[must_use]
+    pub const fn test_support_root_identities(
+        &self,
+    ) -> &BTreeMap<(String, String), RootRuntimeIdentity> {
+        &self.root_identities
+    }
+
+    #[cfg(any(test, feature = "test-support"))]
+    #[must_use]
+    pub fn test_support_gas_branches(&self) -> &[[crate::V10LeafGasBranch; 2]] {
+        &self.gas_branches
     }
 }
 
@@ -563,18 +595,11 @@ pub fn solve_covered_potential_phase(
         key: identity.ground_key(),
         amount_kg_m2_stand_ground: accepted.ground_water.request_kg_m2_stand_ground,
     });
-    let signature = canonical_digest(&PotentialSignature {
-        transaction_id: identity.transaction_id,
-        beginning_lse_state_sha256: &identity.beginning_lse_state_sha256,
-        requests: &requests,
-    })?;
-    let request_batch = PotentialWaterRequestBatch {
-        transaction_id: identity.transaction_id,
-        beginning_lse_state_sha256: identity.beginning_lse_state_sha256.clone(),
+    let request_batch = PotentialWaterRequestBatch::try_new(
+        identity.transaction_id,
+        identity.beginning_lse_state_sha256.clone(),
         requests,
-        potential_signature_sha256: signature,
-    };
-    request_batch.validate()?;
+    )?;
     let vegetation_owner_id = identities
         .values()
         .next()

@@ -1,3 +1,113 @@
+#[cfg(test)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Stage3RejectedDayRollbackAudit {
+    pub error: String,
+    pub frame_unchanged: bool,
+    pub parent_checkpoint_bytes_unchanged: bool,
+    pub coupled_clock_bytes_unchanged: bool,
+}
+
+#[cfg(test)]
+enum Stage3RejectedDayRollbackAuditState {
+    Armed,
+    Recorded(Stage3RejectedDayRollbackAudit),
+}
+
+#[cfg(test)]
+struct Stage3RejectedDayRollbackBeginning {
+    frame: DirectRunFrame,
+    parent_checkpoint_bytes: Vec<u8>,
+    coupled_clock_bytes: Vec<u8>,
+}
+
+#[cfg(test)]
+thread_local! {
+    static STAGE3_REJECTED_DAY_ROLLBACK_AUDIT: std::cell::RefCell<Option<Stage3RejectedDayRollbackAuditState>> = const { std::cell::RefCell::new(None) };
+}
+
+#[cfg(test)]
+pub(crate) fn arm_stage3_rejected_day_rollback_audit() {
+    STAGE3_REJECTED_DAY_ROLLBACK_AUDIT.with(|audit| {
+        assert!(
+            audit
+                .replace(Some(Stage3RejectedDayRollbackAuditState::Armed))
+                .is_none(),
+            "Stage-3 rejected-day rollback audit already armed"
+        );
+    });
+}
+
+#[cfg(test)]
+pub(crate) fn take_stage3_rejected_day_rollback_audit() -> Stage3RejectedDayRollbackAudit {
+    STAGE3_REJECTED_DAY_ROLLBACK_AUDIT.with(|audit| match audit.replace(None) {
+        Some(Stage3RejectedDayRollbackAuditState::Recorded(record)) => record,
+        Some(Stage3RejectedDayRollbackAuditState::Armed) => {
+            panic!("Stage-3 rejected-day rollback audit was not observed")
+        }
+        None => panic!("Stage-3 rejected-day rollback audit was not armed"),
+    })
+}
+
+#[cfg(test)]
+fn stage3_rejected_day_rollback_beginning(
+    frame: &DirectRunFrame,
+) -> Option<Stage3RejectedDayRollbackBeginning> {
+    let armed = STAGE3_REJECTED_DAY_ROLLBACK_AUDIT.with(|audit| {
+        matches!(
+            *audit.borrow(),
+            Some(Stage3RejectedDayRollbackAuditState::Armed)
+        )
+    });
+    if !armed {
+        return None;
+    }
+    let attachment = frame.snow_stage3_v11_attachment.as_ref()?;
+    Some(Stage3RejectedDayRollbackBeginning {
+        frame: frame.clone(),
+        parent_checkpoint_bytes: serde_json::to_vec(
+            &attachment.committed.v11_parent_state.checkpoint(),
+        )
+        .expect("serialize runner-audit V11 parent checkpoint"),
+        coupled_clock_bytes: serde_json::to_vec(&attachment.committed.coupled_clock)
+            .expect("serialize runner-audit coupled clock"),
+    })
+}
+
+#[cfg(test)]
+fn record_stage3_rejected_day_rollback(
+    frame: &DirectRunFrame,
+    beginning: Option<Stage3RejectedDayRollbackBeginning>,
+    error: &DirectRuntimeError,
+) {
+    let Some(beginning) = beginning else {
+        return;
+    };
+    let attachment = frame
+        .snow_stage3_v11_attachment
+        .as_ref()
+        .expect("runner-audit attachment remains installed after rejection");
+    let record = Stage3RejectedDayRollbackAudit {
+        error: error.to_string(),
+        frame_unchanged: frame == &beginning.frame,
+        parent_checkpoint_bytes_unchanged: serde_json::to_vec(
+            &attachment.committed.v11_parent_state.checkpoint(),
+        )
+        .expect("serialize rejected runner-audit V11 parent checkpoint")
+            == beginning.parent_checkpoint_bytes,
+        coupled_clock_bytes_unchanged: serde_json::to_vec(&attachment.committed.coupled_clock)
+            .expect("serialize rejected runner-audit coupled clock")
+            == beginning.coupled_clock_bytes,
+    };
+    STAGE3_REJECTED_DAY_ROLLBACK_AUDIT.with(|audit| {
+        let mut audit = audit.borrow_mut();
+        assert!(
+            matches!(*audit, Some(Stage3RejectedDayRollbackAuditState::Armed)),
+            "Stage-3 rejected-day rollback audit recorded more than once"
+        );
+        *audit = Some(Stage3RejectedDayRollbackAuditState::Recorded(record));
+    });
+}
+
 #[allow(clippy::too_many_arguments)]
 fn execute_hillslope_direct_production_days(
     run_name: &str,
@@ -40,6 +150,9 @@ fn execute_hillslope_direct_production_days(
     frame
         .configure_groundwater(groundwater_authority)
         .map_err(|source| direct_production_runtime_error(&source))?;
+    let day_input_builder =
+        DirectProductionDayInputBuilder::new(&climate_request, &climate_span, &seed_authority)?;
+    let pre_bootstrap_laned_active_enabled = resolve_laned_active_enabled(&day_input_builder)?;
     #[cfg(not(test))]
     let snow_stage3_v11_owner_seed =
         crate::hillslope::snow_stage3_v11_production_seed::DirectSnowStage3V11ProductionSeedV1::load_required(
@@ -51,9 +164,20 @@ fn execute_hillslope_direct_production_days(
             sidecars.snow_stage3_v11_owner_seed_path.as_deref(),
             &frame,
         )?;
-    snow_stage3_v11_owner_seed.bootstrap(&mut frame)?;
-    let day_input_builder =
-        DirectProductionDayInputBuilder::new(&climate_request, &climate_span, &seed_authority)?;
+    snow_stage3_v11_owner_seed.bootstrap_with_laned_active_surface_owner(
+        &mut frame,
+        pre_bootstrap_laned_active_enabled,
+    )?;
+    let (laned_active_enabled, _laned_active_profile_enabled) =
+        configure_laned_active_execution(&mut frame, &day_input_builder)?;
+    if laned_active_enabled != pre_bootstrap_laned_active_enabled {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_prebootstrap_identity",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} active Lane-D ownership changed across Stage-3 bootstrap"
+            ),
+        });
+    }
     let metadata = DirectPublicationRunMetadata {
         run_name: run_name.to_string(),
         runtime_selection: HillslopeRuntimeSelection::DirectProductionExecutor
@@ -64,13 +188,17 @@ fn execute_hillslope_direct_production_days(
         )
         .to_string(),
     };
-    let retained_direct_publication = execute_direct_publication_stream(
+    let mut retained_direct_publication = execute_direct_publication_stream(
         &mut frame,
         &metadata,
         &day_input_builder,
         &snow_stage3_v11_owner_seed,
         streaming_targets,
         stage3_evidence_private_path,
+    )?;
+    retained_direct_publication.laned_active = validate_laned_active_summary(
+        laned_active_enabled,
+        frame.laned_active_summary.as_deref().cloned(),
     )?;
     let coupling_vectors = build_direct_production_coupling_vector_provenance(
         &seed_authority,
@@ -100,7 +228,6 @@ fn execute_hillslope_direct_production_days(
     })
 }
 
-#[cfg(test)]
 fn resolve_laned_active_decision(
     explicit_laned_active_enabled: bool,
     explicit_laned_active_disabled: bool,
@@ -113,10 +240,46 @@ fn resolve_laned_active_decision(
         });
     }
     if explicit_laned_active_enabled {
-        return Ok(true);
+        return match default_eligibility {
+            DirectLanedActiveDefaultEligibility::Complete => Ok(true),
+            DirectLanedActiveDefaultEligibility::Absent => {
+                Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "laned_active_active_eligibility",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} OPENWEPP_LANED_ACTIVE=1 requires coefficient-complete native Lane D authority"
+                    ),
+                })
+            }
+            DirectLanedActiveDefaultEligibility::Mixed { present, absent } => {
+                Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "laned_active_active_eligibility",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} OPENWEPP_LANED_ACTIVE=1 cannot bypass mixed native Lane D authority; found {present} lane(s) with coefficients and {absent} lane(s) without coefficients"
+                    ),
+                })
+            }
+        };
     }
     if explicit_laned_active_disabled {
-        return Ok(false);
+        return match default_eligibility {
+            DirectLanedActiveDefaultEligibility::Complete => Ok(false),
+            DirectLanedActiveDefaultEligibility::Absent => {
+                Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "laned_active_disable_eligibility",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} OPENWEPP_LANED_ACTIVE_DISABLE=1 is a rollback posture only for coefficient-complete native Lane D authority"
+                    ),
+                })
+            }
+            DirectLanedActiveDefaultEligibility::Mixed { present, absent } => {
+                Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "laned_active_disable_eligibility",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} OPENWEPP_LANED_ACTIVE_DISABLE=1 cannot bypass mixed native Lane D authority; found {present} lane(s) with coefficients and {absent} lane(s) without coefficients"
+                    ),
+                })
+            }
+        };
     }
     match default_eligibility {
         DirectLanedActiveDefaultEligibility::Complete => Ok(true),
@@ -132,7 +295,6 @@ fn resolve_laned_active_decision(
     }
 }
 
-#[cfg(test)]
 fn resolve_laned_active_enabled(
     day_input_builder: &DirectProductionDayInputBuilder<'_>,
 ) -> Result<bool, HillslopeCliError> {
@@ -143,7 +305,6 @@ fn resolve_laned_active_enabled(
     )
 }
 
-#[cfg(test)]
 fn resolve_laned_active_configuration(
     laned_active_enabled: bool,
     laned_shadow_enabled: bool,
@@ -161,7 +322,6 @@ fn resolve_laned_active_configuration(
     ))
 }
 
-#[cfg(test)]
 fn apply_laned_active_configuration(
     frame: &mut DirectRunFrame,
     config: Option<openwepp_hillslope_orchestrator::DirectLanedActiveConfig>,
@@ -176,7 +336,6 @@ fn apply_laned_active_configuration(
     }
 }
 
-#[cfg(test)]
 fn validate_laned_active_summary(
     laned_active_enabled: bool,
     laned_active: Option<openwepp_hillslope_orchestrator::DirectLanedActiveRunSummary>,
@@ -191,17 +350,13 @@ fn validate_laned_active_summary(
     Ok(laned_active)
 }
 
-#[cfg(test)]
 fn configure_laned_active_execution(
     frame: &mut DirectRunFrame,
     day_input_builder: &DirectProductionDayInputBuilder<'_>,
 ) -> Result<(bool, bool), HillslopeCliError> {
     let laned_active_enabled = resolve_laned_active_enabled(day_input_builder)?;
-    let (laned_active_enabled, laned_active_profile_enabled) = resolve_laned_active_configuration(
-        laned_active_enabled,
-        crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled(),
-        std::env::var("OPENWEPP_LANED_SHADOW_PROFILE").is_ok_and(|value| value == "1"),
-    )?;
+    let (laned_active_enabled, laned_active_profile_enabled) =
+        resolve_laned_active_configuration(laned_active_enabled, false, false)?;
     let config = if laned_active_enabled {
         Some(day_input_builder.laned_active_config()?)
     } else {
@@ -257,12 +412,15 @@ fn execute_direct_publication_stream(
             frame,
             metadata.clone(),
             |frame, day_index| {
+                let _qualification_stage3_scope = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::enter_release_qualification_stage3_scope_v1();
+                #[cfg(test)]
+                let rollback_beginning = stage3_rejected_day_rollback_beginning(frame);
                 let beginning_canopy_cover_by_lane = frame
                     .lanes
                     .iter()
                     .map(|lane| lane.plant_growth_state.canopy_cover_fraction)
                     .collect::<Vec<_>>();
-                frame.prepare_snow_stage3_v11_production_day_from_repository(
+                let result = frame.prepare_snow_stage3_v11_production_day_from_repository(
                     day_input_builder.climate_request,
                     day_index,
                     snow_stage3_v11_owner_seed
@@ -280,7 +438,12 @@ fn execute_direct_publication_stream(
                             snow_stage3_v11_owner_seed,
                         )
                     },
-                )
+                );
+                #[cfg(test)]
+                if let Err(error) = &result {
+                    record_stage3_rejected_day_rollback(frame, rollback_beginning, error);
+                }
+                result
             },
             |frame, day_index, lane_index| {
                 day_input_builder
@@ -329,20 +492,18 @@ fn execute_direct_publication_stream(
                         },
                     )
                     .map_err(|source| DirectRuntimeError::PublicationSinkFailure {
-                        detail: format!(
-                            "durably append Stage-3 committed-day evidence: {source}"
-                        ),
+                        detail: format!("durably append Stage-3 committed-day evidence: {source}"),
                     })?;
                 if appended_content_sha256 != expected_content_sha256 {
                     return Err(DirectRuntimeError::PublicationSinkFailure {
                         detail: "Stage-3 committed-day archive content digest mismatch".into(),
                     });
                 }
-                archive_manifest
-                    .append(archive_entry)
-                    .map_err(|source| DirectRuntimeError::PublicationSinkFailure {
+                archive_manifest.append(archive_entry).map_err(|source| {
+                    DirectRuntimeError::PublicationSinkFailure {
                         detail: format!("append Stage-3 committed-day archive manifest: {source}"),
-                    })?;
+                    }
+                })?;
                 frame.acknowledge_snow_stage3_v11_committed_day_archive(record_sha256)
             },
         )
@@ -351,12 +512,12 @@ fn execute_direct_publication_stream(
         .snow_stage3_v11_archived_receipt_prefix()
         .map_err(|source| direct_production_runtime_error(&source))?
         .clone();
-    stage3_archived_prefix
-        .validate()
-        .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+    stage3_archived_prefix.validate().map_err(|source| {
+        HillslopeCliError::RuntimeSurfaceFailure {
             surface: "stage3_v11_archive_prefix",
             detail: source.to_string(),
-        })?;
+        }
+    })?;
     if stage3_archived_prefix.archived_day_count != frame.identity.day_count {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "stage3_v11_archive_prefix",
@@ -374,12 +535,13 @@ fn execute_direct_publication_stream(
         crate::hillslope::snow_stage3_v11_qualification_audit::record_committed_snapshot(snapshot);
     }
     let stream = stream_sink.finish()?;
-    let stage3_archive = archive_writer.finish().map_err(|source| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "stage3_v11_archive_spool",
-            detail: format!("finish transaction-private evidence spool: {source}"),
-        }
-    })?;
+    let stage3_archive =
+        archive_writer
+            .finish()
+            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "stage3_v11_archive_spool",
+                detail: format!("finish transaction-private evidence spool: {source}"),
+            })?;
     if usize::try_from(stage3_archive.record_count).ok()
         != Some(stage3_archived_prefix.archived_day_count)
     {
@@ -418,9 +580,15 @@ fn execute_direct_publication_stream(
 }
 
 fn reject_retired_laned_runtime_envs() -> Result<(), HillslopeCliError> {
+    if crate::hillslope::laned_active::env_enabled()
+        && crate::hillslope::laned_active::disable_enabled()
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_selector",
+            detail: "OPENWEPP_LANED_ACTIVE=1 and OPENWEPP_LANED_ACTIVE_DISABLE=1 are mutually exclusive: active rollback cannot coexist with explicit active ownership".to_string(),
+        });
+    }
     for name in [
-        "OPENWEPP_LANED_ACTIVE",
-        "OPENWEPP_LANED_ACTIVE_DISABLE",
         "OPENWEPP_LANED_ACTIVE_IMPLICIT",
         "OPENWEPP_LANED_SHADOW",
         "OPENWEPP_LANED_SHADOW_PROFILE",
@@ -2065,16 +2233,16 @@ pub fn execute_hillslope_run_with_runtime_policy(
             .stage3_archive
             .canonical_uncompressed_bytes,
         stored_record_bytes: retained_publication.stage3_archive.stored_record_bytes,
-        archived_day_count: retained_publication.stage3_archived_prefix.archived_day_count,
+        archived_day_count: retained_publication
+            .stage3_archived_prefix
+            .archived_day_count,
         ordered_day_chain_sha256: retained_publication
             .stage3_archived_prefix
             .ordered_day_chain_sha256,
         archive_content_root_sha256: retained_publication
             .stage3_archived_prefix
             .archive_content_root_sha256,
-        archived_prefix_receipt_sha256: retained_publication
-            .stage3_archived_prefix
-            .receipt_sha256,
+        archived_prefix_receipt_sha256: retained_publication.stage3_archived_prefix.receipt_sha256,
         archive_manifest: retained_publication.stage3_archive_manifest.clone(),
     };
     execution.direct_publication = build_direct_publication_artifacts(

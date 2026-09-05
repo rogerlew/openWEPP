@@ -722,6 +722,10 @@ impl CoupledTimeRestartV2 {
         {
             return Err(CoupledTimeError::RestartInvalid);
         }
+        // Restored durable receipts belong to one new process-local clock
+        // incarnation and can never authenticate reuse against pre-restart
+        // receipt capabilities.
+        let live_incarnation = crate::clock::LiveClockIncarnationV1::fresh();
         let slabs = w
             .accepted_slab_receipts
             .into_iter()
@@ -743,6 +747,11 @@ impl CoupledTimeRestartV2 {
                     end_owner_set: r.end_owner_set_sha256,
                     owner_candidate_set: r.owner_candidate_set_sha256,
                     ledger_digest: r.coupled_ledger_sha256,
+                    live_beginning_revision:
+                        crate::transaction::AcceptedSlabLiveRevisionV1::restored(
+                            live_incarnation.clone(),
+                            r.begin_clock_sha256,
+                        ),
                 })
             })
             .collect::<Result<Vec<_>, CoupledTimeError>>()?;
@@ -859,6 +868,9 @@ impl CoupledTimeRestartV2 {
             })
             .collect::<Result<Vec<_>, CoupledTimeError>>()?;
         let clock = CoupledClockStateV1 {
+            // A restored clock is a new live authority even when its durable
+            // bytes reconstruct an otherwise identical accepted revision.
+            live_incarnation,
             run_identity: w.run_identity_sha256,
             calendar_receipt: w.calendar_receipt_sha256,
             forcing_receipt: w.forcing_receipt_sha256,

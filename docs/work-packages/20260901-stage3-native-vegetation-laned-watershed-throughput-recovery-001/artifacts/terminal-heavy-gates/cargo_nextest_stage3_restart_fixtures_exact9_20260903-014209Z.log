@@ -1,0 +1,9 @@
+bash: -c: line 1: unexpected EOF while looking for matching `"'
+Command exited with non-zero status 2
+time_real=0.06
+max_rss_kb=7856
+max_vsz_kb=?V
+user_s=0.03
+sys_s=0.04
+cpu_pct=113%
+exit_code=2

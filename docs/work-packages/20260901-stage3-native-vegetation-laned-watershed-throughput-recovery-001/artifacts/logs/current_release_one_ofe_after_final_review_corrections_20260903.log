@@ -1,0 +1,28 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-coupled-time v0.1.0 (/workdir/openWEPP/crates/openwepp-coupled-time)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openWEPP/crates/openwepp-vegetation)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-persisted-restart-v1 v0.1.0 (/workdir/openWEPP/crates/openwepp-persisted-restart-v1)
+   Compiling openwepp-runner v0.1.0 (/workdir/openWEPP/crates/openwepp-runner)
+    Finished `release` profile [optimized] target(s) in 8m 09s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-92fd61962f9536e2)
+
+running 1 test
+test hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ... 
+thread 'hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile' (1167359) panicked at crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:885:6:
+one-OFE positive Stage-3 -> Lane-D release probe: RuntimeSurfaceFailure { surface: "r7c_direct_production_executor", detail: "HS-SIMPIPE-E-001 direct runtime kernel guard failed in snow_stage3_v11: prepare: VEG-E-123: imported V10 segment execution failed: V9 real-consumer identity failure: incomplete or mixed complete-owner state: soil-thermal/vegetation transaction" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 235 filtered out; finished in 1.45s
+
+error: test failed, to rerun pass `-p openwepp-runner --lib`

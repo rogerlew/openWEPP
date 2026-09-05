@@ -576,6 +576,39 @@ fn external_precipitation_and_runon_ids_pass_independent_frozen_identity_closure
 }
 
 #[test]
+fn private_ingress_projection_changes_for_retained_parent_mode_poison() {
+    let configuration = routed_configuration();
+    let beginning = initial_state(&configuration, 1.0);
+    let transaction_id = TransactionId(199);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: configuration
+            .records
+            .iter()
+            .map(|record| open_ingress(record, 0.1))
+            .collect(),
+        wb14_parameters: parameters(&configuration),
+    };
+    let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("projection candidate");
+    let mut poisoned = candidate.clone();
+    poisoned.parent_child_mode = !poisoned.parent_child_mode;
+    assert_ne!(
+        candidate
+            .canonical_private_projection_v1()
+            .expect("baseline projection"),
+        poisoned
+            .canonical_private_projection_v1()
+            .expect("poisoned projection"),
+        "a retained private ingress-mode poison must change the opaque physical projection"
+    );
+}
+
+#[test]
 fn unequal_area_runoff_routes_once_and_preserves_mass_and_enthalpy() {
     let configuration = routed_configuration();
     let beginning = initial_state(&configuration, 1.0);

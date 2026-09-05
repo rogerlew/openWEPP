@@ -20,8 +20,8 @@ use openwepp_vegetation::{
     V8ComponentOccupancyBinding, V8CoupledOwnedState, V8FinalOccupancyReceipt,
     V8FinalRootWaterReceipt, V8FinalTileReceipt, V8LseComponentId, V8OccupancyCarbonOperands,
     V8OccupancyCarbonReceipt, V8PhysicalReceiptPass, ValidatedV8CarbonPass,
-    ValidatedV8FinalStatePass, VegetationConfiguration, VegetationError,
-    validate_v8_component_bindings,
+    ValidatedV8FinalStatePass, ValidatedV8ProjectionFamily, VegetationConfiguration,
+    VegetationError, validate_v8_component_bindings,
 };
 use thiserror::Error;
 
@@ -356,45 +356,36 @@ fn project_multi_tile_v8_passes_with_duration(
     capped_receipts.sort_by(|left, right| left.occupancy_id.cmp(&right.occupancy_id));
     final_tiles.sort_by(|left, right| left.tile_id.cmp(&right.tile_id));
     let first = potentials[0];
-    let make_pass = |pass, receipts| match duration_s_bits {
-        Some(bits) => ValidatedV8CarbonPass::try_new_v11(
+    let family = match duration_s_bits {
+        Some(bits) => ValidatedV8ProjectionFamily::try_new_v11(
             first.vegetation_model_definition_sha256.to_owned(),
             configuration.configuration_sha256.clone(),
             expected_transaction,
             beginning.state_sha256.clone(),
-            pass,
             first.interval_s,
-            receipts,
-            configuration,
-            beginning,
-            bits,
-        ),
-        None => ValidatedV8CarbonPass::try_new(
-            first.vegetation_model_definition_sha256.to_owned(),
-            configuration.configuration_sha256.clone(),
-            expected_transaction,
-            beginning.state_sha256.clone(),
-            pass,
-            first.interval_s,
-            receipts,
-            configuration,
-            beginning,
-        ),
-    };
-    let potential = make_pass(CoupledSolvePass::Potential, potential_receipts)?;
-    let capped = make_pass(CoupledSolvePass::Capped, capped_receipts)?;
-    let final_state = match duration_s_bits {
-        Some(bits) => ValidatedV8FinalStatePass::try_new_v11(
+            potential_receipts,
+            capped_receipts,
             bindings,
             final_tiles,
             configuration,
             beginning,
             bits,
-        )?,
-        None => {
-            ValidatedV8FinalStatePass::try_new(bindings, final_tiles, configuration, beginning)?
-        }
+        ),
+        None => ValidatedV8ProjectionFamily::try_new(
+            first.vegetation_model_definition_sha256.to_owned(),
+            configuration.configuration_sha256.clone(),
+            expected_transaction,
+            beginning.state_sha256.clone(),
+            first.interval_s,
+            potential_receipts,
+            capped_receipts,
+            bindings,
+            final_tiles,
+            configuration,
+            beginning,
+        ),
     };
+    let (potential, capped, final_state) = family?.into_parts();
     Ok(V8CoveredProjection {
         potential,
         capped,
@@ -414,40 +405,39 @@ fn project_empty_v8_passes(
             .ok_or(V8ProjectionError::Identity("V8 transaction overflow"))?,
     );
     let interval_s = duration_s_bits.map_or(configuration.dt_s, f64::from_bits);
-    let make_carbon = |pass| match duration_s_bits {
-        Some(bits) => ValidatedV8CarbonPass::try_new_v11(
+    let family = match duration_s_bits {
+        Some(bits) => ValidatedV8ProjectionFamily::try_new_v11(
             openwepp_vegetation::V8_MODEL_SHA256.into(),
             configuration.configuration_sha256.clone(),
             transaction_id,
             beginning.state_sha256.clone(),
-            pass,
             interval_s,
+            Vec::new(),
+            Vec::new(),
+            &[],
             Vec::new(),
             configuration,
             beginning,
             bits,
         ),
-        None => ValidatedV8CarbonPass::try_new(
+        None => ValidatedV8ProjectionFamily::try_new(
             openwepp_vegetation::V8_MODEL_SHA256.into(),
             configuration.configuration_sha256.clone(),
             transaction_id,
             beginning.state_sha256.clone(),
-            pass,
             interval_s,
+            Vec::new(),
+            Vec::new(),
+            &[],
             Vec::new(),
             configuration,
             beginning,
         ),
     };
-    let final_state = match duration_s_bits {
-        Some(bits) => {
-            ValidatedV8FinalStatePass::try_new_v11(&[], Vec::new(), configuration, beginning, bits)?
-        }
-        None => ValidatedV8FinalStatePass::try_new(&[], Vec::new(), configuration, beginning)?,
-    };
+    let (potential, capped, final_state) = family?.into_parts();
     Ok(V8CoveredProjection {
-        potential: make_carbon(CoupledSolvePass::Potential)?,
-        capped: make_carbon(CoupledSolvePass::Capped)?,
+        potential,
+        capped,
         final_state,
     })
 }

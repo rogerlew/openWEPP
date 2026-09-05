@@ -39,7 +39,6 @@ pub use test_fixture_authority::{
     author_stage3_v11_owner_seed_fixture,
 };
 
-#[cfg(test)]
 pub(crate) mod laned_active;
 #[cfg(test)]
 pub(crate) mod laned_shadow;

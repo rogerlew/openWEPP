@@ -328,7 +328,7 @@ impl<J> TerminalEvidenceMode<J> for NoEvidence {
         request: &CoveredTerminalTrialRequestV1,
         result: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1,
     ) {
-        let _ = (request.coupling_iteration, request.ending_snow_hint);
+        let _ = request;
         let _ = &result.transition.trial_snow_soil_receipt;
     }
     #[inline(always)]
@@ -528,6 +528,7 @@ pub(crate) enum CapturedProviderOutcome {
 #[cfg(test)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum CapturedProviderFailure {
+    CoupledTime,
     Runtime,
     Vegetation,
     Serialization,
@@ -540,6 +541,7 @@ pub(crate) enum CapturedProviderFailure {
     Stage3PrecipitationCustody(&'static str),
     Stage3SnowSoilHeatCustody(&'static str),
     ZeroDurationSnowLiquid,
+    SurfaceLiquidReplay,
 }
 #[cfg(test)]
 #[derive(Clone)]
@@ -790,7 +792,12 @@ impl CaptureState {
             }
             let zero = iteration.hook.request.coupling_iteration == 0;
             if zero != iteration.hook.comparisons.is_none()
-                || zero != iteration.hook.request.ending_snow_hint.is_none()
+                || zero
+                    != iteration
+                        .hook
+                        .request
+                        .ending_snow_hint
+                        .is_none()
             {
                 return Err("iteration zero optionality");
             }
@@ -825,7 +832,9 @@ impl CaptureState {
         let mut group_start = 0;
         while group_start < self.coupling_iterations.len() {
             let first = &self.coupling_iterations[group_start].hook;
-            if first.request.coupling_iteration != 0 || first.request.ending_snow_hint.is_some() {
+            if first.request.coupling_iteration != 0
+                || first.request.ending_snow_hint.is_some()
+            {
                 return Err("coupling group start");
             }
             let mut group_end = group_start + 1;
@@ -1030,6 +1039,7 @@ impl TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>> for CaptureE
     ) -> Self::ProviderFailureProjection {
         use crate::v9_real_consumer_shadow::DirectV11RealConsumerError as Error;
         match error {
+            Error::CoupledTime(_) => CapturedProviderFailure::CoupledTime,
             Error::Runtime(_) => CapturedProviderFailure::Runtime,
             Error::Vegetation(_) => CapturedProviderFailure::Vegetation,
             Error::Serialization(_) => CapturedProviderFailure::Serialization,
@@ -1050,6 +1060,7 @@ impl TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>> for CaptureE
                 CapturedProviderFailure::Stage3SnowSoilHeatCustody(value)
             }
             Error::ZeroDurationSnowLiquid(_) => CapturedProviderFailure::ZeroDurationSnowLiquid,
+            Error::SurfaceLiquidReplay(_) => CapturedProviderFailure::SurfaceLiquidReplay,
         }
     }
     fn provider_success(
@@ -1139,7 +1150,7 @@ impl TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>> for CaptureE
 }
 
 /// Pure input presented to the covered carrier for every adaptive and
-/// event-root terminal trial.  The support is the exact absolute interval
+/// event-root terminal trial. The support is the exact absolute interval
 /// beginning at the supplied trial state; it is never a scaled parent receipt.
 #[derive(Clone, Debug)]
 pub(crate) struct CoveredTerminalTrialRequestV1 {
@@ -1624,12 +1635,23 @@ pub(crate) type CoveredTerminalTrialProviderV1<'a> = dyn FnMut(
 #[derive(Clone, Debug)]
 pub(crate) struct CoveredTerminalLaneTrialStateV2 {
     pub lane_id: u32,
+    pub schema_version: u16,
+    pub terminal_event_model: Option<DirectSnowTerminalEventModel>,
+    pub next_interval_index: u64,
+    pub snow_density_model: SnowDensityModel,
     pub ice_kg_m2: f64,
     pub liquid_kg_m2: f64,
     pub cold_content_j_m2: f64,
     pub surface_temperature_c: f64,
     pub snow_depth_m: f64,
     pub snow_density_kg_m3: f64,
+    /// Per-layer density coordinates in the exact represented-layer order.
+    /// These are charged outer candidates, not prior map outputs.
+    pub layer_density_kg_m3: Vec<f64>,
+    /// Exact settling chronology paired with `layer_density_kg_m3`.
+    pub layer_settle_day_count: Vec<f64>,
+    /// Exact represented-layer topology/phase template for this charged map.
+    pub represented_layers: Vec<crate::DirectSnowLayerState>,
     pub resolved_beginning: bool,
     pub candidate_event_tick: Option<ModelTimeNs>,
 }

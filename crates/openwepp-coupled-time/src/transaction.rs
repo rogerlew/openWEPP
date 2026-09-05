@@ -89,6 +89,40 @@ pub(crate) fn ledger_digest(entries: &[LedgerEntryV1]) -> Result<Digest32, Coupl
     Ok(digest_bytes(&bytes))
 }
 
+/// Process-local identity of the live clock revision that admitted a slab.
+///
+/// `begin_clock` remains durable receipt identity, while the incarnation is
+/// deliberately non-wire and changes across independent construction or
+/// restart.  Only this paired proof may authorize same-revision reuse.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct AcceptedSlabLiveRevisionV1 {
+    incarnation: crate::clock::LiveClockIncarnationV1,
+    begin_clock: Digest32,
+}
+
+impl AcceptedSlabLiveRevisionV1 {
+    fn mint(clock: &CoupledClockStateV1) -> Self {
+        Self {
+            incarnation: clock.live_incarnation.clone(),
+            begin_clock: clock.accepted_clock_digest,
+        }
+    }
+
+    pub(crate) fn restored(
+        incarnation: crate::clock::LiveClockIncarnationV1,
+        begin_clock: Digest32,
+    ) -> Self {
+        Self {
+            incarnation,
+            begin_clock,
+        }
+    }
+
+    fn is_same(&self, other: &Self) -> bool {
+        self.incarnation.is_same(&other.incarnation) && self.begin_clock == other.begin_clock
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct AcceptedSlabReceiptV1 {
     pub(crate) receipt_id: ReceiptId,
@@ -105,6 +139,8 @@ pub struct AcceptedSlabReceiptV1 {
     pub(crate) end_owner_set: Digest32,
     pub(crate) owner_candidate_set: Digest32,
     pub(crate) ledger_digest: Digest32,
+    #[serde(skip)]
+    pub(crate) live_beginning_revision: AcceptedSlabLiveRevisionV1,
 }
 impl AcceptedSlabReceiptV1 {
     #[must_use]
@@ -135,6 +171,175 @@ impl AcceptedSlabReceiptV1 {
     pub const fn duration_s_bits(&self) -> u64 {
         self.duration_bits
     }
+
+    /// True only when both receipts were admitted from the same process-local
+    /// clock incarnation and the same live beginning revision. Durable wire
+    /// equality alone is intentionally insufficient.
+    #[must_use]
+    pub fn shares_live_beginning_revision_with(&self, other: &Self) -> bool {
+        self.live_beginning_revision
+            .is_same(&other.live_beginning_revision)
+    }
+
+    /// Compare every durable accepted-revision coordinate that is invariant
+    /// across provisional and final ending-owner identity. The exhaustive
+    /// destructuring intentionally has no `..`: adding a receipt coordinate
+    /// requires coupled-time to classify it here before downstream reuse can
+    /// compile.
+    #[must_use]
+    pub fn shares_nonending_context_with(&self, other: &Self) -> bool {
+        let Self {
+            receipt_id: _,
+            slab_id: _,
+            parent_transaction_id,
+            slab_ordinal,
+            segment_id,
+            support,
+            duration_bits,
+            constraint_digest,
+            begin_clock,
+            end_clock: _,
+            begin_owner_set,
+            end_owner_set: _,
+            owner_candidate_set: _,
+            ledger_digest,
+            live_beginning_revision: _,
+        } = self;
+        let Self {
+            receipt_id: _,
+            slab_id: _,
+            parent_transaction_id: other_parent_transaction_id,
+            slab_ordinal: other_slab_ordinal,
+            segment_id: other_segment_id,
+            support: other_support,
+            duration_bits: other_duration_bits,
+            constraint_digest: other_constraint_digest,
+            begin_clock: other_begin_clock,
+            end_clock: _,
+            begin_owner_set: other_begin_owner_set,
+            end_owner_set: _,
+            owner_candidate_set: _,
+            ledger_digest: other_ledger_digest,
+            live_beginning_revision: _,
+        } = other;
+        parent_transaction_id == other_parent_transaction_id
+            && slab_ordinal == other_slab_ordinal
+            && segment_id == other_segment_id
+            && support == other_support
+            && duration_bits == other_duration_bits
+            && constraint_digest == other_constraint_digest
+            && begin_clock == other_begin_clock
+            && begin_owner_set == other_begin_owner_set
+            && ledger_digest == other_ledger_digest
+    }
+
+    /// Authenticate both receipt seals over one complete ending-owner
+    /// candidate. This keeps the private receipt coordinates owned by
+    /// coupled-time while allowing a consumer to join an already-computed
+    /// physical ending to the accepted final slab without exposing either
+    /// digest separately.
+    pub fn authenticates_complete_ending_owners(
+        &self,
+        ending_owners: &[OwnerState],
+    ) -> Result<bool, CoupledTimeError> {
+        let end_owner_set = complete_owner_set_digest(ending_owners)?;
+        let owner_candidate_set = digest_bytes(
+            &serde_json::to_vec(ending_owners)
+                .map_err(|_| CoupledTimeError::NonCanonicalIdentity)?,
+        );
+        Ok(self.end_owner_set == end_owner_set && self.owner_candidate_set == owner_candidate_set)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct AcceptedClockRevisionProofV1 {
+    incarnation: crate::clock::LiveClockIncarnationV1,
+    parent: ParentTransactionId,
+    parent_support: TimeSupport,
+    accepted_until: crate::ModelTimeNs,
+    active_segment_start: crate::ModelTimeNs,
+    active_segment_end: crate::ModelTimeNs,
+    active_segment_id: SegmentId,
+    segment_ordinal: u32,
+    slab_ordinal: u32,
+    event_ordinal: u32,
+    accepted_slab_count: usize,
+    accepted_event_count: usize,
+    scheduled_once_count: usize,
+    committed: bool,
+    accepted_clock_digest: Digest32,
+}
+
+impl AcceptedClockRevisionProofV1 {
+    fn mint(clock: &CoupledClockStateV1) -> Self {
+        Self {
+            incarnation: clock.live_incarnation.clone(),
+            parent: clock.parent_transaction_id,
+            parent_support: clock.parent_support,
+            accepted_until: clock.accepted_until,
+            active_segment_start: clock.active_segment_start,
+            active_segment_end: clock.active_segment_end,
+            active_segment_id: clock.active_segment_id,
+            segment_ordinal: clock.segment_ordinal,
+            slab_ordinal: clock.slab_ordinal,
+            event_ordinal: clock.event_ordinal,
+            accepted_slab_count: clock.accepted_slab_receipts.len(),
+            accepted_event_count: clock.accepted_event_receipts.len(),
+            scheduled_once_count: clock.scheduled_once_receipts.len(),
+            committed: clock.committed,
+            accepted_clock_digest: clock.accepted_clock_digest,
+        }
+    }
+
+    fn matches(&self, clock: &CoupledClockStateV1) -> bool {
+        self.incarnation.is_same(&clock.live_incarnation)
+            && self.parent == clock.parent_transaction_id
+            && self.parent_support == clock.parent_support
+            && self.accepted_until == clock.accepted_until
+            && self.active_segment_start == clock.active_segment_start
+            && self.active_segment_end == clock.active_segment_end
+            && self.active_segment_id == clock.active_segment_id
+            && self.segment_ordinal == clock.segment_ordinal
+            && self.slab_ordinal == clock.slab_ordinal
+            && self.event_ordinal == clock.event_ordinal
+            && self.accepted_slab_count == clock.accepted_slab_receipts.len()
+            && self.accepted_event_count == clock.accepted_event_receipts.len()
+            && self.scheduled_once_count == clock.scheduled_once_receipts.len()
+            && self.committed == clock.committed
+            && self.accepted_clock_digest == clock.accepted_clock_digest
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ValidatedSlabProofV1 {
+    clock: AcceptedClockRevisionProofV1,
+    parent: ParentTransactionId,
+    segment: SegmentId,
+    ordinal: u32,
+    support: TimeSupport,
+    duration_s_bits: u64,
+    constraint_digest: Digest32,
+    begin_owner_set: Digest32,
+    end_owner_set: Digest32,
+    ledger_digest: Digest32,
+    slab_id: AcceptedSlabId,
+    receipt: AcceptedSlabReceiptV1,
+}
+
+impl ValidatedSlabProofV1 {
+    fn matches_candidate(&self, slab: &CoupledSlabCandidateV1) -> bool {
+        self.parent == slab.parent
+            && self.segment == slab.segment
+            && self.ordinal == slab.ordinal
+            && self.support == slab.support
+            && self.duration_s_bits == slab.duration_s_bits
+            && self.constraint_digest == slab.constraint.digest()
+            && self.begin_owner_set == slab.begin_owner_set
+            && self.end_owner_set == slab.end_owner_set
+            && self.ledger_digest == slab.ledger_digest
+            && self.slab_id == slab.slab_id
+            && self.receipt == slab.receipt
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -152,6 +357,8 @@ pub struct CoupledSlabCandidateV1 {
     ledger_digest: Digest32,
     slab_id: AcceptedSlabId,
     receipt: AcceptedSlabReceiptV1,
+    #[serde(skip)]
+    validation_proof: ValidatedSlabProofV1,
 }
 impl CoupledSlabCandidateV1 {
     #[allow(clippy::too_many_lines)]
@@ -341,6 +548,21 @@ impl CoupledSlabCandidateV1 {
             end_owner_set: end,
             owner_candidate_set,
             ledger_digest: ledger,
+            live_beginning_revision: AcceptedSlabLiveRevisionV1::mint(clock),
+        };
+        let validation_proof = ValidatedSlabProofV1 {
+            clock: AcceptedClockRevisionProofV1::mint(clock),
+            parent: clock.parent_transaction_id,
+            segment,
+            ordinal: clock.slab_ordinal,
+            support,
+            duration_s_bits: duration,
+            constraint_digest: constraint.digest(),
+            begin_owner_set: begin,
+            end_owner_set: end,
+            ledger_digest: ledger,
+            slab_id,
+            receipt: receipt.clone(),
         };
         Ok(Self {
             parent: clock.parent_transaction_id,
@@ -356,6 +578,7 @@ impl CoupledSlabCandidateV1 {
             ledger_digest: ledger,
             slab_id,
             receipt,
+            validation_proof,
         })
     }
 }
@@ -363,32 +586,28 @@ pub fn accept_slab(
     clock: &mut CoupledClockStateV1,
     slab: CoupledSlabCandidateV1,
 ) -> Result<AcceptedSlabReceiptV1, CoupledTimeError> {
-    let expected = CoupledSlabCandidateV1::new(
-        clock,
-        slab.segment,
-        slab.support,
-        &slab.constraint,
-        slab.ending_owners.clone(),
-        slab.ledger_entries.clone(),
-    )?;
-    if slab.parent != clock.parent_transaction_id
-        || slab.ordinal != clock.slab_ordinal
+    // Preserve constructor-first error precedence for the clock-relative
+    // joins. Candidate-local owner, ledger, identity, and receipt validation
+    // already completed exactly once before the private proof was minted.
+    slab.constraint.validate_identity()?;
+    if slab.segment != clock.active_segment_id
+        || !slab
+            .constraint
+            .matches_clock(clock.parent_transaction_id, clock.accepted_until)
         || slab.support.start_ns() != clock.accepted_until
-        || slab.duration_s_bits != slab.support.duration_s_bits()
-        || slab.begin_owner_set != owner_set_digest(&clock.complete_owner_set)?
-        || slab.end_owner_set != owner_set_digest(&slab.ending_owners)?
-        || slab.ledger_digest != ledger_digest(&slab.ledger_entries)?
-        || slab != expected
+        || slab.support.end_ns() > clock.active_segment_end
+        || slab.constraint.proposed_end() != slab.support.end_ns()
+    {
+        return Err(CoupledTimeError::ParentMismatch);
+    }
+    if !slab.validation_proof.clock.matches(clock)
+        || !slab.validation_proof.matches_candidate(&slab)
     {
         return Err(CoupledTimeError::OwnerCandidate);
     }
-    if clock
-        .accepted_slab_receipts
-        .iter()
-        .any(|r| r.id() == slab.receipt.id())
-    {
-        return Err(CoupledTimeError::OwnerCandidate);
-    }
+    // The revision proof binds the authenticated receipt count and the slab
+    // identity binds its next ordinal. Live acceptance and restart validation
+    // therefore make a history-wide duplicate scan redundant.
     clock.slab_ordinal = clock
         .slab_ordinal
         .checked_add(1)
@@ -397,8 +616,8 @@ pub fn accept_slab(
     clock.accepted_until = slab.support.end_ns();
     clock.accepted_clock_digest = slab.receipt.end_clock;
     clock.complete_owner_set = slab.ending_owners;
-    clock.accepted_slab_receipts.push(slab.receipt.clone());
-    Ok(slab.receipt)
+    clock.accepted_slab_receipts.push(slab.receipt);
+    Ok(slab.validation_proof.receipt)
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -530,6 +749,26 @@ mod reduction_tests {
         assert_eq!(retain_minimum(0.0, -0.0).to_bits(), 0.0_f64.to_bits());
     }
 }
+
+#[cfg(test)]
+mod accepted_slab_context_source_guards {
+    #[test]
+    fn nonending_context_relation_is_exhaustive_and_not_a_schema_mirror() {
+        let source = include_str!("transaction.rs");
+        let body = source
+            .split("pub fn shares_nonending_context_with")
+            .nth(1)
+            .expect("typed non-ending context relation")
+            .split("#[derive(Debug, Clone, PartialEq, Eq)]")
+            .next()
+            .expect("typed relation body");
+        assert!(body.contains("let Self {"));
+        assert!(!body.contains(".."));
+        assert!(!body.contains("serde_json"));
+        assert!(!body.contains("field(\""));
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TemporalOperatorClass {
     AlgebraicRate,

@@ -1,0 +1,8 @@
+/usr/bin/time: cannot run \n: No such file or directory
+Command exited with non-zero status 127
+time_real=0.00
+max_rss_kb=960
+max_vsz_kb=?V
+user_s=0.00
+sys_s=0.00
+cpu_pct=81%

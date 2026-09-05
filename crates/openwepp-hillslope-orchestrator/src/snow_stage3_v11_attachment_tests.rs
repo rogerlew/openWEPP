@@ -907,3 +907,120 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod fixed_point_limiter_audit_tests {
+    use super::*;
+
+    #[test]
+    fn limiter_audit_is_explicit_thread_local_and_retains_a_bounded_tail() {
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(60_000_000_000))
+            .expect("limiter audit support");
+        let _guard = begin_covered_fixed_point_iteration_audit_v1();
+        for iteration in 1..=(COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3) {
+            let delta = iteration as f64;
+            record_covered_fixed_point_limiter_sample_v1(CoveredFixedPointLimiterSampleV1 {
+                support,
+                iteration,
+                stage: CoveredFixedPointLimitStageV1::Picard,
+                lse_converged: false,
+                stage3_converged: false,
+                soil_converged: false,
+                boundary_converged: false,
+                lse_max_normalized_delta_bits: delta.to_bits(),
+                stage3_max_normalized_delta_bits: delta.to_bits(),
+                soil_enthalpy_max_normalized_delta_bits: delta.to_bits(),
+                soil_temperature_max_normalized_delta_bits: delta.to_bits(),
+                boundary_max_normalized_delta_bits: delta.to_bits(),
+            });
+        }
+
+        let audit = take_covered_fixed_point_limiter_audit_v1();
+        assert_eq!(
+            audit.total_sample_count,
+            (COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3) as u64
+        );
+        assert_eq!(audit.dropped_sample_count, 3);
+        assert_eq!(
+            audit.retained_tail.len(),
+            COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY
+        );
+        assert_eq!(audit.retained_tail.first().map(|row| row.iteration), Some(4));
+        assert_eq!(
+            audit.retained_tail.last().map(|row| row.iteration),
+            Some(COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3)
+        );
+        assert_eq!(
+            f64::from_bits(audit.peak_lse_normalized_delta_bits),
+            (COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3) as f64
+        );
+
+        record_covered_fixed_point_limiter_sample_v1(CoveredFixedPointLimiterSampleV1 {
+            support,
+            iteration: usize::MAX,
+            stage: CoveredFixedPointLimitStageV1::Picard,
+            lse_converged: true,
+            stage3_converged: true,
+            soil_converged: true,
+            boundary_converged: true,
+            lse_max_normalized_delta_bits: 0.0_f64.to_bits(),
+            stage3_max_normalized_delta_bits: 0.0_f64.to_bits(),
+            soil_enthalpy_max_normalized_delta_bits: 0.0_f64.to_bits(),
+            soil_temperature_max_normalized_delta_bits: 0.0_f64.to_bits(),
+            boundary_max_normalized_delta_bits: 0.0_f64.to_bits(),
+        });
+        assert_eq!(
+            take_covered_fixed_point_limiter_audit_v1().total_sample_count,
+            0
+        );
+    }
+}
+
+#[cfg(test)]
+mod wb14_parent_finalization_placement_tests {
+    use super::*;
+
+    fn support(start_ns: u128, end_ns: u128) -> TimeSupport {
+        TimeSupport::new(ModelTimeNs::new(start_ns), ModelTimeNs::new(end_ns))
+            .expect("positive support")
+    }
+
+    #[test]
+    fn nonfinal_and_final_subslabs_bind_replay_to_exact_parent_end() {
+        let parent = support(0, 1_800_000_000_000);
+        let nonfinal = support(0, 60_000_000_000);
+        let final_subslab = support(1_740_000_000_000, 1_800_000_000_000);
+
+        assert!(wb14_parent_finalization_placement_is_valid_v1(
+            parent, nonfinal, false,
+        ));
+        assert!(wb14_parent_finalization_placement_is_valid_v1(
+            parent,
+            final_subslab,
+            true,
+        ));
+        assert!(
+            !wb14_parent_finalization_placement_is_valid_v1(parent, nonfinal, true),
+            "nonfinal subslab must not carry parent replay",
+        );
+        assert!(
+            !wb14_parent_finalization_placement_is_valid_v1(parent, final_subslab, false),
+            "parent-end subslab must carry parent replay",
+        );
+    }
+
+    #[test]
+    fn restarted_active_prefix_may_end_before_snow_free_parent_finalization() {
+        let parent = support(5_400_000_000_000, 7_200_000_000_000);
+        let restored_last_covered = support(6_240_000_000_000, 6_300_000_000_000);
+        assert!(wb14_parent_finalization_placement_is_valid_v1(
+            parent,
+            restored_last_covered,
+            false,
+        ));
+        assert!(
+            !wb14_parent_finalization_placement_is_valid_v1(parent, restored_last_covered, true,),
+            "restart must not move snow-free parent finalization onto the covered prefix",
+        );
+    }
+}

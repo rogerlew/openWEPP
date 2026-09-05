@@ -9,7 +9,21 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 #[path = "snow_stage3_v11_profile.rs"]
 mod profile;
-pub use profile::AdaptiveParentProfileDetailV1;
+#[cfg(not(test))]
+pub(crate) use profile::record_release_qualification_canonical_covered_map_v1;
+pub use profile::{
+    AdaptiveParentProfileDetailV1, ReleaseQualificationAcceptedCoveredMapV1,
+    ReleaseQualificationLaneDRouteCallV1, ReleaseQualificationProfileScopeV1,
+    ReleaseQualificationTelemetryGuardV1, ReleaseQualificationTelemetryV1,
+    begin_release_qualification_telemetry_v1, enter_release_qualification_stage3_scope_v1,
+    take_release_qualification_telemetry_v1,
+};
+pub(crate) use profile::{
+    begin_release_qualification_covered_map_scope_v1, enter_release_qualification_lane_d_scope_v1,
+    enter_release_qualification_native_vegetation_et_scope_v1,
+    record_release_qualification_accepted_covered_maps_v1,
+    record_release_qualification_lane_d_route_call_v1,
+};
 
 use openwepp_coupled_time::{
     AcceptedEventReceiptV1, ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32,
@@ -24,8 +38,8 @@ use openwepp_meteorology::psychrometrics::saturation_vapor_pressure_water_kpa;
 use openwepp_meteorology::snow_free_forcing::{celsius_to_kelvin, kilopascals_to_pascals};
 use openwepp_unit_boundary::TemperatureCelsius;
 use openwepp_vegetation::v11::{
-    V11OwnerEnvelope, V11ParentCandidate, V11ParentTransaction, VegetationConfigurationV11,
-    migrate_v10_runtime_to_v11, v11_vegetation_owner_envelope,
+    V11OwnerEnvelope, V11ParentCandidate, V11ParentTransaction, ValidatedV11ParentFinalizationV1,
+    VegetationConfigurationV11, migrate_v10_runtime_to_v11, v11_vegetation_owner_envelope,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -465,45 +479,6 @@ pub(crate) fn record_adaptive_parent_trial_phase_v1(
     });
 }
 
-pub(crate) fn record_adaptive_parent_fixed_point_v1(completed_iterations: usize) {
-    ADAPTIVE_PARENT_TELEMETRY.with(|state| {
-        if let Some(state) = state.borrow_mut().as_mut() {
-            state.accumulator.fixed_point_evaluation_count = state
-                .accumulator
-                .fixed_point_evaluation_count
-                .saturating_add(1);
-            state.accumulator.fixed_point_iteration_total = state
-                .accumulator
-                .fixed_point_iteration_total
-                .saturating_add(u64::try_from(completed_iterations).unwrap_or(u64::MAX));
-            state.accumulator.fixed_point_iteration_maximum = state
-                .accumulator
-                .fixed_point_iteration_maximum
-                .max(completed_iterations);
-        }
-    });
-}
-
-pub(crate) fn record_adaptive_parent_fixed_point_phase_v1(
-    phase: &'static str,
-    started: Option<std::time::Instant>,
-) {
-    let Some(started) = started else { return };
-    ADAPTIVE_PARENT_TELEMETRY.with(|state| {
-        let mut state = state.borrow_mut();
-        let Some(state) = state.as_mut() else { return };
-        let destination = match phase {
-            "operands" => &mut state.accumulator.fixed_point_operand_elapsed,
-            "envelope" => &mut state.accumulator.fixed_point_envelope_elapsed,
-            "stage3" => &mut state.accumulator.fixed_point_stage3_elapsed,
-            "soil" => &mut state.accumulator.fixed_point_soil_elapsed,
-            "finalization" => &mut state.accumulator.fixed_point_finalization_elapsed,
-            _ => return,
-        };
-        *destination = destination.saturating_add(started.elapsed());
-    });
-}
-
 pub(crate) fn begin_adaptive_parent_fixed_point_phase_v1() -> Option<std::time::Instant> {
     adaptive_parent_telemetry_enabled_v1().then(std::time::Instant::now)
 }
@@ -687,10 +662,7 @@ pub fn take_covered_fixed_point_limiter_audit_v1() -> CoveredFixedPointLimiterAu
     }
 }
 
-pub(crate) fn covered_fixed_point_limiter_audit_enabled_v1() -> bool {
-    COVERED_FIXED_POINT_LIMITER_AUDIT.with(|audit| audit.borrow().is_some())
-}
-
+#[cfg(test)]
 pub(crate) fn record_covered_fixed_point_limiter_sample_v1(
     sample: CoveredFixedPointLimiterSampleV1,
 ) {
@@ -757,42 +729,6 @@ pub(crate) fn record_covered_receipt_reseal_roundoff_v1(
                 if temperature_residual_k > previous {
                     maximum.set(temperature_residual_k.to_bits());
                 }
-            });
-        }
-    });
-}
-
-pub(crate) fn record_covered_fixed_point_limit_detail_v1(detail: CoveredFixedPointLimitDetailV1) {
-    COVERED_FIXED_POINT_ITERATION_AUDIT_ENABLED.with(|enabled| {
-        if enabled.get() {
-            COVERED_FIXED_POINT_LIMIT_DETAIL.with(|pending| pending.set(Some(detail)));
-        }
-    });
-}
-
-pub(crate) fn record_covered_fixed_point_iteration_audit_v1(
-    support: TimeSupport,
-    completed_iterations: usize,
-    converged: bool,
-) {
-    record_adaptive_parent_fixed_point_v1(completed_iterations);
-    let limit_detail = COVERED_FIXED_POINT_LIMIT_DETAIL.with(|detail| detail.take());
-    let receipt_reseal_max_abs_residual_bits = COVERED_RECEIPT_RESEAL_MAX_ABS_RESIDUAL_BITS
-        .with(|maximum| maximum.replace(0.0_f64.to_bits()));
-    let receipt_reseal_max_abs_temperature_residual_bits =
-        COVERED_RECEIPT_RESEAL_MAX_ABS_TEMPERATURE_RESIDUAL_BITS
-            .with(|maximum| maximum.replace(0.0_f64.to_bits()));
-    COVERED_FIXED_POINT_ITERATION_AUDIT_ENABLED.with(|enabled| {
-        if enabled.get() {
-            COVERED_FIXED_POINT_ITERATION_AUDIT.with(|audit| {
-                audit.borrow_mut().push(CoveredFixedPointIterationAuditV1 {
-                    support,
-                    completed_iterations,
-                    converged,
-                    limit_detail,
-                    receipt_reseal_max_abs_residual_bits,
-                    receipt_reseal_max_abs_temperature_residual_bits,
-                });
             });
         }
     });
@@ -936,6 +872,7 @@ pub enum Stage3LaneLifecycleV1 {
 include!("snow_stage3_v11_precipitation.rs");
 include!("snow_stage3_v11_snow_soil_heat.rs");
 include!("snow_stage3_v11_terminal_chronology.rs");
+
 include!("snow_stage3_v11_terminal_receiver_custody.rs");
 include!("stage3_parent_atmosphere.rs");
 
@@ -2830,6 +2767,7 @@ pub struct DirectSnowStage3V11ShadowAttachment {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Stage3V11FailureInjection {
+    #[allow(dead_code)] // Constructed only by the cfg(test) rollback injector.
     SubslabAccepted(usize),
     OutcomeLedgerBuilt(usize),
     PrecipitationReceiptRejected(usize),
@@ -2950,76 +2888,6 @@ include!("snow_stage3_v11_adaptive_execution.rs");
 
 include!("snow_stage3_v11_restart.rs");
 include!("snow_stage3_v11_terminal_execution.rs");
-#[cfg(test)]
-mod fixed_point_limiter_audit_tests {
-    use super::*;
-
-    #[test]
-    fn limiter_audit_is_explicit_thread_local_and_retains_a_bounded_tail() {
-        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(60_000_000_000))
-            .expect("limiter audit support");
-        let _guard = begin_covered_fixed_point_iteration_audit_v1();
-        for iteration in 1..=(COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3) {
-            let delta = iteration as f64;
-            record_covered_fixed_point_limiter_sample_v1(CoveredFixedPointLimiterSampleV1 {
-                support,
-                iteration,
-                stage: CoveredFixedPointLimitStageV1::Picard,
-                lse_converged: false,
-                stage3_converged: false,
-                soil_converged: false,
-                boundary_converged: false,
-                lse_max_normalized_delta_bits: delta.to_bits(),
-                stage3_max_normalized_delta_bits: delta.to_bits(),
-                soil_enthalpy_max_normalized_delta_bits: delta.to_bits(),
-                soil_temperature_max_normalized_delta_bits: delta.to_bits(),
-                boundary_max_normalized_delta_bits: delta.to_bits(),
-            });
-        }
-
-        let audit = take_covered_fixed_point_limiter_audit_v1();
-        assert_eq!(
-            audit.total_sample_count,
-            (COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3) as u64
-        );
-        assert_eq!(audit.dropped_sample_count, 3);
-        assert_eq!(
-            audit.retained_tail.len(),
-            COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY
-        );
-        assert_eq!(
-            audit.retained_tail.first().map(|row| row.iteration),
-            Some(4)
-        );
-        assert_eq!(
-            audit.retained_tail.last().map(|row| row.iteration),
-            Some(COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3)
-        );
-        assert_eq!(
-            f64::from_bits(audit.peak_lse_normalized_delta_bits),
-            (COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3) as f64
-        );
-
-        record_covered_fixed_point_limiter_sample_v1(CoveredFixedPointLimiterSampleV1 {
-            support,
-            iteration: usize::MAX,
-            stage: CoveredFixedPointLimitStageV1::Picard,
-            lse_converged: true,
-            stage3_converged: true,
-            soil_converged: true,
-            boundary_converged: true,
-            lse_max_normalized_delta_bits: 0.0_f64.to_bits(),
-            stage3_max_normalized_delta_bits: 0.0_f64.to_bits(),
-            soil_enthalpy_max_normalized_delta_bits: 0.0_f64.to_bits(),
-            soil_temperature_max_normalized_delta_bits: 0.0_f64.to_bits(),
-            boundary_max_normalized_delta_bits: 0.0_f64.to_bits(),
-        });
-        assert_eq!(
-            take_covered_fixed_point_limiter_audit_v1().total_sample_count,
-            0
-        );
-    }
-}
 #[cfg(test)]
 include!("snow_stage3_v11_attachment_tests.rs");
 #[cfg(test)]

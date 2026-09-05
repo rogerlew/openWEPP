@@ -112,7 +112,12 @@ fn eb04w2b_contracts_bind_activation_and_independent_closure() {
             "missing snow contract marker {marker}"
         );
     }
-    for marker in ["contract_version: 48", "INV-RUNOFFPART-033"] {
+    for marker in [
+        "contract_version: 49",
+        "INV-RUNOFFPART-033",
+        "INV-RUNOFFPART-034",
+        "OBL-RUNOFFPART-C-005",
+    ] {
         assert!(
             runoff.contains(marker),
             "missing runoff contract marker {marker}"

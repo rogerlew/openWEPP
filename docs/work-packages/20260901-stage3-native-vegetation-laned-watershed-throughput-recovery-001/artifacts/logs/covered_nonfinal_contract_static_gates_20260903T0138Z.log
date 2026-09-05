@@ -1,0 +1,13 @@
+FAIL docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md: 2 issue(s)
+- SNOWENERGY-ADR0044-NONFINAL-PHYSICAL-ONLY: referenced binding ID INV-SNOWENERGY-086 not present in contract
+- SNOWENERGY-ADR0044-NONFINAL-PHYSICAL-ONLY: referenced binding ID OBL-SNOWENERGY-C-054 not present in contract
+FAIL docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md: 2 issue(s)
+- LSE-V26-NONFINAL-PHYSICAL-ONLY: referenced binding ID INV-LANDSURFACEENERGY-161 not present in contract
+- LSE-V26-NONFINAL-PHYSICAL-ONLY: referenced binding ID OBL-LANDSURFACEENERGY-C-016 not present in contract
+FAIL docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md: 2 issue(s)
+- BEI-VEGTRANSACTION-COVERED-NONFINAL-PHYSICAL-ONLY: referenced binding ID OBL-VEGTRANSACTION-P-005 not present in contract
+- BEI-VEGTRANSACTION-COVERED-NONFINAL-PHYSICAL-ONLY: referenced binding ID OBL-VEGTRANSACTION-C-007 not present in contract
+FAIL docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md: 1 issue(s)
+- SURFACELIQUID-V27-COVERED-NONFINAL-PHYSICAL-ONLY: referenced binding ID OBL-SURFACELIQUID-C-024 not present in contract
+PASS docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md: 7 binding exposure row(s) fully consolidated
+PASS: SC unit compliance lint found no findings

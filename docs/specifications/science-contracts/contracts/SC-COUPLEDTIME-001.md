@@ -4,7 +4,7 @@ title: Coupled Time Support, Event, and Atomic Chronology Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + time/numerics + transaction/restart reviewers
-contract_version: 9
+contract_version: 17
 producer_scope:
   - OPENWEPP_COUPLED_TIME_SUPPORT_V1
   - Coupled parent-interval coordinator and staged clock
@@ -12,7 +12,7 @@ consumer_scope:
   - Segmented-support vegetation V11
   - Snow, land-surface-energy, surface-liquid, Lane D, Richards, plant, soil-thermal, biogeochemistry, restart, and publication adopters
 evidence_level: static+independent_oracle+contract_vectors
-last_reviewed: 2026-08-28
+last_reviewed: 2026-09-03
 supersedes: []
 superseded_by: []
 ---
@@ -531,6 +531,11 @@ digest binds this matrix, both precedence tables, and the 256-event budget.
 | malformed/noncanonical serialization | reject | `ERR-CT-020 Serialization` |
 | no candidate satisfies both neighbor supports and all independently admitted event tolerances | atomic parent retry/no-op; no owner or chronology mutation | `ERR-CT-021 EventBoundaryNoCandidate` |
 | archive record/manifest/prefix/durable acknowledgement or V3 archive-reader mismatch | reject without rotation or owner mutation | `ERR-CT-027 ArchiveMismatch` |
+| canonical covered role, zero-based ordinal, or support differs from the closed role sequence | reject before physical execution or custody construction | `ERR-CT-010 SlabJoinMismatch` |
+| canonical covered nonfinal state appears in owner/restart/output custody | reject the complete candidate without exposure | `ERR-CT-016 RejectedStateLeak` |
+| any covered map publishes, enqueues, exposes, or installs before accepted composed-parent commit | reject and expose nothing | `ERR-CT-018 PublicationState` |
+| trusted accepted-publication support capability is foreign, stale, replayed, partially joined, or differs from its owned support/tail identity | consume the capability and reject before history mutation | numeric precedence among `ERR-CT-003/004/010/014/015` |
+| accepted-publication support capability appears in wire, archive, restart, or an untrusted reconstruction | reject; perform full independent support and chronology validation without restoring the capability | numeric precedence among `ERR-CT-015/020/027` |
 
 `ERR-CT-022` through `ERR-CT-026` are reserved historical candidate
 identifiers and are not active version-8 failure authority. Active error
@@ -583,6 +588,10 @@ one family are simultaneously true.
 | INV-COUPLEDTIME-023 | Direct/composed comparison spans the complete prognostic owner set with dimension-specific tolerances and exact discrete topology, event, parcel, ordering, and schema predicates. | transaction atomicity and owner contracts | `[DIRECT][Static] + [INFERENCE][Static]` | comparison vector and owner-set validator | `ERR-CT-010/012/014/016` |
 | INV-COUPLEDTIME-024 | The canonical receipt chain is acyclic: parent request, direct trial, split child 1, split child 2, comparison, accepted microstep, optional event group/parcel set, ending owner set, parent receipt. Every node binds exact support, attempt, beginning/ending owner digests, forcing, topology, configuration, ledgers, and decision. | canonical framed SHA-256 and transaction authority | `[DIRECT][Static]` | receipt replay/poison validation | `ERR-CT-002/003/010/012/015/017` |
 | INV-COUPLEDTIME-026 | Completed-day detail rotates only after durable exact archive acknowledgement. The content-addressed manifest, bounded prefix/qualification fold, resident active-day tail, publication-history prefix, and materialized WB14 tail must reconstruct the uncompacted owner/publication chronology exactly; missing or substituted archive authority fails closed. | transaction, restart, and canonical receipt authority | `[DIRECT][Static]` | archive/prefix/rotation/restart equality and poison gates | `ERR-CT-015/018/020/027` |
+| INV-COUPLEDTIME-028 | A slab candidate may carry a private, non-wire validation proof minted only after complete semantic validation. The proof binds one live clock incarnation and its exact accepted revision: parent, cursor, segment, ordinals, accepted receipt counts, scheduled-once count, committed posture, support/duration, owner-set and ledger digests, slab identity, and receipt identity. Acceptance may move the already-validated immutable payload after exact scalar/revision joins; mutation, stale/foreign clocks, independent reconstruction, or restart invalidates the proof. Exact in-process clock clones share an incarnation, while restart creates a fresh incarnation after full semantic validation. Proof material never enters physics, identities, receipts, publication, or durable wire. | transaction atomicity, restart, and canonical receipt authority | `[INFERENCE][Static]` | private proof constructor/consumer, live-incarnation and exact-revision joins, restart freshness and poison gates | `ERR-CT-003/004/005/010/014/015/017/018` |
+| INV-COUPLEDTIME-029 | A fully validated snow-free provisional owner transaction may yield one private move-only physical-reuse proof. A final slab on the same live clock revision, parent, segment, ordinal, support, beginning owners, ledger and non-slab inputs may consume it only when the provisional/final difference is the ending-owner-derived accepted-slab identity. The consumer reseals final receipt-dependent identities without executing any constitutive, LSE, hydrology, BGC, soil, or vegetation physics again, then proves the final complete owner set byte-identical to the validated physical ending. The proof is single-use, non-wire, absent from restart/checkpoint/publication, and stale, foreign, mutated, replayed, or post-restart use rejects atomically. No physical replay fallback is authorized. | transaction atomicity, exact owner custody, restart, and canonical receipt authority | `[INFERENCE][Static]` | private physical-reuse typestate, live-revision and complete non-slab identity joins, exact final-owner comparison, restart freshness and poison gates | `ERR-CT-003/004/005/010/014/015/016/018` |
+| INV-COUPLEDTIME-030 | Every canonical covered-map role and zero-based ordinal charges exactly one physical map with one exclusive private disposition. `Initial@0` yields only the first validated physical endpoint. Each later `FixedPointAdjudication@1` or contiguous `MultisecantAdjudication(n)@(n+1)`, `n=1..=N`, must validate exact custody before yielding a non-Clone, non-wire pending map. Outer candidate-versus-own-output nonclosure consumes that value into iteration history without error. After outer closure, dependent-output nonclosure against the preceding authentic map consumes it into typed adaptive rejection without history. Only full closure consumes that same pending value once as the `FinalAccepted` outcome and continues into one private complete owner envelope; a constructor failure cannot reinterpret it. Thus `M=N+2`, `0<=N<=5`, and `2<=M<=7`. No map is replayed, promoted from a completed nonfinal endpoint, or allowed to advance the accepted clock, publish, or mutate live accepted state; only accepted composed-parent commit publishes. | transaction atomicity, exact covered-map charge, and canonical solver authority | `[INFERENCE][Static]` | closed role dispatcher, custody-before-pending gate, non-Clone pending typestate with exclusive history/rejection/final dispositions, separate charge/physical-endpoint/disposition/final-constructor/envelope/parent-publication counters, role/ordinal and state-leak poisons | outer nonclosure -> history, no error; dependent-only nonclosure/role/ordinal/support -> `ERR-CT-010`; owner/identity/custody/disposition -> `ERR-CT-003/004/014`; rejected-state leak -> `ERR-CT-016`; publication before commit/after rollback -> `ERR-CT-018`; physical and constructor errors retain their typed variants; numeric precedence, complete rollback |
+| INV-COUPLEDTIME-032 | A fully validated accepted-publication support may be owned by one private, move-only, non-Clone, non-wire capability minted only after one complete semantic, operand-seal, and receipt-seal pass. The capability binds the exact immutable support payload and receipt to one process-local accepted-publication-history incarnation and its complete O(1) live-tail revision. Trusted append consumes it, admits only the exact live-revision and cached chronology/owner-tail join, and then performs the existing byte-preserving WB14 compaction and Arc/COW install; it performs no second support validation, operand/receipt reconstruction, serialization, prefix scan, or payload clone. Every successful support/event append and history rotation/replacement advances the live revision; exact in-process clones may share only the identical incarnation and revision. Independent construction, restart, wire, archive, and every untrusted reconstruction carry no capability and retain full independent support validation plus full chronology reconstruction before a fresh process-local incarnation is established. | transaction atomicity, exact publication chronology, restart, archive, and canonical receipt authority | `[INFERENCE][Static]` | private capability constructor/consumer, exact payload/incarnation/live-revision/tail joins, mutation revision advance, full untrusted validator, non-wire source guard, exhaustive stale/foreign/replay/restart poisons and counters | existing constructor errors before mint; then numeric precedence `ERR-CT-002/003/004/010/014/015/018/020/027`; failed append consumes the capability and preserves history/publication bytes and live revision exactly |
 
 `INV-COUPLEDTIME-025` is a reserved historical candidate identifier and is not
 active version-8 invariant authority.
@@ -608,6 +617,10 @@ superseded and require fresh 60-second execution; no rerun is claimed here.
 | OBL-COUPLEDTIME-007 | Richards equations and controller policy remain outside this contract; Richards adoption must import this clock authority. | boundary and tuple audit |
 | OBL-COUPLEDTIME-008 | Child 2C event receipts bind canonical ticks, participant/support receipts, immutable terminal-state and candidate ledgers, tolerance policy, tie rank, owner custody, and atomic retry identity. | schema, oracle, restart, and transaction gates |
 | OBL-COUPLEDTIME-009 | Multi-day Stage-3 execution proves bounded one-active-day residency, exact uncompacted-versus-archived equality, durable archive rollback, streamed archive reconstruction, V3 restart admission/poisons, and flat retained-memory growth. | runner consumer, archive reader, restart, poison, and resource gates |
+| OBL-COUPLEDTIME-011 | Prove one full validation per slab-candidate revision and no acceptance-time reconstruction, owner/ledger rehash, serialization, or payload clone. Preserve candidate, receipt, clock, and restart bytes and identities. Prove exact-clone acceptance plus atomic rejection for foreign/stale clocks, changed segment or scheduled-once revision, prior slab acceptance, wrong lineage, and pre-restart proof use; a freshly validated post-restore candidate must succeed. | constructor/acceptance counters, source guard, exact-byte vectors, restart and rollback poisons |
+| OBL-COUPLEDTIME-012 | Prove exactly one physical owner-stack execution for each accepted snow-free support while retaining two independently constructed coupled slab candidates, final accepted-slab identity, exact final complete-owner bytes, one final publication, and unchanged restart/wire output. Force every non-slab identity apart, reuse the proof twice, cross a restart boundary, and poison the retained physical ending; every case must reject with byte-identical rollback and a fresh post-restore execution. | provider/physics counters, exact direct-versus-reuse comparison, publication counters, exhaustive identity/reuse/restart poisons, source guards |
+| OBL-COUPLEDTIME-013 | For a successful canonical covered solve, prove `2 <= M <= 7` charged maps beneath the unchanged maximum-eight ceiling, `M` validated physical endpoints, `M-1` nonfinal outcomes, one final disposition of the last pending map, one final-constructor attempt, and one completed private envelope. Prove exactly one history, typed-rejection, or final disposition for each pending value; physical failure before a pending value; dependent-only rejection without history/final construction; and constructor failure after final disposition without reinterpretation. Preserve supports, adaptive retry, rollback, and accepted chronology; every map and failed/direct/unselected candidate publishes zero; only accepted composed-parent commit publishes once. Prove exact differential physical-prefix equality and typed role, ordinal, identity, regime, topology, disposition, and one-ULP rejection without replay, promotion, or fallback. | role/ordinal and physical-map counters, pending/exclusive-disposition counters, final-attempt/envelope/parent-publication counters, forced-complete differential oracle, exhaustive poisons, rollback and source guards |
+| OBL-COUPLEDTIME-015 | Prove constructor-to-trusted-append validation-once custody on the real publication path. One successful support requires exactly one full-validation attempt/success, one operand seal, one receipt seal, one capability mint, one trusted-append attempt, one live-revision join, one chronology/owner-tail join, and one successful append, with zero append-time full validations, operand/receipt reconstructions, serializations, full-prefix scans, or support-payload clones. Prove the same counts for the legitimate snow-free reseal path. Exhaustively poison every bound live-tail field and every stale, foreign, replayed, rotated, replaced, post-event, and pre-restart capability; each must be consumed, return the existing numeric-precedence typed error, leave history/publication bytes and revision unchanged, and permit a freshly validated successor. Wire/archive/restart and untrusted restore must independently revalidate every support and reconstruct the complete chronology, mint no capability during decoding, and establish a fresh incarnation only after success. | exact validation/seal/mint/join/append counters, expected-red capability API test, real routing/rotation/snow-free/adaptive tests, exhaustive tail-field poison matrix, source guards, wire/archive/restart roundtrip and rollback vectors |
 
 ## Symbol alias map
 
@@ -748,6 +761,11 @@ contradiction.
 | `BEI-CT-002` | terminal snow HOLD timing findings | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-002, INV-COUPLEDTIME-007, INV-COUPLEDTIME-008, INV-COUPLEDTIME-010` | `flagged-binding-addition` | Preserves event, participant, and restart residue. |
 | `BEI-CT-003` | Richards assessment timing recommendation | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-003, INV-COUPLEDTIME-009, INV-COUPLEDTIME-016, OBL-COUPLEDTIME-007` | `flagged-binding-addition` | Imports chronology only, not Richards numerics. |
 | `BEI-CT-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-017, INV-COUPLEDTIME-018, INV-COUPLEDTIME-019, INV-COUPLEDTIME-020, OBL-COUPLEDTIME-008` | `flagged-binding-addition` | Active-participant support, canonical event receipt, deterministic coalescing, and atomic no-candidate retry. |
+| `CT-VALIDATED-SLAB-ACCEPTANCE` | Stage 3 throughput-recovery validation-once handoff | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-004, INV-COUPLEDTIME-005, INV-COUPLEDTIME-008, INV-COUPLEDTIME-010, INV-COUPLEDTIME-024, INV-COUPLEDTIME-028, OBL-COUPLEDTIME-011` | `flagged-binding-addition` | Private move-only proof removes duplicate trusted in-process validation without changing chronology, errors, wire, or physics. |
+| `CT-SNOW-FREE-PHYSICAL-REUSE` | Stage 3 snow-free accepted-slab reseal | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-004, INV-COUPLEDTIME-005, INV-COUPLEDTIME-008, INV-COUPLEDTIME-010, INV-COUPLEDTIME-024, INV-COUPLEDTIME-029, OBL-COUPLEDTIME-012` | `flagged-binding-addition` | A private single-use proof permits identity-only final resealing after one validated snow-free physical execution; final owner bytes, publication, restart, and rollback remain exact. |
+| `CT-COVERED-NONFINAL-PHYSICAL-ONLY` | Stage 3 canonical covered-map role split | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-004, INV-COUPLEDTIME-005, INV-COUPLEDTIME-013, INV-COUPLEDTIME-021, INV-COUPLEDTIME-024, INV-COUPLEDTIME-030, OBL-COUPLEDTIME-013` | `flagged-binding-addition` | Every charged map retains its canonical physical role, but only `FinalAccepted` constructs complete publishable transaction custody; nonfinal physical endpoints cannot advance time or be promoted. |
+| `CT-NATIVE-INACTIVE-PREFIX-TRANSITION` | Stage 3 represented-snow to snow-free parent-local transition | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-005, INV-COUPLEDTIME-006, INV-COUPLEDTIME-024, INV-COUPLEDTIME-031, OBL-COUPLEDTIME-014` | `flagged-binding-addition` | A complete accepted represented-snow prefix may advance only the WB14 parent-local support cursor; its coupled chronology remains exact and the first physical WB14 child is ordinal zero. |
+| `CT-VALIDATED-PUBLICATION-SUPPORT-APPEND` | Stage 3 accepted-publication support validation-once handoff | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-004, INV-COUPLEDTIME-005, INV-COUPLEDTIME-010, INV-COUPLEDTIME-013, INV-COUPLEDTIME-024, INV-COUPLEDTIME-026, INV-COUPLEDTIME-032, OBL-COUPLEDTIME-015` | `flagged-binding-addition` | A private capability moves one already-validated support into the exact same-live-revision history after O(1) tail joins; all untrusted, restart, wire, and archive paths still validate and reconstruct independently. |
 
 ## Child 2C shared-carrier and event-boundary amendment
 
@@ -859,10 +877,86 @@ both neighbor-side violations, deterministic tie and tie-poison cases,
 proposed/accepted tick divergence, no-candidate retry, owner-preserving
 rejection, restart before/after the event, and wrong-regime flux rejection.
 
+## Canonical Covered Pending-Adjudication Map Amendment
+
+`INV-COUPLEDTIME-030` makes every charged covered-map role a closed chronology
+and single-use custody decision. `Initial@0` executes from the immutable
+candidate beginning and returns the first private validated physical endpoint.
+The next charge is `FixedPointAdjudication@1`. If iteration remains necessary,
+later charges are contiguous `MultisecantAdjudication(n)@(n+1)` for
+`n=1..=N`, `0<=N<=5`. Every post-initial charge returns one private, non-Clone,
+non-wire pending map only after exact physical, identity, and discrete-custody
+validation. It contains its exact candidate, own physical output, support,
+role ordinal, custody, and identities. No such pending value is yet an
+iteration endpoint or a publishable final envelope.
+
+The pending value has exactly one disposition. Compare its candidate against
+its own output under the unchanged outer tolerance. Outer nonclosure consumes the pending value into iteration
+history and permits the next multisecant adjudication. Outer closure then
+requires dependent-output stability against the preceding authentic map.
+Dependent-only nonclosure consumes it into the canonical adaptive response or
+typed floor failure without admitting the value to history. When both checks close, the
+same pending value is consumed once as the `FinalAccepted` outcome and
+continues from its already-executed physical prefix through complete custody
+construction. A physical or constructor failure retains its existing typed
+variant and cannot reinterpret the pending value. The rule is identical for
+ordinary and native represented-snow regimes.
+
+The exact chronology is `Initial@0`, `FixedPointAdjudication@1`, then zero or
+more contiguous `MultisecantAdjudication(n)@(n+1)` roles until one adjudication
+is consumed as `FinalAccepted`. Therefore `M=N+2`, `0<=N<=5`, and
+`2<=M<=7`. `FinalAccepted` is a disposition of the last charged adjudication,
+not an additional charged role. There is no skipped, repeated, replayed, or
+renumbered map. This correction preserves the existing maximum-eight budget as
+a conservative ceiling while requiring at most seven charges.
+
+Only the successful final disposition constructs and validates the complete
+vegetation, land-surface-energy, surface-liquid, soil, biogeochemistry, joint,
+receipt, and owner envelope. The initial endpoint and history values have no
+conversion into candidate, owner, install, restart, or publication surfaces.
+The private final envelope is publishable only by the enclosing transaction;
+no map performs enqueue, exposure, install, publication, or live-clock
+mutation. Direct, rejected, and unselected adaptive candidates publish zero.
+Only the selected composed parent publishes, exactly once, at atomic commit.
+
+`OBL-COUPLEDTIME-013` requires exact accounting for charges, validated physical
+endpoints, pending values, history dispositions, final dispositions,
+dependent-only rejections, constructor attempts, completed envelopes,
+map-level publication, and accepted-parent publication. Every successful solve
+has `M` charges and `M` validated physical endpoints, `M-1` nonfinal outcomes
+(the initial endpoint plus any history dispositions), exactly one final
+disposition, one final-constructor attempt, and one completed private envelope.
+A charged physical failure has no validated pending value or disposition. An
+outer-nonclosed pending map has exactly one history disposition. A dependent-
+only failure has one validated pending value and one rejection disposition but
+no history or final disposition. A final-constructor failure has one final
+disposition and constructor attempt but no completed envelope. Every map and
+failure publishes zero and rolls back byte-identically; the accepted composed
+parent alone publishes once. Exact physical-prefix parity against a test-only
+forced-complete reference and the complete role, identity, regime, topology,
+disposition, and one-ULP poison matrix remain mandatory.
+
+### Profile integration
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Charge `Initial`, then ordered pending adjudication maps; consume each pending map exactly once into history, rejection, or final construction. |
+| branch/guard | A non-Clone pending typestate prevents replay, cross-disposition reuse, live-clock mutation, or promotion of a completed nonfinal endpoint. |
+| invariant guard map | `INV-COUPLEDTIME-030` -> canonical role/ordinal validator, custody-before-pending gate, pending typestate, exclusive disposition gates, exact counters, final-only transaction constructor, clock/publication/rollback guards; outer nonclosure -> history/no error, dependent-only nonclosure/role/ordinal/support -> `ERR-CT-010`, owner/identity/custody/disposition -> `ERR-CT-003/004/014`, rejected-state leak -> `ERR-CT-016`, publication violation -> `ERR-CT-018`, in numeric precedence. |
+| test vector | `OBL-COUPLEDTIME-013`: two-map and iterative success, physical/history/dependent/constructor failure matrices, exact role/support chronology, forced-complete parity, exhaustive disposition poisons, zero map publication, parent-only publication, unpublishability, rollback. |
+| binding exposure | `CT-COVERED-NONFINAL-PHYSICAL-ONLY`, active, `new-INV`, IDs `030/013`, dual review/verification. |
+
 ## Change log
 
 | Date | Version | Change |
 |---|---|---|
+| 2026-09-03 | `17` | Bound one private move-only accepted-publication support capability to an exact process-local history incarnation and complete live-tail revision. Trusted in-process append retains only exact chronology/tail joins plus existing byte-preserving compaction/COW install; duplicate support validation, sealing, serialization, prefix scanning, and payload cloning are forbidden. Restart, wire, archive, and untrusted reconstruction retain full independent validation and establish fresh incarnation authority. |
+| 2026-09-03 | `16` | Corrected the two-map authority to consume the second charged physical map through a private pending-adjudication typestate: history on outer nonclosure, typed adaptive rejection on dependent-only nonclosure, or final-envelope construction on full closure. `FinalAccepted` is a disposition, not a replayed charge; exact chronologies now require two through seven maps under the unchanged maximum-eight ceiling. |
+| 2026-09-03 | `15` | Authorized the exact two-map stable covered chronology after initial outer closure, with independent final outer/dependent closure and no Predictor fallthrough on final failure. Tolerances, physics, the eight-map ceiling, adaptive response, rollback, restart, and publication authority remain unchanged. |
+| 2026-09-03 | `14` | Bound the coupled-receipt-backed represented-snow inactive prefix consumed by the first exact snow-free WB14 child; no under-snow physics, receipt, accepted-clock change, or publication is added. |
+| 2026-09-02 | `13` | Bound canonical covered-map role to a private nonfinal physical-only result or the one independently charged final-complete owner envelope. Map count, roles, supports, chronology, adaptive response, rollback, restart, and publication authority remain unchanged. |
+| 2026-09-02 | `12` | Bound one private move-only snow-free physical-reuse proof to the exact live provisional/final slab relation. Only accepted-slab-dependent identities may be resealed; physical execution remains once, final complete owners remain byte-identical, and wire/restart/publication/rollback semantics are unchanged. |
+| 2026-09-02 | `11` | Bound private revision-scoped validation-once slab acceptance. Constructor semantics, chronology, owners, ledgers, receipts, restart/publication bytes, error precedence, and physics are unchanged; only duplicate trusted in-process reconstruction is removed. |
 | 2026-08-28 | `9` | Admitted one typed receipt-custody progress successor for exact-empty-mutation `OwnershipTransfer` events with unchanged owners/regime/participants and a nonempty balanced nonzero debit/credit/lineage ledger. The successor advances one event/segment ordinal and one receipt only; all ordinary empty no-ops remain `ERR-CT-013`. |
 | 2026-08-28 | `8` | Added mandatory durable content-addressed completed-day archival, bounded resident prefix/qualification fold, publication/WB14 rotation, transaction-private runner spooling, and fail-closed V3 archive-reader/restart authority without changing physical equations or accepted chronology. |
 | 2026-08-27 | `7` owner amendment | Replaced the provisional 600-ms Stage-3 floor with an exact 60-second (`60_000_000_000 ns`) temporal floor. Conservation, custody, phase, topology, receipt, rollback, and fail-closed obligations are unchanged; stable ordinary supports must accept substantially larger steps. Prior floor-dependent evidence is superseded and awaits rerun. |
@@ -871,3 +965,144 @@ rejection, restart before/after the event, and wrong-regime flux rejection.
 | 2026-08-20 | `1-rc2` | Added complete accepted-slab receipt chronology to restart after implementation exposed that reductions/publications cannot reconstruct parent finalization. |
 | 2026-08-20 | `2` | Preserved restart V1, released restart V2 slab/event chronology, and closed scheduled-once receipt identity without borrowing event ordinals. |
 | 2026-08-20 | `3` | Bound Child 2C active-participant maximum support, deterministic event-boundary coalescing, typed no-candidate retry, and the proposal/accepted event receipt. |
+
+## Canonical Covered-Solver Adaptive Response Amendment
+
+`INV-COUPLEDTIME-027` — A Stage-3 covered-solver eight-map exhaustion is one
+rejected adaptive attempt. Above the exact 60-second floor, the next exact
+support invokes the same canonical covered solver from the immutable beginning
+owner; no alternate, historical, or recovery solver may run. At the floor,
+exhaustion returns a typed evaluation-budget/nonconvergence error. Continuous
+direct/composed replay uses the adopter's `TOL-SNOWENERGY-007`; exact support,
+owner, topology, event, parcel, ordering, schema, receipt chain, and rollback
+rules in `INV-COUPLEDTIME-021`--`024` are unchanged.
+
+`OBL-COUPLEDTIME-010` — Tests must poison an alternate-solver dispatch,
+uncharged map, support mutation, floor split, and discrete receipt mutation,
+and prove exact rollback plus same-solver smaller-support retry.
+
+### Profile integration
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Reduce the rejected covered attempt to the next exact support, then re-enter the same solver from immutable owners. |
+| branch/guard | Above floor: same-solver retry; exact floor: typed `ERR-CT-021`-class failure; alternate solver/floor split refuses. |
+| invariant guard map | `INV-COUPLEDTIME-027` -> adaptive rejection, exact-support reducer, receipt/rollback validator. |
+| test vector | `OBL-COUPLEDTIME-010`: alternate dispatch, uncharged call, support mutation, floor split, discrete poison. |
+| binding exposure | `CT-STAGE3-CANONICAL-RETRY`, active, `new-INV`, IDs `027/010`, dual review/verification. |
+| gap | `GAP-CT-003` remains open only for real production orchestration proof. |
+| change log | 2026-09-01, contract 10: bound same-solver Stage-3 adaptive response and typed floor exhaustion. |
+
+## Native Inactive-Prefix Parent-Local Chronology Amendment
+
+`INV-COUPLEDTIME-031` — If an accepted parent begins with represented snow and
+the exact next positive child is snow-free, the already accepted coupled slabs
+before that child form one immutable inactive prefix. A typed proof must replay
+the complete ordered slab and complete-owner chain from parent start through
+the snow-free child start with no gap, overlap, omission, duplication, or
+identity substitution. The accepted coupled clock, slab receipts, event
+chronology, and complete owners are not advanced or rewritten by consuming the
+proof.
+
+The SurfaceLiquid/WB14 adopter may use that proof only to establish its
+parent-local physical-support cursor at the same exact tick. This chronology-
+only establishment performs no inactive-regime WB14 physics or receipt and
+does not consume a physical-child ordinal; the first snow-free WB14 child is
+ordinal zero. The proof is bound into adopter replay/restart and final parent
+partition identity. Rejection preserves the complete accepted and candidate
+owner sets, clocks, receipts, and publication buffers byte-for-byte.
+
+`OBL-COUPLEDTIME-014` — Prove a real represented-snow prefix followed by one
+snow-free child, first physical ordinal zero, complete coupled/adopter support
+partition, uninterrupted versus split-restart identity, zero inactive physics
+and publication, and exact rollback. Poison every prefix row identity/order/
+support/slab/owner/marker, prefix endpoint, duplicate consumption, nonzero
+first ordinal, and adopter-cursor advance without proof.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Replay the complete accepted inactive prefix and grant one chronology-only adopter cursor establishment at its exact end. |
+| branch/guard | The proof cannot change coupled accepted state, synthesize a physical receipt, or consume a physical ordinal. |
+| invariant guard map | `INV-COUPLEDTIME-031` -> accepted-slab/owner replay, adopter proof digest, cursor/ordinal join, restart and rollback. |
+| test vector | `OBL-COUPLEDTIME-014`: transition, support/identity poisons, ordinal zero, restart, zero work/publication, rollback. |
+| binding exposure | `CT-NATIVE-INACTIVE-PREFIX-TRANSITION`, active, `new-INV`, IDs `031/014`, dual review/verification. |
+
+## Validated Accepted-Publication Support Append Amendment
+
+`INV-COUPLEDTIME-032` removes only the second full validation currently paid
+when a newly constructed accepted-publication support enters its trusted
+in-process history. `Stage3AcceptedPublicationSupportV1::try_new`, and the
+legitimate snow-free identity-only reseal that produces the same support type,
+must complete the existing semantic checks, operand reconstruction/seal, and
+receipt reconstruction/seal exactly once. They accept the exact target
+`AcceptedPublicationHistoryLiveRevisionV1`; only successful validation may
+mint a `ValidatedStage3AcceptedPublicationSupportV1` that owns the immutable
+support and binds its payload/receipt identity to that process-local history
+incarnation and complete cached live-tail revision. Constructor failure returns
+the existing typed error and mints nothing.
+
+The capability is private, move-only, non-Clone, and has no Serialize,
+Deserialize, wire, archive, restart, checkpoint, publication, or public API
+representation. Trusted `push_validated_support` consumes it. Before mutation,
+the consumer compares its exact history incarnation and every live-revision
+field, then applies only the existing O(1) cached support chronology and
+beginning/ending-owner tail join. On success it may perform the unchanged
+byte-preserving WB14 replay compaction and Arc/COW handle installation. It must
+not call `Stage3AcceptedPublicationSupportV1::validate`, reconstruct operand or
+receipt hashes, serialize the support, scan the retained prefix, or clone the
+support payload. A failed attempt consumes the capability and leaves the
+history, publication state, and live revision byte-identical.
+
+The live revision binds the history incarnation, accepted support/event counts,
+last day and interval, last support, last parent transaction, last accepted
+slab, traversed ending owner, pending pre-support event, event and event-ordinal
+authority, sealed-prefix/rotation posture, WB14 tail/checkpoint identity, and
+aggregate tail digest. Every successful support append, event append, or
+history rotation/replacement advances or replaces that history value's
+revision. Exact in-process history clones may share an incarnation only while
+their revisions are identical; mutation makes a capability for the prior
+revision stale against the mutated value. Independently constructed histories
+and all restored histories receive a fresh incarnation after complete
+independent validation.
+
+Wire, archive, checkpoint, restart, and other untrusted reconstruction never
+encode, decode, infer, or restore this capability. They continue to validate
+every support independently and reconstruct the complete ordered chronology
+and cached tail before admitting a fresh live history. This amendment changes
+no support value, history order, compaction bytes, receipt, publication,
+archive, restart, physics, or accepted chronology. It requires no amendment to
+the land-surface-energy, surface-liquid, snow-energy, or vegetation-transaction
+contracts: their existing immutable validated-handoff, publication, restart,
+and custody authority is unchanged.
+
+Error selection retains numeric precedence. Overflow is `ERR-CT-002`; foreign
+history incarnation or support/payload identity is `ERR-CT-003`; owner-tail
+handoff mismatch is `ERR-CT-004`; stale support/event/tail chronology is
+`ERR-CT-010`; forged, replayed, partially joined, or already-consumed append is
+`ERR-CT-014`; a pre-restart capability or invalid restored history is
+`ERR-CT-015`; publication-state violation is `ERR-CT-018`; capability encoding
+or noncanonical wire reconstruction is `ERR-CT-020`; and archive/rotation
+authority mismatch is `ERR-CT-027`. Underlying support validation errors keep
+their existing variants and precedence before capability minting.
+
+`OBL-COUPLEDTIME-015` requires exhaustive counter and poison evidence. The
+ordinary and snow-free success paths each record exactly one full-validation
+attempt/success, operand seal, receipt seal, capability mint, trusted-append
+attempt, live-revision join, chronology/owner-tail join, and successful append.
+They record zero append-time full validations, operand/receipt reconstructions,
+serializations, full-prefix scans, or support-payload clones. Untrusted restore
+records one full validation per support and zero restored capabilities. Every
+individual live-tail field, foreign incarnation, intervening support/event,
+rotation/replacement, replay, and restart boundary receives a fail-closed,
+byte-identical rollback vector, followed by successful freshly validated use.
+
+### Profile integration
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Fully validate and seal one support against the exact target live revision, mint one owning capability, then consume it through `push_validated_support` for exact live-revision and cached chronology/owner-tail joins plus unchanged WB14 compaction/Arc-COW installation. |
+| branch/guard | Constructor error mints nothing; trusted mismatch consumes the capability and mutates nothing; restart/wire/archive/untrusted input cannot carry a capability and enters the full validator/reconstructor. |
+| invariant guard map | `INV-COUPLEDTIME-032` -> private non-Clone/non-wire capability, exact payload/incarnation/revision join, mutation revision advance, full untrusted validator, numeric-precedence error map, rollback and source guards. |
+| test vector | `OBL-COUPLEDTIME-015`: validation-once hot success, snow-free reseal, stale/foreign/replay/restart/rotation poisons, exhaustive tail-field matrix, untrusted restore, non-wire/source guards, exact counters and byte-identical rollback. |
+| binding exposure | `CT-VALIDATED-PUBLICATION-SUPPORT-APPEND`, active, `new-INV`, IDs `032/015`, dual review/verification. |
+| change log | 2026-09-03, contract 17: private same-live-revision validated-support append; no wire, archive, restart, publication, chronology, or physics change. |

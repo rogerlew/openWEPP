@@ -12,8 +12,8 @@ use openwepp_land_surface_energy::{
     LandSurfaceEnergyV3State, LitterPhaseConfiguration, OfeId, PotentialCoveredVegetationOperands,
     PotentialWaterRequestBatch, RequestingComponent, RootRuntimeIdentity, RuntimeTileIdentity,
     Sha256Digest, SurfaceClass, SurfaceConfiguration, V3CoveredPotentialPhase,
-    V3FixedFinalCoveredCandidate, V3PhaseSpecificVaporAuthorization, WaterAuthorization,
-    WaterAuthorizationReason, WaterProtocol, WaterSourceType,
+    V3FixedFinalCoveredCandidate, V3PhaseSpecificVaporAuthorization, WaterAmount,
+    WaterAuthorization, WaterAuthorizationReason, WaterProtocol, WaterSourceType,
     finalize_covered_phase_with_soil_thermal_beginning,
     finalize_open_phase_with_soil_thermal_beginning, finalize_v3_covered_phase,
     solve_covered_potential_phase, solve_open_potential_phase, solve_v3_covered_potential_phase,
@@ -53,6 +53,13 @@ pub(crate) struct StrictProjectedV3RuntimeInputs {
     pub(crate) vegetation_bindings: Vec<V8ComponentOccupancyBinding>,
 }
 
+/// Private proof that the exact borrowed native surface configuration/owner
+/// pair passed complete canonical validation in this projection call.
+pub(crate) struct ValidatedV3SurfaceBeginning<'a> {
+    configuration: &'a SurfaceLiquidConfigurationV2,
+    owner: &'a SurfaceLiquidOwnerEnvelopeV2,
+}
+
 /// A forest-litter tile whose potential and fixed-final evaluations must both
 /// use the V3 phase-free residual.  There is no legacy-litter representation.
 #[derive(Clone, Debug, PartialEq)]
@@ -73,6 +80,7 @@ pub(crate) struct StrictProjectedV3ForestLitterTile {
 pub(crate) enum StrictProjectedV3TileProblem {
     Legacy(StrictProjectedTileProblem),
     FrozenForestLitter(StrictProjectedV3ForestLitterTile),
+    Stage3CoveredNative(StrictProjectedCoveredTile),
 }
 
 impl StrictProjectedV3TileProblem {
@@ -84,6 +92,7 @@ impl StrictProjectedV3TileProblem {
                 StrictProjectedTileProblem::Covered(value) => &value.identity,
             },
             Self::FrozenForestLitter(value) => &value.identity,
+            Self::Stage3CoveredNative(value) => &value.identity,
         }
     }
 }
@@ -145,8 +154,7 @@ fn replace_ground_temperature_trial(
 /// Rebind the already validated V8 structural projection to the exact native
 /// V3 beginnings. This function performs no solve and has no V3-to-legacy
 /// downgrade arm.
-#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-pub(crate) fn project_native_frozen_litter_v3_solver_inputs(
+pub(crate) fn project_native_frozen_litter_v3_solver_inputs<'a>(
     projection: &ValidatedV8RuntimeInputProjection,
     vegetation_owner_id: &openwepp_kernel_contract::ResourceOwnerId,
     authority: openwepp_land_surface_energy::CoveredColumnAuthority,
@@ -155,9 +163,15 @@ pub(crate) fn project_native_frozen_litter_v3_solver_inputs(
     >,
     lse_configuration: &LandSurfaceEnergyConfiguration,
     lse_beginning: &LandSurfaceEnergyV3State,
-    surface_configuration: &SurfaceLiquidConfigurationV2,
-    surface_beginning: &SurfaceLiquidOwnerEnvelopeV2,
-) -> Result<StrictProjectedV3RuntimeInputs, LandSurfaceEnergyShadowError> {
+    surface_configuration: &'a SurfaceLiquidConfigurationV2,
+    surface_beginning: &'a SurfaceLiquidOwnerEnvelopeV2,
+) -> Result<
+    (
+        StrictProjectedV3RuntimeInputs,
+        ValidatedV3SurfaceBeginning<'a>,
+    ),
+    LandSurfaceEnergyShadowError,
+> {
     lse_beginning
         .validate(lse_configuration)
         .map_err(|_| LandSurfaceEnergyShadowError::Identity("native V3 LSE configuration/state"))?;
@@ -198,104 +212,146 @@ pub(crate) fn project_native_frozen_litter_v3_solver_inputs(
         identity.beginning_lse_state_sha256 = lse_beginning.0.state_sha256.clone();
         let projected = match (identity.surface_class, physics) {
             (SurfaceClass::ForestLitter, V8SolverReadyTilePhysics::Covered(mut beginning)) => {
-                let configured = lse_configuration
-                    .ofes
-                    .iter()
-                    .find(|ofe| ofe.ofe_id == identity.ofe_id)
-                    .and_then(|ofe| {
-                        ofe.tiles
-                            .iter()
-                            .find(|configured| configured.tile_id == identity.tile_id)
-                    })
-                    .ok_or(LandSurfaceEnergyShadowError::Identity(
-                        "V3 LSE forest-litter configuration tile",
-                    ))?;
-                let SurfaceConfiguration::ForestLitter {
-                    liquid_capacity_kg_m2_tile_ground,
-                    thickness_m,
-                    dry_density_kg_m3,
-                    dry_specific_heat_j_kg_k,
-                } = configured.surface
-                else {
-                    return Err(LandSurfaceEnergyShadowError::Identity(
-                        "V3 runtime class/configuration forest-litter join",
-                    ));
-                };
-                let (surface_configured, surface_state) =
-                    find_surface_v2_records(&identity, surface_configuration, surface_beginning)?;
-                let lse_state = lse_beginning
-                    .0
-                    .tiles
-                    .iter()
-                    .find(|state| {
-                        state.ofe_id == identity.ofe_id && state.tile_id == identity.tile_id
-                    })
-                    .ok_or(LandSurfaceEnergyShadowError::Identity(
-                        "V3 LSE forest-litter beginning tile",
-                    ))?;
-                let ice_capacity = surface_configured.litter_ice_capacity_kg_m2_tile.ok_or(
-                    LandSurfaceEnergyShadowError::Identity("V3 litter ice capacity"),
-                )?;
-                let surface_depth = surface_configured
-                    .litter_depth_m
-                    .ok_or(LandSurfaceEnergyShadowError::Identity("V3 litter depth"))?;
-                let dry_heat_capacity = thickness_m * dry_density_kg_m3 * dry_specific_heat_j_kg_k;
-                if surface_depth.to_bits() != thickness_m.to_bits()
-                    || lse_state.surface_enthalpy_j_m2_tile_ground.to_bits()
-                        != surface_state.surface_enthalpy_j_m2_tile.to_bits()
-                    || surface_configured.key.surface_class != SurfaceClass::ForestLitter
-                    || surface_configured.key.source_type != WaterSourceType::LitterLiquid
-                {
-                    return Err(LandSurfaceEnergyShadowError::Identity(
-                        "V3 native litter beginning/configuration join",
-                    ));
-                }
-                beginning.ground.surface_liquid_kg_m2_tile = surface_state.liquid_kg_m2_tile;
-                beginning.ground.surface_enthalpy_j_m2_tile =
-                    surface_state.surface_enthalpy_j_m2_tile;
-                beginning.ground.surface_temperature_warm_start_k =
-                    lse_state.surface_temperature_warm_start_k;
-                beginning.ground.surface_conductivity_w_m_k =
-                    super::v8_input_projection::project_forest_litter_conductivity(
-                        surface_state.liquid_kg_m2_tile,
-                        thickness_m,
-                    )
-                    .map_err(|_| {
-                        LandSurfaceEnergyShadowError::Operand(
-                            "native V3 forest-litter conductivity",
-                        )
-                    })?;
-                let beginning_trial = replace_ground_temperature_trial(
-                    beginning_trial,
-                    beginning.ground.soil_nodes.len(),
-                    lse_state.surface_temperature_warm_start_k,
-                )?;
-                StrictProjectedV3TileProblem::FrozenForestLitter(
-                    StrictProjectedV3ForestLitterTile {
+                if beginning.stage3_lower_boundary.is_some() {
+                    let optical = beginning.stage3_optical.as_ref().ok_or(
+                        LandSurfaceEnergyShadowError::Identity(
+                            "Stage3CoveredNative optical receipt",
+                        ),
+                    )?;
+                    optical.validate()?;
+                    if authority
+                        != openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered
+                        || optical.ofe_id != identity.ofe_id
+                        || optical.tile_id != identity.tile_id
+                    {
+                        return Err(LandSurfaceEnergyShadowError::Identity(
+                            "Stage3CoveredNative lower/optical identity",
+                        ));
+                    }
+                    StrictProjectedV3TileProblem::Stage3CoveredNative(StrictProjectedCoveredTile {
                         identity,
                         beginning,
                         roots: root_identities,
                         potential_initial_trial: beginning_trial.clone(),
                         final_initial_trial: beginning_trial,
                         soil_thermal,
-                        litter_configuration: LitterPhaseConfiguration {
-                            litter_depth_m: thickness_m,
-                            dry_heat_capacity_j_m2_k: dry_heat_capacity,
-                            liquid_capacity_kg_m2_tile: liquid_capacity_kg_m2_tile_ground,
-                            ice_capacity_kg_m2_tile: ice_capacity,
+                    })
+                } else {
+                    let represented_snow_native_column_transitions_to_snow_free_litter_after_terminal_split =
+                        beginning.stage3_optical.is_none();
+                    if !represented_snow_native_column_transitions_to_snow_free_litter_after_terminal_split {
+                        return Err(LandSurfaceEnergyShadowError::Identity(
+                            "snow-free native litter retained Stage-3 optical custody",
+                        ));
+                    }
+                    let configured = lse_configuration
+                        .ofes
+                        .iter()
+                        .find(|ofe| ofe.ofe_id == identity.ofe_id)
+                        .and_then(|ofe| {
+                            ofe.tiles
+                                .iter()
+                                .find(|configured| configured.tile_id == identity.tile_id)
+                        })
+                        .ok_or(LandSurfaceEnergyShadowError::Identity(
+                            "V3 LSE forest-litter configuration tile",
+                        ))?;
+                    let SurfaceConfiguration::ForestLitter {
+                        liquid_capacity_kg_m2_tile_ground,
+                        thickness_m,
+                        dry_density_kg_m3,
+                        dry_specific_heat_j_kg_k,
+                    } = configured.surface
+                    else {
+                        return Err(LandSurfaceEnergyShadowError::Identity(
+                            "V3 runtime class/configuration forest-litter join",
+                        ));
+                    };
+                    let (surface_configured, surface_state) = find_surface_v2_records(
+                        &identity,
+                        surface_configuration,
+                        surface_beginning,
+                    )?;
+                    let lse_state = lse_beginning
+                        .0
+                        .tiles
+                        .iter()
+                        .find(|state| {
+                            state.ofe_id == identity.ofe_id && state.tile_id == identity.tile_id
+                        })
+                        .ok_or(LandSurfaceEnergyShadowError::Identity(
+                            "V3 LSE forest-litter beginning tile",
+                        ))?;
+                    let ice_capacity = surface_configured.litter_ice_capacity_kg_m2_tile.ok_or(
+                        LandSurfaceEnergyShadowError::Identity("V3 litter ice capacity"),
+                    )?;
+                    let surface_depth = surface_configured
+                        .litter_depth_m
+                        .ok_or(LandSurfaceEnergyShadowError::Identity("V3 litter depth"))?;
+                    let dry_heat_capacity =
+                        thickness_m * dry_density_kg_m3 * dry_specific_heat_j_kg_k;
+                    if surface_depth.to_bits() != thickness_m.to_bits()
+                        || lse_state.surface_enthalpy_j_m2_tile_ground.to_bits()
+                            != surface_state.surface_enthalpy_j_m2_tile.to_bits()
+                        || surface_configured.key.surface_class != SurfaceClass::ForestLitter
+                        || surface_configured.key.source_type != WaterSourceType::LitterLiquid
+                    {
+                        return Err(LandSurfaceEnergyShadowError::Identity(
+                            "V3 native litter beginning/configuration join",
+                        ));
+                    }
+                    beginning.ground.surface_liquid_kg_m2_tile = surface_state.liquid_kg_m2_tile;
+                    beginning.ground.surface_enthalpy_j_m2_tile =
+                        surface_state.surface_enthalpy_j_m2_tile;
+                    beginning.ground.surface_temperature_warm_start_k =
+                        lse_state.surface_temperature_warm_start_k;
+                    beginning.ground.surface_conductivity_w_m_k =
+                        super::v8_input_projection::project_forest_litter_conductivity(
+                            surface_state.liquid_kg_m2_tile,
+                            thickness_m,
+                        )
+                        .map_err(|_| {
+                            LandSurfaceEnergyShadowError::Operand(
+                                "native V3 forest-litter conductivity",
+                            )
+                        })?;
+                    let beginning_trial = replace_ground_temperature_trial(
+                        beginning_trial,
+                        beginning.ground.soil_nodes.len(),
+                        lse_state.surface_temperature_warm_start_k,
+                    )?;
+                    StrictProjectedV3TileProblem::FrozenForestLitter(
+                        StrictProjectedV3ForestLitterTile {
+                            identity,
+                            beginning,
+                            roots: root_identities,
+                            potential_initial_trial: beginning_trial.clone(),
+                            final_initial_trial: beginning_trial,
+                            soil_thermal,
+                            litter_configuration: LitterPhaseConfiguration {
+                                litter_depth_m: thickness_m,
+                                dry_heat_capacity_j_m2_k: dry_heat_capacity,
+                                liquid_capacity_kg_m2_tile: liquid_capacity_kg_m2_tile_ground,
+                                ice_capacity_kg_m2_tile: ice_capacity,
+                            },
+                            litter_beginning: BeginningLitterPhaseState {
+                                liquid_kg_m2_tile: surface_state.liquid_kg_m2_tile,
+                                ice_kg_m2_tile: surface_state.litter_ice_kg_m2_tile,
+                                sensible_energy_j_m2_tile: surface_state.surface_enthalpy_j_m2_tile,
+                                temperature_k: lse_state.surface_temperature_warm_start_k,
+                            },
                         },
-                        litter_beginning: BeginningLitterPhaseState {
-                            liquid_kg_m2_tile: surface_state.liquid_kg_m2_tile,
-                            ice_kg_m2_tile: surface_state.litter_ice_kg_m2_tile,
-                            sensible_energy_j_m2_tile: surface_state.surface_enthalpy_j_m2_tile,
-                            temperature_k: lse_state.surface_temperature_warm_start_k,
-                        },
-                    },
-                )
+                    )
+                }
             }
-            (SurfaceClass::ForestLitter, _) => {
+            (SurfaceClass::ForestLitter, V8SolverReadyTilePhysics::Open(_)) => {
                 return Err(LandSurfaceEnergyShadowError::UnsupportedCustody(
-                    "forest litter must enter the native V3 covered solver",
+                    "forest litter is missing its configured vegetation occupancy for the native V3 covered solver",
+                ));
+            }
+            (SurfaceClass::ForestLitter, V8SolverReadyTilePhysics::Stage3OpenSnow(_)) => {
+                return Err(LandSurfaceEnergyShadowError::UnsupportedCustody(
+                    "forest litter cannot enter the Stage-3 open-snow solver",
                 ));
             }
             (_, V8SolverReadyTilePhysics::Open(beginning)) => StrictProjectedV3TileProblem::Legacy(
@@ -331,16 +387,28 @@ pub(crate) fn project_native_frozen_litter_v3_solver_inputs(
         };
         tiles.push(projected);
     }
-    Ok(StrictProjectedV3RuntimeInputs {
-        tiles,
-        soil_sources,
-        vegetation_bindings,
-    })
+    Ok((
+        StrictProjectedV3RuntimeInputs {
+            tiles,
+            soil_sources,
+            vegetation_bindings,
+        },
+        ValidatedV3SurfaceBeginning {
+            configuration: surface_configuration,
+            owner: surface_beginning,
+        },
+    ))
 }
 
 #[derive(Clone, Debug, PartialEq)]
 enum V3PotentialTile {
     Legacy(PotentialTilePhase),
+    Stage3CoveredNative {
+        phase: openwepp_land_surface_energy::CoveredPotentialPhase,
+        final_initial_trial: Vec<f64>,
+        soil_thermal: V8SoilThermalPhysicalBeginning,
+        covered_beginning: CoveredColumnInputs,
+    },
     FrozenForestLitter {
         phase: V3CoveredPotentialPhase,
         final_initial_trial: Vec<f64>,
@@ -362,6 +430,7 @@ impl V3PotentialTile {
                 PotentialTilePhase::Covered { phase, .. } => phase.identity(),
             },
             Self::FrozenForestLitter { phase, .. } => phase.identity(),
+            Self::Stage3CoveredNative { phase, .. } => phase.identity(),
         }
     }
 
@@ -371,6 +440,7 @@ impl V3PotentialTile {
             Self::Legacy(PotentialTilePhase::Stage3OpenSnow { request_batch, .. }) => request_batch,
             Self::Legacy(PotentialTilePhase::Covered { phase, .. }) => phase.request_batch(),
             Self::FrozenForestLitter { phase, .. } => phase.request_batch(),
+            Self::Stage3CoveredNative { phase, .. } => phase.request_batch(),
         }
     }
 }
@@ -460,8 +530,7 @@ pub(crate) fn authorize_v3_multitile_potential(
     potential: &V3MultiTilePotentialCandidate,
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
-    surface_configuration: &SurfaceLiquidConfigurationV2,
-    surface_beginning: &SurfaceLiquidOwnerEnvelopeV2,
+    validated_surface_beginning: &ValidatedV3SurfaceBeginning<'_>,
 ) -> Result<
     (
         Vec<WaterAuthorization>,
@@ -470,8 +539,8 @@ pub(crate) fn authorize_v3_multitile_potential(
     ),
     LandSurfaceEnergyShadowError,
 > {
-    surface_beginning
-        .canonical_bytes(surface_configuration.parent(), Some(surface_configuration))?;
+    let surface_configuration = validated_surface_beginning.configuration;
+    let surface_beginning = validated_surface_beginning.owner;
     potential.request_batch.validate()?;
     let frozen = potential
         .tiles
@@ -484,7 +553,7 @@ pub(crate) fn authorize_v3_multitile_potential(
                 ),
                 phase,
             )),
-            V3PotentialTile::Legacy(_) => None,
+            V3PotentialTile::Legacy(_) | V3PotentialTile::Stage3CoveredNative { .. } => None,
         })
         .collect::<BTreeMap<_, _>>();
     let mut soil_requests = Vec::new();
@@ -607,12 +676,22 @@ pub(crate) struct AcceptedV3ForestLitterTile {
     pub occupancy_ids: Vec<String>,
 }
 
+/// One represented-snow forest-litter tile solved exactly once by the
+/// standard V11 covered-column path. Native V3/V4 litter owners remain
+/// inactive and unchanged while snow is the atmospheric ground surface.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct AcceptedStage3CoveredNativeTile {
+    pub identity: RuntimeTileIdentity,
+    pub covered_beginning: CoveredColumnInputs,
+}
+
 /// Typed pre-ingress boundary.  No surface resource, current ingress, WB14,
 /// phase transfer, owner mutation, or persisted diagnostic is constructed.
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct V3MultiTileAcceptedFixedFinalCandidate {
     pub legacy_tiles: Vec<FinalizedRuntimeTile>,
     pub frozen_litter_tiles: Vec<AcceptedV3ForestLitterTile>,
+    pub stage3_covered_native_tiles: Vec<AcceptedStage3CoveredNativeTile>,
     pub water_protocol: WaterProtocol,
     pub soil_arbitration: super::MixedRealHydrologyArbitration,
     pub receiver_expectations: super::UnifiedReceiverExpectations,
@@ -626,6 +705,178 @@ pub(crate) struct V3MultiTileAcceptedFixedFinalCandidate {
 }
 
 impl V3MultiTileAcceptedFixedFinalCandidate {
+    /// Exhaustive, versioned projection of the native represented-snow
+    /// physical result. The projection is test-only and cannot be converted
+    /// back into a resident, owner, or publishable candidate.
+    #[cfg(test)]
+    pub(crate) fn canonical_stage3_native_physical_projection_v1(
+        &self,
+    ) -> Result<Vec<u8>, LandSurfaceEnergyShadowError> {
+        fn push_bytes(out: &mut Vec<u8>, value: &[u8]) {
+            out.extend_from_slice(&(value.len() as u64).to_be_bytes());
+            out.extend_from_slice(value);
+        }
+        fn push_json<T: serde::Serialize>(
+            out: &mut Vec<u8>,
+            value: &T,
+        ) -> Result<(), LandSurfaceEnergyShadowError> {
+            let bytes = serde_json::to_vec(value).map_err(|_| {
+                LandSurfaceEnergyShadowError::Identity(
+                    "native represented-snow physical projection serialization",
+                )
+            })?;
+            push_bytes(out, &bytes);
+            Ok(())
+        }
+        fn push_source(out: &mut Vec<u8>, source: &RealHydrologySourceKey) {
+            out.extend_from_slice(&(source.ofe_lane.lane_index as u64).to_be_bytes());
+            out.extend_from_slice(&source.ofe_lane.lane_id.to_be_bytes());
+            push_bytes(out, source.layer_id.as_str().as_bytes());
+        }
+
+        if !self.frozen_litter_tiles.is_empty() || self.stage3_covered_native_tiles.is_empty() {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "native represented-snow physical projection posture",
+            ));
+        }
+        let mut out = b"OPENWEPP_STAGE3_NATIVE_PHYSICAL_PROJECTION_V1\0".to_vec();
+        for cardinality in [
+            self.legacy_tiles.len(),
+            self.stage3_covered_native_tiles.len(),
+            self.potential_vegetation_operands.len(),
+            self.vegetation_bindings.len(),
+            self.soil_sources.len(),
+            self.soil_arbitration.requests.len(),
+            self.soil_arbitration.authorizations.len(),
+            self.receiver_expectations.ordered_thermal_layers.len(),
+        ] {
+            out.extend_from_slice(&(cardinality as u64).to_be_bytes());
+        }
+        for tile in &self.stage3_covered_native_tiles {
+            push_bytes(
+                &mut out,
+                &super::multi_tile_runtime::canonical_runtime_identity_projection_v1(
+                    &tile.identity,
+                ),
+            );
+            push_bytes(
+                &mut out,
+                &super::multi_tile_runtime::canonical_covered_beginning_projection_v1(
+                    &tile.covered_beginning,
+                )?,
+            );
+        }
+        for tile in &self.legacy_tiles {
+            push_bytes(
+                &mut out,
+                &super::multi_tile_runtime::canonical_finalized_runtime_tile_projection_v1(tile)?,
+            );
+        }
+        for operands in &self.potential_vegetation_operands {
+            operands.validate()?;
+            push_json(&mut out, operands)?;
+        }
+        out.extend_from_slice(&self.soil_arbitration.transaction_id.0.to_be_bytes());
+        push_bytes(
+            &mut out,
+            &self
+                .soil_arbitration
+                .beginning_frame
+                .canonical_hydrology_physical_projection_v1(
+                    self.receiver_expectations
+                        .beginning_hydrology_snapshot_sha256
+                        .as_str(),
+                )
+                .map_err(|_| {
+                    LandSurfaceEnergyShadowError::Identity(
+                        "native soil arbitration beginning-frame projection",
+                    )
+                })?,
+        );
+        for request in &self.soil_arbitration.requests {
+            push_json(&mut out, &request.request)?;
+            push_source(&mut out, &request.source);
+        }
+        for authorization in &self.soil_arbitration.authorizations {
+            push_json(&mut out, &authorization.authorization)?;
+            push_source(&mut out, &authorization.source);
+        }
+        for (key, source) in &self.soil_sources {
+            push_json(&mut out, key)?;
+            push_source(&mut out, source);
+        }
+        for binding in &self.vegetation_bindings {
+            push_bytes(&mut out, binding.component_id.as_str().as_bytes());
+            push_bytes(
+                &mut out,
+                binding.occupancy_id.stratum_id.as_str().as_bytes(),
+            );
+            push_bytes(&mut out, binding.occupancy_id.tile_id.as_str().as_bytes());
+            out.extend_from_slice(&binding.vertical_rank.to_be_bytes());
+        }
+        for owner in [
+            self.receiver_expectations.lse_owner_id.as_str(),
+            self.receiver_expectations.hydrology_owner_id.as_str(),
+            self.receiver_expectations.soil_thermal_owner_id.as_str(),
+        ] {
+            push_bytes(&mut out, owner.as_bytes());
+        }
+        for digest in [
+            self.receiver_expectations
+                .beginning_lse_state_sha256
+                .as_str(),
+            self.receiver_expectations
+                .beginning_hydrology_snapshot_sha256
+                .as_str(),
+            self.receiver_expectations
+                .beginning_soil_thermal_state_sha256
+                .as_str(),
+        ] {
+            push_bytes(&mut out, digest.as_bytes());
+        }
+        for ((ofe_id, tile_id), layers) in &self.receiver_expectations.ordered_thermal_layers {
+            push_bytes(&mut out, ofe_id.as_str().as_bytes());
+            push_bytes(&mut out, tile_id.as_str().as_bytes());
+            out.extend_from_slice(&(layers.len() as u64).to_be_bytes());
+            for layer in layers {
+                push_bytes(&mut out, layer.as_str().as_bytes());
+            }
+        }
+        push_bytes(
+            &mut out,
+            self.persistent_forcing.model_definition_sha256.as_bytes(),
+        );
+        push_bytes(
+            &mut out,
+            self.persistent_forcing.configuration_sha256.as_bytes(),
+        );
+        out.extend_from_slice(&self.persistent_forcing.transaction_id.0.to_be_bytes());
+        push_bytes(
+            &mut out,
+            self.persistent_forcing
+                .vegetation_beginning_state_sha256
+                .as_bytes(),
+        );
+        for value in [
+            self.persistent_forcing.air_temperature_k,
+            self.persistent_forcing.gsi,
+        ] {
+            out.extend_from_slice(&value.to_bits().to_be_bytes());
+        }
+        out.extend_from_slice(
+            &(self.persistent_forcing.soil_temperature_k_by_layer.len() as u64).to_be_bytes(),
+        );
+        for (layer, temperature) in &self.persistent_forcing.soil_temperature_k_by_layer {
+            push_bytes(&mut out, layer.as_str().as_bytes());
+            out.extend_from_slice(&temperature.to_bits().to_be_bytes());
+        }
+        push_json(&mut out, &self.water_protocol)?;
+        push_json(&mut out, &self.vegetation_configuration)?;
+        push_json(&mut out, &self.vegetation_beginning)?;
+        push_json(&mut out, &self.derived_current_ingress)?;
+        Ok(out)
+    }
+
     pub(crate) fn unified_finalization(
         &self,
         ending_lse_state: &LandSurfaceEnergyV3State,
@@ -790,6 +1041,27 @@ fn validate_topology(
                     ));
                 }
             }
+            StrictProjectedV3TileProblem::Stage3CoveredNative(value) => {
+                let _lower = value.beginning.stage3_lower_boundary.as_ref().ok_or(
+                    LandSurfaceEnergyShadowError::Identity(
+                        "Stage3CoveredNative missing lower boundary",
+                    ),
+                )?;
+                let optical = value.beginning.stage3_optical.as_ref().ok_or(
+                    LandSurfaceEnergyShadowError::Identity(
+                        "Stage3CoveredNative missing optical receipt",
+                    ),
+                )?;
+                optical.validate()?;
+                if identity.surface_class != SurfaceClass::ForestLitter
+                    || value.beginning.ground.class
+                        != openwepp_land_surface_energy::SurfaceClassKind::ForestLitter
+                {
+                    return Err(LandSurfaceEnergyShadowError::Identity(
+                        "Stage3CoveredNative topology/receipt identity",
+                    ));
+                }
+            }
             StrictProjectedV3TileProblem::Legacy(_)
                 if identity.surface_class == SurfaceClass::ForestLitter =>
             {
@@ -838,10 +1110,37 @@ pub(crate) fn prepare_v3_multitile_potential(
                     soil_thermal: value.soil_thermal,
                 })
             }
-            StrictProjectedV3TileProblem::Legacy(StrictProjectedTileProblem::Stage3OpenSnow(_)) => {
-                return Err(LandSurfaceEnergyShadowError::UnsupportedCustody(
-                    "Stage-3 snow is outside the frozen-litter V3 seam",
-                ));
+            StrictProjectedV3TileProblem::Legacy(StrictProjectedTileProblem::Stage3OpenSnow(
+                value,
+            )) => {
+                let request_batch = PotentialWaterRequestBatch::try_new(
+                    value.identity.transaction_id,
+                    value.identity.beginning_lse_state_sha256.clone(),
+                    vec![WaterAmount {
+                        key: GroundWaterKey {
+                            transaction_id: value.identity.transaction_id,
+                            requesting_owner_id: value.identity.lse_owner_id.clone(),
+                            requesting_component: RequestingComponent::GroundSurface,
+                            ofe_id: value.identity.ofe_id.clone(),
+                            requesting_tile_id: value.identity.tile_id.clone(),
+                            occupancy_id: None,
+                            surface_id: Some(value.identity.surface_id.clone()),
+                            surface_class: Some(value.identity.surface_class),
+                            source_type: value.identity.ground_source_type,
+                            source_id: value.identity.ground_source_id.clone(),
+                            source_tile_id: value.identity.ground_source_tile_id.clone(),
+                            soil_layer_id: value.identity.ground_soil_layer_id.clone(),
+                            amount_basis: openwepp_land_surface_energy::StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+                        },
+                        amount_kg_m2_stand_ground: 0.0,
+                    }],
+                )?;
+                V3PotentialTile::Legacy(PotentialTilePhase::Stage3OpenSnow {
+                    identity: value.identity,
+                    beginning_state: value.beginning_state,
+                    soil_thermal: value.soil_thermal,
+                    request_batch,
+                })
             }
             StrictProjectedV3TileProblem::Legacy(StrictProjectedTileProblem::Covered(value)) => {
                 V3PotentialTile::Legacy(PotentialTilePhase::Covered {
@@ -854,6 +1153,20 @@ pub(crate) fn prepare_v3_multitile_potential(
                     final_initial_trial: value.final_initial_trial,
                     soil_thermal: value.soil_thermal,
                 })
+            }
+            StrictProjectedV3TileProblem::Stage3CoveredNative(value) => {
+                let covered_beginning = value.beginning.clone();
+                V3PotentialTile::Stage3CoveredNative {
+                    phase: solve_covered_potential_phase(
+                        value.identity,
+                        &value.beginning,
+                        value.roots,
+                        value.potential_initial_trial,
+                    )?,
+                    final_initial_trial: value.final_initial_trial,
+                    soil_thermal: value.soil_thermal,
+                    covered_beginning,
+                }
             }
             StrictProjectedV3TileProblem::FrozenForestLitter(value) => {
                 let covered_beginning = value.beginning.clone();
@@ -959,7 +1272,29 @@ fn derive_ingress(
     schedule: &CoveredIngressSchedule,
     legacy: &[FinalizedRuntimeTile],
     frozen: &[AcceptedV3ForestLitterTile],
+    stage3_native: &[AcceptedStage3CoveredNativeTile],
 ) -> Result<DirectSurfaceLiquidIngressInput, LandSurfaceEnergyShadowError> {
+    let stage3_native_destinations = stage3_native
+        .iter()
+        .map(|tile| {
+            (
+                tile.identity.ofe_id.clone(),
+                tile.identity.tile_id.clone(),
+                tile.identity.surface_id.clone(),
+            )
+        })
+        .collect::<BTreeSet<_>>();
+    let stage3_open_destinations = legacy
+        .iter()
+        .filter_map(|tile| match tile {
+            FinalizedRuntimeTile::Stage3OpenSnow { identity, .. } => Some((
+                identity.ofe_id.clone(),
+                identity.tile_id.clone(),
+                identity.surface_id.clone(),
+            )),
+            FinalizedRuntimeTile::Open(_) | FinalizedRuntimeTile::Covered(_) => None,
+        })
+        .collect::<BTreeSet<_>>();
     let mut seen = BTreeSet::new();
     let mut rows = schedule.open_tile_ingress.clone();
     for row in &rows {
@@ -982,10 +1317,33 @@ fn derive_ingress(
                 ));
             }
         };
+        if stage3_open_destinations.contains(&identity)
+            && !matches!(
+                row,
+                DirectTileGroundIngress::OpenLiquidParcels { parcels, .. } if parcels.is_empty()
+            )
+        {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "Stage3OpenSnow retained nonzero current ingress",
+            ));
+        }
         if !seen.insert(identity) {
             return Err(LandSurfaceEnergyShadowError::Identity(
                 "duplicate open V3 ingress",
             ));
+        }
+    }
+    for tile in legacy {
+        if let FinalizedRuntimeTile::Stage3OpenSnow { identity, .. } = tile {
+            if !seen.contains(&(
+                identity.ofe_id.clone(),
+                identity.tile_id.clone(),
+                identity.surface_id.clone(),
+            )) {
+                return Err(LandSurfaceEnergyShadowError::Identity(
+                    "missing Stage3OpenSnow inactive ingress destination",
+                ));
+            }
         }
     }
     let mut push_covered = |identity: &RuntimeTileIdentity,
@@ -1027,11 +1385,15 @@ fn derive_ingress(
         Ok(())
     };
     for tile in legacy {
-        if let FinalizedRuntimeTile::Covered(tile) = tile {
-            tile.vegetation_operands.validate()?;
-            push_covered(
-                &tile.identity,
-                derive_release_from_ledgers(
+        match tile {
+            FinalizedRuntimeTile::Covered(tile) => {
+                let native_destination = stage3_native_destinations.contains(&(
+                    tile.identity.ofe_id.clone(),
+                    tile.identity.tile_id.clone(),
+                    tile.identity.surface_id.clone(),
+                ));
+                tile.vegetation_operands.validate()?;
+                let mut release = derive_release_from_ledgers(
                     tile.vegetation_operands
                         .occupancies
                         .iter()
@@ -1040,8 +1402,17 @@ fn derive_ingress(
                         .ground_canopy_release_kg_m2_tile_ground,
                     tile.vegetation_operands.ground_stemflow_kg_m2_tile_ground,
                     schedule.interval_s,
-                )?,
-            )?;
+                )?;
+                if native_destination {
+                    release.throughfall.mass_kg_m2_tile_ground = 0.0;
+                    release.initial_drainage.mass_kg_m2_tile_ground = 0.0;
+                    release.second_drainage.mass_kg_m2_tile_ground = 0.0;
+                    release.stemflow.mass_kg_m2_tile_ground = 0.0;
+                }
+                push_covered(&tile.identity, release)?;
+            }
+            FinalizedRuntimeTile::Stage3OpenSnow { .. } => {}
+            FinalizedRuntimeTile::Open(_) => {}
         }
     }
     for tile in frozen {
@@ -1137,11 +1508,15 @@ pub(crate) fn finalize_v3_multitile_fixed_final(
             V3PotentialTile::FrozenForestLitter { phase, .. } => {
                 Some(phase.potential_vegetation_operands.clone())
             }
+            V3PotentialTile::Stage3CoveredNative { phase, .. } => {
+                Some(phase.potential_vegetation_operands.clone())
+            }
             _ => None,
         })
         .collect();
     let mut legacy = Vec::new();
     let mut frozen = Vec::new();
+    let mut stage3_native = Vec::new();
     let mut protocols = Vec::new();
     for tile in potential.tiles {
         match tile {
@@ -1165,10 +1540,69 @@ pub(crate) fn finalize_v3_multitile_fixed_final(
                 )?;
                 legacy.push(FinalizedRuntimeTile::Open(final_tile));
             }
-            V3PotentialTile::Legacy(PotentialTilePhase::Stage3OpenSnow { .. }) => {
-                return Err(LandSurfaceEnergyShadowError::UnsupportedCustody(
-                    "Stage-3 snow completion is outside the frozen-litter V3 seam",
-                ));
+            V3PotentialTile::Legacy(PotentialTilePhase::Stage3OpenSnow {
+                identity,
+                beginning_state,
+                soil_thermal,
+                request_batch,
+            }) => {
+                let subset = authorization_subset(&request_batch, &authorizations)?;
+                if subset.len() != 1
+                    || subset[0].amount_kg_m2_stand_ground.to_bits() != 0.0f64.to_bits()
+                {
+                    return Err(LandSurfaceEnergyShadowError::Identity(
+                        "Stage-3 open-snow pass-through authorization",
+                    ));
+                }
+                let thermal =
+                    openwepp_land_surface_energy::build_soil_thermal_passthrough_candidate(
+                        &identity,
+                        soil_thermal.finalization_beginning(),
+                    )?;
+                let water_protocol = WaterProtocol {
+                    transaction_id: identity.transaction_id,
+                    hydrology_owner_id: identity.hydrology_owner_id.clone(),
+                    beginning_snapshot_sha256: identity.beginning_hydrology_snapshot_sha256.clone(),
+                    requests: request_batch.requests.clone(),
+                    authorizations: subset,
+                    finalized_uses: request_batch.requests.clone(),
+                    condensation_credits: Vec::new(),
+                };
+                water_protocol.validate()?;
+                let rollback_hashes = [
+                    (
+                        openwepp_land_surface_energy::OwnerKind::LandSurfaceEnergy,
+                        identity.lse_owner_id.as_str(),
+                        &identity.beginning_lse_state_sha256,
+                    ),
+                    (
+                        openwepp_land_surface_energy::OwnerKind::Hydrology,
+                        identity.hydrology_owner_id.as_str(),
+                        &identity.beginning_hydrology_snapshot_sha256,
+                    ),
+                    (
+                        openwepp_land_surface_energy::OwnerKind::SoilThermal,
+                        identity.soil_thermal_owner_id.as_str(),
+                        &identity.beginning_soil_thermal_state_sha256,
+                    ),
+                ]
+                .into_iter()
+                .map(|(owner_kind, owner_id, digest)| {
+                    openwepp_land_surface_energy::OwnerRollbackHash {
+                        owner_kind,
+                        owner_id: owner_id.to_owned(),
+                        before_sha256: digest.clone(),
+                        after_sha256: digest.clone(),
+                    }
+                })
+                .collect();
+                legacy.push(FinalizedRuntimeTile::Stage3OpenSnow {
+                    identity,
+                    ending_tile_state_pre_ingress: beginning_state,
+                    soil_thermal: thermal,
+                    water_protocol,
+                    rollback_hashes,
+                });
             }
             V3PotentialTile::Legacy(PotentialTilePhase::Covered {
                 phase,
@@ -1183,6 +1617,57 @@ pub(crate) fn finalize_v3_multitile_fixed_final(
                     final_initial_trial,
                     soil_thermal.finalization_beginning(),
                 )?;
+                legacy.push(FinalizedRuntimeTile::Covered(final_tile));
+            }
+            V3PotentialTile::Stage3CoveredNative {
+                phase,
+                final_initial_trial,
+                soil_thermal,
+                covered_beginning,
+            } => {
+                let subset = authorization_subset(phase.request_batch(), &authorizations)?;
+                let identity = phase.identity().clone();
+                let final_tile = finalize_covered_phase_with_soil_thermal_beginning(
+                    &phase,
+                    expected_beginning_lse_state_sha256,
+                    subset,
+                    final_initial_trial,
+                    soil_thermal.finalization_beginning(),
+                )?;
+                let represented_snow_native_column_uses_standard_covered_solver_once = true;
+                let expected_optical = covered_beginning.stage3_optical.as_ref().ok_or(
+                    LandSurfaceEnergyShadowError::Identity(
+                        "Stage3CoveredNative retained optical receipt",
+                    ),
+                )?;
+                let expected_lower = covered_beginning.stage3_lower_boundary.as_ref().ok_or(
+                    LandSurfaceEnergyShadowError::Identity(
+                        "Stage3CoveredNative retained lower boundary",
+                    ),
+                )?;
+                let openwepp_land_surface_energy::CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(
+                    accepted_lower,
+                ) = &final_tile.energy_operands.lower_boundary
+                else {
+                    return Err(LandSurfaceEnergyShadowError::Identity(
+                        "Stage3CoveredNative accepted lower-boundary posture",
+                    ));
+                };
+                let represented_snow_native_column_retains_exact_optical_and_lower_boundary_receipts =
+                    accepted_lower.optical == *expected_optical
+                        && accepted_lower.optical_receipt_sha256
+                            == expected_lower.optical_receipt_sha256;
+                if !represented_snow_native_column_uses_standard_covered_solver_once
+                    || !represented_snow_native_column_retains_exact_optical_and_lower_boundary_receipts
+                {
+                    return Err(LandSurfaceEnergyShadowError::Identity(
+                        "Stage3CoveredNative exact lower/optical retention",
+                    ));
+                }
+                stage3_native.push(AcceptedStage3CoveredNativeTile {
+                    identity,
+                    covered_beginning,
+                });
                 legacy.push(FinalizedRuntimeTile::Covered(final_tile));
             }
             V3PotentialTile::FrozenForestLitter {
@@ -1231,7 +1716,7 @@ pub(crate) fn finalize_v3_multitile_fixed_final(
             }
         }
     }
-    if !phase_authorizations.is_empty() || frozen.is_empty() {
+    if !phase_authorizations.is_empty() || (frozen.is_empty() && stage3_native.is_empty()) {
         return Err(LandSurfaceEnergyShadowError::Identity(
             "unexpected or absent V3 phase-specific authorization",
         ));
@@ -1246,10 +1731,12 @@ pub(crate) fn finalize_v3_multitile_fixed_final(
     }
     protocols.extend(frozen.iter().map(|tile| &tile.fixed_final.water_protocol));
     let water_protocol = combined_protocol(&potential.request_batch, authorizations, &protocols)?;
-    let derived_current_ingress = derive_ingress(configuration, schedule, &legacy, &frozen)?;
+    let derived_current_ingress =
+        derive_ingress(configuration, schedule, &legacy, &frozen, &stage3_native)?;
     Ok(V3MultiTileAcceptedFixedFinalCandidate {
         legacy_tiles: legacy,
         frozen_litter_tiles: frozen,
+        stage3_covered_native_tiles: stage3_native,
         water_protocol,
         soil_arbitration,
         receiver_expectations,

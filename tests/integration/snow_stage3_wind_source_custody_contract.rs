@@ -15,7 +15,7 @@ fn v11_v134_separate_source_adjusted_and_virtual_wind() {
     let snow = read(SNOW);
 
     for required in [
-        "contract_version: 29",
+        "contract_version: 58",
         "Version 18 defines the persistent Stage 3 snow--soil conductive boundary",
         "INV-SNOWENERGY-033",
         "`z_u,source`",

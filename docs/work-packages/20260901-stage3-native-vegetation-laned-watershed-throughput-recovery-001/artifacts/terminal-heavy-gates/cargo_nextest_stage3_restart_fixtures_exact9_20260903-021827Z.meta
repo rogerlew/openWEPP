@@ -1,0 +1,14 @@
+list_exit=0
+list_elapsed_sec=1
+list_start_utc=2026-09-03T02:18:27Z
+list_end_utc=2026-09-03T02:18:28Z
+list_count=9
+list_names=openwepp-persisted-restart-v1 snow_stage3_v11::tests::adaptive_microstep_boundary_round_trips_and_resumes_byte_identically;openwepp-persisted-restart-v1 snow_stage3_v11::tests::after_snow_reappearance_round_trips_and_resumes_byte_identically;openwepp-persisted-restart-v1 snow_stage3_v11::tests::after_terminal_event_round_trips_and_resumes_byte_identically;openwepp-persisted-restart-v1 snow_stage3_v11::tests::after_terminal_receiver_round_trips_and_resumes_byte_identically;openwepp-persisted-restart-v1 snow_stage3_v11::tests::before_snow_reappearance_round_trips_and_resumes_byte_identically;openwepp-persisted-restart-v1 snow_stage3_v11::tests::before_terminal_event_round_trips_and_resumes_byte_identically;openwepp-persisted-restart-v1 snow_stage3_v11::tests::before_terminal_receiver_round_trips_and_resumes_byte_identically;openwepp-persisted-restart-v1 snow_stage3_v11::tests::cross_midnight_owner_and_receipt_state_is_byte_identical_after_restart;openwepp-persisted-restart-v1 snow_stage3_v11::tests::production_attachment_round_trips_canonical_v2_and_rejects_poison;
+run_exit=0
+run_elapsed_sec=795
+run_start_utc=2026-09-03T02:18:28Z
+run_end_utc=2026-09-03T02:31:43Z
+run_summary=     Summary [ 794.985s] 9 tests run: 9 passed (3 slow), 89 skipped
+command=env RUST_MIN_STACK=67108864 nix develop -c cargo nextest run --package openwepp-persisted-restart-v1 --features fixtures --no-fail-fast --no-capture --filterset "test(/adaptive_microstep_boundary_round_trips_and_resumes_byte_identically/)|test(/before_terminal_event_round_trips_and_resumes_byte_identically/)|test(/after_terminal_event_round_trips_and_resumes_byte_identically/)|test(/before_terminal_receiver_round_trips_and_resumes_byte_identically/)|test(/after_terminal_receiver_round_trips_and_resumes_byte_identically/)|test(/before_snow_reappearance_round_trips_and_resumes_byte_identically/)|test(/after_snow_reappearance_round_trips_and_resumes_byte_identically/)|test(/cross_midnight_owner_and_receipt_state_is_byte_identical_after_restart/)|test(/production_attachment_round_trips_canonical_v2_and_rejects_poison/)"
+head=a28c55c2d0f06e0c4aab58642f1009f70f82b3d3
+dirty=DIRTY

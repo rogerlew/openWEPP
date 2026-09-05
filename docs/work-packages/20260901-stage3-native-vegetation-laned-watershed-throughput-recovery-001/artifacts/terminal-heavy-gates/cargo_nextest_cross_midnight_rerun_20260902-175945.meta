@@ -1,0 +1,8 @@
+exit=100
+status=FAIL
+elapsed_sec=2.428
+command=env RUST_MIN_STACK=67108864 nix develop -c cargo nextest run --package openwepp-persisted-restart-v1 --features fixtures --no-fail-fast --no-capture --filterset 'test(/cross_midnight_owner_and_receipt_state_is_byte_identical_after_restart/)'
+log=/workdir/openWEPP/docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/terminal-heavy-gates/cargo_nextest_cross_midnight_rerun_20260902-175945.log
+warning_line_count=44
+failure_hit_count=5
+summary_line=446:     Summary [   0.419s] 1 test run: 0 passed, 1 failed, 97 skipped

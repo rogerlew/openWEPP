@@ -251,15 +251,10 @@ impl DirectSnowStage3V11AttachmentRestartV2 {
                     if matches!(
                         in_progress.posture(),
                         openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary
-                    ) && support_current
-                        .real_consumer
-                        .restart_authority_wb14_parent_canonical_bytes()
-                        .map_err(nested)?
-                        .is_none()
-                    {
-                        return Err(SnowStage3V11RestartError::Identity(
-                            "adaptive boundary WB14 parent posture",
-                        ));
+                    ) {
+                        in_progress
+                            .restart_authority_validate_wb14_parent_posture_v2()
+                            .map_err(nested)?;
                     }
                     let metadata = if for_v3 {
                         restart_authority_encode_in_progress_metadata_base_v3(in_progress)
@@ -525,19 +520,10 @@ impl DirectSnowStage3V11AttachmentRestartV2 {
                 if matches!(
                     restored.posture(),
                     openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary
-                ) && restored
-                    .support_current()
-                    .ok_or(SnowStage3V11RestartError::Identity(
-                        "in-progress support owner",
-                    ))?
-                    .real_consumer
-                    .restart_authority_wb14_parent_canonical_bytes()
-                    .map_err(nested)?
-                    .is_none()
-                {
-                    return Err(SnowStage3V11RestartError::Identity(
-                        "adaptive boundary WB14 parent posture",
-                    ));
+                ) {
+                    restored
+                        .restart_authority_validate_wb14_parent_posture_v2()
+                        .map_err(nested)?;
                 }
                 Ok(restored)
             })
@@ -806,12 +792,16 @@ fn restore_committed(
     .map_err(nested)?
     .clock()
     .clone();
+    let represented_snow = value.stage3_by_lane.iter().any(|(_, state)| {
+        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::restart_authority_stage3_has_represented_ice_v2(state)
+    });
     let mut real_consumer = restore_real_consumer(
         value,
         context.real_consumer_context,
         posture,
         &coupled_clock,
         for_v3,
+        represented_snow,
     )?;
     if let Some(restorer) = exact_restorer {
         restorer.restore_exact_resident(exact_position, &mut real_consumer)?;
@@ -929,6 +919,7 @@ fn restore_real_consumer(
     posture: CommittedRestartPosture,
     coupled_clock: &openwepp_coupled_time::CoupledClockStateV1,
     for_v3: bool,
+    represented_snow: bool,
 ) -> Result<DirectV10RealConsumerShadow, SnowStage3V11RestartError> {
     let (run, topology) = checkpoint_identities_v1(
         &value.real_consumer,
@@ -969,6 +960,7 @@ fn restore_real_consumer(
         posture,
         coupled_clock,
         for_v3,
+        represented_snow,
     )?;
     let exact_surface_liquid_bytes = if posture.is_in_progress() {
         let next_interval_index = exact_accepted_interval_count
@@ -1154,6 +1146,7 @@ fn normalize_parent_finalization_for_v1_admission(
     posture: CommittedRestartPosture,
     coupled_clock: &openwepp_coupled_time::CoupledClockStateV1,
     for_v3: bool,
+    represented_snow: bool,
 ) -> Result<
     Option<(
         openwepp_vegetation::V10CoupledOwnedState,
@@ -1218,7 +1211,7 @@ fn normalize_parent_finalization_for_v1_admission(
             .ok_or(SnowStage3V11RestartError::Identity(
                 "receiver surface successor overflow",
             ))?;
-    if posture.permits_receiver_surface_successor()
+    if (posture.permits_receiver_surface_successor() || represented_snow)
         && biogeochemistry_transaction == vegetation_transaction
         && lse_transaction == Some(vegetation_transaction)
         && soil_transaction == Some(vegetation_transaction)

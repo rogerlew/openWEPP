@@ -1,0 +1,6 @@
+exit=1
+status=FAIL
+elapsed_sec= 831.131
+command=env RUST_MIN_STACK=67108864 nix develop -c cargo nextest run --package openwepp-persisted-restart-v1 --features fixtures --no-fail-fast --no-capture --filterset "test(/adaptive_microstep_boundary_round_trips_and_resumes_byte_identically/)|test(/before_terminal_event_round_trips_and_resumes_byte_identically/)|test(/after_terminal_event_round_trips_and_resumes_byte_identically/)|test(/before_terminal_receiver_round_trips_and_resumes_byte_identically/)|test(/after_terminal_receiver_round_trips_and_resumes_byte_identically/)|test(/before_snow_reappearance_round_trips_and_resumes_byte_identically/)|test(/after_snow_reappearance_round_trips_and_resumes_byte_identically/)|test(/cross_midnight_owner_and_receipt_state_is_byte_identically_after_restart/)|test(/production_attachment_round_trips_canonical_v2_and_rejects_poison/)"
+summary_line=520:     Summary [ 831.131s] 9 tests run: 8 passed (3 slow), 1 failed, 89 skipped
+warnings_summary=warning: `openwepp-hillslope-orchestrator` (lib) generated 42 warnings (run `cargo fix --lib -p openwepp-hillslope-orchestrator` to apply 1 suggestion)

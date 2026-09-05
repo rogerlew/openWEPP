@@ -133,6 +133,16 @@ impl DirectSnowStage3V11ProductionSeedV1 {
         Ok(value)
     }
 
+    #[cfg(test)]
+    pub(super) const fn test_fixture_vegetation_authorities(
+        &self,
+    ) -> (&VegetationConfiguration, &LandSurfaceEnergyConfiguration) {
+        (
+            &self.artifact.vegetation_configuration,
+            &self.artifact.lse_configuration,
+        )
+    }
+
     fn validate_envelope(&self) -> Result<(), HillslopeCliError> {
         let artifact = &self.artifact;
         if artifact.schema != SCHEMA || artifact.version != VERSION {
@@ -239,13 +249,23 @@ impl DirectSnowStage3V11ProductionSeedV1 {
     /// bootstrap provenance into a mandatory native frozen-litter V3 resident,
     /// and install the production attachment. No value is inferred from runner
     /// fixtures or defaults, and the old wire is not execution evidence.
+    #[cfg(test)]
     #[allow(clippy::too_many_lines)]
     pub(super) fn bootstrap(&self, frame: &mut DirectRunFrame) -> Result<(), HillslopeCliError> {
+        self.bootstrap_with_laned_active_surface_owner(frame, false)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    pub(super) fn bootstrap_with_laned_active_surface_owner(
+        &self,
+        frame: &mut DirectRunFrame,
+        laned_active_surface_owner: bool,
+    ) -> Result<(), HillslopeCliError> {
         let artifact = &self.artifact;
         let committed = self.day_zero_committed()?;
         let scientific = &committed.scientific;
 
-        let surface_configuration = committed
+        let mut surface_configuration = committed
             .surface_liquid_configuration
             .restore()
             .map_err(nested)?;
@@ -309,22 +329,15 @@ impl DirectSnowStage3V11ProductionSeedV1 {
             ));
         }
 
-        let surface_state = scientific
+        let mut surface_state = scientific
             .direct_hydrology
             .surface_liquid_owned_state
             .as_deref()
             .ok_or_else(|| failure("Stage-3 production seed omits the surface-liquid owner"))?
             .restore_with_configuration(&surface_configuration)
             .map_err(nested)?;
-        let (frozen_litter_v3, frozen_litter_v4) = bootstrap_frozen_litter_v4_resident(
-            &artifact.lse_configuration,
-            &lse_state,
-            &surface_configuration,
-            &surface_state,
-        )
-        .map_err(nested)?;
         frame
-            .configure_surface_liquid_shadow(&surface_configuration, surface_state)
+            .configure_surface_liquid_shadow(&surface_configuration, surface_state.clone())
             .map_err(nested)?;
 
         let day_inputs = frame
@@ -354,6 +367,24 @@ impl DirectSnowStage3V11ProductionSeedV1 {
                 "Stage-3 production seed hydrology owner is not exactly the freshly built live frame",
             ));
         }
+
+        if laned_active_surface_owner {
+            (surface_configuration, surface_state) = project_laned_active_day_zero_surface_owner(
+                &surface_configuration,
+                &surface_state,
+            )?;
+            frame
+                .configure_surface_liquid_shadow(&surface_configuration, surface_state.clone())
+                .map_err(nested)?;
+        }
+
+        let (frozen_litter_v3, frozen_litter_v4) = bootstrap_frozen_litter_v4_resident(
+            &artifact.lse_configuration,
+            &lse_state,
+            &surface_configuration,
+            &surface_state,
+        )
+        .map_err(nested)?;
 
         let layer_maps = frame
             .lanes
@@ -485,7 +516,7 @@ pub(super) fn load_required_or_explicit_test(
     match EXPLICIT_TEST_OWNER_SEED.with(std::cell::Cell::get) {
         0 => DirectSnowStage3V11ProductionSeedV1::load_required(path),
         1 => explicit_repository_test_seed(frame, None),
-        2 => explicit_two_ofe_repository_test_seed(frame, None, false),
+        2 => explicit_two_ofe_repository_test_seed(frame, None, false, false),
         3 => explicit_adaptive_repository_test_seed(frame, None),
         _ => unreachable!("closed explicit test seed kind"),
     }
@@ -515,6 +546,7 @@ fn explicit_repository_test_seed(
         interval_template,
         authoring_latitude_degrees,
         false,
+        false,
     )
 }
 
@@ -542,6 +574,7 @@ fn explicit_adaptive_repository_test_seed(
         interval_template,
         authoring_latitude_degrees,
         true,
+        false,
     )
 }
 
@@ -550,6 +583,7 @@ fn explicit_two_ofe_repository_test_seed(
     frame: &DirectRunFrame,
     authoring_latitude_degrees: Option<f64>,
     adaptive_owner: bool,
+    duplicate_configured_mapping_poison: bool,
 ) -> Result<DirectSnowStage3V11ProductionSeedV1, HillslopeCliError> {
     use openwepp_persisted_restart_v1::restart_authority_two_ofe_owner_fixture;
 
@@ -581,6 +615,7 @@ fn explicit_two_ofe_repository_test_seed(
         interval_template,
         authoring_latitude_degrees,
         adaptive_owner,
+        duplicate_configured_mapping_poison,
     )
 }
 
@@ -694,6 +729,7 @@ fn validate_bgc_inventory_covers_vegetation_roots<T>(
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn expand_checked_two_lane_owner_to_live_test_topology(
     frame: &DirectRunFrame,
+    retain_downstream_configured_vegetation: bool,
     surface_configuration: &mut openwepp_hillslope_orchestrator::DirectSurfaceLiquidConfiguration,
     surface_state: &openwepp_hillslope_orchestrator::DirectSurfaceLiquidOwnedState,
     records: &mut Vec<openwepp_hillslope_orchestrator::DirectSurfaceLiquidConfigurationRecord>,
@@ -705,7 +741,7 @@ fn expand_checked_two_lane_owner_to_live_test_topology(
     Option<BTreeMap<openwepp_hillslope_orchestrator::DirectSurfaceLiquidStoreKey, f64>>,
     HillslopeCliError,
 > {
-    if frame.lanes.len() <= 2 {
+    if frame.lanes.len() < 2 {
         return Ok(None);
     }
     if surface_configuration.ofe_topology.len() != 2
@@ -740,6 +776,23 @@ fn expand_checked_two_lane_owner_to_live_test_topology(
         .iter()
         .position(|tile| tile.tile_id == routed_receiver_tile)
         .ok_or_else(|| failure("checked routed receiver is absent from the LSE tile authority"))?;
+    let upstream_open_tile = template_lse_ofes[0]
+        .tiles
+        .iter()
+        .find(|tile| {
+            matches!(
+                tile.surface,
+                openwepp_land_surface_energy::SurfaceConfiguration::BareMineralSoil { .. }
+            )
+        })
+        .ok_or_else(|| failure("checked two-OFE owner omits its open LSE tile template"))?;
+    let upstream_open_record = template_records
+        .iter()
+        .find(|record| {
+            record.key.ofe_id == template_topology[0]
+                && record.key.tile_id == upstream_open_tile.tile_id
+        })
+        .ok_or_else(|| failure("checked two-OFE owner omits its open surface store template"))?;
 
     let target_ofes = frame
         .lanes
@@ -777,6 +830,7 @@ fn expand_checked_two_lane_owner_to_live_test_topology(
     let mut rebound_wb14 = Vec::with_capacity(frame.lanes.len());
     for (lane_index, lane) in frame.lanes.iter().enumerate() {
         let template_index = usize::from(lane_index != 0);
+        let is_downstream = lane_index + 1 == frame.lanes.len();
         let template_ofe = &template_topology[template_index];
         let target_ofe = &target_ofes[lane_index];
         let template_lse = &template_lse_ofes[template_index];
@@ -790,8 +844,22 @@ fn expand_checked_two_lane_owner_to_live_test_topology(
         let mut lse_ofe = template_lse.clone();
         lse_ofe.ofe_id.clone_from(target_ofe);
         lse_ofe.area_m2 = lane.area_m2;
-        for (tile, target_tile) in lse_ofe.tiles.iter_mut().zip(target_tiles) {
+        for (tile_index, (tile, target_tile)) in
+            lse_ofe.tiles.iter_mut().zip(target_tiles).enumerate()
+        {
+            if !retain_downstream_configured_vegetation || !is_downstream {
+                tile.surface.clone_from(&upstream_open_tile.surface);
+                tile.surface_heat_storage_mode = upstream_open_tile.surface_heat_storage_mode;
+            }
             tile.tile_id.clone_from(target_tile);
+            if !retain_downstream_configured_vegetation || !is_downstream {
+                tile.vegetation_tile_id = TileId::try_new(format!(
+                    "fixture-open-lane-{}-vegetation-{}",
+                    lane.lane_id,
+                    tile_index + 1
+                ))
+                .map_err(nested)?;
+            }
         }
         rebound_lse_ofes.push(lse_ofe);
 
@@ -848,7 +916,13 @@ fn expand_checked_two_lane_owner_to_live_test_topology(
                 .iter()
                 .position(|tile| tile.tile_id == template_record.key.tile_id)
                 .ok_or_else(|| failure("checked surface tile is absent from LSE authority"))?;
-            let mut record = template_record.clone();
+            let mut record = if !retain_downstream_configured_vegetation || !is_downstream {
+                let mut open = upstream_open_record.clone();
+                open.tile_fraction = template_record.tile_fraction;
+                open
+            } else {
+                template_record.clone()
+            };
             record.key.run_id = frame.identity.run_id;
             record.key.ofe_id.clone_from(target_ofe);
             record.key.tile_id.clone_from(&target_tiles[tile_index]);
@@ -865,6 +939,10 @@ fn expand_checked_two_lane_owner_to_live_test_topology(
             ))
             .map_err(nested)?;
             record.ofe_area_m2 = lane.area_m2;
+            if !retain_downstream_configured_vegetation || !is_downstream {
+                record.ground_ingress_mode =
+                    openwepp_hillslope_orchestrator::DirectGroundIngressMode::OpenRawPrecipitation;
+            }
             if lane_index + 1 < frame.lanes.len() {
                 record.runon_destination_ofe_id = Some(target_ofes[lane_index + 1].clone());
                 record.runon_destination_tile_id =
@@ -874,7 +952,13 @@ fn expand_checked_two_lane_owner_to_live_test_topology(
                 record.runon_destination_tile_id = None;
             }
             let liquid = template_liquid
-                .get(&template_record.key)
+                .get(
+                    if !retain_downstream_configured_vegetation || !is_downstream {
+                        &upstream_open_record.key
+                    } else {
+                        &template_record.key
+                    },
+                )
                 .copied()
                 .ok_or_else(|| failure("checked surface owner omits a configured store"))?;
             if rebound_liquid.insert(record.key.clone(), liquid).is_some() {
@@ -904,6 +988,7 @@ fn explicit_repository_test_seed_from_owner(
     mut interval_template: openwepp_hillslope_orchestrator::v9_real_consumer_shadow::DirectV9ShadowIntervalInput,
     authoring_latitude_degrees: Option<f64>,
     adaptive_owner: bool,
+    duplicate_configured_mapping_poison: bool,
 ) -> Result<DirectSnowStage3V11ProductionSeedV1, HillslopeCliError> {
     use openwepp_coupled_time::digest_bytes;
     use openwepp_persisted_restart_v1::{
@@ -959,6 +1044,7 @@ fn explicit_repository_test_seed_from_owner(
         }
         let expanded_surface_liquid = expand_checked_two_lane_owner_to_live_test_topology(
             frame,
+            !adaptive_owner,
             &mut surface_configuration,
             &surface_state,
             &mut records,
@@ -967,6 +1053,32 @@ fn explicit_repository_test_seed_from_owner(
             &mut soil_thermal,
             &mut interval_template,
         )?;
+        if duplicate_configured_mapping_poison {
+            let configured_tile = vegetation_configuration
+                .expected_occupancies()
+                .into_iter()
+                .next()
+                .ok_or_else(|| failure("duplicate mapping poison requires configured vegetation"))?
+                .tile_id;
+            let upstream_ofe = lse_configuration
+                .ofes
+                .first_mut()
+                .ok_or_else(|| failure("duplicate mapping poison requires an upstream OFE"))?;
+            let upstream_tile = upstream_ofe
+                .tiles
+                .first_mut()
+                .ok_or_else(|| failure("duplicate mapping poison requires an upstream LSE tile"))?;
+            upstream_tile.vegetation_tile_id = configured_tile;
+            let upstream_record = records
+                .iter_mut()
+                .find(|record| {
+                    record.key.ofe_id == upstream_ofe.ofe_id
+                        && record.key.tile_id == upstream_tile.tile_id
+                })
+                .ok_or_else(|| failure("duplicate mapping poison omits its surface store"))?;
+            upstream_record.ground_ingress_mode =
+                openwepp_hillslope_orchestrator::DirectGroundIngressMode::CoveredCanopyRelease;
+        }
         for record in &mut records {
             record.key.run_id = run_id;
             let topology_index = surface_configuration
@@ -1398,16 +1510,44 @@ pub(super) fn author_explicit_test_seed_bytes(
     let seed = match (adaptive_owner, frame.identity.lane_count) {
         (false, 1) => explicit_repository_test_seed(frame, Some(latitude_degrees))?,
         (false, 2..) => {
-            explicit_two_ofe_repository_test_seed(frame, Some(latitude_degrees), false)?
+            explicit_two_ofe_repository_test_seed(frame, Some(latitude_degrees), false, false)?
         }
         (true, 1) => explicit_adaptive_repository_test_seed(frame, Some(latitude_degrees))?,
-        (true, 2..) => explicit_two_ofe_repository_test_seed(frame, Some(latitude_degrees), true)?,
+        (true, 2..) => {
+            explicit_two_ofe_repository_test_seed(frame, Some(latitude_degrees), true, false)?
+        }
         (_, 0) => {
             return Err(failure(
                 "test fixture owner requires a nonempty live lane set",
             ));
         }
     };
+    openwepp_persisted_restart_v1::to_canonical_bytes(&seed.artifact).map_err(nested)
+}
+
+/// Author the exact live-topology owner, then introduce one duplicate
+/// configured vegetation mapping while keeping every restart/configuration
+/// digest internally valid. This is a qualification poison only: the normal
+/// adaptive transaction must be the boundary that rejects it.
+#[cfg(test)]
+pub(crate) fn duplicate_configured_vegetation_mapping_test_seed(
+    frame: &DirectRunFrame,
+    latitude_degrees: f64,
+) -> Result<DirectSnowStage3V11ProductionSeedV1, HillslopeCliError> {
+    if frame.identity.lane_count < 2 {
+        return Err(failure(
+            "duplicate configured-vegetation poison requires at least two OFEs",
+        ));
+    }
+    explicit_two_ofe_repository_test_seed(frame, Some(latitude_degrees), false, true)
+}
+
+#[cfg(test)]
+pub(crate) fn duplicate_configured_vegetation_mapping_test_seed_bytes(
+    frame: &DirectRunFrame,
+    latitude_degrees: f64,
+) -> Result<Vec<u8>, HillslopeCliError> {
+    let seed = duplicate_configured_vegetation_mapping_test_seed(frame, latitude_degrees)?;
     openwepp_persisted_restart_v1::to_canonical_bytes(&seed.artifact).map_err(nested)
 }
 
@@ -1448,8 +1588,14 @@ fn validate_wb14_authority(
         .iter()
         .map(|value| value.ofe_id.as_str())
         .collect::<Vec<_>>();
+    let authenticated_topology_ofes = committed
+        .surface_liquid_configuration
+        .ofe_topology
+        .iter()
+        .map(openwepp_land_surface_energy::OfeId::as_str)
+        .collect::<Vec<_>>();
     if parameters.is_empty()
-        || parameter_ofes.windows(2).any(|pair| pair[0] >= pair[1])
+        || parameter_ofes != authenticated_topology_ofes
         || parameter_ofes
             .iter()
             .copied()
@@ -1466,7 +1612,7 @@ fn validate_wb14_authority(
         })
     {
         return Err(failure(
-            "Stage-3 production seed WB14 parameters must be nonempty and strictly OFE ordered",
+            "Stage-3 production seed WB14 parameters must be nonempty, duplicate-free, and exactly match authenticated physical OFE topology order",
         ));
     }
     let destination_ofes = committed
@@ -1658,6 +1804,61 @@ fn digest32(value: &Sha256Hex) -> Result<Digest32, HillslopeCliError> {
     Ok(Digest32::from_bytes(bytes))
 }
 
+fn project_laned_active_day_zero_surface_owner(
+    configuration: &openwepp_hillslope_orchestrator::DirectSurfaceLiquidConfiguration,
+    state: &openwepp_hillslope_orchestrator::DirectSurfaceLiquidOwnedState,
+) -> Result<
+    (
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidConfiguration,
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidOwnedState,
+    ),
+    HillslopeCliError,
+> {
+    if state
+        .records
+        .iter()
+        .any(|record| record.last_accepted_transaction_id.is_some())
+        || state.continuations.iter().any(|continuation| {
+            continuation.day_index != 0
+                || continuation.next_interval_index != 0
+                || continuation.cumulative_supply_m.to_bits() != 0.0_f64.to_bits()
+                || continuation.cumulative_infiltration_m.to_bits() != 0.0_f64.to_bits()
+                || continuation.last_accepted_transaction_id.is_some()
+        })
+    {
+        return Err(failure(
+            "INV-OFEROUTE-015 active surface-owner projection requires an untouched day-zero state",
+        ));
+    }
+    let mut records = configuration.records.clone();
+    for record in &mut records {
+        record.runon_destination_ofe_id = None;
+        record.runon_destination_tile_id = None;
+    }
+    let projected_configuration =
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidConfiguration::new(
+            configuration.owner_id.clone(),
+            configuration.run_id,
+            configuration.ofe_topology.clone(),
+            configuration.ofe_bindings.clone(),
+            records,
+        )
+        .map_err(nested)?;
+    let liquid_by_key = state
+        .records
+        .iter()
+        .map(|record| (record.key.clone(), record.liquid_kg_m2_tile))
+        .collect::<BTreeMap<_, _>>();
+    let projected_state =
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidOwnedState::new_initial(
+            &projected_configuration,
+            &liquid_by_key,
+            0,
+        )
+        .map_err(nested)?;
+    Ok((projected_configuration, projected_state))
+}
+
 fn failure(detail: impl Into<String>) -> HillslopeCliError {
     HillslopeCliError::RuntimeSurfaceFailure {
         surface: "snow_stage3_v11_owner_seed",
@@ -1765,6 +1966,239 @@ mod tests {
             cp_air_j_kg_k: 1_005.0,
             underlying_surface_albedo: 0.2,
         }
+    }
+
+    fn wb14_physical_topology_fixture(
+        ofe_count: usize,
+    ) -> (
+        openwepp_persisted_restart_v1::CompleteCommittedOwnerStateV1,
+        Vec<DirectOfeWb14Parameters>,
+    ) {
+        let fixture = openwepp_persisted_restart_v1::restart_authority_prepared_day_fixture();
+        let mut committed = fixture.owners.committed.clone();
+        let mut parameters = Vec::with_capacity(ofe_count);
+        for lane_id in 1..=ofe_count {
+            parameters.push(DirectOfeWb14Parameters {
+                ofe_id: OfeId::try_new(format!("ofe-{lane_id}")).expect("physical OFE"),
+                effective_conductivity_m_s: 1.0e-6,
+                matric_potential_m: 0.1,
+                infiltration_storage_capacity_m: 0.04,
+            });
+        }
+        committed.surface_liquid_configuration.ofe_topology = parameters
+            .iter()
+            .map(|parameter| parameter.ofe_id.clone())
+            .collect();
+        let destination_template = committed
+            .static_forcing_configuration
+            .destinations
+            .first()
+            .expect("fixture destination")
+            .clone();
+        committed.static_forcing_configuration.destinations = parameters
+            .iter()
+            .enumerate()
+            .map(|(index, parameter)| {
+                let mut destination = destination_template.clone();
+                destination.ofe_id = parameter.ofe_id.as_str().to_owned();
+                destination.tile_id = format!("fixture-tile-{}", index + 1);
+                destination.wb14_configuration_sha256 =
+                    Sha256Hex::try_new(restart_authority_wb14_parameter_sha256(parameter))
+                        .expect("WB14 receipt digest");
+                destination
+            })
+            .collect();
+        (committed, parameters)
+    }
+
+    fn assert_wb14_physical_topology_count(ofe_count: usize) {
+        let (committed, parameters) = wb14_physical_topology_fixture(ofe_count);
+        validate_wb14_authority(&committed, &parameters)
+            .expect("numeric physical OFE topology order must be accepted exactly");
+    }
+
+    #[test]
+    fn wb14_physical_topology_order_accepts_one_ofe() {
+        assert_wb14_physical_topology_count(1);
+    }
+
+    #[test]
+    fn wb14_physical_topology_order_accepts_nine_ofes() {
+        assert_wb14_physical_topology_count(9);
+    }
+
+    #[test]
+    fn wb14_physical_topology_order_accepts_ten_ofes() {
+        assert_wb14_physical_topology_count(10);
+    }
+
+    #[test]
+    fn wb14_physical_topology_order_accepts_nineteen_ofes() {
+        assert_wb14_physical_topology_count(19);
+    }
+
+    #[test]
+    fn wb14_physical_topology_rejects_duplicate_without_mutation() {
+        let (committed, mut parameters) = wb14_physical_topology_fixture(10);
+        parameters[9] = parameters[8].clone();
+        let before_committed = committed.clone();
+        let before_parameters = parameters.clone();
+        assert!(validate_wb14_authority(&committed, &parameters).is_err());
+        assert_eq!(committed, before_committed);
+        assert_eq!(parameters, before_parameters);
+    }
+
+    #[test]
+    fn wb14_physical_topology_rejects_reordered_without_mutation() {
+        let (committed, mut parameters) = wb14_physical_topology_fixture(10);
+        parameters.swap(8, 9);
+        let before_committed = committed.clone();
+        let before_parameters = parameters.clone();
+        assert!(validate_wb14_authority(&committed, &parameters).is_err());
+        assert_eq!(committed, before_committed);
+        assert_eq!(parameters, before_parameters);
+    }
+
+    #[test]
+    fn wb14_physical_topology_rejects_missing_without_mutation() {
+        let (committed, mut parameters) = wb14_physical_topology_fixture(10);
+        parameters.pop().expect("parameter to omit");
+        let before_committed = committed.clone();
+        let before_parameters = parameters.clone();
+        assert!(validate_wb14_authority(&committed, &parameters).is_err());
+        assert_eq!(committed, before_committed);
+        assert_eq!(parameters, before_parameters);
+    }
+
+    #[test]
+    fn wb14_physical_topology_rejects_foreign_without_mutation() {
+        let (committed, mut parameters) = wb14_physical_topology_fixture(10);
+        parameters[9].ofe_id = OfeId::try_new("ofe-foreign").expect("foreign OFE");
+        let before_committed = committed.clone();
+        let before_parameters = parameters.clone();
+        assert!(validate_wb14_authority(&committed, &parameters).is_err());
+        assert_eq!(committed, before_committed);
+        assert_eq!(parameters, before_parameters);
+    }
+
+    fn persisted_day_zero_surface_owner() -> (
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidConfiguration,
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidOwnedState,
+    ) {
+        let fixture = openwepp_persisted_restart_v1::restart_authority_prepared_day_fixture();
+        let configuration = fixture
+            .owners
+            .committed
+            .surface_liquid_configuration
+            .restore()
+            .expect("persisted surface configuration");
+        let state = fixture
+            .owners
+            .committed
+            .scientific
+            .direct_hydrology
+            .surface_liquid_owned_state
+            .as_deref()
+            .expect("persisted surface state")
+            .restore_with_configuration(&configuration)
+            .expect("validated persisted surface state");
+        (configuration, state)
+    }
+
+    #[test]
+    fn active_laned_bootstrap_removes_surface_runon_and_preserves_day_zero_liquid_bits() {
+        let (configuration, state) = persisted_day_zero_surface_owner();
+        let source_ofe = configuration.records[0].key.ofe_id.clone();
+        let destination_ofe = OfeId::try_new("ofe-2").expect("destination OFE");
+        let destination_tile = configuration.records[0].key.tile_id.clone();
+        let mut routed_records = configuration.records.clone();
+        for record in routed_records
+            .iter_mut()
+            .filter(|record| record.key.ofe_id == source_ofe)
+        {
+            record.runon_destination_ofe_id = Some(destination_ofe.clone());
+            record.runon_destination_tile_id = Some(destination_tile.clone());
+        }
+        let mut liquid_by_key = state
+            .records
+            .iter()
+            .map(|record| (record.key.clone(), record.liquid_kg_m2_tile))
+            .collect::<BTreeMap<_, _>>();
+        for (index, source_record) in configuration.records.iter().enumerate() {
+            let mut destination_record = source_record.clone();
+            destination_record.key.ofe_id.clone_from(&destination_ofe);
+            destination_record.key.surface_id =
+                SurfaceId::try_new(format!("surface:ofe-2:{}", index + 1))
+                    .expect("destination surface");
+            destination_record.key.source_id =
+                SourceId::try_new(format!("liquid:ofe-2:{}", index + 1))
+                    .expect("destination source");
+            destination_record.runon_destination_ofe_id = None;
+            destination_record.runon_destination_tile_id = None;
+            liquid_by_key.insert(
+                destination_record.key.clone(),
+                state.records[index].liquid_kg_m2_tile,
+            );
+            routed_records.push(destination_record);
+        }
+        let mut topology = configuration.ofe_topology.clone();
+        topology.push(destination_ofe.clone());
+        let mut bindings = configuration.ofe_bindings.clone();
+        let mut destination_binding = bindings[0].clone();
+        destination_binding.ofe_id = destination_ofe;
+        destination_binding.production_lane_index = 1;
+        destination_binding.production_lane_id = 2;
+        bindings.push(destination_binding);
+        let configuration = openwepp_hillslope_orchestrator::DirectSurfaceLiquidConfiguration::new(
+            configuration.owner_id,
+            configuration.run_id,
+            topology,
+            bindings,
+            routed_records,
+        )
+        .expect("routed day-zero configuration");
+        let state = openwepp_hillslope_orchestrator::DirectSurfaceLiquidOwnedState::new_initial(
+            &configuration,
+            &liquid_by_key,
+            0,
+        )
+        .expect("routed day-zero state");
+        let (projected_configuration, projected_state) =
+            project_laned_active_day_zero_surface_owner(&configuration, &state)
+                .expect("active Lane-D day-zero projection");
+
+        assert_ne!(
+            projected_configuration.configuration_sha256,
+            configuration.configuration_sha256,
+        );
+        assert!(projected_configuration.records.iter().all(|record| {
+            record.runon_destination_ofe_id.is_none() && record.runon_destination_tile_id.is_none()
+        }));
+        let before = state
+            .records
+            .iter()
+            .map(|record| (record.key.clone(), record.liquid_kg_m2_tile.to_bits()))
+            .collect::<BTreeMap<_, _>>();
+        let after = projected_state
+            .records
+            .iter()
+            .map(|record| (record.key.clone(), record.liquid_kg_m2_tile.to_bits()))
+            .collect::<BTreeMap<_, _>>();
+        assert_eq!(after, before, "routing projection changed physical liquid");
+        projected_state
+            .validate(&projected_configuration)
+            .expect("projected owner identity");
+    }
+
+    #[test]
+    fn active_laned_bootstrap_rejects_non_day_zero_owner_without_mutation() {
+        let (configuration, mut state) = persisted_day_zero_surface_owner();
+        state.continuations[0].day_index = 1;
+        let before_configuration = configuration.clone();
+        let before_state = state.clone();
+        assert!(project_laned_active_day_zero_surface_owner(&configuration, &state).is_err());
+        assert_eq!(configuration, before_configuration);
+        assert_eq!(state, before_state);
     }
 
     #[test]

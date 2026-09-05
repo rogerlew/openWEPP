@@ -1,18 +1,20 @@
 # Required-reading map
 
-Status: `SCAFFOLDED — RECOMPUTE AT EXECUTION INTAKE`
+Status: `EXECUTION INTAKE RECOMPUTED`
 
-Evidence mode: `Static`
+Evidence mode: `Static + Ran`
 
 ## Applicable instruction chain
 
-Ran during scaffolding:
+Ran during execution intake for every exact selected contract/source/test path:
 
 `tools/agents/find-agents --for docs/ROADMAP.md docs/work-packages/README.md docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/package.md docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/prompts/active/kickoff.md docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/required-reading-map.md`
 
-Applicable instructions for the scaffold are root `AGENTS.md` and
-`docs/work-packages/AGENTS.md` for package-tree/catalog files; root
-`AGENTS.md` alone applies to `docs/ROADMAP.md`.
+Applicable instructions are root `AGENTS.md`; `docs/work-packages/AGENTS.md`
+for package artifacts; `crates/AGENTS.md` for Rust; `tests/AGENTS.md` for
+integration tests; and `docs/specifications/science-contracts/AGENTS.md` for
+the canonical contract. There is no nearer nested crate instruction file for
+the selected orchestrator or runner paths.
 
 ## Core execution reading
 
@@ -51,9 +53,15 @@ to classify each reachable production seam and its deletion/migration status.
 
 ## Byte-budget disposition
 
-Scaffold-time core total: `261999` local bytes, `OK` under the canonical
-`<=400000` threshold. This count includes the eleven core rows above plus this
-map. Recompute after the package and inherited worktree
-are frozen at execution intake. Heavy contract and historical solver materials
-should remain conditional or on-demand unless the selected write set makes them
-mandatory.
+Execution-intake required total: `769514` local bytes, `WARN` above 400,000
+and below the 800,000 `REQUIRES-JUSTIFICATION` threshold. The increase is
+necessary because the exact write set makes the complete 433,972-byte
+`SC-SNOWENERGY-001` contract, contract procedure/profile, unit/correctness
+governance, crate/test instructions, and local-CI standard mandatory. Other
+large SC contracts remain on demand and are loaded only if the exact diff
+touches their authority.
+
+Phase-0 discovery also selected `SC-VEGETATION-001`,
+`SC-LANDSURFACEENERGY-001`, `SC-COUPLEDTIME-001`, `SC-OFEROUTE-001`,
+`SC-RUNOFFPART-001`, `SC-WATBAL-001`, and `SC-SYSTEM-001` as protected
+on-demand authority. They are not silently converted into a broad write set.

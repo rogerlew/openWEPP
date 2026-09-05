@@ -1600,7 +1600,7 @@ fn wb16_hourly_peak_runoff_from_closing_depths_m_s(
     Ok((peak_rate_m_s, runoff_duration_s, peak_hour_index))
 }
 
-fn closing_hourly_runoff_depths_m(
+pub(crate) fn closing_hourly_runoff_depths_m(
     wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
     hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
 ) -> Result<([f64; DC01_HOUR_BIN_COUNT], f64), DirectRuntimeError> {
@@ -1699,10 +1699,266 @@ pub(crate) struct DirectWb14OutcomeWithProfile {
 #[allow(clippy::struct_field_names)]
 pub(crate) struct DirectWb14SubhourlyProfile {
     pub rainfall_m: [f64; WAT5_INTERVALS_PER_DAY],
+    pub additional_supply_m: [f64; WAT5_INTERVALS_PER_DAY],
     pub infiltration_m: [f64; WAT5_INTERVALS_PER_DAY],
     pub depression_storage_retention_m: [f64; WAT5_INTERVALS_PER_DAY],
     pub post_depression_excess_m: [f64; WAT5_INTERVALS_PER_DAY],
     pub depression_storage_delta_m: f64,
+    pub canonical_source_pieces: Vec<DirectWb14HyetographInterval>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct Wat5BoundedPartitionLedgerReconciliationV1 {
+    pub hour_index: usize,
+    pub authoritative_generation_m: f64,
+    pub raw_generation_m: f64,
+    pub closing_residual_m: f64,
+    pub selected_piece_start_s: f64,
+    pub selected_piece_end_s: f64,
+    pub selected_bin_index: usize,
+    pub closing_ledger_m: [f64; WAT5_INTERVALS_PER_HOUR],
+}
+
+fn wat5_zero_raw_reconciliation_error() -> DirectRuntimeError {
+    wat5_zero_raw_reconciliation_error_at(
+        "WAT5-E-002 bounded source-supported partition-ledger reconciliation",
+    )
+}
+
+fn wat5_zero_raw_reconciliation_error_at(upstream: &'static str) -> DirectRuntimeError {
+    DirectRuntimeError::MissingDirectUpstream { upstream }
+}
+
+impl Wat5BoundedPartitionLedgerReconciliationV1 {
+    pub(crate) fn validate_against(
+        &self,
+        accepted_hourly_generation_m: &[f64; DC01_HOUR_BIN_COUNT],
+        accepted_partition_runoff_m: f64,
+        raw: &DirectWb14SubhourlyProfile,
+    ) -> Result<(), DirectRuntimeError> {
+        let hour = self.hour_index;
+        if hour >= DC01_HOUR_BIN_COUNT {
+            return Err(wat5_zero_raw_reconciliation_error());
+        }
+        let start = hour * WAT5_INTERVALS_PER_HOUR;
+        let end = start + WAT5_INTERVALS_PER_HOUR;
+        let sum_checked = |field: &'static str, values: &[f64]| {
+            values.iter().try_fold(0.0_f64, |sum, value| {
+                validate_nonnegative_direct_m(field, *value)?;
+                let next = sum + *value;
+                validate_nonnegative_direct_m(field, next)?;
+                Ok(next)
+            })
+        };
+        let rainfall_m = sum_checked(
+            "wat5.bounded.hourly_rainfall_m",
+            &raw.rainfall_m[start..end],
+        )?;
+        let additional_m = sum_checked(
+            "wat5.bounded.hourly_additional_supply_m",
+            &raw.additional_supply_m[start..end],
+        )?;
+        let source_m = rainfall_m + additional_m;
+        validate_nonnegative_direct_m("wat5.bounded.hourly_source_m", source_m)?;
+        let infiltration_m = sum_checked(
+            "wat5.bounded.hourly_infiltration_m",
+            &raw.infiltration_m[start..end],
+        )?;
+        let depression_m = sum_checked(
+            "wat5.bounded.hourly_depression_storage_m",
+            &raw.depression_storage_retention_m[start..end],
+        )?;
+        let raw_generation_m = sum_checked(
+            "wat5.bounded.hourly_raw_generation_m",
+            &raw.post_depression_excess_m[start..end],
+        )?;
+        let authoritative_m = accepted_hourly_generation_m[hour];
+        validate_nonnegative_direct_m(
+            "wat5.bounded.authoritative_hourly_generation_m",
+            authoritative_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "wat5.bounded.accepted_partition_runoff_m",
+            accepted_partition_runoff_m,
+        )?;
+        let accepted_total_m = sum_checked(
+            "wat5.bounded.accepted_hourly_generation_m",
+            accepted_hourly_generation_m,
+        )?;
+        let accepted_tolerance_m = 24.0
+            * 1.0e-9
+            * accepted_total_m
+                .abs()
+                .max(accepted_partition_runoff_m.abs())
+                .max(1.0);
+        if (accepted_total_m - accepted_partition_runoff_m).abs() > accepted_tolerance_m {
+            return Err(wat5_zero_raw_reconciliation_error_at(
+                "WAT5-E-002 accepted hourly/partition runoff closure",
+            ));
+        }
+        let raw_accounted_m = infiltration_m + depression_m + raw_generation_m;
+        validate_nonnegative_direct_m("wat5.bounded.hourly_raw_accounted_m", raw_accounted_m)?;
+        let raw_tolerance_m = 1.0e-12 * source_m.abs().max(raw_accounted_m.abs()).max(1.0);
+        if (source_m - raw_accounted_m).abs() > raw_tolerance_m
+            || authoritative_m <= 0.0
+            || raw_generation_m != 0.0
+            || source_m <= 0.0
+        {
+            return Err(wat5_zero_raw_reconciliation_error_at(
+                "WAT5-E-002 positive source-backed exact-zero raw generation eligibility",
+            ));
+        }
+        let epsilon_m = authoritative_m - raw_generation_m;
+        validate_nonnegative_direct_m("wat5.bounded.closing_residual_m", epsilon_m)?;
+        let epsilon_tolerance_m = 1.0e-12
+            * source_m
+                .abs()
+                .max(infiltration_m.abs())
+                .max(depression_m.abs())
+                .max(authoritative_m.abs())
+                .max(1.0);
+        if epsilon_m <= 0.0 || epsilon_m > epsilon_tolerance_m {
+            return Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "WAT5-E-002",
+                detail: format!(
+                    "bounded closing residual tolerance: hour={hour} epsilon_m={epsilon_m:?} tolerance_m={epsilon_tolerance_m:?} source_m={source_m:?} infiltration_m={infiltration_m:?} depression_m={depression_m:?} authoritative_m={authoritative_m:?} raw_generation_m={raw_generation_m:?}",
+                ),
+            });
+        }
+
+        let hour_start_s = f64::from(u32::try_from(hour).unwrap_or(u32::MAX)) * 3_600.0;
+        let hour_end_s = hour_start_s + 3_600.0;
+        let mut positive_pieces = raw
+            .canonical_source_pieces
+            .iter()
+            .filter(|piece| {
+                piece.intensity_m_s > 0.0
+                    && piece.start_s >= hour_start_s
+                    && piece.end_s <= hour_end_s
+                    && piece.end_s > piece.start_s
+            })
+            .collect::<Vec<_>>();
+        positive_pieces.sort_by(|left, right| {
+            left.end_s
+                .total_cmp(&right.end_s)
+                .then_with(|| left.start_s.total_cmp(&right.start_s))
+        });
+        let selected = positive_pieces
+            .last()
+            .ok_or_else(wat5_zero_raw_reconciliation_error)?;
+        if positive_pieces
+            .iter()
+            .filter(|piece| {
+                piece.start_s.to_bits() == selected.start_s.to_bits()
+                    && piece.end_s.to_bits() == selected.end_s.to_bits()
+            })
+            .count()
+            != 1
+        {
+            return Err(wat5_zero_raw_reconciliation_error_at(
+                "WAT5-E-002 unique latest positive source piece",
+            ));
+        }
+        let selected_bin_index = (start..end)
+            .filter(|bin| {
+                let bin_start_s =
+                    f64::from(u32::try_from(*bin).unwrap_or(u32::MAX)) * WAT5_INTERVAL_SECONDS;
+                let bin_end_s = bin_start_s + WAT5_INTERVAL_SECONDS;
+                selected.start_s >= bin_start_s && selected.end_s <= bin_end_s
+            })
+            .next()
+            .ok_or_else(wat5_zero_raw_reconciliation_error)?;
+        if self.authoritative_generation_m.to_bits() != authoritative_m.to_bits()
+            || self.raw_generation_m.to_bits() != raw_generation_m.to_bits()
+            || self.closing_residual_m.to_bits() != epsilon_m.to_bits()
+            || self.selected_piece_start_s.to_bits() != selected.start_s.to_bits()
+            || self.selected_piece_end_s.to_bits() != selected.end_s.to_bits()
+            || self.selected_bin_index != selected_bin_index
+        {
+            return Err(wat5_zero_raw_reconciliation_error_at(
+                "WAT5-E-002 closing-reconciliation identity replay",
+            ));
+        }
+        for (offset, value) in self.closing_ledger_m.iter().copied().enumerate() {
+            validate_nonnegative_direct_m("wat5.bounded.closing_ledger_m", value)?;
+            let expected = if start + offset == selected_bin_index {
+                epsilon_m
+            } else {
+                0.0
+            };
+            if value.to_bits() != expected.to_bits() {
+                return Err(wat5_zero_raw_reconciliation_error_at(
+                    "WAT5-E-002 single-bin closing-ledger placement",
+                ));
+            }
+        }
+        let closed_m = sum_checked("wat5.bounded.closed_generation_m", &self.closing_ledger_m)?;
+        if closed_m.to_bits() != authoritative_m.to_bits() {
+            return Err(wat5_zero_raw_reconciliation_error_at(
+                "WAT5-E-002 exact closed-hour reconstruction",
+            ));
+        }
+        Ok(())
+    }
+}
+
+pub(crate) fn reconcile_wat5_zero_raw_generation_hour_v1(
+    hour_index: usize,
+    accepted_hourly_generation_m: &[f64; DC01_HOUR_BIN_COUNT],
+    accepted_partition_runoff_m: f64,
+    raw: &DirectWb14SubhourlyProfile,
+) -> Result<Wat5BoundedPartitionLedgerReconciliationV1, DirectRuntimeError> {
+    if hour_index >= DC01_HOUR_BIN_COUNT {
+        return Err(wat5_zero_raw_reconciliation_error());
+    }
+    let start = hour_index * WAT5_INTERVALS_PER_HOUR;
+    let end = start + WAT5_INTERVALS_PER_HOUR;
+    let authoritative_generation_m = accepted_hourly_generation_m[hour_index];
+    let raw_generation_m = raw.post_depression_excess_m[start..end].iter().sum();
+    let hour_start_s = f64::from(u32::try_from(hour_index).unwrap_or(u32::MAX)) * 3_600.0;
+    let hour_end_s = hour_start_s + 3_600.0;
+    let selected = raw
+        .canonical_source_pieces
+        .iter()
+        .filter(|piece| {
+            piece.intensity_m_s > 0.0
+                && piece.start_s >= hour_start_s
+                && piece.end_s <= hour_end_s
+                && piece.end_s > piece.start_s
+        })
+        .max_by(|left, right| {
+            left.end_s
+                .total_cmp(&right.end_s)
+                .then_with(|| left.start_s.total_cmp(&right.start_s))
+        })
+        .ok_or_else(wat5_zero_raw_reconciliation_error)?;
+    let selected_bin_index = (start..end)
+        .find(|bin| {
+            let bin_start_s =
+                f64::from(u32::try_from(*bin).unwrap_or(u32::MAX)) * WAT5_INTERVAL_SECONDS;
+            let bin_end_s = bin_start_s + WAT5_INTERVAL_SECONDS;
+            selected.start_s >= bin_start_s && selected.end_s <= bin_end_s
+        })
+        .ok_or_else(wat5_zero_raw_reconciliation_error)?;
+    let closing_residual_m = authoritative_generation_m - raw_generation_m;
+    let mut closing_ledger_m = [0.0; WAT5_INTERVALS_PER_HOUR];
+    closing_ledger_m[selected_bin_index - start] = closing_residual_m;
+    let reconciliation = Wat5BoundedPartitionLedgerReconciliationV1 {
+        hour_index,
+        authoritative_generation_m,
+        raw_generation_m,
+        closing_residual_m,
+        selected_piece_start_s: selected.start_s,
+        selected_piece_end_s: selected.end_s,
+        selected_bin_index,
+        closing_ledger_m,
+    };
+    reconciliation.validate_against(
+        accepted_hourly_generation_m,
+        accepted_partition_runoff_m,
+        raw,
+    )?;
+    Ok(reconciliation)
 }
 
 fn add_depth_to_fixed_bins(
@@ -1783,8 +2039,239 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
         .map(|(outcome, _)| outcome)
 }
 
+#[cfg(test)]
 pub(crate) fn compute_wb14_subhourly_profile(
     inputs: &DirectWb14InfiltrationProducerInputs,
+) -> Result<DirectWb14SubhourlyProfile, DirectRuntimeError> {
+    compute_wb14_subhourly_profile_with_exact_segments(inputs, &[], None)
+}
+
+fn wat5_exact_segment_error() -> DirectRuntimeError {
+    DirectRuntimeError::DirectDomainViolation {
+        field: "WAT5-E-001 exact accepted additional-supply segment custody",
+    }
+}
+
+pub(crate) fn wat5_additional_supply_source_receipt_sha256(
+    source_kind: Wat5AdditionalSupplySourceKindV1,
+    source_identity: &str,
+    transaction_id: &str,
+    destination_ofe_id: &openwepp_land_surface_energy::OfeId,
+    start_s: f64,
+    end_s: f64,
+    depth_m_ofe_ground: f64,
+) -> Result<String, DirectRuntimeError> {
+    let source_kind = format!("{source_kind:?}");
+    let start_bits = start_s.to_bits().to_be_bytes();
+    let end_bits = end_s.to_bits().to_be_bytes();
+    let depth_bits = depth_m_ofe_ground.to_bits().to_be_bytes();
+    let digest = openwepp_coupled_time::framed_sha256(
+        "wat5-exact-accepted-additional-source-receipt-v1",
+        &[
+            openwepp_coupled_time::FramedField {
+                tag: "source_kind",
+                value: source_kind.as_bytes(),
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "source_identity",
+                value: source_identity.as_bytes(),
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "transaction_id",
+                value: transaction_id.as_bytes(),
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "destination_ofe_id",
+                value: destination_ofe_id.as_str().as_bytes(),
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "start_s_bits",
+                value: &start_bits,
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "end_s_bits",
+                value: &end_bits,
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "depth_m_ofe_ground_bits",
+                value: &depth_bits,
+            },
+        ],
+    )
+    .map_err(|_| wat5_exact_segment_error())?;
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut text = String::with_capacity(64);
+    for byte in digest.as_bytes() {
+        text.push(char::from(HEX[usize::from(byte >> 4)]));
+        text.push(char::from(HEX[usize::from(byte & 0x0f)]));
+    }
+    Ok(text)
+}
+
+fn wat5_canonical_additional_supply_segments(
+    segments: &[Wat5AdditionalSupplySegmentV1],
+    expected_destination_ofe_id: Option<&openwepp_land_surface_energy::OfeId>,
+) -> Result<Vec<Wat5AdditionalSupplySegmentV1>, DirectRuntimeError> {
+    let mut canonical = segments.to_vec();
+    for segment in &canonical {
+        if !segment.start_s.is_finite()
+            || !segment.end_s.is_finite()
+            || segment.start_s < 0.0
+            || segment.end_s <= segment.start_s
+            || segment.end_s > WAT5_DAY_SECONDS
+            || !segment.depth_m_ofe_ground.is_finite()
+            || segment.depth_m_ofe_ground <= 0.0
+            || segment.source_identity.is_empty()
+            || segment.source_receipt_sha256.len() != 64
+            || !segment
+                .source_receipt_sha256
+                .bytes()
+                .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+            || segment.transaction_id.is_empty()
+            || expected_destination_ofe_id
+                .is_some_and(|expected| expected != &segment.destination_ofe_id)
+        {
+            return Err(wat5_exact_segment_error());
+        }
+        let expected_receipt = wat5_additional_supply_source_receipt_sha256(
+            segment.source_kind,
+            &segment.source_identity,
+            &segment.transaction_id,
+            &segment.destination_ofe_id,
+            segment.start_s,
+            segment.end_s,
+            segment.depth_m_ofe_ground,
+        )?;
+        if expected_receipt != segment.source_receipt_sha256 {
+            return Err(wat5_exact_segment_error());
+        }
+    }
+    canonical.sort_by(|left, right| {
+        left.start_s
+            .total_cmp(&right.start_s)
+            .then_with(|| left.end_s.total_cmp(&right.end_s))
+            .then_with(|| left.source_kind.cmp(&right.source_kind))
+            .then_with(|| left.source_receipt_sha256.cmp(&right.source_receipt_sha256))
+            .then_with(|| left.transaction_id.cmp(&right.transaction_id))
+            .then_with(|| left.destination_ofe_id.cmp(&right.destination_ofe_id))
+    });
+    for (index, segment) in canonical.iter().enumerate() {
+        if canonical[..index].iter().any(|earlier| {
+            earlier.source_receipt_sha256 == segment.source_receipt_sha256
+                && (earlier.start_s < segment.end_s && segment.start_s < earlier.end_s)
+        }) {
+            return Err(wat5_exact_segment_error());
+        }
+    }
+    Ok(canonical)
+}
+
+pub(crate) fn wat5_hourly_additional_supply_from_segments(
+    segments: &[Wat5AdditionalSupplySegmentV1],
+    expected_destination_ofe_id: Option<&openwepp_land_surface_energy::OfeId>,
+) -> Result<[f64; DC01_HOUR_BIN_COUNT], DirectRuntimeError> {
+    let canonical =
+        wat5_canonical_additional_supply_segments(segments, expected_destination_ofe_id)?;
+    let mut hourly = [0.0; DC01_HOUR_BIN_COUNT];
+    for segment in canonical {
+        add_depth_to_fixed_bins(
+            &mut hourly,
+            DC01_HOUR_BIN_SECONDS,
+            segment.start_s,
+            segment.end_s,
+            segment.depth_m_ofe_ground,
+        );
+        for depth_m in &hourly {
+            validate_nonnegative_direct_m("wat5.exact_segment_hourly_depth_m", *depth_m)?;
+        }
+    }
+    Ok(hourly)
+}
+
+fn wat5_piecewise_combined_supply(
+    rain: &[DirectWb14HyetographInterval],
+    canonical_additional: &[Wat5AdditionalSupplySegmentV1],
+) -> Result<Vec<DirectWb14HyetographInterval>, DirectRuntimeError> {
+    let mut boundaries = rain
+        .iter()
+        .flat_map(|interval| [interval.start_s, interval.end_s])
+        .chain(
+            canonical_additional
+                .iter()
+                .flat_map(|segment| [segment.start_s, segment.end_s]),
+        )
+        .chain((0..=WAT5_INTERVALS_PER_DAY).map(|index| {
+            f64::from(u32::try_from(index).unwrap_or(u32::MAX)) * WAT5_INTERVAL_SECONDS
+        }))
+        .collect::<Vec<_>>();
+    boundaries.sort_by(f64::total_cmp);
+    boundaries.dedup_by(|left, right| left.to_bits() == right.to_bits());
+
+    let mut combined = Vec::with_capacity(boundaries.len().saturating_sub(1));
+    for bounds in boundaries.windows(2) {
+        let start_s = bounds[0];
+        let end_s = bounds[1];
+        if end_s <= start_s {
+            continue;
+        }
+        let rain_rate_m_s = rain
+            .iter()
+            .filter(|interval| interval.start_s <= start_s && interval.end_s >= end_s)
+            .try_fold(0.0, |sum, interval| {
+                let next = sum + interval.intensity_m_s;
+                validate_nonnegative_direct_m("wat5.rain_rate_m_s", next)?;
+                Ok(next)
+            })?;
+        let additional_rate_m_s = canonical_additional
+            .iter()
+            .filter(|segment| segment.start_s <= start_s && segment.end_s >= end_s)
+            .try_fold(0.0, |sum, segment| {
+                let rate_m_s = segment.depth_m_ofe_ground / (segment.end_s - segment.start_s);
+                validate_nonnegative_direct_m("wat5.additional_rate_m_s", rate_m_s)?;
+                let next = sum + rate_m_s;
+                validate_nonnegative_direct_m("wat5.additional_rate_m_s", next)?;
+                Ok(next)
+            })?;
+        let intensity_m_s = rain_rate_m_s + additional_rate_m_s;
+        validate_nonnegative_direct_m("wat5.combined_supply_rate_m_s", intensity_m_s)?;
+        combined.push(DirectWb14HyetographInterval {
+            start_s,
+            end_s,
+            intensity_m_s,
+        });
+    }
+    Ok(combined)
+}
+
+pub(crate) fn compute_wb14_subhourly_profile_with_exact_segments(
+    inputs: &DirectWb14InfiltrationProducerInputs,
+    segments: &[Wat5AdditionalSupplySegmentV1],
+    expected_destination_ofe_id: Option<&openwepp_land_surface_energy::OfeId>,
+) -> Result<DirectWb14SubhourlyProfile, DirectRuntimeError> {
+    let source_profile =
+        wat5_source_profile_with_exact_segments(inputs, segments, expected_destination_ofe_id)?;
+    let mut split_inputs = inputs.clone();
+    split_inputs
+        .hyetograph
+        .clone_from(&source_profile.canonical_source_pieces);
+    split_inputs.hourly_additional_supply_m = [0.0; DC01_HOUR_BIN_COUNT];
+    let (outcome, mut subhourly) =
+        compute_wb14_infiltration_depression_with_optional_subhourly(&split_inputs, true)?;
+    if let Some(profile) = subhourly.as_mut() {
+        profile.depression_storage_delta_m = outcome.state.depression_storage_delta_m;
+        profile.canonical_source_pieces = source_profile.canonical_source_pieces;
+        profile.rainfall_m = source_profile.rainfall_m;
+        profile.additional_supply_m = source_profile.additional_supply_m;
+    }
+    subhourly.ok_or(DirectRuntimeError::MissingDirectUpstream {
+        upstream: "requested WAT5 subhourly WB14 profile",
+    })
+}
+
+pub(crate) fn wat5_source_profile_with_exact_segments(
+    inputs: &DirectWb14InfiltrationProducerInputs,
+    segments: &[Wat5AdditionalSupplySegmentV1],
+    expected_destination_ofe_id: Option<&openwepp_land_surface_energy::OfeId>,
 ) -> Result<DirectWb14SubhourlyProfile, DirectRuntimeError> {
     validate_wb14_infiltration_inputs(inputs)?;
     if inputs.hyetograph.iter().any(|interval| {
@@ -1794,55 +2281,47 @@ pub(crate) fn compute_wb14_subhourly_profile(
             field: "WAT5-E-003 hyetograph support lies outside the simulation day",
         });
     }
-    if inputs
-        .hourly_additional_supply_m
+    let canonical =
+        wat5_canonical_additional_supply_segments(segments, expected_destination_ofe_id)?;
+    let reconstructed_hourly =
+        wat5_hourly_additional_supply_from_segments(&canonical, expected_destination_ofe_id)?;
+    if reconstructed_hourly
         .iter()
-        .any(|depth_m| *depth_m > 0.0)
+        .zip(inputs.hourly_additional_supply_m)
+        .any(|(reconstructed, authoritative)| reconstructed.to_bits() != authoritative.to_bits())
     {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "WAT5-E-001 positive additional supply lacks 300-second timing",
-        });
+        return Err(wat5_exact_segment_error());
     }
 
-    // WAT5 is a chronological Green-Ampt replay, not a proportional
-    // redistribution of whole source-interval outcomes. Split every source
-    // interval at exact 300-second boundaries so each piece advances the
-    // cumulative infiltration state before the next piece is solved.
-    let mut split_inputs = inputs.clone();
-    split_inputs.hyetograph = wat5_boundary_split_hyetograph(&inputs.hyetograph);
-    let (outcome, mut subhourly) =
-        compute_wb14_infiltration_depression_with_optional_subhourly(&split_inputs, true)?;
-    if let Some(profile) = subhourly.as_mut() {
-        profile.depression_storage_delta_m = outcome.state.depression_storage_delta_m;
+    let canonical_source_pieces = wat5_piecewise_combined_supply(&inputs.hyetograph, &canonical)?;
+    let mut profile = DirectWb14SubhourlyProfile {
+        rainfall_m: [0.0; WAT5_INTERVALS_PER_DAY],
+        additional_supply_m: [0.0; WAT5_INTERVALS_PER_DAY],
+        infiltration_m: [0.0; WAT5_INTERVALS_PER_DAY],
+        depression_storage_retention_m: [0.0; WAT5_INTERVALS_PER_DAY],
+        post_depression_excess_m: [0.0; WAT5_INTERVALS_PER_DAY],
+        depression_storage_delta_m: 0.0,
+        canonical_source_pieces,
+    };
+    for interval in &inputs.hyetograph {
+        add_depth_to_fixed_bins(
+            &mut profile.rainfall_m,
+            WAT5_INTERVAL_SECONDS,
+            interval.start_s,
+            interval.end_s,
+            interval.intensity_m_s * (interval.end_s - interval.start_s),
+        );
     }
-    subhourly.ok_or(DirectRuntimeError::MissingDirectUpstream {
-        upstream: "requested WAT5 subhourly WB14 profile",
-    })
-}
-
-fn wat5_boundary_split_hyetograph(
-    hyetograph: &[DirectWb14HyetographInterval],
-) -> Vec<DirectWb14HyetographInterval> {
-    let mut split = Vec::with_capacity(hyetograph.len());
-    for interval in hyetograph {
-        if interval.end_s <= interval.start_s {
-            split.push(*interval);
-            continue;
-        }
-        let mut piece_start_s = interval.start_s;
-        while piece_start_s < interval.end_s {
-            let next_boundary_s =
-                ((piece_start_s / WAT5_INTERVAL_SECONDS).floor() + 1.0) * WAT5_INTERVAL_SECONDS;
-            let piece_end_s = interval.end_s.min(next_boundary_s);
-            split.push(DirectWb14HyetographInterval {
-                start_s: piece_start_s,
-                end_s: piece_end_s,
-                intensity_m_s: interval.intensity_m_s,
-            });
-            piece_start_s = piece_end_s;
-        }
+    for segment in &canonical {
+        add_depth_to_fixed_bins(
+            &mut profile.additional_supply_m,
+            WAT5_INTERVAL_SECONDS,
+            segment.start_s,
+            segment.end_s,
+            segment.depth_m_ofe_ground,
+        );
     }
-    split
+    Ok(profile)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -1863,10 +2342,12 @@ fn compute_wb14_infiltration_depression_with_optional_subhourly(
     let mut subhourly = if collect_subhourly {
         Some(DirectWb14SubhourlyProfile {
             rainfall_m: [0.0; WAT5_INTERVALS_PER_DAY],
+            additional_supply_m: [0.0; WAT5_INTERVALS_PER_DAY],
             infiltration_m: [0.0; WAT5_INTERVALS_PER_DAY],
             depression_storage_retention_m: [0.0; WAT5_INTERVALS_PER_DAY],
             post_depression_excess_m: [0.0; WAT5_INTERVALS_PER_DAY],
             depression_storage_delta_m: 0.0,
+            canonical_source_pieces: Vec::new(),
         })
     } else {
         None
@@ -2184,718 +2665,4 @@ fn validate_positive_direct(field: &'static str, value: f64) -> Result<(), Direc
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(
-    any(
-        feature = "restart-authority-evidence",
-        feature = "persisted-restart-v1"
-    ),
-    derive(serde::Serialize)
-)]
-pub struct DirectLiquidInputInputs {
-    pub liquid_input_handoff_m: f64,
-}
-
-impl DirectLiquidInputInputs {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            liquid_input_handoff_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectLiquidInputState {
-    pub liquid_input_m: f64,
-}
-
-impl DirectLiquidInputState {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            liquid_input_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectLiquidInputDownstreamOperands {
-    pub liquid_input_m: f64,
-}
-
-impl DirectLiquidInputDownstreamOperands {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            liquid_input_m: 0.0,
-        }
-    }
-}
-
-impl From<DirectLiquidInputState> for DirectLiquidInputDownstreamOperands {
-    fn from(state: DirectLiquidInputState) -> Self {
-        Self {
-            liquid_input_m: state.liquid_input_m,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectLiquidInputShadowProjection {
-    pub lane_index: usize,
-    pub day_index: usize,
-    pub liquid_input_m: f64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(
-    any(
-        feature = "restart-authority-evidence",
-        feature = "persisted-restart-v1"
-    ),
-    derive(serde::Serialize)
-)]
-pub struct DirectRunonCarryInputs {
-    pub surface_runon_handoff_m: f64,
-    pub subsurface_carry_handoff_m: f64,
-}
-
-impl DirectRunonCarryInputs {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            surface_runon_handoff_m: 0.0,
-            subsurface_carry_handoff_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectRunonCarryState {
-    pub runon_input_m: f64,
-    pub subsurface_carry_m: f64,
-}
-
-impl DirectRunonCarryState {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            runon_input_m: 0.0,
-            subsurface_carry_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectRunonCarryDownstreamOperands {
-    pub runon_input_m: f64,
-    pub subsurface_carry_m: f64,
-}
-
-impl DirectRunonCarryDownstreamOperands {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            runon_input_m: 0.0,
-            subsurface_carry_m: 0.0,
-        }
-    }
-}
-
-impl From<DirectRunonCarryState> for DirectRunonCarryDownstreamOperands {
-    fn from(state: DirectRunonCarryState) -> Self {
-        Self {
-            runon_input_m: state.runon_input_m,
-            subsurface_carry_m: state.subsurface_carry_m,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectRunonCarryShadowProjection {
-    pub lane_index: usize,
-    pub day_index: usize,
-    pub runon_input_m: f64,
-    pub subsurface_carry_m: f64,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    any(
-        feature = "restart-authority-evidence",
-        feature = "persisted-restart-v1"
-    ),
-    derive(serde::Serialize)
-)]
-pub struct DirectInfiltrationDepressionInputs {
-    pub cumulative_infiltration_handoff_m: f64,
-    pub depression_storage_delta_handoff_m: f64,
-    pub producer_inputs: Option<DirectWb14InfiltrationProducerInputs>,
-}
-
-impl DirectInfiltrationDepressionInputs {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            cumulative_infiltration_handoff_m: 0.0,
-            depression_storage_delta_handoff_m: 0.0,
-            producer_inputs: None,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectCanopyInterceptionInputs {
-    pub hyetograph_rainfall_m: f64,
-    pub interception_rainfall_input_m: f64,
-    pub canopy_cover_fraction: f64,
-    pub leaf_area_index: f64,
-    pub interception_live_biomass_kg_m2: f64,
-}
-
-impl DirectCanopyInterceptionInputs {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            hyetograph_rainfall_m: 0.0,
-            interception_rainfall_input_m: 0.0,
-            canopy_cover_fraction: 0.0,
-            leaf_area_index: 0.0,
-            interception_live_biomass_kg_m2: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectCanopyInterceptionState {
-    pub interception_m: f64,
-    pub liquid_after_interception_m: f64,
-    pub rainfall_scale: f64,
-}
-
-impl DirectCanopyInterceptionState {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            interception_m: 0.0,
-            liquid_after_interception_m: 0.0,
-            rainfall_scale: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    any(
-        feature = "restart-authority-evidence",
-        feature = "persisted-restart-v1"
-    ),
-    derive(serde::Serialize)
-)]
-pub struct DirectWb14InfiltrationProducerInputs {
-    pub hyetograph: Vec<DirectWb14HyetographInterval>,
-    /// Producer-owned hourly liquid supplied in addition to direct rain.
-    /// Routed melt is seeded by the runner before WB14; inter-OFE runon is
-    /// added at R4K from the R4J-resolved totals. Both pass through the same
-    /// infiltration/depression partition before any runoff timing is claimed.
-    pub hourly_additional_supply_m: [f64; DC01_HOUR_BIN_COUNT],
-    pub effective_conductivity_m_s: f64,
-    pub matric_potential_m: f64,
-    pub storage_capacity_m: f64,
-    pub depression_storage_capacity_m: f64,
-}
-
-pub fn compute_direct_canopy_interception(
-    inputs: DirectCanopyInterceptionInputs,
-) -> Result<DirectCanopyInterceptionState, DirectRuntimeError> {
-    validate_direct_canopy_interception_inputs(inputs)?;
-
-    let interception_m = if inputs.canopy_cover_fraction <= WB11_ZERO_THRESHOLD
-        || inputs.leaf_area_index <= WB11_ZERO_THRESHOLD
-    {
-        0.0
-    } else {
-        let biomass_kg_ha = inputs.interception_live_biomass_kg_m2 * WB15_BIOMASS_TO_KG_HA;
-        validate_finite("canopy_interception.biomass_kg_ha", biomass_kg_ha)?;
-        let interception_biomass_kg_ha = biomass_kg_ha.min(WB15_INTERCEPT_BIOMASS_MAX_KG_HA);
-        let potential_interception_m = inputs.canopy_cover_fraction
-            * ((WB15_INTERCEPT_LINEAR_COEFF * interception_biomass_kg_ha
-                - WB15_INTERCEPT_QUADRATIC_COEFF * interception_biomass_kg_ha.powi(2))
-                / WB15_INTERCEPT_MM_TO_M);
-        validate_nonnegative_direct_m(
-            "canopy_interception.potential_interception_m",
-            potential_interception_m,
-        )?;
-        potential_interception_m.min(inputs.interception_rainfall_input_m)
-    };
-    validate_nonnegative_direct_m("canopy_interception.interception_m", interception_m)?;
-    if interception_m > inputs.interception_rainfall_input_m + WB11_ZERO_THRESHOLD {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "canopy_interception.interception_m",
-        });
-    }
-
-    let liquid_after_interception_raw = inputs.interception_rainfall_input_m - interception_m;
-    validate_finite(
-        "canopy_interception.liquid_after_interception_m",
-        liquid_after_interception_raw,
-    )?;
-    if liquid_after_interception_raw < -WB11_ZERO_THRESHOLD {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "canopy_interception.liquid_after_interception_m",
-        });
-    }
-    let liquid_after_interception_m = liquid_after_interception_raw.max(0.0);
-    let rainfall_scale = if inputs.hyetograph_rainfall_m <= WB11_ZERO_THRESHOLD {
-        0.0
-    } else {
-        liquid_after_interception_m / inputs.hyetograph_rainfall_m
-    };
-    validate_finite("canopy_interception.rainfall_scale", rainfall_scale)?;
-    validate_nonnegative_direct_m("canopy_interception.rainfall_scale", rainfall_scale)?;
-
-    Ok(DirectCanopyInterceptionState {
-        interception_m,
-        liquid_after_interception_m,
-        rainfall_scale,
-    })
-}
-
-fn validate_direct_canopy_interception_inputs(
-    inputs: DirectCanopyInterceptionInputs,
-) -> Result<(), DirectRuntimeError> {
-    validate_nonnegative_direct_m(
-        "canopy_interception.hyetograph_rainfall_m",
-        inputs.hyetograph_rainfall_m,
-    )?;
-    validate_nonnegative_direct_m(
-        "canopy_interception.interception_rainfall_input_m",
-        inputs.interception_rainfall_input_m,
-    )?;
-    validate_finite(
-        "canopy_interception.canopy_cover_fraction",
-        inputs.canopy_cover_fraction,
-    )?;
-    if inputs.canopy_cover_fraction < 0.0 || inputs.canopy_cover_fraction > WB15_CANCOV_MAX {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "canopy_interception.canopy_cover_fraction",
-        });
-    }
-    validate_nonnegative_direct_m(
-        "canopy_interception.leaf_area_index",
-        inputs.leaf_area_index,
-    )?;
-    validate_nonnegative_direct_m(
-        "canopy_interception.interception_live_biomass_kg_m2",
-        inputs.interception_live_biomass_kg_m2,
-    )?;
-    if inputs.interception_rainfall_input_m > inputs.hyetograph_rainfall_m + WB11_ZERO_THRESHOLD {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "canopy_interception.interception_rainfall_input_m",
-        });
-    }
-    Ok(())
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(
-    any(
-        feature = "restart-authority-evidence",
-        feature = "persisted-restart-v1"
-    ),
-    derive(serde::Serialize)
-)]
-pub struct DirectWb14HyetographInterval {
-    pub start_s: f64,
-    pub end_s: f64,
-    pub intensity_m_s: f64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectInfiltrationDepressionState {
-    pub cumulative_infiltration_m: f64,
-    pub depression_storage_delta_m: f64,
-}
-
-impl DirectInfiltrationDepressionState {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            cumulative_infiltration_m: 0.0,
-            depression_storage_delta_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectInfiltrationDepressionDownstreamOperands {
-    pub cumulative_infiltration_m: f64,
-    pub depression_storage_delta_m: f64,
-}
-
-impl DirectInfiltrationDepressionDownstreamOperands {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            cumulative_infiltration_m: 0.0,
-            depression_storage_delta_m: 0.0,
-        }
-    }
-}
-
-impl From<DirectInfiltrationDepressionState> for DirectInfiltrationDepressionDownstreamOperands {
-    fn from(state: DirectInfiltrationDepressionState) -> Self {
-        Self {
-            cumulative_infiltration_m: state.cumulative_infiltration_m,
-            depression_storage_delta_m: state.depression_storage_delta_m,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectInfiltrationDepressionShadowProjection {
-    pub lane_index: usize,
-    pub day_index: usize,
-    pub cumulative_infiltration_m: f64,
-    pub depression_storage_delta_m: f64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(
-    any(
-        feature = "restart-authority-evidence",
-        feature = "persisted-restart-v1"
-    ),
-    derive(serde::Serialize)
-)]
-pub struct DirectSaturationAddbackInputs {
-    pub surface_saturation_runoff_handoff_m: f64,
-}
-
-impl DirectSaturationAddbackInputs {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            surface_saturation_runoff_handoff_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectSaturationAddbackState {
-    pub surface_saturation_runoff_m: f64,
-}
-
-impl DirectSaturationAddbackState {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            surface_saturation_runoff_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectSaturationAddbackDownstreamOperands {
-    pub surface_saturation_runoff_m: f64,
-}
-
-impl DirectSaturationAddbackDownstreamOperands {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            surface_saturation_runoff_m: 0.0,
-        }
-    }
-}
-
-impl From<DirectSaturationAddbackState> for DirectSaturationAddbackDownstreamOperands {
-    fn from(state: DirectSaturationAddbackState) -> Self {
-        Self {
-            surface_saturation_runoff_m: state.surface_saturation_runoff_m,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectSaturationAddbackShadowProjection {
-    pub lane_index: usize,
-    pub day_index: usize,
-    pub surface_saturation_runoff_m: f64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(
-    any(
-        feature = "restart-authority-evidence",
-        feature = "persisted-restart-v1"
-    ),
-    derive(serde::Serialize)
-)]
-pub struct DirectRunoffPartitionInputs {
-    pub liquid_input_m: f64,
-    pub runon_input_m: f64,
-    pub cumulative_infiltration_m: f64,
-    pub depression_storage_delta_m: f64,
-    pub surface_saturation_runoff_m: f64,
-    pub frost_retained_local_liquid_m: f64,
-    pub frost_preprojected_local_liquid_m: f64,
-}
-
-impl DirectRunoffPartitionInputs {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            liquid_input_m: 0.0,
-            runon_input_m: 0.0,
-            cumulative_infiltration_m: 0.0,
-            depression_storage_delta_m: 0.0,
-            surface_saturation_runoff_m: 0.0,
-            frost_retained_local_liquid_m: 0.0,
-            frost_preprojected_local_liquid_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectRunoffPartitionState {
-    pub liquid_input_m: f64,
-    pub runon_input_m: f64,
-    pub cumulative_infiltration_m: f64,
-    pub depression_storage_delta_m: f64,
-    pub surface_saturation_runoff_m: f64,
-    pub partition_runoff_m: f64,
-    pub q_runoff_m: f64,
-    pub closure_residual_m: f64,
-}
-
-impl DirectRunoffPartitionState {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            liquid_input_m: 0.0,
-            runon_input_m: 0.0,
-            cumulative_infiltration_m: 0.0,
-            depression_storage_delta_m: 0.0,
-            surface_saturation_runoff_m: 0.0,
-            partition_runoff_m: 0.0,
-            q_runoff_m: 0.0,
-            closure_residual_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectRunoffDownstreamOperands {
-    pub liquid_input_m: f64,
-    pub runon_input_m: f64,
-    pub cumulative_infiltration_m: f64,
-    pub depression_storage_delta_m: f64,
-    pub surface_saturation_runoff_m: f64,
-    pub partition_runoff_m: f64,
-    pub q_runoff_m: f64,
-    pub closure_residual_m: f64,
-}
-
-impl DirectRunoffDownstreamOperands {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            liquid_input_m: 0.0,
-            runon_input_m: 0.0,
-            cumulative_infiltration_m: 0.0,
-            depression_storage_delta_m: 0.0,
-            surface_saturation_runoff_m: 0.0,
-            partition_runoff_m: 0.0,
-            q_runoff_m: 0.0,
-            closure_residual_m: 0.0,
-        }
-    }
-}
-
-impl From<DirectRunoffPartitionState> for DirectRunoffDownstreamOperands {
-    fn from(state: DirectRunoffPartitionState) -> Self {
-        Self {
-            liquid_input_m: state.liquid_input_m,
-            runon_input_m: state.runon_input_m,
-            cumulative_infiltration_m: state.cumulative_infiltration_m,
-            depression_storage_delta_m: state.depression_storage_delta_m,
-            surface_saturation_runoff_m: state.surface_saturation_runoff_m,
-            partition_runoff_m: state.partition_runoff_m,
-            q_runoff_m: state.q_runoff_m,
-            closure_residual_m: state.closure_residual_m,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectRunoffShadowProjection {
-    pub lane_index: usize,
-    pub day_index: usize,
-    pub liquid_input_m: f64,
-    pub runon_input_m: f64,
-    pub cumulative_infiltration_m: f64,
-    pub depression_storage_delta_m: f64,
-    pub surface_saturation_runoff_m: f64,
-    pub partition_runoff_m: f64,
-    pub q_runoff_m: f64,
-    pub closure_residual_m: f64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectPeakRunoffState {
-    pub q_runoff_m: f64,
-    pub peak_runoff_rate_m_s: f64,
-    pub runoff_duration_s: f64,
-    pub peak_hour_index: Option<usize>,
-    pub method_branch: f64,
-    pub tstar: f64,
-    pub qpstar: f64,
-    pub vstar: f64,
-}
-
-impl DirectPeakRunoffState {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            q_runoff_m: 0.0,
-            peak_runoff_rate_m_s: 0.0,
-            runoff_duration_s: 0.0,
-            peak_hour_index: None,
-            method_branch: 0.0,
-            tstar: 0.0,
-            qpstar: 0.0,
-            vstar: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectPeakRunoffDownstreamOperands {
-    pub q_runoff_m: f64,
-    pub peak_runoff_rate_m_s: f64,
-    pub runoff_duration_s: f64,
-    pub peak_hour_index: Option<usize>,
-    pub method_branch: f64,
-    pub tstar: f64,
-    pub qpstar: f64,
-    pub vstar: f64,
-}
-
-impl DirectPeakRunoffDownstreamOperands {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            q_runoff_m: 0.0,
-            peak_runoff_rate_m_s: 0.0,
-            runoff_duration_s: 0.0,
-            peak_hour_index: None,
-            method_branch: 0.0,
-            tstar: 0.0,
-            qpstar: 0.0,
-            vstar: 0.0,
-        }
-    }
-}
-
-impl From<DirectPeakRunoffState> for DirectPeakRunoffDownstreamOperands {
-    fn from(state: DirectPeakRunoffState) -> Self {
-        Self {
-            q_runoff_m: state.q_runoff_m,
-            peak_runoff_rate_m_s: state.peak_runoff_rate_m_s,
-            runoff_duration_s: state.runoff_duration_s,
-            peak_hour_index: state.peak_hour_index,
-            method_branch: state.method_branch,
-            tstar: state.tstar,
-            qpstar: state.qpstar,
-            vstar: state.vstar,
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct DirectPeakRunoffShadowProjection {
-    pub lane_index: usize,
-    pub day_index: usize,
-    pub q_runoff_m: f64,
-    pub peak_runoff_rate_m_s: f64,
-    pub runoff_duration_s: f64,
-    pub peak_hour_index: Option<usize>,
-    pub method_branch: f64,
-    pub tstar: f64,
-    pub qpstar: f64,
-    pub vstar: f64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectLiquidInputSpanReport {
-    pub phase_count: usize,
-    pub phase_entry_count: u64,
-    pub direct_compute_count: u64,
-    pub state_mutation_count: u64,
-    pub downstream_operand_count: u64,
-    pub shadow_projection_count: u64,
-    pub compatibility_edge_invocation_count: u64,
-    pub liquid_input_shadow_projection: DirectLiquidInputShadowProjection,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectRunonCarrySpanReport {
-    pub phase_count: usize,
-    pub phase_entry_count: u64,
-    pub direct_compute_count: u64,
-    pub state_mutation_count: u64,
-    pub downstream_operand_count: u64,
-    pub shadow_projection_count: u64,
-    pub compatibility_edge_invocation_count: u64,
-    pub runon_carry_shadow_projection: DirectRunonCarryShadowProjection,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectInfiltrationDepressionSpanReport {
-    pub phase_count: usize,
-    pub phase_entry_count: u64,
-    pub direct_compute_count: u64,
-    pub state_mutation_count: u64,
-    pub downstream_operand_count: u64,
-    pub shadow_projection_count: u64,
-    pub compatibility_edge_invocation_count: u64,
-    pub infiltration_depression_shadow_projection: DirectInfiltrationDepressionShadowProjection,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectSaturationAddbackSpanReport {
-    pub phase_count: usize,
-    pub phase_entry_count: u64,
-    pub direct_compute_count: u64,
-    pub state_mutation_count: u64,
-    pub downstream_operand_count: u64,
-    pub shadow_projection_count: u64,
-    pub compatibility_edge_invocation_count: u64,
-    pub saturation_addback_shadow_projection: DirectSaturationAddbackShadowProjection,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectRunoffPartitionSpanReport {
-    pub phase_count: usize,
-    pub phase_entry_count: u64,
-    pub direct_compute_count: u64,
-    pub state_mutation_count: u64,
-    pub downstream_operand_count: u64,
-    pub shadow_projection_count: u64,
-    pub compatibility_edge_invocation_count: u64,
-    pub runoff_shadow_projection: DirectRunoffShadowProjection,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct DirectPeakRunoffSpanReport {
-    pub phase_count: usize,
-    pub phase_entry_count: u64,
-    pub direct_compute_count: u64,
-    pub state_mutation_count: u64,
-    pub downstream_operand_count: u64,
-    pub shadow_projection_count: u64,
-    pub compatibility_edge_invocation_count: u64,
-    pub peak_runoff_shadow_projection: DirectPeakRunoffShadowProjection,
-}
+include!("runoff_result_types.rs");

@@ -1,0 +1,67 @@
+Ran 2026-09-04
+Evidence class: exact CPU-0 release diagnostic
+Rust manifest SHA-256: b9f0e1018e72ac0aded97aa1d4004cba3e670d7ec856baa9e662f8584415155f
+Release test binary SHA-256: e54e71af09af60e1c7c993011bc794a9355ce8c11e6ac7987085ad0b9f73780e
+Command: timeout 1800 taskset -c 0 env RUST_MIN_STACK=67108864 CARGO_PROFILE_RELEASE_LTO=false nix develop -c cargo test --release -p openwepp-runner --lib hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile -- --ignored --exact --nocapture --test-threads=1
+Exit: 0
+Release build: 7m 27s
+Test elapsed: 4.96s
+
+STAGE3_LANED_RELEASE_PROBE selected exact fields:
+run_wall_us=4935335
+qualification_telemetry_total_wall_us=4935336
+rss_kib=70572
+laned_source_m3=0.8488061229561478
+laned_outlet_m3=0.8471105124736579
+laned_end_window_storage_m3=0.0016956104824910018
+laned_clamp_m3=0.0
+total_parent_support_count=48
+accepted_publication_support_count=56
+direct_trial_count=20
+split_child_trial_count=32
+accepted_microstep_count=4
+qualification_counters_complete=true
+qualification_scopes_balanced=true
+
+carrier_physical_evidence_attribution:
+map_started_count=400
+map_completed_count=400
+measured_stage_total_wall_us=27257
+required_first_construction_wall_us=19136
+source_proven_removable_duplicate_wall_us=8121
+identity_existing_digest_count=1200
+identity_telemetry_overhead_wall_us=63
+identity_join_count=800
+identity_same_count=800
+identity_mismatch_count=0
+identity_incomplete_map_count=0
+
+operations count/wall_us:
+stage3_initial_projection=400/2355
+stage3_precipitation_seal=400/1103
+stage3_completion_projection=400/1404
+soil_initial_authority=400/130
+soil_initial_operands=400/5387
+soil_completion_authority=400/84
+soil_completion_operands=400/4857
+terminal_receipt_initial_seal=400/209
+terminal_receipt_validation=400/197
+surface_custody_clone=400/131
+surface_custody_validation=400/474
+hydrology_effective_frame_clone=400/613
+hydrology_seed_frames=800/5527
+hydrology_layer_facts=800/1857
+hydrology_snapshot_bytes=800/938
+hydrology_snapshot_fingerprint=800/1111
+hydrology_frame_assembly=800/871
+
+Source-truth correction: the release record's 20 direct trials and 32 split
+children count adaptive trial topology. They are not one-to-one with executions
+of the common physical-evidence map scope; the instrumented authentic path
+executed 400 such scopes. The 800 later Stage-3 joins are two per scope and all
+matched the first scope digest.
+
+Disposition: REJECTED_AND_REVERTED. The six source-proven later duplicates
+total only 8,121 us, below the prospective 100,000 us floor. The diagnostic
+also observed 70,572 KiB RSS, above the 65,536 KiB package ceiling. No
+production gain, contract amendment, or custody implementation is claimed.

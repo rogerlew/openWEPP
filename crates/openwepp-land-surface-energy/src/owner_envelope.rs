@@ -1729,6 +1729,7 @@ pub fn project_soil_thermal_unpublished_top_layer_coordinates_v2(
     )
 }
 
+#[allow(clippy::too_many_lines)]
 fn project_soil_thermal_unpublished_coordinates_with_scope_v2(
     prepared: &PreparedSoilThermalSupportV2,
     coordinates: &[SoilThermalUnpublishedCoordinateV2],

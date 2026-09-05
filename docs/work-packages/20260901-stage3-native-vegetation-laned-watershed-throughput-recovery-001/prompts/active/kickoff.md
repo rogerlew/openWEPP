@@ -1,6 +1,6 @@
 # Execute Stage 3 native-vegetation laned watershed throughput recovery
 
-Status: `QUEUED — DO NOT EXECUTE UNTIL EXPLICITLY STARTED`
+Status: `EXECUTED — TERMINAL HOLD; RELEASE/PERFORMANCE QUALIFICATION FAILED`
 
 Scope: local openWEPP kernel/runtime architecture and performance recovery;
 flat-file reads/edits and local commands only. Do not edit wepppy or use network

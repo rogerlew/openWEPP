@@ -16,7 +16,8 @@ use crate::{
     V3LitterResidualContext, V3PhaseFreeCoveredEvaluation, V3PhaseFreeSurfaceEnergyLedger,
     WaterAmount, WaterAuthorization, WaterProtocol, WaterSourceType, apply_bounded_litter_phase,
     canonical_digest, evaluate_raw_litter_vapor, finalize_litter_vapor, install_finalized_vapor,
-    publish_phase_free_litter_vapor, reconstruct_litter_phase_closure,
+    litter_phase_capacity_spill_v1, publish_phase_free_litter_vapor,
+    reconstruct_litter_phase_closure, retained_litter_phase_ending_v1,
     solve_v3_phase_free_covered_column, validate_beginning_litter_state,
     validate_litter_phase_configuration,
 };
@@ -181,7 +182,14 @@ pub fn execute_litter_phase_v3(
     };
     receipt.receipt_sha256 = canonical_litter_phase_receipt_sha256(&receipt)?;
     validate_litter_phase_receipt(&receipt)?;
-    Ok(AcceptedLitterPhaseCandidate { ending, receipt })
+    let retained_ending = retained_litter_phase_ending_v1(input.configuration, ending)?;
+    let capacity_spill = litter_phase_capacity_spill_v1(&receipt)?;
+    Ok(AcceptedLitterPhaseCandidate {
+        ending,
+        retained_ending,
+        capacity_spill,
+        receipt,
+    })
 }
 
 pub fn validate_litter_phase_receipt(

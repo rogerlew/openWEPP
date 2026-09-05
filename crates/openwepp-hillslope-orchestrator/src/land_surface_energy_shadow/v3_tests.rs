@@ -1,31 +1,34 @@
 //! Focused frozen-litter V3 coordinator vectors.
 
-use openwepp_kernel_contract::{ResourceOwnerId, TransactionId};
+use openwepp_kernel_contract::{ResourceOwnerId, TileId, TransactionId};
 use openwepp_land_surface_energy::{
     BeginningLitterPhaseState, ExactDyadicEnthalpy, FinalizedLitterVapor,
     LandSurfaceEnergyConfiguration, LandSurfaceEnergyV3State, LitterPhaseConfiguration,
     LitterVaporEnvironment, OfeId, Sha256Digest, SoilThermalOwnerEnvelopeV2,
-    SoilThermalOwnerRestartV2, SoilThermalV2MigrationIdentity, SurfaceId,
+    SoilThermalOwnerRestartV2, SoilThermalV2MigrationIdentity, SourceId, SurfaceClass, SurfaceId,
     V2_MODEL_DEFINITION_SHA256, V2_MODEL_VERSION, V2_VEGETATION_MODEL_DEFINITION_SHA256,
     V2_VEGETATION_MODEL_VERSION, V3PhaseFreeSurfaceEnergyLedger, evaluate_raw_litter_vapor,
     finalize_litter_vapor, install_finalized_vapor, migrate_soil_thermal_v1_to_v2,
     migrate_v2_configuration_to_v3, migrate_v2_state_to_v3, project_validated_v1_runtime_to_v2,
     saturation_specific_humidity,
 };
+use sha2::{Digest, Sha256};
 
 use crate::direct_runtime::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
-    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidReceiptDisposition,
-    DirectTileGroundIngress, DirectWb14CoupledChildBindingV1,
-    LseSurfaceEnthalpyAcceptedEnergyOperandV1, LseSurfaceEnthalpyEnergyOperandKindV1,
-    LseSurfaceEnthalpyOwnerEnvelopeV1, SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2,
-    SurfaceLiquidOwnerEnvelopeV2, SurfaceLiquidOwnerModelDefinitionV2,
+    DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidIngressInput,
+    DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidReceiptDisposition, DirectTileGroundIngress,
+    DirectWb14CoupledChildBindingV1, LseSurfaceEnthalpyAcceptedEnergyOperandV1,
+    LseSurfaceEnthalpyEnergyOperandKindV1, LseSurfaceEnthalpyOwnerEnvelopeV1,
+    SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2, SurfaceLiquidOwnerEnvelopeV2,
+    SurfaceLiquidOwnerModelDefinitionV2,
 };
 
+use super::PhysicalSoilEnergyTransactionAuthorityV2;
 use super::endpoint_fixture;
 use super::v3_execution::{
-    FrozenLitterV3RuntimeInput, FrozenLitterV4RuntimeInput, execute_frozen_litter_v3,
-    execute_frozen_litter_v4,
+    FrozenLitterV3RollbackV1, FrozenLitterV3RuntimeInput, FrozenLitterV3SoilBeginningV1,
+    FrozenLitterV4RuntimeInput, execute_frozen_litter_v3, execute_frozen_litter_v4,
 };
 use super::v3_input_projection::{
     FROZEN_LITTER_V3_SUPPORT_FLOOR_NS, FrozenLitterV3PhaseFreeInput, FrozenLitterV3RuntimeError,
@@ -163,6 +166,438 @@ fn surface_v2_fixture(
     let owner =
         SurfaceLiquidOwnerEnvelopeV2::wrap_v2(&configuration, state).expect("surface V2 owner");
     (configuration, owner)
+}
+
+struct ExactSurfaceTopologyFixture {
+    surface_configuration: SurfaceLiquidConfigurationV2,
+    surface_owner: SurfaceLiquidOwnerEnvelopeV2,
+    lse_configuration: LandSurfaceEnergyConfiguration,
+    lse_state: LandSurfaceEnergyV3State,
+    exact_owner: LseSurfaceEnthalpyOwnerEnvelopeV1,
+}
+
+fn scale_tile_id(base: &str, rank: usize) -> TileId {
+    TileId::try_new(format!("{base}-{}", rank + 1)).expect("scale tile ID")
+}
+
+fn exact_surface_topology_fixture(ofe_names: &[String]) -> ExactSurfaceTopologyFixture {
+    assert!(!ofe_names.is_empty(), "test topology must be nonempty");
+    let base_parent = endpoint_fixture().surface_configuration;
+    let topology = ofe_names
+        .iter()
+        .map(|name| OfeId::try_new(name).expect("scale OFE ID"))
+        .collect::<Vec<_>>();
+    let mut records = Vec::with_capacity(base_parent.records.len() * topology.len());
+    for (rank, ofe_id) in topology.iter().enumerate() {
+        for template in &base_parent.records {
+            let base_tile = template.key.tile_id.as_str();
+            let mut record = template.clone();
+            record.key.ofe_id = ofe_id.clone();
+            record.key.tile_id = scale_tile_id(base_tile, rank);
+            record.key.surface_id = SurfaceId::try_new(format!("surface:{rank}:{base_tile}"))
+                .expect("scale surface ID");
+            record.key.source_id =
+                SourceId::try_new(format!("liquid:{rank}:{base_tile}")).expect("scale source ID");
+            record.ofe_area_m2 = 100.0 + rank as f64;
+            if rank + 1 < topology.len() {
+                record.runon_destination_ofe_id = Some(topology[rank + 1].clone());
+                record.runon_destination_tile_id = Some(scale_tile_id("open", rank + 1));
+            } else {
+                record.runon_destination_ofe_id = None;
+                record.runon_destination_tile_id = None;
+            }
+            records.push(record);
+        }
+    }
+    let bindings = topology
+        .iter()
+        .enumerate()
+        .map(|(rank, ofe_id)| {
+            let mut binding = base_parent.ofe_bindings[0].clone();
+            binding.ofe_id = ofe_id.clone();
+            binding.production_lane_index = rank;
+            binding.production_lane_id = u32::try_from(rank + 1).expect("scale lane ID");
+            binding
+        })
+        .collect::<Vec<DirectSurfaceLiquidOfeBinding>>();
+    let parent = DirectSurfaceLiquidConfiguration::new(
+        base_parent.owner_id,
+        base_parent.run_id,
+        topology.clone(),
+        bindings,
+        records,
+    )
+    .expect("scale surface configuration");
+
+    let (base_lse_configuration, base_lse_state) = lse_v3_fixture();
+    let mut lse_configuration = base_lse_configuration.clone();
+    lse_configuration.ofes = topology
+        .iter()
+        .enumerate()
+        .map(|(rank, ofe_id)| {
+            let mut ofe = base_lse_configuration.ofes[0].clone();
+            ofe.ofe_id = ofe_id.clone();
+            ofe.area_m2 = 100.0 + rank as f64;
+            for tile in &mut ofe.tiles {
+                tile.tile_id = scale_tile_id(tile.tile_id.as_str(), rank);
+            }
+            ofe
+        })
+        .collect();
+    lse_configuration.configuration_sha256 = lse_configuration
+        .canonical_sha256()
+        .expect("scale LSE configuration digest");
+    lse_configuration
+        .validate_v3()
+        .expect("scale LSE configuration");
+    let mut lse_state = base_lse_state.clone();
+    lse_state.0.configuration_sha256 = lse_configuration.configuration_sha256.clone();
+    lse_state.0.tiles = topology
+        .iter()
+        .enumerate()
+        .flat_map(|(rank, ofe_id)| {
+            base_lse_state.0.tiles.iter().cloned().map(move |mut tile| {
+                tile.ofe_id = ofe_id.clone();
+                tile.tile_id = scale_tile_id(tile.tile_id.as_str(), rank);
+                tile
+            })
+        })
+        .collect();
+    lse_state.0.state_sha256 = lse_state
+        .canonical_sha256()
+        .expect("scale LSE state digest");
+    lse_state
+        .validate(&lse_configuration)
+        .expect("scale LSE state");
+
+    let litter_depths = parent
+        .records
+        .iter()
+        .filter(|record| record.key.surface_class == SurfaceClass::ForestLitter)
+        .map(|record| (record.key.clone(), 0.04))
+        .collect();
+    let model = SurfaceLiquidOwnerModelDefinitionV2::new(digest('1'), digest('2'), digest('3'))
+        .expect("scale surface model");
+    let surface_configuration = SurfaceLiquidConfigurationV2::new(parent, model, &litter_depths)
+        .expect("scale surface V2 configuration");
+    let zeros = surface_configuration
+        .records()
+        .iter()
+        .map(|record| (record.key.clone(), 0.0))
+        .collect();
+    let enthalpy = surface_configuration
+        .records()
+        .iter()
+        .map(|record| {
+            let value = lse_state
+                .0
+                .tiles
+                .iter()
+                .find(|tile| tile.ofe_id == record.key.ofe_id && tile.tile_id == record.key.tile_id)
+                .expect("scale LSE mirror")
+                .surface_enthalpy_j_m2_tile_ground;
+            (record.key.clone(), value)
+        })
+        .collect();
+    let surface_state = SurfaceLiquidOwnedStateV2::new_initial(
+        &surface_configuration,
+        &zeros,
+        &zeros,
+        &enthalpy,
+        0,
+    )
+    .expect("scale surface state");
+    let surface_owner =
+        SurfaceLiquidOwnerEnvelopeV2::wrap_v2(&surface_configuration, surface_state)
+            .expect("scale surface owner");
+    let exact_owner = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+        ResourceOwnerId::try_new("scale-exact-surface-owner").expect("exact owner ID"),
+        &lse_configuration,
+        &lse_state,
+        &surface_configuration,
+        &surface_owner,
+    )
+    .expect("scale exact owner");
+    ExactSurfaceTopologyFixture {
+        surface_configuration,
+        surface_owner,
+        lse_configuration,
+        lse_state,
+        exact_owner,
+    }
+}
+
+fn reseal_exact_surface_owner(owner: &mut LseSurfaceEnthalpyOwnerEnvelopeV1) {
+    owner.state_sha256 = typed_digest('0');
+    let mut preimage = owner.clone();
+    preimage.state_sha256 = typed_digest('0');
+    preimage.receipt_chain_sha256 = typed_digest('0');
+    owner.state_sha256 = Sha256Digest::try_new(format!(
+        "{:x}",
+        Sha256::digest(serde_json::to_vec(&preimage).expect("exact-owner preimage"))
+    ))
+    .expect("resealed exact-owner digest");
+}
+
+fn scale_ofe_names(count: usize) -> Vec<String> {
+    (1..=count).map(|index| format!("ofe-{index}")).collect()
+}
+
+fn assert_exact_topology_join_rejects(
+    owner: &LseSurfaceEnthalpyOwnerEnvelopeV1,
+    fixture: &ExactSurfaceTopologyFixture,
+    label: &str,
+) {
+    assert!(
+        owner
+            .validate_frozen_parent_join(
+                &fixture.lse_configuration,
+                &fixture.lse_state,
+                &fixture.surface_configuration,
+                &fixture.surface_owner,
+            )
+            .is_err(),
+        "topology poison must reject: {label}",
+    );
+}
+
+#[test]
+fn exact_surface_owner_accepts_configured_ofe_9_then_ofe_10_topology() {
+    for count in [1, 9, 10, 19] {
+        let names = scale_ofe_names(count);
+        let fixture = exact_surface_topology_fixture(&names);
+        fixture
+            .exact_owner
+            .validate_frozen_parent_join(
+                &fixture.lse_configuration,
+                &fixture.lse_state,
+                &fixture.surface_configuration,
+                &fixture.surface_owner,
+            )
+            .expect("physical topology-ranked exact owner");
+        let restart = fixture.exact_owner.restart().expect("scale exact restart");
+        let restored = crate::LseSurfaceEnthalpyOwnerRestartV1::from_canonical_bytes(
+            &restart
+                .canonical_bytes()
+                .expect("scale exact restart bytes"),
+        )
+        .expect("scale exact restart replay");
+        restored
+            .owner
+            .validate_frozen_parent_join(
+                &fixture.lse_configuration,
+                &fixture.lse_state,
+                &fixture.surface_configuration,
+                &fixture.surface_owner,
+            )
+            .expect("restored physical topology-ranked exact owner");
+        let observed = fixture
+            .exact_owner
+            .records()
+            .iter()
+            .map(|record| record.surface_key.ofe_id.as_str())
+            .fold(Vec::new(), |mut ids, id| {
+                if ids.last().copied() != Some(id) {
+                    ids.push(id);
+                }
+                ids
+            });
+        assert_eq!(
+            observed,
+            names.iter().map(String::as_str).collect::<Vec<_>>()
+        );
+        if count >= 10 {
+            assert_eq!(observed[8], "ofe-9");
+            assert_eq!(observed[9], "ofe-10");
+        }
+    }
+}
+
+#[test]
+fn exact_surface_owner_accepts_opaque_nonlexical_ofe_topology() {
+    let names = ["zeta", "alpha", "middle", "opaque-x"]
+        .map(str::to_owned)
+        .to_vec();
+    let fixture = exact_surface_topology_fixture(&names);
+    fixture
+        .exact_owner
+        .validate_frozen_parent_join(
+            &fixture.lse_configuration,
+            &fixture.lse_state,
+            &fixture.surface_configuration,
+            &fixture.surface_owner,
+        )
+        .expect("opaque topology-ranked exact owner");
+    let observed = fixture
+        .exact_owner
+        .records()
+        .iter()
+        .map(|record| record.surface_key.ofe_id.as_str())
+        .fold(Vec::new(), |mut ids, id| {
+            if ids.last().copied() != Some(id) {
+                ids.push(id);
+            }
+            ids
+        });
+    assert_eq!(
+        observed,
+        names.iter().map(String::as_str).collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn exact_surface_owner_preserves_within_ofe_and_operand_order() {
+    let names = ["ofe-9".to_owned(), "ofe-10".to_owned()];
+    let fixture = exact_surface_topology_fixture(&names);
+    assert!(
+        fixture
+            .exact_owner
+            .records()
+            .iter()
+            .zip(fixture.surface_configuration.records())
+            .all(|(exact, configured)| exact.surface_key == configured.key)
+    );
+
+    let runtime = runtime_fixture(272.5, false, 0.0);
+    let beginning = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+        ResourceOwnerId::try_new("operand-order-exact-owner").expect("exact owner ID"),
+        &runtime.lse_configuration,
+        &runtime.lse_state,
+        &runtime.surface_configuration,
+        &runtime.surface_owner,
+    )
+    .expect("operand-order owner");
+    let accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
+        physical: physical_input(&runtime),
+        beginning_exact_surface_owner: &beginning,
+    })
+    .expect("operand-order candidate");
+    let identities = accepted
+        .exact_surface_receipt
+        .accepted_operands
+        .iter()
+        .map(|operand| {
+            let rank = beginning
+                .records()
+                .iter()
+                .position(|record| record.surface_key == operand.surface_key)
+                .expect("beginning owner record rank");
+            (rank, operand.kind, operand.ordinal)
+        })
+        .collect::<Vec<_>>();
+    assert!(identities.windows(2).all(|pair| pair[0] < pair[1]));
+}
+
+#[test]
+fn exact_surface_owner_rejects_duplicate_omitted_or_substituted_topology_keys() {
+    let fixture = exact_surface_topology_fixture(&["ofe-9".to_owned(), "ofe-10".to_owned()]);
+
+    let mut duplicate = fixture.exact_owner.clone();
+    duplicate.records[1].surface_key = duplicate.records[0].surface_key.clone();
+    reseal_exact_surface_owner(&mut duplicate);
+    assert_exact_topology_join_rejects(&duplicate, &fixture, "duplicate");
+
+    let mut omitted = fixture.exact_owner.clone();
+    omitted.records.pop();
+    reseal_exact_surface_owner(&mut omitted);
+    assert_exact_topology_join_rejects(&omitted, &fixture, "omission");
+
+    let mut substituted = fixture.exact_owner.clone();
+    substituted.records[0].surface_key.ofe_id = OfeId::try_new("foreign-ofe").expect("foreign OFE");
+    reseal_exact_surface_owner(&mut substituted);
+    assert_exact_topology_join_rejects(&substituted, &fixture, "substitution");
+}
+
+#[test]
+fn exact_surface_owner_rejects_topology_relative_or_within_ofe_reorder() {
+    let fixture = exact_surface_topology_fixture(&["ofe-9".to_owned(), "ofe-10".to_owned()]);
+    let first_second_ofe = fixture
+        .exact_owner
+        .records()
+        .iter()
+        .position(|record| record.surface_key.ofe_id.as_str() == "ofe-10")
+        .expect("second OFE record");
+
+    let mut topology_reorder = fixture.exact_owner.clone();
+    topology_reorder.records.swap(0, first_second_ofe);
+    reseal_exact_surface_owner(&mut topology_reorder);
+    topology_reorder
+        .validate()
+        .expect("bare validation does not infer topology from OFE spelling");
+    assert_exact_topology_join_rejects(&topology_reorder, &fixture, "topology reorder");
+
+    let mut within_ofe_reorder = fixture.exact_owner.clone();
+    within_ofe_reorder.records.swap(0, 1);
+    reseal_exact_surface_owner(&mut within_ofe_reorder);
+    within_ofe_reorder
+        .validate()
+        .expect("bare validation permits unique opaque-key sequence");
+    assert_exact_topology_join_rejects(&within_ofe_reorder, &fixture, "within-OFE reorder");
+}
+
+#[test]
+fn exact_surface_owner_rejects_stale_configuration_digest() {
+    let fixture = exact_surface_topology_fixture(&["ofe-9".to_owned(), "ofe-10".to_owned()]);
+    let mut stale = fixture.exact_owner.clone();
+    stale.configuration_sha256 = typed_digest('f');
+    reseal_exact_surface_owner(&mut stale);
+    assert_exact_topology_join_rejects(&stale, &fixture, "stale configuration digest");
+
+    let foreign = exact_surface_topology_fixture(&["right".to_owned(), "left".to_owned()]);
+    assert!(
+        fixture
+            .exact_owner
+            .validate_frozen_parent_join(
+                &foreign.lse_configuration,
+                &foreign.lse_state,
+                &foreign.surface_configuration,
+                &foreign.surface_owner,
+            )
+            .is_err(),
+        "cross-owner topology must reject",
+    );
+}
+
+#[test]
+fn exact_surface_owner_topology_failure_rolls_back_all_bytes() {
+    let fixture = exact_surface_topology_fixture(&["ofe-9".to_owned(), "ofe-10".to_owned()]);
+    let exact_before = fixture
+        .exact_owner
+        .canonical_bytes()
+        .expect("beginning exact bytes");
+    let surface_before = fixture
+        .surface_owner
+        .canonical_bytes(
+            fixture.surface_configuration.parent(),
+            Some(&fixture.surface_configuration),
+        )
+        .expect("beginning surface bytes");
+    let lse_before = serde_json::to_vec(&fixture.lse_state).expect("beginning LSE bytes");
+    let mut poison = fixture.exact_owner.clone();
+    poison.records.reverse();
+    reseal_exact_surface_owner(&mut poison);
+    assert_exact_topology_join_rejects(&poison, &fixture, "complete reversal");
+    assert_eq!(
+        fixture
+            .exact_owner
+            .canonical_bytes()
+            .expect("rollback exact bytes"),
+        exact_before,
+    );
+    assert_eq!(
+        fixture
+            .surface_owner
+            .canonical_bytes(
+                fixture.surface_configuration.parent(),
+                Some(&fixture.surface_configuration),
+            )
+            .expect("rollback surface bytes"),
+        surface_before,
+    );
+    assert_eq!(
+        serde_json::to_vec(&fixture.lse_state).expect("rollback LSE bytes"),
+        lse_before,
+    );
 }
 
 fn phase_input(
@@ -321,7 +756,9 @@ fn ingress(
     }
 }
 
-fn soil_fixture() -> (SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2) {
+fn soil_fixture_at(
+    transaction_id: TransactionId,
+) -> (SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2) {
     let thermal = endpoint_fixture().thermal;
     let owner = migrate_soil_thermal_v1_to_v2(
         &thermal,
@@ -329,7 +766,7 @@ fn soil_fixture() -> (SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2) {
             model_version: "OPENWEPP_SOIL_THERMAL_TEST_V2".into(),
             model_definition_sha256: typed_digest('8'),
             run_id: "83".into(),
-            transaction_id: TRANSACTION,
+            transaction_id,
             support_start_ns: SUPPORT_START_NS,
             support_end_ns: SUPPORT_END_NS,
             receipt_chain_sha256: typed_digest('9'),
@@ -347,6 +784,10 @@ fn soil_fixture() -> (SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2) {
         restart_sha256: typed_digest('a'),
     };
     (owner, restart)
+}
+
+fn soil_fixture() -> (SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2) {
+    soil_fixture_at(TRANSACTION)
 }
 
 fn runtime_fixture(temperature_k: f64, evaporating: bool, litter_ingress: f64) -> RuntimeFixture {
@@ -383,12 +824,50 @@ fn runtime_fixture(temperature_k: f64, evaporating: bool, litter_ingress: f64) -
     }
 }
 
+fn saturated_melting_runtime_fixture() -> RuntimeFixture {
+    let mut fixture = runtime_fixture(295.0, false, 0.0);
+    let state = fixture.surface_owner.v2_state().expect("surface V2 state");
+    let records = state
+        .records()
+        .iter()
+        .cloned()
+        .map(|mut record| {
+            if record.key.tile_id.as_str() == "forest" {
+                record.liquid_kg_m2_tile = 6.0;
+                record.litter_ice_kg_m2_tile = 1.0;
+                record.surface_enthalpy_j_m2_tile = 0.0;
+            }
+            record
+        })
+        .collect();
+    fixture.surface_owner = fixture
+        .surface_owner
+        .try_replace_v2_state(
+            &fixture.surface_configuration,
+            records,
+            state.continuations().to_vec(),
+        )
+        .expect("saturated melting surface owner");
+    fixture.phase_inputs = vec![phase_input(
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+        295.0,
+        false,
+    )];
+    fixture
+}
+
 fn execute_fixture(
     fixture: &RuntimeFixture,
 ) -> Result<super::v3_execution::AcceptedFrozenLitterV3RuntimeCandidate, FrozenLitterV3RuntimeError>
 {
     execute_frozen_litter_v3(&FrozenLitterV3RuntimeInput {
         transaction_id: TRANSACTION,
+        soil_transaction_authority: PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            TRANSACTION,
+            fixture.soil_owner.transaction_id,
+        )
+        .expect("V3 soil transaction authority"),
         predecessor_transaction_id: None,
         parent_support_start_ns: SUPPORT_START_NS,
         parent_support_end_ns: PARENT_END_NS,
@@ -404,14 +883,21 @@ fn execute_fixture(
         wb14_parent: None,
         finalize_wb14_parent_interval: false,
         coupled_binding: fixture.binding,
-        soil_thermal_owner: &fixture.soil_owner,
-        soil_thermal_restart: &fixture.soil_restart,
+        soil_beginning: FrozenLitterV3SoilBeginningV1::PublishableOwner {
+            owner: &fixture.soil_owner,
+            restart: &fixture.soil_restart,
+        },
     })
 }
 
 fn physical_input(fixture: &RuntimeFixture) -> FrozenLitterV3RuntimeInput<'_> {
     FrozenLitterV3RuntimeInput {
         transaction_id: TRANSACTION,
+        soil_transaction_authority: PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            TRANSACTION,
+            fixture.soil_owner.transaction_id,
+        )
+        .expect("V3 soil transaction authority"),
         predecessor_transaction_id: None,
         parent_support_start_ns: SUPPORT_START_NS,
         parent_support_end_ns: PARENT_END_NS,
@@ -427,9 +913,43 @@ fn physical_input(fixture: &RuntimeFixture) -> FrozenLitterV3RuntimeInput<'_> {
         wb14_parent: None,
         finalize_wb14_parent_interval: false,
         coupled_binding: fixture.binding,
-        soil_thermal_owner: &fixture.soil_owner,
-        soil_thermal_restart: &fixture.soil_restart,
+        soil_beginning: FrozenLitterV3SoilBeginningV1::PublishableOwner {
+            owner: &fixture.soil_owner,
+            restart: &fixture.soil_restart,
+        },
     }
+}
+
+#[test]
+fn soil_transaction_authority_admits_split_source_target_and_refuses_rebinding() {
+    let mut fixture = runtime_fixture(272.0, false, 0.0);
+    let soil_target = TransactionId(TRANSACTION.0 + 1);
+    (fixture.soil_owner, fixture.soil_restart) = soil_fixture_at(soil_target);
+
+    if let Err(error) = execute_frozen_litter_v3(&physical_input(&fixture)) {
+        panic!(
+            "an authenticated physical-source/soil-target split must remain admissible: {error:?}"
+        );
+    }
+
+    let mut swapped = physical_input(&fixture);
+    swapped.soil_transaction_authority =
+        PhysicalSoilEnergyTransactionAuthorityV2::try_new(soil_target, TRANSACTION)
+            .expect("swapped nonzero authority");
+    assert!(execute_frozen_litter_v3(&swapped).is_err());
+
+    let mut stale_target = physical_input(&fixture);
+    stale_target.soil_transaction_authority =
+        PhysicalSoilEnergyTransactionAuthorityV2::try_new(TRANSACTION, TRANSACTION)
+            .expect("stale nonzero authority");
+    assert!(execute_frozen_litter_v3(&stale_target).is_err());
+
+    let mut rebased_source = physical_input(&fixture);
+    rebased_source.transaction_id = soil_target;
+    rebased_source.soil_transaction_authority =
+        PhysicalSoilEnergyTransactionAuthorityV2::try_new(soil_target, soil_target)
+            .expect("rebased nonzero authority");
+    assert!(execute_frozen_litter_v3(&rebased_source).is_err());
 }
 
 #[test]
@@ -577,6 +1097,41 @@ fn wrong_vapor_sign_is_rejected_and_beginning_bytes_roll_back_exactly() {
 }
 
 #[test]
+fn litter_phase_capacity_spill_rolls_back_all_owners() {
+    let accepted = execute_fixture(&saturated_melting_runtime_fixture())
+        .expect("saturated melting phase candidate");
+    assert_eq!(accepted.litter_phase_capacity_spills.len(), 1);
+
+    let mut fixture = saturated_melting_runtime_fixture();
+    let snapshot = FrozenLitterV3RollbackSnapshot::capture(
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+        &fixture.lse_state,
+        &fixture.soil_owner,
+        &fixture.soil_restart,
+        None,
+    )
+    .expect("spill rollback snapshot");
+    fixture.ingress.wb14_parameters[0].effective_conductivity_m_s = f64::NAN;
+    assert!(execute_fixture(&fixture).is_err());
+    snapshot
+        .require_exactly_unchanged(
+            &fixture.surface_configuration,
+            &fixture.surface_owner,
+            &fixture.lse_state,
+            &fixture.soil_owner,
+            &fixture.soil_restart,
+            None,
+        )
+        .expect("spill failure preserves every beginning owner");
+}
+
+#[test]
+fn heterogeneous_v3_resource_join_rolls_back_all_owners() {
+    litter_phase_capacity_spill_rolls_back_all_owners();
+}
+
+#[test]
 fn complete_projection_joins_surface_owner_soil_v2_and_canonical_replay() {
     let fixture = runtime_fixture(273.15, false, 0.0);
     let accepted = execute_fixture(&fixture).expect("complete V3 candidate");
@@ -613,15 +1168,17 @@ fn complete_projection_joins_surface_owner_soil_v2_and_canonical_replay() {
     assert_eq!(phase_ice.to_bits(), ending_ice.to_bits());
     assert_eq!(
         accepted.rollback,
-        FrozenLitterV3RollbackSnapshot::capture(
-            &fixture.surface_configuration,
-            &fixture.surface_owner,
-            &fixture.lse_state,
-            &fixture.soil_owner,
-            &fixture.soil_restart,
-            None,
+        FrozenLitterV3RollbackV1::Publishable(
+            FrozenLitterV3RollbackSnapshot::capture(
+                &fixture.surface_configuration,
+                &fixture.surface_owner,
+                &fixture.lse_state,
+                &fixture.soil_owner,
+                &fixture.soil_restart,
+                None,
+            )
+            .expect("beginning rollback")
         )
-        .expect("beginning rollback")
     );
 }
 
@@ -1502,6 +2059,10 @@ fn exact_surface_named_operand_trial(
             tile.surface_enthalpy_j_m2_tile_ground = expected_high;
         }
     }
+    // `advance_exact` represents a complete parent support. Its independently
+    // constructed LSE/surface candidates must therefore carry the final
+    // transaction marker, just as the production V3 finalizer does.
+    ending_lse.0.last_accepted_transaction_id = Some(TRANSACTION);
     ending_lse.0.state_sha256 = ending_lse.canonical_sha256().expect("ending V3 digest");
     let surface_state = fixture.surface_owner.v2_state().expect("surface V2");
     let ending_surface = fixture
@@ -1516,10 +2077,20 @@ fn exact_surface_named_operand_trial(
                     if record.key == key {
                         record.surface_enthalpy_j_m2_tile = expected_high;
                     }
+                    record.last_accepted_transaction_id = Some(TRANSACTION);
                     record
                 })
                 .collect(),
-            surface_state.continuations().to_vec(),
+            surface_state
+                .continuations()
+                .iter()
+                .cloned()
+                .map(|mut continuation| {
+                    continuation.next_interval_index = 1;
+                    continuation.last_accepted_transaction_id = Some(TRANSACTION);
+                    continuation
+                })
+                .collect(),
         )
         .expect("ending surface V2");
     let accepted = beginning.advance_exact(

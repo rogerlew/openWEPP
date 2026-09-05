@@ -267,10 +267,15 @@ fn v48_r122_fixed_point_finalizer_fixture(
         .expect("R122 prepared exact composed final support");
     assert_eq!(prepared.beginning_owner().transaction_id, TransactionId(43));
     assert_eq!(
-        prepared.beginning_owner().expected_predecessor_transaction_id,
+        prepared
+            .beginning_owner()
+            .expected_predecessor_transaction_id,
         Some(TransactionId(42)),
     );
-    assert_eq!(prepared.beginning_owner().support_start_ns, 1_800_000_000_000);
+    assert_eq!(
+        prepared.beginning_owner().support_start_ns,
+        1_800_000_000_000
+    );
     assert_eq!(prepared.beginning_owner().support_end_ns, 1_980_000_000_000);
     let (accepted, seals) = accepted_bundle(
         &prepared,
@@ -292,9 +297,7 @@ fn v47_atomic_transaction_posture_accepts_same_source_and_soil_target() {
         v47_atomic_posture_fixture('1');
     align_complete_owner_transaction(&mut candidate, target);
     let posture = direct_soil_thermal_atomic_complete_owner_transaction_posture_v2(
-        &candidate,
-        &resident,
-        None,
+        &candidate, &resident, None,
     )
     .expect("same source/soil target posture");
     assert_eq!(posture.source_transaction_id, target);
@@ -319,8 +322,10 @@ fn v47_atomic_transaction_posture_accepts_exact_authenticated_soil_successor() {
     let (mut candidate, _, resident, _, _, source, target) = v47_atomic_posture_fixture('2');
     assert_ne!(source, target);
     align_complete_owner_transaction(&mut candidate, source);
-    let authority = crate::land_surface_energy_shadow::
-        PhysicalSoilEnergyTransactionAuthorityV2::try_new(source, target)
+    let authority =
+        crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            source, target,
+        )
         .expect("native split authority");
     let posture = direct_soil_thermal_atomic_complete_owner_transaction_posture_v2(
         &candidate,
@@ -397,14 +402,18 @@ fn v47_atomic_transaction_posture_refuses_foreign_swapped_or_missing_identity() 
 fn v47_atomic_transaction_posture_refuses_source_owner_disagreement() {
     let (mut candidate, _, resident, _, _, source, target) = v47_atomic_posture_fixture('4');
     align_complete_owner_transaction(&mut candidate, source);
-    let authority = crate::land_surface_energy_shadow::
-        PhysicalSoilEnergyTransactionAuthorityV2::try_new(source, target)
+    let authority =
+        crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            source, target,
+        )
         .expect("exact split authority");
     for poison in 0..3 {
         let mut changed = candidate.clone();
         match poison {
             0 => changed.vegetation_state.0.last_transaction_id = source.0 + 1,
-            1 => changed.lse_state.0.last_accepted_transaction_id = Some(TransactionId(source.0 + 1)),
+            1 => {
+                changed.lse_state.0.last_accepted_transaction_id = Some(TransactionId(source.0 + 1))
+            }
             _ => changed.inner.biogeochemistry.last_transaction_id = source.0 + 1,
         }
         assert!(
@@ -465,7 +474,9 @@ fn v47_composed_second_child_installs_with_exact_source_target_predecessor_chain
     let (mut candidate, prepared, _, _, _, source, target) = v47_atomic_posture_fixture('6');
     assert_ne!(source, target);
     assert_eq!(
-        prepared.beginning_owner().expected_predecessor_transaction_id,
+        prepared
+            .beginning_owner()
+            .expected_predecessor_transaction_id,
         Some(source),
     );
     align_complete_owner_transaction(&mut candidate, source);
@@ -505,16 +516,36 @@ fn v47_composed_second_child_installs_with_exact_source_target_predecessor_chain
         .expect("successor composed accepted ending");
     assert_eq!(accepted.ending_owner.transaction_id, target);
     assert_eq!(
-        accepted
-            .ending_owner
-            .expected_predecessor_transaction_id,
+        accepted.ending_owner.expected_predecessor_transaction_id,
         Some(source),
     );
-    let seals = seal_soil_thermal_accepted_candidate_v2(
-        prepared.beginning_owner(),
-        &accepted,
-    )
-    .expect("successor accepted seals");
+    let seals = seal_soil_thermal_accepted_candidate_v2(prepared.beginning_owner(), &accepted)
+        .expect("successor accepted seals");
+    let v3_authority = candidate
+        .authenticate_soil_thermal_unpublished_continuation_install_authority_v3(
+            &authoritative_beginning,
+            &result,
+            prepared.beginning_owner(),
+        )
+        .expect("sequential continuation three-domain authority");
+    let mut v3_candidate = candidate.clone();
+    v3_candidate
+        .install_soil_thermal_accepted_v2_from_unpublished_continuation_v3(
+            &authoritative_beginning,
+            &result,
+            prepared.beginning_owner(),
+            v3_authority,
+            accepted.clone(),
+            seals.clone(),
+        )
+        .expect("sequential continuation V3 install");
+    assert_eq!(
+        v3_candidate
+            .soil_thermal_v2()
+            .expect("V3 sequential resident")
+            .owner(),
+        &accepted.ending_owner,
+    );
     let authority = candidate
         .authenticate_soil_thermal_unpublished_continuation_install_authority_v2(
             &result,
@@ -548,8 +579,14 @@ fn v47_composed_second_child_installs_with_exact_source_target_predecessor_chain
         TransactionId(candidate.vegetation_state.0.last_transaction_id),
         source,
     );
-    assert_eq!(candidate.lse_state.0.last_accepted_transaction_id, Some(source));
-    assert_eq!(candidate.inner.biogeochemistry.last_transaction_id, source.0);
+    assert_eq!(
+        candidate.lse_state.0.last_accepted_transaction_id,
+        Some(source)
+    );
+    assert_eq!(
+        candidate.inner.biogeochemistry.last_transaction_id,
+        source.0
+    );
     assert_eq!(
         authoritative_beginning
             .soil_thermal_resident()
@@ -580,17 +617,29 @@ fn v48_authenticated_prepared_beginning_installs_exact_split() {
         seals,
     )
     .expect("real fixed-point finalizer authenticated prepared install");
-    assert_eq!(candidate.soil_thermal_v2().expect("installed V2"), &resident);
+    assert_eq!(
+        candidate.soil_thermal_v2().expect("installed V2"),
+        &resident
+    );
     assert_eq!(resident.owner.transaction_id, target);
-    assert_eq!(resident.owner.expected_predecessor_transaction_id, Some(source));
+    assert_eq!(
+        resident.owner.expected_predecessor_transaction_id,
+        Some(source)
+    );
     assert_eq!(resident.owner.support_start_ns, 1_800_000_000_000);
     assert_eq!(resident.owner.support_end_ns, 1_980_000_000_000);
     assert_eq!(
         TransactionId(candidate.vegetation_state.0.last_transaction_id),
         source,
     );
-    assert_eq!(candidate.lse_state.0.last_accepted_transaction_id, Some(source));
-    assert_eq!(candidate.inner.biogeochemistry.last_transaction_id, source.0);
+    assert_eq!(
+        candidate.lse_state.0.last_accepted_transaction_id,
+        Some(source)
+    );
+    assert_eq!(
+        candidate.inner.biogeochemistry.last_transaction_id,
+        source.0
+    );
     assert_eq!(candidate.accepted_publication_history, publication_before);
     assert_eq!(
         authoritative_beginning
@@ -603,8 +652,7 @@ fn v48_authenticated_prepared_beginning_installs_exact_split() {
 
 #[test]
 fn v48_generic_install_remains_strict_same_id() {
-    let (mut candidate, prepared, _, accepted, seals) =
-        v48_r122_fixed_point_finalizer_fixture('b');
+    let (mut candidate, prepared, _, accepted, seals) = v48_r122_fixed_point_finalizer_fixture('b');
     let source = TransactionId(42);
     let target = TransactionId(43);
     assert_ne!(source, target);
@@ -629,8 +677,7 @@ fn v48_generic_install_remains_strict_same_id() {
 
 #[test]
 fn v48_prepared_beginning_authority_refuses_substitution() {
-    let (mut candidate, prepared, _, accepted, seals) =
-        v48_r122_fixed_point_finalizer_fixture('c');
+    let (mut candidate, prepared, _, accepted, seals) = v48_r122_fixed_point_finalizer_fixture('c');
     let source = TransactionId(42);
     let target = TransactionId(43);
     let authoritative_beginning = candidate.clone();
@@ -644,8 +691,10 @@ fn v48_prepared_beginning_authority_refuses_substitution() {
             .is_err(),
         "foreign prepared receipt/owner custody must refuse",
     );
-    let swapped = crate::land_surface_energy_shadow::
-        PhysicalSoilEnergyTransactionAuthorityV2::try_new(target, source)
+    let swapped =
+        crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            target, source,
+        )
         .expect("swapped explicit authority poison");
     assert!(
         candidate
@@ -663,8 +712,7 @@ fn v48_prepared_beginning_authority_refuses_substitution() {
 
 #[test]
 fn v48_authenticated_final_install_rolls_back_on_refusal() {
-    let (mut candidate, prepared, _, accepted, seals) =
-        v48_r122_fixed_point_finalizer_fixture('e');
+    let (mut candidate, prepared, _, accepted, seals) = v48_r122_fixed_point_finalizer_fixture('e');
     let source = TransactionId(42);
     let target = TransactionId(43);
     let authoritative_beginning = candidate.clone();
@@ -677,8 +725,11 @@ fn v48_authenticated_final_install_rolls_back_on_refusal() {
         candidate.lse_state.0.last_accepted_transaction_id,
         candidate.inner.biogeochemistry.last_transaction_id,
     );
-    let foreign = crate::land_surface_energy_shadow::
-        PhysicalSoilEnergyTransactionAuthorityV2::try_new(TransactionId(source.0 + 9), target)
+    let foreign =
+        crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            TransactionId(source.0 + 9),
+            target,
+        )
         .expect("foreign explicit authority poison");
     assert!(
         candidate
@@ -731,8 +782,7 @@ fn v48_authenticated_same_id_and_exact_noop_do_not_publish() {
 
 #[test]
 fn v48_authenticated_prepared_custody_poison_matrix() {
-    let (mut candidate, prepared, _, accepted, seals) =
-        v48_r122_fixed_point_finalizer_fixture('9');
+    let (mut candidate, prepared, _, accepted, seals) = v48_r122_fixed_point_finalizer_fixture('9');
     let authoritative_beginning = candidate.clone();
     let authority = candidate
         .authenticate_soil_thermal_prepared_beginning_install_authority_v2(
@@ -797,9 +847,7 @@ fn v48_authenticated_prepared_custody_poison_matrix() {
     let mut target = accepted.clone();
     target.ending_owner.transaction_id = TransactionId(44);
     let mut predecessor = accepted.clone();
-    predecessor
-        .ending_owner
-        .expected_predecessor_transaction_id = Some(TransactionId(41));
+    predecessor.ending_owner.expected_predecessor_transaction_id = Some(TransactionId(41));
     let mut support = accepted.clone();
     support.ending_owner.support_end_ns += 60_000_000_000;
     let mut receipt = accepted.clone();
@@ -1698,8 +1746,7 @@ fn v39_v47_second_child_continuation_transaction_behavior() {
 }
 
 #[test]
-fn v39_second_child_continuation_uses_authenticated_soil_transaction_and_refuses_foreign_custody()
-{
+fn v39_second_child_continuation_uses_authenticated_soil_transaction_and_refuses_foreign_custody() {
     v39_v47_second_child_continuation_transaction_behavior();
 }
 
@@ -1977,6 +2024,193 @@ fn unpublished_physical_beginning_rebuilds_same_support_prior_from_installed_res
             .canonical_active_owner_bytes()
             .expect("after same-support poison"),
         before
+    );
+}
+
+pub(super) fn unpublished_aggregate_candidate_only_behavior() {
+    let (authoritative, _) = native_v2_shadow_for_parent('a');
+    let parent = authoritative
+        .prepare_next_soil_thermal_support_v2(0, 1_800_000_000_000)
+        .expect("installed parent support");
+    let parent_transaction = parent.beginning_owner().transaction_id;
+    let (accepted, seals) = accepted_bundle(
+        &parent,
+        &authoritative.inner.lse_configuration,
+        f64::from_bits(1),
+        'b',
+    );
+    let mut installed = authoritative.clone();
+    align_complete_owner_transaction(&mut installed, parent_transaction);
+    installed
+        .install_soil_thermal_accepted_v2_from_beginning(
+            &authoritative,
+            parent.beginning_owner(),
+            accepted,
+            seals,
+        )
+        .expect("install aggregate resident");
+
+    let retained_prepared = installed
+        .prepare_next_soil_thermal_support_v2(1_800_000_000_000, 1_860_000_000_000)
+        .expect("retained trial support");
+    let retained_trial = unpublished_composed_trial(
+        &retained_prepared,
+        &installed.inner.lse_configuration,
+        1_800_000_000_000,
+        1_860_000_000_000,
+        f64::from_bits(1),
+        'c',
+    );
+    let retained_candidate =
+        DirectSoilThermalCandidate::from_v2(retained_trial.clone()).expect("retained candidate");
+    let aggregate = installed
+        .prepare_base_soil_thermal_unpublished_aggregate_support_v2(
+            &retained_candidate,
+            1_860_000_000_000,
+            1_920_000_000_000,
+        )
+        .expect("authenticated aggregate support");
+    assert_eq!(
+        aggregate.beginning_owner().support_start_ns,
+        installed
+            .soil_thermal_v2()
+            .expect("installed resident")
+            .owner()
+            .support_start_ns,
+    );
+    assert_eq!(
+        aggregate.beginning_owner().support_end_ns,
+        1_920_000_000_000
+    );
+    let continuation = installed
+        .prepare_soil_thermal_base_unpublished_continuation_v2(
+            &aggregate,
+            &retained_trial,
+            retained_candidate.state_sha256(),
+            1_860_000_000_000,
+            1_920_000_000_000,
+        )
+        .expect("aggregate base continuation");
+    assert_eq!(continuation.retained_trial(), &retained_trial);
+    assert_eq!(continuation.child_support_start_ns(), 1_860_000_000_000);
+    assert_eq!(continuation.child_support_end_ns(), 1_920_000_000_000);
+    let snow_owner = ResourceOwnerId::try_new("aggregate-snow").expect("snow owner");
+    let child_credit = continuation_credit(
+        continuation.child_beginning_state(),
+        1_860_000_000_000,
+        1_920_000_000_000,
+        'd',
+    );
+    let child_operands = continuation
+        .child_top_boundary_operands_v2(&[child_credit], &snow_owner)
+        .expect("aggregate child operands");
+    let result = installed
+        .advance_soil_thermal_unpublished_continuation_v2(&continuation, &child_operands)
+        .expect("aggregate child result");
+    let selected = result.physical_trial();
+    let beginning = result.original_prepared().beginning_owner();
+    let resident = installed.soil_thermal_v2().expect("installed V2 resident");
+    assert_eq!(
+        beginning.support_start_ns,
+        resident.owner().support_start_ns
+    );
+    assert_eq!(beginning.support_end_ns, selected.support_end_ns());
+    assert!(resident.owner().support_end_ns <= selected.support_start_ns());
+    assert!(selected.unpublished_predecessor_trial_sha256().is_some());
+    assert!(
+        selected
+            .accepted_predecessor_receipt_chain_sha256()
+            .is_none()
+    );
+    let accepted = result
+        .compose_accepted_outer_candidate(&installed.inner.lse_configuration)
+        .expect("aggregate accepted outer candidate");
+    installed
+        .validate_soil_thermal_accepted_v2_from_unpublished_continuation(
+            selected, &result, beginning, &accepted,
+        )
+        .expect("aggregate accepted selection validation");
+    let mut predecessor_substitution = result.clone();
+    predecessor_substitution.physical_trial = retained_trial.clone();
+    assert!(
+        installed
+            .validate_soil_thermal_accepted_v2_from_unpublished_continuation(
+                predecessor_substitution.physical_trial(),
+                &predecessor_substitution,
+                beginning,
+                &accepted,
+            )
+            .is_err(),
+        "predecessor trial substitution must fail closed",
+    );
+
+    let before = installed
+        .soil_thermal_resident()
+        .canonical_active_owner_bytes()
+        .expect("before aggregate poisons");
+    for (child_start_ns, child_end_ns) in [(1_860_000_000_001, 1_920_000_000_000)] {
+        assert!(
+            installed
+                .prepare_base_soil_thermal_unpublished_aggregate_support_v2(
+                    &retained_candidate,
+                    child_start_ns,
+                    child_end_ns,
+                )
+                .is_err(),
+            "aggregate support rebind must fail closed",
+        );
+    }
+    assert_eq!(
+        installed
+            .soil_thermal_resident()
+            .canonical_active_owner_bytes()
+            .expect("after aggregate poisons"),
+        before,
+        "aggregate construction and refusal must not install resident custody",
+    );
+
+    let seals = seal_soil_thermal_accepted_candidate_v2(beginning, &accepted)
+        .expect("aggregate accepted seals");
+    let authority = installed
+        .authenticate_soil_thermal_unpublished_continuation_install_authority_v3(
+            &installed, &result, beginning,
+        )
+        .expect("aggregate three-domain install authority");
+    assert!(
+        installed
+            .authenticate_soil_thermal_unpublished_continuation_install_authority_v3(
+                &installed,
+                &predecessor_substitution,
+                beginning,
+            )
+            .is_err(),
+        "foreign aggregate predecessor custody must refuse authority",
+    );
+    let mut published = installed.clone();
+    published
+        .install_soil_thermal_accepted_v2_from_unpublished_continuation_v3(
+            &installed,
+            &result,
+            beginning,
+            authority,
+            accepted.clone(),
+            seals,
+        )
+        .expect("single aggregate final install");
+    assert_eq!(
+        published
+            .soil_thermal_v2()
+            .expect("published V2 resident")
+            .owner(),
+        &accepted.ending_owner,
+    );
+    assert_eq!(
+        installed
+            .soil_thermal_resident()
+            .canonical_active_owner_bytes()
+            .expect("unchanged authoritative resident"),
+        before,
+        "final install must not mutate the authoritative beginning",
     );
 }
 
@@ -2534,8 +2768,7 @@ fn v43_projected_fixed_point_retains_base_reconstruction_byte_lock() {
         f64::from_bits(1),
         'b',
     );
-    let candidate =
-        DirectSoilThermalCandidate::from_v2(trial).expect("ordinary base candidate");
+    let candidate = DirectSoilThermalCandidate::from_v2(trial).expect("ordinary base candidate");
     let before = authoritative
         .soil_thermal_resident()
         .canonical_active_owner_bytes()
@@ -2606,17 +2839,19 @@ fn v43_projected_fixed_point_refuses_support_receipt_authority_or_order_poison()
         .prepare_next_soil_thermal_support_v2(0, 1_800_000_000_000)
         .expect("V43 authoritative support");
     let projected = v43_top_coordinate_candidate(&authoritative, &prepared);
-    assert!(!authoritative
-        .inner
-        .soil_thermal
-        .validate_unpublished_fixed_point_v2(
-            &authoritative.inner.lse_configuration,
-            &projected,
-            None,
-            60_000_000_000,
-            1_800_000_000_000,
-        )
-        .expect("wrong support is ineligible"));
+    assert!(
+        !authoritative
+            .inner
+            .soil_thermal
+            .validate_unpublished_fixed_point_v2(
+                &authoritative.inner.lse_configuration,
+                &projected,
+                None,
+                60_000_000_000,
+                1_800_000_000_000,
+            )
+            .expect("wrong support is ineligible")
+    );
     let mut missing = prepared
         .beginning_owner()
         .state
@@ -2690,9 +2925,11 @@ fn v44_numerical_projection_selects_resident_v8_and_rejects_double_use() {
         .expect("V44 prepared support");
     let projected = v43_top_coordinate_candidate(&authoritative, &prepared);
     let resident = &authoritative.inner.soil_thermal;
-    assert!(!resident
-        .read_view()
-        .physically_equals(projected.read_view()));
+    assert!(
+        !resident
+            .read_view()
+            .physically_equals(projected.read_view())
+    );
 
     let selected = crate::v9_real_consumer_shadow::direct_v9_select_v8_soil_beginning_v44(
         resident,
@@ -2741,222 +2978,4 @@ fn v44_numerical_projection_selects_resident_v8_and_rejects_double_use() {
     assert!(ordinary_candidate.physically_equals(projected.read_view()));
 }
 
-#[test]
-fn receipt_free_resident_has_exactly_one_v2_owner_and_no_v1_projection() {
-    let (prepared, _) = prepared_fixture();
-    let seals = seal_soil_thermal_receipt_free_owner_v2(&prepared).expect("receipt-free seals");
-    let resident =
-        DirectSoilThermalResident::try_new_v2(prepared.clone(), seals).expect("native V2 resident");
-
-    assert!(resident.v1().is_err());
-    assert_eq!(
-        resident.v2().expect("V2").owner(),
-        prepared.beginning_owner()
-    );
-    assert!(resident.v2().expect("V2").latest_accepted().is_none());
-    assert!(resident.v2().expect("V2").receipt_free_seals().is_some());
-    let bytes = resident
-        .canonical_active_owner_bytes()
-        .expect("canonical V2");
-    let text = String::from_utf8(bytes).expect("JSON");
-    assert!(text.contains("OPENWEPP_DIRECT_V10_SOIL_THERMAL_RESIDENT_V2"));
-    assert!(text.contains("OPENWEPP_SOIL_THERMAL_OWNER_V2"));
-    assert!(!text.contains("snapshot_sha256"));
-}
-
-#[test]
-fn accepted_exact_carry_is_joined_into_the_next_support_read_view() {
-    let (prepared, configuration) = prepared_fixture();
-    let beginning = prepared.beginning_owner();
-    let resident = DirectSoilThermalResident::try_new_v2(
-        prepared.clone(),
-        seal_soil_thermal_receipt_free_owner_v2(&prepared).expect("receipt-free seals"),
-    )
-    .expect("native V2 resident");
-    let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
-        beginning,
-        &configuration,
-        vec![exact_operand(beginning, f64::from_bits(1))],
-    )
-    .expect("expected operands");
-    let accepted = aggregate_soil_thermal_ending_v2(beginning, &configuration, &expected)
-        .expect("exact accepted candidate");
-    let accepted_seals =
-        seal_soil_thermal_accepted_candidate_v2(beginning, &accepted).expect("accepted seals");
-    let accepted_resident = resident
-        .v2()
-        .expect("V2")
-        .accepted(beginning, accepted, accepted_seals)
-        .expect("accepted native resident");
-    let next = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
-        accepted_resident.owner(),
-        TransactionId(42),
-        120_000_000_000,
-        180_000_000_000,
-    )
-    .expect("next support");
-    let ofe = &next.beginning_owner().state.ofes[0];
-    let layer = &ofe.ordered_layers[0];
-    let exact = next
-        .physical_read_view()
-        .exact_layer_enthalpy(&ofe.ofe_id, &layer.layer_id)
-        .expect("exact physical read");
-
-    assert_ne!(layer.enthalpy_carry.sign, 0);
-    assert_eq!(
-        exact,
-        openwepp_land_surface_energy::ExactDyadicEnthalpy::exact_sum([
-            &openwepp_land_surface_energy::ExactDyadicEnthalpy::from_f64(
-                layer.enthalpy_hi_j_m2_ofe_ground,
-            )
-            .expect("high term"),
-            &layer.enthalpy_carry,
-        ])
-        .expect("exact sum")
-    );
-}
-
-#[test]
-fn acceptance_poison_preserves_resident_bytes() {
-    let (prepared, configuration) = prepared_fixture();
-    let beginning = prepared.beginning_owner();
-    let resident = DirectSoilThermalResident::try_new_v2(
-        prepared.clone(),
-        seal_soil_thermal_receipt_free_owner_v2(&prepared).expect("receipt-free seals"),
-    )
-    .expect("native V2 resident");
-    let before = resident
-        .canonical_active_owner_bytes()
-        .expect("before bytes");
-    let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
-        beginning,
-        &configuration,
-        vec![exact_operand(beginning, 0.25)],
-    )
-    .expect("expected operands");
-    let accepted = aggregate_soil_thermal_ending_v2(beginning, &configuration, &expected)
-        .expect("accepted candidate");
-    let mut poison =
-        seal_soil_thermal_accepted_candidate_v2(beginning, &accepted).expect("accepted seals");
-    poison.expected_operand_set_sha256 = digest('f');
-
-    assert!(
-        resident
-            .v2()
-            .expect("V2")
-            .accepted(beginning, accepted, poison)
-            .is_err()
-    );
-    assert_eq!(
-        resident
-            .canonical_active_owner_bytes()
-            .expect("rollback bytes"),
-        before
-    );
-}
-
-#[test]
-fn direct_v10_try_new_v2_is_single_resident_and_poisoned_install_is_atomic() {
-    let (v1_shadow, _) = super::tests::v10_shadow_fixture();
-    let current_transaction = TransactionId(v1_shadow.vegetation_state.0.last_transaction_id);
-    let support_transaction = TransactionId(current_transaction.0 + 1);
-    let migrated = migrate_soil_thermal_v1_to_v2(
-        v1_shadow
-            .inner
-            .soil_thermal
-            .v1()
-            .expect("V1 fixture resident"),
-        SoilThermalV2MigrationIdentity {
-            model_version: v1_shadow
-                .inner
-                .lse_configuration
-                .soil_thermal_configuration
-                .model_version
-                .clone(),
-            model_definition_sha256: v1_shadow
-                .inner
-                .lse_configuration
-                .soil_thermal_configuration
-                .model_definition_sha256
-                .clone(),
-            run_id: "direct-v10-single-resident".to_owned(),
-            transaction_id: current_transaction,
-            support_start_ns: 0,
-            support_end_ns: 60_000_000_000,
-            receipt_chain_sha256: digest('c'),
-        },
-    )
-    .expect("checked V2 migration");
-    let prepared = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
-        &migrated,
-        support_transaction,
-        60_000_000_000,
-        120_000_000_000,
-    )
-    .expect("prepared V2 support");
-    let receipt_free_seals =
-        seal_soil_thermal_receipt_free_owner_v2(&prepared).expect("receipt-free seals");
-    let mut v2_shadow = DirectV10RealConsumerShadow::try_new_v2(
-        v1_shadow.vegetation_configuration.clone(),
-        v1_shadow.vegetation_state.clone(),
-        v1_shadow.inner.vegetation_owner_id.clone(),
-        v1_shadow.lse_configuration.clone(),
-        v1_shadow.lse_state.clone(),
-        v1_shadow.inner.surface_configuration.clone(),
-        v1_shadow.inner.layer_maps.clone(),
-        prepared.clone(),
-        receipt_free_seals,
-        v1_shadow.inner.biogeochemistry.clone(),
-        v1_shadow.inner.hydrology_frame.clone(),
-        v1_shadow.inner.next_day_index,
-        v1_shadow.gsi_owner_configuration.clone(),
-        v1_shadow.gsi_state.clone(),
-        v1_shadow.provider_static_configuration.clone(),
-        v1_shadow.provider_cursor.clone(),
-        v1_shadow.root_zone_hydraulic_configuration.clone(),
-    )
-    .expect("DirectV10 native V2 constructor");
-    assert!(v2_shadow.inner.soil_thermal.v1().is_err());
-    assert!(v2_shadow.soil_thermal_v2().is_ok());
-    let owner_bytes = v2_shadow
-        .canonical_owner_state_bytes()
-        .expect("complete canonical owner bytes");
-    let soil_bytes = owner_bytes.get("soil_thermal").expect("soil owner bytes");
-    let soil_text = std::str::from_utf8(soil_bytes).expect("soil JSON");
-    assert!(soil_text.contains("OPENWEPP_DIRECT_V10_SOIL_THERMAL_RESIDENT_V2"));
-    assert!(!soil_text.contains("snapshot_sha256"));
-    let vegetation_envelope = v11_soil_thermal_owner_envelope(&v2_shadow.inner.soil_thermal)
-        .expect("V11 native V2 soil owner envelope");
-    assert_eq!(
-        vegetation_envelope.state_bytes, *soil_bytes,
-        "V11 support custody must carry the canonical active V2 owner bytes"
-    );
-
-    let beginning = prepared.beginning_owner();
-    let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
-        beginning,
-        &v2_shadow.inner.lse_configuration,
-        vec![exact_operand(beginning, 0.25)],
-    )
-    .expect("expected operands");
-    let accepted =
-        aggregate_soil_thermal_ending_v2(beginning, &v2_shadow.inner.lse_configuration, &expected)
-            .expect("accepted candidate");
-    let mut poison =
-        seal_soil_thermal_accepted_candidate_v2(beginning, &accepted).expect("accepted seals");
-    poison.orchestrator_seal_sha256 = digest('f');
-    let before = v2_shadow
-        .canonical_owner_state_bytes()
-        .expect("beginning owner bytes");
-    assert!(
-        v2_shadow
-            .install_soil_thermal_accepted_v2(beginning, accepted, poison)
-            .is_err()
-    );
-    assert_eq!(
-        v2_shadow
-            .canonical_owner_state_bytes()
-            .expect("rollback owner bytes"),
-        before
-    );
-}
+include!("v10_soil_thermal_v2_resident_install_tests.rs");

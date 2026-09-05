@@ -90,8 +90,78 @@ impl FrozenLitterV3PublicationSupportV1 {
             publication_sha256: Digest32::zero(),
         };
         value.publication_sha256 = value.recomputed_sha256()?;
-        value.validate(configuration)?;
+        value.validate_constructed(configuration, projection, ordered_receipts)?;
         Ok(value)
+    }
+
+    fn validate_constructed(
+        &self,
+        configuration: &crate::SurfaceLiquidConfigurationV2,
+        projection: &crate::SurfaceLiquidCompleteOwnerProjectionV3,
+        ordered_receipts: &[openwepp_land_surface_energy::LitterPhaseReceipt],
+    ) -> Result<(), crate::DirectSurfaceLiquidError> {
+        let expected_count = configuration
+            .parent()
+            .records
+            .iter()
+            .filter(|record| {
+                record.key.surface_class == openwepp_land_surface_energy::SurfaceClass::ForestLitter
+            })
+            .count();
+        if self.schema != FROZEN_LITTER_V3_PUBLICATION_SUPPORT_SCHEMA
+            || self.surface_configuration_sha256 != configuration.configuration_sha256()
+            || self.projection_sha256 != projection.projection_sha256()
+            || self.projection_receipt_chain_sha256 != projection.identity().receipt_chain_sha256
+            || self.ordered_litter_phase_receipts.len() != ordered_receipts.len()
+            || self.ordered_litter_phase_receipts.len()
+                != projection.litter_phase_receipt_bytes().len()
+            || expected_count != ordered_receipts.len()
+            || self.publication_sha256 == Digest32::zero()
+            || self.publication_sha256 != self.recomputed_sha256()?
+        {
+            return Err(crate::DirectSurfaceLiquidError::Identity(
+                "frozen-litter V3 constructed publication support seal",
+            ));
+        }
+        for (ordinal, ((frame, receipt), projection_receipt_bytes)) in self
+            .ordered_litter_phase_receipts
+            .iter()
+            .zip(ordered_receipts)
+            .zip(projection.litter_phase_receipt_bytes())
+            .enumerate()
+        {
+            let configured = configuration
+                .parent()
+                .records
+                .iter()
+                .filter(|record| {
+                    record.key.surface_class
+                        == openwepp_land_surface_energy::SurfaceClass::ForestLitter
+                })
+                .nth(ordinal)
+                .ok_or(crate::DirectSurfaceLiquidError::Identity(
+                    "frozen-litter V3 constructed publication receipt order",
+                ))?;
+            if usize::try_from(frame.ordinal) != Ok(ordinal)
+                || &frame.canonical_receipt_bytes != projection_receipt_bytes
+                || frame.model_version != receipt.identity.model_version
+                || frame.model_definition_sha256
+                    != receipt.identity.model_definition_sha256.as_str()
+                || frame.lse_configuration_sha256
+                    != receipt.identity.lse_configuration_sha256.as_str()
+                || frame.receipt_sha256 != receipt.receipt_sha256.as_str()
+                || receipt.identity.transaction_id != projection.identity().transaction_id
+                || receipt.identity.support_start_ns != projection.identity().support_start_ns
+                || receipt.identity.support_end_ns != projection.identity().support_end_ns
+                || receipt.identity.ofe_id != configured.key.ofe_id
+                || receipt.identity.tile_id != configured.key.tile_id
+            {
+                return Err(crate::DirectSurfaceLiquidError::Identity(
+                    "frozen-litter V3 constructed publication receipt identity",
+                ));
+            }
+        }
+        Ok(())
     }
 
     pub(crate) fn canonical_bytes(

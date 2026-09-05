@@ -393,6 +393,86 @@ fn sub_floor_support_and_rho_i_capacity_fail_closed() {
 }
 
 #[test]
+fn litter_phase_capacity_boundary_does_not_spill() {
+    let raw = EndingLitterPhaseState {
+        liquid_kg_m2_tile: configuration().liquid_capacity_kg_m2_tile,
+        ice_kg_m2_tile: 0.5,
+        sensible_energy_j_m2_tile: beginning(6.0, 0.5, 280.0)
+            .sensible_energy_j_m2_tile,
+        temperature_k: 280.0,
+        heat_capacity_j_m2_k: configuration().dry_heat_capacity_j_m2_k
+            + 6.0 * WATER_HEAT_CAPACITY_J_KG_K
+            + 0.5 * LITTER_ICE_HEAT_CAPACITY_J_KG_K,
+    };
+    assert_eq!(
+        retained_litter_phase_ending_v1(configuration(), raw).expect("boundary retention"),
+        raw
+    );
+}
+
+#[test]
+fn melt_created_litter_phase_capacity_spill_preserves_mass_and_enthalpy() {
+    let phase_temperature = 295.0;
+    let saturation = saturation_specific_humidity(phase_temperature, 93_000.0)
+        .expect("saturation humidity");
+    let candidate = execute_litter_phase_v3(&transaction_input(
+        6.0,
+        1.0,
+        phase_temperature,
+        phase_temperature,
+        saturation,
+        3_300,
+    ))
+    .expect("melting saturated litter candidate");
+    let spill = candidate.capacity_spill.expect("positive melt spill");
+    validate_litter_phase_capacity_spill_v1(&candidate.receipt, &spill)
+        .expect("spill receipt binding");
+    assert!(candidate.ending.liquid_kg_m2_tile > 6.0);
+    assert_eq!(candidate.retained_ending.liquid_kg_m2_tile.to_bits(), 6.0_f64.to_bits());
+    assert_eq!(
+        (candidate.retained_ending.liquid_kg_m2_tile + spill.spill_liquid_kg_m2_tile)
+            .to_bits(),
+        candidate.ending.liquid_kg_m2_tile.to_bits()
+    );
+    assert_eq!(
+        (candidate.retained_ending.sensible_energy_j_m2_tile
+            + spill.spill_sensible_energy_j_m2_tile)
+            .to_bits(),
+        candidate.ending.sensible_energy_j_m2_tile.to_bits()
+    );
+    assert_eq!(spill.raw_ending, candidate.receipt.ending);
+}
+
+#[test]
+fn litter_phase_capacity_spill_rejects_transaction_support_receipt_substitution() {
+    let phase_temperature = 295.0;
+    let saturation = saturation_specific_humidity(phase_temperature, 93_000.0)
+        .expect("saturation humidity");
+    let candidate = execute_litter_phase_v3(&transaction_input(
+        6.0,
+        1.0,
+        phase_temperature,
+        phase_temperature,
+        saturation,
+        3_300,
+    ))
+    .expect("spill candidate");
+    let spill = candidate.capacity_spill.expect("spill");
+    for poison in 0..3 {
+        let mut foreign = spill.clone();
+        match poison {
+            0 => foreign.transaction_id.0 += 1,
+            1 => foreign.support_end_ns += 60_000_000_000,
+            _ => foreign.phase_receipt_sha256 = digest(0x55),
+        }
+        assert!(
+            validate_litter_phase_capacity_spill_v1(&candidate.receipt, &foreign).is_err(),
+            "spill poison {poison} must fail closed",
+        );
+    }
+}
+
+#[test]
 fn vector_artifact_retains_independent_constants_and_mutants() {
     let vectors: serde_json::Value = serde_json::from_slice(include_bytes!(concat!(
         env!("CARGO_MANIFEST_DIR"),

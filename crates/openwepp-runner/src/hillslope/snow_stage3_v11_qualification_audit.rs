@@ -8,6 +8,8 @@ pub(crate) struct RunnerStage3V11QualificationAuditV1 {
     pub(crate) support_chronology_by_day: BTreeMap<usize, Vec<TimeSupport>>,
     pub(crate) committed_snapshot:
         Option<openwepp_hillslope_orchestrator::SnowStage3V11ProductionQualificationSnapshotV1>,
+    pub(crate) attachment_adoption:
+        openwepp_hillslope_orchestrator::SnowStage3V11AttachmentAdoptionAuditV1,
 }
 
 #[derive(Default)]
@@ -26,6 +28,7 @@ pub(crate) fn begin() {
         assert!(!state.enabled, "nested Stage-3 qualification audit");
         state.enabled = true;
         state.audit = RunnerStage3V11QualificationAuditV1::default();
+        openwepp_hillslope_orchestrator::begin_snow_stage3_v11_attachment_adoption_audit_v1();
     });
 }
 
@@ -67,6 +70,8 @@ pub(crate) fn take() -> RunnerStage3V11QualificationAuditV1 {
         let mut state = state.borrow_mut();
         assert!(state.enabled, "Stage-3 qualification audit was not begun");
         state.enabled = false;
+        state.audit.attachment_adoption =
+            openwepp_hillslope_orchestrator::take_snow_stage3_v11_attachment_adoption_audit_v1();
         std::mem::take(&mut state.audit)
     })
 }

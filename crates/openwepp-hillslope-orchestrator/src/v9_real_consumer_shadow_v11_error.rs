@@ -8,6 +8,8 @@ pub(crate) fn direct_v11_bgc_debit_scope(
 #[derive(Debug, Error)]
 pub enum DirectV11RealConsumerError {
     #[error(transparent)]
+    CoupledTime(#[from] openwepp_coupled_time::CoupledTimeError),
+    #[error(transparent)]
     Runtime(#[from] DirectV10RealConsumerError),
     #[error(transparent)]
     Vegetation(#[from] openwepp_vegetation::v11::V11Error),
@@ -15,6 +17,8 @@ pub enum DirectV11RealConsumerError {
     Serialization(#[from] serde_json::Error),
     #[error("V11 actual-consumer identity mismatch: {0}")]
     Identity(&'static str),
+    #[error("V11 surface-liquid replay rejected: {0}")]
+    SurfaceLiquidReplay(crate::DirectSurfaceLiquidError),
     #[error("V11 zero-duration snow-liquid receiver rejected: {0}")]
     ZeroDurationSnowLiquid(String),
     #[error(

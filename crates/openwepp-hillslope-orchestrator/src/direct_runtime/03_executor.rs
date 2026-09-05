@@ -127,7 +127,7 @@ impl DirectFrameExecutor {
         // D15A: the active owner is a publication-stream integration; a
         // skeleton run with the selector present would silently not route,
         // which is exactly the shadow-only-activation shape rev 27 forbids.
-        if frame.laned_active.is_some() {
+        if frame.laned_active.is_some() && frame.snow_stage3_v11_attachment.is_none() {
             return Err(DirectRuntimeError::DirectKernelGuardFailure {
                 phase: "laned_active_selector",
                 detail: "the skeleton executor does not support the active routing owner; use the publication stream".to_string(),
@@ -555,12 +555,9 @@ impl DirectFrameExecutor {
                             field: "snow_stage3_terminal_handoff.multiple_pending",
                         });
                     }
-                    if let Some(request) = build_handoff(
-                        lane_index,
-                        day_frame.day_index,
-                        input,
-                        day_frame,
-                    )? {
+                    if let Some(request) =
+                        build_handoff(lane_index, day_frame.day_index, input, day_frame)?
+                    {
                         runtime_candidate.stage(request).map_err(|error| {
                             DirectRuntimeError::DirectKernelGuardFailure {
                                 phase: "snow_stage3_terminal_handoff.stage",
@@ -608,12 +605,7 @@ impl DirectFrameExecutor {
     /// receive its commit callback.
     #[allow(clippy::too_many_arguments)]
     #[cfg(test)]
-    pub fn run_publication_stream_with_snow_stage3_terminal_handoff_and_owner_executor<
-        F,
-        B,
-        O,
-        S,
-    >(
+    pub fn run_publication_stream_with_snow_stage3_terminal_handoff_and_owner_executor<F, B, O, S>(
         &self,
         frame: &mut DirectRunFrame,
         metadata: DirectPublicationRunMetadata,
@@ -670,12 +662,9 @@ impl DirectFrameExecutor {
                             field: "snow_stage3_terminal_handoff.multiple_pending",
                         });
                     }
-                    if let Some(mut request) = build_handoff(
-                        lane_index,
-                        day_frame.day_index,
-                        input,
-                        day_frame,
-                    )? {
+                    if let Some(mut request) =
+                        build_handoff(lane_index, day_frame.day_index, input, day_frame)?
+                    {
                         let owner_receipt = owner_candidate
                             .stage_owner_execution(&request)
                             .map_err(|error| DirectRuntimeError::DirectKernelGuardFailure {
@@ -759,7 +748,10 @@ impl DirectFrameExecutor {
             usize,
             &[DirectDayFrame],
             &[DirectPublicationDayInput],
-        ) -> Result<crate::v9_real_consumer_shadow::DirectV9ShadowDayInput, DirectRuntimeError>,
+        ) -> Result<
+            crate::v9_real_consumer_shadow::DirectV9ShadowDayInput,
+            DirectRuntimeError,
+        >,
         S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
     {
         if frame.laned_active.is_some() {
@@ -796,11 +788,8 @@ impl DirectFrameExecutor {
                     Ok(())
                 }
                 DirectPublicationDayHook::CompleteDay { day_index } => {
-                    let shadow_input = build_shadow_day_input(
-                        day_index,
-                        &projected_frames,
-                        &projected_inputs,
-                    )?;
+                    let shadow_input =
+                        build_shadow_day_input(day_index, &projected_frames, &projected_inputs)?;
                     let immutable_shadow_frame = shadow_candidate.hydrology_frame().clone();
                     shadow_candidate
                         .execute_day(
@@ -1003,13 +992,7 @@ impl DirectFrameExecutor {
         )
     }
 
-    fn run_publication_stream_with_stage3_day_preparation_and_day_hook_and_archive<
-        F,
-        P,
-        S,
-        H,
-        A,
-    >(
+    fn run_publication_stream_with_stage3_day_preparation_and_day_hook_and_archive<F, P, S, H, A>(
         &self,
         frame: &mut DirectRunFrame,
         metadata: DirectPublicationRunMetadata,
@@ -1072,10 +1055,16 @@ impl DirectFrameExecutor {
         ) -> Result<(), DirectRuntimeError>,
         A: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
     {
-        // D15A (rev 27): the opt-in ACTIVE owner takes the two-phase day
-        // loop; the default path below is textually untouched
-        // (`INV-OFEROUTE-010`).
-        if frame.laned_active.is_some() {
+        // The ordinary ACTIVE owner takes the two-phase day loop only when
+        // there is no constitutive Stage-3 owner. A prepared Stage-3 day must
+        // reach `commit_stage3_day` first: its accepted publication frame
+        // already executes WB16, Lane D, erosion, and ledger exactly once.
+        // Selecting this ordinary branch for that day would run WB16 against
+        // pre-commit inputs and publish before the accepted owner exists.
+        if Self::ordinary_laned_active_stream_selected(
+            frame.laned_active.is_some(),
+            frame.snow_stage3_v11_attachment.is_some(),
+        ) {
             return self.run_laned_active_publication_stream(
                 frame,
                 metadata,
@@ -1111,6 +1100,7 @@ impl DirectFrameExecutor {
 
         for day_index in 0..frame.identity.day_count {
             let stage3_v11_owned_day = frame.snow_stage3_v11_attachment.is_some();
+            let laned_active_owned_day = frame.laned_active.is_some();
             prepare_stage3_day(frame, day_index)?;
             if stage3_v11_owned_day {
                 let mut publication_inputs = Vec::with_capacity(frame.identity.lane_count);
@@ -1127,15 +1117,26 @@ impl DirectFrameExecutor {
                     .committed_snow_stage3_publication_day(day_index)?
                     .lane_frames()
                     .to_vec();
+                if frame.laned_active.is_some() != laned_active_owned_day {
+                    return Err(DirectRuntimeError::DirectDomainViolation {
+                        field: "publication.laned_active_authority_stability",
+                    });
+                }
                 if committed_day_frames.len() != frame.identity.lane_count {
                     return Err(DirectRuntimeError::FrameLaneCountMismatch {
                         identity_lane_count: frame.identity.lane_count,
                         actual_lane_count: committed_day_frames.len(),
                     });
                 }
-                for (lane_index, mut day_frame) in
-                    committed_day_frames.into_iter().enumerate()
-                {
+                let public_routing_ledger = committed_day_frames
+                    .iter()
+                    .map(|day_frame| day_frame.laned_active_routing.as_deref())
+                    .collect::<Vec<_>>();
+                Self::validate_optional_laned_active_public_day_ledger(
+                    &public_routing_ledger,
+                    laned_active_owned_day,
+                )?;
+                for (lane_index, mut day_frame) in committed_day_frames.into_iter().enumerate() {
                     let day_input = publication_inputs.get(lane_index).ok_or(
                         DirectRuntimeError::LaneIndexOutOfRange {
                             lane_index,
@@ -1155,8 +1156,11 @@ impl DirectFrameExecutor {
                             lane_count: frame.lanes.len(),
                         },
                     )?;
-                    let row =
+                    let mut row =
                         DirectPublicationDayRow::from_day_frame(&day_frame, day_input, lane)?;
+                    if laned_active_owned_day {
+                        Self::bind_laned_active_public_hourly_surfaces(&day_frame, &mut row)?;
+                    }
                     row_count = row_count.checked_add(1).ok_or(
                         DirectRuntimeError::DirectDomainViolation {
                             field: "publication.row_count",
@@ -1265,6 +1269,13 @@ impl DirectFrameExecutor {
             metadata,
             row_count,
         })
+    }
+
+    const fn ordinary_laned_active_stream_selected(
+        laned_active: bool,
+        stage3_v11_attached: bool,
+    ) -> bool {
+        laned_active && !stage3_v11_attached
     }
 
     /// D15A (rev 27): the ACTIVE publication stream — the two-phase day loop
@@ -1377,7 +1388,6 @@ impl DirectFrameExecutor {
         day_index: usize,
         lane_count: usize,
         area_m2: f64,
-        trace_enabled: bool,
         books: &mut laned_active::DirectLanedActiveDayBooks,
     ) -> Result<(), DirectRuntimeError> {
         laned_active::laned_active_assert_no_dc01_surface_feed(day_frame).map_err(|source| {
@@ -1386,21 +1396,22 @@ impl DirectFrameExecutor {
         day_frame.erosion_inputs.hydrograph_shape_authority =
             DirectErosionHydrographShapeAuthority::RoutedHydrograph;
         day_frame.erosion_inputs.routed_hydrograph_runoff_fraction = Some(Box::new([0.0; 24]));
-        if trace_enabled {
-            day_frame.laned_active_routing =
-                Some(Box::new(laned_active::DirectLanedActiveDayRouting {
-                    canopy_height_m_consumed: None,
-                    source_m3: 0.0,
-                    outlet_m3: 0.0,
-                    mesh_end_storage_m3: 0.0,
-                    clamp_m3: 0.0,
-                    tail_fold_m3: 0.0,
-                    routed_weights: [0.0; 24],
-                    uniform_shape: false,
-                    erosion_source_shape_degenerate: false,
-                    trace_detail: None,
-                }));
-        }
+        // The authenticated routing record is also the public HBP timing
+        // source. It is therefore required on exact-zero days independently
+        // of whether diagnostic trace rows were requested.
+        day_frame.laned_active_routing =
+            Some(Box::new(laned_active::DirectLanedActiveDayRouting {
+                canopy_height_m_consumed: None,
+                source_m3: 0.0,
+                outlet_m3: 0.0,
+                mesh_end_storage_m3: 0.0,
+                clamp_m3: 0.0,
+                tail_fold_m3: 0.0,
+                routed_weights: [0.0; 24],
+                uniform_shape: false,
+                erosion_source_shape_degenerate: false,
+                trace_detail: None,
+            }));
         if lane_index + 1 == lane_count {
             books.latqcc_outlet_m3 = day_frame
                 .subsurface_compute_shadow_projection
@@ -1418,6 +1429,8 @@ impl DirectFrameExecutor {
         day_index: usize,
         window_s: Option<f64>,
     ) -> Result<laned_active::DirectLanedActiveDayBooks, DirectRuntimeError> {
+        let _qualification_lane_d_scope =
+            crate::snow_stage3_v11_attachment::enter_release_qualification_lane_d_scope_v1();
         let lane_count = frame.identity.lane_count;
         let mut books = laned_active::DirectLanedActiveDayBooks::default();
         let mut upstream: Option<crate::ofe_routing::cascade::UpstreamHandoff> = None;
@@ -1452,20 +1465,219 @@ impl DirectFrameExecutor {
                 .map_err(|source| {
                     Self::day_execution_failure(day_frame, lane_index, day_index, &source)
                 })?;
+                crate::snow_stage3_v11_attachment::record_release_qualification_lane_d_route_call_v1(
+                    day_index,
+                    lane_index,
+                );
                 upstream = Some(handoff);
             } else {
                 Self::mark_laned_active_zero_source_lane(
-                    day_frame,
-                    lane_index,
-                    day_index,
-                    lane_count,
-                    area_m2,
-                    config.trace_enabled,
-                    &mut books,
+                    day_frame, lane_index, day_index, lane_count, area_m2, &mut books,
                 )?;
             }
         }
         Ok(books)
+    }
+
+    /// Bind the authenticated Lane-D outlet shape to the public row consumed
+    /// by HBP. The update is transactional: all source and paired-sediment
+    /// guards run against a copy before the row is changed.
+    fn bind_laned_active_public_hourly_surfaces(
+        day_frame: &DirectDayFrame,
+        row: &mut DirectPublicationDayRow,
+    ) -> Result<(), DirectRuntimeError> {
+        let routing = day_frame.laned_active_routing.as_ref().ok_or(
+            DirectRuntimeError::MissingDirectUpstream {
+                upstream: "laned_active authenticated routed hourly surface",
+            },
+        )?;
+        let is_terminal = day_frame.lane_index + 1 == day_frame.identity.lane_count;
+        Self::validate_laned_active_public_routing_record(routing, is_terminal)?;
+        let wave1_active =
+            day_frame.erosion.wave1.is_some() || day_frame.erosion.wave1_continuity.is_some();
+        let mut candidate = row.clone();
+        Self::bind_laned_active_public_hourly_pair(
+            Some(routing.routed_weights),
+            wave1_active,
+            &mut candidate.erosion,
+        )?;
+        Self::bind_laned_active_public_runoff_operands(
+            routing,
+            is_terminal,
+            &mut candidate.runoff,
+        )?;
+        *row = candidate;
+        Ok(())
+    }
+
+    fn bind_laned_active_public_runoff_operands(
+        routing: &laned_active::DirectLanedActiveDayRouting,
+        is_terminal: bool,
+        runoff: &mut DirectPublicationRunoffOperands,
+    ) -> Result<(), DirectRuntimeError> {
+        Self::validate_laned_active_public_routing_record(routing, is_terminal)?;
+        if !is_terminal {
+            return Ok(());
+        }
+        let mut candidate = *runoff;
+        candidate.runvol_m3 = routing.outlet_m3;
+        candidate.peak_runoff_m3_s = Some(
+            routing
+                .routed_weights
+                .iter()
+                .map(|weight| weight * routing.outlet_m3)
+                .fold(0.0_f64, f64::max)
+                / 3_600.0,
+        );
+        *runoff = candidate;
+        Ok(())
+    }
+
+    fn validate_laned_active_public_routing_record(
+        routing: &laned_active::DirectLanedActiveDayRouting,
+        is_terminal: bool,
+    ) -> Result<(), DirectRuntimeError> {
+        for (field, value) in [
+            ("laned_active.publication.source_m3", routing.source_m3),
+            ("laned_active.publication.outlet_m3", routing.outlet_m3),
+            (
+                "laned_active.publication.mesh_end_storage_m3",
+                routing.mesh_end_storage_m3,
+            ),
+            ("laned_active.publication.clamp_m3", routing.clamp_m3),
+        ] {
+            validate_finite(field, value)?;
+            if value < 0.0 {
+                return Err(DirectRuntimeError::DirectDomainViolation { field });
+            }
+        }
+        let weight_sum = routing.routed_weights.iter().sum::<f64>();
+        validate_finite(
+            "laned_active.publication.hourly_runoff_fraction_sum",
+            weight_sum,
+        )?;
+        let sum_is_zero = weight_sum.to_bits() == 0.0_f64.to_bits();
+        let sum_is_one = (weight_sum - 1.0).abs() <= laned_active::LANED_ACTIVE_CASCADE_REL_TOL;
+        if (!sum_is_zero && !sum_is_one) || (is_terminal && routing.outlet_m3 > 0.0 && !sum_is_one)
+        {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.publication.hourly_runoff_fraction_sum",
+            });
+        }
+        Ok(())
+    }
+
+    fn validate_laned_active_public_day_ledger(
+        routings: &[&laned_active::DirectLanedActiveDayRouting],
+    ) -> Result<(), DirectRuntimeError> {
+        let terminal = routings
+            .last()
+            .ok_or(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "laned_active authenticated routed public day ledger",
+            })?;
+        let mut source_m3 = 0.0;
+        let mut storage_m3 = 0.0;
+        let mut clamp_m3 = 0.0;
+        for routing in routings {
+            Self::validate_laned_active_public_routing_record(routing, false)?;
+            source_m3 += routing.source_m3;
+            storage_m3 += routing.mesh_end_storage_m3;
+            clamp_m3 += routing.clamp_m3;
+        }
+        for (field, value) in [
+            ("laned_active.publication.day_source_m3", source_m3),
+            ("laned_active.publication.day_storage_m3", storage_m3),
+            ("laned_active.publication.day_clamp_m3", clamp_m3),
+        ] {
+            validate_finite(field, value)?;
+        }
+        let residual_m3 = source_m3 + clamp_m3 - terminal.outlet_m3 - storage_m3;
+        let tolerance_m3 = laned_active::LANED_ACTIVE_CASCADE_REL_TOL * source_m3.max(1.0);
+        if residual_m3.abs() > tolerance_m3 {
+            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "laned_active.publication.source_clamp_outlet_storage",
+            });
+        }
+        Ok(())
+    }
+
+    fn validate_optional_laned_active_public_day_ledger(
+        routings: &[Option<&laned_active::DirectLanedActiveDayRouting>],
+        laned_active_owned_day: bool,
+    ) -> Result<(), DirectRuntimeError> {
+        if !laned_active_owned_day {
+            if routings.iter().any(Option::is_some) {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "publication.unexpected_inactive_laned_active_routing",
+                });
+            }
+            return Ok(());
+        }
+        let required = routings
+            .iter()
+            .map(|routing| {
+                routing.ok_or(DirectRuntimeError::MissingDirectUpstream {
+                    upstream: "laned_active authenticated routed public day ledger",
+                })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        Self::validate_laned_active_public_day_ledger(&required)
+    }
+
+    fn bind_laned_active_public_hourly_pair(
+        routed_weights: Option<[f64; 24]>,
+        wave1_active: bool,
+        publication: &mut DirectPublicationErosionOperands,
+    ) -> Result<(), DirectRuntimeError> {
+        let routed_weights = routed_weights.ok_or(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "laned_active authenticated routed hourly surface",
+        })?;
+        for value in routed_weights {
+            validate_finite("laned_active.publication.hourly_runoff_fraction", value)?;
+            if value < 0.0 {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "laned_active.publication.hourly_runoff_fraction",
+                });
+            }
+        }
+
+        let mut candidate = *publication;
+        match candidate.hourly_runoff_fraction {
+            Some(existing) => {
+                if existing
+                    .iter()
+                    .zip(routed_weights)
+                    .any(|(actual, expected)| actual.to_bits() != expected.to_bits())
+                {
+                    return Err(DirectRuntimeError::DirectDomainViolation {
+                        field: "laned_active.publication.hourly_runoff_fraction",
+                    });
+                }
+            }
+            None => candidate.hourly_runoff_fraction = Some(routed_weights),
+        }
+
+        match candidate.hourly_sediment_mass_kg {
+            Some(existing) => {
+                for value in existing {
+                    validate_finite("laned_active.publication.hourly_sediment_mass_kg", value)?;
+                    if value < 0.0 {
+                        return Err(DirectRuntimeError::DirectDomainViolation {
+                            field: "laned_active.publication.hourly_sediment_mass_kg",
+                        });
+                    }
+                }
+            }
+            None if wave1_active => {
+                return Err(DirectRuntimeError::MissingDirectUpstream {
+                    upstream: "laned_active Wave-1 hourly sediment surface",
+                });
+            }
+            None => candidate.hourly_sediment_mass_kg = Some([0.0; 24]),
+        }
+
+        *publication = candidate;
+        Ok(())
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -2167,12 +2379,11 @@ impl DirectFrameExecutor {
         counters: &mut DirectExecutionCounters,
         winter_frost_compute_inputs: Option<&crate::hydrology::DirectWinterFrostComputeInputs>,
     ) -> Result<(), DirectRuntimeError> {
-        day_frame.frost_daily_consumers = winter_frost_compute_inputs.map(|inputs| {
-            DirectFrostDailyConsumers {
+        day_frame.frost_daily_consumers =
+            winter_frost_compute_inputs.map(|inputs| DirectFrostDailyConsumers {
                 residue_depth_m: inputs.thermal.residue_depth_m,
                 canopy_height_m: inputs.thermal.canopy_height_m,
-            }
-        });
+            });
         record_direct_span_report!(counters, day_frame.run_r5b_normalization_phase());
         record_direct_span_report!(counters, day_frame.run_r5b_storage_bounds_phase());
         record_direct_span_report!(counters, day_frame.run_r5c_decomposition_phase());
@@ -2219,408 +2430,4 @@ impl DirectFrameExecutor {
 }
 
 #[cfg(test)]
-mod cqr_executor_tests {
-    use super::*;
-
-    fn day_frame(day_index: usize, day_count: usize) -> DirectDayFrame {
-        let identity = DirectRunIdentity::new(91, 501, 2, day_count)
-            .expect("valid executor characterization identity");
-        DirectDayFrame::seed(identity, 0, day_index).expect("valid executor day frame")
-    }
-
-    fn calendar_input() -> DirectPublicationDayInput {
-        DirectPublicationDayInput::calendar_only(DirectPublicationCalendarDay {
-            year: 2026,
-            julian_day: 1,
-            month: 1,
-            day_of_month: 1,
-            water_year: 2026,
-        })
-    }
-
-    #[test]
-    fn cqr_apply_publication_input_covers_optional_payloads_and_guard_priority() {
-        let mut day = day_frame(0, 1);
-        let mut input = calendar_input();
-        input.precipitation_m = 0.01;
-        input.effective_temperature_c = 2.0;
-        input.interception_m = 0.001;
-        input.canopy_cover_fraction = Some(0.5);
-        input.initial_soil_water_m = Some(0.2);
-        input.storage_input_inputs = Some(day.storage_input_inputs);
-        input.liquid_input_inputs = Some(day.liquid_input_inputs);
-        input.percolation_inputs = Some(DirectPercolationInputs::neutral());
-        input.infiltration_depression_inputs = Some(day.infiltration_depression_inputs.clone());
-        input.subsurface_compute_inputs = Some(DirectSubsurfaceComputeInputs::neutral());
-        input.decomposition_inputs = Some(day.decomposition_inputs);
-        input.residue_partition_inputs = Some(day.residue_partition_inputs);
-        input.annual_growth_inputs = Some(day.annual_growth_inputs);
-        input.perennial_growth_inputs = Some(day.perennial_growth_inputs);
-        let mut et = day.evapotranspiration_compute_inputs.clone();
-        et.stage_state = None;
-        input.evapotranspiration_compute_inputs = Some(et);
-        input.snow_coupling_inputs = Some(day.snow_coupling_inputs.clone());
-        input.hydrology_projection_inputs = Some(day.hydrology_projection_inputs);
-        input.erosion_inputs = Some(day.erosion_inputs.clone());
-        input.frost_storage_liquid_delta_m = Some(-0.001);
-        input.frost_layer_carry_projection = Some(Vec::new());
-        DirectFrameExecutor::apply_publication_day_input(&mut day, &input)
-            .expect("complete optional publication payload");
-        assert!((day.forcing.precipitation_m - 0.01).abs() < f64::EPSILON);
-        assert!((day.water.soil_water_m - 0.2).abs() < f64::EPSILON);
-        assert_eq!(day.frost_storage_liquid_delta_m, Some(-0.001));
-
-        let mut fallback = calendar_input();
-        fallback.precipitation_m = 0.02;
-        DirectFrameExecutor::apply_publication_day_input(&mut day, &fallback)
-            .expect("precipitation fallback liquid handoff");
-        assert!(
-            (day.liquid_input_inputs.liquid_input_handoff_m - 0.02).abs() < f64::EPSILON
-        );
-
-        let mut invalid = calendar_input();
-        invalid.precipitation_m = -1.0;
-        invalid.effective_temperature_c = f64::NAN;
-        assert!(matches!(
-            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
-            Err(DirectRuntimeError::NegativeDirectValue {
-                field: "publication_input.precipitation_m"
-            })
-        ));
-        invalid.precipitation_m = 0.0;
-        assert!(matches!(
-            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
-            Err(DirectRuntimeError::NonFiniteDirectValue {
-                field: "publication_input.effective_temperature_c"
-            })
-        ));
-        invalid.effective_temperature_c = 0.0;
-        invalid.canopy_cover_fraction = Some(1.1);
-        assert!(matches!(
-            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
-            Err(DirectRuntimeError::DirectDomainViolation {
-                field: "publication_input.canopy_cover_fraction"
-            })
-        ));
-        invalid.canopy_cover_fraction = Some(f64::NAN);
-        assert!(matches!(
-            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
-            Err(DirectRuntimeError::NonFiniteDirectValue {
-                field: "publication_input.canopy_cover_fraction"
-            })
-        ));
-        invalid.canopy_cover_fraction = None;
-        invalid.initial_soil_water_m = Some(-0.1);
-        assert!(matches!(
-            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
-            Err(DirectRuntimeError::NegativeDirectValue {
-                field: "publication_input.initial_soil_water_m"
-            })
-        ));
-        invalid.initial_soil_water_m = None;
-        invalid.frost_storage_liquid_delta_m = Some(f64::NAN);
-        assert!(matches!(
-            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
-            Err(DirectRuntimeError::NonFiniteDirectValue {
-                field: "publication_input.frost_storage_liquid_delta_m"
-            })
-        ));
-    }
-
-    #[test]
-    fn cqr_executor_mode_and_phase_status_cover_both_lifecycle_arms() {
-        let executor = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect);
-        assert_eq!(executor.mode(), DirectExecutorMode::ProductionDirect);
-
-        let mut counters = DirectExecutionCounters::default();
-        counters.record_phase_status(
-            DirectPhaseKind::Normalization,
-            DirectPhaseLifecycleStatus::Executed,
-        );
-        counters.record_phase_status(
-            DirectPhaseKind::StorageBounds,
-            DirectPhaseLifecycleStatus::Hold,
-        );
-        let counts = counters.phase_status_counts();
-        assert!(counts.iter().any(|count| {
-            count.phase == DirectPhaseKind::Normalization
-                && count.status == DirectPhaseLifecycleStatus::Executed
-                && count.count == 1
-        }));
-        assert!(counts.iter().any(|count| {
-            count.phase == DirectPhaseKind::StorageBounds
-                && count.status == DirectPhaseLifecycleStatus::Hold
-                && count.count == 1
-        }));
-    }
-
-    #[test]
-    fn cqr_active_selector_and_first_day_empty_layer_payloads_take_guarded_branches() {
-        let identity = DirectRunIdentity::new(94, 501, 1, 1)
-            .expect("valid selector characterization identity");
-        let mut frame = DirectRunFrame::skeleton(identity).expect("selector frame");
-        frame.laned_active = Some(Box::new(laned_active::DirectLanedActiveConfig {
-            lanes: vec![laned_active::DirectLanedActiveLaneConfig {
-                slplen_m: 10.0,
-                width_m: 10.0,
-                mean_gradient: 0.01,
-                skin_friction_coefficient_ko: 500.0,
-                form_drag_coefficient: 0.0,
-                roughness_element_height_m: 0.0,
-                roughness_concentration: 0.0,
-                vegetation_drag_coefficient: 0.0,
-                canopy_height_m: None,
-            }],
-            mesh_policy: laned_active::DirectLanedActiveMeshPolicy::FixedCells { cells: 10 },
-            max_dt_s: 300.0,
-            trace_enabled: false,
-            trace_detail_filter: None,
-            step_trace_enabled: false,
-        }));
-        assert!(matches!(
-            DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly).run_skeleton(&mut frame),
-            Err(DirectRuntimeError::DirectKernelGuardFailure {
-                phase: "laned_active_selector",
-                ..
-            })
-        ));
-
-        let mut day = day_frame(0, 1);
-        day.percolation_inputs = DirectPercolationInputs::neutral();
-        day.subsurface_compute_inputs = DirectSubsurfaceComputeInputs::neutral();
-        let mut input = calendar_input();
-        let mut percolation = DirectPercolationInputs::neutral();
-        percolation.layers.clear();
-        input.percolation_inputs = Some(percolation);
-        let mut subsurface = DirectSubsurfaceComputeInputs::neutral();
-        subsurface.layers.clear();
-        input.subsurface_compute_inputs = Some(subsurface);
-        DirectFrameExecutor::apply_publication_day_input(&mut day, &input)
-            .expect("first-day empty layers inherit seeded layers");
-        assert_eq!(day.percolation_inputs.layers.len(), 1);
-        assert_eq!(day.subsurface_compute_inputs.layers.len(), 1);
-    }
-
-    #[test]
-    fn cqr_publication_layer_inputs_cover_carry_forward_and_cardinality_guards() {
-        let mut day = day_frame(1, 2);
-        day.percolation_inputs = DirectPercolationInputs::neutral();
-        day.subsurface_compute_inputs = DirectSubsurfaceComputeInputs::neutral();
-        day.water.soil_water_m = 0.25;
-
-        let mut input = calendar_input();
-        let mut percolation = DirectPercolationInputs::neutral();
-        percolation.layers.clear();
-        input.percolation_inputs = Some(percolation);
-        let mut subsurface = DirectSubsurfaceComputeInputs::neutral();
-        subsurface.layers.clear();
-        input.subsurface_compute_inputs = Some(subsurface);
-        DirectFrameExecutor::apply_publication_day_input(&mut day, &input)
-            .expect("empty later-day layer payloads carry forward");
-        assert_eq!(day.percolation_inputs.layers.len(), 1);
-        assert!((day.percolation_inputs.soil_water_initial_m - 0.25).abs() < f64::EPSILON);
-        assert_eq!(day.subsurface_compute_inputs.layers.len(), 1);
-
-        let mut bad_percolation = DirectPercolationInputs::neutral();
-        bad_percolation
-            .layers
-            .push(DirectSubsurfaceLayerState::neutral());
-        input.percolation_inputs = Some(bad_percolation);
-        assert!(matches!(
-            DirectFrameExecutor::apply_publication_percolation_input(&mut day, &input),
-            Err(DirectRuntimeError::DirectDomainViolation {
-                field: "publication_input.percolation_layers"
-            })
-        ));
-
-        let mut bad_subsurface = DirectSubsurfaceComputeInputs::neutral();
-        bad_subsurface
-            .layers
-            .push(DirectSubsurfaceLayerInputs::neutral());
-        input.subsurface_compute_inputs = Some(bad_subsurface);
-        assert!(matches!(
-            DirectFrameExecutor::apply_publication_subsurface_input(&mut day, &input),
-            Err(DirectRuntimeError::DirectDomainViolation {
-                field: "publication_input.subsurface_layers"
-            })
-        ));
-    }
-
-    fn erosion_publisher_fixture() -> (DirectRunFrame, DirectDayFrame) {
-        let identity =
-            DirectRunIdentity::new(92, 501, 2, 1).expect("valid erosion publisher identity");
-        let frame = DirectRunFrame::skeleton(identity).expect("erosion publisher frame");
-        let mut day = DirectDayFrame::seed(identity, 0, 0).expect("erosion publisher day");
-        day.erosion_inputs.wave1_operand_seed.enabled = true;
-        day.erosion_inputs.wave1_operand_seed.efflen_m = 2.0;
-        day.erosion_inputs.wave1_operand_seed.field_width_m = 4.0;
-        day.wave1_hourly_plan
-            .push((0, DirectWave1ContinuityInputs::zero()));
-        (frame, day)
-    }
-
-    #[test]
-    fn cqr_erosion_inflow_publisher_covers_errors_and_downstream_publication() {
-        let (mut frame, mut day) = erosion_publisher_fixture();
-        let mut inactive = day.clone();
-        inactive.erosion_inputs.wave1_operand_seed.enabled = false;
-        assert!(
-            !DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &inactive)
-                .expect("inactive erosion lane")
-        );
-        let downstream_lane_id = frame.lanes[0].downstream_lane_id;
-        frame.lanes[0].downstream_lane_id = 0;
-        assert!(
-            !DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day)
-                .expect("terminal erosion lane")
-        );
-        frame.lanes[0].downstream_lane_id = downstream_lane_id;
-        assert!(matches!(
-            DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day),
-            Err(DirectRuntimeError::MissingDirectUpstream {
-                upstream: "E.3 erosion inflow publisher peak-runoff producer"
-            })
-        ));
-        day.peak_runoff_shadow_projection = Some(DirectPeakRunoffShadowProjection {
-            lane_index: 0,
-            day_index: 0,
-            q_runoff_m: 0.024,
-            peak_runoff_rate_m_s: 1.0,
-            runoff_duration_s: 3600.0,
-            peak_hour_index: Some(0),
-            method_branch: 1.0,
-            tstar: 0.0,
-            qpstar: 0.0,
-            vstar: 0.0,
-        });
-        assert!(matches!(
-            DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day),
-            Err(DirectRuntimeError::MissingDirectUpstream {
-                upstream: "E.3 erosion inflow publisher continuity state"
-            })
-        ));
-        day.erosion.wave1_continuity = Some(Box::new(DirectWave1ContinuityState::inactive()));
-        assert!(matches!(
-            DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day),
-            Err(DirectRuntimeError::MissingDirectUpstream {
-                upstream: "E.3 erosion inflow publisher hourly sediment surface"
-            })
-        ));
-        day.erosion_downstream_operands
-            .publication
-            .hourly_sediment_mass_kg = Some([3.6; 24]);
-        day.wave1_hourly_weights = [1.0 / 24.0; 24];
-        assert!(
-            DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day)
-                .expect("erosion inflow publication")
-        );
-        let intake = frame.lanes[1]
-            .erosion_inflow_intake
-            .as_ref()
-            .expect("downstream erosion intake");
-        assert!((intake.hourly_qsout_kg_m_s[0] - 0.00025).abs() < f64::EPSILON);
-        assert!(intake.exit_fractions.iter().all(|value| value.abs() < f64::EPSILON));
-
-        day.erosion_downstream_operands
-            .publication
-            .sediment_concentration_kg_m3 = Some([1.0, 1.0, 2.0, 0.0, 0.0]);
-        DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day)
-            .expect("positive concentration publication");
-        let expected = [0.25, 0.25, 0.5, 0.0, 0.0];
-        let actual = frame.lanes[1]
-            .erosion_inflow_intake
-            .as_ref()
-            .expect("updated intake")
-            .exit_fractions;
-        assert!(
-            actual
-                .iter()
-                .zip(expected)
-                .all(|(actual, expected)| (actual - expected).abs() < f64::EPSILON)
-        );
-
-        day.erosion_inputs.wave1_operand_seed.field_width_m = 0.0;
-        assert!(matches!(
-            DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day),
-            Err(DirectRuntimeError::DirectDomainViolation {
-                field: "erosion.inflow_publisher.geometry"
-            })
-        ));
-    }
-
-    #[test]
-    fn cqr_day_execution_failure_preserves_context_and_runoff_diagnostics() {
-        let mut day = day_frame(0, 1);
-        let ordinary = DirectFrameExecutor::day_execution_failure(
-            &day,
-            1,
-            2,
-            &DirectRuntimeError::DirectDomainViolation { field: "ordinary" },
-        );
-        assert!(matches!(
-            ordinary,
-            DirectRuntimeError::DirectDayExecutionFailure {
-                lane_index: 1,
-                day_index: 2,
-                ..
-            }
-        ));
-
-        day.runoff_partition_inputs.liquid_input_m = 0.1;
-        day.runoff_partition_inputs.runon_input_m = 0.2;
-        day.storage_reconciliation_inputs.precip_input_m = 0.3;
-        let detailed = DirectFrameExecutor::day_execution_failure(
-            &day,
-            0,
-            0,
-            &DirectRuntimeError::NegativeDirectValue {
-                field: "runoff_partition.partition_runoff_m",
-            },
-        );
-        let DirectRuntimeError::DirectDayExecutionFailure { detail, .. } = detailed else {
-            panic!("expected wrapped day failure")
-        };
-        assert!(detail.contains("liquid_input_m=0.1"));
-        assert!(detail.contains("runon_input_m=0.2"));
-        assert!(detail.contains("storage_precip_input_m=0.3"));
-    }
-
-    #[test]
-    fn cqr_day_execution_failure_enriches_aggregate_storage_context() {
-        let identity =
-            DirectRunIdentity::new(93, 501, 1, 1).expect("valid aggregate diagnostic identity");
-        let mut frame = DirectRunFrame::skeleton(identity).expect("aggregate diagnostic frame");
-        frame.lanes[0].area_m2 = 100.0;
-        let input = calendar_input();
-        let mut enriched = false;
-        DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
-            .run_publication_stream_with_interleaved_day_inputs_and_day_frames(
-                &mut frame,
-                DirectPublicationRunMetadata {
-                    run_name: "cqr_aggregate_diagnostic".to_string(),
-                    runtime_selection: "direct".to_string(),
-                    output_policy: "test".to_string(),
-                },
-                |_, _, _| Ok(input.clone()),
-                |_, day_frame| {
-                    let wrapped = DirectFrameExecutor::day_execution_failure(
-                        day_frame,
-                        0,
-                        0,
-                        &DirectRuntimeError::DirectClosureToleranceExceeded {
-                            field: "hydrology_projection.aggregate_storage_delta_m",
-                        },
-                    );
-                    let DirectRuntimeError::DirectDayExecutionFailure { detail, .. } = wrapped
-                    else {
-                        panic!("expected wrapped aggregate diagnostic")
-                    };
-                    enriched = detail.contains("aggregate_storage_from_layers_m=")
-                        && detail.contains("frozen_layer_storage_m=");
-                    Ok(())
-                },
-            )
-            .expect("aggregate diagnostic publication stream");
-        assert!(enriched);
-    }
-}
+include!("03_executor_tests.rs");

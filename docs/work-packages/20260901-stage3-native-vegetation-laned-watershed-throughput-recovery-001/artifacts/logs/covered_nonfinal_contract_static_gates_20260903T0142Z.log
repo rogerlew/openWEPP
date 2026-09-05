@@ -1,0 +1,6 @@
+PASS docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md: 49 binding exposure row(s) fully consolidated
+PASS docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md: 11 binding exposure row(s) fully consolidated
+PASS docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md: 7 binding exposure row(s) fully consolidated
+PASS docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md: 19 binding exposure row(s) fully consolidated
+PASS docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md: 7 binding exposure row(s) fully consolidated
+PASS: SC unit compliance lint found no findings

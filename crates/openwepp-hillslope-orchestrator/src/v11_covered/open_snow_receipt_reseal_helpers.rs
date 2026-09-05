@@ -16,6 +16,7 @@ fn snow_soil_receipt_reseal_roundoff_within_bound_v1(
 /// identity. V2 trial custody is expected to change when the final debit
 /// receipt digest is installed into its layer credits, but its complete
 /// ending owner state must remain byte-for-byte equivalent.
+#[cfg(test)]
 fn select_identity_replayed_soil_candidate_v1(
     installed: &DirectSoilThermalCandidate,
     identity_replayed: DirectSoilThermalCandidate,

@@ -28,9 +28,11 @@ use crate::direct_runtime::{
     SurfaceLiquidOwnerModelDefinitionV2,
 };
 
+use super::PhysicalSoilEnergyTransactionAuthorityV2;
 use super::endpoint_fixture;
 use super::v3_execution::{
-    FrozenLitterV3RuntimeInput, FrozenLitterV4RuntimeInput, execute_frozen_litter_v4,
+    FrozenLitterV3RuntimeInput, FrozenLitterV3SoilBeginningV1, FrozenLitterV4RuntimeInput,
+    execute_frozen_litter_v4,
 };
 use super::v3_input_projection::FrozenLitterV3PhaseFreeInput;
 use crate::v9_real_consumer_shadow::FrozenLitterV3PublicationSupportV1;
@@ -533,6 +535,11 @@ pub fn accepted_negative_zero_v4_evidence_v1() -> AcceptedNegativeZeroV4Evidence
     let accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
         physical: FrozenLitterV3RuntimeInput {
             transaction_id: TRANSACTION,
+            soil_transaction_authority: PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+                TRANSACTION,
+                fixture.soil_owner.transaction_id,
+            )
+            .expect("V4 soil transaction authority"),
             predecessor_transaction_id: None,
             parent_support_start_ns: SUPPORT_START_NS,
             parent_support_end_ns: PARENT_END_NS,
@@ -548,8 +555,10 @@ pub fn accepted_negative_zero_v4_evidence_v1() -> AcceptedNegativeZeroV4Evidence
             wb14_parent: None,
             finalize_wb14_parent_interval: true,
             coupled_binding: fixture.binding,
-            soil_thermal_owner: &fixture.soil_owner,
-            soil_thermal_restart: &fixture.soil_restart,
+            soil_beginning: FrozenLitterV3SoilBeginningV1::PublishableOwner {
+                owner: &fixture.soil_owner,
+                restart: &fixture.soil_restart,
+            },
         },
         beginning_exact_surface_owner: &beginning_exact_surface_owner,
     })
@@ -648,6 +657,11 @@ pub fn execute_nonzero_carry_successor_after_reload_v1(
     let second_accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
         physical: FrozenLitterV3RuntimeInput {
             transaction_id: SUCCESSOR_TRANSACTION,
+            soil_transaction_authority: PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+                SUCCESSOR_TRANSACTION,
+                second_soil_owner.transaction_id,
+            )
+            .expect("successor V4 soil transaction authority"),
             predecessor_transaction_id: Some(TRANSACTION),
             parent_support_start_ns: SUPPORT_END_NS,
             parent_support_end_ns: SUCCESSOR_SUPPORT_END_NS,
@@ -672,8 +686,10 @@ pub fn execute_nonzero_carry_successor_after_reload_v1(
                 child_support_start_ns: SUPPORT_END_NS,
                 child_support_end_ns: SUCCESSOR_SUPPORT_END_NS,
             },
-            soil_thermal_owner: &second_soil_owner,
-            soil_thermal_restart: &second_soil_restart,
+            soil_beginning: FrozenLitterV3SoilBeginningV1::PublishableOwner {
+                owner: &second_soil_owner,
+                restart: &second_soil_restart,
+            },
         },
         beginning_exact_surface_owner,
     })
@@ -736,6 +752,11 @@ pub fn accepted_nonzero_carry_split_v4_evidence_v1() -> AcceptedNonzeroCarrySpli
     let first_accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
         physical: FrozenLitterV3RuntimeInput {
             transaction_id: TRANSACTION,
+            soil_transaction_authority: PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+                TRANSACTION,
+                fixture.soil_owner.transaction_id,
+            )
+            .expect("V4 soil transaction authority"),
             predecessor_transaction_id: None,
             parent_support_start_ns: SUPPORT_START_NS,
             parent_support_end_ns: SUPPORT_END_NS,
@@ -760,8 +781,10 @@ pub fn accepted_nonzero_carry_split_v4_evidence_v1() -> AcceptedNonzeroCarrySpli
                 child_support_start_ns: SUPPORT_START_NS,
                 child_support_end_ns: SUPPORT_END_NS,
             },
-            soil_thermal_owner: &fixture.soil_owner,
-            soil_thermal_restart: &fixture.soil_restart,
+            soil_beginning: FrozenLitterV3SoilBeginningV1::PublishableOwner {
+                owner: &fixture.soil_owner,
+                restart: &fixture.soil_restart,
+            },
         },
         beginning_exact_surface_owner: &first_beginning_exact,
     })

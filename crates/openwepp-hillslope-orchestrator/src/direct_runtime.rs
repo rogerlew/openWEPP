@@ -175,6 +175,12 @@ mod snow_stage3_shadow;
 mod stage3_committed_publication;
 pub(crate) use stage3_committed_publication::Stage3AcceptedPublicationDayV1;
 mod snow_stage3_v11_scheduler;
+pub(crate) use snow_stage3_v11_scheduler::record_snow_stage3_v11_accepted_history_append_v1;
+pub(crate) use snow_stage3_v11_scheduler::record_snow_stage3_v11_native_inactive_prefix_validation_v1;
+pub use snow_stage3_v11_scheduler::{
+    SnowStage3V11AttachmentAdoptionAuditV1, begin_snow_stage3_v11_attachment_adoption_audit_v1,
+    take_snow_stage3_v11_attachment_adoption_audit_v1,
+};
 #[cfg(test)]
 mod snow_stage3_v11_scheduler_tests;
 #[cfg(test)]
@@ -197,6 +203,9 @@ pub(crate) use surface_liquid_owner::{
 pub use surface_liquid_owner_v3_exact_enthalpy::*;
 pub use surface_liquid_owner_v4_projection::*;
 mod surface_liquid_wb14;
+pub(crate) use surface_liquid_wb14::{
+    ValidatedNativeInactiveWb14PrefixV1, validate_native_inactive_wb14_prefix_v1,
+};
 #[cfg(test)]
 pub(crate) use surface_liquid_wb14::{
     force_deep_clone_direct_wb14_receipt_history_v1, permit_short_wb14_parent_support_for_test,
@@ -423,6 +432,8 @@ pub use surface_liquid_closure::{
 };
 pub use surface_liquid_ingress::DirectWb14CoupledChildBindingV1;
 pub(crate) use surface_liquid_ingress::preflight_surface_liquid_ingress_input_identities;
+#[cfg(test)]
+pub(crate) use surface_liquid_ingress::stage3_covered_native_inactive_child_custody_bytes;
 pub use surface_liquid_ingress::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
     DirectOpenLiquidIngressParcel, DirectSurfaceLiquidIngressCandidate,
@@ -434,14 +445,17 @@ pub use surface_liquid_ingress::{
 pub(crate) use surface_liquid_ingress::{
     DirectWb14ParentWorkingState,
     execute_surface_liquid_ingress_with_parent_state_and_coupled_binding,
-    rebind_wb14_replay_to_accepted_slab, validate_wb14_child_replay_binding,
+    rebind_stage3_covered_native_inactive_child_custody, rebind_wb14_replay_to_accepted_slab,
+    stage3_covered_native_inactive_child_custody_binding, validate_wb14_child_replay_binding,
     validate_wb14_parent_replay, wb14_child_replay_binding,
 };
+#[cfg(test)]
+pub(crate) use surface_liquid_owner::v2_ingress_adapter::prepare_surface_liquid_resource_candidate_v2;
 pub(crate) use surface_liquid_owner::v2_ingress_adapter::{
     DirectSurfaceLiquidIngressCandidateV2, DirectSurfaceLiquidResourceCandidateV2,
-    DirectWb14ParentWorkingStateV2,
+    DirectWb14ParentWorkingStateV2, apply_ordinary_finalized_uses_to_phase_adjusted_v2,
     execute_surface_liquid_ingress_v2_with_parent_state_and_coupled_binding,
-    prepare_surface_liquid_resource_candidate_v2,
+    prepare_surface_liquid_resource_candidate_v2_with_phase_capacity_spills,
 };
 pub use surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,

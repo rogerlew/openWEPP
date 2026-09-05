@@ -4,7 +4,7 @@ title: Coupled Vegetation Occupancy Owner-Transaction Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
-contract_version: 15
+contract_version: 18
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
   - OPENWEPP_C3_WOODY_V11 accepted-segment and parent candidates
@@ -12,7 +12,7 @@ consumer_scope:
   - Default-off real-hydrology, LSE, BGC, and soil-thermal shadow owners
   - Default-off coupled-time V11 parent coordinator and additive restart
 evidence_level: static+independent_oracle
-last_reviewed: 2026-08-20
+last_reviewed: 2026-09-02
 supersedes: []
 superseded_by: []
 ---
@@ -161,6 +161,8 @@ current/next parent sequence. None is a live-owner mutation before commit.
 | `INV-VEGTRANSACTION-015` | Carrier fluxes and reciprocal longwave are exact-once, independently reconstructed, and owner/segment keyed. | Child 2C carrier transaction | `[INFERENCE][Static]` | ledger validator | `VEGTXN-E-016` |
 | `INV-VEGTRANSACTION-016` | Event receipt, active supports, and forcing/exposure receipts are authenticated before any carrier solve. | Child 2C carrier transaction | `[INFERENCE][Static]` | receipt join | `VEGTXN-E-017` |
 | `INV-VEGTRANSACTION-017` | Wrong-regime or post-event snow operands reject without mutating any owner. | Child 2C carrier transaction | `[INFERENCE][Static]` | regime validator | `VEGTXN-E-018` |
+| `INV-VEGTRANSACTION-018` | A fully validated snow-free provisional V11 segment may mint one private move-only physical-reuse proof. A final independently constructed accepted-slab receipt on the same live parent revision may consume it only to reseal slab-dependent transaction, resource, transition, owner-candidate, WB14, and publication identities. No vegetation, LSE, hydrology, BGC, soil, or surface physics is repeated. Every non-slab input and exact physical ending remains identical; the final segment owners equal the validated provisional ending byte-for-byte and only the final path publishes. The proof is single-use, non-wire, and invalid after mutation, transfer, or restart. | `SC-COUPLEDTIME-001#INV-COUPLEDTIME-029` + transaction atomicity and exact owner custody | `[INFERENCE][Static]` | private physical-reuse typestate, final identity reconstruction, exact complete-owner comparison, publication/restart/rollback poisons | `VEGTXN-E-011..014` |
+| `INV-VEGTRANSACTION-019` | `Initial` produces only a private validated physical endpoint. Every later canonical covered-map charge validates exact custody before producing a non-Clone pending adjudication value and constructs no vegetation persistent candidate, material transaction, BGC candidate, ending joint, complete owner set, restart owner, or publication until disposition. Outer nonclosure consumes it into history without error; dependent-only nonclosure consumes it into typed rejection; full closure consumes that same value once as `FinalAccepted` and constructs each transaction artifact exactly once from its own physical prefix into a private publishable envelope. No extra final physical map or completed-nonfinal promotion is authorized. No covered map enqueues, exposes, installs, or publishes; only accepted parent commit publishes. | `SC-SNOWENERGY-001#INV-SNOWENERGY-086` + transaction atomicity | `[INFERENCE][Static]` | custody-before-pending typestate, exclusive disposition, success/failure constructor and parent-publication counters, unpublishable physical-only/history results, exact rollback | outer nonclosure -> history, no error; dependent-only nonclosure/role/ordinal -> `DirectV11RealConsumerError::AdaptiveRefinement`; identity/custody/disposition/leak -> `VEGTXN-E-011`; incomplete or per-map final transaction -> `VEGTXN-E-013`; complete shared-owner mismatch -> `VEGTXN-E-015`; partial-owner/rollback defect -> `VEGTXN-E-007`; restart/replay mismatch -> `VEGTXN-E-014`; existing numeric precedence |
 
 ### Invariant Guard Map
 
@@ -179,6 +181,8 @@ current/next parent sequence. None is a live-owner mutation before commit.
 | `INV-VEGTRANSACTION-011` | ordered material receipt/proposal reconstruction | default-off runtime/test | reject/rollback | V11 segmented-support package |
 | `INV-VEGTRANSACTION-012` | consuming complete-owner parent commit and late-failure injection | default-off runtime/test | rollback | V11 segmented-support package |
 | `INV-VEGTRANSACTION-013` | fresh restore, event boundary, replay, reduction and publication poisons | default-off runtime/test | reject/rollback | V11 segmented-support package |
+| `INV-VEGTRANSACTION-018` | private snow-free provisional physical ending and exact final accepted-slab identity reseal | runtime/test/governance | one physical execution, exact final owners, one publication, or typed atomic rejection | provider counters, direct/reuse equality, exhaustive non-slab/reuse/restart poisons, rollback |
+| `INV-VEGTRANSACTION-019` | typed covered nonfinal physical-only versus final complete-owner posture | runtime/test/governance | zero vegetation/BGC/joint/owner construction for nonfinal roles; exactly one for the final role; typed rollback on mismatch | role/ordinal and constructor counters, differential physical-prefix proof, identity/ULP poisons, rollback |
 
 ## Producer Obligations and Consumer Obligations
 
@@ -200,6 +204,13 @@ current/next parent sequence. None is a live-owner mutation before commit.
 - `OBL-VEGTRANSACTION-C-005`: the parent validator reconstructs carrier flux,
   snow mass, liquid, energy, and chronology from beginning owners and rejects
   aliases, duplicates, and partial commits.
+- `OBL-VEGTRANSACTION-P-004`: a snow-free provisional producer may expose only
+  one private move-only fully validated physical ending; it may not publish,
+  persist, serialize, clone, or replay it.
+- `OBL-VEGTRANSACTION-C-006`: the final accepted-slab consumer reseals only
+  slab-dependent identities, proves byte-identical complete ending owners,
+  publishes once, and rejects every stale, foreign, changed, reused, or
+  post-restart proof with exact rollback and no physical fallback.
 
 ## Symbol Alias Map
 
@@ -255,6 +266,15 @@ events, active-participant changes, water and separate NH4/NO3 overbooking,
 scheduled replay, rejected-attempt no-op, mid-parent/event-boundary restart,
 publication-before-commit, abort, consecutive parents, and exact-one commit.
 
+`OBL-VEGTRANSACTION-P-005` requires zero vegetation persistent/material, BGC,
+joint, owner-set, restart, and publication construction for every nonfinal
+covered role while retaining the exact charged physical endpoint.
+
+`OBL-VEGTRANSACTION-C-007` requires one final construction of every complete
+transaction artifact, exact physical-prefix differential equality, complete
+existing owner/receipt validation, role/ordinal/native/identity/one-ULP
+poisons, unpublishability, and final-failure rollback without fallback.
+
 ## Binding Exposure Index
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
@@ -264,6 +284,8 @@ publication-before-commit, abort, consecutive parents, and exact-one commit.
 | `BEI-VEGTRANSACTION-003` | Terminal receiver amendment | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-008` | `flagged-binding-addition` | Phase-aware predecessor chain, restart, and rollback authority. |
 | `BEI-VEGTRANSACTION-004` | V11 segmented parent-transaction amendment | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-009, INV-VEGTRANSACTION-010, INV-VEGTRANSACTION-011, INV-VEGTRANSACTION-012, INV-VEGTRANSACTION-013` | `flagged-binding-addition` | Segment resource identities, staged custody, ordered material accumulation, atomic parent commit, and restart. |
 | `BEI-VEGTRANSACTION-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-014, INV-VEGTRANSACTION-015, INV-VEGTRANSACTION-016, INV-VEGTRANSACTION-017, OBL-VEGTRANSACTION-P-003, OBL-VEGTRANSACTION-C-005` | `flagged-binding-addition` | Shared carrier staging, typed flux/ledger lineage, receipt joins, complete-owner custody, and wrong-regime rollback. |
+| `BEI-VEGTRANSACTION-SNOW-FREE-PHYSICAL-REUSE` | Stage 3 throughput-recovery final-receipt reseal | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-004, INV-VEGTRANSACTION-009, INV-VEGTRANSACTION-010, INV-VEGTRANSACTION-011, INV-VEGTRANSACTION-012, INV-VEGTRANSACTION-013, INV-VEGTRANSACTION-018, OBL-VEGTRANSACTION-P-004, OBL-VEGTRANSACTION-C-006` | `flagged-binding-addition` | A private single-use validated physical ending may reseal only final accepted-slab identities; exact owners, one publication, restart, and rollback remain unchanged. |
+| `BEI-VEGTRANSACTION-COVERED-NONFINAL-PHYSICAL-ONLY` | Stage 3 throughput-recovery pending-adjudication split | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-019, OBL-VEGTRANSACTION-P-005, OBL-VEGTRANSACTION-C-007` | `flagged-binding-addition` | Initial and history/rejected maps create no publishable vegetation/BGC/joint/owner transaction; the converged pending map creates each once from its own prefix. |
 
 ## Gap Register and Promotability Labels
 
@@ -502,6 +524,7 @@ segment is below the LSE domain.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-09-02 | 17 | Codex | Bound nonfinal covered roles to private physical-only endpoints with zero vegetation/BGC/joint/owner construction; the independently charged final map constructs complete transaction custody once. |
 | 2026-08-20 | 14 | Codex | Bound V11 transaction admission to the reviewed LSE positive-support receipt and replaced the actual-stack 1 ns positive requirement with structural identity plus minimum/typed-reject populations. |
 
 ## Child 2C shared-carrier transaction amendment
@@ -534,10 +557,48 @@ never a live-owner mutation. `OBL-VEGTRANSACTION-C-005`: the parent validator
 reconstructs carrier flux, snow mass, liquid, energy, and chronology from
 beginning owners and rejects aliases, duplicates, and partial commits.
 
+## Snow-Free Final-Receipt Reseal Amendment
+
+`INV-VEGTRANSACTION-018` permits one private single-use bridge between the
+fully validated provisional physical execution and the final accepted-slab
+identity envelope. It does not admit a second physical result or a digest-only
+owner. The provisional producer retains the exact complete physical ending and
+all non-slab transaction inputs but publishes nothing. The final consumer
+independently constructs the ending-owner-derived slab, proves the same live
+parent revision, segment, ordinal, support, beginning owners, configuration,
+forcing, resources, material transfers, and physical ending, then reconstructs
+only identities whose preimage contains the accepted slab receipt.
+
+Vegetation evaluation, resource arbitration, LSE, BGC, soil, surface-liquid,
+WB14, and every constitutive/conservation operation execute exactly once. The
+final segment's seven ordered owner envelopes must equal the validated
+provisional physical ending byte-for-byte before the one final publication is
+released. Missing, cloned, reused, stale, foreign, mutated, or post-restart
+proofs reject atomically. The proof is private, move-only, nonserializable, and
+absent from candidate, receipt, checkpoint, restart, publication, and durable
+wire. No physical replay fallback is authorized.
+
+`OBL-VEGTRANSACTION-P-004` and `OBL-VEGTRANSACTION-C-006` require exact forced
+direct-versus-reuse owner/receipt comparison, one-call physical-provider
+counters, zero provisional and one final publication, exhaustive non-slab and
+ending-owner poisons, duplicate-use and restart refusal, fresh execution after
+restore, and complete rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Execute and validate the snow-free physical transaction once; consume one private proof to reseal final accepted-slab identities; compare all seven exact owner envelopes; publish once. |
+| branch/guard | Final reseal may call identity constructors and validators only. Missing/invalid proof is a typed failure without physical replay; restart requires fresh execution. |
+| invariant guard map | `INV-VEGTRANSACTION-018` -> private physical-reuse typestate, exact live/non-slab join, final candidate reconstruction, seven-owner equality, publication and rollback gates. |
+| test vector | `OBL-VEGTRANSACTION-P-004/C-006`: direct/reuse equality, provider count one, publication 0/1, identity/ending poisons, duplicate use, restart refusal/fresh execution, rollback. |
+| binding exposure | `BEI-VEGTRANSACTION-SNOW-FREE-PHYSICAL-REUSE`, active, `new-INV`, IDs `018/P-004/C-006`, dual review/verification. |
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-09-03 | 18 | Codex | Corrected final transaction custody to consume the converged pending adjudication map's own physical prefix once; no independently replayed final physical map or completed-nonfinal promotion is authorized. |
+| 2026-09-02 | 17 | Codex | Bound nonfinal covered roles to private physical-only endpoints, final-only private complete-envelope construction, zero map-level publication, exact failure accounting, and parent-only atomic publication. |
+| 2026-09-02 | 16 | Codex | Bound one private single-use validated snow-free physical ending to final accepted-slab identity resealing. Physical operations execute once; exact seven-owner bytes, one final publication, restart, and rollback semantics remain unchanged. |
 | 2026-08-20 | 15 | Codex | Bound the shared Child 2C carrier node, exposure/event/support receipt joins, exact-once flux lineage, wrong-regime rejection, and complete-owner-only commit. |
 | 2026-08-20 | 4 | Codex | Drafted V11 accepted-segment staging, cumulative resource/material custody, additive restart, and one atomic parent commit. |
 | 2026-08-20 | 5 | Codex | Added production V11 restart V2 complete typed checkpoint/owner custody after implementation inventory proved reviewed V1 insufficient. |
@@ -552,3 +613,67 @@ beginning owners and rejects aliases, duplicates, and partial commits.
 | 2026-08-19 | 3 | Codex | Added default-off terminal receiver all-owner transaction authority (`INV-VEGTRANSACTION-008`) with phase-aware error precedence, exact rollback, restart membership, and CoE production invariance. |
 | 2026-08-14 | 2 | Codex | Extended the transaction to V8/LSE source-keyed ground water, one real-hydrology authorization, coupled final solve, LSE/soil-thermal owner joins and production-isolated atomic shadow commit. |
 | 2026-08-12 | 1 | Codex | Initial shared V2 occupancy water/energy owner identity, reconstruction, and atomicity authority. |
+
+## Covered Pending-Adjudication Transaction Amendment
+
+`INV-VEGTRANSACTION-019` separates a charged covered map's validated physical
+endpoint from its publishable transaction custody. `Initial` returns only the
+first private physical endpoint governed by
+`SC-SNOWENERGY-001#INV-SNOWENERGY-086`. Every later charged role returns a
+non-Clone pending adjudication value only after exact physical, identity, and
+discrete-custody validation and creates no vegetation persistent
+candidate, vegetation material transaction, BGC candidate, ending joint,
+complete owner set, restart bytes, or publication until disposition. Outer
+nonclosure consumes the value into iteration history; dependent-only
+nonclosure consumes it into typed adaptive rejection. Full closure consumes
+that same value once as `FinalAccepted`, creates the transaction artifacts from
+its own already-executed physical prefix, and then passes every existing exact
+parent/segment/resource/material/predecessor/owner and atomic-commit guard.
+It returns a private publishable envelope to the enclosing adaptive candidate;
+it does not enqueue, expose, install, or publish it.
+
+The physical-only and history types are nonserializable and have no candidate,
+owner, install, or publication conversion. Role/ordinal substitution,
+duplicate or cross-disposition consumption, duplicate finalization,
+physical-prefix mutation, native/ordinary substitution, or failure in any
+final-only constructor rejects before live mutation; an earlier physical-only
+map cannot be promoted or used as fallback.
+
+| Amendment trigger | Typed failure and precedence |
+| --- | --- |
+| role, ordinal, or charged-map sequence mismatch | `DirectV11RealConsumerError::AdaptiveRefinement` before transaction construction; if a transaction boundary is nevertheless reached with that mismatch, `VEGTXN-E-011` |
+| outer nonclosure | consume the pending map into history; no error |
+| dependent-only nonclosure | consume the pending map into `DirectV11RealConsumerError::AdaptiveRefinement`; no history or constructor |
+| transaction, support, native/ordinary posture, identity, custody, promotion, or state-leak mismatch | `VEGTXN-E-011` before pending minting or the affected constructor/exposure |
+| material/BGC/joint transaction is incomplete or inconsistent | `VEGTXN-E-013` |
+| complete shared-owner mismatch | `VEGTXN-E-015` |
+| atomic install, per-map commit, or duplicate-finalization attempt | `VEGTXN-E-013` |
+| partial owner-set validation or rollback defect | `VEGTXN-E-007` |
+| restart or reconstructed replay-chain mismatch | `VEGTXN-E-014` |
+| map-level publication attempt | coupled-time `ERR-CT-018 PublicationState`; expose nothing |
+
+Validation follows table order, then the existing numeric vegetation-
+transaction precedence.
+
+`OBL-VEGTRANSACTION-P-005` — Instrument initial, history, and rejected producers
+and prove zero vegetation persistent/material, BGC, joint, owner-set, restart,
+and publication construction while retaining the exact physical endpoint and
+charged role.
+
+`OBL-VEGTRANSACTION-C-007` — Prove exactly one final construction of every
+transaction/owner artifact, exact physical-prefix parity with a test-only
+forced-complete reference, complete existing owner/receipt validation, role/
+ordinal/native/identity/disposition/one-ULP poisons, no physical-only or history
+promotion, and exact rollback after every final-constructor failure. Apply the
+canonical charge, physical-endpoint, exclusive-disposition, physical-failure,
+dependent-rejection, and final-constructor failure counters. Every covered map
+and failed/direct/unselected adaptive candidate publishes zero; the accepted
+composed parent publishes exactly once at atomic commit.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Initial and history/rejected dispositions stop before transaction construction; the fully closed pending value continues from its own physical prefix into complete custody once. |
+| branch/guard | Distinct private pending dispositions prevent role reinterpretation, dual consumption, or physical-only/history promotion; final failures roll back without fallback. |
+| invariant guard map | `INV-VEGTRANSACTION-019` -> canonical role dispatcher, custody-before-pending and exclusive-disposition gates, final-only constructors, complete-owner validator, separate envelope/parent-publication counters and rollback gates; outer nonclosure -> history/no error, dependent-only nonclosure/role/ordinal -> `DirectV11RealConsumerError::AdaptiveRefinement` before transaction construction, identity/custody/disposition/leak -> `VEGTXN-E-011`, incomplete or per-map final custody -> `VEGTXN-E-013`, complete shared-owner mismatch -> `VEGTXN-E-015`, partial owner/rollback defect -> `VEGTXN-E-007`, restart/replay mismatch -> `VEGTXN-E-014`, with existing numeric precedence. |
+| test vector | `OBL-VEGTRANSACTION-P-005/C-007`: exclusive dispositions, success/failure zero/one constructor counts, physical parity, exhaustive role/identity/ULP poisons, zero map publication, parent-only publication, unpublishability, rollback. |
+| binding exposure | `BEI-VEGTRANSACTION-COVERED-NONFINAL-PHYSICAL-ONLY`, active, `new-INV`, IDs `019/P-005/C-007`, dual review/verification. |

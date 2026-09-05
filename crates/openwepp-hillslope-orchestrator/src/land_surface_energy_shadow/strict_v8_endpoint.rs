@@ -606,6 +606,12 @@ pub(crate) fn execute_frozen_litter_v3_fixed_final_pre_ingress(
     wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
     wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
 ) -> Result<V3MultiTileAcceptedFixedFinalCandidate, ExecuteV8LseRuntimeShadowError> {
+    use crate::snow_stage3_v11_attachment::{
+        begin_adaptive_parent_fixed_point_phase_v1 as profile_start,
+        record_adaptive_parent_profile_detail_v1 as profile_record,
+    };
+
+    let projection_started = profile_start();
     let projected = project_v8_runtime_inputs_with_carriers(
         vegetation_configuration,
         vegetation_beginning,
@@ -633,7 +639,9 @@ pub(crate) fn execute_frozen_litter_v3_fixed_final_pre_ingress(
         wb14_coupled_child_binding,
         covered_lower_boundaries,
         covered_destinations,
-    )?;
+    );
+    profile_record("physical topology", projection_started);
+    let projected = projected?;
     let stage3_snow_destinations = covered_lower_boundaries
         .map_or_else(BTreeSet::new, |values| values.keys().cloned().collect());
     let ingress_schedule = derive_ingress_schedule(
@@ -647,32 +655,44 @@ pub(crate) fn execute_frozen_litter_v3_fixed_final_pre_ingress(
         wb14_parent_working_state,
         wb14_coupled_child_binding,
     )?;
+    let native_authority = if covered_lower_boundaries.is_some() {
+        openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered
+    } else {
+        authority
+    };
+    let solver_ready_started = profile_start();
     let solver_inputs = project_native_frozen_litter_v3_solver_inputs(
         &projected,
         vegetation_owner_id,
-        authority,
+        native_authority,
         covered_lower_boundaries,
         lse_configuration,
         lse_beginning,
         surface_configuration,
         surface_beginning,
-    )?;
+    );
+    profile_record("physical topology", solver_ready_started);
+    let (solver_inputs, validated_surface_beginning) = solver_inputs?;
     let receiver_expectations = receiver_expectations_v3(
         lse_configuration,
         lse_beginning,
         &projected.hydrology_snapshot_sha256,
         soil_thermal,
     )?;
+    let potential_started = profile_start();
     let potential =
-        prepare_v3_multitile_potential(surface_configuration.parent(), solver_inputs.tiles)?;
-    let (authorizations, phase_authorizations, soil_arbitration) =
-        authorize_v3_multitile_potential(
-            &potential,
-            soil_adapter,
-            &solver_inputs.soil_sources,
-            surface_configuration,
-            surface_beginning,
-        )?;
+        prepare_v3_multitile_potential(surface_configuration.parent(), solver_inputs.tiles);
+    profile_record("physical potential", potential_started);
+    let potential = potential?;
+    let authorization_started = profile_start();
+    let authorization = authorize_v3_multitile_potential(
+        &potential,
+        soil_adapter,
+        &solver_inputs.soil_sources,
+        &validated_surface_beginning,
+    );
+    profile_record("unified authorization", authorization_started);
+    let (authorizations, phase_authorizations, soil_arbitration) = authorization?;
     let configured_root_layers = vegetation_configuration
         .strata
         .iter()
@@ -693,7 +713,8 @@ pub(crate) fn execute_frozen_litter_v3_fixed_final_pre_ingress(
             .map(|layer| (layer.layer_id.clone(), layer.temperature_k))
             .collect(),
     };
-    Ok(finalize_v3_multitile_fixed_final(
+    let final_started = profile_start();
+    let final_candidate = finalize_v3_multitile_fixed_final(
         surface_configuration.parent(),
         potential,
         &lse_beginning.0.state_sha256,
@@ -707,7 +728,9 @@ pub(crate) fn execute_frozen_litter_v3_fixed_final_pre_ingress(
         vegetation_beginning.clone(),
         persistent_forcing,
         &ingress_schedule,
-    )?)
+    );
+    profile_record("physical final tile", final_started);
+    Ok(final_candidate?)
 }
 
 fn injection_requires_actual_pending_payload(
@@ -830,6 +853,8 @@ fn execute_v8_lse_runtime_shadow_phases(
         covered_lower_boundaries,
         covered_destinations,
     )?;
+    #[cfg(test)]
+    crate::v9_real_consumer_shadow::record_snow_free_provider_projection_v1();
     crate::snow_stage3_v11_attachment::record_adaptive_parent_provisional_envelope_phase_v1(
         "projection",
         provisional_phase_started.take(),

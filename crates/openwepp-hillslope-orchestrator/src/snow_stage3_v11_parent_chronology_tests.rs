@@ -2,6 +2,8 @@
 
 use super::*;
 
+use std::sync::OnceLock;
+
 use openwepp_kernel_contract::{ResourceOwnerId, TransactionId};
 use openwepp_land_surface_energy::{
     LandSurfaceEnergyV2State, Sha256Digest, V2_MODEL_DEFINITION_SHA256, V2_MODEL_VERSION,
@@ -10,7 +12,9 @@ use openwepp_land_surface_energy::{
 use openwepp_plant_phenology::{GsiParameters, GsiState};
 use openwepp_vegetation::{
     V9_MODEL_SHA256, V9CoupledOwnedState, V10_MODEL_SHA256, V10CoupledOwnedState,
-    VegetationConfiguration,
+    V11ParentTransaction, V11ParentTransactionCheckpoint, V11ValidatedHandoffAuditV1,
+    VegetationConfiguration, VegetationConfigurationV11, begin_v11_validated_handoff_audit_v1,
+    take_v11_validated_handoff_audit_v1,
 };
 use sha2::{Digest as _, Sha256};
 
@@ -769,6 +773,164 @@ fn execute_real_parent(
         fixture.attachment.committed.terminal_parcels.clone(),
         injection,
     )
+}
+
+#[derive(Clone)]
+struct ValidatedVegetationHandoffEvidenceV1 {
+    configuration: VegetationConfigurationV11,
+    checkpoint: V11ParentTransactionCheckpoint,
+    beginning_checkpoint: V11ParentTransactionCheckpoint,
+    audit: V11ValidatedHandoffAuditV1,
+    accepted_segment_count: usize,
+    ending_state: openwepp_vegetation::V11CoupledOwnedState,
+    ending_vegetation_bytes: Vec<u8>,
+}
+
+fn validated_vegetation_handoff_evidence_v1() -> &'static ValidatedVegetationHandoffEvidenceV1 {
+    static EVIDENCE: OnceLock<ValidatedVegetationHandoffEvidenceV1> = OnceLock::new();
+    EVIDENCE.get_or_init(|| {
+        std::thread::Builder::new()
+            .name("validated-vegetation-handoff".to_owned())
+            .stack_size(64 * 1024 * 1024)
+            .spawn(|| {
+                let _short_wb14_parent =
+                    crate::direct_runtime::permit_short_wb14_parent_support_for_test(
+                        CHRONOLOGY_TEST_PARENT_NS,
+                    );
+                let fixture = native_v2_real_parent_fixture(
+                    ChronologyCase {
+                        swe_m: 0.08,
+                        cold_delta_k: 8.0,
+                        radiation_mj_m2: 0.0,
+                        open_snow_shortwave_multiplier: 1.0,
+                        reference_specific_humidity: 0.002,
+                        snowfall_m: 0.0,
+                        rain_m: 0.0,
+                        terminal_event: false,
+                        hard_boundary_ns: None,
+                    },
+                    CHRONOLOGY_TEST_PARENT_NS,
+                );
+                let configuration = fixture
+                    .attachment
+                    .static_context
+                    .vegetation_configuration
+                    .clone();
+                let beginning_checkpoint =
+                    fixture.attachment.committed.v11_parent_state.checkpoint();
+                begin_v11_validated_handoff_audit_v1();
+                let outcome = execute_real_parent(&fixture, None)
+                    .expect("validated vegetation handoff parent");
+                let audit = take_v11_validated_handoff_audit_v1();
+                let ending_vegetation_bytes = outcome
+                    .3
+                    .ending_complete_owners
+                    .iter()
+                    .find(|owner| owner.owner_id() == "vegetation")
+                    .expect("ending vegetation owner")
+                    .state_bytes()
+                    .to_vec();
+                ValidatedVegetationHandoffEvidenceV1 {
+                    configuration,
+                    checkpoint: outcome.0.checkpoint(),
+                    beginning_checkpoint,
+                    audit,
+                    accepted_segment_count: outcome.3.accepted_segment_checkpoints.len(),
+                    ending_state: outcome.3.ending_state,
+                    ending_vegetation_bytes,
+                }
+            })
+            .expect("spawn validated vegetation handoff fixture")
+            .join()
+            .expect("join validated vegetation handoff fixture")
+    })
+}
+
+mod validated_handoff {
+    use super::*;
+
+    #[test]
+    fn parent_finalization_reuses_one_validated_vegetation_image() {
+        let evidence = validated_vegetation_handoff_evidence_v1();
+        assert_eq!(evidence.audit.trusted_parent_handoff_reuses, 1);
+        assert_eq!(evidence.audit.lineage_mutation_full_validations, 1);
+        assert_eq!(
+            evidence.ending_vegetation_bytes,
+            serde_json::to_vec(&evidence.ending_state).expect("accepted vegetation bytes")
+        );
+    }
+
+    #[test]
+    fn untrusted_v11_executor_ending_is_independently_validated_once() {
+        let evidence = validated_vegetation_handoff_evidence_v1();
+        assert!(evidence.accepted_segment_count > 0);
+        assert_eq!(evidence.audit.untrusted_executor_full_validations, 2);
+        assert!(
+            evidence.audit.untrusted_executor_full_validations as usize
+                >= evidence.accepted_segment_count
+        );
+    }
+
+    #[test]
+    fn lineage_mutation_requires_new_digest_and_validation() {
+        let evidence = validated_vegetation_handoff_evidence_v1();
+        assert_eq!(evidence.audit.lineage_mutation_full_validations, 1);
+        let mut poison = evidence.checkpoint.clone();
+        poison.staged_state.last_parent_transaction_id += 1;
+        poison.staged_state.physical.last_transaction_id += 1;
+        poison.staged_state.physical.state_sha256 = poison.staged_state.physical.canonical_sha256();
+        poison.staged_state.state_sha256 = poison
+            .staged_state
+            .canonical_sha256()
+            .expect("mutated state digest");
+        assert!(V11ParentTransaction::restore(&evidence.configuration, poison).is_err());
+    }
+
+    #[test]
+    fn vegetation_restart_reparses_and_revalidates_complete_state() {
+        let evidence = validated_vegetation_handoff_evidence_v1();
+        let bytes = serde_json::to_vec(&evidence.beginning_checkpoint).expect("checkpoint bytes");
+        let parsed: V11ParentTransactionCheckpoint =
+            serde_json::from_slice(&bytes).expect("checkpoint parse");
+        assert_eq!(
+            serde_json::to_vec(&parsed).expect("checkpoint reserialize"),
+            bytes
+        );
+        begin_v11_validated_handoff_audit_v1();
+        let restored = V11ParentTransaction::restore(&evidence.configuration, parsed)
+            .expect("restart validation");
+        assert!(take_v11_validated_handoff_audit_v1().restart_full_validations >= 2);
+        assert_eq!(restored.checkpoint(), evidence.beginning_checkpoint);
+    }
+
+    #[test]
+    fn validated_vegetation_proof_is_not_transferable() {
+        let evidence = validated_vegetation_handoff_evidence_v1();
+        for poison in 0..4 {
+            let mut checkpoint = evidence.checkpoint.clone();
+            let mut configuration = evidence.configuration.clone();
+            match poison {
+                0 => checkpoint.staged_state.state_sha256.replace_range(..1, "f"),
+                1 => configuration.configuration_sha256.replace_range(..1, "f"),
+                2 => checkpoint.staged_state.last_parent_transaction_id += 1,
+                _ => {
+                    checkpoint
+                        .accepted_segments
+                        .last_mut()
+                        .expect("accepted segment")
+                        .duration_s_bits ^= 1
+                }
+            }
+            assert!(V11ParentTransaction::restore(&configuration, checkpoint).is_err());
+        }
+        assert_eq!(
+            evidence.beginning_checkpoint,
+            serde_json::from_slice(
+                &serde_json::to_vec(&evidence.beginning_checkpoint).expect("beginning checkpoint")
+            )
+            .expect("beginning checkpoint parse")
+        );
+    }
 }
 
 fn assert_parent_finalization_event(

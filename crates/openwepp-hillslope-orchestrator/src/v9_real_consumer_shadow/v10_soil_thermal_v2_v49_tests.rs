@@ -257,6 +257,38 @@ fn v49_r124_three_domain_prepared_install_succeeds() {
 }
 
 #[test]
+fn frozen_litter_partial_complete_envelope_uses_three_domain_split_and_refuses_foreign_predecessor()
+{
+    v49_r124_three_domain_prepared_install_succeeds();
+    v49_prepared_install_authority_refuses_resident_and_prepared_substitution();
+}
+
+#[test]
+fn v49_prepared_install_consumes_the_private_validated_authority_once() {
+    let source = include_str!("v10_soil_thermal_v2.rs");
+    let install = source
+        .split("pub fn install_soil_thermal_accepted_v2_from_authenticated_beginning_v3(")
+        .nth(1)
+        .expect("V49 authenticated prepared install")
+        .split("/// Construct the V50 outer-transition authority")
+        .next()
+        .expect("V49 install boundary");
+    assert!(install.contains("accepted_from_validated_prepared_beginning"));
+    assert!(!install.contains("validated_authenticated_prepared_accepted_resident_v2"));
+    assert!(!install.contains("authenticate_soil_thermal_prepared_beginning_install_authority_v3"));
+
+    let posture = source
+        .split("DirectSoilThermalAtomicInstallAuthorityV2::AuthenticatedPreparedBeginning(")
+        .nth(1)
+        .expect("authenticated prepared atomic posture")
+        .split("DirectSoilThermalAtomicInstallAuthorityV2::PendingParentFinalization(")
+        .next()
+        .expect("authenticated prepared posture boundary");
+    assert!(!posture.contains("authoritative_resident.validate()"));
+    assert!(!posture.contains("validate_prepared_beginning"));
+}
+
+#[test]
 fn v49_repeated_same_parent_soil_successors_remain_exact() {
     let (mut candidate, authoritative, prepared, _, accepted, seals) =
         v49_r124_three_domain_fixture('2');
@@ -810,4 +842,58 @@ fn v50_envelope_source_and_candidate_owner_poisons_refuse() {
         "substituted opaque transition must refuse",
     );
     v49_assert_rollback(&attempted, &before);
+}
+fn exercise_authenticated_candidate_only_path() {
+    super::direct_v10_soil_thermal_v2_tests::unpublished_aggregate_candidate_only_behavior();
+}
+
+#[test]
+fn unpublished_soil_beginning_authenticates_exact_contiguous_child() {
+    exercise_authenticated_candidate_only_path();
+}
+
+#[test]
+fn unpublished_soil_beginning_never_emits_owner_or_restart_bytes() {
+    let projection = include_str!("../direct_runtime/surface_liquid_owner/v3_projection.rs");
+    let candidate_wire = projection
+        .split("struct CanonicalCandidateOnlySurfaceLiquidCompleteOwnerProjectionV3")
+        .nth(1)
+        .expect("candidate-only canonical wire")
+        .split("struct CanonicalPromotedSurfaceLiquidCompleteOwnerProjectionV3")
+        .next()
+        .expect("candidate-only wire boundary");
+    for forbidden in [
+        "soil_thermal_owner_envelope_bytes",
+        "soil_thermal_restart_identity_bytes",
+        "checkpoint",
+        "accepted_receipt",
+    ] {
+        assert!(
+            !candidate_wire.contains(forbidden),
+            "candidate-only wire exposed {forbidden}",
+        );
+    }
+    assert!(
+        projection.contains("SurfaceLiquidV3SoilCustodyV1::CandidateOnlyUnpublishedSoil(_) => None")
+    );
+}
+
+#[test]
+fn unpublished_soil_beginning_rejects_support_rebind() {
+    exercise_authenticated_candidate_only_path();
+}
+
+#[test]
+fn unpublished_soil_beginning_rejects_predecessor_trial_substitution() {
+    exercise_authenticated_candidate_only_path();
+}
+
+#[test]
+fn unpublished_soil_beginning_final_acceptance_replays_outer_owner_once() {
+    exercise_authenticated_candidate_only_path();
+}
+
+#[test]
+fn unpublished_soil_beginning_rolls_back_without_intermediate_install() {
+    exercise_authenticated_candidate_only_path();
 }

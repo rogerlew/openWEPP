@@ -1,8 +1,12 @@
+#[cfg(test)]
+use super::runoff::compute_wb14_subhourly_profile;
 use super::runoff::{
     DC01_HOUR_BIN_COUNT, WAT5_INTERVAL_SECONDS, WAT5_INTERVALS_PER_DAY, WAT5_INTERVALS_PER_HOUR,
-    compute_wb14_subhourly_profile,
+    Wat5AdditionalSupplySegmentV1, compute_wb14_subhourly_profile_with_exact_segments,
+    reconcile_wat5_zero_raw_generation_hour_v1,
 };
 use super::{DirectDayFrame, DirectRuntimeError, validate_finite, validate_nonnegative_direct_m};
+use openwepp_land_surface_energy::OfeId;
 
 const WAT5_CLOSURE_TOLERANCE_M: f64 = 1.0e-12;
 const WAT5_INTERVALS_PER_HOUR_F64: f64 = 12.0;
@@ -72,6 +76,32 @@ impl DirectDayFrame {
     /// only and is not read by peak, routing, HBP, or erosion code.
     #[allow(clippy::too_many_lines)]
     pub fn run_wat5_subhourly_generation(&mut self) -> Result<(), DirectRuntimeError> {
+        self.run_wat5_subhourly_generation_with_segments(&[], None, None)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn run_wat5_subhourly_generation_with_exact_segments(
+        &mut self,
+        segments: &[Wat5AdditionalSupplySegmentV1],
+        destination_ofe_id: &OfeId,
+    ) -> Result<(), DirectRuntimeError> {
+        self.run_wat5_subhourly_generation_with_segments(segments, Some(destination_ofe_id), None)
+    }
+
+    pub(crate) fn run_wat5_subhourly_generation_with_accepted_profile(
+        &mut self,
+        profile: super::runoff::DirectWb14SubhourlyProfile,
+    ) -> Result<(), DirectRuntimeError> {
+        self.run_wat5_subhourly_generation_with_segments(&[], None, Some(profile))
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn run_wat5_subhourly_generation_with_segments(
+        &mut self,
+        segments: &[Wat5AdditionalSupplySegmentV1],
+        destination_ofe_id: Option<&OfeId>,
+        accepted_profile: Option<super::runoff::DirectWb14SubhourlyProfile>,
+    ) -> Result<(), DirectRuntimeError> {
         self.wat5_subhourly_generation = None;
         if !self.wat5_subhourly_requested {
             return Ok(());
@@ -88,18 +118,17 @@ impl DirectDayFrame {
             return Ok(());
         };
 
-        if producer_inputs
-            .hourly_additional_supply_m
-            .iter()
-            .any(|depth_m| *depth_m > 0.0)
-        {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "WAT5-E-001 positive additional supply lacks 300-second timing",
-            });
-        }
-
-        let raw = compute_wb14_subhourly_profile(producer_inputs)?;
-        let raw_supply_m: f64 = raw.rainfall_m.iter().sum();
+        let raw = if let Some(profile) = accepted_profile {
+            profile
+        } else {
+            compute_wb14_subhourly_profile_with_exact_segments(
+                producer_inputs,
+                segments,
+                destination_ofe_id,
+            )?
+        };
+        let raw_supply_m: f64 =
+            raw.rainfall_m.iter().sum::<f64>() + raw.additional_supply_m.iter().sum::<f64>();
         let raw_accounted_m: f64 = raw.infiltration_m.iter().sum::<f64>()
             + raw.depression_storage_retention_m.iter().sum::<f64>()
             + raw.post_depression_excess_m.iter().sum::<f64>();
@@ -136,11 +165,14 @@ impl DirectDayFrame {
             validate_finite("wat5.raw_hourly_generation_depth_m", raw_total_m)?;
             let authority_m = self.wb14_hourly_excess_m[hour];
             if authority_m > 0.0 && raw_total_m == 0.0 {
-                return Err(DirectRuntimeError::MissingDirectUpstream {
-                    upstream: "WAT5-E-002 positive authoritative WB14 hour has zero raw support",
-                });
-            }
-            if authority_m > 0.0 {
+                let reconciliation = reconcile_wat5_zero_raw_generation_hour_v1(
+                    hour,
+                    &self.wb14_hourly_excess_m,
+                    self.runoff_partition.partition_runoff_m,
+                    &raw,
+                )?;
+                closed_wb14[start..end].copy_from_slice(&reconciliation.closing_ledger_m);
+            } else if authority_m > 0.0 {
                 let scale = authority_m / raw_total_m;
                 for (closed_m, raw_m) in closed_wb14[start..end]
                     .iter_mut()
@@ -177,6 +209,7 @@ impl DirectDayFrame {
         let is_active = |bin: usize| {
             let hour = bin / WAT5_INTERVALS_PER_HOUR;
             raw.rainfall_m[bin] > 0.0
+                || raw.additional_supply_m[bin] > 0.0
                 || raw.infiltration_m[bin] > 0.0
                 || raw.post_depression_excess_m[bin] > 0.0
                 || closed_wb14[bin] > 0.0
@@ -215,7 +248,7 @@ impl DirectDayFrame {
                 interval_start_s: f64::from(bin_u32) * WAT5_INTERVAL_SECONDS,
                 interval_duration_s: WAT5_INTERVAL_SECONDS,
                 rainfall_depth_m: raw.rainfall_m[bin],
-                additional_supply_depth_m: 0.0,
+                additional_supply_depth_m: raw.additional_supply_m[bin],
                 raw_green_ampt_infiltration_depth_m: raw.infiltration_m[bin],
                 depression_storage_retention_depth_m: raw.depression_storage_retention_m[bin],
                 raw_wb14_post_depression_generation_depth_m: raw.post_depression_excess_m[bin],
@@ -230,7 +263,8 @@ impl DirectDayFrame {
                 hourly_power_equivalent_duration_s: None,
                 power_exponent: None,
                 method_code: "water_only_no_erosion_adoption",
-                source_completeness_code: "rainfall_complete_saturation_hourly_zero_order_hold",
+                source_completeness_code:
+                    "rainfall_and_exact_typed_additional_segments_saturation_hourly_zero_order_hold",
                 hourly_closure_residual_m: hourly_residual[hour],
             });
         }
@@ -248,12 +282,25 @@ impl DirectDayFrame {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::direct_runtime::runoff::compute_wb14_infiltration_depression_with_profile;
+    use crate::direct_runtime::runoff::{
+        Wat5AdditionalSupplySourceKindV1, compute_wb14_infiltration_depression_with_profile,
+        wat5_additional_supply_source_receipt_sha256, wat5_hourly_additional_supply_from_segments,
+    };
     use crate::{
         DirectInfiltrationDepressionInputs, DirectRunIdentity,
         DirectSubsurfaceComputeShadowProjection, DirectWb14HyetographInterval,
         DirectWb14InfiltrationProducerInputs,
     };
+
+    fn assert_f64_slices_bit_equal(actual: &[f64], expected: &[f64]) {
+        assert_eq!(actual.len(), expected.len());
+        assert!(
+            actual
+                .iter()
+                .zip(expected)
+                .all(|(actual, expected)| actual.to_bits() == expected.to_bits())
+        );
+    }
 
     fn inputs(
         mut hyetograph: Vec<DirectWb14HyetographInterval>,
@@ -290,6 +337,68 @@ mod tests {
         };
         day
     }
+
+    fn wat5_reconciliation_segment(
+        source_identity: &str,
+        start_s: f64,
+        end_s: f64,
+        depth_m_ofe_ground: f64,
+        destination_ofe_id: &OfeId,
+    ) -> Wat5AdditionalSupplySegmentV1 {
+        let source_kind = Wat5AdditionalSupplySourceKindV1::LitterPhaseOverflow;
+        let transaction_id = "wat5-v4-reconciliation-transaction".to_owned();
+        let source_receipt_sha256 = wat5_additional_supply_source_receipt_sha256(
+            source_kind,
+            source_identity,
+            &transaction_id,
+            destination_ofe_id,
+            start_s,
+            end_s,
+            depth_m_ofe_ground,
+        )
+        .expect("seal exact WAT5 source segment");
+        Wat5AdditionalSupplySegmentV1 {
+            source_kind,
+            source_identity: source_identity.to_owned(),
+            source_receipt_sha256,
+            transaction_id,
+            destination_ofe_id: destination_ofe_id.clone(),
+            start_s,
+            end_s,
+            depth_m_ofe_ground,
+        }
+    }
+
+    fn wat5_reconciliation_case() -> (
+        DirectWb14InfiltrationProducerInputs,
+        Vec<Wat5AdditionalSupplySegmentV1>,
+        OfeId,
+    ) {
+        let destination_ofe_id = OfeId::try_new("wat5-v4-destination").expect("test OFE");
+        let segments = vec![
+            wat5_reconciliation_segment(
+                "litter-overflow-7500-7800",
+                7_500.0,
+                7_800.0,
+                3.0e-7,
+                &destination_ofe_id,
+            ),
+            wat5_reconciliation_segment(
+                "litter-overflow-10500-10800",
+                10_500.0,
+                10_800.0,
+                6.0e-7,
+                &destination_ofe_id,
+            ),
+        ];
+        let mut producer = inputs(Vec::new());
+        producer.hourly_additional_supply_m =
+            wat5_hourly_additional_supply_from_segments(&segments, Some(&destination_ofe_id))
+                .expect("reconstruct exact hourly additional supply");
+        (producer, segments, destination_ofe_id)
+    }
+
+    const TRACED_WAT5_CLOSING_RESIDUAL_M: f64 = 2.998_903_209_094_905_3e-19;
 
     #[test]
     fn dry_day_emits_an_empty_event() {
@@ -399,11 +508,7 @@ mod tests {
         let error = day
             .run_wat5_subhourly_generation()
             .expect_err("must reject runon timing");
-        assert!(
-            error
-                .to_string()
-                .contains("positive additional supply lacks 300-second timing")
-        );
+        assert!(error.to_string().contains("WAT5-E-001"));
     }
 
     #[test]
@@ -414,11 +519,7 @@ mod tests {
         let error = day
             .run_wat5_subhourly_generation()
             .expect_err("must not use closure tolerance as a source classifier");
-        assert!(
-            error
-                .to_string()
-                .contains("positive additional supply lacks 300-second timing")
-        );
+        assert!(error.to_string().contains("WAT5-E-001"));
     }
 
     #[test]
@@ -507,11 +608,308 @@ mod tests {
         let error = day
             .run_wat5_subhourly_generation()
             .expect_err("must reject missing support");
-        assert!(
-            error
-                .to_string()
-                .contains("positive authoritative WB14 hour has zero raw support")
+        assert!(error.to_string().contains("WAT5-E-002"));
+    }
+
+    #[test]
+    fn wat5_bounded_reconciliation_places_on_latest_positive_source_piece() {
+        let (producer, segments, destination) = wat5_reconciliation_case();
+        let raw = compute_wb14_subhourly_profile_with_exact_segments(
+            &producer,
+            &segments,
+            Some(&destination),
+        )
+        .expect("exact WAT5 replay");
+        let mut accepted = [0.0; DC01_HOUR_BIN_COUNT];
+        accepted[2] = TRACED_WAT5_CLOSING_RESIDUAL_M;
+        let reconciliation = reconcile_wat5_zero_raw_generation_hour_v1(
+            2,
+            &accepted,
+            TRACED_WAT5_CLOSING_RESIDUAL_M,
+            &raw,
+        )
+        .expect("bounded partition-ledger reconciliation");
+
+        assert_eq!(
+            reconciliation.selected_piece_start_s.to_bits(),
+            10_500.0_f64.to_bits()
         );
+        assert_eq!(
+            reconciliation.selected_piece_end_s.to_bits(),
+            10_800.0_f64.to_bits()
+        );
+        assert_eq!(reconciliation.selected_bin_index, 35);
+        assert_eq!(
+            reconciliation.closing_ledger_m[11].to_bits(),
+            TRACED_WAT5_CLOSING_RESIDUAL_M.to_bits()
+        );
+        assert!(
+            reconciliation.closing_ledger_m[..11]
+                .iter()
+                .all(|value| value.to_bits() == 0.0_f64.to_bits())
+        );
+    }
+
+    #[test]
+    fn wat5_bounded_reconciliation_preserves_raw_supply_infiltration_closure() {
+        let (producer, segments, destination) = wat5_reconciliation_case();
+        let raw = compute_wb14_subhourly_profile_with_exact_segments(
+            &producer,
+            &segments,
+            Some(&destination),
+        )
+        .expect("exact WAT5 replay");
+        let rainfall_before = raw.rainfall_m;
+        let additional_before = raw.additional_supply_m;
+        let infiltration_before = raw.infiltration_m;
+        let depression_before = raw.depression_storage_retention_m;
+        let generation_before = raw.post_depression_excess_m;
+        let pieces_before = raw.canonical_source_pieces.clone();
+        let mut accepted = [0.0; DC01_HOUR_BIN_COUNT];
+        accepted[2] = TRACED_WAT5_CLOSING_RESIDUAL_M;
+
+        reconcile_wat5_zero_raw_generation_hour_v1(
+            2,
+            &accepted,
+            TRACED_WAT5_CLOSING_RESIDUAL_M,
+            &raw,
+        )
+        .expect("bounded partition-ledger reconciliation");
+
+        assert_f64_slices_bit_equal(&raw.rainfall_m, &rainfall_before);
+        assert_f64_slices_bit_equal(&raw.additional_supply_m, &additional_before);
+        assert_f64_slices_bit_equal(&raw.infiltration_m, &infiltration_before);
+        assert_f64_slices_bit_equal(&raw.depression_storage_retention_m, &depression_before);
+        assert_f64_slices_bit_equal(&raw.post_depression_excess_m, &generation_before);
+        assert_eq!(raw.canonical_source_pieces, pieces_before);
+        let source_m: f64 =
+            raw.rainfall_m.iter().sum::<f64>() + raw.additional_supply_m.iter().sum::<f64>();
+        let raw_accounted_m = raw.infiltration_m.iter().sum::<f64>()
+            + raw.depression_storage_retention_m.iter().sum::<f64>()
+            + raw.post_depression_excess_m.iter().sum::<f64>();
+        assert!((source_m - raw_accounted_m).abs() <= 1.0e-12);
+    }
+
+    #[test]
+    fn wat5_bounded_reconciliation_preserves_authoritative_positive_hour() {
+        let (producer, segments, destination) = wat5_reconciliation_case();
+        let mut day = day_with(producer);
+        day.wb14_hourly_excess_m = [0.0; DC01_HOUR_BIN_COUNT];
+        day.wb14_hourly_excess_m[2] = TRACED_WAT5_CLOSING_RESIDUAL_M;
+        day.runoff_partition.partition_runoff_m = TRACED_WAT5_CLOSING_RESIDUAL_M;
+        day.runoff_downstream_operands.q_runoff_m = TRACED_WAT5_CLOSING_RESIDUAL_M;
+
+        day.run_wat5_subhourly_generation_with_exact_segments(&segments, &destination)
+            .expect("source-supported bounded WAT5 generation");
+
+        assert_eq!(
+            day.wb14_hourly_excess_m[2].to_bits(),
+            TRACED_WAT5_CLOSING_RESIDUAL_M.to_bits()
+        );
+        let event = day.wat5_subhourly_generation.expect("WAT5 event");
+        let hour_generation_m: f64 = event
+            .intervals
+            .iter()
+            .filter(|interval| interval.hour_index == 2)
+            .map(|interval| interval.closed_wb14_generation_depth_m)
+            .sum();
+        assert_eq!(
+            hour_generation_m.to_bits(),
+            TRACED_WAT5_CLOSING_RESIDUAL_M.to_bits()
+        );
+        assert_eq!(
+            event
+                .intervals
+                .iter()
+                .find(|interval| interval.subinterval_index == 35)
+                .expect("latest positive source bin")
+                .closed_wb14_generation_depth_m
+                .to_bits(),
+            TRACED_WAT5_CLOSING_RESIDUAL_M.to_bits()
+        );
+    }
+
+    #[test]
+    fn wat5_bounded_reconciliation_is_source_order_independent() {
+        let (producer, segments, destination) = wat5_reconciliation_case();
+        let raw_forward = compute_wb14_subhourly_profile_with_exact_segments(
+            &producer,
+            &segments,
+            Some(&destination),
+        )
+        .expect("forward exact WAT5 replay");
+        let mut reversed = segments;
+        reversed.reverse();
+        let raw_reversed = compute_wb14_subhourly_profile_with_exact_segments(
+            &producer,
+            &reversed,
+            Some(&destination),
+        )
+        .expect("reversed exact WAT5 replay");
+        let mut accepted = [0.0; DC01_HOUR_BIN_COUNT];
+        accepted[2] = TRACED_WAT5_CLOSING_RESIDUAL_M;
+        let forward = reconcile_wat5_zero_raw_generation_hour_v1(
+            2,
+            &accepted,
+            TRACED_WAT5_CLOSING_RESIDUAL_M,
+            &raw_forward,
+        )
+        .expect("forward reconciliation");
+        let reversed = reconcile_wat5_zero_raw_generation_hour_v1(
+            2,
+            &accepted,
+            TRACED_WAT5_CLOSING_RESIDUAL_M,
+            &raw_reversed,
+        )
+        .expect("reversed reconciliation");
+        assert_eq!(forward, reversed);
+    }
+
+    #[test]
+    fn wat5_bounded_reconciliation_rejects_first_uniform_or_duplicate_placement() {
+        let (producer, segments, destination) = wat5_reconciliation_case();
+        let raw = compute_wb14_subhourly_profile_with_exact_segments(
+            &producer,
+            &segments,
+            Some(&destination),
+        )
+        .expect("exact WAT5 replay");
+        let mut accepted = [0.0; DC01_HOUR_BIN_COUNT];
+        accepted[2] = TRACED_WAT5_CLOSING_RESIDUAL_M;
+        let canonical = reconcile_wat5_zero_raw_generation_hour_v1(
+            2,
+            &accepted,
+            TRACED_WAT5_CLOSING_RESIDUAL_M,
+            &raw,
+        )
+        .expect("canonical reconciliation");
+
+        let mut first = canonical.clone();
+        first.closing_ledger_m = [0.0; WAT5_INTERVALS_PER_HOUR];
+        first.closing_ledger_m[0] = TRACED_WAT5_CLOSING_RESIDUAL_M;
+        assert!(
+            first
+                .validate_against(&accepted, TRACED_WAT5_CLOSING_RESIDUAL_M, &raw)
+                .expect_err("first-bin placement must fail")
+                .to_string()
+                .contains("WAT5-E-002")
+        );
+
+        let mut uniform = canonical.clone();
+        uniform.closing_ledger_m = [TRACED_WAT5_CLOSING_RESIDUAL_M / 12.0; WAT5_INTERVALS_PER_HOUR];
+        assert!(
+            uniform
+                .validate_against(&accepted, TRACED_WAT5_CLOSING_RESIDUAL_M, &raw)
+                .expect_err("uniform placement must fail")
+                .to_string()
+                .contains("WAT5-E-002")
+        );
+
+        let mut duplicate = canonical;
+        duplicate.closing_ledger_m[10] = TRACED_WAT5_CLOSING_RESIDUAL_M;
+        assert!(
+            duplicate
+                .validate_against(&accepted, TRACED_WAT5_CLOSING_RESIDUAL_M, &raw)
+                .expect_err("duplicate placement must fail")
+                .to_string()
+                .contains("WAT5-E-002")
+        );
+    }
+
+    #[test]
+    fn wat5_bounded_reconciliation_rejects_zero_foreign_or_missing_source_support() {
+        let (producer, segments, destination) = wat5_reconciliation_case();
+        let raw = compute_wb14_subhourly_profile_with_exact_segments(
+            &producer,
+            &segments,
+            Some(&destination),
+        )
+        .expect("exact WAT5 replay");
+        let mut accepted = [0.0; DC01_HOUR_BIN_COUNT];
+        accepted[2] = TRACED_WAT5_CLOSING_RESIDUAL_M;
+
+        let mut zero =
+            compute_wb14_subhourly_profile(&inputs(Vec::new())).expect("zero-source WAT5 replay");
+        zero.canonical_source_pieces = raw.canonical_source_pieces.clone();
+        assert!(
+            reconcile_wat5_zero_raw_generation_hour_v1(
+                2,
+                &accepted,
+                TRACED_WAT5_CLOSING_RESIDUAL_M,
+                &zero,
+            )
+            .expect_err("zero source must fail")
+            .to_string()
+            .contains("WAT5-E-002")
+        );
+
+        let mut foreign = raw;
+        for piece in &mut foreign.canonical_source_pieces {
+            piece.start_s += 3_600.0;
+            piece.end_s += 3_600.0;
+        }
+        assert!(
+            reconcile_wat5_zero_raw_generation_hour_v1(
+                2,
+                &accepted,
+                TRACED_WAT5_CLOSING_RESIDUAL_M,
+                &foreign,
+            )
+            .expect_err("foreign-hour source support must fail")
+            .to_string()
+            .contains("WAT5-E-002")
+        );
+
+        foreign.canonical_source_pieces.clear();
+        assert!(
+            reconcile_wat5_zero_raw_generation_hour_v1(
+                2,
+                &accepted,
+                TRACED_WAT5_CLOSING_RESIDUAL_M,
+                &foreign,
+            )
+            .expect_err("missing source support must fail")
+            .to_string()
+            .contains("WAT5-E-002")
+        );
+    }
+
+    #[test]
+    fn wat5_bounded_reconciliation_accepts_exact_tolerance_boundary() {
+        let (producer, segments, destination) = wat5_reconciliation_case();
+        let raw = compute_wb14_subhourly_profile_with_exact_segments(
+            &producer,
+            &segments,
+            Some(&destination),
+        )
+        .expect("exact WAT5 replay");
+        let exact_boundary_m = 1.0e-12;
+        let mut accepted = [0.0; DC01_HOUR_BIN_COUNT];
+        accepted[2] = exact_boundary_m;
+        let reconciliation =
+            reconcile_wat5_zero_raw_generation_hour_v1(2, &accepted, exact_boundary_m, &raw)
+                .expect("exact TOL-WAT5-002 boundary must pass");
+        assert_eq!(
+            reconciliation.closing_residual_m.to_bits(),
+            exact_boundary_m.to_bits()
+        );
+    }
+
+    #[test]
+    fn wat5_bounded_reconciliation_rejects_first_value_above_tolerance() {
+        let (producer, segments, destination) = wat5_reconciliation_case();
+        let raw = compute_wb14_subhourly_profile_with_exact_segments(
+            &producer,
+            &segments,
+            Some(&destination),
+        )
+        .expect("exact WAT5 replay");
+        let first_above_m = f64::from_bits(1.0e-12_f64.to_bits() + 1);
+        let mut accepted = [0.0; DC01_HOUR_BIN_COUNT];
+        accepted[2] = first_above_m;
+        let error = reconcile_wat5_zero_raw_generation_hour_v1(2, &accepted, first_above_m, &raw)
+            .expect_err("first value above TOL-WAT5-002 must fail");
+        assert!(error.to_string().contains("WAT5-E-002"));
     }
 
     #[test]

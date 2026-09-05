@@ -687,3 +687,383 @@ fn accepted_wat5_hyetograph_preserves_overlapping_segment_shape_and_magnitude() 
         "uniform daily-depth timing is a rejected WAT5 alias",
     );
 }
+
+fn accepted_wat5_test_receipt_source(
+    kind: DirectSurfaceLiquidParcelKind,
+    receipt_byte: u8,
+    depth_m: f64,
+    infiltration_m: f64,
+    retained_surface_m: f64,
+    runoff_m: f64,
+) -> AcceptedWat5ReceiptSourceV1 {
+    AcceptedWat5ReceiptSourceV1 {
+        support_receipt_sha256: Digest32::from_bytes([receipt_byte; 32]),
+        kind,
+        source_parcel_id: format!("wat5-v5-source-{receipt_byte}"),
+        transaction_id: openwepp_kernel_contract::TransactionId(u128::from(receipt_byte)),
+        start_s: 0.0,
+        end_s: 300.0,
+        depth_m,
+        infiltration_m,
+        retained_surface_m,
+        runoff_m,
+    }
+}
+
+#[test]
+fn accepted_wat5_receipt_profile_preserves_source_and_disposition_ledgers_without_second_solve() {
+    let ofe_id = wat5_segment_test_ofe();
+    let sources = vec![
+        accepted_wat5_test_receipt_source(
+            DirectSurfaceLiquidParcelKind::RawPrecipitation,
+            1,
+            0.002,
+            0.001,
+            0.000_5,
+            0.000_5,
+        ),
+        accepted_wat5_test_receipt_source(
+            DirectSurfaceLiquidParcelKind::CondensationOverflow,
+            2,
+            0.001,
+            0.000_25,
+            0.000_25,
+            0.000_5,
+        ),
+    ];
+    let hyetograph = accepted_wat5_hyetograph(&sources).expect("accepted precipitation lineage");
+    let segments = accepted_wat5_additional_supply_segments(&sources, &ofe_id)
+        .expect("accepted non-rain lineage");
+    let inputs = wat5_test_producer(hyetograph, &segments);
+    let profile = accepted_wat5_receipt_profile(&inputs, &segments, &sources, &ofe_id)
+        .expect("sealed receipt disposition profile");
+
+    assert!((profile.rainfall_m.iter().sum::<f64>() - 0.002).abs() < 1.0e-15);
+    assert!((profile.additional_supply_m.iter().sum::<f64>() - 0.001).abs() < 1.0e-15);
+    assert!((profile.infiltration_m.iter().sum::<f64>() - 0.001_25).abs() < 1.0e-15);
+    assert!(
+        (profile.depression_storage_retention_m.iter().sum::<f64>() - 0.000_75).abs()
+            < 1.0e-15
+    );
+    assert!((profile.post_depression_excess_m.iter().sum::<f64>() - 0.001).abs() < 1.0e-15);
+    assert_eq!(profile.depression_storage_delta_m.to_bits(), 0.000_75_f64.to_bits());
+}
+
+#[test]
+fn accepted_wat5_receipt_profile_rejects_source_disposition_omission_or_duplication() {
+    let ofe_id = wat5_segment_test_ofe();
+    let mut sources = vec![accepted_wat5_test_receipt_source(
+        DirectSurfaceLiquidParcelKind::RawPrecipitation,
+        3,
+        0.002,
+        0.001,
+        0.000_5,
+        0.000_5,
+    )];
+    let hyetograph = accepted_wat5_hyetograph(&sources).expect("accepted precipitation lineage");
+    let segments = accepted_wat5_additional_supply_segments(&sources, &ofe_id)
+        .expect("empty accepted non-rain lineage");
+    let inputs = wat5_test_producer(hyetograph, &segments);
+
+    sources[0].runoff_m += 1.0e-6;
+    assert!(
+        accepted_wat5_receipt_profile(&inputs, &segments, &sources, &ofe_id).is_err(),
+        "a duplicated disposition must not create source mass",
+    );
+    sources[0].runoff_m -= 2.0e-6;
+    assert!(
+        accepted_wat5_receipt_profile(&inputs, &segments, &sources, &ofe_id).is_err(),
+        "an omitted disposition must not disappear source mass",
+    );
+}
+
+fn wat5_segment_test_ofe() -> OfeId {
+    OfeId::try_new("wat5-test-ofe").expect("WAT5 test OFE")
+}
+
+fn wat5_test_segment(
+    source_kind: runoff::Wat5AdditionalSupplySourceKindV1,
+    receipt_digit: char,
+    start_s: f64,
+    end_s: f64,
+    depth_m_ofe_ground: f64,
+) -> runoff::Wat5AdditionalSupplySegmentV1 {
+    let source_identity = format!("accepted-source-{receipt_digit}");
+    let transaction_id = format!("transaction-{receipt_digit}");
+    let destination_ofe_id = wat5_segment_test_ofe();
+    let source_receipt_sha256 = runoff::wat5_additional_supply_source_receipt_sha256(
+        source_kind,
+        &source_identity,
+        &transaction_id,
+        &destination_ofe_id,
+        start_s,
+        end_s,
+        depth_m_ofe_ground,
+    )
+    .expect("exact WAT5 source receipt");
+    runoff::Wat5AdditionalSupplySegmentV1 {
+        source_kind,
+        source_identity,
+        source_receipt_sha256,
+        transaction_id,
+        destination_ofe_id,
+        start_s,
+        end_s,
+        depth_m_ofe_ground,
+    }
+}
+
+fn wat5_test_producer(
+    hyetograph: Vec<DirectWb14HyetographInterval>,
+    segments: &[runoff::Wat5AdditionalSupplySegmentV1],
+) -> DirectWb14InfiltrationProducerInputs {
+    DirectWb14InfiltrationProducerInputs {
+        hyetograph,
+        hourly_additional_supply_m: runoff::wat5_hourly_additional_supply_from_segments(
+            segments,
+            Some(&wat5_segment_test_ofe()),
+        )
+        .expect("exact WAT5 hourly source"),
+        effective_conductivity_m_s: 1.0e-8,
+        matric_potential_m: 0.1,
+        storage_capacity_m: 1.0,
+        depression_storage_capacity_m: 0.0,
+    }
+}
+
+#[test]
+fn wat5_exact_segments_keep_rain_and_snow_terminal_distinct() {
+    let snow = wat5_test_segment(
+        runoff::Wat5AdditionalSupplySourceKindV1::SnowTerminalReceiver,
+        'a',
+        150.0,
+        450.0,
+        0.003,
+    );
+    let inputs = wat5_test_producer(
+        vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 300.0,
+            intensity_m_s: 1.0e-5,
+        }],
+        std::slice::from_ref(&snow),
+    );
+    let profile = runoff::compute_wb14_subhourly_profile_with_exact_segments(
+        &inputs,
+        &[snow],
+        Some(&wat5_segment_test_ofe()),
+    )
+    .expect("rain plus exact snow-terminal replay");
+
+    assert_eq!(profile.rainfall_m[0].to_bits(), 0.003_f64.to_bits());
+    assert_eq!(
+        profile.additional_supply_m.iter().sum::<f64>().to_bits(),
+        0.003_f64.to_bits()
+    );
+    assert!(profile.additional_supply_m[0] > 0.0);
+    assert!(profile.additional_supply_m[1] > 0.0);
+}
+
+#[test]
+fn wat5_exact_segments_preserve_routed_runon_receipt_support() {
+    let runon = wat5_test_segment(
+        runoff::Wat5AdditionalSupplySourceKindV1::RoutedRunon,
+        'b',
+        3_500.0,
+        3_700.0,
+        0.002,
+    );
+    let inputs = wat5_test_producer(
+        vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 0.0,
+            intensity_m_s: 0.0,
+        }],
+        std::slice::from_ref(&runon),
+    );
+    let profile = runoff::compute_wb14_subhourly_profile_with_exact_segments(
+        &inputs,
+        &[runon],
+        Some(&wat5_segment_test_ofe()),
+    )
+    .expect("exact routed-runon support");
+
+    assert_eq!(
+        profile.additional_supply_m[11].to_bits(),
+        0.001_f64.to_bits()
+    );
+    assert_eq!(
+        profile.additional_supply_m[12].to_bits(),
+        0.001_f64.to_bits()
+    );
+    assert!(profile.rainfall_m.iter().all(|depth_m| *depth_m == 0.0));
+}
+
+#[test]
+fn wat5_exact_segments_preserve_litter_overflow_phase_receipt_support() {
+    let litter = wat5_test_segment(
+        runoff::Wat5AdditionalSupplySourceKindV1::LitterPhaseOverflow,
+        'c',
+        290.0,
+        310.0,
+        0.001,
+    );
+    let inputs = wat5_test_producer(
+        vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 0.0,
+            intensity_m_s: 0.0,
+        }],
+        std::slice::from_ref(&litter),
+    );
+    let profile = runoff::compute_wb14_subhourly_profile_with_exact_segments(
+        &inputs,
+        &[litter],
+        Some(&wat5_segment_test_ofe()),
+    )
+    .expect("phase-receipt-bound litter overflow");
+
+    assert_eq!(
+        profile.additional_supply_m[0].to_bits(),
+        0.0005_f64.to_bits()
+    );
+    assert_eq!(
+        profile.additional_supply_m[1].to_bits(),
+        0.0005_f64.to_bits()
+    );
+}
+
+#[test]
+fn wat5_overlapping_sources_advance_piecewise_wb14_once() {
+    let snow = wat5_test_segment(
+        runoff::Wat5AdditionalSupplySourceKindV1::SnowTerminalReceiver,
+        'd',
+        100.0,
+        500.0,
+        0.004,
+    );
+    let runon = wat5_test_segment(
+        runoff::Wat5AdditionalSupplySourceKindV1::RoutedRunon,
+        'e',
+        250.0,
+        650.0,
+        0.002,
+    );
+    let segments = vec![runon, snow];
+    let inputs = wat5_test_producer(
+        vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 600.0,
+            intensity_m_s: 1.0e-5,
+        }],
+        &segments,
+    );
+    let profile = runoff::compute_wb14_subhourly_profile_with_exact_segments(
+        &inputs,
+        &segments,
+        Some(&wat5_segment_test_ofe()),
+    )
+    .expect("one combined piecewise WB14 replay");
+    let supplied_m =
+        profile.rainfall_m.iter().sum::<f64>() + profile.additional_supply_m.iter().sum::<f64>();
+    let partitioned_m = profile.infiltration_m.iter().sum::<f64>()
+        + profile.depression_storage_retention_m.iter().sum::<f64>()
+        + profile.post_depression_excess_m.iter().sum::<f64>();
+
+    assert!((supplied_m - 0.012).abs() <= 1.0e-15);
+    assert!((supplied_m - partitioned_m).abs() <= 1.0e-12);
+}
+
+#[test]
+fn wat5_exact_segments_reconstruct_hourly_additional_supply_without_double_count() {
+    let snow = wat5_test_segment(
+        runoff::Wat5AdditionalSupplySourceKindV1::SnowTerminalReceiver,
+        'f',
+        0.0,
+        3_600.0,
+        0.003,
+    );
+    let runon = wat5_test_segment(
+        runoff::Wat5AdditionalSupplySourceKindV1::RoutedRunon,
+        '1',
+        3_600.0,
+        7_200.0,
+        0.002,
+    );
+    let segments = vec![runon, snow];
+    let hourly = runoff::wat5_hourly_additional_supply_from_segments(
+        &segments,
+        Some(&wat5_segment_test_ofe()),
+    )
+    .expect("canonical exact hourly reconstruction");
+
+    assert_eq!(hourly[0].to_bits(), 0.003_f64.to_bits());
+    assert_eq!(hourly[1].to_bits(), 0.002_f64.to_bits());
+    assert_eq!(hourly.iter().sum::<f64>().to_bits(), 0.005_f64.to_bits());
+    let mut aggregate_only = wat5_test_producer(
+        vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 0.0,
+            intensity_m_s: 0.0,
+        }],
+        &segments,
+    );
+    aggregate_only.hourly_additional_supply_m = hourly;
+    assert!(
+        runoff::compute_wb14_subhourly_profile_with_exact_segments(
+            &aggregate_only,
+            &[],
+            Some(&wat5_segment_test_ofe()),
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn wat5_exact_segments_reject_unknown_retimed_or_substituted_source() {
+    let segment = wat5_test_segment(
+        runoff::Wat5AdditionalSupplySourceKindV1::LitterPhaseOverflow,
+        '2',
+        100.0,
+        400.0,
+        0.001,
+    );
+    let inputs = wat5_test_producer(
+        vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 0.0,
+            intensity_m_s: 0.0,
+        }],
+        std::slice::from_ref(&segment),
+    );
+
+    let mut retimed = segment.clone();
+    retimed.start_s = 101.0;
+    assert!(
+        runoff::compute_wb14_subhourly_profile_with_exact_segments(
+            &inputs,
+            &[retimed],
+            Some(&wat5_segment_test_ofe()),
+        )
+        .is_err()
+    );
+    let mut substituted = segment.clone();
+    substituted.source_receipt_sha256 = "not-a-receipt".to_owned();
+    assert!(
+        runoff::compute_wb14_subhourly_profile_with_exact_segments(
+            &inputs,
+            &[substituted],
+            Some(&wat5_segment_test_ofe()),
+        )
+        .is_err()
+    );
+    let foreign = OfeId::try_new("foreign-ofe").expect("foreign OFE");
+    assert!(
+        runoff::compute_wb14_subhourly_profile_with_exact_segments(
+            &inputs,
+            &[segment],
+            Some(&foreign),
+        )
+        .is_err()
+    );
+}

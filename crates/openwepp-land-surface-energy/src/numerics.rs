@@ -307,6 +307,7 @@ where
     )
 }
 
+#[allow(clippy::too_many_lines)]
 pub(crate) fn solve_normalized_system_with_adjustment<D, B, E, V, F, A>(
     mut evaluator: E,
     initial: Vec<f64>,

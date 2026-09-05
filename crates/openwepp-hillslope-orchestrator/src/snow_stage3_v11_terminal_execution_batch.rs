@@ -21,13 +21,57 @@ fn finalize_terminal_batch_subslab_v2(
     event_ordinal: u64,
 ) -> Result<ActualTerminalSubslabV1, DirectSnowStage3V11AttachmentError> {
     let replay_trial_sha256 = exact.phase.transition.probe_child_identity.receipt_sha256;
-    let replay_beginning_owner_sha256 = Digest32::from_bytes(
-        crate::direct_runtime::wb14_child_replay_binding(&exact.phase.wb14_child_replay_bytes)
-            .map_err(|_| {
-                DirectSnowStage3V11AttachmentError::Terminal("terminal batch WB14 replay binding")
-            })?
-            .parent_beginning_complete_owner_set_sha256,
-    );
+    let wb14_ofe_topology = exact
+        .phase
+        .beginning_candidates
+        .shadow()
+        .surface_configuration()
+        .ofe_topology
+        .clone();
+    let lower_boundary_ofes = exact
+        .phase
+        .complete_lower_boundaries
+        .keys()
+        .map(|(ofe_id, _)| ofe_id)
+        .collect::<BTreeSet<_>>();
+    if lower_boundary_ofes.is_empty()
+        || lower_boundary_ofes
+            .iter()
+            .any(|ofe_id| !wb14_ofe_topology.contains(ofe_id))
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Terminal(
+            "terminal batch lower-boundary OFE topology",
+        ));
+    }
+    let replay_binding =
+        crate::direct_runtime::stage3_covered_native_inactive_child_custody_binding(
+            &exact.phase.wb14_child_replay_bytes,
+            &wb14_ofe_topology,
+        )
+        .map_err(|error| {
+            DirectSnowStage3V11AttachmentError::Owner(
+                crate::v9_real_consumer_shadow::DirectV11RealConsumerError::SurfaceLiquidReplay(
+                    error,
+                ),
+            )
+        })?
+        .map_or_else(
+            || {
+                crate::direct_runtime::wb14_child_replay_binding(
+                    &exact.phase.wb14_child_replay_bytes,
+                )
+                .map_err(|error| {
+                    DirectSnowStage3V11AttachmentError::Owner(
+                        crate::v9_real_consumer_shadow::DirectV11RealConsumerError::SurfaceLiquidReplay(
+                            error,
+                        ),
+                    )
+                })
+            },
+            Ok,
+        )?;
+    let replay_beginning_owner_sha256 =
+        Digest32::from_bytes(replay_binding.parent_beginning_complete_owner_set_sha256);
     let forcing_sha256 =
         canonical_stage3_support_forcing_digest(&exact_prepared.support_forcing_by_lane);
     let mut endpoints = Vec::new();
@@ -331,16 +375,38 @@ fn evaluate_covered_terminal_batch_candidate_v2(
         } else {
             100.0
         };
+        let snow_density_model = prepared
+            .snow_inputs_by_lane
+            .get(lane_id)
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "terminal batch density-model lane",
+            ))?
+            .snow_density_model;
         lanes.insert(
             *lane_id,
             crate::hydrology::CoveredTerminalLaneTrialStateV2 {
                 lane_id: *lane_id,
+                schema_version: state.schema_version,
+                terminal_event_model: state.terminal_event_model,
+                next_interval_index: state.next_interval_index,
+                snow_density_model,
                 ice_kg_m2,
                 liquid_kg_m2,
                 cold_content_j_m2,
                 surface_temperature_c: surface.surface_temperature_k - 273.15,
                 snow_depth_m,
                 snow_density_kg_m3,
+                layer_density_kg_m3: state
+                    .layers
+                    .iter()
+                    .map(|layer| layer.density_kg_m3)
+                    .collect(),
+                layer_settle_day_count: state
+                    .layers
+                    .iter()
+                    .map(|layer| layer.settle_day_count)
+                    .collect(),
+                represented_layers: state.layers.clone(),
                 resolved_beginning: stage3_is_resolved_thermal_domain(state),
                 candidate_event_tick: None,
             },
@@ -723,4 +789,169 @@ fn try_actual_terminal_batch_subslab_v2(
         event_ordinal,
     )?;
     Ok(Some(finalized))
+}
+
+pub(crate) fn validate_accepted_terminal_group_for_native_prefix_v1(
+    group: &Stage3V11TerminalEventGroupV1,
+    parent: TimeSupport,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    physical_child_ordinal: u32,
+) -> Result<(), DirectSnowStage3V11AttachmentError> {
+    if group.pre_active_lanes.is_empty()
+        || group.terminating_lanes.is_empty()
+        || !group.terminating_lanes.is_subset(&group.pre_active_lanes)
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "native inactive-prefix terminal participant set",
+        ));
+    }
+    let candidate_lanes = group
+        .candidates
+        .iter()
+        .map(|candidate| candidate.lane_id)
+        .collect::<BTreeSet<_>>();
+    let expected_post = group
+        .pre_active_lanes
+        .difference(&group.terminating_lanes)
+        .copied()
+        .collect::<BTreeSet<_>>();
+    if candidate_lanes.len() != group.candidates.len()
+        || candidate_lanes != group.terminating_lanes
+        || expected_post != group.post_active_lanes
+        || group
+            .candidates
+            .iter()
+            .any(|candidate| candidate.tick != group.tick)
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "native inactive-prefix terminal participant transition",
+        ));
+    }
+    for candidate in &group.candidates {
+        candidate.validate(parent, &group.pre_active_lanes)?;
+    }
+    validate_retained_terminal_receiver_custody_v1(group)?;
+    group.validate_terminal_receiver_custody_v2()?;
+
+    let accepted = group.accepted_event_receipt.as_ref().ok_or(
+        DirectSnowStage3V11AttachmentError::Identity(
+            "native inactive-prefix terminal accepted event",
+        ),
+    )?;
+    accepted.validate().map_err(|_| {
+        DirectSnowStage3V11AttachmentError::Identity(
+            "native inactive-prefix terminal accepted event seal",
+        )
+    })?;
+    let ledger = group.terminal_physical_ledger.as_ref().ok_or(
+        DirectSnowStage3V11AttachmentError::Identity(
+            "native inactive-prefix terminal physical ledger",
+        ),
+    )?;
+    ledger.validate()?;
+
+    let discovery = terminal_event_group_digest(
+        parent,
+        group.tick,
+        group.ordinal,
+        &group.pre_active_lanes,
+        &group.post_active_lanes,
+        &group.candidates,
+    )?;
+    let proposal_core = terminal_event_proposal_core(
+        configuration,
+        group,
+        accepted.parent_transaction_id().digest(),
+        parent,
+        physical_child_ordinal,
+    )?;
+    let parcel_fields = group
+        .produced_unconsumed_parcel_digests
+        .iter()
+        .map(|digest| FramedField {
+            tag: "parcel",
+            value: digest.as_bytes(),
+        })
+        .collect::<Vec<_>>();
+    let parcel_set = framed_sha256("stage3-v11-terminal-parcel-set", &parcel_fields)?;
+    let topology = group
+        .produced_unconsumed_parcels
+        .first()
+        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+            "native inactive-prefix terminal topology",
+        ))?
+        .receiver_topology_sha256;
+    let mut candidate_members = u32::try_from(group.candidates.len())
+        .map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Identity(
+                "native inactive-prefix terminal candidate count",
+            )
+        })?
+        .to_be_bytes()
+        .to_vec();
+    for candidate in &group.candidates {
+        let mut member = Vec::new();
+        member.extend_from_slice(&candidate.lane_id.to_be_bytes());
+        member.extend_from_slice(candidate.event_result_digest.as_bytes());
+        member.extend_from_slice(candidate.terminal_state_sha256.as_bytes());
+        member.extend_from_slice(&candidate.event.terminal_liquid_kg_m2.to_bits().to_be_bytes());
+        member.extend_from_slice(
+            &candidate
+                .event
+                .terminal_unallocated_energy_j_m2
+                .to_bits()
+                .to_be_bytes(),
+        );
+        member.extend_from_slice(parcel_set.as_bytes());
+        candidate_members.extend_from_slice(
+            &u32::try_from(member.len())
+                .map_err(|_| {
+                    DirectSnowStage3V11AttachmentError::Identity(
+                        "native inactive-prefix terminal candidate width",
+                    )
+                })?
+                .to_be_bytes(),
+        );
+        candidate_members.extend_from_slice(&member);
+    }
+    let search = group.candidates[0].support;
+    let ordinal = u32::try_from(group.ordinal).map_err(|_| {
+        DirectSnowStage3V11AttachmentError::Identity(
+            "native inactive-prefix terminal ordinal width",
+        )
+    })?;
+    let receipt = framed_sha256(
+        "stage3-v11-terminal-group-preaccept",
+        &[
+            FramedField { tag: "schema", value: &1_u32.to_be_bytes() },
+            FramedField { tag: "proposal_core", value: proposal_core.as_bytes() },
+            FramedField { tag: "parent_transaction", value: accepted.parent_transaction_id().digest().as_bytes() },
+            FramedField { tag: "enclosing_start", value: &parent.start_ns().get().to_be_bytes() },
+            FramedField { tag: "enclosing_end", value: &parent.end_ns().get().to_be_bytes() },
+            FramedField { tag: "search_start", value: &search.start_ns().get().to_be_bytes() },
+            FramedField { tag: "search_end", value: &search.end_ns().get().to_be_bytes() },
+            FramedField { tag: "event_tick", value: &group.tick.get().to_be_bytes() },
+            FramedField { tag: "child_ordinal", value: &physical_child_ordinal.to_be_bytes() },
+            FramedField { tag: "event_ordinal", value: &ordinal.to_be_bytes() },
+            FramedField { tag: "forcing", value: group.candidates[0].shortened_forcing_sha256.as_bytes() },
+            FramedField { tag: "topology", value: topology.as_bytes() },
+            FramedField { tag: "begin_owner_set", value: ledger.beginning_owner_set_sha256.as_bytes() },
+            FramedField { tag: "proposed_end_owner_set", value: ledger.ending_owner_set_sha256.as_bytes() },
+            FramedField { tag: "mutations", value: b"\0\0\0\x04snow" },
+            FramedField { tag: "candidates", value: &candidate_members },
+        ],
+    )?;
+    let accepted_group = accepted_terminal_group_digest(group)?;
+    if group.discovery_receipt_sha256 != discovery
+        || group.proposal_core_sha256 != Some(proposal_core)
+        || ledger.proposal_core_sha256 != proposal_core
+        || ledger.produced_unconsumed_parcel_set_sha256 != parcel_set
+        || group.receipt_sha256 != receipt
+        || group.accepted_group_receipt_sha256 != Some(accepted_group)
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "native inactive-prefix terminal group reconstruction",
+        ));
+    }
+    Ok(())
 }

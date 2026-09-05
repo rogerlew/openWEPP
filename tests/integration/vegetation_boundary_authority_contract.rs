@@ -225,7 +225,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 30",
+        "contract_version: 31",
         "Version 13 admits `OPENWEPP_C3_WOODY_V9`",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
@@ -248,8 +248,8 @@ fn canonical_schema_and_registry_entry_are_bound() {
     for field in [
         lifecycle,
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
-        "| `static+independent_oracle+contract_vectors` | `2026-08-29` |",
-        "v30 retains V9 generation-host/provider-equivalence",
+        "| `static+independent_oracle+contract_vectors` | `2026-09-02` |",
+        "v31 admits only private immutable revision-bound V10/V11 validation handoffs",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -728,7 +728,7 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 30",
+        "contract_version: 31",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",
@@ -795,6 +795,37 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
 }
 
 #[test]
+fn version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs() {
+    let contract = read(CONTRACT);
+    for required in [
+        "contract_version: 31",
+        "INV-VEGETATION-134",
+        "OBL-VEGETATION-C-006",
+        "BEI-VEGETATION-017",
+        "### Validated in-memory V10/V11 state handoff",
+        "private typed handoff",
+        "no mutable dereference, public or\nunchecked constructor",
+        "cannot be reconstructed from a digest alone",
+        "parent-lineage normalization",
+        "consumes the proof",
+        "untrusted `V11SegmentExecutor` boundary is unchanged",
+        "independently and fully validated",
+        "full parse, canonical reconstruction, digest computation",
+        "zero duplicate digest/canonicalization",
+        "full\nrestart parse-reserialize",
+        "byte-exact rollback",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+    let index = read(INDEX);
+    assert!(
+        index.contains(
+            "v31 admits only private immutable revision-bound V10/V11 validation handoffs"
+        )
+    );
+}
+
+#[test]
 fn v2_tile_liquid_authority_is_digest_bound_and_v1_is_historical() {
     let vegetation = read(CONTRACT);
     let v2_path = format!("{V2_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v2_definition.json");
@@ -838,7 +869,7 @@ fn v2_tile_liquid_authority_is_digest_bound_and_v1_is_historical() {
         (
             "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
             "c30b7c243a36f7fc2aec316c3ba590c8f7629759d36bf1f91b60c0cf0c419188",
-            false,
+            true,
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",
@@ -921,7 +952,7 @@ fn v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable() 
             "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
             "water_balance_contract",
             "c30b7c243a36f7fc2aec316c3ba590c8f7629759d36bf1f91b60c0cf0c419188",
-            false,
+            true,
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",

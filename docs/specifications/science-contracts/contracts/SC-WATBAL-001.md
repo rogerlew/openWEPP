@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 170
+contract_version: 171
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-08-09
+last_reviewed: 2026-09-01
 supersedes: []
 superseded_by: []
 ---
@@ -2614,3 +2614,35 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 | `2026-05-25` | `35` | `Codex` | SIMIMPL21 amendment: added baseline WB11 ET/soil-water ordering authority (`INV-WATBAL-028`) and layer-to-aggregate publication-lineage authority (`INV-WATBAL-029`) with explicit legacy provenance anchors and SIMIMPL22/SIMIMPL23 gating obligations. |
 | `2026-05-25` | `36` | `Codex` | MOFE04 amendment: added explicit multi-OFE WB13/H.wat canonicalized publication policy authority (`OFE=1` row id semantics), required publication provenance fields (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`), and aggregate OFE-geometry area closure obligations. |
 | `2026-07-02` | `100` | `Claude Code` | MOFEFID-B02 reconciliation: `INV-WATBAL-098` anti-clone `QOFE == Q` rejection SUPERSEDED by MOFE04 canonicalized policy + `SC-RUNOFFPART-001#INV-RUNOFFPART-032` (QOFE == Q is the canonical published convention; per-OFE genuineness proven by hydrology-vector/raw-runoff/lineage evidence, not QOFE!=Q). |
+
+## Accepted Stage-3 to Lane-D Publication Amendment
+
+`INV-WATBAL-105` — Accepted non-CoE Stage-3 liquid follows one exact lineage:
+accepted Stage-3 owner/receipt, surface-liquid exact-one custody, RUNOFFPART
+hourly WB14 source and 24-bin closure, Lane-D per-OFE routing and adjacent
+handoff, independent per-OFE/hillslope closure, then public WAT/PASS/HBP rows.
+`INV-WATBAL-064`--`066`, `096`--`100`, and `102`--`104` remain binding.
+No CoE or diagnostic generation, legacy vegetation, scalar retiming, daily
+aggregate substitution, producer residual, wrong OFE area, or internal-only
+router result may satisfy publication. Element/adjacent and hillslope closure
+retain `TOL-WATBAL-007/008`; WB14 hourly/daily closure retains
+`TOL-WATBAL-009`.
+
+`OBL-WATBAL-P-032` / `OBL-WATBAL-C-007` — The real runner/output consumer must
+prove exact owner/source lineage, native vegetation ET, hourly source closure,
+each adjacent handoff, hillslope cancellation, outlet volume, field-specific
+units/area bases, rejected aliases, accepted-only publication, and exact
+rollback on any poison.
+
+### Profile integration
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Accepted Stage-3 -> surface liquid -> RUNOFFPART/WB14 -> Lane D -> per-OFE/hillslope closure -> WAT/PASS/HBP consumer. |
+| branch/guard | Every link must retain exact owner/source/OFE identity and declared basis; shadow/internal/aggregate aliases fail before publication. |
+| invariant guard map | `INV-WATBAL-105` -> source join, hourly closure, adjacent/hillslope reconstruction, output row validator. |
+| tolerance | Existing `TOL-WATBAL-007/008/009`; no new tolerance or normalization. |
+| test vector | `P-032/C-007`: native ET, non-CoE Stage-3, 24 bins, unequal areas, factor-1000, adjacent/area swaps, outlet and public fields. |
+| binding exposure | `WATBAL-STAGE3-LANED-PUBLICATION`, active, `new-INV`, IDs `105/P-032/C-007`, dual review/verification. |
+| gap | `GAP-WATBAL-002` is narrowed only for the proved target path; companion-process claims remain open. |
+| change log | 2026-09-01, contract 171: bound accepted Stage-3 through real Lane-D publication lineage. |

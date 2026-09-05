@@ -9,6 +9,7 @@ const OPEN_SNOW_PHYSICAL_SUPPORT: &str =
     "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs";
 const OPEN_SNOW_TESTS: &str =
     "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs";
+const OPEN_SNOW_HISTORICAL_TESTS: &str = "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_superseded_historical_solver_tests.rs";
 const OPEN_SNOW_V51_TESTS: &str =
     "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_v51_tests.rs";
 const OPEN_SNOW_V52_TESTS: &str =
@@ -44,6 +45,11 @@ const OWNER_FINALIZATION: &str =
     "crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs";
 const OWNER_FINALIZATION_V50_TRANSITION: &str =
     "crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization_v50_transition.rs";
+const TERMINAL_EVALUATION: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs";
+const TERMINAL_TYPES: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs";
+const REAL_CARRIER: &str =
+    "crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs";
+const FEED_FORWARD_TESTS: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/cqr_row5_tests.rs";
 const PARENT_CHRONOLOGY_TESTS: &str =
     "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_parent_chronology_tests.rs";
 const PACKAGE: &str =
@@ -53,8 +59,101 @@ fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
 }
 
+fn read_open_snow_tests() -> String {
+    format!(
+        "{}\n{}",
+        read(OPEN_SNOW_TESTS),
+        read(OPEN_SNOW_HISTORICAL_TESTS),
+    )
+}
+
 fn read_optional(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_default()
+}
+
+fn rust_item_body<'a>(source: &'a str, marker: &str) -> &'a str {
+    let start = source.find(marker).expect("Rust item marker");
+    let open = source[start..].find('{').expect("Rust item open") + start;
+    let mut depth = 0_u32;
+    for (offset, byte) in source.as_bytes()[open..].iter().enumerate() {
+        match byte {
+            b'{' => depth += 1,
+            b'}' => {
+                depth -= 1;
+                if depth == 0 {
+                    return &source[open..=open + offset];
+                }
+            }
+            _ => {}
+        }
+    }
+    panic!("Rust item close");
+}
+
+#[test]
+fn revision_61_binds_one_typed_feed_forward_call_per_logical_terminal_group() {
+    let energy = read(ENERGY);
+    let index = read(INDEX);
+    for required in [
+        "contract_version: 61",
+        "Revision 61 Typed Feed-Forward Terminal Carrier Evaluation",
+        "INV-SNOWENERGY-088",
+        "OBL-SNOWENERGY-C-056",
+        "SNOWENERGY-V61-FEED-FORWARD-TERMINAL-CARRIER",
+        "creates no\nnumerical process-solver V61",
+        "no preceding ending-snow hint and no coupling-iteration ordinal",
+        "executes exactly one complete carrier evaluation",
+        "Full`, `Retry`, `Half1`, `Half2`, and `Root",
+        "`DiscoveryProbe` and shortened-\nsupport `ExactEndpoint` outer invocations remain separate",
+        "400 complete common-carrier map calls to exactly 200",
+        "test-only forced\ntwo-call reference",
+        "feedback-capable mode is a typed request/interface distinction",
+        "byte-identical rollback",
+    ] {
+        assert!(energy.contains(required), "{ENERGY} missing {required}");
+    }
+    let row = index
+        .lines()
+        .find(|line| line.starts_with("| `SC-SNOWENERGY-001` |"))
+        .expect("snow-energy index row");
+    assert!(row.contains("Contract revision 61"));
+    assert!(row.contains("typed feed-forward real carrier call"));
+    assert!(row.contains("no process-solver V61"));
+}
+
+#[test]
+fn revision_61_structural_production_seam_is_expected_red() {
+    let terminal_types = read(TERMINAL_TYPES);
+    let evaluation = read(TERMINAL_EVALUATION);
+    let production = format!("{}\n{}\n{}", terminal_types, evaluation, read(REAL_CARRIER));
+    let tests = read(FEED_FORWARD_TESTS);
+    for required in [
+        "FeedForwardTerminalCarrierRequestV1",
+        "evaluate_feed_forward_terminal_carrier_v1",
+        "FeedForwardTerminalCarrierAuditV1",
+    ] {
+        assert!(
+            production.contains(required),
+            "missing revision-61 production seam {required}"
+        );
+    }
+    for required in [
+        "feed_forward_terminal_carrier_matches_forced_two_call_reference",
+        "feed_forward_terminal_carrier_preserves_role_support_and_error_order",
+        "feed_forward_terminal_carrier_is_invocation_local_and_rolls_back",
+        "evaluate_feed_forward_terminal_carrier_v1(",
+        "forced_two_call_reference",
+        "provider_call_count",
+    ] {
+        assert!(
+            tests.contains(required),
+            "missing revision-61 behavior obligation {required}"
+        );
+    }
+    let request = rust_item_body(&production, "struct FeedForwardTerminalCarrierRequestV1");
+    assert!(!request.contains("ending_snow_hint"));
+    assert!(!request.contains("coupling_iteration"));
+    assert!(!evaluation.contains("for coupling_iteration in 0..32_u32"));
 }
 
 #[test]
@@ -62,7 +161,7 @@ fn contracts_admit_only_event_local_terminal_snow_numerics() {
     let energy = read(ENERGY);
     let freeze = read(FREEZE);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "Version 18 defines the persistent Stage 3 snow--soil conductive boundary",
         "INV-SNOWENERGY-034",
         "OBL-SNOWENERGY-P-008",
@@ -95,7 +194,7 @@ fn contracts_admit_only_event_local_terminal_snow_numerics() {
 fn v49_contract_binds_three_domain_prepared_install_authority() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V49",
         "INV-SNOWENERGY-073",
         "OBL-SNOWENERGY-C-041",
@@ -176,7 +275,7 @@ fn v49_real_finalizer_requires_exact_resident_predecessor_authority() {
 fn v50_contract_binds_validated_envelope_ending_source() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V50",
         "INV-SNOWENERGY-074",
         "OBL-SNOWENERGY-C-042",
@@ -190,6 +289,7 @@ fn v50_contract_binds_validated_envelope_ending_source() {
 }
 
 #[test]
+#[ignore = "historical v50 production seam superseded by non-versioned ADR-0044"]
 fn v50_real_finalizer_passes_exact_envelope_source_anchor() {
     let production = read(V10_SOIL_THERMAL);
     let finalization = read(OWNER_FINALIZATION);
@@ -283,7 +383,7 @@ fn v50_real_finalizer_passes_exact_envelope_source_anchor() {
 fn v51_contract_binds_post_crossing_alternating_contraction() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V51",
         "INV-SNOWENERGY-075",
         "OBL-SNOWENERGY-C-043",
@@ -296,10 +396,11 @@ fn v51_contract_binds_post_crossing_alternating_contraction() {
 }
 
 #[test]
+#[ignore = "historical v51 production seam superseded by non-versioned ADR-0044"]
 fn v51_post_crossing_contraction_production_seams_are_required() {
     let coupled = read(COUPLED_SOLVE);
     let open_snow = read(OPEN_SNOW);
-    let behavior = format!("{}\n{}", read(OPEN_SNOW_TESTS), read(OPEN_SNOW_V51_TESTS));
+    let behavior = format!("{}\n{}", read_open_snow_tests(), read(OPEN_SNOW_V51_TESTS));
     let production = format!("{coupled}\n{open_snow}");
     let mut defects = Vec::new();
     for required in [
@@ -348,7 +449,7 @@ fn v51_post_crossing_contraction_production_seams_are_required() {
 fn v52_contract_binds_explicit_cn_heat_coordinate() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V52",
         "INV-SNOWENERGY-076",
         "OBL-SNOWENERGY-C-044",
@@ -362,6 +463,7 @@ fn v52_contract_binds_explicit_cn_heat_coordinate() {
 }
 
 #[test]
+#[ignore = "historical v52 production seam superseded by non-versioned ADR-0044"]
 fn v52_cn_heat_coordinate_production_seams_are_required() {
     let production = format!("{}\n{}", read(COUPLED_SOLVE), read(OPEN_SNOW));
     let behavior = read(OPEN_SNOW_V52_TESTS);
@@ -410,7 +512,7 @@ fn v52_cn_heat_coordinate_production_seams_are_required() {
 fn v53_contract_binds_same_map_cn_heat_seed() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V53",
         "INV-SNOWENERGY-077",
         "OBL-SNOWENERGY-C-045",
@@ -424,6 +526,7 @@ fn v53_contract_binds_same_map_cn_heat_seed() {
 }
 
 #[test]
+#[ignore = "historical v53 production seam superseded by non-versioned ADR-0044"]
 fn v53_same_map_cn_heat_seed_production_seams_are_required() {
     let production = format!("{}\n{}", read(COUPLED_SOLVE), read(OPEN_SNOW));
     let behavior = read(OPEN_SNOW_V53_TESTS);
@@ -471,7 +574,7 @@ fn v53_same_map_cn_heat_seed_production_seams_are_required() {
 fn v54_contract_binds_representable_receipt_cycle_witness() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V54",
         "INV-SNOWENERGY-078",
         "OBL-SNOWENERGY-C-046",
@@ -486,6 +589,7 @@ fn v54_contract_binds_representable_receipt_cycle_witness() {
 }
 
 #[test]
+#[ignore = "historical v54 production seam superseded by non-versioned ADR-0044"]
 fn v54_receipt_cycle_witness_production_seams_are_required() {
     let production = format!("{}\n{}", read(COUPLED_SOLVE), read(OPEN_SNOW));
     let behavior = read(OPEN_SNOW_V54_TESTS);
@@ -536,7 +640,7 @@ fn v54_receipt_cycle_witness_production_seams_are_required() {
 fn v55_contract_binds_private_q_lattice_witness() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V55",
         "INV-SNOWENERGY-079",
         "OBL-SNOWENERGY-C-047",
@@ -550,6 +654,7 @@ fn v55_contract_binds_private_q_lattice_witness() {
 }
 
 #[test]
+#[ignore = "historical v55 production seam superseded by non-versioned ADR-0044"]
 fn v55_private_q_lattice_production_seams_are_required() {
     let production = format!("{}\n{}", read(COUPLED_SOLVE), read(PRIVATE_Q_LATTICE));
     let behavior = read(OPEN_SNOW_V55_TESTS);
@@ -604,7 +709,7 @@ fn v55_private_q_lattice_production_seams_are_required() {
 fn v56_contract_binds_frozen_temperature_primary_compound_owner() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V56",
         "INV-SNOWENERGY-080",
         "OBL-SNOWENERGY-C-048",
@@ -627,6 +732,7 @@ fn v56_contract_binds_frozen_temperature_primary_compound_owner() {
 }
 
 #[test]
+#[ignore = "historical v56 production seam superseded by non-versioned ADR-0044"]
 fn v56_frozen_temperature_primary_production_seams_are_required() {
     let production = format!(
         "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
@@ -693,7 +799,7 @@ fn v56_frozen_temperature_primary_production_seams_are_required() {
 fn v57_contract_binds_bounded_liquid_eligibility_without_normalization() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V57",
         "INV-SNOWENERGY-081",
         "OBL-SNOWENERGY-C-049",
@@ -709,6 +815,7 @@ fn v57_contract_binds_bounded_liquid_eligibility_without_normalization() {
 }
 
 #[test]
+#[ignore = "historical v57 production seam superseded by non-versioned ADR-0044"]
 fn v57_bounded_liquid_eligibility_and_post_root_transition_are_required() {
     let production = format!("{}\n{}", read(TEMPERATURE_PRIMARY), read(OPEN_SNOW),);
     let behavior = read_optional(OPEN_SNOW_V56_TESTS);
@@ -837,10 +944,11 @@ fn v32_captured_root_rejects_affine_latent_interpolation() {
 }
 
 #[test]
+#[ignore = "historical v32 production seam superseded by non-versioned ADR-0044"]
 fn v32_production_symbols_and_larger_direct_support_behavior_are_required() {
     let fixed_point = read(FIXED_POINT);
     let open_snow = read(OPEN_SNOW);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
 
     for required in [
         "CoveredVaporActiveSetInterfaceV1",
@@ -940,10 +1048,11 @@ fn v34_contract_binds_stable_monotone_coupled_eligibility() {
 }
 
 #[test]
+#[ignore = "historical v34 production seam superseded by non-versioned ADR-0044"]
 fn v34_stable_monotone_production_seams_are_required() {
     let fixed_point = read(FIXED_POINT);
     let open_snow = read(OPEN_SNOW);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let production = format!("{fixed_point}\n{open_snow}\n{coupled}");
     let mut defects = Vec::new();
@@ -1009,10 +1118,11 @@ fn v35_contract_binds_exact_authentic_receipt_stabilization() {
 }
 
 #[test]
+#[ignore = "historical v35 production seam superseded by non-versioned ADR-0044"]
 fn v35_authentic_receipt_stabilization_production_seams_are_required() {
     let fixed_point = read(FIXED_POINT);
     let open_snow = read(OPEN_SNOW);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let production = format!("{fixed_point}\n{open_snow}\n{coupled}");
     let mut defects = Vec::new();
@@ -1049,7 +1159,7 @@ fn v35_authentic_receipt_stabilization_production_seams_are_required() {
 fn v36_contract_binds_geometry_complete_physical_solver() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V36",
         "INV-SNOWENERGY-060",
         "OBL-SNOWENERGY-C-028",
@@ -1076,10 +1186,11 @@ fn v36_contract_binds_geometry_complete_physical_solver() {
 }
 
 #[test]
+#[ignore = "historical v36 production seam superseded by non-versioned ADR-0044"]
 fn v36_geometry_complete_production_seams_are_required() {
     let fixed_point = read(FIXED_POINT);
     let open_snow = read(OPEN_SNOW);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let production = format!("{fixed_point}\n{open_snow}\n{coupled}");
     let mut defects = Vec::new();
@@ -1114,7 +1225,7 @@ fn v36_geometry_complete_production_seams_are_required() {
 fn v37_contract_binds_derived_thickness_root_closure() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V37",
         "INV-SNOWENERGY-061",
         "OBL-SNOWENERGY-C-029",
@@ -1135,10 +1246,11 @@ fn v37_contract_binds_derived_thickness_root_closure() {
 }
 
 #[test]
+#[ignore = "historical v37 production seam superseded by non-versioned ADR-0044"]
 fn v37_derived_thickness_production_seams_are_required() {
     let fixed_point = read(FIXED_POINT);
     let open_snow = read(OPEN_SNOW);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let production = format!("{fixed_point}\n{open_snow}\n{coupled}");
     let mut defects = Vec::new();
@@ -1174,7 +1286,7 @@ fn v37_derived_thickness_production_seams_are_required() {
 fn v38_contract_binds_finalization_equivalent_charged_map() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V38",
         "INV-SNOWENERGY-062",
         "OBL-SNOWENERGY-C-030",
@@ -1197,10 +1309,11 @@ fn v38_contract_binds_finalization_equivalent_charged_map() {
 }
 
 #[test]
+#[ignore = "historical v38 production seam superseded by non-versioned ADR-0044"]
 fn v38_finalization_equivalent_production_seams_are_required() {
     let open_snow = read(OPEN_SNOW);
     let physical_support = read(OPEN_SNOW_PHYSICAL_SUPPORT);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let production = format!("{open_snow}\n{coupled}");
     let mut defects = Vec::new();
@@ -1343,7 +1456,7 @@ fn v38_finalization_equivalent_production_seams_are_required() {
 fn v39_contract_binds_distinct_soil_energy_source_and_target_transactions() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V39",
         "INV-SNOWENERGY-063",
         "OBL-SNOWENERGY-C-031",
@@ -1359,11 +1472,12 @@ fn v39_contract_binds_distinct_soil_energy_source_and_target_transactions() {
 }
 
 #[test]
+#[ignore = "historical v39 production seam superseded by non-versioned ADR-0044"]
 fn v39_soil_energy_transaction_separation_production_seams_are_required() {
     let production = read(REAL_HYDROLOGY);
     let open_snow = read(OPEN_SNOW);
     let physical_support = read(OPEN_SNOW_PHYSICAL_SUPPORT);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let v10_soil_thermal_tests = read(V10_SOIL_THERMAL_TESTS);
     let mut defects = Vec::new();
     for required in [
@@ -1485,7 +1599,7 @@ fn v39_soil_energy_transaction_separation_production_seams_are_required() {
 fn v40_contract_binds_parity_monotone_active_set_trigger() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V40",
         "INV-SNOWENERGY-064",
         "OBL-SNOWENERGY-C-032",
@@ -1500,10 +1614,11 @@ fn v40_contract_binds_parity_monotone_active_set_trigger() {
 }
 
 #[test]
+#[ignore = "historical v40 production seam superseded by non-versioned ADR-0044"]
 fn v40_parity_monotone_production_seams_are_required() {
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let open_snow = read(OPEN_SNOW);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let production = format!("{coupled}\n{open_snow}");
     let mut defects = Vec::new();
     for required in [
@@ -1541,7 +1656,7 @@ fn v40_parity_monotone_production_seams_are_required() {
 fn v41_contract_binds_one_way_canonical_enthalpy_boundary_trigger() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V41",
         "INV-SNOWENERGY-065",
         "OBL-SNOWENERGY-C-033",
@@ -1555,10 +1670,11 @@ fn v41_contract_binds_one_way_canonical_enthalpy_boundary_trigger() {
 }
 
 #[test]
+#[ignore = "historical v41 production seam superseded by non-versioned ADR-0044"]
 fn v41_one_way_phase_boundary_production_seams_are_required() {
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let open_snow = read(OPEN_SNOW);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let production = format!("{coupled}\n{open_snow}");
     let mut defects = Vec::new();
     for required in [
@@ -1595,7 +1711,7 @@ fn v41_one_way_phase_boundary_production_seams_are_required() {
 fn v42_contract_binds_exact_cold_content_export_coordinate() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V42",
         "INV-SNOWENERGY-066",
         "OBL-SNOWENERGY-C-034",
@@ -1608,11 +1724,12 @@ fn v42_contract_binds_exact_cold_content_export_coordinate() {
 }
 
 #[test]
+#[ignore = "historical v42 production seam superseded by non-versioned ADR-0044"]
 fn v42_cold_content_export_production_seams_are_required() {
     let fixed_point = read(FIXED_POINT);
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let open_snow = read(OPEN_SNOW);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let production = format!("{fixed_point}\n{coupled}\n{open_snow}");
     let mut defects = Vec::new();
     for required in [
@@ -1648,7 +1765,7 @@ fn v42_cold_content_export_production_seams_are_required() {
 fn v43_contract_binds_typed_projected_base_custody() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V43",
         "INV-SNOWENERGY-067",
         "OBL-SNOWENERGY-C-035",
@@ -1703,7 +1820,7 @@ fn v43_projected_base_custody_production_seams_are_required() {
 fn v44_contract_binds_uncommitted_lse_then_strict_authentic_closure() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V44",
         "INV-SNOWENERGY-068",
         "OBL-SNOWENERGY-C-036",
@@ -1716,6 +1833,7 @@ fn v44_contract_binds_uncommitted_lse_then_strict_authentic_closure() {
 }
 
 #[test]
+#[ignore = "historical v44 production seam superseded by non-versioned ADR-0044"]
 fn v44_uncommitted_lse_closure_production_seams_are_required() {
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let open_snow = read(OPEN_SNOW);
@@ -1727,7 +1845,7 @@ direct_v9_real_consumer_shadow_impl.rs",
         "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/\
 v10_soil_thermal_v2_tests.rs",
     );
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let open_snow_v44_tests = read(
         "crates/openwepp-hillslope-orchestrator/src/v11_covered/\
 open_snow_convergence_v44_tests.rs",
@@ -1774,7 +1892,7 @@ open_snow_convergence_v44_tests.rs",
 fn v45_contract_binds_authentic_receipt_root_polishing_and_replay_reserve() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V45",
         "INV-SNOWENERGY-069",
         "OBL-SNOWENERGY-C-037",
@@ -1790,6 +1908,7 @@ fn v45_contract_binds_authentic_receipt_root_polishing_and_replay_reserve() {
 }
 
 #[test]
+#[ignore = "historical v45 production seam superseded by non-versioned ADR-0044"]
 fn v45_authentic_receipt_root_polishing_production_seams_are_required() {
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let open_snow = read(OPEN_SNOW);
@@ -1862,7 +1981,7 @@ open_snow_convergence_v45_tests.rs",
 fn v46_contract_binds_dimension_complete_safeguarded_step_budget_preflight() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V46",
         "INV-SNOWENERGY-070",
         "OBL-SNOWENERGY-C-038",
@@ -1877,6 +1996,7 @@ fn v46_contract_binds_dimension_complete_safeguarded_step_budget_preflight() {
 }
 
 #[test]
+#[ignore = "historical v46 production seam superseded by non-versioned ADR-0044"]
 fn v46_complete_step_budget_preflight_production_seams_are_required() {
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let open_snow = read(OPEN_SNOW);
@@ -1937,7 +2057,7 @@ open_snow_convergence_v46_tests.rs",
 fn v47_contract_binds_typed_atomic_complete_owner_transaction_posture() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V47",
         "INV-SNOWENERGY-071",
         "OBL-SNOWENERGY-C-039",
@@ -2004,7 +2124,7 @@ fn v47_atomic_complete_owner_transaction_production_seams_are_required() {
 fn v48_contract_binds_authenticated_prepared_beginning_final_install() {
     let energy = read(ENERGY);
     for required in [
-        "contract_version: 57",
+        "contract_version: 61",
         "REF-SNOWENERGY-WGHL-V48",
         "INV-SNOWENERGY-072",
         "OBL-SNOWENERGY-C-040",
@@ -2157,10 +2277,11 @@ fn v33_known_phase_roots_use_the_unchanged_canonical_projection() {
 }
 
 #[test]
+#[ignore = "historical v33 production seam superseded by non-versioned ADR-0044"]
 fn v33_corrective_production_seams_are_required() {
     let fixed_point = read(FIXED_POINT);
     let open_snow = read(OPEN_SNOW);
-    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let open_snow_tests = read_open_snow_tests();
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let production = format!("{fixed_point}\n{open_snow}\n{coupled}");
     let mut defects = Vec::new();
@@ -2207,4 +2328,67 @@ fn v33_corrective_production_seams_are_required() {
         "current version-33 draft is nonconforming:\n{}",
         defects.join("\n")
     );
+}
+
+#[test]
+fn adr0044_native_cross_regime_companion_binds_one_charged_map_and_inactive_litter() {
+    let energy = read(ENERGY);
+    let index = read(INDEX);
+    for required in [
+        "contract_version: 61",
+        "ADR-0044 Native Covered-Envelope Cross-Regime Companion",
+        "INV-SNOWENERGY-083",
+        "OBL-SNOWENERGY-C-051",
+        "SNOWENERGY-ADR0044-NATIVE-CROSS-REGIME",
+        "does not create process version 58",
+        "standard Stage-3 covered-column physics executes exactly once",
+        "same canonical\neight-map charge/adaptive budget",
+        "Stage3SnowOpticalBoundaryReceiptV1",
+        "CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered",
+        "frozen-litter V3/V4 vapor",
+        "current-ingress, and WB14 work are inactive",
+        "second inner legacy LSE/hydrology\nenvelope",
+        "only the positive\npost-event snow-free child may invoke the V3/V4 litter path",
+        "unchanged equations/tolerances/budget/wire",
+    ] {
+        assert!(energy.contains(required), "{ENERGY} missing {required}");
+    }
+    let row = index
+        .lines()
+        .find(|line| line.starts_with("| `SC-SNOWENERGY-001` |"))
+        .expect("snow-energy index row");
+    assert!(row.contains("non-versioned ADR-0044 amendments"));
+    assert!(row.contains("one native-identity represented-snow map"));
+    assert!(row.contains("no V58"));
+}
+
+#[test]
+fn adr0044_unpublished_soil_companion_binds_non_owner_input_and_single_final_promotion() {
+    let energy = read(ENERGY);
+    let index = read(INDEX);
+    for required in [
+        "contract_version: 61",
+        "ADR-0044 Candidate-Only Unpublished-Soil Companion",
+        "INV-SNOWENERGY-084",
+        "OBL-SNOWENERGY-C-052",
+        "SNOWENERGY-ADR0044-UNPUBLISHED-SOIL-BEGINNING",
+        "creates no process version 58",
+        "SoilThermalUnpublishedPhysicalBeginningV2",
+        "typed candidate-only discriminator",
+        "contains no owner, restart,\ncheckpoint, accepted-receipt",
+        "cannot be installed,\naccepted, persisted, restored",
+        "complete original prepared\nowner, canonical accumulated physical operands, exact selected ending",
+        "exactly one V2 owner/receipt/restart/checkpoint\nbundle",
+        "Support/transaction rebinding, synthetic or empty owner bytes",
+        "unchanged physics/tolerances/budget/wire",
+    ] {
+        assert!(energy.contains(required), "{ENERGY} missing {required}");
+    }
+    let row = index
+        .lines()
+        .find(|line| line.starts_with("| `SC-SNOWENERGY-001` |"))
+        .expect("snow-energy index row");
+    assert!(row.contains("typed candidate-only unpublished-soil input"));
+    assert!(row.contains("one complete final owner/restart promotion"));
+    assert!(row.contains("no V58"));
 }

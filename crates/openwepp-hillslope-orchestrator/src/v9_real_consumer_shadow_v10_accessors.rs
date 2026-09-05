@@ -26,6 +26,12 @@ fn genesis_pre_support_event_authority_is_exact_v1(
 }
 
 impl DirectV10RealConsumerShadow {
+    pub(crate) const fn wb14_parent_working_state_v1(
+        &self,
+    ) -> Option<&crate::direct_runtime::DirectWb14ParentWorkingState> {
+        self.inner.wb14_parent_working_state.as_ref()
+    }
+
     #[cfg(feature = "persisted-restart-v1")]
     pub fn restart_authority_accepted_publication_active_tail_canonical_bytes_v3(
         &self,

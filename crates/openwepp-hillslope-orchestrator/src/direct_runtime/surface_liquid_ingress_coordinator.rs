@@ -10,6 +10,282 @@ pub struct DirectWb14CoupledChildBindingV1 {
     pub child_support_end_ns: u128,
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+struct Stage3CoveredNativeInactiveChildCustodyV1 {
+    schema: String,
+    proposed_upper_bound_s_bits: u64,
+    coupled_parent_transaction_sha256: [u8; 32],
+    accepted_slab_sha256: [u8; 32],
+    parent_beginning_complete_owner_set_sha256: [u8; 32],
+    parent_support_start_ns: u128,
+    parent_support_end_ns: u128,
+    child_support_start_ns: u128,
+    child_support_end_ns: u128,
+    ofe_topology: Vec<OfeId>,
+}
+
+impl DirectSurfaceLiquidIngressCandidate {
+    #[cfg(test)]
+    pub(crate) fn canonical_private_projection_v1(
+        &self,
+    ) -> Result<Vec<u8>, DirectSurfaceLiquidError> {
+        #[derive(serde::Serialize)]
+        struct Wire<'a> {
+            schema: &'static str,
+            transaction_id: TransactionId,
+            beginning_state: &'a DirectSurfaceLiquidOwnedState,
+            ending_state: &'a DirectSurfaceLiquidOwnedState,
+            receipts: &'a [DirectSurfaceLiquidParcelReceipt],
+            ledgers: &'a [DirectSurfaceLiquidIngressLedger],
+            wb14_calls_by_ofe: &'a BTreeMap<OfeId, u8>,
+            closure_operands: Vec<u8>,
+            open_ingress_parcels: &'a [DirectOpenLiquidIngressParcel],
+            parent_child_mode: bool,
+            finalize_parent_interval: bool,
+            input_parent_working_state: &'a Option<DirectWb14ParentWorkingState>,
+            parent_working_state: &'a Option<DirectWb14ParentWorkingState>,
+            wb14_child_receipt_set_sha256: &'a Sha256Digest,
+            wb14_parent_receipt_set_sha256: &'a Option<Sha256Digest>,
+            wb14_child_replay_bytes: &'a [u8],
+            wb14_parent_replay_bytes: &'a Option<Vec<u8>>,
+            stage3_covered_native_inactive: bool,
+        }
+
+        serde_json::to_vec(&Wire {
+            schema: "OPENWEPP_SURFACE_LIQUID_INGRESS_PRIVATE_PROJECTION_V1",
+            transaction_id: self.transaction_id,
+            beginning_state: &self.beginning_state,
+            ending_state: &self.ending_state,
+            receipts: &self.receipts,
+            ledgers: &self.ledgers,
+            wb14_calls_by_ofe: &self.wb14_calls_by_ofe,
+            closure_operands: self.closure_operands.canonical_private_projection_v1()?,
+            open_ingress_parcels: &self.open_ingress_parcels,
+            parent_child_mode: self.parent_child_mode,
+            finalize_parent_interval: self.finalize_parent_interval,
+            input_parent_working_state: &self.input_parent_working_state,
+            parent_working_state: &self.parent_working_state,
+            wb14_child_receipt_set_sha256: &self.wb14_child_receipt_set_sha256,
+            wb14_parent_receipt_set_sha256: &self.wb14_parent_receipt_set_sha256,
+            wb14_child_replay_bytes: &self.wb14_child_replay_bytes,
+            wb14_parent_replay_bytes: &self.wb14_parent_replay_bytes,
+            stage3_covered_native_inactive: self.stage3_covered_native_inactive,
+        })
+        .map_err(|_| DirectSurfaceLiquidError::Schema("ingress private projection"))
+    }
+
+    fn validate_stage3_covered_native_inactive(
+        &self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+        resource: &DirectSurfaceLiquidResourceCandidate,
+        input: &DirectSurfaceLiquidIngressInput,
+    ) -> Result<(), DirectSurfaceLiquidError> {
+        preflight_surface_liquid_ingress_public_identities(configuration, resource, input)?;
+        resource.validate(configuration)?;
+        self.validate_stage3_covered_native_inactive_structure(resource, input)
+    }
+
+    fn validate_stage3_covered_native_inactive_with_validated_resource(
+        &self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+        validated_resource: &ValidatedStage3CoveredNativeInactiveResourceV1,
+        input: &DirectSurfaceLiquidIngressInput,
+    ) -> Result<(), DirectSurfaceLiquidError> {
+        let resource = validated_resource.resource();
+        preflight_surface_liquid_ingress_public_identities(configuration, resource, input)?;
+        self.validate_stage3_covered_native_inactive_structure(resource, input)
+    }
+
+    fn validate_stage3_covered_native_inactive_structure(
+        &self,
+        resource: &DirectSurfaceLiquidResourceCandidate,
+        input: &DirectSurfaceLiquidIngressInput,
+    ) -> Result<(), DirectSurfaceLiquidError> {
+        if self.transaction_id != input.transaction_id
+            || self.transaction_id != resource.transaction_id()
+            || self.beginning_state != *resource.beginning_state()
+            || self.ending_state != *resource.working_state()
+            || self.beginning_state != self.ending_state
+            || !self.receipts.is_empty()
+            || !self.ledgers.is_empty()
+            || !self.wb14_calls_by_ofe.is_empty()
+            || !self.open_ingress_parcels.is_empty()
+            || self.parent_working_state != self.input_parent_working_state
+            || self.wb14_parent_receipt_set_sha256.is_some()
+            || self.wb14_parent_replay_bytes.is_some()
+            || self.closure_operands.transaction_id() != self.transaction_id
+        {
+            return Err(DirectSurfaceLiquidError::Closure(
+                "Stage3CoveredNative inactive ingress custody",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Construct a typed inactive-surface continuation for represented snow.
+    /// This validates identity and custody without entering surface or WB14 physics.
+    pub(crate) fn try_new_stage3_covered_native_inactive(
+        configuration: &DirectSurfaceLiquidConfiguration,
+        validated_resource: &ValidatedStage3CoveredNativeInactiveResourceV1,
+        input: &DirectSurfaceLiquidIngressInput,
+        parent_working_state: Option<&DirectWb14ParentWorkingState>,
+        coupled_binding: DirectWb14CoupledChildBindingV1,
+    ) -> Result<Self, DirectSurfaceLiquidError> {
+        let resource = validated_resource.resource();
+        preflight_surface_liquid_ingress_public_identities(configuration, resource, input)?;
+        let has_nonzero_ingress = input.tile_ingress.iter().any(|row| match row {
+            DirectTileGroundIngress::OpenRawPrecipitation {
+                raw_precipitation, ..
+            } => raw_precipitation.mass_kg_m2_tile_ground.to_bits() != 0.0_f64.to_bits(),
+            DirectTileGroundIngress::OpenLiquidParcels { parcels, .. } => parcels.iter().any(
+                |parcel| parcel.amount.mass_kg_m2_tile_ground.to_bits() != 0.0_f64.to_bits(),
+            ),
+            DirectTileGroundIngress::CoveredCanopyRelease { release, .. }
+            | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { release, .. } => {
+                [
+                    &release.throughfall,
+                    &release.initial_drainage,
+                    &release.second_drainage,
+                    &release.stemflow,
+                ]
+                .into_iter()
+                .any(|amount| amount.mass_kg_m2_tile_ground.to_bits() != 0.0_f64.to_bits())
+                    || matches!(
+                        row,
+                        DirectTileGroundIngress::CoveredCanopyReleaseAndRunon {
+                            runon_parcels,
+                            ..
+                        } if runon_parcels.iter().any(|parcel| parcel.amount.mass_kg_m2_tile_ground.to_bits() != 0.0_f64.to_bits())
+                    )
+            }
+        });
+        if has_nonzero_ingress {
+            return Err(DirectSurfaceLiquidError::Closure(
+                "Stage3CoveredNative inactive surface received liquid ingress",
+            ));
+        }
+        let closure_operands =
+            DirectSurfaceLiquidClosureOperands::try_new_stage3_covered_native_inactive(
+                input.transaction_id,
+                configuration,
+                resource,
+            )?;
+        let wb14_child_replay_bytes = stage3_covered_native_inactive_child_custody_bytes(
+            coupled_binding,
+            &configuration.ofe_topology,
+        )?;
+        let wb14_child_receipt_set_sha256 =
+            Sha256Digest::try_new(format!("{:x}", Sha256::digest(&wb14_child_replay_bytes)))
+                .map_err(|_| DirectSurfaceLiquidError::Schema("inactive WB14 custody digest"))?;
+        let candidate = Self {
+            transaction_id: input.transaction_id,
+            beginning_state: resource.beginning_state().clone(),
+            ending_state: resource.working_state().clone(),
+            receipts: Vec::new(),
+            ledgers: Vec::new(),
+            wb14_calls_by_ofe: BTreeMap::new(),
+            closure_operands,
+            open_ingress_parcels: Vec::new(),
+            parent_child_mode: true,
+            finalize_parent_interval: false,
+            input_parent_working_state: parent_working_state.cloned(),
+            parent_working_state: parent_working_state.cloned(),
+            wb14_child_receipt_set_sha256,
+            wb14_parent_receipt_set_sha256: None,
+            wb14_child_replay_bytes,
+            wb14_parent_replay_bytes: None,
+            stage3_covered_native_inactive: true,
+        };
+        candidate.validate_stage3_covered_native_inactive_with_validated_resource(
+            configuration,
+            validated_resource,
+            input,
+        )?;
+        Ok(candidate)
+    }
+}
+
+pub(crate) fn stage3_covered_native_inactive_child_custody_bytes(
+    binding: DirectWb14CoupledChildBindingV1,
+    ofe_topology: &[OfeId],
+) -> Result<Vec<u8>, DirectSurfaceLiquidError> {
+    if ofe_topology.is_empty()
+        || binding.child_support_start_ns >= binding.child_support_end_ns
+        || binding.child_support_start_ns < binding.parent_support_start_ns
+        || binding.child_support_end_ns > binding.parent_support_end_ns
+    {
+        return Err(DirectSurfaceLiquidError::Identity(
+            "Stage3CoveredNative inactive child custody bounds",
+        ));
+    }
+    serde_json::to_vec(&Stage3CoveredNativeInactiveChildCustodyV1 {
+        schema: "openwepp.stage3-covered-native-inactive-child-custody.v1".to_owned(),
+        proposed_upper_bound_s_bits: binding.proposed_upper_bound_s_bits,
+        coupled_parent_transaction_sha256: binding.coupled_parent_transaction_sha256,
+        accepted_slab_sha256: binding.accepted_slab_sha256,
+        parent_beginning_complete_owner_set_sha256: binding
+            .parent_beginning_complete_owner_set_sha256,
+        parent_support_start_ns: binding.parent_support_start_ns,
+        parent_support_end_ns: binding.parent_support_end_ns,
+        child_support_start_ns: binding.child_support_start_ns,
+        child_support_end_ns: binding.child_support_end_ns,
+        ofe_topology: ofe_topology.to_vec(),
+    })
+    .map_err(|_| DirectSurfaceLiquidError::Schema("inactive child custody serialization"))
+}
+
+pub(crate) fn stage3_covered_native_inactive_child_custody_binding(
+    bytes: &[u8],
+    expected_ofe_topology: &[OfeId],
+) -> Result<Option<DirectWb14CoupledChildBindingV1>, DirectSurfaceLiquidError> {
+    if bytes.first() != Some(&b'{') {
+        return Ok(None);
+    }
+    let wire: Stage3CoveredNativeInactiveChildCustodyV1 = serde_json::from_slice(bytes)
+        .map_err(|_| DirectSurfaceLiquidError::Schema("inactive child custody decoding"))?;
+    let canonical = serde_json::to_vec(&wire)
+        .map_err(|_| DirectSurfaceLiquidError::Schema("inactive child custody serialization"))?;
+    if canonical != bytes
+        || wire.schema != "openwepp.stage3-covered-native-inactive-child-custody.v1"
+        || wire.ofe_topology != expected_ofe_topology
+        || wire.child_support_start_ns >= wire.child_support_end_ns
+        || wire.child_support_start_ns < wire.parent_support_start_ns
+        || wire.child_support_end_ns > wire.parent_support_end_ns
+    {
+        return Err(DirectSurfaceLiquidError::Identity(
+            "Stage3CoveredNative inactive child custody identity",
+        ));
+    }
+    Ok(Some(DirectWb14CoupledChildBindingV1 {
+        proposed_upper_bound_s_bits: wire.proposed_upper_bound_s_bits,
+        coupled_parent_transaction_sha256: wire.coupled_parent_transaction_sha256,
+        accepted_slab_sha256: wire.accepted_slab_sha256,
+        parent_beginning_complete_owner_set_sha256: wire.parent_beginning_complete_owner_set_sha256,
+        parent_support_start_ns: wire.parent_support_start_ns,
+        parent_support_end_ns: wire.parent_support_end_ns,
+        child_support_start_ns: wire.child_support_start_ns,
+        child_support_end_ns: wire.child_support_end_ns,
+    }))
+}
+
+pub(crate) fn rebind_stage3_covered_native_inactive_child_custody(
+    bytes: &[u8],
+    target: DirectWb14CoupledChildBindingV1,
+    expected_ofe_topology: &[OfeId],
+) -> Result<Vec<u8>, DirectSurfaceLiquidError> {
+    let prior = stage3_covered_native_inactive_child_custody_binding(bytes, expected_ofe_topology)?
+        .ok_or(DirectSurfaceLiquidError::Identity(
+            "Stage3CoveredNative inactive child custody posture",
+        ))?;
+    if !wb14_rebind_target_is_slab_only(prior, target) {
+        return Err(DirectSurfaceLiquidError::Identity(
+            "Stage3CoveredNative inactive child custody rebind",
+        ));
+    }
+    stage3_covered_native_inactive_child_custody_bytes(target, expected_ofe_topology)
+}
+
 fn wb14_rebind_target_is_slab_only(
     prior: DirectWb14CoupledChildBindingV1,
     target: DirectWb14CoupledChildBindingV1,
@@ -23,19 +299,20 @@ fn wb14_rebind_target_is_slab_only(
 pub(crate) fn validate_wb14_child_replay_binding(
     bytes: &[u8],
     binding: DirectWb14CoupledChildBindingV1,
+    expected_ofe_topology: &[OfeId],
 ) -> Result<(), DirectSurfaceLiquidError> {
     let rows: Vec<(OfeId, DirectWb14ParentIntervalV1)> = serde_json::from_slice(bytes)
         .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 child replay decoding"))?;
-    if rows.is_empty() {
-        return Err(DirectSurfaceLiquidError::Identity("empty WB14 replay set"));
+    if rows.is_empty() || rows.len() != expected_ofe_topology.len() {
+        return Err(DirectSurfaceLiquidError::Identity(
+            "WB14 replay topology cardinality",
+        ));
     }
-    let mut predecessor: Option<OfeId> = None;
     let mut previous_queue_after = None;
-    for (ofe_id, authority) in rows {
-        if predecessor.as_ref().is_some_and(|value| value >= &ofe_id) {
+    for ((ofe_id, authority), expected_ofe_id) in rows.into_iter().zip(expected_ofe_topology) {
+        if &ofe_id != expected_ofe_id {
             return Err(DirectSurfaceLiquidError::Identity("WB14 replay OFE order"));
         }
-        predecessor = Some(ofe_id.clone());
         let actual = authority
             .coupled_child_binding_v1()
             .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 replay validation"))?;
@@ -105,34 +382,53 @@ pub(crate) fn rebind_wb14_replay_to_accepted_slab(
     if rows.is_empty() {
         return Err(DirectSurfaceLiquidError::Identity("empty WB14 replay set"));
     }
-    let mut rebuilt_rows = Vec::with_capacity(rows.len());
-    let mut finalizations = Vec::with_capacity(rows.len());
-    for (ofe_id, authority) in rows {
+    super::surface_liquid_wb14::note_wb14_reseal_input_validation();
+    for (_, authority) in &rows {
+        authority
+            .validate()
+            .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 replay validation"))?;
         let prior_binding = authority
-            .coupled_child_binding_v1()
+            .coupled_child_binding_from_validated_reseal_source()
             .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 replay validation"))?;
         if !wb14_rebind_target_is_slab_only(prior_binding, binding) {
             return Err(DirectSurfaceLiquidError::Identity(
                 "WB14 replay physical authority substitution",
             ));
         }
+    }
+    let mut rebuilt_rows = Vec::with_capacity(rows.len());
+    for (ofe_id, authority) in rows {
         let rebuilt = authority
-            .rebind_final_accepted_slab(binding.accepted_slab_sha256)
+            .rebind_final_accepted_slab_from_validated_reseal_source(binding.accepted_slab_sha256)
             .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 replay child reseal"))?;
-        if parent_bytes_present {
-            finalizations.push((
-                ofe_id.clone(),
-                rebuilt
-                    .finalize()
-                    .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 replay parent reseal"))?,
-            ));
-        }
         rebuilt_rows.push((ofe_id, rebuilt));
     }
+    super::surface_liquid_wb14::note_wb14_reseal_final_validation();
+    for (_, authority) in &rebuilt_rows {
+        authority
+            .validate()
+            .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 replay child reseal"))?;
+    }
+    let finalizations = parent_bytes_present
+        .then(|| {
+            rebuilt_rows
+                .iter()
+                .map(|(ofe_id, authority)| {
+                    authority
+                        .finalize_from_validated_reseal_source()
+                        .map(|finalization| (ofe_id.clone(), finalization))
+                        .map_err(|_| {
+                            DirectSurfaceLiquidError::Identity("WB14 replay parent reseal")
+                        })
+                })
+                .collect::<Result<Vec<_>, _>>()
+        })
+        .transpose()?;
     let child = serde_json::to_vec(&rebuilt_rows)
         .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 child replay serialization"))?;
-    let parent = parent_bytes_present
-        .then(|| serde_json::to_vec(&finalizations))
+    let parent = finalizations
+        .as_ref()
+        .map(serde_json::to_vec)
         .transpose()
         .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 parent replay serialization"))?;
     Ok((child, parent))
@@ -323,6 +619,11 @@ fn wb14_parent_binding(
 
 impl DirectWb14ParentWorkingState {
     #[must_use]
+    pub(crate) const fn persistent_beginning_state(&self) -> &DirectSurfaceLiquidOwnedState {
+        &self.persistent_beginning_state
+    }
+
+    #[must_use]
     pub(crate) const fn candidate_state(&self) -> &DirectSurfaceLiquidOwnedState {
         &self.candidate_state
     }
@@ -365,6 +666,50 @@ impl DirectWb14ParentWorkingState {
         }
         Ok(())
     }
+
+    /// Validate a trusted in-process parent without materializing durable
+    /// restart bytes. External and restart consumers retain `restart_bytes`
+    /// and `from_restart_bytes` as their canonical serialization boundary.
+    pub(crate) fn validate_in_process(
+        &self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+    ) -> Result<(), DirectSurfaceLiquidError> {
+        self.validate_nested(configuration)
+    }
+
+    /// Reseal only the accepted-slab authorization on the final child of an
+    /// already validated parent. All support, owner, queue, transition, and
+    /// physical arithmetic remains byte-identical.
+    pub(crate) fn rebind_final_accepted_slab(
+        &self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+        target: DirectWb14CoupledChildBindingV1,
+    ) -> Result<Self, DirectSurfaceLiquidError> {
+        super::surface_liquid_wb14::note_wb14_reseal_input_validation();
+        self.validate_nested(configuration)?;
+        let mut rebuilt = self.clone();
+        let authorities = std::mem::take(&mut rebuilt.per_ofe_authorities);
+        for (ofe_id, authority) in authorities {
+            let observed = authority
+                .coupled_child_binding_from_validated_reseal_source()
+                .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 parent rebind source"))?;
+            if !wb14_rebind_target_is_slab_only(observed, target) {
+                return Err(DirectSurfaceLiquidError::Identity(
+                    "WB14 parent rebind physical authority substitution",
+                ));
+            }
+            let rebound = authority
+                .rebind_final_accepted_slab_from_validated_reseal_source(
+                    target.accepted_slab_sha256,
+                )
+                .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 parent child reseal"))?;
+            rebuilt.per_ofe_authorities.insert(ofe_id, rebound);
+        }
+        super::surface_liquid_wb14::note_wb14_reseal_final_validation();
+        rebuilt.validate_nested(configuration)?;
+        Ok(rebuilt)
+    }
+
     pub(crate) fn restart_bytes(
         &self,
         configuration: &DirectSurfaceLiquidConfiguration,
@@ -476,30 +821,36 @@ impl DirectWb14ParentWorkingState {
 
 fn begin_scalar_wb14_authorities(
     configuration: &DirectSurfaceLiquidConfiguration,
-    input: &DirectSurfaceLiquidIngressInput,
+    transaction_id: TransactionId,
+    wb14_parameters: &[DirectOfeWb14Parameters],
     persistent_beginning: &DirectSurfaceLiquidOwnedState,
     parent_support_start_ns: i128,
     parent_support_end_ns: i128,
     wb14_configuration_sha256: &str,
     wb14_model_definition_sha256: &str,
     coupled_binding: Option<DirectWb14CoupledChildBindingV1>,
+    inactive_prefix: Option<super::surface_liquid_wb14::ValidatedNativeInactiveWb14PrefixV1>,
 ) -> Result<BTreeMap<OfeId, DirectWb14ParentIntervalV1>, DirectSurfaceLiquidError> {
     let support_start_ns = u128::try_from(parent_support_start_ns)
         .map_err(|_| DirectSurfaceLiquidError::Identity("negative WB14 parent support"))?;
     let support_end_ns = u128::try_from(parent_support_end_ns)
         .map_err(|_| DirectSurfaceLiquidError::Identity("negative WB14 parent support"))?;
     let coupled_parent_transaction_sha256 = coupled_binding.map_or_else(
-        || Sha256::digest(input.transaction_id.0.to_be_bytes()).into(),
+        || Sha256::digest(transaction_id.0.to_be_bytes()).into(),
         |binding| binding.coupled_parent_transaction_sha256,
     );
     let schema_sha256 = Sha256::digest(WB14_PARENT_WORKING_SCHEMA.as_bytes()).into();
     let surface_configuration_sha256 = digest32(&configuration.configuration_sha256)?;
     let wb14_configuration_sha256 = digest32(wb14_configuration_sha256)?;
     let wb14_model_definition_sha256 = digest32(wb14_model_definition_sha256)?;
-    let parent_beginning_owner_sha256 = coupled_binding
-        .map_or(digest32(&persistent_beginning.state_sha256)?, |binding| {
-            binding.parent_beginning_complete_owner_set_sha256
-        });
+    let ordinary_parent_beginning = coupled_binding.map_or_else(
+        || digest32(&persistent_beginning.state_sha256),
+        |binding| Ok(binding.parent_beginning_complete_owner_set_sha256),
+    )?;
+    let parent_beginning_owner_sha256 = inactive_prefix.map_or(
+        ordinary_parent_beginning,
+        super::surface_liquid_wb14::ValidatedNativeInactiveWb14PrefixV1::parent_beginning_owner_sha256,
+    );
     let mut authorities = BTreeMap::new();
     for (topology_index, ofe_id) in configuration.ofe_topology.iter().enumerate() {
         let continuation = persistent_beginning
@@ -519,8 +870,7 @@ fn begin_scalar_wb14_authorities(
                 "WB14 topology/lane order",
             ));
         }
-        let parameter = input
-            .wb14_parameters
+        let parameter = wb14_parameters
             .iter()
             .find(|row| &row.ofe_id == ofe_id)
             .ok_or(DirectSurfaceLiquidError::Identity(
@@ -551,23 +901,131 @@ fn begin_scalar_wb14_authorities(
             cursor,
             identity,
         )
-        .map_err(|_| {
-            production_binding_failure(
-                input.transaction_id,
+        .map_err(|error| {
+            wb14_parent_interval_failure(
+                transaction_id,
+                Some(configuration.owner_id.clone()),
                 Some(ofe_id.clone()),
-                "WB14 scalar parent authority",
+                &error,
+                format!("WB14 scalar parent authority: {error}"),
             )
         })?;
-        let parent = DirectWb14ParentIntervalV1::begin(authority, cursor).map_err(|_| {
-            production_binding_failure(
-                input.transaction_id,
-                Some(ofe_id.clone()),
-                "WB14 scalar parent begin",
+        let parent = inactive_prefix
+            .map_or_else(
+                || DirectWb14ParentIntervalV1::begin(authority, cursor),
+                |prefix| {
+                    DirectWb14ParentIntervalV1::begin_after_native_inactive_prefix(
+                        authority, cursor, prefix,
+                    )
+                },
             )
-        })?;
+            .map_err(|error| {
+                wb14_parent_interval_failure(
+                    transaction_id,
+                    Some(configuration.owner_id.clone()),
+                    Some(ofe_id.clone()),
+                    &error,
+                    format!("WB14 scalar parent begin: {error}"),
+                )
+            })?;
         authorities.insert(ofe_id.clone(), parent);
     }
     Ok(authorities)
+}
+
+impl DirectWb14ParentWorkingState {
+    pub(crate) fn begin_after_native_inactive_prefix(
+        configuration: &DirectSurfaceLiquidConfiguration,
+        transaction_id: TransactionId,
+        day_index: usize,
+        interval_index: usize,
+        wb14_parameters: &[DirectOfeWb14Parameters],
+        persistent_beginning: &DirectSurfaceLiquidOwnedState,
+        coupled_binding: DirectWb14CoupledChildBindingV1,
+        prefix: super::surface_liquid_wb14::ValidatedNativeInactiveWb14PrefixV1,
+    ) -> Result<Self, DirectSurfaceLiquidError> {
+        configuration.validate()?;
+        persistent_beginning.validate(configuration)?;
+        prefix
+            .validate_successor_binding(coupled_binding)
+            .map_err(|error| {
+                wb14_parent_interval_failure(
+                    transaction_id,
+                    Some(configuration.owner_id.clone()),
+                    None,
+                    &error,
+                    format!("native inactive-prefix successor: {error}"),
+                )
+            })?;
+        let interval_ordinal = day_index
+            .checked_mul(48)
+            .and_then(|value| value.checked_add(interval_index))
+            .ok_or(DirectSurfaceLiquidError::Identity(
+                "WB14 parent support overflow",
+            ))?;
+        let parent_support_start_ns = i128::try_from(interval_ordinal)
+            .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 parent support overflow"))?
+            .checked_mul(1_800_000_000_000)
+            .ok_or(DirectSurfaceLiquidError::Identity(
+                "WB14 parent support overflow",
+            ))?;
+        let parent_support_end_ns = parent_support_start_ns
+            .checked_add(1_800_000_000_000)
+            .ok_or(DirectSurfaceLiquidError::Identity(
+                "WB14 parent support overflow",
+            ))?;
+        if u128::try_from(parent_support_start_ns).ok()
+            != Some(coupled_binding.parent_support_start_ns)
+            || u128::try_from(parent_support_end_ns).ok()
+                != Some(coupled_binding.parent_support_end_ns)
+        {
+            return Err(production_binding_failure(
+                transaction_id,
+                None,
+                "native inactive-prefix WB14 parent support",
+            ));
+        }
+        let parameter_bytes = serde_json::to_vec(wb14_parameters)
+            .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 configuration serialization"))?;
+        let wb14_configuration_sha256 = format!("{:x}", Sha256::digest(parameter_bytes));
+        let wb14_model_definition_sha256 = format!("{:x}", Sha256::digest(WB14_MODEL_DEFINITION));
+        let per_ofe_authorities = begin_scalar_wb14_authorities(
+            configuration,
+            transaction_id,
+            wb14_parameters,
+            persistent_beginning,
+            parent_support_start_ns,
+            parent_support_end_ns,
+            &wb14_configuration_sha256,
+            &wb14_model_definition_sha256,
+            Some(coupled_binding),
+            Some(prefix),
+        )?;
+        let value = Self {
+            schema: WB14_PARENT_WORKING_SCHEMA.to_owned(),
+            parent_day_index: day_index,
+            parent_interval_index: u8::try_from(interval_index)
+                .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 interval index overflow"))?,
+            parent_support_start_ns,
+            parent_support_end_ns,
+            surface_liquid_configuration_sha256: configuration.configuration_sha256.clone(),
+            wb14_configuration_sha256,
+            wb14_model_definition_sha256,
+            production_lane_ids: configuration
+                .ofe_bindings
+                .iter()
+                .map(|binding| binding.production_lane_id)
+                .collect(),
+            accepted_until_ns: coupled_binding.child_support_start_ns,
+            parameters: wb14_parameters.to_vec(),
+            persistent_beginning_state: persistent_beginning.clone(),
+            candidate_state: persistent_beginning.clone(),
+            per_ofe_authorities,
+            parent_finalizations: None,
+        };
+        value.validate_nested(configuration)?;
+        Ok(value)
+    }
 }
 
 #[cfg(test)]
@@ -584,9 +1042,7 @@ mod cadence_tests {
             ))
         ));
         assert_eq!(
-            proposed_upper_bound_s(60.0)
-                .expect("exact floor")
-                .to_bits(),
+            proposed_upper_bound_s(60.0).expect("exact floor").to_bits(),
             60.0_f64.to_bits()
         );
         assert_eq!(
@@ -596,4 +1052,27 @@ mod cadence_tests {
             120.0_f64.to_bits()
         );
     }
+}
+fn wb14_parent_interval_failure(
+    transaction_id: TransactionId,
+    owner_id: Option<ResourceOwnerId>,
+    ofe_id: Option<OfeId>,
+    error: &super::surface_liquid_wb14::DirectWb14ParentIntervalErrorV1,
+    detail: impl Into<String>,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        error.canonical_surface_liquid_error_code(),
+        DirectSurfaceLiquidPhase::Restart,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            owner_id,
+            ofe_id,
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        detail,
+    )
 }

@@ -23,9 +23,7 @@ pub enum DirectSoilThermalCandidate {
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum DirectSoilThermalUnpublishedFixedPointPostureV2<'a> {
     BasePhysical(&'a openwepp_land_surface_energy::SoilThermalTrialStateV2),
-    NumericalCoordinateProjection(
-        &'a openwepp_land_surface_energy::SoilThermalTrialStateV2,
-    ),
+    NumericalCoordinateProjection(&'a openwepp_land_surface_energy::SoilThermalTrialStateV2),
 }
 
 impl<'a> DirectSoilThermalUnpublishedFixedPointPostureV2<'a> {
@@ -61,11 +59,10 @@ enum DirectSoilThermalAtomicCompleteOwnerTransactionKindV2 {
 
 #[derive(Clone, Copy, Debug)]
 enum DirectSoilThermalAtomicInstallAuthorityV2<'a> {
-    Physical(
-        crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2,
-    ),
-    AuthenticatedPreparedBeginning(
-        &'a DirectSoilThermalPreparedBeginningInstallAuthorityV2,
+    Physical(crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2),
+    AuthenticatedPreparedBeginning(&'a DirectSoilThermalPreparedBeginningInstallAuthorityV2),
+    PendingParentFinalization(
+        &'a crate::snow_stage3_v11_attachment::PendingV11ParentFinalizationSoilCloseAuthorityV1,
     ),
 }
 
@@ -81,12 +78,19 @@ fn direct_soil_thermal_complete_source_transaction_v2(
     candidate: &DirectV10RealConsumerShadow,
 ) -> Result<TransactionId, DirectV9RealConsumerError> {
     let source_transaction_id = TransactionId(candidate.vegetation_state.0.last_transaction_id);
-    if source_transaction_id.0 == 0
-        || candidate.lse_state.0.last_accepted_transaction_id != Some(source_transaction_id)
-        || candidate.inner.biogeochemistry.last_transaction_id != source_transaction_id.0
-    {
+    if source_transaction_id.0 == 0 {
         return Err(DirectV9RealConsumerError::Identity(
-            "V2 soil atomic complete-owner source transaction join",
+            "V2 soil atomic zero complete-owner source transaction",
+        ));
+    }
+    if candidate.lse_state.0.last_accepted_transaction_id != Some(source_transaction_id) {
+        return Err(DirectV9RealConsumerError::Identity(
+            "V2 soil atomic LSE source transaction join",
+        ));
+    }
+    if candidate.inner.biogeochemistry.last_transaction_id != source_transaction_id.0 {
+        return Err(DirectV9RealConsumerError::Identity(
+            "V2 soil atomic BGC source transaction join",
         ));
     }
     Ok(source_transaction_id)
@@ -108,16 +112,21 @@ fn direct_soil_thermal_atomic_complete_owner_transaction_posture_v2(
     split_authority: Option<DirectSoilThermalAtomicInstallAuthorityV2<'_>>,
 ) -> Result<DirectSoilThermalAtomicCompleteOwnerTransactionPostureV2, DirectV9RealConsumerError> {
     accepted_resident.validate()?;
-    let source_transaction_id = direct_soil_thermal_complete_source_transaction_v2(candidate)?;
+    let source_transaction_id = match split_authority {
+        Some(DirectSoilThermalAtomicInstallAuthorityV2::PendingParentFinalization(authority)) => {
+            authority.source_transaction_id()
+        }
+        _ => direct_soil_thermal_complete_source_transaction_v2(candidate)?,
+    };
     let soil_target_transaction_id = accepted_resident.owner.transaction_id;
     let soil_expected_predecessor_transaction_id =
         accepted_resident.owner.expected_predecessor_transaction_id;
     if accepted_resident.owner.state.last_accepted_transaction_id
         != Some(soil_target_transaction_id)
         || accepted_resident.owner.state.ofes.iter().any(|ofe| {
-            ofe.ordered_layers.iter().any(|layer| {
-                layer.last_accepted_transaction_id != Some(soil_target_transaction_id)
-            })
+            ofe.ordered_layers
+                .iter()
+                .any(|layer| layer.last_accepted_transaction_id != Some(soil_target_transaction_id))
         })
     {
         return Err(DirectV9RealConsumerError::Identity(
@@ -131,8 +140,8 @@ fn direct_soil_thermal_atomic_complete_owner_transaction_posture_v2(
                 source_transaction_id,
                 soil_target_transaction_id,
                 soil_expected_predecessor_transaction_id,
-                kind: DirectSoilThermalAtomicCompleteOwnerTransactionKindV2::
-                    SameSourceAndSoilTarget,
+                kind:
+                    DirectSoilThermalAtomicCompleteOwnerTransactionKindV2::SameSourceAndSoilTarget,
             })
         }
         Some(DirectSoilThermalAtomicInstallAuthorityV2::Physical(authority)) => {
@@ -179,10 +188,11 @@ fn direct_soil_thermal_atomic_complete_owner_transaction_posture_v2(
         Some(DirectSoilThermalAtomicInstallAuthorityV2::AuthenticatedPreparedBeginning(
             authority,
         )) => {
-            authority.authoritative_resident.validate()?;
-            authority
-                .authoritative_resident
-                .validate_prepared_beginning(&authority.prepared_beginning)?;
+            // This opaque token is produced only after the resident and
+            // prepared beginning have passed their full validation. Install
+            // joins the token back to its exact inputs before reaching this
+            // posture, so replaying those whole-state digests here would not
+            // add an independent authority check.
             let physical = authority.physical_transaction_authority;
             let reconstructed_physical = crate::land_surface_energy_shadow::
                 PhysicalSoilEnergyTransactionAuthorityV2::try_new(
@@ -198,6 +208,14 @@ fn direct_soil_thermal_atomic_complete_owner_transaction_posture_v2(
                 DirectSoilThermalPreparedBeginningSourceAuthorityV2::AuthenticatedBeginning(
                     authenticated_source_transaction_id,
                 ) => *authenticated_source_transaction_id == source_transaction_id,
+                DirectSoilThermalPreparedBeginningSourceAuthorityV2::AuthenticatedUnpublishedContinuation {
+                    source_transaction_id: authenticated_source_transaction_id,
+                    continuation,
+                } => {
+                    *authenticated_source_transaction_id == source_transaction_id
+                        && continuation.original_prepared().beginning_owner()
+                            == &authority.prepared_beginning
+                }
                 DirectSoilThermalPreparedBeginningSourceAuthorityV2::ValidatedOuterTransition(
                     transition,
                 ) => transition.validated_source_and_expected().is_ok_and(
@@ -232,8 +250,28 @@ fn direct_soil_thermal_atomic_complete_owner_transaction_posture_v2(
                 None
             };
             if let Some(reason) = refusal {
+                return Err(DirectV9RealConsumerError::Identity(reason));
+            }
+            Ok(DirectSoilThermalAtomicCompleteOwnerTransactionPostureV2 {
+                source_transaction_id,
+                soil_target_transaction_id,
+                soil_expected_predecessor_transaction_id,
+                kind: DirectSoilThermalAtomicCompleteOwnerTransactionKindV2::
+                    AuthenticatedPreparedBeginning,
+            })
+        }
+        Some(DirectSoilThermalAtomicInstallAuthorityV2::PendingParentFinalization(authority)) => {
+            if authority.validate_install_candidate(candidate).is_err()
+                || authority.physical_transaction_authority().source_transaction_id
+                    != source_transaction_id
+                || authority
+                    .physical_transaction_authority()
+                    .soil_thermal_transaction_id
+                    != soil_target_transaction_id
+                || authority.prepared_beginning().transaction_id != soil_target_transaction_id
+            {
                 return Err(DirectV9RealConsumerError::Identity(
-                    reason,
+                    "pending parent-finalization soil atomic authority",
                 ));
             }
             Ok(DirectSoilThermalAtomicCompleteOwnerTransactionPostureV2 {
@@ -314,6 +352,10 @@ pub struct DirectSoilThermalPreparedBeginningInstallAuthorityV2 {
 #[derive(Clone, Debug, PartialEq)]
 enum DirectSoilThermalPreparedBeginningSourceAuthorityV2 {
     AuthenticatedBeginning(TransactionId),
+    AuthenticatedUnpublishedContinuation {
+        source_transaction_id: TransactionId,
+        continuation: DirectSoilThermalUnpublishedContinuationResultV2,
+    },
     ValidatedOuterTransition(DirectSoilThermalOuterOwnerTransitionAuthorityV2),
 }
 
@@ -824,7 +866,8 @@ impl DirectSoilThermalResident {
             return Ok(false);
         }
         let Some(prior) = prior else {
-            let fresh = self.prepare_next_v2_support(child_support_start_ns, child_support_end_ns)?;
+            let fresh =
+                self.prepare_next_v2_support(child_support_start_ns, child_support_end_ns)?;
             if fresh.beginning_owner().transaction_id != candidate.transaction_id() {
                 return Err(DirectV9RealConsumerError::OwnerClosure(
                     "V2 same-support fixed-point transaction join",
@@ -880,16 +923,16 @@ impl DirectSoilThermalResident {
         let resident = self.v2()?;
         resident.validate()?;
         resident.validate_prepared_beginning(prepared.beginning_owner())?;
-        openwepp_land_surface_energy::validate_soil_thermal_unpublished_trial_v2(trial)
-            .map_err(|_| {
+        openwepp_land_surface_energy::validate_soil_thermal_unpublished_trial_v2(trial).map_err(
+            |_| {
                 DirectV9RealConsumerError::OwnerClosure(
                     "V2 projected fixed-point unpublished trial seal",
                 )
-            })?;
+            },
+        )?;
         let beginning = prepared.beginning_owner();
         if trial.transaction_id() != beginning.transaction_id
-            || trial.predecessor_transaction_id()
-                != beginning.expected_predecessor_transaction_id
+            || trial.predecessor_transaction_id() != beginning.expected_predecessor_transaction_id
             || trial.support_start_ns() != child_support_start_ns
             || trial.support_end_ns() != child_support_end_ns
             || beginning.support_start_ns != child_support_start_ns
@@ -909,8 +952,7 @@ impl DirectSoilThermalResident {
         let ending = trial.ending_state();
         if ending.owner_id != beginning.state.owner_id
             || ending.configuration_sha256 != beginning.state.configuration_sha256
-            || ending.last_accepted_transaction_id
-                != beginning.state.last_accepted_transaction_id
+            || ending.last_accepted_transaction_id != beginning.state.last_accepted_transaction_id
             || ending.ofes.len() != beginning.state.ofes.len()
         {
             return Err(DirectV9RealConsumerError::OwnerClosure(
@@ -940,8 +982,7 @@ impl DirectSoilThermalResident {
                     != ending_top.last_accepted_transaction_id
                 || !ending_top.enthalpy_hi_j_m2_ofe_ground.is_finite()
                 || (ending_top.enthalpy_hi_j_m2_ofe_ground == 0.0
-                    && ending_top.enthalpy_hi_j_m2_ofe_ground.to_bits()
-                        != 0.0_f64.to_bits())
+                    && ending_top.enthalpy_hi_j_m2_ofe_ground.to_bits() != 0.0_f64.to_bits())
                 || ending_top.enthalpy_carry
                     != openwepp_land_surface_energy::ExactDyadicEnthalpy::zero()
                 || !ending_top.temperature_k.is_finite()
@@ -1023,640 +1064,7 @@ impl DirectSoilThermalCandidate {
     }
 }
 
-impl DirectSoilThermalUnpublishedContinuationV2 {
-    fn try_new(
-        resident: &DirectV10SoilThermalResidentV2,
-        configuration: &LandSurfaceEnergyConfiguration,
-        original_prepared: &openwepp_land_surface_energy::PreparedSoilThermalSupportV2,
-        prior_prepared: &openwepp_land_surface_energy::PreparedSoilThermalSupportV2,
-        retained_trial: &openwepp_land_surface_energy::SoilThermalTrialStateV2,
-        expected_retained_ending_state_sha256: &Sha256Digest,
-        child_support_start_ns: u128,
-        child_support_end_ns: u128,
-    ) -> Result<Self, DirectV9RealConsumerError> {
-        resident.validate()?;
-        resident.validate_prepared_beginning(original_prepared.beginning_owner())?;
-        resident.validate_prepared_beginning(prior_prepared.beginning_owner())?;
-        let original = original_prepared.beginning_owner();
-        let prior = prior_prepared.beginning_owner();
-        validate_unpublished_continuation_lineage(
-            original,
-            prior,
-            child_support_start_ns,
-            child_support_end_ns,
-        )?;
-        if retained_trial.transaction_id() != prior.transaction_id
-            || retained_trial.predecessor_transaction_id()
-                != prior.expected_predecessor_transaction_id
-            || retained_trial.support_start_ns() != prior.support_start_ns
-            || retained_trial.support_end_ns() != prior.support_end_ns
-            || retained_trial.beginning_state_sha256() != &prior.state.state_sha256
-            || retained_trial.accepted_predecessor_receipt_chain_sha256()
-                != Some(&prior.receipt_chain_sha256)
-            || &retained_trial.ending_state().state_sha256 != expected_retained_ending_state_sha256
-        {
-            return Err(DirectV9RealConsumerError::OwnerClosure(
-                "V2 retained trial identity or support",
-            ));
-        }
-        retained_trial
-            .ending_state()
-            .validate()
-            .map_err(|_| DirectV9RealConsumerError::OwnerClosure("V2 retained trial ending"))?;
-        let retained_operands = retained_trial
-            .layer_credits()
-            .iter()
-            .flat_map(|credit| credit.accepted_operands.iter().cloned())
-            .collect::<Vec<_>>();
-        let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
-            original,
-            configuration,
-            retained_operands,
-        )?;
-        let reconstructed = openwepp_land_surface_energy::advance_soil_thermal_composed_trial_v2(
-            original_prepared,
-            prior.support_start_ns,
-            prior.support_end_ns,
-            expected.accepted_operands(),
-            expected.temperature_projections(),
-        )
-        .map_err(|_| DirectV9RealConsumerError::OwnerClosure("V2 retained trial reconstruction"))?;
-        if &reconstructed != retained_trial {
-            return Err(DirectV9RealConsumerError::OwnerClosure(
-                "V2 retained trial substitution or carry",
-            ));
-        }
-        Ok(Self {
-            original_prepared: original_prepared.clone(),
-            retained_trial: retained_trial.clone(),
-            retained_accumulated_operands: expected.accepted_operands().to_vec(),
-            retained_layer_credit_chain: vec![retained_trial.layer_credits().to_vec()],
-            child_support_start_ns,
-            child_support_end_ns,
-        })
-    }
-
-    fn try_from_result(
-        resident: &DirectV10SoilThermalResidentV2,
-        configuration: &LandSurfaceEnergyConfiguration,
-        original_prepared: &openwepp_land_surface_energy::PreparedSoilThermalSupportV2,
-        prior: &DirectSoilThermalUnpublishedContinuationResultV2,
-        expected_retained_ending_state_sha256: &Sha256Digest,
-        child_support_start_ns: u128,
-        child_support_end_ns: u128,
-    ) -> Result<Self, DirectV9RealConsumerError> {
-        resident.validate()?;
-        resident.validate_prepared_beginning(original_prepared.beginning_owner())?;
-        let original = original_prepared.beginning_owner();
-        let prior_original = prior.original_prepared.beginning_owner();
-        let trial = &prior.physical_trial;
-        if original.owner_tag != prior_original.owner_tag
-            || original.schema_sha256 != prior_original.schema_sha256
-            || original.exact_carry_definition_sha256
-                != prior_original.exact_carry_definition_sha256
-            || original.parent_v1_state_sha256 != prior_original.parent_v1_state_sha256
-            || original.contract_version != prior_original.contract_version
-            || original.model_version != prior_original.model_version
-            || original.model_definition_sha256 != prior_original.model_definition_sha256
-            || original.run_id != prior_original.run_id
-            || original.transaction_id != prior_original.transaction_id
-            || original.expected_predecessor_transaction_id
-                != prior_original.expected_predecessor_transaction_id
-            || original.receipt_chain_sha256 != prior_original.receipt_chain_sha256
-            || original.state != prior_original.state
-            || original.support_start_ns != prior_original.support_start_ns
-            || prior_original.support_end_ns != child_support_start_ns
-            || child_support_end_ns != original.support_end_ns
-            || &trial.ending_state().state_sha256 != expected_retained_ending_state_sha256
-            || trial.support_end_ns() != prior_original.support_end_ns
-            || child_support_start_ns >= child_support_end_ns
-            || child_support_end_ns - child_support_start_ns
-                < openwepp_land_surface_energy::MINIMUM_SUPPORT_NS
-        {
-            return Err(DirectV9RealConsumerError::OwnerClosure(
-                "V2 chained continuation identity or support",
-            ));
-        }
-        let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
-            original,
-            configuration,
-            prior.accumulated_operands.clone(),
-        )?;
-        if expected.accepted_operands() != prior.accumulated_operands {
-            return Err(DirectV9RealConsumerError::OwnerClosure(
-                "V2 chained continuation accumulated custody",
-            ));
-        }
-        openwepp_land_surface_energy::validate_soil_thermal_unpublished_trial_v2(trial).map_err(
-            |_| {
-                DirectV9RealConsumerError::OwnerClosure("V2 chained continuation unpublished trial")
-            },
-        )?;
-        openwepp_land_surface_energy::compose_soil_thermal_accepted_from_unpublished_v2(
-            &prior.original_prepared,
-            trial,
-            &prior.accumulated_operands,
-            &prior.layer_credit_chain,
-        )
-        .map_err(|_| {
-            DirectV9RealConsumerError::OwnerClosure("V2 chained continuation prior replay")
-        })?;
-        Ok(Self {
-            original_prepared: original_prepared.clone(),
-            retained_trial: trial.clone(),
-            retained_accumulated_operands: prior.accumulated_operands.clone(),
-            retained_layer_credit_chain: prior.layer_credit_chain.clone(),
-            child_support_start_ns,
-            child_support_end_ns,
-        })
-    }
-
-    pub fn child_beginning_state(&self) -> &openwepp_land_surface_energy::SoilThermalOwnedStateV2 {
-        self.retained_trial.ending_state()
-    }
-
-    pub const fn child_support_start_ns(&self) -> u128 {
-        self.child_support_start_ns
-    }
-
-    pub const fn child_support_end_ns(&self) -> u128 {
-        self.child_support_end_ns
-    }
-
-    pub fn original_prepared(&self) -> &openwepp_land_surface_energy::PreparedSoilThermalSupportV2 {
-        &self.original_prepared
-    }
-
-    pub fn retained_trial(&self) -> &openwepp_land_surface_energy::SoilThermalTrialStateV2 {
-        &self.retained_trial
-    }
-
-    pub fn child_top_boundary_operands_v2(
-        &self,
-        credits: &[SoilThermalTopBoundaryCreditV1],
-        source_owner_id: &ResourceOwnerId,
-    ) -> Result<
-        Vec<openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2>,
-        DirectV9RealConsumerError,
-    > {
-        let beginning = self.child_beginning_state();
-        let mut identities = BTreeSet::new();
-        let mut operands = Vec::with_capacity(credits.len());
-        for credit in credits {
-            let ofe = beginning
-                .ofes
-                .iter()
-                .find(|ofe| ofe.ofe_id == credit.ofe_id)
-                .ok_or(DirectV9RealConsumerError::OwnerClosure(
-                    "V2 continuation top-boundary OFE",
-                ))?;
-            let layer =
-                ofe.ordered_layers
-                    .first()
-                    .ok_or(DirectV9RealConsumerError::OwnerClosure(
-                        "V2 continuation top-boundary layer",
-                    ))?;
-            if credit.beginning_owner_id != beginning.owner_id
-                || credit.beginning_configuration_sha256 != beginning.configuration_sha256
-                || credit.beginning_state_sha256 != beginning.state_sha256
-                || credit.first_layer_id != layer.layer_id
-                || u128::try_from(credit.support_start_ns).ok() != Some(self.child_support_start_ns)
-                || u128::try_from(credit.support_end_ns).ok() != Some(self.child_support_end_ns)
-                || !credit
-                    .accepted_positive_downward_j_m2_ofe_ground
-                    .is_finite()
-                || credit.soil_thermal_credit_j_m2_ofe_ground.to_bits()
-                    != credit.accepted_positive_downward_j_m2_ofe_ground.to_bits()
-                || !identities.insert((credit.ofe_id.clone(), credit.lane_id))
-            {
-                return Err(DirectV9RealConsumerError::OwnerClosure(
-                    "V2 continuation top-boundary identity or support",
-                ));
-            }
-            operands.push(
-                openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2 {
-                    ofe_id: credit.ofe_id.clone(),
-                    layer_id: layer.layer_id.clone(),
-                    source_kind:
-                        openwepp_land_surface_energy::SoilThermalEnergyOperandKindV2::TopBoundary,
-                    source_owner_id: source_owner_id.clone(),
-                    debit_credit_identity_sha256: credit.snow_soil_heat_receipt_sha256.clone(),
-                    ordinal: credit.lane_id,
-                    units: "J m^-2 OFE-ground".to_owned(),
-                    basis: "ofe_ground".to_owned(),
-                    energy_j_m2_ofe_ground: credit.soil_thermal_credit_j_m2_ofe_ground,
-                },
-            );
-        }
-        canonicalize_v2_operand_order(self.original_prepared.beginning_owner(), &mut operands)?;
-        Ok(operands)
-    }
-
-    fn advance_sequential(
-        &self,
-        configuration: &LandSurfaceEnergyConfiguration,
-        child_operands: &[openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2],
-    ) -> Result<DirectSoilThermalUnpublishedContinuationResultV2, DirectV9RealConsumerError> {
-        let mut physical_operands = child_operands.to_vec();
-        reordinal_and_canonicalize_v2_operands(
-            self.original_prepared.beginning_owner(),
-            &mut physical_operands,
-        )?;
-        let projections = v2_temperature_projections_for_unpublished_state(
-            self.retained_trial.ending_state(),
-            configuration,
-            &physical_operands,
-        )?;
-        let physical_trial =
-            openwepp_land_surface_energy::advance_soil_thermal_sequential_unpublished_trial_v2(
-                &self.retained_trial,
-                self.child_support_start_ns,
-                self.child_support_end_ns,
-                &physical_operands,
-                &projections,
-            )
-            .map_err(|_| {
-                DirectV9RealConsumerError::OwnerClosure("V2 sequential continuation trial")
-            })?;
-        let mut accumulated_operands = self
-            .retained_accumulated_operands
-            .iter()
-            .cloned()
-            .chain(physical_operands)
-            .collect::<Vec<_>>();
-        reordinal_and_canonicalize_v2_operands(
-            self.original_prepared.beginning_owner(),
-            &mut accumulated_operands,
-        )?;
-        Ok(DirectSoilThermalUnpublishedContinuationResultV2 {
-            original_prepared: self.original_prepared.clone(),
-            layer_credit_chain: self
-                .retained_layer_credit_chain
-                .iter()
-                .cloned()
-                .chain(std::iter::once(physical_trial.layer_credits().to_vec()))
-                .collect(),
-            physical_trial,
-            accumulated_operands,
-        })
-    }
-}
-
-const V2_UNPUBLISHED_CONTINUATION_IMMUTABLE_IDENTITY: &str =
-    "V2 unpublished continuation immutable owner/schema/model/run/state identity";
-const V2_UNPUBLISHED_CONTINUATION_TRANSACTION_LINEAGE: &str =
-    "V2 unpublished continuation transaction/predecessor/receipt lineage";
-const V2_UNPUBLISHED_CONTINUATION_SUPPORT_START: &str =
-    "V2 unpublished continuation original/prior support start";
-const V2_UNPUBLISHED_CONTINUATION_PRIOR_END: &str =
-    "V2 unpublished continuation prior end/child start";
-const V2_UNPUBLISHED_CONTINUATION_OUTER_END: &str =
-    "V2 unpublished continuation child/original support end";
-const V2_UNPUBLISHED_CONTINUATION_WIDTH: &str =
-    "V2 unpublished continuation child support width/floor";
-
-fn validate_unpublished_continuation_lineage(
-    original: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
-    prior: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
-    child_support_start_ns: u128,
-    child_support_end_ns: u128,
-) -> Result<(), DirectV9RealConsumerError> {
-    if original.owner_tag != prior.owner_tag {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_IMMUTABLE_IDENTITY,
-        ));
-    }
-    if original.schema_sha256 != prior.schema_sha256 {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_IMMUTABLE_IDENTITY,
-        ));
-    }
-    if original.exact_carry_definition_sha256 != prior.exact_carry_definition_sha256 {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_IMMUTABLE_IDENTITY,
-        ));
-    }
-    if original.parent_v1_state_sha256 != prior.parent_v1_state_sha256 {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_IMMUTABLE_IDENTITY,
-        ));
-    }
-    if original.contract_version != prior.contract_version {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_IMMUTABLE_IDENTITY,
-        ));
-    }
-    if original.model_version != prior.model_version {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_IMMUTABLE_IDENTITY,
-        ));
-    }
-    if original.model_definition_sha256 != prior.model_definition_sha256 {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_IMMUTABLE_IDENTITY,
-        ));
-    }
-    if original.run_id != prior.run_id {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_IMMUTABLE_IDENTITY,
-        ));
-    }
-    if original.transaction_id != prior.transaction_id {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_TRANSACTION_LINEAGE,
-        ));
-    }
-    if original.expected_predecessor_transaction_id != prior.expected_predecessor_transaction_id {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_TRANSACTION_LINEAGE,
-        ));
-    }
-    if original.receipt_chain_sha256 != prior.receipt_chain_sha256 {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_TRANSACTION_LINEAGE,
-        ));
-    }
-    if original.state != prior.state {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_IMMUTABLE_IDENTITY,
-        ));
-    }
-    if prior.support_start_ns != original.support_start_ns {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_SUPPORT_START,
-        ));
-    }
-    if prior.support_end_ns != child_support_start_ns {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_PRIOR_END,
-        ));
-    }
-    if child_support_end_ns != original.support_end_ns {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_OUTER_END,
-        ));
-    }
-    if child_support_start_ns >= child_support_end_ns {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_WIDTH,
-        ));
-    }
-    if child_support_end_ns - child_support_start_ns
-        < openwepp_land_surface_energy::MINIMUM_SUPPORT_NS
-    {
-        return Err(DirectV9RealConsumerError::OwnerClosure(
-            V2_UNPUBLISHED_CONTINUATION_WIDTH,
-        ));
-    }
-    Ok(())
-}
-
-impl DirectSoilThermalUnpublishedContinuationResultV2 {
-    fn try_from_base_unpublished_trial(
-        resident: &DirectV10SoilThermalResidentV2,
-        configuration: &LandSurfaceEnergyConfiguration,
-        original_prepared: &openwepp_land_surface_energy::PreparedSoilThermalSupportV2,
-        retained_trial: &openwepp_land_surface_energy::SoilThermalTrialStateV2,
-        authenticated_operands: &[openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2],
-    ) -> Result<Self, DirectV9RealConsumerError> {
-        resident.validate()?;
-        resident.validate_prepared_beginning(original_prepared.beginning_owner())?;
-        openwepp_land_surface_energy::validate_soil_thermal_unpublished_trial_v2(retained_trial)
-            .map_err(|_| {
-                DirectV9RealConsumerError::OwnerClosure("V2 base unpublished result trial seal")
-            })?;
-        let original = original_prepared.beginning_owner();
-        if retained_trial.transaction_id() != original.transaction_id
-            || retained_trial.predecessor_transaction_id()
-                != original.expected_predecessor_transaction_id
-            || retained_trial.support_start_ns() != original.support_start_ns
-            || retained_trial.support_end_ns() > original.support_end_ns
-            || retained_trial.beginning_state_sha256() != &original.state.state_sha256
-            || retained_trial.accepted_predecessor_receipt_chain_sha256()
-                != Some(&original.receipt_chain_sha256)
-            || retained_trial
-                .unpublished_predecessor_trial_sha256()
-                .is_some()
-        {
-            return Err(DirectV9RealConsumerError::OwnerClosure(
-                "V2 base unpublished result identity or support",
-            ));
-        }
-        let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
-            original,
-            configuration,
-            authenticated_operands.to_vec(),
-        )?;
-        if expected.accepted_operands() != authenticated_operands {
-            return Err(DirectV9RealConsumerError::OwnerClosure(
-                "V2 base unpublished result operand order",
-            ));
-        }
-        let reconstructed = openwepp_land_surface_energy::advance_soil_thermal_composed_trial_v2(
-            original_prepared,
-            retained_trial.support_start_ns(),
-            retained_trial.support_end_ns(),
-            expected.accepted_operands(),
-            expected.temperature_projections(),
-        )
-        .map_err(|_| {
-            DirectV9RealConsumerError::OwnerClosure("V2 base unpublished result reconstruction")
-        })?;
-        if &reconstructed != retained_trial {
-            return Err(DirectV9RealConsumerError::OwnerClosure(
-                "V2 base unpublished result substitution or carry",
-            ));
-        }
-        let base_prepared = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
-            original,
-            original.transaction_id,
-            retained_trial.support_start_ns(),
-            retained_trial.support_end_ns(),
-        )
-        .map_err(|_| {
-            DirectV9RealConsumerError::OwnerClosure("V2 base unpublished result support")
-        })?;
-        resident.validate_prepared_beginning(base_prepared.beginning_owner())?;
-        Ok(Self {
-            original_prepared: base_prepared,
-            physical_trial: retained_trial.clone(),
-            accumulated_operands: expected.accepted_operands().to_vec(),
-            layer_credit_chain: vec![retained_trial.layer_credits().to_vec()],
-        })
-    }
-
-    pub fn original_prepared(&self) -> &openwepp_land_surface_energy::PreparedSoilThermalSupportV2 {
-        &self.original_prepared
-    }
-
-    pub fn physical_trial(&self) -> &openwepp_land_surface_energy::SoilThermalTrialStateV2 {
-        &self.physical_trial
-    }
-
-    pub fn accumulated_operands(
-        &self,
-    ) -> &[openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2] {
-        &self.accumulated_operands
-    }
-
-    pub fn compose_accepted_outer_candidate(
-        &self,
-        configuration: &LandSurfaceEnergyConfiguration,
-    ) -> Result<SoilThermalAcceptedCandidateV2, DirectV9RealConsumerError> {
-        let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
-            self.original_prepared.beginning_owner(),
-            configuration,
-            self.accumulated_operands.clone(),
-        )?;
-        let candidate =
-            openwepp_land_surface_energy::compose_soil_thermal_accepted_from_unpublished_v2(
-                &self.original_prepared,
-                &self.physical_trial,
-                expected.accepted_operands(),
-                &self.layer_credit_chain,
-            )
-            .map_err(|_| {
-                DirectV9RealConsumerError::OwnerClosure(
-                    "V2 continuation accepted outer composition",
-                )
-            })?;
-        Ok(SoilThermalAcceptedCandidateV2 {
-            ending_owner: candidate.ending_owner,
-            credit_receipt: candidate.credit_receipt,
-            expected_sources: expected,
-        })
-    }
-
-    /// Validate the independently reconstructed terminal operand image as the
-    /// exact per-layer/source suffix of the authenticated parent accumulation.
-    /// Local child ordinals restart at zero; parent ordinals retain the
-    /// checked number of earlier operands in that same canonical group.
-    pub fn validate_terminal_operand_suffix(
-        &self,
-        reconstructed: &[openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2],
-    ) -> Result<(), DirectV9RealConsumerError> {
-        let mut canonical = reconstructed.to_vec();
-        canonicalize_v2_operand_order(self.original_prepared.beginning_owner(), &mut canonical)?;
-        if canonical != reconstructed || reconstructed.is_empty() {
-            return Err(DirectV9RealConsumerError::OwnerClosure(
-                "V2 continuation terminal operand canonical order",
-            ));
-        }
-        let retained_groups = v2_operand_groups(&self.accumulated_operands);
-        let reconstructed_groups = v2_operand_groups(reconstructed);
-        let mut retained_index = 0;
-        for reconstructed in reconstructed_groups {
-            let reconstructed_key = reconstructed.first().map(v2_operand_group_key);
-            let Some(relative_index) =
-                retained_groups[retained_index..]
-                    .iter()
-                    .position(|retained| {
-                        retained.first().map(v2_operand_group_key) == reconstructed_key
-                    })
-            else {
-                return Err(DirectV9RealConsumerError::OwnerClosure(
-                    "V2 continuation terminal operand suffix",
-                ));
-            };
-            retained_index += relative_index;
-            let retained = retained_groups[retained_index];
-            retained_index += 1;
-            if reconstructed.len() > retained.len() {
-                return Err(DirectV9RealConsumerError::OwnerClosure(
-                    "V2 continuation terminal operand suffix",
-                ));
-            }
-            let prefix_len = retained.len() - reconstructed.len();
-            let prefix_ordinal = u32::try_from(prefix_len).map_err(|_| {
-                DirectV9RealConsumerError::OwnerClosure(
-                    "V2 continuation terminal operand prefix overflow",
-                )
-            })?;
-            for (index, (retained, reconstructed)) in retained[prefix_len..]
-                .iter()
-                .zip(reconstructed.iter())
-                .enumerate()
-            {
-                let local_ordinal = u32::try_from(index).map_err(|_| {
-                    DirectV9RealConsumerError::OwnerClosure(
-                        "V2 continuation terminal operand ordinal overflow",
-                    )
-                })?;
-                let parent_ordinal = prefix_ordinal.checked_add(local_ordinal).ok_or(
-                    DirectV9RealConsumerError::OwnerClosure(
-                        "V2 continuation terminal operand ordinal overflow",
-                    ),
-                )?;
-                if reconstructed.ordinal != local_ordinal
-                    || retained.ordinal != parent_ordinal
-                    || !v2_operand_matches_except_ordinal(retained, reconstructed)
-                {
-                    return Err(DirectV9RealConsumerError::OwnerClosure(
-                        "V2 continuation terminal operand suffix",
-                    ));
-                }
-            }
-        }
-        Ok(())
-    }
-
-    pub fn into_physical_candidate(
-        self,
-    ) -> Result<DirectSoilThermalCandidate, DirectV9RealConsumerError> {
-        DirectSoilThermalCandidate::from_v2(self.physical_trial)
-    }
-
-    fn validate_selected_accepted_child(
-        &self,
-        candidate_resident: &DirectV10SoilThermalResidentV2,
-        prepared_beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
-        accepted: &SoilThermalAcceptedCandidateV2,
-    ) -> Result<(), DirectV9RealConsumerError> {
-        candidate_resident.validate()?;
-        candidate_resident.validate_prepared_beginning(self.original_prepared.beginning_owner())?;
-        self.validate_selected_accepted_child_without_resident(prepared_beginning, accepted)
-    }
-
-    fn validate_selected_accepted_child_without_resident(
-        &self,
-        prepared_beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
-        accepted: &SoilThermalAcceptedCandidateV2,
-    ) -> Result<(), DirectV9RealConsumerError> {
-        openwepp_land_surface_energy::validate_soil_thermal_unpublished_trial_v2(
-            &self.physical_trial,
-        )
-        .map_err(|_| DirectV9RealConsumerError::OwnerClosure("V2 selected unpublished trial"))?;
-        let original = self.original_prepared.beginning_owner();
-        let receipt = &accepted.credit_receipt;
-        let physical_ending = self.physical_trial.ending_state();
-        let accepted_ending = &accepted.ending_owner.state;
-        let predicates = [
-            prepared_beginning == original,
-            !self
-                .physical_trial
-                .accepted_predecessor_receipt_chain_sha256()
-                .is_some(),
-            self.physical_trial
-                .unpublished_predecessor_trial_sha256()
-                .is_some(),
-            self.physical_trial.support_end_ns() == original.support_end_ns,
-            receipt.transaction_id == original.transaction_id,
-            receipt.predecessor_transaction_id == original.expected_predecessor_transaction_id,
-            receipt.support_start_ns == original.support_start_ns,
-            receipt.support_end_ns == original.support_end_ns,
-            receipt.beginning_owner_state_sha256 == original.state.state_sha256,
-            receipt.predecessor_receipt_chain_sha256 == original.receipt_chain_sha256,
-            accepted.expected_sources.accepted_operands() == self.accumulated_operands,
-            soil_thermal_v2_physical_ending_matches(physical_ending, accepted_ending),
-        ];
-        if predicates.into_iter().any(|predicate| !predicate) {
-            return Err(DirectV9RealConsumerError::OwnerClosure(
-                "V2 selected continuation final replay join",
-            ));
-        }
-        Ok(())
-    }
-}
+include!("v10_soil_thermal_v2_unpublished_continuation.rs");
 
 fn v2_operand_groups(
     operands: &[openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2],
@@ -1901,6 +1309,332 @@ impl DirectV10SoilThermalResidentV2 {
         Ok(())
     }
 
+    fn validate_unpublished_aggregate_prepared_beginning(
+        &self,
+        continuation: &DirectSoilThermalUnpublishedContinuationResultV2,
+        beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+    ) -> Result<(), DirectV9RealConsumerError> {
+        if continuation.original_prepared().beginning_owner() != beginning {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate V2 original prepared join",
+            ));
+        }
+        self.validate_unpublished_aggregate_prepared_beginning_trial(
+            beginning,
+            continuation.physical_trial(),
+        )
+    }
+
+    fn validate_unpublished_aggregate_prepared_beginning_trial(
+        &self,
+        beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+        selected: &openwepp_land_surface_energy::SoilThermalTrialStateV2,
+    ) -> Result<(), DirectV9RealConsumerError> {
+        beginning.validate().map_err(|_| {
+            DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate prepared V2 soil beginning",
+            )
+        })?;
+        openwepp_land_surface_energy::validate_soil_thermal_unpublished_trial_v2(selected)
+            .map_err(|_| {
+                DirectV9RealConsumerError::OwnerClosure(
+                    "unpublished aggregate selected V2 soil trial",
+                )
+            })?;
+        let next_transaction = self
+            .owner
+            .transaction_id
+            .0
+            .checked_add(1)
+            .map(TransactionId)
+            .ok_or(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate V2 prepared transaction overflow",
+            ))?;
+        if self.receipt_free_seals.is_some() {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate V2 resident receipt-free posture",
+            ));
+        }
+        if beginning.owner_tag != self.owner.owner_tag
+            || beginning.schema_sha256 != self.owner.schema_sha256
+            || beginning.exact_carry_definition_sha256 != self.owner.exact_carry_definition_sha256
+            || beginning.parent_v1_state_sha256 != self.owner.parent_v1_state_sha256
+            || beginning.contract_version != self.owner.contract_version
+            || beginning.model_version != self.owner.model_version
+            || beginning.model_definition_sha256 != self.owner.model_definition_sha256
+            || beginning.run_id != self.owner.run_id
+            || beginning.state != self.owner.state
+            || beginning.receipt_chain_sha256 != self.owner.receipt_chain_sha256
+        {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate V2 prepared resident identity join",
+            ));
+        }
+        if beginning.transaction_id != next_transaction
+            || beginning.expected_predecessor_transaction_id != Some(self.owner.transaction_id)
+            || beginning.state.last_accepted_transaction_id != Some(self.owner.transaction_id)
+        {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate V2 prepared resident transaction join",
+            ));
+        }
+        if beginning.support_start_ns > self.owner.support_start_ns
+            || beginning.support_start_ns > self.owner.support_end_ns
+            || self.owner.support_end_ns > selected.support_start_ns()
+            || selected.support_start_ns() >= selected.support_end_ns()
+            || selected.support_end_ns() != beginning.support_end_ns
+        {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate V2 prepared resident support join",
+            ));
+        }
+        if selected.unpublished_predecessor_trial_sha256().is_none()
+            || selected
+                .accepted_predecessor_receipt_chain_sha256()
+                .is_some()
+        {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate V2 prepared selected lineage join",
+            ));
+        }
+        Ok(())
+    }
+
+    fn validate_unpublished_continuation_prepared_beginning(
+        &self,
+        continuation: &DirectSoilThermalUnpublishedContinuationResultV2,
+        beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+    ) -> Result<(), DirectV9RealConsumerError> {
+        if self.receipt_free_seals.is_some()
+            || beginning.support_start_ns == self.owner.support_end_ns
+        {
+            self.validate_prepared_beginning(beginning)
+        } else {
+            self.validate_unpublished_aggregate_prepared_beginning(continuation, beginning)
+        }
+    }
+
+    pub(super) fn validate_unpublished_physical_beginning(
+        &self,
+        beginning: &openwepp_land_surface_energy::SoilThermalUnpublishedPhysicalBeginningV2,
+    ) -> Result<(), DirectV9RealConsumerError> {
+        let original = beginning.authority().beginning_owner();
+        let predecessor = beginning.predecessor_trial();
+        if beginning.transaction_id() != original.transaction_id
+            || predecessor.support_end_ns() != beginning.support_start_ns()
+            || beginning.support_end_ns() != original.support_end_ns
+        {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished physical V2 beginning transaction/support join",
+            ));
+        }
+        if self.receipt_free_seals.is_some()
+            || original.support_start_ns == self.owner.support_end_ns
+        {
+            self.validate_prepared_beginning(original)
+        } else {
+            self.validate_unpublished_aggregate_prepared_beginning_trial(original, predecessor)
+        }
+    }
+
+    fn validate_unpublished_aggregate_prepared_extension(
+        &self,
+        prior: &DirectSoilThermalUnpublishedContinuationResultV2,
+        beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+        child_support_start_ns: u128,
+        child_support_end_ns: u128,
+    ) -> Result<(), DirectV9RealConsumerError> {
+        beginning.validate().map_err(|_| {
+            DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate extension V2 soil beginning",
+            )
+        })?;
+        let prior_original = prior.original_prepared().beginning_owner();
+        let prior_trial = prior.physical_trial();
+        openwepp_land_surface_energy::validate_soil_thermal_unpublished_trial_v2(prior_trial)
+            .map_err(|_| {
+                DirectV9RealConsumerError::OwnerClosure(
+                    "unpublished aggregate extension prior V2 soil trial",
+                )
+            })?;
+        let beginning_transaction_join = if self.receipt_free_seals.is_some() {
+            beginning.transaction_id == self.owner.transaction_id
+                && beginning.expected_predecessor_transaction_id
+                    == self.owner.expected_predecessor_transaction_id
+                && beginning.state.last_accepted_transaction_id
+                    == self.owner.state.last_accepted_transaction_id
+                && beginning.support_start_ns == self.owner.support_start_ns
+                && beginning.support_end_ns <= self.owner.support_end_ns
+        } else {
+            let next_transaction = self
+                .owner
+                .transaction_id
+                .0
+                .checked_add(1)
+                .map(TransactionId)
+                .ok_or(DirectV9RealConsumerError::OwnerClosure(
+                    "unpublished aggregate extension V2 transaction overflow",
+                ))?;
+            beginning.transaction_id == next_transaction
+                && beginning.expected_predecessor_transaction_id
+                    == Some(self.owner.transaction_id)
+                && beginning.state.last_accepted_transaction_id == Some(self.owner.transaction_id)
+        };
+        let prior_custody_join = if let Some(unpublished) =
+            prior_trial.unpublished_predecessor_trial_sha256()
+        {
+            !unpublished.as_str().is_empty()
+                && prior_trial
+                    .accepted_predecessor_receipt_chain_sha256()
+                    .is_none()
+        } else {
+            prior_trial.accepted_predecessor_receipt_chain_sha256()
+                == Some(&prior_original.receipt_chain_sha256)
+        };
+        if beginning.owner_tag != self.owner.owner_tag
+            || beginning.schema_sha256 != self.owner.schema_sha256
+            || beginning.exact_carry_definition_sha256 != self.owner.exact_carry_definition_sha256
+            || beginning.parent_v1_state_sha256 != self.owner.parent_v1_state_sha256
+            || beginning.contract_version != self.owner.contract_version
+            || beginning.model_version != self.owner.model_version
+            || beginning.model_definition_sha256 != self.owner.model_definition_sha256
+            || beginning.run_id != self.owner.run_id
+            || beginning.state != self.owner.state
+            || beginning.receipt_chain_sha256 != self.owner.receipt_chain_sha256
+            || !beginning_transaction_join
+            || prior_original.owner_tag != beginning.owner_tag
+            || prior_original.schema_sha256 != beginning.schema_sha256
+            || prior_original.exact_carry_definition_sha256
+                != beginning.exact_carry_definition_sha256
+            || prior_original.parent_v1_state_sha256 != beginning.parent_v1_state_sha256
+            || prior_original.contract_version != beginning.contract_version
+            || prior_original.model_version != beginning.model_version
+            || prior_original.model_definition_sha256 != beginning.model_definition_sha256
+            || prior_original.run_id != beginning.run_id
+            || prior_original.transaction_id != beginning.transaction_id
+            || prior_original.expected_predecessor_transaction_id
+                != beginning.expected_predecessor_transaction_id
+            || prior_original.receipt_chain_sha256 != beginning.receipt_chain_sha256
+            || prior_original.state != beginning.state
+            || prior_original.support_start_ns != beginning.support_start_ns
+            || prior_original.support_end_ns != child_support_start_ns
+            || prior_trial.support_end_ns() != child_support_start_ns
+            || child_support_end_ns != beginning.support_end_ns
+            || child_support_start_ns >= child_support_end_ns
+            || !prior_custody_join
+        {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate V2 prepared extension join",
+            ));
+        }
+        Ok(())
+    }
+
+    fn validate_unpublished_aggregate_base_prepared_beginning(
+        &self,
+        beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+        retained_trial: &openwepp_land_surface_energy::SoilThermalTrialStateV2,
+        child_support_start_ns: u128,
+        child_support_end_ns: u128,
+    ) -> Result<(), DirectV9RealConsumerError> {
+        beginning.validate().map_err(|_| {
+            DirectV9RealConsumerError::OwnerClosure("unpublished aggregate base V2 soil beginning")
+        })?;
+        openwepp_land_surface_energy::validate_soil_thermal_unpublished_trial_v2(retained_trial)
+            .map_err(|_| {
+                DirectV9RealConsumerError::OwnerClosure(
+                    "unpublished aggregate base retained V2 soil trial",
+                )
+            })?;
+        let next_transaction = self
+            .owner
+            .transaction_id
+            .0
+            .checked_add(1)
+            .map(TransactionId)
+            .ok_or(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate base V2 transaction overflow",
+            ))?;
+        if self.receipt_free_seals.is_some()
+            || beginning.owner_tag != self.owner.owner_tag
+            || beginning.schema_sha256 != self.owner.schema_sha256
+            || beginning.exact_carry_definition_sha256 != self.owner.exact_carry_definition_sha256
+            || beginning.parent_v1_state_sha256 != self.owner.parent_v1_state_sha256
+            || beginning.contract_version != self.owner.contract_version
+            || beginning.model_version != self.owner.model_version
+            || beginning.model_definition_sha256 != self.owner.model_definition_sha256
+            || beginning.run_id != self.owner.run_id
+            || beginning.state != self.owner.state
+            || beginning.receipt_chain_sha256 != self.owner.receipt_chain_sha256
+            || beginning.transaction_id != next_transaction
+            || beginning.expected_predecessor_transaction_id != Some(self.owner.transaction_id)
+            || beginning.state.last_accepted_transaction_id != Some(self.owner.transaction_id)
+            || beginning.support_start_ns != self.owner.support_start_ns
+            || retained_trial.transaction_id() != beginning.transaction_id
+            || retained_trial.predecessor_transaction_id()
+                != beginning.expected_predecessor_transaction_id
+            || retained_trial.support_start_ns() != self.owner.support_end_ns
+            || retained_trial.support_end_ns() != child_support_start_ns
+            || retained_trial.beginning_state_sha256() != &beginning.state.state_sha256
+            || retained_trial.accepted_predecessor_receipt_chain_sha256()
+                != Some(&beginning.receipt_chain_sha256)
+            || retained_trial
+                .unpublished_predecessor_trial_sha256()
+                .is_some()
+            || child_support_end_ns != beginning.support_end_ns
+            || child_support_start_ns >= child_support_end_ns
+        {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate V2 base resident/trial/support join",
+            ));
+        }
+        Ok(())
+    }
+
+    fn validate_unpublished_aggregate_base_lineage(
+        &self,
+        original: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+        prior: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+        retained_trial: &openwepp_land_surface_energy::SoilThermalTrialStateV2,
+        child_support_start_ns: u128,
+        child_support_end_ns: u128,
+    ) -> Result<(), DirectV9RealConsumerError> {
+        self.validate_unpublished_aggregate_base_prepared_beginning(
+            original,
+            retained_trial,
+            child_support_start_ns,
+            child_support_end_ns,
+        )?;
+        if original.owner_tag != prior.owner_tag
+            || original.schema_sha256 != prior.schema_sha256
+            || original.exact_carry_definition_sha256 != prior.exact_carry_definition_sha256
+            || original.parent_v1_state_sha256 != prior.parent_v1_state_sha256
+            || original.contract_version != prior.contract_version
+            || original.model_version != prior.model_version
+            || original.model_definition_sha256 != prior.model_definition_sha256
+            || original.run_id != prior.run_id
+            || original.transaction_id != prior.transaction_id
+            || original.expected_predecessor_transaction_id
+                != prior.expected_predecessor_transaction_id
+            || original.receipt_chain_sha256 != prior.receipt_chain_sha256
+            || original.state != prior.state
+            || original.support_start_ns != self.owner.support_start_ns
+            || prior.support_start_ns != self.owner.support_end_ns
+            || retained_trial.support_start_ns() != prior.support_start_ns
+            || retained_trial.support_end_ns() != prior.support_end_ns
+            || prior.support_end_ns != child_support_start_ns
+            || original.support_end_ns != child_support_end_ns
+            || child_support_start_ns >= child_support_end_ns
+            || child_support_end_ns - child_support_start_ns
+                < openwepp_land_surface_energy::MINIMUM_SUPPORT_NS
+        {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "unpublished aggregate V2 base lineage join",
+            ));
+        }
+        Ok(())
+    }
+
     fn validate(&self) -> Result<(), DirectV9RealConsumerError> {
         self.owner
             .validate()
@@ -1950,6 +1684,62 @@ impl DirectV10SoilThermalResidentV2 {
         seals: SoilThermalOrchestratorSealsV2,
     ) -> Result<Self, DirectV9RealConsumerError> {
         self.validate_prepared_beginning(beginning)?;
+        validate_soil_thermal_orchestrator_seals_v2(beginning, &candidate, &seals)?;
+        canonical_soil_thermal_v2_bundle_bytes(beginning, &candidate, &seals)?;
+        let accepted = Self {
+            owner: candidate.ending_owner,
+            receipt_free_seals: None,
+            latest_accepted: Some(DirectV10SoilThermalAcceptedCustodyV2 {
+                predecessor: beginning.clone(),
+                credit_receipt: candidate.credit_receipt,
+                expected_sources: candidate.expected_sources,
+                seals,
+            }),
+        };
+        accepted.validate()?;
+        Ok(accepted)
+    }
+
+    /// Consume a prepared-beginning proof that was validated by this module
+    /// and joined back to its exact resident/input at the install boundary.
+    /// The canonical bundle builder retains the independent receipt/seal
+    /// replay; only the already-proved prepared-beginning validation is
+    /// omitted.
+    fn accepted_from_validated_prepared_beginning(
+        &self,
+        beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+        candidate: SoilThermalAcceptedCandidateV2,
+        seals: SoilThermalOrchestratorSealsV2,
+    ) -> Result<Self, DirectV9RealConsumerError> {
+        canonical_soil_thermal_v2_bundle_bytes(beginning, &candidate, &seals)?;
+        let accepted = Self {
+            owner: candidate.ending_owner,
+            receipt_free_seals: None,
+            latest_accepted: Some(DirectV10SoilThermalAcceptedCustodyV2 {
+                predecessor: beginning.clone(),
+                credit_receipt: candidate.credit_receipt,
+                expected_sources: candidate.expected_sources,
+                seals,
+            }),
+        };
+        accepted.validate()?;
+        Ok(accepted)
+    }
+
+    fn accepted_from_unpublished_continuation(
+        &self,
+        continuation: &DirectSoilThermalUnpublishedContinuationResultV2,
+        beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+        candidate: SoilThermalAcceptedCandidateV2,
+        seals: SoilThermalOrchestratorSealsV2,
+    ) -> Result<Self, DirectV9RealConsumerError> {
+        if self.receipt_free_seals.is_some()
+            || beginning.support_start_ns == self.owner.support_end_ns
+        {
+            return self.accepted(beginning, candidate, seals);
+        }
+        self.validate_unpublished_aggregate_prepared_beginning(continuation, beginning)?;
+        continuation.validate_selected_accepted_child_without_resident(beginning, &candidate)?;
         validate_soil_thermal_orchestrator_seals_v2(beginning, &candidate, &seals)?;
         canonical_soil_thermal_v2_bundle_bytes(beginning, &candidate, &seals)?;
         let accepted = Self {
@@ -2091,6 +1881,87 @@ impl DirectV10RealConsumerShadow {
             .map_err(Into::into)
     }
 
+    pub fn prepare_next_soil_thermal_unpublished_aggregate_support_v2(
+        &self,
+        prior: &DirectSoilThermalUnpublishedContinuationResultV2,
+        child_support_start_ns: u128,
+        child_support_end_ns: u128,
+    ) -> Result<
+        openwepp_land_surface_energy::PreparedSoilThermalSupportV2,
+        DirectV10RealConsumerError,
+    > {
+        let resident = self.inner.soil_thermal.v2()?;
+        resident.validate()?;
+        let prior_original = prior.original_prepared().beginning_owner();
+        let prepared = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+            resident.owner(),
+            prior_original.transaction_id,
+            prior_original.support_start_ns,
+            child_support_end_ns,
+        )
+        .map_err(|_| {
+            DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::OwnerClosure(
+                "prepare unpublished aggregate V2 soil support",
+            ))
+        })?;
+        resident.validate_unpublished_aggregate_prepared_extension(
+            prior,
+            prepared.beginning_owner(),
+            child_support_start_ns,
+            child_support_end_ns,
+        )?;
+        Ok(prepared)
+    }
+
+    pub fn prepare_base_soil_thermal_unpublished_aggregate_support_v2(
+        &self,
+        candidate: &DirectSoilThermalCandidate,
+        child_support_start_ns: u128,
+        child_support_end_ns: u128,
+    ) -> Result<
+        openwepp_land_surface_energy::PreparedSoilThermalSupportV2,
+        DirectV10RealConsumerError,
+    > {
+        let resident = self.inner.soil_thermal.v2()?;
+        resident.validate()?;
+        if resident.receipt_free_seals.is_some() {
+            return self.prepare_next_soil_thermal_support_v2(
+                resident.owner().support_start_ns,
+                child_support_end_ns,
+            );
+        }
+        let retained_trial = candidate.v2()?;
+        let transaction_id = resident
+            .owner()
+            .transaction_id
+            .0
+            .checked_add(1)
+            .map(TransactionId)
+            .ok_or(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::OwnerClosure(
+                    "prepare unpublished aggregate base V2 transaction overflow",
+                ),
+            ))?;
+        let prepared = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+            resident.owner(),
+            transaction_id,
+            resident.owner().support_start_ns,
+            child_support_end_ns,
+        )
+        .map_err(|_| {
+            DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::OwnerClosure(
+                "prepare unpublished aggregate base V2 soil support",
+            ))
+        })?;
+        resident.validate_unpublished_aggregate_base_prepared_beginning(
+            prepared.beginning_owner(),
+            retained_trial,
+            child_support_start_ns,
+            child_support_end_ns,
+        )?;
+        Ok(prepared)
+    }
+
     /// Authenticate an unpublished sequential ending as the constitutive
     /// beginning for the next child support. The returned value is read-only
     /// physical custody: it cannot seal, accept, install, or publish an owner.
@@ -2176,7 +2047,19 @@ impl DirectV10RealConsumerShadow {
     ) -> Result<DirectSoilThermalUnpublishedContinuationV2, DirectV10RealConsumerError> {
         let resident = self.inner.soil_thermal.v2()?;
         resident.validate()?;
-        resident.validate_prepared_beginning(original_prepared.beginning_owner())?;
+        let original = original_prepared.beginning_owner();
+        if resident.receipt_free_seals.is_some()
+            || original.support_start_ns == resident.owner.support_end_ns
+        {
+            resident.validate_prepared_beginning(original)?;
+        } else {
+            resident.validate_unpublished_aggregate_base_prepared_beginning(
+                original,
+                retained_trial,
+                child_support_start_ns,
+                child_support_end_ns,
+            )?;
+        }
         let prior_prepared = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
             original_prepared.beginning_owner(),
             original_prepared.beginning_owner().transaction_id,
@@ -2243,13 +2126,40 @@ impl DirectV10RealConsumerShadow {
         .map_err(Into::into)
     }
 
+    /// Re-authenticate retained unpublished custody without reconstructing a
+    /// direct-successor prepared owner or installing any accepted state.
+    pub fn validate_soil_thermal_unpublished_continuation_custody_v2(
+        &self,
+        continuation: &DirectSoilThermalUnpublishedContinuationResultV2,
+    ) -> Result<(), DirectV10RealConsumerError> {
+        let resident = self.inner.soil_thermal.v2()?;
+        resident.validate_unpublished_continuation_prepared_beginning(
+            continuation,
+            continuation.original_prepared().beginning_owner(),
+        )?;
+        continuation.compose_accepted_outer_candidate(&self.inner.lse_configuration)?;
+        Ok(())
+    }
+
     pub fn advance_soil_thermal_unpublished_continuation_v2(
         &self,
         continuation: &DirectSoilThermalUnpublishedContinuationV2,
         child_operands: &[openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2],
     ) -> Result<DirectSoilThermalUnpublishedContinuationResultV2, DirectV10RealConsumerError> {
         let resident = self.inner.soil_thermal.v2()?;
-        resident.validate_prepared_beginning(continuation.original_prepared.beginning_owner())?;
+        let beginning = continuation.original_prepared.beginning_owner();
+        if resident.receipt_free_seals.is_some()
+            || beginning.support_start_ns == resident.owner.support_end_ns
+        {
+            resident.validate_prepared_beginning(beginning)?;
+        } else {
+            resident.validate_unpublished_aggregate_base_prepared_beginning(
+                beginning,
+                continuation.retained_trial(),
+                continuation.child_support_start_ns(),
+                continuation.child_support_end_ns(),
+            )?;
+        }
         continuation
             .advance_sequential(&self.inner.lse_configuration, child_operands)
             .map_err(Into::into)
@@ -2377,13 +2287,10 @@ impl DirectV10RealConsumerShadow {
         let authoritative_resident = authoritative_beginning.inner.soil_thermal.v2()?;
         authoritative_resident.validate()?;
         authoritative_resident.validate_prepared_beginning(prepared_beginning)?;
-        let source_transaction_id =
-            direct_soil_thermal_complete_source_transaction_v2(self).map_err(|error| {
-                DirectV10RealConsumerError::Runtime(error)
-            })?;
+        let source_transaction_id = direct_soil_thermal_complete_source_transaction_v2(self)
+            .map_err(|error| DirectV10RealConsumerError::Runtime(error))?;
         if source_transaction_id != prepared_beginning.transaction_id
-            && prepared_beginning.expected_predecessor_transaction_id
-                != Some(source_transaction_id)
+            && prepared_beginning.expected_predecessor_transaction_id != Some(source_transaction_id)
         {
             return Err(DirectV10RealConsumerError::Runtime(
                 DirectV9RealConsumerError::Identity(
@@ -2457,10 +2364,8 @@ impl DirectV10RealConsumerShadow {
         let authoritative_resident = authoritative_beginning.inner.soil_thermal.v2()?;
         authoritative_resident.validate()?;
         authoritative_resident.validate_prepared_beginning(prepared_beginning)?;
-        let source_transaction_id =
-            direct_soil_thermal_complete_source_transaction_v2(self).map_err(|error| {
-                DirectV10RealConsumerError::Runtime(error)
-            })?;
+        let source_transaction_id = direct_soil_thermal_complete_source_transaction_v2(self)
+            .map_err(|error| DirectV10RealConsumerError::Runtime(error))?;
         let authoritative_source_transaction_id =
             direct_soil_thermal_complete_source_transaction_v2(authoritative_beginning)
                 .map_err(DirectV10RealConsumerError::Runtime)?;
@@ -2471,8 +2376,8 @@ impl DirectV10RealConsumerShadow {
                 ),
             ));
         }
-        let physical_transaction_authority = crate::land_surface_energy_shadow::
-            PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+        let physical_transaction_authority =
+            crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
                 source_transaction_id,
                 prepared_beginning.transaction_id,
             )
@@ -2504,26 +2409,49 @@ impl DirectV10RealConsumerShadow {
         accepted: SoilThermalAcceptedCandidateV2,
         seals: SoilThermalOrchestratorSealsV2,
     ) -> Result<(), DirectV10RealConsumerError> {
-        let (accepted_resident, exact_accepted_noop) = self
-            .validated_authenticated_prepared_accepted_resident_v2(
-                authoritative_beginning,
-                prepared_beginning,
-                accepted,
-                seals,
-                "V2 multi-child prepared candidate beginning-or-ending join",
-            )?;
-        let expected_authority = self
-            .authenticate_soil_thermal_prepared_beginning_install_authority_v3(
-                authoritative_beginning,
-                prepared_beginning,
-            )?;
-        if authority != expected_authority {
+        let authoritative_resident = authoritative_beginning.inner.soil_thermal.v2()?;
+        let source_transaction_id = direct_soil_thermal_complete_source_transaction_v2(self)
+            .map_err(DirectV10RealConsumerError::Runtime)?;
+        let authoritative_source_transaction_id =
+            direct_soil_thermal_complete_source_transaction_v2(authoritative_beginning)
+                .map_err(DirectV10RealConsumerError::Runtime)?;
+        let expected_physical =
+            crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+                source_transaction_id,
+                prepared_beginning.transaction_id,
+            )
+            .map_err(DirectV9RealConsumerError::LandSurfaceShadow)?;
+        let source_authority_matches = matches!(
+            &authority.source_authority,
+            DirectSoilThermalPreparedBeginningSourceAuthorityV2::AuthenticatedBeginning(
+                authenticated_source_transaction_id,
+            ) if *authenticated_source_transaction_id == source_transaction_id
+                && *authenticated_source_transaction_id == authoritative_source_transaction_id
+        );
+        if authority.authoritative_resident != *authoritative_resident
+            || authority.prepared_beginning != *prepared_beginning
+            || authority.physical_transaction_authority != expected_physical
+            || !source_authority_matches
+        {
             return Err(DirectV10RealConsumerError::Runtime(
                 DirectV9RealConsumerError::Identity(
                     "V2 multi-child prepared-beginning explicit authority",
                 ),
             ));
         }
+        let accepted_resident = authority
+            .authoritative_resident
+            .accepted_from_validated_prepared_beginning(prepared_beginning, accepted, seals)?;
+        let candidate_resident = self.inner.soil_thermal.v2()?;
+        if candidate_resident != authoritative_resident && candidate_resident != &accepted_resident
+        {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::OwnerClosure(
+                    "V2 multi-child prepared candidate beginning-or-ending join",
+                ),
+            ));
+        }
+        let exact_accepted_noop = candidate_resident == &accepted_resident;
         self.install_validated_soil_thermal_resident_v2(
             accepted_resident,
             Some(
@@ -2549,9 +2477,8 @@ impl DirectV10RealConsumerShadow {
         let authoritative_resident = authoritative_beginning.inner.soil_thermal.v2()?;
         authoritative_resident.validate()?;
         authoritative_resident.validate_prepared_beginning(prepared_beginning)?;
-        let source_transaction_id =
-            direct_soil_thermal_complete_source_transaction_v2(self)
-                .map_err(DirectV10RealConsumerError::Runtime)?;
+        let source_transaction_id = direct_soil_thermal_complete_source_transaction_v2(self)
+            .map_err(DirectV10RealConsumerError::Runtime)?;
         let (authenticated_source_transaction_id, expected_non_soil_ending) =
             outer_owner_transition_authority
                 .validated_source_and_expected()
@@ -2565,8 +2492,8 @@ impl DirectV10RealConsumerShadow {
                 ),
             ));
         }
-        let physical_transaction_authority = crate::land_surface_energy_shadow::
-            PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+        let physical_transaction_authority =
+            crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
                 source_transaction_id,
                 prepared_beginning.transaction_id,
             )
@@ -2634,9 +2561,12 @@ impl DirectV10RealConsumerShadow {
         &self,
         authenticated_transition: &v11_covered::AuthenticatedCoveredV8OuterOwnerTransitionV1,
     ) -> Result<DirectSoilThermalOuterOwnerTransitionAuthorityV2, DirectV10RealConsumerError> {
-        authenticated_transition.envelope().validate().map_err(|error| {
-            DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::from(error))
-        })?;
+        authenticated_transition
+            .envelope()
+            .validate()
+            .map_err(|error| {
+                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::from(error))
+            })?;
         let authenticated_complete_owner_source_transaction_id =
             authenticated_transition.envelope().transaction_id();
         let expected_non_soil_ending = authenticated_transition.expected_non_soil_ending();
@@ -2705,10 +2635,8 @@ impl DirectV10RealConsumerShadow {
                 ),
             ));
         }
-        let source_transaction_id =
-            direct_soil_thermal_complete_source_transaction_v2(self).map_err(|error| {
-                DirectV10RealConsumerError::Runtime(error)
-            })?;
+        let source_transaction_id = direct_soil_thermal_complete_source_transaction_v2(self)
+            .map_err(|error| DirectV10RealConsumerError::Runtime(error))?;
         crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
             source_transaction_id,
             prepared_beginning.transaction_id,
@@ -2717,6 +2645,64 @@ impl DirectV10RealConsumerShadow {
             DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
                 "V2 continuation install transaction authority",
             ))
+        })
+    }
+
+    /// Authenticate an aggregate unpublished continuation while retaining
+    /// independent complete-owner source, resident predecessor, and soil
+    /// target custody. This authority cannot be constructed from an ordinary
+    /// prepared beginning or used by the generic physical installer.
+    pub fn authenticate_soil_thermal_unpublished_continuation_install_authority_v3(
+        &self,
+        authoritative_beginning: &DirectV10RealConsumerShadow,
+        continuation: &DirectSoilThermalUnpublishedContinuationResultV2,
+        prepared_beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+    ) -> Result<DirectSoilThermalPreparedBeginningInstallAuthorityV2, DirectV10RealConsumerError>
+    {
+        if continuation.original_prepared().beginning_owner() != prepared_beginning {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Identity(
+                    "V2 aggregate continuation install authority prepared owner",
+                ),
+            ));
+        }
+        let authoritative_resident = authoritative_beginning.inner.soil_thermal.v2()?;
+        authoritative_resident.validate()?;
+        authoritative_resident.validate_unpublished_continuation_prepared_beginning(
+            continuation,
+            prepared_beginning,
+        )?;
+        let source_transaction_id = direct_soil_thermal_complete_source_transaction_v2(self)
+            .map_err(DirectV10RealConsumerError::Runtime)?;
+        let authoritative_source_transaction_id =
+            direct_soil_thermal_complete_source_transaction_v2(authoritative_beginning)
+                .map_err(DirectV10RealConsumerError::Runtime)?;
+        if source_transaction_id != authoritative_source_transaction_id {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Identity(
+                    "V2 aggregate continuation authoritative source join",
+                ),
+            ));
+        }
+        let physical_transaction_authority =
+            crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+                source_transaction_id,
+                prepared_beginning.transaction_id,
+            )
+            .map_err(|_| {
+                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
+                    "V2 aggregate continuation transaction authority",
+                ))
+            })?;
+        Ok(DirectSoilThermalPreparedBeginningInstallAuthorityV2 {
+            physical_transaction_authority,
+            source_authority:
+                DirectSoilThermalPreparedBeginningSourceAuthorityV2::AuthenticatedUnpublishedContinuation {
+                    source_transaction_id,
+                    continuation: continuation.clone(),
+                },
+            authoritative_resident: authoritative_resident.clone(),
+            prepared_beginning: prepared_beginning.clone(),
         })
     }
 
@@ -2774,13 +2760,115 @@ impl DirectV10RealConsumerShadow {
                 true,
             );
         }
-        let accepted_resident =
-            authoritative_resident.accepted(prepared_beginning, accepted, seals)?;
+        let accepted_resident = authoritative_resident.accepted_from_unpublished_continuation(
+            continuation,
+            prepared_beginning,
+            accepted,
+            seals,
+        )?;
         self.install_validated_soil_thermal_resident_v2(
             accepted_resident,
             Some(DirectSoilThermalAtomicInstallAuthorityV2::Physical(
                 transaction_authority,
             )),
+            false,
+        )
+    }
+
+    pub(crate) fn install_pending_parent_finalization_soil_close_v1(
+        &mut self,
+        authoritative_beginning: &DirectV10RealConsumerShadow,
+        authority: &mut crate::snow_stage3_v11_attachment::PendingV11ParentFinalizationSoilCloseAuthorityV1,
+    ) -> Result<(), DirectV10RealConsumerError> {
+        authority.validate_install_candidate(self)?;
+        let authoritative_resident = authoritative_beginning.inner.soil_thermal.v2()?;
+        authoritative_resident.validate()?;
+        let candidate_resident = self.inner.soil_thermal.v2()?;
+        if candidate_resident != authoritative_resident {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::OwnerClosure(
+                    "pending parent-finalization soil-close resident authority",
+                ),
+            ));
+        }
+        self.validate_soil_thermal_accepted_v2_from_unpublished_continuation(
+            authority.continuation().physical_trial(),
+            authority.continuation(),
+            authority.prepared_beginning(),
+            authority.accepted(),
+        )?;
+        let accepted_resident = authoritative_resident
+            .accepted_from_unpublished_continuation(
+                authority.continuation(),
+                authority.prepared_beginning(),
+                authority.accepted().clone(),
+                authority.seals().clone(),
+            )?;
+        self.install_validated_soil_thermal_resident_v2(
+            accepted_resident,
+            Some(
+                DirectSoilThermalAtomicInstallAuthorityV2::PendingParentFinalization(authority),
+            ),
+            false,
+        )?;
+        authority.mark_consumed();
+        Ok(())
+    }
+
+    /// Install the one aggregate replay result using an authenticated
+    /// three-domain authority. The accepted resident is reconstructed only by
+    /// the unpublished-continuation replay path.
+    #[allow(clippy::too_many_arguments)]
+    pub fn install_soil_thermal_accepted_v2_from_unpublished_continuation_v3(
+        &mut self,
+        authoritative_beginning: &DirectV10RealConsumerShadow,
+        continuation: &DirectSoilThermalUnpublishedContinuationResultV2,
+        prepared_beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+        authority: DirectSoilThermalPreparedBeginningInstallAuthorityV2,
+        accepted: SoilThermalAcceptedCandidateV2,
+        seals: SoilThermalOrchestratorSealsV2,
+    ) -> Result<(), DirectV10RealConsumerError> {
+        self.validate_soil_thermal_accepted_v2_from_unpublished_continuation(
+            continuation.physical_trial(),
+            continuation,
+            prepared_beginning,
+            &accepted,
+        )?;
+        let expected_authority = self
+            .authenticate_soil_thermal_unpublished_continuation_install_authority_v3(
+                authoritative_beginning,
+                continuation,
+                prepared_beginning,
+            )?;
+        if authority != expected_authority {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Identity(
+                    "V2 aggregate continuation explicit transaction authority",
+                ),
+            ));
+        }
+        let authoritative_resident = authoritative_beginning.inner.soil_thermal.v2()?;
+        let candidate_resident = self.inner.soil_thermal.v2()?;
+        if candidate_resident != authoritative_resident {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::OwnerClosure(
+                    "V2 aggregate continuation candidate resident authority",
+                ),
+            ));
+        }
+        let accepted_resident = authoritative_resident.accepted_from_unpublished_continuation(
+            continuation,
+            prepared_beginning,
+            accepted,
+            seals,
+        )?;
+        self.install_validated_soil_thermal_resident_v2(
+            accepted_resident,
+            Some(
+                DirectSoilThermalAtomicInstallAuthorityV2::AuthenticatedPreparedBeginning(
+                    &authority,
+                ),
+            ),
             false,
         )
     }
@@ -2856,11 +2944,10 @@ fn install_v2_soil_from_authenticated_prepared_beginning_v1(
     accepted: SoilThermalAcceptedCandidateV2,
     seals: SoilThermalOrchestratorSealsV2,
 ) -> Result<(), DirectV10RealConsumerError> {
-    let authority = candidate
-        .authenticate_soil_thermal_prepared_beginning_install_authority_v3(
-            authoritative_beginning,
-            prepared_beginning,
-        )?;
+    let authority = candidate.authenticate_soil_thermal_prepared_beginning_install_authority_v3(
+        authoritative_beginning,
+        prepared_beginning,
+    )?;
     candidate.install_soil_thermal_accepted_v2_from_authenticated_beginning_v3(
         authoritative_beginning,
         prepared_beginning,
@@ -2878,5 +2965,6 @@ mod direct_v10_soil_thermal_v2_tests {
 mod direct_v10_soil_thermal_v2_v49_tests {
     include!("v10_soil_thermal_v2_v49_tests.rs");
 }
+
 #[cfg(test)]
 pub(crate) use direct_v10_soil_thermal_v2_v49_tests::migrate_shadow_to_native_v2_for_parent_test;

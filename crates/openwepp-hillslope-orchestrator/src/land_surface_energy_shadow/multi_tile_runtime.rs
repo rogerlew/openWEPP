@@ -289,6 +289,1060 @@ impl MultiTileRuntimeResult {
     pub(crate) const fn hydrology_candidate(&self) -> &UnifiedRealHydrologyCandidate {
         &self.hydrology_candidate
     }
+
+    /// Versioned, exhaustive projection of the covered-only physical tiles
+    /// retained by [`ProvisionalCoveredV8PhysicalEvaluationV1`]. This stays
+    /// test-only and returns bytes, not an owner or cloneable physical value.
+    #[cfg(test)]
+    pub(crate) fn canonical_covered_physical_projection_v1(
+        &self,
+    ) -> Result<Vec<u8>, LandSurfaceEnergyShadowError> {
+        let mut out = CanonicalCoveredPhysicalWriterV1::new(
+            b"OPENWEPP_MULTI_TILE_COVERED_PHYSICAL_PROJECTION_V1\0",
+        );
+        out.potential_request_batch(&self.potential_request_batch)?;
+        out.usize(self.potential_tiles.len());
+        for potential in &self.potential_tiles {
+            out.potential_tile(potential)?;
+        }
+        out.usize(self.finalized_tiles.len());
+        for finalized in &self.finalized_tiles {
+            out.finalized_tile(finalized)?;
+        }
+        out.usize(self.weighted_ofe_energy.len());
+        for weighted in &self.weighted_ofe_energy {
+            out.string(weighted.ofe_id.as_str());
+            out.usize(weighted.ordered_tile_ids.len());
+            for tile_id in &weighted.ordered_tile_ids {
+                out.string(tile_id.as_str());
+            }
+            out.usize(weighted.operands.len());
+            for operand in &weighted.operands {
+                out.f64s(&[
+                    operand.tile_fraction,
+                    operand.local_input_j_m2_tile,
+                    operand.local_output_j_m2_tile,
+                    operand.local_storage_change_j_m2_tile,
+                    operand.local_sum_abs_integrated_components_j_m2_tile,
+                ]);
+            }
+            out.f64s(&[
+                weighted.closure.reconstructed_residual,
+                weighted.closure.tolerance,
+            ]);
+        }
+        Ok(out.finish())
+    }
+}
+
+#[cfg(test)]
+pub(crate) fn canonical_runtime_identity_projection_v1(
+    identity: &openwepp_land_surface_energy::RuntimeTileIdentity,
+) -> Vec<u8> {
+    let mut out =
+        CanonicalCoveredPhysicalWriterV1::new(b"OPENWEPP_RUNTIME_TILE_IDENTITY_PROJECTION_V1\0");
+    out.runtime_identity(identity);
+    out.finish()
+}
+
+#[cfg(test)]
+pub(crate) fn canonical_covered_beginning_projection_v1(
+    beginning: &openwepp_land_surface_energy::CoveredColumnInputs,
+) -> Result<Vec<u8>, LandSurfaceEnergyShadowError> {
+    let mut out =
+        CanonicalCoveredPhysicalWriterV1::new(b"OPENWEPP_COVERED_COLUMN_BEGINNING_PROJECTION_V1\0");
+    out.covered_beginning(beginning)?;
+    Ok(out.finish())
+}
+
+#[cfg(test)]
+pub(crate) fn canonical_finalized_runtime_tile_projection_v1(
+    tile: &FinalizedRuntimeTile,
+) -> Result<Vec<u8>, LandSurfaceEnergyShadowError> {
+    let mut out =
+        CanonicalCoveredPhysicalWriterV1::new(b"OPENWEPP_FINALIZED_RUNTIME_TILE_PROJECTION_V1\0");
+    out.finalized_tile(tile)?;
+    Ok(out.finish())
+}
+
+#[cfg(test)]
+pub(crate) fn canonical_soil_thermal_candidate_set_projection_v1(
+    schema: &[u8],
+    candidates: &[SoilThermalTileCandidate],
+) -> Result<Vec<u8>, LandSurfaceEnergyShadowError> {
+    let mut out = CanonicalCoveredPhysicalWriterV1::new(schema);
+    out.usize(candidates.len());
+    for candidate in candidates {
+        out.soil_candidate(candidate)?;
+    }
+    Ok(out.finish())
+}
+
+#[cfg(test)]
+struct CanonicalCoveredPhysicalWriterV1 {
+    bytes: Vec<u8>,
+}
+
+#[cfg(test)]
+impl CanonicalCoveredPhysicalWriterV1 {
+    fn new(schema: &[u8]) -> Self {
+        Self {
+            bytes: schema.to_vec(),
+        }
+    }
+
+    fn finish(self) -> Vec<u8> {
+        self.bytes
+    }
+
+    fn usize(&mut self, value: usize) {
+        self.bytes.extend_from_slice(&(value as u64).to_be_bytes());
+    }
+
+    fn u128(&mut self, value: u128) {
+        self.bytes.extend_from_slice(&value.to_be_bytes());
+    }
+
+    fn string(&mut self, value: &str) {
+        self.usize(value.len());
+        self.bytes.extend_from_slice(value.as_bytes());
+    }
+
+    fn f64(&mut self, value: f64) {
+        self.bytes.extend_from_slice(&value.to_bits().to_be_bytes());
+    }
+
+    fn f64s(&mut self, values: &[f64]) {
+        self.usize(values.len());
+        for value in values {
+            self.f64(*value);
+        }
+    }
+
+    fn option_f64(&mut self, value: Option<f64>) {
+        self.bytes.push(u8::from(value.is_some()));
+        if let Some(value) = value {
+            self.f64(value);
+        }
+    }
+
+    fn option_string(&mut self, value: Option<&str>) {
+        self.bytes.push(u8::from(value.is_some()));
+        if let Some(value) = value {
+            self.string(value);
+        }
+    }
+
+    fn json<T: serde::Serialize>(&mut self, value: &T) -> Result<(), LandSurfaceEnergyShadowError> {
+        let bytes = serde_json::to_vec(value).map_err(|_| {
+            LandSurfaceEnergyShadowError::Identity("covered physical projection serialization")
+        })?;
+        self.usize(bytes.len());
+        self.bytes.extend_from_slice(&bytes);
+        Ok(())
+    }
+
+    fn runtime_identity(&mut self, value: &openwepp_land_surface_energy::RuntimeTileIdentity) {
+        self.u128(value.transaction_id.0);
+        self.u128(value.soil_thermal_transaction_id.0);
+        for field in [
+            value.lse_owner_id.as_str(),
+            value.hydrology_owner_id.as_str(),
+            value.soil_thermal_owner_id.as_str(),
+            value.vegetation_owner_id.as_str(),
+            value.biogeochemistry_owner_id.as_str(),
+            value.configuration_sha256.as_str(),
+            value.beginning_lse_state_sha256.as_str(),
+            value.beginning_hydrology_snapshot_sha256.as_str(),
+            value.beginning_soil_thermal_state_sha256.as_str(),
+            value.beginning_vegetation_state_sha256.as_str(),
+            value.beginning_biogeochemistry_state_sha256.as_str(),
+            value.ofe_id.as_str(),
+            value.tile_id.as_str(),
+            value.surface_id.as_str(),
+            value.ground_source_id.as_str(),
+        ] {
+            self.string(field);
+        }
+        self.bytes.push(match value.surface_class {
+            openwepp_land_surface_energy::SurfaceClass::BareMineralSoil => 0,
+            openwepp_land_surface_energy::SurfaceClass::ForestLitter => 1,
+        });
+        self.bytes.push(match value.ground_source_type {
+            openwepp_land_surface_energy::WaterSourceType::SurfaceLiquid => 0,
+            openwepp_land_surface_energy::WaterSourceType::LitterLiquid => 1,
+            openwepp_land_surface_energy::WaterSourceType::SoilLayerLiquid => 2,
+        });
+        self.option_string(
+            value
+                .ground_source_tile_id
+                .as_ref()
+                .map(|value| value.as_str()),
+        );
+        self.option_string(
+            value
+                .ground_soil_layer_id
+                .as_ref()
+                .map(|value| value.as_str()),
+        );
+        self.f64s(&[value.tile_fraction, value.interval_s]);
+    }
+
+    fn potential_request_batch(
+        &mut self,
+        value: &openwepp_land_surface_energy::PotentialWaterRequestBatch,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        value.validate()?;
+        self.u128(value.transaction_id.0);
+        self.string(value.beginning_lse_state_sha256.as_str());
+        self.json(&value.requests)?;
+        self.string(value.potential_signature_sha256.as_str());
+        Ok(())
+    }
+
+    fn band(&mut self, value: openwepp_land_surface_energy::BandDirectionalFluxes) {
+        self.f64s(&[
+            value.direct_vis,
+            value.diffuse_vis,
+            value.direct_nir,
+            value.diffuse_nir,
+        ]);
+    }
+
+    fn ground_water(
+        &mut self,
+        value: openwepp_land_surface_energy::GroundWaterFlux,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        self.f64s(&[
+            value.law_kg_m2_tile_s,
+            value.final_kg_m2_tile_s,
+            value.request_kg_m2_stand_ground,
+            value.finalized_use_kg_m2_stand_ground,
+            value.condensation_credit_kg_m2_stand_ground,
+        ]);
+        self.option_f64(value.authorization_kg_m2_stand_ground);
+        self.json(&value.branch)
+    }
+
+    fn source_water(
+        &mut self,
+        value: &openwepp_land_surface_energy::SourceWaterFlux,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        self.string(&value.occupancy_id);
+        self.string(&value.layer_id);
+        self.f64s(&[
+            value.law_kg_m2_tile_s,
+            value.final_kg_m2_tile_s,
+            value.request_kg_m2_stand_ground,
+            value.finalized_use_kg_m2_stand_ground,
+        ]);
+        self.option_f64(value.authorization_kg_m2_stand_ground);
+        self.json(&value.branch)
+    }
+
+    fn covered_candidate(
+        &mut self,
+        value: &openwepp_land_surface_energy::CoveredColumnCandidate,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        self.f64s(&value.solution);
+        self.f64s(&value.evaluation.raw_residuals);
+        self.f64s(&value.evaluation.normalized_residuals);
+        self.f64s(&value.evaluation.tolerances);
+        self.usize(value.evaluation.occupancies.len());
+        for occupancy in &value.evaluation.occupancies {
+            self.f64s(&occupancy.residuals);
+            self.f64s(&occupancy.tolerances);
+            self.usize(occupancy.source_water.len());
+            for source in &occupancy.source_water {
+                self.source_water(source)?;
+            }
+            self.f64s(&[
+                occupancy.canopy_sensible_w_m2,
+                occupancy.canopy_vapor_kg_m2_s,
+                occupancy.wet_vapor_kg_m2_s,
+            ]);
+            self.json(&occupancy.wet_branch)?;
+            self.f64s(&occupancy.component_temperatures_k);
+            self.f64s(&occupancy.ci_pa);
+            for branch in occupancy.gas_branches {
+                self.bytes.push(match branch {
+                    openwepp_land_surface_energy::V10LeafGasBranch::Inactive => 0,
+                    openwepp_land_surface_energy::V10LeafGasBranch::ExactZeroPar => 1,
+                    openwepp_land_surface_energy::V10LeafGasBranch::RespirationDominated => 2,
+                    openwepp_land_surface_energy::V10LeafGasBranch::PositiveAssimilation => 3,
+                });
+            }
+            self.f64s(&occupancy.gross_assimilation_umol_co2_m2_leaf_s);
+            self.f64s(&occupancy.net_assimilation_umol_co2_m2_leaf_s);
+            self.f64s(&occupancy.dark_respiration_umol_co2_m2_leaf_s);
+            self.f64s(&occupancy.emax_kg_m2_s);
+            self.json(&occupancy.liquid)?;
+            for fields in [
+                &occupancy.absorbed_shortwave_w_m2,
+                &occupancy.net_longwave_w_m2,
+                &occupancy.sensible_to_canopy_air_w_m2,
+                &occupancy.signed_vapor_to_canopy_air_kg_m2_s,
+                &occupancy.component_areas_m2_m2_tile,
+                &occupancy.component_emissive_areas_m2_m2_tile,
+                &occupancy.component_heat_conductance_m_s_tile,
+                &occupancy.component_vapor_conductance_m_s_tile,
+                &occupancy.component_surface_specific_humidity_kg_kg,
+            ] {
+                self.f64s(fields);
+            }
+            for authorization in occupancy.component_vapor_authorization_kg_m2_tile_s {
+                self.option_f64(authorization);
+            }
+        }
+        self.f64s(&[
+            value.evaluation.canopy_air_temperature_k,
+            value.evaluation.canopy_air_specific_humidity_kg_kg,
+            value.evaluation.ground_temperature_k,
+        ]);
+        self.f64s(&value.evaluation.soil_temperature_k);
+        self.ground_water(value.evaluation.ground_water)?;
+        self.f64s(&value.evaluation.ground_heat_cn_w_m2_tile);
+        self.f64s(&[
+            value.evaluation.ground_storage_w_m2_tile,
+            value.evaluation.ending_surface_enthalpy_j_m2_tile,
+        ]);
+        let longwave = &value.evaluation.whole_column_longwave;
+        self.f64s(&longwave.transmissivities);
+        self.f64s(&longwave.downward_boundaries_w_m2);
+        self.f64s(&longwave.upward_boundaries_w_m2);
+        self.usize(longwave.component_net_w_m2.len());
+        for component in &longwave.component_net_w_m2 {
+            self.f64s(component);
+        }
+        self.f64s(&[
+            longwave.ground_net_w_m2,
+            longwave.top_upward_w_m2,
+            value.evaluation.ground_canopy_release_kg_m2_tile,
+            value.evaluation.ground_stemflow_kg_m2_tile,
+            value.evaluation.ground_sensible_to_canopy_air_w_m2,
+            value.evaluation.lower_boundary_vapor_to_canopy_air_kg_m2_s,
+            value.evaluation.canopy_sensible_w_m2,
+            value.evaluation.canopy_vapor_kg_m2_s,
+            value.evaluation.sensible_to_reference_air_w_m2,
+            value.evaluation.vapor_to_reference_air_kg_m2_s,
+            value.evaluation.shared_heat_residual_w_m2,
+            value.evaluation.shared_heat_tolerance_w_m2,
+            value.evaluation.shared_vapor_residual_kg_m2_s,
+            value.evaluation.shared_vapor_tolerance_kg_m2_s,
+            value.surface_enthalpy_j_m2_tile,
+        ]);
+        self.f64s(&value.soil_temperature_k);
+        self.usize(value.root_water.len());
+        for source in &value.root_water {
+            self.source_water(source)?;
+        }
+        self.ground_water(value.ground_water)?;
+        self.bytes
+            .extend_from_slice(&value.iterations.to_be_bytes());
+        self.bytes
+            .extend_from_slice(&value.backtracking_count.to_be_bytes());
+        self.f64s(&[
+            value.step_norms.hydraulic_mm,
+            value.step_norms.beta,
+            value.step_norms.temperature_k,
+            value.step_norms.humidity_kg_kg,
+            value.step_norms.ci_pa,
+        ]);
+        Ok(())
+    }
+
+    fn open_candidate(
+        &mut self,
+        value: &AcceptedOpenSurface,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        self.f64s(&value.solution);
+        let evaluation = &value.evaluation;
+        self.f64s(&evaluation.raw_residuals);
+        self.f64s(&evaluation.normalized_residuals);
+        self.f64s(&evaluation.tolerances);
+        self.f64(evaluation.surface_temperature_k);
+        self.f64s(&evaluation.soil_temperature_k);
+        self.band(evaluation.shortwave_absorbed_w_m2_tile);
+        self.band(evaluation.shortwave_reflected_w_m2_tile);
+        self.f64s(&[
+            evaluation.longwave_net_w_m2_tile,
+            evaluation.sensible_w_m2_tile,
+            evaluation.vapor_energy_w_m2_tile,
+            evaluation.surface_storage_w_m2_tile,
+            evaluation.ending_surface_enthalpy_j_m2_tile,
+        ]);
+        self.f64s(&evaluation.ground_heat_cn_w_m2_tile);
+        self.usize(evaluation.soil_thermal.len());
+        for layer in &evaluation.soil_thermal {
+            self.string(&layer.layer_id);
+            self.f64s(&[
+                layer.incoming_cn_w_m2,
+                layer.outgoing_cn_w_m2,
+                layer.storage_w_m2,
+                layer.residual_w_m2,
+            ]);
+        }
+        self.ground_water(evaluation.water)?;
+        self.f64s(&[
+            evaluation.neutral_resistances.heat_s_m,
+            evaluation.neutral_resistances.vapor_s_m,
+        ]);
+        self.bytes
+            .push(u8::from(evaluation.bare_soil_vapor.is_some()));
+        if let Some(vapor) = evaluation.bare_soil_vapor {
+            self.f64s(&[
+                vapor.signed_flux_kg_m2_s,
+                vapor.saturation,
+                vapor.volumetric_liquid,
+                vapor.matric_potential_mm,
+                vapor.kelvin_factor,
+                vapor.theta_air,
+                vapor.dry_layer_m,
+                vapor.pore_tortuosity,
+                vapor.vapor_diffusivity_m2_s,
+                vapor.soil_resistance_s_m,
+                vapor.surface_specific_humidity_kg_kg,
+            ]);
+            self.bytes.push(u8::from(vapor.zero_flux_branch));
+        }
+        self.f64s(&[
+            value.candidate.surface_enthalpy_j_m2_tile,
+            value.candidate.surface_temperature_warm_start_k,
+        ]);
+        self.f64s(&value.candidate.soil_temperature_k);
+        self.bytes
+            .extend_from_slice(&value.iterations.to_be_bytes());
+        self.bytes
+            .extend_from_slice(&value.backtracking_count.to_be_bytes());
+        self.f64(value.step_norm);
+        Ok(())
+    }
+
+    fn soil_beginning(
+        &mut self,
+        value: &V8SoilThermalPhysicalBeginning,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        match value {
+            V8SoilThermalPhysicalBeginning::V1(beginning) => {
+                self.bytes.push(1);
+                self.json(beginning)?;
+            }
+            V8SoilThermalPhysicalBeginning::V2(beginning) => {
+                self.bytes.push(2);
+                self.json(beginning.beginning_owner())?;
+            }
+            V8SoilThermalPhysicalBeginning::V2Unpublished(beginning) => {
+                self.bytes.push(3);
+                self.json(beginning.authority().beginning_owner())?;
+                self.json(beginning.predecessor_trial().ending_state())?;
+                self.u128(beginning.transaction_id().0);
+                self.u128(beginning.support_start_ns());
+                self.u128(beginning.support_end_ns());
+            }
+        }
+        Ok(())
+    }
+
+    fn potential_tile(
+        &mut self,
+        value: &PotentialTilePhase,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        match value {
+            PotentialTilePhase::Open {
+                phase,
+                final_initial_trial,
+                soil_thermal,
+            } => {
+                self.bytes.push(0);
+                self.runtime_identity(&phase.identity);
+                self.open_surface_beginning(phase.test_support_beginning());
+                self.open_candidate(&phase.accepted)?;
+                self.potential_request_batch(&phase.request_batch)?;
+                self.bytes.push(u8::from(final_initial_trial.is_some()));
+                if let Some(trial) = final_initial_trial {
+                    self.f64s(trial);
+                }
+                self.soil_beginning(soil_thermal)?;
+            }
+            PotentialTilePhase::Stage3OpenSnow {
+                identity,
+                beginning_state,
+                soil_thermal,
+                request_batch,
+            } => {
+                self.bytes.push(1);
+                self.runtime_identity(identity);
+                self.json(beginning_state)?;
+                self.soil_beginning(soil_thermal)?;
+                self.potential_request_batch(request_batch)?;
+            }
+            PotentialTilePhase::Covered {
+                phase,
+                final_initial_trial,
+                soil_thermal,
+            } => {
+                self.bytes.push(2);
+                self.runtime_identity(phase.identity());
+                self.covered_beginning(phase.test_support_beginning())?;
+                self.covered_candidate(phase.test_support_accepted())?;
+                let roots = phase.test_support_root_identities();
+                self.usize(roots.len());
+                for ((solver_occupancy, solver_layer), root) in roots {
+                    self.string(solver_occupancy);
+                    self.string(solver_layer);
+                    self.string(&root.solver_occupancy_id);
+                    self.string(root.requesting_owner_id.as_str());
+                    self.string(root.occupancy_id.as_str());
+                    self.string(root.layer_id.as_str());
+                    self.string(root.source_id.as_str());
+                }
+                let gas_branches = phase.test_support_gas_branches();
+                self.usize(gas_branches.len());
+                for branches in gas_branches {
+                    for branch in branches {
+                        self.bytes.push(match branch {
+                            openwepp_land_surface_energy::V10LeafGasBranch::Inactive => 0,
+                            openwepp_land_surface_energy::V10LeafGasBranch::ExactZeroPar => 1,
+                            openwepp_land_surface_energy::V10LeafGasBranch::RespirationDominated => 2,
+                            openwepp_land_surface_energy::V10LeafGasBranch::PositiveAssimilation => 3,
+                        });
+                    }
+                }
+                self.potential_request_batch(phase.request_batch())?;
+                phase.potential_vegetation_operands.validate()?;
+                self.json(&phase.potential_vegetation_operands)?;
+                self.f64s(final_initial_trial);
+                self.soil_beginning(soil_thermal)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn soil_candidate(
+        &mut self,
+        value: &SoilThermalTileCandidate,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        self.string(value.owner_id.as_str());
+        self.string(value.beginning_state_sha256.as_str());
+        match &value.beginning_identity {
+            openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V1 {
+                configuration_sha256,
+                last_accepted_transaction_id,
+            } => {
+                self.bytes.push(1);
+                self.string(configuration_sha256.as_str());
+                self.bytes
+                    .push(u8::from(last_accepted_transaction_id.is_some()));
+                if let Some(transaction_id) = last_accepted_transaction_id {
+                    self.u128(transaction_id.0);
+                }
+            }
+            openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V2 {
+                owner_tag,
+                schema_sha256,
+                exact_carry_definition_sha256,
+                parent_v1_state_sha256,
+                contract_version,
+                model_version,
+                model_definition_sha256,
+                run_id,
+                configuration_sha256,
+                transaction_id,
+                expected_predecessor_transaction_id,
+                support_start_ns,
+                support_end_ns,
+                receipt_chain_sha256,
+            } => {
+                self.bytes.push(2);
+                for field in [
+                    owner_tag.as_str(),
+                    schema_sha256.as_str(),
+                    exact_carry_definition_sha256.as_str(),
+                    parent_v1_state_sha256.as_str(),
+                    model_version.as_str(),
+                    model_definition_sha256.as_str(),
+                    run_id.as_str(),
+                    configuration_sha256.as_str(),
+                    receipt_chain_sha256.as_str(),
+                ] {
+                    self.string(field);
+                }
+                self.bytes
+                    .extend_from_slice(&contract_version.to_be_bytes());
+                self.u128(transaction_id.0);
+                self.bytes
+                    .push(u8::from(expected_predecessor_transaction_id.is_some()));
+                if let Some(predecessor) = expected_predecessor_transaction_id {
+                    self.u128(predecessor.0);
+                }
+                self.u128(*support_start_ns);
+                self.u128(*support_end_ns);
+            }
+        }
+        self.string(value.ofe_id.as_str());
+        self.string(value.tile_id.as_str());
+        self.usize(value.layers.len());
+        for layer in &value.layers {
+            self.string(layer.layer_id.as_str());
+            self.f64s(&[
+                layer.beginning_enthalpy_j_m2_ofe_ground,
+                layer.ground_heat_credit_j_m2_ofe_ground,
+                layer.infiltration_enthalpy_credit_j_m2_ofe_ground,
+                layer.ending_enthalpy_j_m2_ofe_ground,
+                layer.ending_temperature_k,
+            ]);
+            self.json(&layer.beginning_enthalpy_carry)?;
+        }
+        Ok(())
+    }
+
+    fn surface_energy(&mut self, value: openwepp_land_surface_energy::SurfaceEnergyOperands) {
+        self.f64s(&[
+            value.absorbed_shortwave_w_m2,
+            value.net_longwave_w_m2,
+            value.sensible_w_m2,
+            value.signed_vapor_kg_m2_s,
+            value.surface_temperature_k,
+            value.ground_heat_w_m2,
+            value.storage_w_m2,
+        ]);
+    }
+
+    fn tile_energy(&mut self, value: &openwepp_land_surface_energy::TileEnergyOperandSet) {
+        self.surface_energy(value.surface);
+        self.f64s(&[
+            value.latent.signed_vapor_kg_m2_s,
+            value.latent.interval_s,
+            value.latent.surface_temperature_k,
+            value.latent.signed_water_amount_kg_m2,
+            value.latent.vapor_energy_j_m2,
+        ]);
+        self.usize(value.ground_heat.len());
+        for ground in &value.ground_heat {
+            self.f64s(&[ground.surface_debit_j_m2, ground.soil_credit_j_m2]);
+        }
+    }
+
+    fn covered_energy(
+        &mut self,
+        value: &openwepp_land_surface_energy::CoveredTileEnergyOperandSet,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        self.bytes.push(match value.authority {
+            openwepp_land_surface_energy::CoveredColumnAuthority::HistoricalV8 => 0,
+            openwepp_land_surface_energy::CoveredColumnAuthority::V10NonpositiveAssimilation => 1,
+            openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered => 2,
+        });
+        match &value.lower_boundary {
+            openwepp_land_surface_energy::CoveredLowerBoundaryEnergyOperands::SnowFree(ground) => {
+                self.bytes.push(0);
+                self.tile_energy(ground);
+            }
+            openwepp_land_surface_energy::CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(
+                stage3,
+            ) => {
+                self.bytes.push(1);
+                self.string(stage3.optical.ofe_id.as_str());
+                self.string(stage3.optical.tile_id.as_str());
+                self.band(stage3.optical.terminal_w_m2_tile);
+                self.band(stage3.optical.absorbed_w_m2_tile);
+                self.band(stage3.optical.reflected_w_m2_tile);
+                self.f64s(&[
+                    stage3.optical.snow_vis_albedo,
+                    stage3.optical.snow_nir_albedo,
+                    stage3.snow_temperature_k,
+                    stage3.vapor_to_canopy_air_kg_m2_tile_s,
+                    stage3.interval_s,
+                    stage3.latent_heat_j_kg,
+                    stage3.latent_energy_to_canopy_air_j_m2_tile,
+                    stage3.sensible_to_canopy_air_w_m2_tile,
+                    stage3.net_longwave_w_m2_tile,
+                    stage3.precipitation_advection_w_m2_tile,
+                    stage3.boundary_energy_w_m2_tile,
+                ]);
+                for digest in [
+                    Some(&stage3.optical.stage3_albedo_state_sha256),
+                    Some(&stage3.optical.forcing_receipt_sha256),
+                    Some(&stage3.optical.receipt_sha256),
+                    Some(&stage3.carrier_receipt_id),
+                    stage3.optical_receipt_sha256.as_ref(),
+                    stage3.reciprocal_longwave_receipt_sha256.as_ref(),
+                    stage3.final_canopy_boundary_receipt_sha256.as_ref(),
+                ] {
+                    self.option_string(digest.map(|value| value.as_str()));
+                }
+            }
+        }
+        let column = &value.column;
+        self.usize(column.occupancies.len());
+        for occupancy in &column.occupancies {
+            self.string(&occupancy.occupancy_id);
+            for surface in [
+                occupancy.sun_leaf,
+                occupancy.shade_leaf,
+                occupancy.wet_surface,
+                occupancy.dry_stem,
+            ] {
+                self.f64s(&[
+                    surface.surface_area_m2_m2_tile,
+                    surface.emissive_area_m2_m2_tile,
+                    surface.heat_conductance_m_s_tile,
+                    surface.vapor_conductance_m_s_tile,
+                    surface.surface_specific_humidity_kg_kg,
+                    surface.absorbed_shortwave_w_m2_tile,
+                    surface.net_longwave_w_m2_tile,
+                    surface.sensible_to_canopy_air_w_m2_tile,
+                    surface.signed_vapor_to_canopy_air_kg_m2_tile_s,
+                    surface.surface_temperature_k,
+                    surface.latent_heat_j_kg,
+                ]);
+                self.option_f64(surface.vapor_authorization_kg_m2_tile_s);
+            }
+        }
+        let air = column.canopy_air;
+        self.f64s(&[
+            air.rho_air_kg_m3,
+            air.cp_air_j_kg_k,
+            air.canopy_air_temperature_k,
+            air.canopy_air_specific_humidity_kg_kg,
+            air.ground_sensible_to_canopy_air_w_m2_tile,
+            air.ground_vapor_to_canopy_air_kg_m2_tile_s,
+            air.canopy_sensible_w_m2_tile,
+            air.canopy_vapor_kg_m2_tile_s,
+            air.sensible_to_reference_air_w_m2_tile,
+            air.vapor_to_reference_air_kg_m2_tile_s,
+            air.shared_heat_residual_w_m2_tile,
+            air.shared_heat_tolerance_w_m2_tile,
+            air.shared_vapor_residual_kg_m2_tile_s,
+            air.shared_vapor_tolerance_kg_m2_tile_s,
+        ]);
+        for band in [
+            column.shortwave.incident_w_m2_tile,
+            column.shortwave.top_reflected_w_m2_tile,
+            column.shortwave.ground_absorbed_by_incident_w_m2_tile,
+            column.shortwave.ground_terminal_w_m2_tile,
+            column.shortwave.ground_absorbed_w_m2_tile,
+            column.shortwave.ground_reflected_w_m2_tile,
+        ] {
+            self.band(band);
+        }
+        self.usize(column.shortwave.occupancies.len());
+        for occupancy in &column.shortwave.occupancies {
+            self.string(&occupancy.occupancy_id);
+            self.band(occupancy.sun_leaf_absorbed_w_m2_tile);
+            self.band(occupancy.shade_leaf_absorbed_w_m2_tile);
+            self.band(occupancy.stem_absorbed_w_m2_tile);
+        }
+        self.f64s(&[
+            column.longwave.atmospheric_downward_w_m2_tile,
+            column.longwave.top_upward_w_m2_tile,
+            column.longwave.ground_net_w_m2_tile,
+        ]);
+        self.f64s(&column.longwave.transmissivities);
+        self.f64s(&column.longwave.downward_boundaries_w_m2_tile);
+        self.f64s(&column.longwave.upward_boundaries_w_m2_tile);
+        self.usize(column.longwave.occupancy_component_net_w_m2_tile.len());
+        for (identity, values) in &column.longwave.occupancy_component_net_w_m2_tile {
+            self.string(identity);
+            self.f64s(values);
+        }
+        self.f64(column.stage3_lower_boundary_energy_w_m2_tile);
+        for digest in [
+            column.optical_receipt_sha256.as_ref(),
+            column.reciprocal_longwave_receipt_sha256.as_ref(),
+            column.final_canopy_boundary_receipt_sha256.as_ref(),
+        ] {
+            self.option_string(digest.map(|value| value.as_str()));
+        }
+        Ok(())
+    }
+
+    fn final_covered_tile(
+        &mut self,
+        value: &openwepp_land_surface_energy::FinalCoveredTileCandidate,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        self.u128(value.transaction_id.0);
+        self.runtime_identity(&value.identity);
+        self.covered_candidate(&value.final_solver_candidate)?;
+        self.json(&value.water_protocol)?;
+        self.json(&value.ending_tile_state_pre_ingress)?;
+        self.soil_candidate(&value.soil_thermal)?;
+        self.covered_energy(&value.energy_operands)?;
+        self.json(&value.diagnostics)?;
+        self.json(&value.rollback_hashes)?;
+        value.vegetation_operands.validate()?;
+        self.json(&value.vegetation_operands)?;
+        Ok(())
+    }
+
+    fn finalized_tile(
+        &mut self,
+        value: &FinalizedRuntimeTile,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        match value {
+            FinalizedRuntimeTile::Open(value) => {
+                self.bytes.push(0);
+                self.u128(value.transaction_id.0);
+                self.runtime_identity(&value.identity);
+                self.open_candidate(&value.final_solver_candidate)?;
+                self.json(&value.water_protocol)?;
+                self.json(&value.ending_tile_state_pre_ingress)?;
+                self.soil_candidate(&value.soil_thermal)?;
+                self.tile_energy(&value.energy_operands);
+                self.json(&value.diagnostics)?;
+                self.json(&value.rollback_hashes)?;
+            }
+            FinalizedRuntimeTile::Stage3OpenSnow {
+                identity,
+                ending_tile_state_pre_ingress,
+                soil_thermal,
+                water_protocol,
+                rollback_hashes,
+            } => {
+                self.bytes.push(1);
+                self.runtime_identity(identity);
+                self.json(ending_tile_state_pre_ingress)?;
+                self.soil_candidate(soil_thermal)?;
+                self.json(water_protocol)?;
+                self.json(rollback_hashes)?;
+            }
+            FinalizedRuntimeTile::Covered(value) => {
+                self.bytes.push(2);
+                self.final_covered_tile(value)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn covered_beginning(
+        &mut self,
+        value: &openwepp_land_surface_energy::CoveredColumnInputs,
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        self.bytes.push(match value.authority {
+            openwepp_land_surface_energy::CoveredColumnAuthority::HistoricalV8 => 0,
+            openwepp_land_surface_energy::CoveredColumnAuthority::V10NonpositiveAssimilation => 1,
+            openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered => 2,
+        });
+        self.f64s(&[
+            value.interval_s,
+            value.tile_fraction,
+            value.pressure_pa,
+            value.air_temperature_k,
+            value.air_specific_humidity_kg_kg,
+            value.reference_wind_m_s,
+            value.atmospheric_downward_longwave_w_m2,
+            value.ca_pa,
+            value.canopy_to_atmosphere_heat_resistance_s_m,
+            value.canopy_to_atmosphere_vapor_resistance_s_m,
+            value.latent_heat_j_kg,
+            value.top_rain_kg_m2_tile,
+            value.under_canopy_geometry.canopy_height_m,
+            value.under_canopy_geometry.canopy_roughness_m,
+            value.under_canopy_geometry.reference_height_m,
+            value.under_canopy_geometry.leaf_area_index,
+        ]);
+        self.open_surface_beginning(&value.ground);
+        self.usize(value.occupancies.len());
+        for occupancy in &value.occupancies {
+            self.string(&occupancy.occupancy_id);
+            self.f64s(&[
+                occupancy.medlyn_g1_kpa_sqrt,
+                occupancy.g0_umol_m2_s,
+                occupancy.sun.leaf_area_m2_m2_tile,
+                occupancy.sun.absorbed_shortwave_w_m2_tile,
+                occupancy.sun.absorbed_par_w_m2_leaf,
+                occupancy.sun.vcmax25,
+                occupancy.sun.jmax25,
+                occupancy.sun.rd25,
+                occupancy.shade.leaf_area_m2_m2_tile,
+                occupancy.shade.absorbed_shortwave_w_m2_tile,
+                occupancy.shade.absorbed_par_w_m2_leaf,
+                occupancy.shade.vcmax25,
+                occupancy.shade.jmax25,
+                occupancy.shade.rd25,
+                occupancy.biochemical.ha_vcmax_j_mol,
+                occupancy.biochemical.hd_vcmax_j_mol,
+                occupancy.biochemical.entropy_vcmax_j_mol_k,
+                occupancy.biochemical.ha_jmax_j_mol,
+                occupancy.biochemical.hd_jmax_j_mol,
+                occupancy.biochemical.entropy_jmax_j_mol_k,
+                occupancy.biochemical.kc25_pa,
+                occupancy.biochemical.ha_kc_j_mol,
+                occupancy.biochemical.ko25_pa,
+                occupancy.biochemical.ha_ko_j_mol,
+                occupancy.biochemical.gamma25_pa,
+                occupancy.biochemical.ha_gamma_j_mol,
+                occupancy.biochemical.oxygen_partial_pressure_pa,
+                occupancy.biochemical.tp_vcmax_ratio,
+                occupancy.biochemical.electron_quantum_yield,
+                occupancy.biochemical.par_photon_umol_per_j,
+                occupancy.biochemical.electron_curvature,
+                occupancy.biochemical.ac_aj_curvature,
+                occupancy.biochemical.ag_ap_curvature,
+                occupancy.stem_area_m2_m2_tile,
+                occupancy.stem_absorbed_shortwave_w_m2_tile,
+                occupancy.beginning_canopy_liquid_kg_m2_tile,
+                occupancy.liquid_interception_fraction,
+                occupancy.liquid_capacity_kg_m2_plant,
+                occupancy.stemflow_fraction,
+                occupancy.gb_leaf_m_s,
+                occupancy.gb_wet_m_s,
+                occupancy.gb_stem_m_s,
+                occupancy.lai,
+                occupancy.sai,
+                occupancy.clumping_index,
+                occupancy.k1_sun_max_s1,
+                occupancy.k1_shade_max_s1,
+                occupancy.k2_max,
+                occupancy.k3_max_m_s,
+                occupancy.height_m,
+                occupancy.root_to_leaf_area,
+                occupancy.p50_leaf_mm,
+                occupancy.p50_xylem_mm,
+                occupancy.p50_root_mm,
+                occupancy.vulnerability_exponent,
+            ]);
+            self.usize(occupancy.root_layers.len());
+            for root in &occupancy.root_layers {
+                self.string(&root.layer_id);
+                self.bytes.push(u8::from(root.accessible));
+                self.bytes.push(u8::from(root.frozen));
+                self.f64s(&[
+                    root.root_fraction,
+                    root.soil_potential_mm,
+                    root.gravity_head_mm,
+                    root.z3_m,
+                    root.dxroot_m,
+                    root.ksoil_m2_s,
+                ]);
+            }
+        }
+        for band in [
+            value.shortwave.incident_w_m2_tile,
+            value.shortwave.top_reflected_w_m2_tile,
+            value.shortwave.ground_absorbed_by_incident_w_m2_tile,
+        ] {
+            self.band(band);
+        }
+        self.usize(value.shortwave.occupancies.len());
+        for occupancy in &value.shortwave.occupancies {
+            self.string(&occupancy.occupancy_id);
+            self.band(occupancy.sun_leaf_absorbed_w_m2_tile);
+            self.band(occupancy.shade_leaf_absorbed_w_m2_tile);
+            self.band(occupancy.stem_absorbed_w_m2_tile);
+        }
+        self.bytes
+            .push(u8::from(value.stage3_lower_boundary.is_some()));
+        if let Some(boundary) = &value.stage3_lower_boundary {
+            self.stage3_lower_boundary(boundary);
+        }
+        self.bytes.push(u8::from(value.stage3_optical.is_some()));
+        if let Some(optical) = &value.stage3_optical {
+            self.stage3_optical(optical);
+        }
+        Ok(())
+    }
+
+    fn stage3_lower_boundary(
+        &mut self,
+        value: &openwepp_land_surface_energy::Stage3SnowCoveredLowerBoundary,
+    ) {
+        self.f64s(&[
+            value.snow_temperature_k,
+            value.latent_heat_j_kg,
+            value.sensible_to_canopy_air_w_m2,
+            value.vapor_to_canopy_air_kg_m2_s,
+            value.net_longwave_w_m2,
+            value.shortwave_absorbed_w_m2,
+            value.precipitation_advection_w_m2,
+            value.snow_vis_albedo,
+            value.snow_nir_albedo,
+        ]);
+        for digest in [
+            Some(&value.carrier_receipt_id),
+            Some(&value.stage3_albedo_state_sha256),
+            Some(&value.forcing_receipt_sha256),
+            value.optical_receipt_sha256.as_ref(),
+            value.reciprocal_longwave_receipt_sha256.as_ref(),
+            value.final_canopy_boundary_receipt_sha256.as_ref(),
+        ] {
+            self.option_string(digest.map(|digest| digest.as_str()));
+        }
+    }
+
+    fn stage3_optical(
+        &mut self,
+        value: &openwepp_land_surface_energy::Stage3SnowOpticalBoundaryReceiptV1,
+    ) {
+        self.string(value.ofe_id.as_str());
+        self.string(value.tile_id.as_str());
+        self.band(value.terminal_w_m2_tile);
+        self.band(value.absorbed_w_m2_tile);
+        self.band(value.reflected_w_m2_tile);
+        self.f64s(&[value.snow_vis_albedo, value.snow_nir_albedo]);
+        for digest in [
+            &value.stage3_albedo_state_sha256,
+            &value.forcing_receipt_sha256,
+            &value.receipt_sha256,
+        ] {
+            self.string(digest.as_str());
+        }
+    }
+
+    fn open_surface_beginning(&mut self, value: &openwepp_land_surface_energy::OpenSurfaceProblem) {
+        self.f64s(&[
+            value.interval_s,
+            value.tile_fraction,
+            value.surface_vis_albedo,
+            value.surface_nir_albedo,
+            value.surface_emissivity,
+            value.surface_depth_m,
+            value.surface_conductivity_w_m_k,
+            value.surface_dry_heat_capacity_j_m2_k,
+            value.open_geometry.reference_height_m,
+            value.open_geometry.roughness_momentum_m,
+            value.open_geometry.roughness_heat_m,
+            value.open_geometry.roughness_vapor_m,
+            value.air_temperature_k,
+            value.air_specific_humidity_kg_kg,
+            value.air_pressure_pa,
+            value.reference_wind_m_s,
+            value.atmospheric_downward_longwave_w_m2,
+            value.surface_liquid_kg_m2_tile,
+            value.surface_enthalpy_j_m2_tile,
+            value.surface_temperature_warm_start_k,
+        ]);
+        self.band(value.terminal_shortwave_w_m2_tile);
+        self.bytes.push(match value.class {
+            openwepp_land_surface_energy::SurfaceClassKind::BareMineralSoil => 0,
+            openwepp_land_surface_energy::SurfaceClassKind::ForestLitter => 1,
+        });
+        self.bytes.push(match value.storage_branch {
+            openwepp_land_surface_energy::SurfaceStorageBranch::FiniteCapacity => 0,
+            openwepp_land_surface_energy::SurfaceStorageBranch::EquilibriumZero => 1,
+        });
+        self.option_f64(value.litter_capacity_kg_m2_tile);
+        self.bytes.push(u8::from(value.bare_soil.is_some()));
+        if let Some(bare) = value.bare_soil {
+            self.f64s(&[
+                bare.top_layer_liquid_kg_m2,
+                bare.top_layer_ice_kg_m2,
+                bare.porosity,
+                bare.saturated_matric_potential_mm,
+                bare.clapp_hornberger_b,
+                bare.theta_initial,
+            ]);
+        }
+        self.usize(value.soil_nodes.len());
+        for node in &value.soil_nodes {
+            self.string(&node.layer_id);
+            self.f64s(&[
+                node.depth_m,
+                node.conductivity_w_m_k,
+                node.heat_capacity_j_m2_k,
+                node.beginning_temperature_k,
+            ]);
+        }
+    }
 }
 
 /// Execute all strictly projected open and covered tiles against one real
@@ -369,6 +1423,8 @@ fn execute_multi_tile_runtime_with_mode(
     profile_record("physical topology", topology_started);
     let potential_started = profile_start();
     let potential_phases = solve_all_potential(projected_tiles, failure_hook)?;
+    #[cfg(test)]
+    crate::v9_real_consumer_shadow::record_snow_free_vapor_operation_v1();
     profile_record("physical potential", potential_started);
     let request_started = profile_start();
     let request_batch = combined_request_batch(&potential_phases)?;
@@ -403,6 +1459,8 @@ fn execute_multi_tile_runtime_with_mode(
                 failure_hook,
                 pending_hook,
             )?;
+            #[cfg(test)]
+            crate::v9_real_consumer_shadow::record_snow_free_phase_operation_v1();
             profile_record("physical final tile", final_tile_started);
             let protocol_started = profile_start();
             let protocol = combined_protocol(&request_batch, authorizations, &final_tiles)?;

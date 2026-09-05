@@ -76,102 +76,19 @@ fn validate_restart_adaptive_trial_grid_v2(
     Ok(())
 }
 
-#[cfg(test)]
-mod restart_adaptive_trial_grid_tests {
-    use super::*;
-
-    const MINIMUM_SUPPORT_NS: u128 = 60_000_000_000;
-    const PARENT_END_NS: u128 = 1_800_000_000_000;
-
-    fn parent_support() -> TimeSupport {
-        TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(PARENT_END_NS)).unwrap()
-    }
-
-    #[test]
-    fn exact_floor_count_and_cursor_cross_join_rejects_poisons() {
-        let parent = parent_support();
-        let cursor = ModelTimeNs::new(600_000_000_000);
-        validate_restart_adaptive_trial_grid_v2(
-            DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
-            20,
-            MINIMUM_SUPPORT_NS,
-            parent,
-            cursor,
-        )
-        .unwrap();
-
-        // Count poison.
-        assert!(
-            validate_restart_adaptive_trial_grid_v2(
-                DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
-                0,
-                MINIMUM_SUPPORT_NS,
-                parent,
-                cursor,
-            )
-            .is_err()
-        );
-        // Minimum-support substitution poison: the previous 600-ms authority
-        // cannot be interpreted as a count on the exact 60-second grid.
-        assert!(
-            validate_restart_adaptive_trial_grid_v2(
-                DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
-                20,
-                600_000_000,
-                parent,
-                cursor,
-            )
-            .is_err()
-        );
-        // Cursor divisibility poison.
-        assert!(
-            validate_restart_adaptive_trial_grid_v2(
-                DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
-                20,
-                MINIMUM_SUPPORT_NS,
-                parent,
-                ModelTimeNs::new(cursor.get() + 1),
-            )
-            .is_err()
-        );
-        // Proposal range poison: 21 quanta do not fit the 20-quanta parent
-        // remainder at this cursor.
-        assert!(
-            validate_restart_adaptive_trial_grid_v2(
-                DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
-                21,
-                MINIMUM_SUPPORT_NS,
-                parent,
-                cursor,
-            )
-            .is_err()
-        );
-        // Parent range poison remains invalid even for a posture retaining the
-        // just-executed proposal rather than a next proposal.
-        assert!(
-            validate_restart_adaptive_trial_grid_v2(
-                DirectSnowStage3V11InterruptionPostureV2::AfterTerminalEvent,
-                31,
-                MINIMUM_SUPPORT_NS,
-                parent,
-                cursor,
-            )
-            .is_err()
-        );
-    }
-
-    #[test]
-    fn endpoint_event_posture_retains_nonzero_completed_trial_count() {
-        validate_restart_adaptive_trial_grid_v2(
-            DirectSnowStage3V11InterruptionPostureV2::AfterTerminalReceiver,
-            30,
-            MINIMUM_SUPPORT_NS,
-            parent_support(),
-            ModelTimeNs::new(PARENT_END_NS),
-        )
-        .unwrap();
-    }
+/// Restart-only access to the canonical represented-ice classifier. Keeping
+/// the predicate in the orchestrator prevents persisted admission from
+/// inventing a second snow-domain threshold.
+#[cfg(feature = "persisted-restart-v1")]
+#[must_use]
+pub fn restart_authority_stage3_has_represented_ice_v2(
+    state: &DirectSnowStage3PersistentState,
+) -> bool {
+    crate::hydrology::stage3_has_represented_ice(state)
 }
+
+#[cfg(test)]
+include!("snow_stage3_v11_restart_tests.rs");
 
 enum PreparedDayExecutionOutcomeV2 {
     Complete(DirectSnowStage3V11ParentCandidate),
@@ -218,6 +135,45 @@ impl DirectSnowStage3V11InProgressExecutionV2 {
     #[must_use]
     pub const fn support_current(&self) -> Option<&DirectSnowStage3V11CommittedState> {
         self.support_current.as_ref()
+    }
+
+    /// Validate the exact frozen-litter/WB14 parent posture at a durable
+    /// interruption boundary. Represented snow owns the atmospheric ground
+    /// surface and therefore leaves any pre-existing WB14 parent inactive and
+    /// byte-retained; either retained or absent custody is valid there. A
+    /// snow-free positive partial parent requires the working parent, while
+    /// exact snow-free parent completion requires it to have been finalized
+    /// and cleared.
+    #[cfg(feature = "persisted-restart-v1")]
+    pub fn restart_authority_validate_wb14_parent_posture_v2(
+        &self,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        let current =
+            self.support_current
+                .as_ref()
+                .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                    "restart WB14 posture current support owner",
+                ))?;
+        let represented_snow = current
+            .stage3_by_lane
+            .values()
+            .any(crate::hydrology::stage3_has_represented_ice);
+        let parent_complete = current.coupled_clock.accepted_until()
+            == current.coupled_clock.parent_support().end_ns();
+        let has_wb14_parent = current
+            .real_consumer
+            .restart_authority_wb14_parent_canonical_bytes()
+            .map_err(|_| {
+                DirectSnowStage3V11AttachmentError::Identity("restart WB14 parent canonical bytes")
+            })?
+            .is_some();
+        let invalid_snow_free_posture = !represented_snow && has_wb14_parent == parent_complete;
+        if invalid_snow_free_posture {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "restart represented-snow/WB14 parent posture",
+            ));
+        }
+        Ok(())
     }
 
     /// Admit the one posture where the coupled clock has accepted the
@@ -323,6 +279,7 @@ struct Stage3CoupledSubslabReceiptWireV2 {
     wb14_replay_beginning_owner_set_sha256: Digest32,
     wb14_child_receipt_set_sha256: Digest32,
     wb14_parent_receipt_set_sha256: Option<Digest32>,
+    wb14_ofe_topology: Vec<OfeId>,
     wb14_child_replay_bytes: Vec<u8>,
     wb14_parent_replay_bytes: Option<Vec<u8>>,
     destination_receipts: Vec<Stage3DestinationBoundaryReceiptWireV2>,
@@ -351,6 +308,7 @@ impl Stage3CoupledSubslabReceiptWireV2 {
             wb14_replay_beginning_owner_set_sha256: value.wb14_replay_beginning_owner_set_sha256,
             wb14_child_receipt_set_sha256: value.wb14_child_receipt_set_sha256,
             wb14_parent_receipt_set_sha256: value.wb14_parent_receipt_set_sha256,
+            wb14_ofe_topology: value.wb14_ofe_topology.clone(),
             wb14_child_replay_bytes: value.wb14_child_replay_bytes.clone(),
             wb14_parent_replay_bytes: value.wb14_parent_replay_bytes.clone(),
             destination_receipts: value
@@ -408,6 +366,7 @@ impl Stage3CoupledSubslabReceiptWireV2 {
             wb14_replay_beginning_owner_set_sha256: self.wb14_replay_beginning_owner_set_sha256,
             wb14_child_receipt_set_sha256: self.wb14_child_receipt_set_sha256,
             wb14_parent_receipt_set_sha256: self.wb14_parent_receipt_set_sha256,
+            wb14_ofe_topology: self.wb14_ofe_topology,
             wb14_child_replay_bytes: self.wb14_child_replay_bytes,
             wb14_parent_replay_bytes: self.wb14_parent_replay_bytes,
             destination_receipts,
@@ -510,20 +469,36 @@ pub fn restart_authority_decode_in_progress_metadata_v2(
     let adaptive_trial_quanta = wire.adaptive_trial_quanta.parse::<u128>().map_err(|_| {
         DirectSnowStage3V11AttachmentError::Identity("restart adaptive trial quanta")
     })?;
-    if wire.support_index >= wire.prepared_supports.len()
-        || wire.day_index != wire.prepared_supports[0].day_index
-        || wire
-            .prepared_supports
-            .iter()
-            .enumerate()
-            .any(|(index, support)| {
-                support.day_index != wire.day_index || support.support_index != index
-            })
-        || support_current.is_none()
-        || adaptive_trial_quanta == 0
+    if wire.support_index >= wire.prepared_supports.len() {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "restart in-progress support-index range",
+        ));
+    }
+    if wire.day_index != wire.prepared_supports[0].day_index {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "restart in-progress day-index join",
+        ));
+    }
+    if wire
+        .prepared_supports
+        .iter()
+        .enumerate()
+        .any(|(index, support)| {
+            support.day_index != wire.day_index || support.support_index != index
+        })
     {
         return Err(DirectSnowStage3V11AttachmentError::Identity(
-            "restart in-progress support join",
+            "restart in-progress prepared-support order",
+        ));
+    }
+    if support_current.is_none() {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "restart in-progress current support owner",
+        ));
+    }
+    if adaptive_trial_quanta == 0 {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "restart in-progress adaptive trial quanta",
         ));
     }
     let coupled_subslabs = wire
@@ -1401,6 +1376,7 @@ struct Stage3CoupledSubslabReceiptWireRefV2<'a> {
     wb14_replay_beginning_owner_set_sha256: &'a Digest32,
     wb14_child_receipt_set_sha256: &'a Digest32,
     wb14_parent_receipt_set_sha256: &'a Option<Digest32>,
+    wb14_ofe_topology: &'a [OfeId],
     wb14_child_replay_bytes: &'a [u8],
     wb14_parent_replay_bytes: &'a Option<Vec<u8>>,
     destination_receipts: Stage3DestinationBoundaryReceiptsWireRefV2<'a>,
@@ -1411,16 +1387,13 @@ struct Stage3CoupledSubslabReceiptWireRefV2<'a> {
     post_support_liquid_output_set_sha256: &'a Option<Digest32>,
     post_support_liquid_mass_kg_m2_bits: &'a Option<u64>,
     post_support_liquid_enthalpy_j_m2_bits: &'a Option<u64>,
-    post_support_liquid_surface_beginning_state:
-        &'a Option<crate::DirectSurfaceLiquidOwnedState>,
+    post_support_liquid_surface_beginning_state: &'a Option<crate::DirectSurfaceLiquidOwnedState>,
     post_support_liquid_surface_ending_state: &'a Option<crate::DirectSurfaceLiquidOwnedState>,
     owner_join: &'a CoveredParentOwnerJoinReceiptV1,
     receipt_sha256: &'a Digest32,
 }
 
-impl<'a> From<&'a Stage3CoupledSubslabReceiptV1>
-    for Stage3CoupledSubslabReceiptWireRefV2<'a>
-{
+impl<'a> From<&'a Stage3CoupledSubslabReceiptV1> for Stage3CoupledSubslabReceiptWireRefV2<'a> {
     fn from(value: &'a Stage3CoupledSubslabReceiptV1) -> Self {
         Self {
             parent_support: &value.parent_support,
@@ -1428,10 +1401,10 @@ impl<'a> From<&'a Stage3CoupledSubslabReceiptV1>
             selected_upper_bound_s_bits: value.selected_upper_bound_s_bits,
             accepted_slab_sha256: &value.accepted_slab_sha256,
             wb14_replay_trial_sha256: &value.wb14_replay_trial_sha256,
-            wb14_replay_beginning_owner_set_sha256: &value
-                .wb14_replay_beginning_owner_set_sha256,
+            wb14_replay_beginning_owner_set_sha256: &value.wb14_replay_beginning_owner_set_sha256,
             wb14_child_receipt_set_sha256: &value.wb14_child_receipt_set_sha256,
             wb14_parent_receipt_set_sha256: &value.wb14_parent_receipt_set_sha256,
+            wb14_ofe_topology: &value.wb14_ofe_topology,
             wb14_child_replay_bytes: &value.wb14_child_replay_bytes,
             wb14_parent_replay_bytes: &value.wb14_parent_replay_bytes,
             destination_receipts: Stage3DestinationBoundaryReceiptsWireRefV2(
@@ -1443,8 +1416,7 @@ impl<'a> From<&'a Stage3CoupledSubslabReceiptV1>
             post_support_liquid_receiver_event: &value.post_support_liquid_receiver_event,
             post_support_liquid_output_set_sha256: &value.post_support_liquid_output_set_sha256,
             post_support_liquid_mass_kg_m2_bits: &value.post_support_liquid_mass_kg_m2_bits,
-            post_support_liquid_enthalpy_j_m2_bits: &value
-                .post_support_liquid_enthalpy_j_m2_bits,
+            post_support_liquid_enthalpy_j_m2_bits: &value.post_support_liquid_enthalpy_j_m2_bits,
             post_support_liquid_surface_beginning_state: &value
                 .post_support_liquid_surface_beginning_state,
             post_support_liquid_surface_ending_state: &value
@@ -1629,9 +1601,7 @@ fn stage3_v11_parent_receipt_archive_digest_borrowed_v3(
             version: 3,
             receipt,
             support_liquid_custody_v2: Stage3SupportLiquidCustodyWireRefV3(coupled_subslabs),
-            terminal_liquid_custody_v2: Stage3TerminalLiquidCustodyWireRefV3(
-                terminal_event_groups,
-            ),
+            terminal_liquid_custody_v2: Stage3TerminalLiquidCustodyWireRefV3(terminal_event_groups),
         },
     )
     .map_err(|_| {
@@ -1669,9 +1639,7 @@ pub(crate) fn write_stage3_v11_parent_receipt_canonical_v3(
         schema: "OPENWEPP_SNOW_STAGE3_V11_PARENT_RECEIPT_ARCHIVE_V3",
         version: 3,
         receipt: &receipt,
-        support_liquid_custody_v2: Stage3SupportLiquidCustodyWireRefV3(
-            &value.coupled_subslabs,
-        ),
+        support_liquid_custody_v2: Stage3SupportLiquidCustodyWireRefV3(&value.coupled_subslabs),
         terminal_liquid_custody_v2: Stage3TerminalLiquidCustodyWireRefV3(
             &value.terminal_event_groups,
         ),
@@ -1842,12 +1810,8 @@ struct Stage3V11SupportLiquidCustodyStateWireV3 {
     in_progress_support_owner_joins: Option<Vec<Option<Stage3SupportLiquidCustodyV2>>>,
     committed_terminal: Vec<Vec<Option<Stage3TerminalLiquidCustodyV2>>>,
     pending_candidate_terminal: Option<Vec<Vec<Option<Stage3TerminalLiquidCustodyV2>>>>,
-    in_progress_day_candidate_terminal: Option<
-        Vec<Vec<Option<Stage3TerminalLiquidCustodyV2>>>,
-    >,
-    in_progress_support_current_terminal: Option<
-        Vec<Vec<Option<Stage3TerminalLiquidCustodyV2>>>,
-    >,
+    in_progress_day_candidate_terminal: Option<Vec<Vec<Option<Stage3TerminalLiquidCustodyV2>>>>,
+    in_progress_support_current_terminal: Option<Vec<Vec<Option<Stage3TerminalLiquidCustodyV2>>>>,
     in_progress_terminal_event_groups: Option<Vec<Option<Stage3TerminalLiquidCustodyV2>>>,
     in_progress_support_event_groups: Option<Vec<Option<Stage3TerminalLiquidCustodyV2>>>,
     payload_sha256: Digest32,
@@ -1929,9 +1893,7 @@ fn validate_terminal_liquid_custody_set_v3(
             && index.checked_add(1) == Some(groups.len())
             && requires_custody
             && group.terminal_receiver_custody_v2().is_none();
-        if group.terminal_receiver_custody_v2().is_some() != requires_custody
-            && !allowed_pending
-        {
+        if group.terminal_receiver_custody_v2().is_some() != requires_custody && !allowed_pending {
             return Err(DirectSnowStage3V11AttachmentError::Identity(
                 "restart V3 terminal-liquid custody required posture",
             ));
@@ -2075,9 +2037,7 @@ pub fn restart_authority_encode_support_liquid_custody_state_v3(
             })
             .transpose()?,
         in_progress_terminal_event_groups: in_progress
-            .map(|execution| {
-                project_terminal_liquid_custody_v3(&execution.terminal_event_groups)
-            })
+            .map(|execution| project_terminal_liquid_custody_v3(&execution.terminal_event_groups))
             .transpose()?,
         in_progress_support_event_groups: in_progress
             .map(|execution| project_terminal_liquid_custody_v3(&execution.support_event_groups))
@@ -2134,12 +2094,13 @@ fn reseal_support_liquid_custody_poison_v3(
         predecessor = receipt.receipt_sha256;
     }
     custody.receiver_receipt_set_sha256 = Digest32::from_bytes(
-        crate::zero_duration_snow_liquid_receipt_set_sha256(&custody.receiver_receipts)
-            .map_err(|_| {
+        crate::zero_duration_snow_liquid_receipt_set_sha256(&custody.receiver_receipts).map_err(
+            |_| {
                 DirectSnowStage3V11AttachmentError::Identity(
                     "restart V3 support-liquid poison receipt-set reseal",
                 )
-            })?,
+            },
+        )?,
     );
     custody.custody_sha256 = Digest32::zero();
     custody.custody_sha256 = custody.reconstructed_digest()?;
@@ -2154,17 +2115,13 @@ pub fn restart_authority_poison_support_liquid_custody_state_v3(
     bytes: &[u8],
     poison: RestartAuthoritySupportLiquidCustodyPoisonV3,
 ) -> Result<Vec<u8>, DirectSnowStage3V11AttachmentError> {
-    let mut wire: Stage3V11SupportLiquidCustodyStateWireV3 =
-        serde_json::from_slice(bytes).map_err(|_| {
+    let mut wire: Stage3V11SupportLiquidCustodyStateWireV3 = serde_json::from_slice(bytes)
+        .map_err(|_| {
             DirectSnowStage3V11AttachmentError::Identity(
                 "restart V3 support-liquid custody poison decoding",
             )
         })?;
-    let mut custody = wire
-        .committed
-        .iter_mut()
-        .flatten()
-        .find_map(Option::as_mut);
+    let mut custody = wire.committed.iter_mut().flatten().find_map(Option::as_mut);
     if custody.is_none() {
         custody = wire
             .pending_candidate
@@ -2222,27 +2179,23 @@ pub fn restart_authority_poison_support_liquid_custody_state_v3(
             .ok_or(DirectSnowStage3V11AttachmentError::Identity(
                 "restart V3 support-liquid custody poison LSE tile",
             ))?;
-        tile.surface_enthalpy_j_m2_tile_ground = f64::from_bits(
-            tile.surface_enthalpy_j_m2_tile_ground.to_bits() ^ 1,
-        );
+        tile.surface_enthalpy_j_m2_tile_ground =
+            f64::from_bits(tile.surface_enthalpy_j_m2_tile_ground.to_bits() ^ 1);
     } else {
-        let receipt = custody
-            .receiver_receipts
-            .first_mut()
-            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+        let receipt = custody.receiver_receipts.first_mut().ok_or(
+            DirectSnowStage3V11AttachmentError::Identity(
                 "restart V3 support-liquid custody poison receipt",
-            ))?;
+            ),
+        )?;
         match poison {
             RestartAuthoritySupportLiquidCustodyPoisonV3::RunoffRouteTopologySubstitution => {
-                receipt.recipient_ofe_id = OfeId::try_new(format!(
-                    "{}-restart-poison",
-                    receipt.recipient_ofe_id
-                ))
-                .map_err(|_| {
-                    DirectSnowStage3V11AttachmentError::Identity(
-                        "restart V3 support-liquid custody poison route identity",
-                    )
-                })?;
+                receipt.recipient_ofe_id =
+                    OfeId::try_new(format!("{}-restart-poison", receipt.recipient_ofe_id))
+                        .map_err(|_| {
+                            DirectSnowStage3V11AttachmentError::Identity(
+                                "restart V3 support-liquid custody poison route identity",
+                            )
+                        })?;
             }
             RestartAuthoritySupportLiquidCustodyPoisonV3::RunoffDispositionSubstitution => {
                 match receipt.disposition {
@@ -2326,12 +2279,13 @@ fn reseal_terminal_liquid_custody_poison_v3(
         predecessor = receipt.receipt_sha256;
     }
     custody.receiver_receipt_set_sha256 = Digest32::from_bytes(
-        crate::zero_duration_snow_liquid_receipt_set_sha256(&custody.receiver_receipts)
-            .map_err(|_| {
+        crate::zero_duration_snow_liquid_receipt_set_sha256(&custody.receiver_receipts).map_err(
+            |_| {
                 DirectSnowStage3V11AttachmentError::Identity(
                     "restart V3 terminal-liquid poison receipt-set reseal",
                 )
-            })?,
+            },
+        )?,
     );
     custody.custody_sha256 = Digest32::zero();
     custody.custody_sha256 = custody.reconstructed_digest()?;
@@ -2346,8 +2300,8 @@ pub fn restart_authority_poison_terminal_liquid_custody_state_v3(
     bytes: &[u8],
     poison: RestartAuthorityTerminalLiquidCustodyPoisonV3,
 ) -> Result<Vec<u8>, DirectSnowStage3V11AttachmentError> {
-    let mut wire: Stage3V11SupportLiquidCustodyStateWireV3 =
-        serde_json::from_slice(bytes).map_err(|_| {
+    let mut wire: Stage3V11SupportLiquidCustodyStateWireV3 = serde_json::from_slice(bytes)
+        .map_err(|_| {
             DirectSnowStage3V11AttachmentError::Identity(
                 "restart V3 terminal-liquid custody poison decoding",
             )
@@ -2412,25 +2366,22 @@ pub fn restart_authority_poison_terminal_liquid_custody_state_v3(
         }
         RestartAuthorityTerminalLiquidCustodyPoisonV3::RunoffRouteTopologySubstitution
         | RestartAuthorityTerminalLiquidCustodyPoisonV3::RunoffDispositionSubstitution => {
-            let receipt = custody
-                .receiver_receipts
-                .first_mut()
-                .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+            let receipt = custody.receiver_receipts.first_mut().ok_or(
+                DirectSnowStage3V11AttachmentError::Identity(
                     "restart V3 terminal-liquid custody poison receipt",
-                ))?;
+                ),
+            )?;
             if matches!(
                 poison,
                 RestartAuthorityTerminalLiquidCustodyPoisonV3::RunoffRouteTopologySubstitution
             ) {
-                receipt.recipient_ofe_id = OfeId::try_new(format!(
-                    "{}-restart-poison",
-                    receipt.recipient_ofe_id
-                ))
-                .map_err(|_| {
-                    DirectSnowStage3V11AttachmentError::Identity(
-                        "restart V3 terminal-liquid custody poison route identity",
-                    )
-                })?;
+                receipt.recipient_ofe_id =
+                    OfeId::try_new(format!("{}-restart-poison", receipt.recipient_ofe_id))
+                        .map_err(|_| {
+                            DirectSnowStage3V11AttachmentError::Identity(
+                                "restart V3 terminal-liquid custody poison route identity",
+                            )
+                        })?;
             } else {
                 receipt.disposition = match receipt.disposition {
                     crate::DirectZeroDurationSnowLiquidDispositionV1::RetainedSurface => {

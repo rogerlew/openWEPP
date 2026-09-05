@@ -87,7 +87,7 @@ pub enum SurfaceLiquidRestartError {
     Identity,
     #[error("{field} violates surface-liquid domain")]
     Domain { field: &'static str },
-    #[error("records or continuations are not strictly ordered and unique")]
+    #[error("records or continuations contain duplicate identities")]
     Ordering,
     #[error("platform-width day index")]
     DayIndex,
@@ -368,11 +368,20 @@ impl DirectSurfaceLiquidOwnedStateRestartV1 {
         })
     }
     pub fn restore(&self) -> Result<DirectSurfaceLiquidOwnedState, SurfaceLiquidRestartError> {
-        if self.records.windows(2).any(|p| p[0].key >= p[1].key)
+        if self
+            .records
+            .iter()
+            .map(|record| &record.key)
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+            != self.records.len()
             || self
                 .continuations
-                .windows(2)
-                .any(|p| p[0].ofe_id >= p[1].ofe_id)
+                .iter()
+                .map(|continuation| &continuation.ofe_id)
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != self.continuations.len()
         {
             return Err(SurfaceLiquidRestartError::Ordering);
         }
@@ -414,6 +423,7 @@ impl DirectSurfaceLiquidOwnedStateRestartV1 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     fn key(name: &str) -> DirectSurfaceLiquidStoreKey {
         DirectSurfaceLiquidStoreKey {
             run_id: 7,
@@ -425,6 +435,176 @@ mod tests {
             source_id: SourceId::try_new(format!("source-{name}")).unwrap(),
         }
     }
+
+    fn physical_configuration_and_state(
+        ofe_count: usize,
+    ) -> (
+        DirectSurfaceLiquidConfiguration,
+        DirectSurfaceLiquidOwnedState,
+    ) {
+        let topology = (1..=ofe_count)
+            .map(|lane_id| OfeId::try_new(format!("ofe-{lane_id}")).unwrap())
+            .collect::<Vec<_>>();
+        let bindings = topology
+            .iter()
+            .enumerate()
+            .map(|(lane_index, ofe_id)| {
+                let layer = openwepp_kernel_contract::SoilLayerId::try_new(format!(
+                    "soil-{}",
+                    lane_index + 1
+                ))
+                .unwrap();
+                DirectSurfaceLiquidOfeBinding {
+                    ofe_id: ofe_id.clone(),
+                    production_lane_index: lane_index,
+                    production_lane_id: u32::try_from(lane_index + 1).unwrap(),
+                    ordered_soil_layer_ids: vec![layer.clone()],
+                    infiltration_soil_thermal_layer_id: layer,
+                }
+            })
+            .collect::<Vec<_>>();
+        let records = topology
+            .iter()
+            .enumerate()
+            .map(
+                |(lane_index, ofe_id)| DirectSurfaceLiquidConfigurationRecord {
+                    key: key(ofe_id.as_str()),
+                    tile_fraction: 1.0,
+                    capacity_kg_m2_tile: 2.0,
+                    ofe_area_m2: 100.0,
+                    ground_ingress_mode: DirectGroundIngressMode::OpenRawPrecipitation,
+                    runon_destination_ofe_id: topology.get(lane_index + 1).cloned(),
+                    runon_destination_tile_id: topology
+                        .get(lane_index + 1)
+                        .map(|destination| TileId::try_new(format!("tile-{destination}")).unwrap()),
+                },
+            )
+            .collect::<Vec<_>>();
+        let configuration = DirectSurfaceLiquidConfiguration::new(
+            ResourceOwnerId::try_new("surface-owner").unwrap(),
+            7,
+            topology,
+            bindings,
+            records,
+        )
+        .unwrap();
+        let liquid_by_key = configuration
+            .records
+            .iter()
+            .map(|record| (record.key.clone(), 0.25))
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let state =
+            DirectSurfaceLiquidOwnedState::new_initial(&configuration, &liquid_by_key, 0).unwrap();
+        (configuration, state)
+    }
+
+    fn assert_physical_restore_with_configuration(ofe_count: usize) {
+        let (configuration, state) = physical_configuration_and_state(ofe_count);
+        let projected = DirectSurfaceLiquidOwnedStateRestartV1::project(&state).unwrap();
+        assert_eq!(
+            projected
+                .restore_with_configuration(&configuration)
+                .unwrap(),
+            state
+        );
+    }
+
+    fn assert_restore_with_configuration_rejects_without_mutation(
+        configuration: &DirectSurfaceLiquidConfiguration,
+        projected: &DirectSurfaceLiquidOwnedStateRestartV1,
+    ) {
+        let before = projected.clone();
+        assert!(projected.restore_with_configuration(configuration).is_err());
+        assert_eq!(*projected, before);
+    }
+
+    #[test]
+    fn surface_liquid_state_restart_accepts_one_ofe_physical_order() {
+        assert_physical_restore_with_configuration(1);
+    }
+
+    #[test]
+    fn surface_liquid_state_restart_accepts_nine_ofe_physical_order() {
+        assert_physical_restore_with_configuration(9);
+    }
+
+    #[test]
+    fn surface_liquid_state_restart_accepts_ten_ofe_physical_order() {
+        assert_physical_restore_with_configuration(10);
+    }
+
+    #[test]
+    fn surface_liquid_state_restart_accepts_nineteen_ofe_physical_order() {
+        assert_physical_restore_with_configuration(19);
+    }
+
+    #[test]
+    fn surface_liquid_state_restart_rejects_duplicate_identities_without_mutation() {
+        let (configuration, state) = physical_configuration_and_state(10);
+        let projected = DirectSurfaceLiquidOwnedStateRestartV1::project(&state).unwrap();
+
+        let mut duplicate_record = projected.clone();
+        duplicate_record.records.push(projected.records[0].clone());
+        assert_eq!(
+            duplicate_record.restore(),
+            Err(SurfaceLiquidRestartError::Ordering)
+        );
+        assert_restore_with_configuration_rejects_without_mutation(
+            &configuration,
+            &duplicate_record,
+        );
+
+        let mut duplicate_continuation = projected.clone();
+        duplicate_continuation
+            .continuations
+            .push(projected.continuations[0].clone());
+        assert_eq!(
+            duplicate_continuation.restore(),
+            Err(SurfaceLiquidRestartError::Ordering)
+        );
+        assert_restore_with_configuration_rejects_without_mutation(
+            &configuration,
+            &duplicate_continuation,
+        );
+    }
+
+    #[test]
+    fn surface_liquid_state_restart_rejects_omission_without_mutation() {
+        let (configuration, state) = physical_configuration_and_state(10);
+        let mut projected = DirectSurfaceLiquidOwnedStateRestartV1::project(&state).unwrap();
+        projected.records.pop().unwrap();
+        assert_restore_with_configuration_rejects_without_mutation(&configuration, &projected);
+    }
+
+    #[test]
+    fn surface_liquid_state_restart_rejects_substitution_without_mutation() {
+        let (configuration, state) = physical_configuration_and_state(10);
+        let mut projected = DirectSurfaceLiquidOwnedStateRestartV1::project(&state).unwrap();
+        projected.records[9].key.ofe_id = OfeId::try_new("ofe-foreign").unwrap();
+        assert_restore_with_configuration_rejects_without_mutation(&configuration, &projected);
+    }
+
+    #[test]
+    fn surface_liquid_state_restart_rejects_reorder_without_mutation() {
+        let (configuration, state) = physical_configuration_and_state(10);
+        let mut projected = DirectSurfaceLiquidOwnedStateRestartV1::project(&state).unwrap();
+        projected.records.swap(8, 9);
+        projected.continuations.swap(8, 9);
+        assert!(
+            projected.restore().is_ok(),
+            "bare restore must not impose lexical identifier order"
+        );
+        assert_restore_with_configuration_rejects_without_mutation(&configuration, &projected);
+    }
+
+    #[test]
+    fn surface_liquid_state_restart_rejects_stale_digest_without_mutation() {
+        let (configuration, state) = physical_configuration_and_state(10);
+        let mut projected = DirectSurfaceLiquidOwnedStateRestartV1::project(&state).unwrap();
+        projected.state_sha256 = Sha256Hex::try_new("0".repeat(64)).unwrap();
+        assert_restore_with_configuration_rejects_without_mutation(&configuration, &projected);
+    }
+
     #[test]
     fn surface_liquid_round_trip_and_order_domain_poisons() {
         let state = DirectSurfaceLiquidOwnedState {

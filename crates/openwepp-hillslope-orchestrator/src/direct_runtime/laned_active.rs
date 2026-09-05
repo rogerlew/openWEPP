@@ -11,6 +11,7 @@
 //! notes), and the run-level evidence summary. Default/off takes none of
 //! these paths (`INV-OFEROUTE-010`).
 
+use super::runoff::closing_hourly_runoff_depths_m;
 use super::{
     DirectDayFrame, DirectErosionHydrographShapeAuthority, DirectRuntimeError, validate_finite,
     validate_nonnegative_direct_m,
@@ -44,6 +45,8 @@ pub(crate) const LANED_ACTIVE_SOURCE_WINDOW_S: f64 = 24.0 * 3600.0;
 pub(crate) const LANED_ACTIVE_DRAIN_TAIL_S: f64 = 6.0 * 3600.0;
 /// Rev-27 tolerance: per-lane-day supply reconstruction (relative).
 pub(crate) const LANED_ACTIVE_SUPPLY_REL_TOL: f64 = 1.0e-9;
+/// INV-OFEROUTE-014 accepted Stage-3 24-bin source/daily-depth closure.
+pub(crate) const LANED_ACTIVE_ACCEPTED_SOURCE_ABS_TOL_M: f64 = 1.0e-12;
 /// Rev-27 tolerance: per-day clamp-adjusted cascade residual (relative).
 pub(crate) const LANED_ACTIVE_CASCADE_REL_TOL: f64 = 1.0e-9;
 /// Rev-40 active publication guard: positivity-clamp injection may close the
@@ -615,11 +618,9 @@ pub(crate) struct LanedActiveLaneSource {
     pub supply_reconstruction_rel: f64,
 }
 
-/// Build the lane-day routed source series: the ADR-0036 weights-times-total
-/// form over the three D12 limbs (`wb14_hourly_excess` + `ui_SCrunf`-lineage
-/// carry + routed melt), consumed from the LIVE day frame. Fails closed on
-/// the hourly-lane precondition (missing R4O projection) and on supply
-/// non-reconstruction (rev-27 tolerance (a)).
+/// Build the lane-day routed source series from the exact accepted Stage-3
+/// WB14 24-bin owner. INV-OFEROUTE-014 forbids reconstructing, normalizing,
+/// or retiming this series after the accepted day frame is committed.
 pub(crate) fn laned_active_lane_source(
     day_frame: &DirectDayFrame,
 ) -> Result<LanedActiveLaneSource, DirectRuntimeError> {
@@ -628,32 +629,27 @@ pub(crate) fn laned_active_lane_source(
             upstream: "laned_active R4A runoff partition producer",
         },
     )?;
-    let subsurface = day_frame
+    let q_runoff_m = runoff.q_runoff_m;
+    validate_finite("laned_active.q_runoff_m", q_runoff_m)?;
+    validate_nonnegative_direct_m("laned_active.q_runoff_m", q_runoff_m)?;
+    let hourly_saturation_carry_m = day_frame
         .subsurface_compute_shadow_projection
         .as_ref()
         .ok_or(DirectRuntimeError::MissingDirectUpstream {
             upstream: "laned_active R4O hourly carries (hourly lane required)",
-        })?;
-    let q_runoff_m = runoff.q_runoff_m;
-    validate_finite("laned_active.q_runoff_m", q_runoff_m)?;
-    validate_nonnegative_direct_m("laned_active.q_runoff_m", q_runoff_m)?;
-    let weights = super::runoff::dc01_surface_runoff_hourly_weights(
-        q_runoff_m,
+        })?
+        .hourly_saturation_carry_m;
+    let (depths_m, total) = closing_hourly_runoff_depths_m(
         &day_frame.wb14_hourly_excess_m,
-        &subsurface.hourly_saturation_carry_m,
+        &hourly_saturation_carry_m,
     )?;
-    let mut depths_m = [0.0_f64; SEAM_HOUR_BINS];
-    let mut uniform_shape = false;
-    if q_runoff_m > 0.0 {
-        let uniform = 1.0 / 24.0;
-        uniform_shape = weights
-            .iter()
-            .all(|weight| (weight - uniform).abs() < 1.0e-12);
-        for (depth, weight) in depths_m.iter_mut().zip(weights.iter()) {
-            *depth = weight * q_runoff_m;
-        }
+    let accepted_source_tolerance_m = LANED_ACTIVE_ACCEPTED_SOURCE_ABS_TOL_M
+        + LANED_ACTIVE_SUPPLY_REL_TOL * total.abs().max(q_runoff_m.abs());
+    if (total - q_runoff_m).abs() > accepted_source_tolerance_m {
+        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "laned_active.accepted_wb14_source",
+        });
     }
-    let total: f64 = depths_m.iter().sum();
     let supply_reconstruction_rel = if q_runoff_m > WB11_ZERO_THRESHOLD {
         (total - q_runoff_m).abs() / q_runoff_m
     } else {
@@ -664,6 +660,14 @@ pub(crate) fn laned_active_lane_source(
             field: "laned_active.supply_reconstruction",
         });
     }
+    let uniform_shape = if q_runoff_m > WB11_ZERO_THRESHOLD {
+        let uniform_depth_m = q_runoff_m / SEAM_HOUR_BINS as f64;
+        depths_m
+            .iter()
+            .all(|depth| (*depth - uniform_depth_m).abs() <= LANED_ACTIVE_ACCEPTED_SOURCE_ABS_TOL_M)
+    } else {
+        false
+    };
     Ok(LanedActiveLaneSource {
         depths_m,
         q_runoff_m,
@@ -1381,20 +1385,72 @@ mod tests {
             })
         ));
 
+        let mut missing_hourly_custody = day_with_lane_source(0.0);
+        missing_hourly_custody.subsurface_compute_shadow_projection = None;
+        assert!(matches!(
+            laned_active_lane_source(&missing_hourly_custody),
+            Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "laned_active R4O hourly carries (hourly lane required)"
+            })
+        ));
+
         let mut day = day_with_lane_source(0.024);
         day.wb14_hourly_excess_m[3] = 0.024;
-        let source = laned_active_lane_source(&day).expect("weighted source");
+        let source = laned_active_lane_source(&day).expect("partition-only weighted source");
         assert_eq!(source.depths_m[3].to_bits(), 0.024_f64.to_bits());
+        assert_eq!(source.depths_m[4].to_bits(), 0.0_f64.to_bits());
         assert!(!source.uniform_shape);
         assert_eq!(
             source.supply_reconstruction_rel.to_bits(),
             0.0_f64.to_bits()
         );
 
+        let mut saturation_only = day_with_lane_source(0.012);
+        {
+            let runoff = saturation_only
+                .runoff_shadow_projection
+                .as_mut()
+                .expect("saturation-only runoff projection");
+            runoff.partition_runoff_m = 0.0;
+            runoff.surface_saturation_runoff_m = 0.012;
+        }
+        saturation_only
+            .subsurface_compute_shadow_projection
+            .as_mut()
+            .expect("saturation-only timing projection")
+            .hourly_saturation_carry_m[4] = 0.012;
+        let source = laned_active_lane_source(&saturation_only)
+            .expect("saturation-only modeled-hour source");
+        assert_eq!(source.depths_m[4].to_bits(), 0.012_f64.to_bits());
+        assert_eq!(
+            source.depths_m.iter().sum::<f64>().to_bits(),
+            0.012_f64.to_bits()
+        );
+
+        let mut mixed = day_with_lane_source(0.036);
+        mixed.wb14_hourly_excess_m[3] = 0.024;
+        {
+            let runoff = mixed
+                .runoff_shadow_projection
+                .as_mut()
+                .expect("mixed runoff projection");
+            runoff.partition_runoff_m = 0.024;
+            runoff.surface_saturation_runoff_m = 0.012;
+        }
+        mixed
+            .subsurface_compute_shadow_projection
+            .as_mut()
+            .expect("mixed timing projection")
+            .hourly_saturation_carry_m[4] = 0.012;
+        let source = laned_active_lane_source(&mixed).expect("mixed modeled-hour source");
+        assert_eq!(source.depths_m[3].to_bits(), 0.024_f64.to_bits());
+        assert_eq!(source.depths_m[4].to_bits(), 0.012_f64.to_bits());
+        assert!((source.depths_m.iter().sum::<f64>() - 0.036).abs() <= 1.0e-15);
+
         assert!(matches!(
             laned_active_lane_source(&day_with_lane_source(0.024)),
-            Err(DirectRuntimeError::MissingDirectUpstream {
-                upstream: "post-partition hourly runoff timing for positive runoff"
+            Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "laned_active.accepted_wb14_source"
             })
         ));
     }

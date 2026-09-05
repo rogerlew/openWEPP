@@ -39,9 +39,85 @@ fn row(bin: i32) -> HillslopeWatSubhourlyRow {
         hourly_power_equivalent_duration_s: None,
         power_exponent: None,
         method_code: "water_only_no_erosion_adoption".to_string(),
-        source_completeness_code: "rainfall_complete_saturation_hourly_zero_order_hold".to_string(),
+        source_completeness_code:
+            "rainfall_and_exact_typed_additional_segments_saturation_hourly_zero_order_hold"
+                .to_string(),
         hourly_closure_residual_mm: 0.0,
     }
+}
+
+fn bounded_closing_row(bin: i32, epsilon_mm: f64) -> HillslopeWatSubhourlyRow {
+    let source_mm = 0.1;
+    let closed_mm = if bin == 10 || bin == 11 {
+        epsilon_mm / 2.0
+    } else {
+        0.0
+    };
+    HillslopeWatSubhourlyRow {
+        wepp_id: 61,
+        ofe_id: 1,
+        year: 2026,
+        sim_day_index: 4,
+        julian: 5,
+        event_ordinal: 0,
+        hour_index: 0,
+        subinterval_index: bin,
+        interval_start_s: f64::from(bin) * 300.0,
+        interval_duration_s: 300.0,
+        rainfall_depth_mm: 0.0,
+        additional_supply_depth_mm: source_mm,
+        raw_green_ampt_infiltration_depth_mm: source_mm,
+        depression_storage_retention_depth_mm: 0.0,
+        raw_wb14_post_depression_generation_depth_mm: 0.0,
+        closed_wb14_generation_depth_mm: closed_mm,
+        saturation_return_depth_mm: 0.0,
+        closing_surface_generation_depth_mm: closed_mm,
+        closing_surface_generation_intensity_mm_h: closed_mm * 12.0,
+        hourly_authoritative_runoff_depth_mm: epsilon_mm,
+        hourly_mean_generation_intensity_mm_h: epsilon_mm,
+        hourly_power_equivalent_generation_intensity_mm_h: None,
+        hourly_power_equivalent_duration_s: None,
+        power_exponent: None,
+        method_code: "water_only_no_erosion_adoption".to_string(),
+        source_completeness_code:
+            "rainfall_and_exact_typed_additional_segments_saturation_hourly_zero_order_hold"
+                .to_string(),
+        hourly_closure_residual_mm: 0.0,
+    }
+}
+
+#[test]
+fn output_preserves_hour_and_run_output_set_on_failure() {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("test clock")
+        .as_nanos();
+    let directory = std::env::temp_dir().join(format!("openwepp-wat5-v4-rollback-{nonce}"));
+    fs::create_dir(&directory).expect("create WAT5 v4 rollback directory");
+    let path = directory.join("H61.wat-subhourly.parquet");
+    let temporary_path = path.with_extension(format!("parquet.tmp.{}", std::process::id()));
+    let protected_output = directory.join("H61.wat.parquet");
+    fs::write(&protected_output, b"protected-run-output").expect("seed protected run output");
+    let epsilon_mm = 2.998_903_209_094_905e-16;
+    let rows = (0..12)
+        .map(|bin| bounded_closing_row(bin, epsilon_mm))
+        .collect::<Vec<_>>();
+    let mut writer =
+        HillslopeWatSubhourlyParquetRowGroupWriter::create(&path).expect("create WAT5 writer");
+    writer
+        .write_rows(&rows)
+        .expect("stage poisoned complete hour");
+    let error = writer
+        .close()
+        .expect_err("duplicate bounded closing must fail before publication");
+    assert!(error.to_string().contains("WAT5-E-004"));
+    assert!(!path.exists());
+    assert!(!temporary_path.exists());
+    assert_eq!(
+        fs::read(&protected_output).expect("read protected run output"),
+        b"protected-run-output"
+    );
+    fs::remove_dir_all(directory).expect("remove WAT5 v4 rollback directory");
 }
 
 #[test]

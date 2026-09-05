@@ -4,7 +4,7 @@ title: Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology/land-surface-energy reviewer
-contract_version: 16
+contract_version: 29
 producer_scope:
   - Persistent snow-free bare-surface and forest-litter liquid hydrology state
   - Versioned snow-free forest-litter liquid/ice custody and restart state
@@ -17,7 +17,7 @@ consumer_scope:
   - Production WB14 infiltration/runoff and routed-runon owners
   - Versioned soil-thermal owner, restart, checkpoint, and atomic consumers
 evidence_level: static+contract_vectors
-last_reviewed: 2026-08-30
+last_reviewed: 2026-09-03
 supersedes: []
 superseded_by: []
 ---
@@ -218,11 +218,16 @@ for one OFE carries the same bitwise-identical area. For each OFE, tile
 fractions close to one when
 `abs(sum(f_t)-1) <= 64*epsilon*max(abs(sum(f_t)),1)`.
 
-The OFE topology is a strict acyclic upstream-to-downstream order. A routed
-destination, when present, has a greater topology index. The final OFE has no
-destination. A routed destination names one configured receiving tile. No
-cycle, backward edge, missing destination, fan-out, or unresolved parcel is
-admitted. No executable `Default` supplies a record or scientific value.
+The OFE topology is a strict acyclic upstream-to-downstream order. A
+configuration has exactly one of two complete routing postures. In the native
+DC01 posture, each nonterminal OFE has one routed destination at a greater
+topology index and the final OFE has no destination. In the Lane-D-local
+posture admitted by `SC-OFEROUTE-001#INV-OFEROUTE-015`, every record has both
+destination fields absent and SurfaceLiquid performs no inter-OFE transfer;
+Lane D is then the sole transfer owner. A routed destination names one
+configured receiving tile. Mixed postures, cycles, backward edges, incomplete
+destination pairs, fan-out, or unresolved parcels are not admitted. No executable `Default`
+supplies a record or scientific value.
 
 Canonical configuration bytes are deterministic JSON of a
 `deny_unknown_fields` structure with records sorted by the complete key and
@@ -703,6 +708,17 @@ string. A generic category plus prose detail is not the canonical payload.
 | `INV-SURFACELIQUID-021` | V2 model definition, state/restart, phase-specific vapor, phase transfer, closure operands, ordered receipts, successor complete-owner projection, warm start, and rollback bind exact identities and bytes; any failure preserves every V1/V2/V3 beginning and production owner byte. Both unchanged `p61` and native-forest real consumers must read the successor path. | correctness authority model + transaction atomicity | successor owner envelope, restart replay, and real-consumer gates | identity/restart/rollback; `E-001..011` | `[DIRECT][Static]`; unchanged-production V2 pre-red and runtime evidence required |
 | `INV-SURFACELIQUID-022` | Every accepted soil-layer energy credit is owned by a versioned soil-thermal V2 receiver as the exact total `E=exact(H_hi)+R`: aggregate the exact beginning total and every canonical accepted soil-internal, top-boundary, and infiltration operand; round once to finite binary64 nearest-even `H_hi`; retain the exact normalized signed-dyadic remainder `R`. V1 bytes remain frozen, V1-to-V2 initializes exact zero carry, downgrade is prohibited, identity/receipt/restart/checkpoint joins are exact, and any refusal rolls back the complete envelope byte-for-byte. | `REF-SURFACELIQUID-EXACT-DYADIC` + physical energy conservation + transaction atomicity | `SoilThermalOwnerEnvelopeV2`, `SoilThermalEnergyCreditReceiptV2`, restart/checkpoint replay, independent exact reconstruction, and real-consumer gates | schema/domain/identity/closure/rollback; `E-001..003,E-005,E-009..011` | `[DIRECT][Static] + [INFERENCE][Static]`; unchanged-production V2 expected-red and runtime evidence required |
 | `INV-SURFACELIQUID-023` | On the V16 successor path, the LSE exact-surface owner exclusively owns `U=exact(U_hi)+R_U` for every complete surface key. Surface-owner V2 and LSE V3 bytes remain frozen and their enthalpy fields are nonauthoritative bit-identical high mirrors. Every accepted phase-free, fusion, and named retained-ingress tile credit is aggregated exactly, rounded once to finite nearest-even `U_hi`, and retained with its exact normalized signed-dyadic remainder through receipt, projection V4, restart/checkpoint, real consumers, and full rollback. | `REF-SURFACELIQUID-SURFACE-EXACT-DYADIC` + physical energy conservation + transaction atomicity | `LseSurfaceEnthalpyOwnerEnvelopeV1`, `LseSurfaceEnthalpyEnergyCreditReceiptV1`, `SurfaceLiquidCompleteOwnerProjectionV4`, restart/checkpoint replay, independent exact reconstruction, and real-consumer gates | schema/domain/identity/mirror/closure/rollback; `E-001..003,E-005,E-009..012` | `[DIRECT][Static] + [INFERENCE][Static]`; unchanged-production expected-red and `p61`/native runtime evidence required |
+| `INV-SURFACELIQUID-025` | The V16 exact-surface credit receipt contains a canonical `ParentLocalPartial` or `PersistentParentFinal` ending posture and exact parent support bounds. The posture is derived, never caller-selected: child end below parent end is partial and retains the persistent predecessor marker in exact/LSE-V3/surface-V2 records while exact carry and receipt chain advance; child end equal to parent end is final and stamps the transaction marker once. Mixed markers, wrong bounds/posture, early physical advance, final predecessor retention, replay, or restart substitution reject atomically. | `SC-COUPLEDTIME-001#INV-COUPLEDTIME-006/024` + `INV-SURFACELIQUID-012/013/014` + `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-153` | typed receipt posture, parent/child-support validator, projection V4, mirror join, restart/checkpoint | identity/chronology/replay/rollback; `E-008,E-011,E-012` | `[DIRECT][Static] + [INFERENCE][Static]`; production partial/final and restart evidence required |
+| `INV-SURFACELIQUID-026` | While Stage-3 snow is represented, the frozen-litter surface owner and exact enthalpy companion are inactive byte-identical custody: no litter vapor, phase, storage, current-ingress, or WB14 operation may debit, credit, restage, or reseal them. The sole charged native Stage-3 covered map owns snow-ground transfer and exact optical/lower-boundary receipts. Only the exact post-terminal snow-free child may resume V3/V4 litter custody. | `SC-SNOWENERGY-001#INV-SNOWENERGY-083` + `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-154` | represented-snow classifier, inactive-owner byte validator, terminal split | custody/identity/chronology/rollback; `E-002,E-008,E-011,E-012` | `[INFERENCE][Static]`; production seam expected-red and real-consumer proof required |
+| `INV-SURFACELIQUID-027` | A frozen-litter V3 candidate evaluated from authenticated unpublished V2 soil may carry only a typed non-owner soil custody record. It must not embed, infer, or install soil owner/restart bytes. The ordinary publishable projection remains owner-plus-restart exact; final unpublished acceptance replaces the private projection after one complete original-owner replay and atomic seal. | `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-155` + `SC-SNOWENERGY-001#INV-SNOWENERGY-084` + transaction atomicity | typed V3 input/projection discriminator and final replay | identity/support/replay/rollback; `E-002,E-011,E-012` | `[DIRECT][Static] + [INFERENCE][Static]`; production seam expected-red required |
+| `INV-SURFACELIQUID-028` | A raw V3 litter phase ending above liquid capacity is never sealed or normalized as an owner. One typed phase-capacity spill exactly debits the raw liquid/sensible-enthalpy excess from the retained within-capacity owner and enters current ingress as a phase-receipt-bound `LitterPhaseOverflow` parcel on the same transaction and full child support. Ordinary WB14 owns its one-time infiltration/excess/retention/runoff routing; exact-surface custody debits the spill once and credits only actually retained ingress. | `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-156` + `REF-SURFACELIQUID-LITTER-WATBAL` + physical conservation/transaction atomicity | phase projection, generated-parcel ingress, WB14 receipt, exact-surface and complete-owner join | domain/identity/closure/rollback; `E-002,E-003,E-005,E-008..012` | `[DIRECT][Static] + [INFERENCE][Static]`; production seam expected-red required |
+| `INV-SURFACELIQUID-029` | In a heterogeneous V3 batch, accepted native litter-vapor finalized uses are consumed only by their exact phase receipts; the complete unmatched ordinary finalized-use set is authenticated against its original requests/authorizations and debits the accepted phase-adjusted V2 liquid owner exactly once in canonical key order before one ingress. Native phase closure, spill parcel, ice, enthalpy mirrors, and exact receipts remain unchanged. No finalized row is omitted, replayed, reclassified, or applied through wholesale resource replacement. | `INV-SURFACELIQUID-004/018/028` + `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-157` + transaction atomicity | typed heterogeneous row partition, V2 resource candidate join, ingress and complete-owner closure | identity/cardinality/mass/rollback; `E-002,E-003,E-005,E-006,E-009..012` | `[DIRECT][Static] + [INFERENCE][Static]`; production seam expected-red required |
+| `INV-SURFACELIQUID-030` | Exact-surface owner records and their accepted-energy operand groups use the authenticated surface-liquid configuration's OFE topology rank first, followed by the existing within-OFE store-key and operand-kind/ordinal order. OFE identifiers are opaque identities: lexical comparison and numeric parsing never define topology. The complete configured membership, configuration digest, order, predecessor lineage, and rollback remain exact. | `INV-SURFACELIQUID-014/023/025` + `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-158` + transaction atomicity | topology-ranked owner/receipt validator at the authenticated configuration join | identity/cardinality/order/rollback; `E-001,E-002,E-011,E-012` | `[DIRECT][Static] + [INFERENCE][Static]`; multi-digit OFE production seam expected-red required |
+| `INV-SURFACELIQUID-031` | A private immutable nonserializable validated handoff may reuse one complete semantic validation of the exact same in-memory surface-resource candidate revision. Its proof binds model/schema, authenticated configuration digest, complete owner/envelope digest, transaction/predecessor/support, and exact candidate revision; it grants no mutable access, public/unchecked construction, persistence, or wire authority. Any mutation, replacement, configuration change, or lineage change consumes and invalidates the proof. Deserialization, restart/checkpoint restore, external bytes, and untrusted executor returns always perform fresh full validation and canonical reconstruction before a new handoff can exist. | `INV-SURFACELIQUID-009/014/018/021/023/025/028/029/030` + transaction atomicity + `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-159` | private validated typestate, revision-bound digest/cache, mutation boundary, restart/external/untrusted boundary validator | identity/configuration/revision/lineage/rollback; `E-001,E-002,E-005,E-011,E-012` | `[INFERENCE][Static]`; validation-once/revision invalidation and mandatory-boundary revalidation expected-red required |
+| `INV-SURFACELIQUID-032` | A configuration uses exactly one complete inter-OFE routing posture: native DC01 has one forward destination per nonterminal OFE and none at the terminal OFE; Lane-D-local has no destination on any record and is admitted only by the pre-bootstrap active-owner projection under `SC-OFEROUTE-001#INV-OFEROUTE-015`. Mixed or incomplete postures reject. The local posture preserves topology, binding, store identity, physical state, and configuration digest authority while SurfaceLiquid performs no inter-OFE transfer. | `SC-OFEROUTE-001#INV-OFEROUTE-015` + exact-one transfer ownership | complete configuration identity validator and active day-zero projection | identity/topology/rollback; `E-002,E-011` | `[DIRECT][Static + Ran]`; routed-to-local positive, mixed/incomplete poison, physical-bit preservation, and non-day-zero rollback vectors |
+| `INV-SURFACELIQUID-033` | One fully validated snow-free provisional V11 transaction may place its exact immutable SurfaceLiquid/WB14 physical ending in a private move-only proof. A final accepted-slab pass may reseal only slab/receipt-dependent identities: it may not repeat vapor/phase arithmetic, current ingress, WB14, routing, retention, infiltration, runoff, or exact-energy custody. Final surface owner, parent/child posture, receipts, and complete owner bytes must equal the provisional physical ending exactly; provisional publication is zero and final publication is exactly one. The proof is single-use, non-wire, and invalid across mutation, foreign lineage, or restart. | `INV-SURFACELIQUID-012/013/014/018/025/028/029/031` + `SC-COUPLEDTIME-001#INV-COUPLEDTIME-029` + transaction atomicity | private snow-free physical-reuse typestate, accepted-slab-only reseal, exact owner/receipt replay, provider/publication counters, restart and poison gates | identity/chronology/closure/rollback; `E-001,E-002,E-005,E-008..012` | `[INFERENCE][Static]`; direct/reuse equality, one physical call, non-slab poisons, duplicate-use/restart refusal, rollback required |
+| `INV-SURFACELIQUID-034` | Every charged covered map validates its exact surface-ingress/WB14 physical endpoint and custody. `Initial` returns a private physical-only endpoint; every later charge yields a non-Clone pending adjudication map only after custody validation. Outer nonclosure consumes it into history without error, dependent-only nonclosure into typed rejection, or full closure consumes the same physical prefix once as `FinalAccepted` and constructs complete private surface owner/receipt/envelope custody. Native represented-snow evaluation preserves inactive litter/WB14 bytes and performs no snow-free surface work. The snow-free provisional-reuse authority in `INV-SURFACELIQUID-033` is outside canonical covered solves and cannot supply or promote this prefix. No additional final physical map, cross-disposition reuse, or completed-nonfinal promotion is authorized. No map publishes; only accepted parent commit publishes. | `SC-SNOWENERGY-001#INV-SNOWENERGY-086` + `INV-SURFACELIQUID-026/031` | custody-before-pending role and ordinary/native physical-owner split, exclusive disposition/final-only owner constructor, exact differential/rollback guards | outer nonclosure -> history, no error; dependent-only nonclosure/role/support/ordinal -> `SURFACELIQUID-E-008`; identity/regime/custody/disposition/state leak -> `SURFACELIQUID-E-002`; physical-prefix closure -> `SURFACELIQUID-E-010`; final envelope/publication/rollback -> `SURFACELIQUID-E-011`; numeric precedence 2, 8, 10, 11 | `[INFERENCE][Static]`; exact ordinary/native physical parity, disposition, zero/one owner construction, ULP/role/regime poisons required |
+| `INV-SURFACELIQUID-035` | When represented snow occupies an initial prefix of one WB14 parent and the exact next child is snow-free, a typed authenticated inactive-prefix proof advances WB14 chronology to that child start without executing WB14 physics, changing its beginning cumulatives, or creating a WB14 child receipt. The proof covers the complete contiguous accepted coupled-slab/owner chain from parent start to child start and is bound into every per-OFE parent identity, receipt-chain seed, final receipt, replay, and restart. The first physical child is ordinal zero; inactive prefix plus ordered physical receipts must partition the full parent exactly. | `INV-SURFACELIQUID-012/013/026` + `SC-COUPLEDTIME-001#INV-COUPLEDTIME-031` + transaction atomicity | typed native inactive-prefix proof, WB14 parent constructor/reconstructor, child and final receipt join, restart | chronology/identity/replay/rollback; `E-002,E-008,E-011,E-012` | `[INFERENCE][Static]`; transition expected-red, complete prefix/poison/restart/rollback vectors required |
 
 ## Producer Obligations
 
@@ -726,6 +742,60 @@ string. A generic category plus prose detail is not the canonical payload.
 | Shadow orchestrator/restart | Validate the complete candidate and replace the whole shadow state only after all joins pass. Select and replay the exact V1 or V2 surface-owner/restart tag and successor complete-owner projection. | Partial owner commit, production mutation, synthesized state, implicit ice, or V2-to-V1 fallback. |
 | LSE exact-surface owner | Own authoritative `U=exact(U_hi)+R_U`, require both frozen high mirrors bit-identical, persist/replay the exact receipt and restart/checkpoint chain, and install only through projection V4. | Treat either frozen mirror as independently authoritative, discard a carry/credit, feed carry into flux/phase/temperature, downgrade, or commit separately. |
 | Coupled owner join | Bind exact beginning/ending complete-owner sets, coupled slab, ordered WB14 child receipts, and final-only parent receipts/cursor transition. | Digest-only trust, inactive-owner mutation, omitted receipt, or child-local persistent lineage. |
+| Represented-snow native join | Retain frozen-litter V3/V4 physical/exact owner bytes and receipt chains while consuming the one native Stage-3 covered map; resume litter custody only on the exact snow-free successor. | Under-snow litter vapor/phase/storage/current-ingress/WB14, receipt reseal, synthesized enthalpy, or a second legacy envelope. |
+
+`OBL-SURFACELIQUID-C-016` — The represented-snow native join must prove
+byte-identical inactive litter custody, exact Stage-3 boundary receipts, zero
+litter/WB14 work, one physical envelope, exact terminal transition, and full
+rollback.
+
+`OBL-SURFACELIQUID-C-017` — The candidate-only V3 projection must prove exact
+unpublished soil custody without owner/restart bytes, reject branch/support/
+trial/receipt substitution, remain ineligible for persistence or installation,
+and be replaced by one publishable owner projection only after complete final
+replay, with full rollback.
+
+`OBL-SURFACELIQUID-C-018` — Prove the raw/retained/spill mass and enthalpy
+partition, typed phase-receipt/source/transaction/support identity, exact
+surface-owner debit, one generated current-ingress parcel and WB14 call,
+ordinary infiltration/retention/runoff disposition, rejected condensation or
+caller-input aliases, no over-capacity owner sealing, and byte-exact rollback.
+
+`OBL-SURFACELIQUID-C-019` — Prove exact partition of a heterogeneous finalized-
+use batch into already-consumed native litter-vapor rows and authenticated
+ordinary rows, one canonical ordinary debit on the phase-adjusted V2 owner,
+unchanged phase/spill/ice/enthalpy custody, one ingress, complete row and mass
+closure, identity/cardinality/substitution refusal, and byte-exact rollback.
+
+`OBL-SURFACELIQUID-C-020` — Prove exact-owner records and accepted-energy
+operand groups follow authenticated configuration-topology rank for opaque OFE
+IDs, including `ofe-9 -> ofe-10`; reject lexical/numeric-derived order,
+duplicate, omission, substitution, within-OFE/operand reorder, stale
+configuration/digest, and cross-owner topology mismatch with byte-exact
+rollback.
+
+`OBL-SURFACELIQUID-C-021` — Prove a surface-resource candidate can enter one
+private immutable validated handoff only after full semantic validation, and
+that unchanged trusted in-process consumers reuse it without reserializing the
+same owner envelopes. Prove every candidate mutation/revision, configuration
+or lineage change invalidates the proof; wrong nested owner/configuration,
+proof transfer, and stale digest reject with byte-exact rollback. Restart,
+checkpoint, external-byte, and untrusted-executor inputs must still perform a
+fresh full parse, canonical reconstruction, digest, and semantic validation.
+
+`OBL-SURFACELIQUID-C-022` — Prove the pre-bootstrap active Lane-D projection
+converts a complete routed day-zero configuration to the complete all-local
+posture while preserving every physical liquid bit; mixed/incomplete routes
+and previously advanced owners reject atomically, and the real consumer proves
+Lane D is the sole inter-OFE transfer owner.
+
+`OBL-SURFACELIQUID-C-023` — Prove the snow-free provisional/final transaction
+performs vapor/phase/current-ingress/WB14/routing and surface-energy custody
+exactly once; reseals only final accepted-slab identities; produces exact
+direct-execution owner/receipt bytes and zero/one provisional/final
+publication; rejects changed parent, support, configuration, topology,
+forcing, beginning owner, WB14 binding, physical ending, duplicate use, and
+post-restart use with byte-exact rollback and fresh execution after restore.
 
 ## Symbol Alias Map
 
@@ -1473,6 +1543,12 @@ persistent continuation advance.
 | `INV-SURFACELIQUID-014` | The complete parent candidate processes all OFEs in topology order and atomically stages surface storage, attributed liquid/enthalpy, routing, production soil, soil thermal, LSE, V11, Stage 3, clock, provider/GSI, event, and receipt owners. |
 | `INV-SURFACELIQUID-015` | A positive candidate persistent credit within the declared binary64 mass envelope retains nothing, preserves persistent bits, and routes the complete conservative parcel onward. |
 
+`OBL-SURFACELIQUID-C-024` requires exact ordinary and native physical-prefix
+parity against a test-only forced-complete reference, zero nonfinal and one
+final surface-owner construction, inactive native litter/WB14 call counts,
+exact partial/final parent custody, role/regime/identity/one-ULP poisons,
+unpublishability, final-failure no-fallback, and complete rollback.
+
 ## Binding Exposure Index
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
@@ -1482,11 +1558,21 @@ persistent continuation advance.
 | `SURFACELIQUID-V9-MULTI-LANE-STAGE3` | Multi-lane clause of `INV-SURFACELIQUID-014` | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-012, INV-SURFACELIQUID-013, INV-SURFACELIQUID-014` | `flagged-binding-addition` | Version 9 admits multiple resolved-snow production lanes only after real attachment fixtures prove common-earliest cadence, per-lane boundary closure, topology-ordered routing, atomic publication, and complete rollback. |
 | `SURFACELIQUID-V10-ADAPTIVE-GRID` | Adaptive-grid clauses of `INV-SURFACELIQUID-012/014` | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-006, INV-SURFACELIQUID-012, INV-SURFACELIQUID-013, INV-SURFACELIQUID-014` | `flagged-binding-addition` | Version 10 admits exact integer-quantum adaptive Stage-3 child supports while retaining one actual stateful WB14 transition per accepted child, complete-owner isolation, and final-only persistent cursor publication. |
 | `SURFACELIQUID-V13-FACTORIZATION-LINEAGE` | Adaptive direct-versus-composed receipt classification above | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-012, INV-SURFACELIQUID-013, INV-SURFACELIQUID-014` | `none` | Version 13 classifies only the WB14 child ordinal and digest-keyed receipt-map identity as exact per-trial factorization lineage; all receipt custody and accepted-path replay obligations remain exact. |
-| `SURFACELIQUID-V11-REPRESENTATIONAL-SATURATION` | Section 7 effective-retention rule | `active` | `new-INV` | `INV-SURFACELIQUID-007, INV-SURFACELIQUID-008, INV-SURFACELIQUID-015` | `none` | A bounded binary64-only candidate credit, whether parcel- or capacity-limited, routes the complete conservative parcel instead of attempting an unrepresentable persistent mass/enthalpy credit. |
+| `SURFACELIQUID-V11-REPRESENTATIONAL-SATURATION` | Section 7 effective-retention rule | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-007, INV-SURFACELIQUID-008, INV-SURFACELIQUID-015` | `none` | A bounded binary64-only candidate credit, whether parcel- or capacity-limited, routes the complete conservative parcel instead of attempting an unrepresentable persistent mass/enthalpy credit. |
 | `SURFACELIQUID-V12-INVERSE-BASIS-AUTHORIZATION` | Section 2 checked OFE/tile-basis authorization rule | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-003, INV-SURFACELIQUID-004` | `none` | One common binary64 scale must make both the OFE-ground authorization sum and the exact resource-phase tile-ground inverse sum no greater than their immutable beginning supplies; no clamp or candidate tolerance is admitted. |
-| `SURFACELIQUID-V14-FROZEN-LITTER-V2` | Frozen Forest-Litter Surface-Owner V2 Amendment above | `active` | `new-INV` | `INV-SURFACELIQUID-016, INV-SURFACELIQUID-017, INV-SURFACELIQUID-018, INV-SURFACELIQUID-019, INV-SURFACELIQUID-020, INV-SURFACELIQUID-021` | `flagged-binding-addition` | Admits only the immutable snow-free forest-litter liquid/ice successor after contract review, production closure, exact restart/rollback, independent mass/energy reconstruction, and both real-consumer gates. |
-| `SURFACELIQUID-V15-SOIL-THERMAL-EXACT-CARRY` | Version 15 Exact Soil-Thermal Enthalpy-Carry Amendment above | `active` | `new-INV` | `INV-SURFACELIQUID-022` | `flagged-binding-addition` | Admits only receiver-owned exact energy representation/custody with a finite binary64 high term and normalized signed-dyadic carry; constitutive physics and chronology remain unchanged. |
-| `SURFACELIQUID-V16-SURFACE-ENTHALPY-EXACT-CARRY` | Version 16 Exact LSE Surface-Enthalpy-Carry Amendment above | `active` | `new-INV` | `INV-SURFACELIQUID-023` | `flagged-binding-addition` | Admits one minimal LSE-owned exact per-tile enthalpy companion with frozen surface-owner V2/LSE V3 high mirrors, exact named retained tile-credit custody, and successor projection/restart/rollback. |
+| `SURFACELIQUID-V14-FROZEN-LITTER-V2` | Frozen Forest-Litter Surface-Owner V2 Amendment above | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-016, INV-SURFACELIQUID-017, INV-SURFACELIQUID-018, INV-SURFACELIQUID-019, INV-SURFACELIQUID-020, INV-SURFACELIQUID-021` | `flagged-binding-addition` | Admits only the immutable snow-free forest-litter liquid/ice successor after contract review, production closure, exact restart/rollback, independent mass/energy reconstruction, and both real-consumer gates. |
+| `SURFACELIQUID-V15-SOIL-THERMAL-EXACT-CARRY` | Version 15 Exact Soil-Thermal Enthalpy-Carry Amendment above | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-022` | `flagged-binding-addition` | Admits only receiver-owned exact energy representation/custody with a finite binary64 high term and normalized signed-dyadic carry; constitutive physics and chronology remain unchanged. |
+| `SURFACELIQUID-V16-SURFACE-ENTHALPY-EXACT-CARRY` | Version 16 Exact LSE Surface-Enthalpy-Carry Amendment above plus the version-18 parent-local chronology amendment | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-023, INV-SURFACELIQUID-025` | `flagged-binding-addition` | Admits one minimal LSE-owned exact per-tile enthalpy companion with frozen surface-owner V2/LSE V3 high mirrors, exact named retained tile-credit custody, typed partial/final parent posture, and successor projection/restart/rollback. |
+| `SURFACELIQUID-STAGE3-INACTIVE-LITTER-CUSTODY` | Represented-Snow Frozen-Litter Inactive-Custody Amendment below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-026, OBL-SURFACELIQUID-C-016` | `flagged-binding-addition` | Represented Stage-3 snow retains litter V3/V4 owner bytes and prohibits litter phase/current-ingress/WB14 work until the exact snow-free successor. |
+| `SURFACELIQUID-V3-UNPUBLISHED-SOIL-CUSTODY` | Candidate-Only V3 Unpublished-Soil Custody Amendment below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-027, OBL-SURFACELIQUID-C-017` | `flagged-binding-addition` | Candidate-only V3 may seal a non-owner soil custody record; it cannot emit owner/restart bytes or be accepted beside the final publishable replay. |
+| `SURFACELIQUID-V3-LITTER-PHASE-CAPACITY-SPILL` | Exact V3 Litter-Phase Capacity-Spill Custody Amendment below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-028, OBL-SURFACELIQUID-C-018` | `flagged-binding-addition` | One phase-receipt-bound liquid/enthalpy spill enters ordinary current-ingress/WB14 custody; over-capacity sealing, clipping, condensation aliasing, and duplicate supply are forbidden. |
+| `SURFACELIQUID-V3-HETEROGENEOUS-FINALIZED-USE-JOIN` | Exact Heterogeneous V3 Finalized-Use Join Amendment below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-029, OBL-SURFACELIQUID-C-019` | `flagged-binding-addition` | Applies unmatched ordinary finalized uses once to the accepted phase-adjusted V2 owner while native phase and spill custody remain exact and separate. |
+| `SURFACELIQUID-V16-TOPOLOGY-RANKED-EXACT-OWNER` | Topology-Ranked Exact-Surface Owner Amendment below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-030, OBL-SURFACELIQUID-C-020` | `flagged-binding-addition` | Exact-owner records and operand groups follow authenticated configuration topology, never lexical or parsed-numeric OFE identifiers. |
+| `SURFACELIQUID-V24-VALIDATED-IN-MEMORY-HANDOFF` | Validated In-Memory Surface-Resource Handoff Amendment below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-031, OBL-SURFACELIQUID-C-021` | `flagged-binding-addition` | Private immutable revision-bound typestate may remove duplicate in-process validation; restart, external, and untrusted boundaries retain full validation. |
+| `SURFACELIQUID-V25-LANED-ACTIVE-LOCAL-ROUTING` | Lane-D-Local SurfaceLiquid Routing Posture Amendment below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-032, OBL-SURFACELIQUID-C-022` | `flagged-binding-addition` | Active Lane D may project an untouched day-zero owner to a complete all-local SurfaceLiquid routing posture; mixed routing and duplicate DC01/Lane-D transfer remain forbidden. |
+| `SURFACELIQUID-V26-SNOW-FREE-PHYSICAL-REUSE` | Snow-Free Final-Receipt Reseal Amendment below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-033, OBL-SURFACELIQUID-C-023` | `flagged-binding-addition` | One private single-use provisional physical ending permits final slab identity resealing without repeating surface/WB14 physics; exact owner, publication, restart, and rollback semantics remain unchanged. |
+| `SURFACELIQUID-V29-COVERED-PENDING-ADJUDICATION` | Covered pending-adjudication map amendment below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-034, OBL-SURFACELIQUID-C-024` | `flagged-binding-addition` | Initial and history maps retain physical custody only; a converged pending map continues from its own surface-ingress/WB14 prefix into final custody once. |
+| `SURFACELIQUID-V28-NATIVE-INACTIVE-PREFIX-TRANSITION` | Native inactive-prefix WB14 transition amendment below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-035, OBL-SURFACELIQUID-C-025` | `flagged-binding-addition` | The first exact snow-free child consumes an authenticated represented-snow prefix proof and begins physical WB14 receipt chronology at ordinal zero without synthesizing under-snow physics or receipts. |
 
 ## Gap Register And Promotability
 
@@ -1519,6 +1605,10 @@ rerun; this amendment claims no replacement execution.
 
 | Date | Version | Author | Change |
 |---|---|---|---|
+| 2026-09-03 | 29 | Codex | Corrected final surface custody to consume the converged pending adjudication map's own surface-ingress/WB14 prefix once; no independently replayed final physical map or completed-nonfinal promotion is authorized. |
+| 2026-09-02 | 27 | Codex | Bound nonfinal covered roles to private validated surface-ingress/WB14 physical endpoints with no install/publication; final accepted custody is constructed once from the same physical prefix. |
+| 2026-09-02 | 25 | Codex | Admitted the complete all-local SurfaceLiquid routing posture for pre-bootstrap active Lane-D projection, with exact day-zero state preservation, recomputed configuration identity, mixed-posture refusal, and sole Lane-D inter-OFE ownership. |
+| 2026-09-01 | 18 | Codex | Bound V16 exact-surface receipt chronology to a typed, support-derived parent-local-partial versus persistent-parent-final posture. Partial children advance exact carry/state/receipt chain but retain the persistent predecessor mirrored by LSE V3 and surface-owner V2; only the final child stamps the transaction once. Added bounds/posture/mixed-marker/restart/rollback obligations without changing physics or tolerances. |
 | 2026-08-31 | 16 | Codex | Added a minimal LSE-owned exact per-tile surface-enthalpy companion `U=exact(U_hi)+R_U`, frozen surface-owner V2/LSE V3 high mirrors, exact named phase-free/fusion/retained-ingress tile-credit aggregation, nearest-even high/canonical carry, successor receipt/restart/checkpoint/projection custody, full rollback and `p61`/native real-consumer gates, with unchanged V14 physics, phase, chronology, tolerances, and exact 60-second floor. |
 | 2026-08-30 | 15 | Codex | Added receiver-owned exact soil-layer enthalpy representation `E=exact(H_hi)+R`, canonical normalized signed-dyadic carry, exact accepted operand reconstruction, one nearest-even high-term rounding, V1-to-V2 zero-carry migration, versioned credit/restart/checkpoint custody, exact rollback, WAT5 sub-ULP and numeric/identity poison vectors, and unchanged physics, v14 phase chronology, tolerances, and 60-second floor. Production remains non-promotable pending the retained contract-first red. |
 | 2026-08-30 | 14 | Codex | Added immutable surface-owner/restart V2 authority for snow-free forest-litter liquid/ice, exact V1 migration and byte preservation, phase-specific vapor custody, bounded phase chronology, fusion-energy closure, liquid-only WB14 handoff, successor receipts/restart/rollback, explicit refusals, and unchanged `p61`/native-forest real-consumer obligations. Production remains non-promotable pending the retained contract-first red. |
@@ -1538,3 +1628,578 @@ rerun; this amendment claims no replacement execution.
 | 2026-08-14 | 4 | Codex | Add the strict per-tile `ground_ingress_mode` discriminator required to validate mutually exclusive open-precipitation and covered-canopy ingress without caller-driven branch inference. |
 | 2026-08-14 | 5 | Codex | Bind every surface OFE to the actual production lane and ordered soil layers; require strict restart combinations; require shared production same-pass infiltration credit, typed soil-thermal and retained-LSE receipts, independent full-equation closure, and canonical contextual failure payloads. |
 | 2026-08-15 | 6 | Codex | Admit the symmetric binary64 joint-supply representability rule for a raw proportional aggregate overshoot: one common downward scale, exact no-overdraw proof, 64-decision bound, contextual E003 failure, canonical request/finalized-use aggregation, caller-order-invariant ending state, and no canonical-last remainder. |
+
+## Accepted Stage-3 Liquid Custody Amendment
+
+`INV-SURFACELIQUID-024` — The accepted non-CoE Stage-3 terminal or routed
+liquid payload is consumed exactly once by the existing surface-liquid owner
+on the same accepted support. Mass, zero-reference sensible enthalpy where
+applicable, destination, OFE/tile basis, support, event, transaction, receipt
+order, restart posture, and rollback are exact. Continuous values originate
+from the single authentic Stage-3 payload admitted under
+`TOL-SNOWENERGY-007`; this does not authorize receipt repair, inferred lane
+receipt V2, proxy exposure, CoE generation, or a second snow owner. The
+existing V14/V16 liquid/enthalpy physics and closure are unchanged.
+
+Real-consumer proof must show this exact accepted owner supplies RUNOFFPART/
+WB14 and the subsequent Lane-D path before any publication claim.
+
+`OBL-SURFACELIQUID-C-014` — Reconstruct accepted Stage-3 liquid mass/enthalpy,
+exact owner/event/destination/support, exact-one WB14 debit, and rollback;
+reject CoE, inferred V2 wire, duplicate, wrong-basis, or repaired receipt.
+
+### Profile integration
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Consume the one accepted Stage-3 liquid receipt into the existing surface owner, then transfer exactly once to WB14. |
+| branch/guard | Exact owner/event/destination/support and no duplicate/CoE/V2 inference; otherwise typed custody failure. |
+| invariant guard map | `INV-SURFACELIQUID-024` -> receipt validator, surface-owner installer, WB14 debit, rollback. |
+| test vector | `OBL-SURFACELIQUID-C-014`: mass/enthalpy reconstruction, duplicate, wrong basis, CoE, V2 inference, rollback. |
+| binding exposure | `SURFACELIQUID-STAGE3-ACCEPTED-CUSTODY`, active, `new-INV`, IDs `024/C-014`, dual review/verification. |
+| change log | 2026-09-01, contract 17: bound accepted Stage-3 liquid to existing exact-one surface/WB14 custody. |
+
+## Exact-Surface Parent-Local Chronology Amendment
+
+`INV-SURFACELIQUID-025` — The exact-surface V16 credit receipt seals exact
+parent support bounds and a typed ending posture derived from support:
+`ParentLocalPartial` iff `child_end < parent_end`, and
+`PersistentParentFinal` iff `child_end == parent_end`. Parent start is no later
+than child start, child support is positive, and child end cannot exceed parent
+end. Callers cannot independently select the posture.
+
+On a partial child, authoritative exact enthalpy/carry, frozen-parent digests,
+state digest, and receipt chain advance, but every exact record retains the
+persistent predecessor transaction marker also retained by LSE V3 and surface-
+owner V2. On the final child, all three owners stamp the transaction exactly
+once. The receipt still seals the accepted child transaction, predecessor,
+support, exact operands, beginning/ending owner-state digests, and predecessor
+receipt-chain digest in both postures. Mixed record markers, wrong bounds or
+posture, early physical-owner advance, final predecessor retention, replay,
+restart substitution, or any projection mismatch rejects atomically with
+`LSEB-E-050` / `SURFACELIQUID-E-012`.
+
+The current pre-production V1 receipt wire adds the typed posture and parent
+bounds to its digest preimage and changes its schema digest. Older V1 receipt
+bytes fail closed; no compatibility parse or inferred default is authorized.
+This amendment changes custody chronology only, not liquid/energy physics,
+tolerances, WB14 equations, or the 60-second floor.
+
+`OBL-SURFACELIQUID-C-015` — Prove first/middle partial children, final child,
+mid-parent restart, independent receipt replay, exact mirror joins, and full
+rollback. Wrong posture/bounds, mixed markers, early physical advance, final
+predecessor retention, omission, duplication, or replay must reject typed.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Derive posture from sealed parent/child supports, advance exact carry/receipt chain each accepted child, publish persistent transaction lineage only at the parent endpoint. |
+| branch/guard | Partial retains predecessor in exact/V3/V2; final stamps transaction once; no caller posture override. |
+| invariant guard map | `INV-SURFACELIQUID-025` -> receipt schema/lineage validator, projection V4, restart/checkpoint, complete-owner join. |
+| test vector | `OBL-SURFACELIQUID-C-015`: first/middle/final, split restart, bounds/posture/marker poisons, rollback. |
+| binding exposure | `SURFACELIQUID-V16-PARENT-LOCAL-CHRONOLOGY`, active, `new-INV`, IDs `025/C-015`, dual review/verification. |
+| change log | 2026-09-01, contract 18: typed partial/final exact-surface receipt chronology; unchanged physics/tolerances. |
+
+## Represented-Snow Frozen-Litter Inactive-Custody Amendment
+
+`INV-SURFACELIQUID-026` — Immutable represented-snow classification occurs
+before surface-liquid work. While Stage-3 snow is represented, snow is the sole
+atmospheric ground surface and the frozen-litter V3 physical owner plus V4 exact
+enthalpy companion are inactive custody. Their complete state, predecessor
+markers, receipt chains, and canonical bytes remain identical across the
+charged map. Litter liquid/ice vapor, phase transfer, surface-storage arithmetic,
+current-ingress adoption, and WB14 may neither run nor be represented by a
+locally synthesized receipt.
+
+The same single charged standard Stage-3 covered-column call runs under native
+vegetation/LSE identities and retains its exact typed optical and snow--soil
+lower-boundary receipts. Canopy-to-snow precipitation and Stage-3 terminal or
+routed liquid remain governed by their existing snow and `INV-SURFACELIQUID-024`
+custody; they are not current litter ingress. No independent legacy envelope
+may execute the same support. At the exact accepted terminal split, the
+represented-snow child retains inactive custody and only the positive
+post-event snow-free child may resume the ordinary V3/V4 chronology and WB14.
+
+Any under-snow owner mutation or reseal, litter phase/storage/ingress/WB14 call,
+receipt substitution, synthesized enthalpy, duplicate physical envelope, or
+pre-terminal snow-free transition rejects with the existing typed custody error
+and restores every joined owner byte. This adds no tolerance, normalization,
+liquid arithmetic, phase equation, or receipt-relaxation authority.
+
+`OBL-SURFACELIQUID-C-016` — Prove byte-identical frozen-litter V3/V4 custody
+under represented snow, zero litter vapor/phase/storage/current-ingress/WB14
+calls, exact native Stage-3 receipt retention, no second envelope, exact
+snow-free transition, poison rejection, and full rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Classify represented snow before liquid work; retain litter owners through the one native Stage-3 map; resume V3/V4 only on the post-terminal child. |
+| branch/guard | Under-snow litter operations or byte changes reject; no current-ingress/WB14 receipt may be synthesized. |
+| invariant guard map | `INV-SURFACELIQUID-026` -> represented-snow classifier, inactive-owner byte join, charged-map receipt join, and terminal split. |
+| test vector | `OBL-SURFACELIQUID-C-016`: unchanged bytes, zero phase/WB14 calls, exact receipts, no second envelope, transition, poisons, rollback. |
+| binding exposure | `SURFACELIQUID-STAGE3-INACTIVE-LITTER-CUSTODY`, active, `new-INV`, IDs `026/C-016`, dual review/verification. |
+| change log | 2026-09-01, contract 19: represented-snow frozen-litter inactive custody; unchanged liquid/energy physics and tolerances. |
+
+## Candidate-Only V3 Unpublished-Soil Custody Amendment
+
+`INV-SURFACELIQUID-027` — Frozen-litter V3 soil custody has two exact,
+mutually exclusive branches selected before projection:
+
+- the ordinary branch consumes a validated `SoilThermalOwnerEnvelopeV2` and
+  its exact matching restart and retains the existing publishable projection;
+- the candidate-only branch consumes only the authenticated
+  `SoilThermalUnpublishedPhysicalBeginningV2` constructed from the complete
+  continuation authority in `INV-LANDSURFACEENERGY-155`.
+
+The candidate-only projection may seal a typed non-owner record over the
+original prepared-owner digest, exact predecessor unpublished-trial seal,
+physical beginning-state digest, soil transaction/predecessor/receipt-chain,
+and exact child support. Its owner-envelope, restart, checkpoint, accepted-
+receipt, and receipt-free-seal byte fields are absent, not empty/defaulted. It
+cannot pass the ordinary publishable projection validator, enter restart or
+checkpoint state, or authorize an install. No surface/LSE source transaction
+may be copied into its independent soil transaction.
+
+At authentic final acceptance, independent complete replay from the original
+prepared owner, canonical accumulated operands, exact selected physical ending,
+and complete credit chain creates one ordinary publishable owner projection and
+one atomic soil install. The candidate-only projection is replaced and cannot
+coexist as a second accepted projection. Wrong discriminator, support rebind,
+predecessor-trial or receipt substitution, synthetic/empty owner bytes,
+intermediate install, dual acceptance, or replay disagreement rejects with
+`SURFACELIQUID-E-012` / `LSEB-E-049` and byte-exact complete-owner rollback.
+
+This is projection and custody authority only. It changes no litter mass,
+vapor, phase, ingress, WB14, soil energy arithmetic, physical tolerance,
+temporal floor, or accepted persistence wire.
+
+`OBL-SURFACELIQUID-C-017` — Prove exact branch discrimination, non-owner
+custody replay, absence rather than defaulting of owner/restart bytes,
+non-persistability/non-installability, exact final replacement, single atomic
+install, substitution/rebinding/dual-acceptance poisons, and full rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Select publishable or candidate-only soil custody before V3 projection; replace candidate custody only after complete final replay. |
+| branch/guard | Candidate branch has no owner/restart bytes and cannot validate as publishable; ordinary branch is unchanged. |
+| invariant guard map | `INV-SURFACELIQUID-027` -> V3 soil-custody discriminator, non-owner projection validator, final replay/install join. |
+| test vector | `OBL-SURFACELIQUID-C-017`: branch sides, absent bytes, support/trial/receipt poisons, final replacement, one install, rollback. |
+| binding exposure | `SURFACELIQUID-V3-UNPUBLISHED-SOIL-CUSTODY`, active, `maps-to-existing-INV`, IDs `027/C-017`, dual review/verification. |
+| change log | 2026-09-01, contract 20: candidate-only V3 unpublished-soil custody and one final publishable replacement; unchanged physics/tolerances/wire. |
+
+## Exact V3 Litter-Phase Capacity-Spill Custody Amendment
+
+`INV-SURFACELIQUID-028` specializes the already-authorized post-phase
+`litter overflow` chronology. The accepted LSE bounded-phase receipt first
+defines the raw liquid/ice/enthalpy ending. If its raw liquid is above the
+configured liquid capacity, `INV-LANDSURFACEENERGY-156` constructs exactly one
+typed `LitterPhaseCapacitySpillV1`. SurfaceLiquid must not pass the raw state to
+`SurfaceLiquidOwnerEnvelopeV2::try_replace_v2_state`, clamp it to capacity, or
+reinterpret the excess as condensation.
+
+The phase-adjusted V2 owner contains the companion's retained liquid, unchanged
+phase-ending ice, retained sensible-energy high mirror, and derived retained
+temperature. Its phase closure adds one liquid debit equal to the typed tile-
+basis spill. Independent closure reconstructs:
+
+```text
+W_raw = W_retained + m_spill,tile
+U_raw = U_retained + m_spill,tile*C_w*(T_raw-T_ref)
+m_spill,ofe = f_t*m_spill,tile
+Q_spill,ofe = m_spill,ofe*C_w*(T_raw-T_ref).
+```
+
+These are named-operand reconstructions, not producer residuals. Zero and
+positive spill are distinct typed outcomes. A positive spill requires finite
+positive mass, an exact configured forest-litter key and capacity, the
+accepted phase-receipt SHA-256, the same surface/LSE transaction and exact
+child support, and checked tile-to-OFE basis conversion. The V16 exact-surface
+receipt carries one negative tile-basis spill-energy operand. Removing mass
+without its sensible enthalpy, using air or forcing temperature, moving fusion
+or latent energy with the parcel, or cancelling the debit against later
+retention is forbidden.
+
+The spill is an internally generated `LitterPhaseOverflow` source parcel, not
+a caller-admitted precipitation/runon parcel and not
+`CondensationOverflow`. Its immutable origin and recipient are the exact litter
+store; its source identity includes transaction, store key, and phase receipt;
+its support is the full accepted child `[0,dt)`. It joins the ordinary
+canonical parcel ordering and well-mixed WB14 supply once. WB14 then owns its
+ordinary infiltration and post-infiltration excess. Any remaining capacity may
+retain attributed excess under the unchanged section-7 rule, and the remainder
+routes with unchanged source identity, OFE-area conversion, and hourly support.
+Only a named retained-ingress receipt may return mass/enthalpy to surface
+storage. The phase spill may not re-enter vapor/phase or trigger another WB14
+call.
+
+The complete projection and current-ingress receipt set must seal the phase
+companion, negative exact-surface operand, generated source parcel, and every
+infiltrated/retained/routed disposition. Missing, duplicate, reordered, wrong-
+kind, wrong-receipt, wrong-key, wrong-transaction/support, wrong-basis, or
+wrong-temperature/enthalpy material rejects with the existing typed identity,
+domain, closure, or atomic-envelope error. Any failure restores the beginning
+surface V2, exact-surface, LSE V3, soil, WB14 parent/cursor, receipt, checkpoint,
+and runner bytes. No capacity normalization, tolerance, phase equation, liquid
+retention equation, WB14 constitutive rule, temporal floor, or publication
+semantics changes.
+
+`OBL-SURFACELIQUID-C-018` — Prove below/at/above-capacity and melt-created
+spill cases; exact raw/retained/spill mass and sensible-enthalpy closure; typed
+source/receipt/transaction/support and area-basis identity; one negative exact-
+surface operand; exactly one current-ingress/WB14 supply; infiltration,
+retention, runoff, and routing; caller/condensation/ice/fusion aliases;
+duplicate/omitted/reordered poisons; no over-capacity owner; and full rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Receive the exact LSE phase spill companion; seal the retained within-capacity owner; debit spill energy; enqueue one internal phase-overflow parcel before ordinary WB14. |
+| branch/guard | Raw liquid at/below capacity has zero spill; above capacity requires complete typed custody. A raw over-capacity owner, clamp, caller parcel, or condensation alias rejects. |
+| invariant guard map | `INV-SURFACELIQUID-028` -> V3 phase projection, V2 resource candidate, generated-parcel validator, ingress/closure receipts, exact-surface and complete-owner joins. |
+| test vector | `OBL-SURFACELIQUID-C-018`: boundary sides, melt spill, mass/enthalpy/basis closure, one WB14 call, dispositions, aliases/poisons, rollback. |
+| binding exposure | `SURFACELIQUID-V3-LITTER-PHASE-CAPACITY-SPILL`, active, `maps-to-existing-INV`, IDs `028/C-018`, dual review/verification. |
+| change log | 2026-09-01, contract 21: exact post-phase litter liquid/enthalpy spill into current-ingress/WB14 custody; unchanged phase and hydrology equations, tolerances, floor, and prior owner bytes. |
+
+## Exact Heterogeneous V3 Finalized-Use Join Amendment
+
+`INV-SURFACELIQUID-029` specializes the existing exact finalized-use rule for
+one V3 batch containing native frozen-litter phase rows and ordinary legacy
+open or covered surface rows. Native litter-vapor rows are matched to accepted
+phase receipts by exact transaction, child support, OFE/tile/surface/source
+key, and the checked phase-specific aggregate amount. Those rows have already
+changed native liquid/ice/enthalpy custody and are consumed only by that phase
+receipt; applying them again through the resource candidate is replay.
+
+All unmatched surface rows form the complete ordinary set. Each retains the
+original request and authorization identity and satisfies `0<=F<=A<=D`.
+`SurfaceLiquidV2HeterogeneousResourceJoinV1` starts from the exact accepted
+phase-adjusted V2 owner and applies the ordinary `F/f_t` liquid debit once,
+using the section-3 complete-`GroundWaterKey` aggregation and checked binary64
+arithmetic. Its working liquid state, finalized-use lineage, and closure are
+the sole resource candidate passed to the existing one current-ingress/WB14
+transition. An empty ordinary set is bit-identical resource identity.
+
+The join changes only the liquid storage coordinates named by the ordinary
+finalized uses. It retains native litter ice, phase-adjusted thermodynamic
+coordinates, exact-surface owner/carry and phase receipt bytes, and the typed
+phase-capacity spill companion exactly. The spill remains a separately ordered
+internal `LitterPhaseOverflow` parcel; it is never a finalized use. The
+ordinary debit neither creates an ingress parcel nor supplies a new sensible,
+latent, fusion, or exact-surface energy operand: accepted LSE endings already
+own those energy effects. Therefore copying an independently produced legacy
+resource over the phase-adjusted owner, replaying a native row, folding spill
+into the ordinary set, recomputing enthalpy, or calling ingress twice is
+forbidden.
+
+Independent reconstruction must show that every unified finalized row is
+accounted exactly once as soil, accepted native phase, or ordinary surface;
+that the ordinary ending liquid equals the phase-adjusted beginning less the
+canonical sum of `F/f_t`; and that all unaffected native and exact custody
+bytes are unchanged. The join rejects omitted, duplicate, foreign, reordered-
+with-different-result, wrong-amount, transaction, support, key, source, basis,
+owner, configuration, predecessor, or phase-receipt inputs. Any rejection or
+later ingress/closure/publication failure preserves every V1/V2 surface,
+LSE/exact-energy, soil, WB14 parent, spill, receipt, cursor, and runner
+beginning byte.
+
+`OBL-SURFACELIQUID-C-019` — Prove heterogeneous and empty-ordinary cases,
+canonical-order mass closure, exact native-row exclusion, replay/omission/
+duplicate/foreign/substitution poisons, unchanged phase/spill/ice/enthalpy
+bytes, one resource candidate and ingress, and complete rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Match and consume native phase rows; debit the complete unmatched ordinary set once from the phase-adjusted V2 owner; execute current ingress once. |
+| branch/guard | Native rows require exact phase-receipt finalized-use identity and `0<=F<=A<=D` bounds and cannot be ordinary; all unmatched rows require exact D/A/F custody. Spill is not a finalized use. |
+| invariant guard map | `INV-SURFACELIQUID-029` -> typed row partition, heterogeneous V2 resource join, canonical debit and complete-owner rollback validators. |
+| test vector | `OBL-SURFACELIQUID-C-019`: heterogeneous/empty ordinary sets, exact mass/byte closure, row and receipt poisons, one ingress, rollback. |
+| binding exposure | `SURFACELIQUID-V3-HETEROGENEOUS-FINALIZED-USE-JOIN`, active, `maps-to-existing-INV`, IDs `029/C-019`, dual review/verification. |
+| change log | 2026-09-02, contract 22: exact heterogeneous native-phase/ordinary finalized-use partition and once-only ordinary debit; unchanged physics, energy receipts, ingress ordering, tolerances, and support. |
+
+## Topology-Ranked Exact-Surface Owner Amendment
+
+`INV-SURFACELIQUID-030` specializes the canonical ordering requirement for the
+V16 exact-surface owner at hillslope scale. The exact owner record sequence is
+the complete `SurfaceLiquidConfigurationV2` record sequence: first the rank of
+each opaque `ofe_id` in the configuration's authenticated `ofe_topology`, then
+the existing `DirectSurfaceLiquidStoreKey` order with the OFE component held
+equal. Each accepted-energy operand group follows that same owner-record rank,
+then the existing operand-kind and ordinal order. Thus configured topology
+`ofe-9 -> ofe-10` is canonical as written even though lexical string order
+would place `ofe-10` first. Reverse, nonmonotone, or nonnumeric OFE identifiers
+are equally governed by configuration rank. Numeric parsing, lexical sorting,
+and caller insertion order are not admitted authorities.
+
+The existing V1 wire schema retains only the configuration digest, not an
+independent topology copy. Consequently, bare envelope/receipt parsing may
+validate schema, digest form, finite exact-energy coordinates, record
+uniqueness, state/receipt digests, matching beginning/ending sequence, and
+lineage. It may not declare an installable record sequence canonical from OFE
+spelling. Canonical order and complete membership are proven at the existing
+authenticated configuration/frozen-parent join by matching the exact record
+sequence to the configuration-ranked surface-owner V2 sequence. Successor
+receipts, restart/checkpoint, projection, and independent reconstruction
+preserve that sequence exactly.
+
+Duplicate keys or topology entries, omitted or substituted configured keys,
+within-OFE reorder, operand-group reorder, foreign OFE, stale configuration or
+digest, mismatch between LSE and SurfaceLiquid topology, beginning/ending
+reorder, and any later receipt/projection/install failure reject before
+publication and preserve every exact-surface, LSE V3, SurfaceLiquid V2, WB14,
+restart/checkpoint, receipt, and runner beginning byte. This amendment changes
+no energy value, exact-carry arithmetic, physics, support, transaction,
+tolerance, or serialized field.
+
+`OBL-SURFACELIQUID-C-020` — Prove accepted two-OFE topology
+`ofe-9 -> ofe-10`, reverse/nonmonotone and nonnumeric opaque IDs, multiple
+within-OFE keys and operand kinds/ordinals, exact restart/receipt roundtrip,
+and byte-identical energy coordinates. Poison duplicate/omitted/substituted
+keys, foreign OFE, lexical and numeric-derived reorder, within-OFE reorder,
+operand-group reorder, stale configuration/digest, LSE/SurfaceLiquid topology
+mismatch, beginning/ending reorder, and failed install; every poison proves
+complete rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Obtain OFE rank from the authenticated surface configuration; validate complete exact-owner records in configuration order and accepted operands by record rank, kind, and ordinal. |
+| branch/guard | Bare validation proves uniqueness and sealed lineage only; canonical installability requires the authenticated configuration join. Lexical/numeric OFE ordering is forbidden. |
+| invariant guard map | `INV-SURFACELIQUID-030` -> exact-owner parser, frozen-parent/configuration join, receipt/restart/projection validators, and atomic installer. |
+| test vector | `OBL-SURFACELIQUID-C-020`: `ofe-9 -> ofe-10`, opaque/reverse IDs, within-OFE order, duplicate/omission/substitution/reorder/stale-config poisons, rollback. |
+| binding exposure | `SURFACELIQUID-V16-TOPOLOGY-RANKED-EXACT-OWNER`, active, `maps-to-existing-INV`, IDs `030/C-020`, dual review/verification. |
+| change log | 2026-09-02, contract 23: configuration-topology-ranked V16 exact-owner and operand order for opaque OFE IDs; unchanged schema, physics, exact arithmetic, chronology, and rollback. |
+
+## Validated In-Memory Surface-Resource Handoff Amendment
+
+`INV-SURFACELIQUID-031` permits one narrow performance optimization without
+changing custody: after the complete V2 surface-resource candidate has passed
+its existing semantic validation, a private typed handoff may carry that fact
+to trusted in-process consumers of the same immutable revision. The handoff
+binds the model and schema, authenticated configuration digest, complete
+candidate and nested-owner digests, transaction, predecessor, support, and
+revision identity. It owns or immutably borrows the validated value and exposes
+no mutable dereference, public constructor, unchecked constructor, wire form,
+or persistence form.
+
+Canonical bytes or digests cached while performing that validation are derived
+evidence only. A cache is keyed to the exact configuration and candidate
+revision, must equal fresh canonical serialization, and is discarded with the
+proof on any mutation, replacement, configuration change, transaction change,
+predecessor change, support change, or nested-owner change. A consuming
+transformation must fully validate its new candidate before producing a new
+handoff. Proof transfer between candidates is forbidden.
+
+This amendment does not move a trust boundary. Deserialization, restart or
+checkpoint restore, external bytes, durable publication, and values returned
+by an untrusted executor always undergo the existing full parse, canonical
+reconstruction, digest computation, and semantic validation before a private
+handoff may be minted. No cached digest or typed wrapper can substitute for
+those checks. Failure preserves all beginning owner, candidate, receipt,
+restart, cursor, and publication bytes.
+
+`OBL-SURFACELIQUID-C-021` — Prove validation once for an unchanged candidate
+revision and zero repeated nested-owner serialization at trusted ingress;
+proof invalidation and fresh validation after every mutation; rejection of
+wrong configuration, nested-owner poison, stale digest, lineage/support
+change, and cross-candidate proof use; byte-identical accepted outputs and
+failure rollback; and unchanged full restart/external/untrusted validation.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Fully validate one immutable candidate revision, mint a private revision-bound handoff, and consume that handoff only within the trusted in-process custody chain. |
+| branch/guard | Mutation consumes the proof; restart, checkpoint, external bytes, durable publication, and untrusted executor returns always perform fresh full validation. |
+| invariant guard map | `INV-SURFACELIQUID-031` -> private validated typestate, candidate-revision/configuration digest join, mutation invalidation, boundary validators, and atomic rollback. |
+| test vector | `OBL-SURFACELIQUID-C-021`: validation-once, zero duplicate owner serialization, mutation/configuration/nested-owner/proof-transfer poisons, restart and untrusted-boundary revalidation, output equality, rollback. |
+| binding exposure | `SURFACELIQUID-V24-VALIDATED-IN-MEMORY-HANDOFF`, active, `maps-to-existing-INV`, IDs `031/C-021`, dual review/verification. |
+| change log | 2026-09-02, contract 24: admitted only private immutable nonserializable validation-once handoffs; retained full validation at every restart, external, durable, and untrusted-executor boundary. |
+
+## Lane-D-Local SurfaceLiquid Routing Posture Amendment
+
+`INV-SURFACELIQUID-032` admits a second complete configuration posture needed
+when Lane D owns inter-OFE surface transfer. Before Stage-3 day-zero bootstrap,
+the active Lane-D decision may reconstruct the authenticated SurfaceLiquid
+configuration with both runon destination fields absent on every record. The
+ordered OFE topology, production bindings, complete store keys, physical
+liquid values, and every non-routing scientific operand remain unchanged; the
+configuration digest is recomputed from the projected canonical record set.
+SurfaceLiquid then owns only local ingress, infiltration, retention, and local
+runoff disposition. Lane D alone owns downstream transfer and outlet routing.
+
+The all-local posture is whole-configuration semantics, not an optional edge.
+Native DC01 routing retains one complete forward route per nonterminal OFE and
+no route on the terminal OFE. Any mixture of the two postures, any incomplete
+destination pair, or any attempted projection after a transaction, cursor
+advance, cumulative supply, or cumulative infiltration rejects before
+mutation. Inactive Lane D retains the persisted native DC01 configuration.
+
+`OBL-SURFACELIQUID-C-022` — Prove a valid routed multi-OFE day-zero owner
+projects to the all-local configuration, recomputes and validates its digest,
+and preserves every physical liquid bit; prove mixed/incomplete routes reject;
+prove non-day-zero or previously transacted owners reject without mutation;
+and prove the real active Lane-D consumer observes zero DC01 runon while Lane D
+retains sole conservative inter-OFE transfer and outlet publication.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Resolve active Lane D before Stage-3 bootstrap; reconstruct one complete all-local configuration and its day-zero state from exact keyed physical values. |
+| branch/guard | All routes are native DC01 or all routes are absent; mixed/incomplete posture and non-day-zero projection reject before mutation. |
+| invariant guard map | `INV-SURFACELIQUID-032` -> configuration identity validator, pre-bootstrap projection, active-owner decision stability check, DC01 double-feed guard, and atomic rollback. |
+| test vector | `OBL-SURFACELIQUID-C-022`: routed-to-local positive, digest/state validation, physical-bit equality, mixed/incomplete route poison, non-day-zero rollback, real active Lane-D zero-DC01-runon consumer. |
+| binding exposure | `SURFACELIQUID-V25-LANED-ACTIVE-LOCAL-ROUTING`, active, `maps-to-existing-INV`, IDs `032/C-022`, dual review/verification. |
+| change log | 2026-09-02, contract 25: admitted a complete all-local SurfaceLiquid routing posture only for the pre-bootstrap active Lane-D owner projection; retained native DC01 routing for inactive execution and forbade mixed or duplicate transfer ownership. |
+
+## Snow-Free Final-Receipt Reseal Amendment
+
+`INV-SURFACELIQUID-033` allows a private, single-use implementation shortcut
+only after the complete provisional snow-free transaction has executed and
+validated. The proof retains the exact physical ending and every non-slab
+identity. A final independently constructed accepted slab may consume it to
+rebuild the receipt-bound envelope, WB14 replay seals, parent/child receipts,
+and complete-owner candidates. No surface-liquid, vapor, phase, ingress,
+Green-Ampt/WB14, routing, retention, runoff, or energy arithmetic may execute
+again.
+
+The accepted-slab digest is the sole permitted provisional/final binding
+difference. Parent, segment, ordinal, support, configuration, topology,
+forcing, beginning owners, resource uses, soil custody, physical ending, and
+publication input remain exact. The final reseal must reconstruct the same
+surface owner and complete-owner bytes as the validated provisional physical
+ending. The provisional transaction publishes nothing; the final transaction
+publishes once. The proof has no serialization, restart, checkpoint, receipt,
+or public constructor and cannot survive mutation or restore. Failure is typed
+and atomic; no physical replay fallback is permitted.
+
+`OBL-SURFACELIQUID-C-023` requires direct/reuse exact-byte comparison, one-call
+vapor/phase/ingress/WB14/routing counters, zero/one publication counters,
+partial and final WB14 posture, exhaustive identity and ending-state poisons,
+duplicate-use and restart refusal, fresh post-restore execution, and complete
+rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Capture one fully validated snow-free physical ending; consume it once to reseal accepted-slab-dependent authority; compare exact ending owners; publish the final transaction once. |
+| branch/guard | Final reseal executes no physical surface operation. Missing/invalid proof is a typed failure without replay; restart requires fresh physical execution. |
+| invariant guard map | `INV-SURFACELIQUID-033` -> private physical-reuse typestate, accepted-slab-only delta guard, exact owner/WB14 replay validator, provider/publication counters, restart/rollback gates. |
+| test vector | `OBL-SURFACELIQUID-C-023`: direct/reuse equality, physical count one, publication 0/1, partial/final WB14, identity/ending poisons, reuse/restart refusal, rollback. |
+| binding exposure | `SURFACELIQUID-V26-SNOW-FREE-PHYSICAL-REUSE`, active, `maps-to-existing-INV`, IDs `033/C-023`, dual review/verification. |
+| change log | 2026-09-02, contract 26: admitted one private single-use snow-free physical ending for final accepted-slab identity resealing; surface/WB14 physics, exact owners, publication, restart, and rollback are unchanged. |
+
+## Covered Pending-Adjudication Map Amendment
+
+`INV-SURFACELIQUID-034` distinguishes a charged covered map's validated
+surface physical custody from a publishable surface owner. `Initial` and every
+later charged map execute and validate their existing surface-ingress/WB14
+candidate and
+retain the exact physical result, parent/child posture, receipts, and replay
+custody only inside a private typed endpoint. Native represented-snow maps
+instead retain inactive litter/WB14 bytes exactly and perform zero
+snow-free phase, storage, ingress, or WB14 work. Neither posture constructs,
+installs, serializes, persists, restores, or publishes a surface owner.
+
+Every post-initial charge yields a non-Clone pending adjudication value only
+after exact physical, identity, and discrete-custody validation. Outer
+nonclosure consumes it into iteration history; dependent-only nonclosure
+consumes it into typed adaptive rejection. Full closure consumes the same
+pending value once as the `FinalAccepted` disposition and constructs complete
+surface owner and receipt custody from its already-executed physical prefix. It
+returns private candidate custody and performs no enqueue, exposure, live-owner
+install, or publication. Exact
+role/ordinal, support, transaction, topology, configuration, forcing, lower
+boundary, soil predecessor, parent posture, and physical endpoint are required.
+Wrong ordinary/native posture, half-native custody, a one-ULP physical change,
+or any duplicate/cross-disposition use or final constructor failure rejects
+with exact rollback and cannot promote or replay a physical-only/history result.
+
+`INV-SURFACELIQUID-033` applies only to the separately governed snow-free
+provisional/final accepted-slab reseal. It is not authority for canonical
+covered-map reuse. A canonical final disposition may consume only its own
+pending charged physical prefix and cannot consume, convert, or promote an
+earlier completed endpoint.
+
+| Amendment trigger | Typed failure and precedence |
+| --- | --- |
+| role, support, or zero-based ordinal mismatch | `SURFACELIQUID-E-008`, before surface physical execution |
+| outer nonclosure | consume the pending map into history; no error |
+| dependent-only nonclosure | consume the pending map into `SURFACELIQUID-E-008`; no history or constructor |
+| transaction, topology, configuration, regime, native posture, predecessor, custody, promotion, or state-leak mismatch | `SURFACELIQUID-E-002`, before pending minting or the affected constructor/exposure |
+| physical-prefix or surface/WB14 closure mismatch | `SURFACELIQUID-E-010` |
+| complete surface envelope, rollback, or map-level publication violation | `SURFACELIQUID-E-011`; expose nothing |
+
+Validation precedence is `E-002`, then `E-008`, then `E-010`, then `E-011`;
+unchanged earlier schema/domain/resource errors retain their numeric priority.
+
+`OBL-SURFACELIQUID-C-024` — Prove exact ordinary and native physical-prefix
+parity against a test-only forced-complete reference, exclusive history,
+rejection, and final dispositions, zero history/rejection and one successful
+final surface-owner/envelope construction, inactive native litter/WB14 call
+counts, exact partial/final parent custody, role/regime/identity/one-ULP
+poisons, unpublishability, final-failure no-fallback, and complete rollback.
+Apply the canonical charge, physical-endpoint, disposition, physical-failure,
+dependent-rejection, and final-constructor failure matrix. Every map and failed/direct/unselected candidate
+publishes zero; the selected composed parent publishes exactly once only at
+atomic parent commit.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Validate surface physical custody for each charged map; consume each post-initial pending value into history, rejection, or same-map final owner construction. |
+| branch/guard | Typed ordinary/native pending endpoints preserve distinct physical authority and prevent cross-disposition reuse or owner/wire/install/publication conversion outside final disposition. |
+| invariant guard map | `INV-SURFACELIQUID-034` -> role dispatcher, ordinary/native custody-before-pending physical endpoint validators, pending disposition gates, final-only owner constructor, separate envelope/parent-publication counters, exact rollback guards; outer nonclosure -> history/no error, dependent-only nonclosure/role/support/ordinal -> `E-008`, identity/regime/custody/disposition/leak -> `E-002`, prefix closure -> `E-010`, envelope/publication/rollback -> `E-011`, in numeric precedence. |
+| test vector | `OBL-SURFACELIQUID-C-024`: physical parity, exclusive dispositions, success/failure zero/one constructor counts, inactive-native counters, parent posture, identity/ULP poisons, zero map publication, parent-only publication, unpublishability, rollback. |
+| binding exposure | `SURFACELIQUID-V29-COVERED-PENDING-ADJUDICATION`, active, `new-INV`, IDs `034/C-024`, dual review/verification. |
+| change log | 2026-09-03, contract 29: the converged pending adjudication map continues from its own physical prefix into complete surface custody; no final physical replay is authorized. |
+
+## Native Inactive-Prefix WB14 Transition Amendment
+
+`INV-SURFACELIQUID-035` closes the exact transition from represented-snow
+inactive custody to the first positive snow-free child inside the same
+1,800-second WB14 parent. The transition constructor consumes a typed proof of
+the complete accepted inactive prefix. In canonical order that proof binds the
+WB14 parent transaction and support, beginning cursor and immutable per-OFE
+identities, surface topology, every accepted coupled slab and beginning/ending
+complete-owner identity, and each inactive-custody marker. Its supports are
+positive, unique, gap-free, nonoverlapping, begin at the WB14 parent start, and
+end exactly at the first snow-free child start. Every row must authenticate
+against the coupled parent's accepted receipt chain; a marker list by itself is
+not authority.
+
+For every configured OFE the constructor preserves the beginning WB14 cursor's
+cumulative supply and infiltration bits, executes no Green--Ampt transition,
+and creates no WB14 call, transition, child receipt, routed parcel, or liquid
+ledger for the prefix. It sets only the parent-local accepted-support cursor to
+the prefix end. The first snow-free physical child therefore starts at that
+cursor with WB14 child ordinal zero. A canonical digest of the complete proof
+is included in the WB14 parent identity and initial receipt-chain seed, and the
+proof/digest is retained by child replay, parent finalization, and restart.
+Validation reconstructs the proof before reconstructing any physical receipt.
+
+An ordinary parent has no inactive-prefix proof and retains its existing exact
+wire and start-at-parent-origin semantics. A native-prefix parent must carry
+the explicit proof; absence, empty/default synthesis, compatibility inference,
+or cursor mutation is prohibited. The final parent partition is exactly the
+inactive prefix followed by zero or more ordered physical WB14 receipts and
+must cover the parent support once. A fully inactive parent remains governed by
+`INV-SURFACELIQUID-026` and finalizes through its native custody path; this
+amendment does not fabricate a WB14 parent receipt for it.
+
+This is a conditional additive parent-local WB14 replay/restart schema change.
+Only native-prefix candidates carry the new proof; unaffected ordinary replay
+bytes remain exact. Old or malformed bytes that claim an advanced WB14 cursor
+without the complete proof fail closed. No represented-snow litter operation,
+liquid mass, infiltration, runoff, energy, tolerance, solver, map charge, or
+publication authority is added.
+
+`OBL-SURFACELIQUID-C-025` — Record the contract-derived expected red, then prove
+the real represented-snow-to-snow-free runner transition. Prove complete prefix
+coverage and coupled-receipt authentication; unchanged beginning cumulative
+bits; zero inactive-prefix WB14 calls, transitions, receipts, routing, and
+ledgers; first physical ordinal zero; exact full-parent finalization; split
+restart equivalence; and byte-exact rollback. Reject missing/extra/reordered,
+gapped/overlapping, wrong-parent, wrong-owner, wrong-topology, wrong-slab,
+wrong-marker, wrong-prefix-end, changed-cumulative, nonzero-ordinal, replay,
+and advanced-cursor-without-proof poisons.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Authenticate the complete native inactive prefix, seed the parent-local WB14 chronology at its exact end without physics, then accept the first snow-free physical child as ordinal zero. |
+| branch/guard | Native cursor advancement requires the explicit coupled-receipt-backed proof; ordinary parents remain unchanged and no inactive WB14 receipt is admissible. |
+| invariant guard map | `INV-SURFACELIQUID-035` -> inactive-prefix constructor/digest, per-OFE parent identity and receipt-chain seed, physical-child support/ordinal validator, final partition, replay/restart, rollback. |
+| test vector | `OBL-SURFACELIQUID-C-025`: real transition, prefix poisons, zero-work counters, ordinal/cumulative identity, finalization, restart, rollback. |
+| binding exposure | `SURFACELIQUID-V28-NATIVE-INACTIVE-PREFIX-TRANSITION`, active, `new-INV`, IDs `035/C-025`, dual review/verification. |
+| change log | 2026-09-03, contract 28: authenticated represented-snow inactive-prefix chronology for the first exact snow-free WB14 child; unchanged physics/tolerances. |

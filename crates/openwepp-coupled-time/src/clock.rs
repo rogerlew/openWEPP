@@ -1,4 +1,5 @@
 use serde::Serialize;
+use std::sync::Arc;
 
 use crate::{
     CoupledTimeError, Digest32, ModelTimeNs, ParentIntervalId, ParentTransactionId, ReceiptId,
@@ -37,8 +38,29 @@ impl OwnerState {
     }
 }
 
+/// Process-local authority for candidates validated against one live clock.
+///
+/// The unit payload deliberately keeps ordinary clock equality independent of
+/// this non-wire capability. Pointer identity, exposed only within this crate,
+/// distinguishes independent construction and restart from exact in-process
+/// clones.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct LiveClockIncarnationV1(Arc<()>);
+
+impl LiveClockIncarnationV1 {
+    pub(crate) fn fresh() -> Self {
+        Self(Arc::new(()))
+    }
+
+    pub(crate) fn is_same(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.0, &other.0)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CoupledClockStateV1 {
+    #[serde(skip)]
+    pub(crate) live_incarnation: LiveClockIncarnationV1,
     pub(crate) run_identity: Digest32,
     pub(crate) calendar_receipt: Digest32,
     pub(crate) forcing_receipt: Digest32,
@@ -131,6 +153,7 @@ impl CoupledClockStateV1 {
             crate::digest_bytes(&participant_bytes),
         )?;
         Ok(Self {
+            live_incarnation: LiveClockIncarnationV1::fresh(),
             run_identity: authority.run_identity,
             calendar_receipt: authority.calendar_receipt,
             forcing_receipt: authority.forcing_receipt,
@@ -259,6 +282,10 @@ impl CoupledClockStateV1 {
         });
         self.scheduled_once_receipts
             .sort_by_key(|receipt| receipt.receipt_id);
+        // Scheduled receipts do not advance the accepted-clock digest. Fork
+        // the private live capability so equal receipt counts on two clock
+        // clones cannot make distinct scheduled histories interchangeable.
+        self.live_incarnation = LiveClockIncarnationV1::fresh();
         Ok(receipt)
     }
 }

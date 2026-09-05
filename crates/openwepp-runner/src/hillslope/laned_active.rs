@@ -1,26 +1,29 @@
-//! Lane D ACTIVE production owner selector (`SC-OFEROUTE-001` rev 46,
-//! `INV-OFEROUTE-010` / `INV-OFEROUTE-012` activation): explicit opt-in via
-//! `OPENWEPP_LANED_ACTIVE=1`, plus conditional default activation when every
-//! scheduled lane has native management `routing_coefficients`. The runner
+//! Lane D production owner (`SC-OFEROUTE-001`, `INV-OFEROUTE-010` /
+//! `INV-OFEROUTE-012`): authenticated default activation when every scheduled
+//! lane has native management `routing_coefficients`. The runner
 //! builds the per-lane active configuration from the SAME rev-20/21 authority
 //! sources as the diagnostic shadow (native management `routing_coefficients`,
 //! Wave-1 operand-seed geometry, typed-management `canhgt`) and attaches it to
 //! the direct run frame; the orchestrator executor then owns the two-phase
 //! active day loop, the DC01-surface-disable, the D13 erosion producer flip,
 //! the rev-45 `dx5` active production mesh default, and the day-closure
-//! hard-fails. Mutually exclusive with
-//! `OPENWEPP_LANED_SHADOW=1` (the shadow's published-row reconstruction
-//! basis is DC01-shaped and is not defined over an active run). The explicit
-//! disable selector forces the legacy/off path for rollback and cannot coexist
-//! with explicit active opt-in.
+//! hard-fails. The contracted explicit active and active-disable rollback
+//! selectors remain production inputs; obsolete shadow/profile/tuning
+//! selectors are rejected at the Stage-3 owner.
 
+#[cfg(test)]
 use crate::HillslopeCliError;
 
+#[cfg(test)]
 pub(crate) const ACTIVE_MAX_DT_ENV: &str = "OPENWEPP_LANED_ACTIVE_MAX_DT_S";
 pub(crate) const ACTIVE_DISABLE_ENV: &str = "OPENWEPP_LANED_ACTIVE_DISABLE";
+#[cfg(test)]
 pub(crate) const ACTIVE_MESH_TARGET_DX_ENV: &str = "OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M";
+#[cfg(test)]
 pub(crate) const ACTIVE_STEP_TRACE_ENV: &str = "OPENWEPP_LANED_ACTIVE_STEP_TRACE";
+#[cfg(test)]
 pub(crate) const ACTIVE_TRACE_DETAIL_ENV: &str = "OPENWEPP_LANED_ACTIVE_TRACE_DETAIL";
+#[cfg(test)]
 pub(crate) const ACTIVE_TRACE_ENV: &str = "OPENWEPP_LANED_ACTIVE_TRACE";
 
 /// Env opt-in: `OPENWEPP_LANED_ACTIVE=1`.
@@ -35,13 +38,16 @@ pub(crate) fn disable_enabled() -> bool {
 }
 
 #[must_use]
+#[cfg(test)]
 pub(crate) fn trace_enabled() -> bool {
     trace_enabled_from_value(std::env::var(ACTIVE_TRACE_ENV).ok().as_deref())
 }
 
 #[derive(Debug, Default, Clone, Copy)]
+#[cfg(test)]
 struct ActiveTraceSelectorState(u8);
 
+#[cfg(test)]
 impl ActiveTraceSelectorState {
     const ACTIVE: u8 = 1 << 0;
     const TRACE: u8 = 1 << 1;
@@ -74,6 +80,7 @@ impl ActiveTraceSelectorState {
     }
 }
 
+#[cfg(test)]
 fn validate_trace_selector_combination(
     state: ActiveTraceSelectorState,
 ) -> Result<(), HillslopeCliError> {
@@ -122,33 +129,17 @@ fn validate_trace_selector_combination(
     Ok(())
 }
 
+#[cfg(test)]
 fn trace_enabled_from_value(value: Option<&str>) -> bool {
     value.is_some_and(|value| value == "1")
 }
 
-#[must_use]
-pub(crate) fn step_trace_enabled() -> bool {
-    step_trace_enabled_from_value(std::env::var(ACTIVE_STEP_TRACE_ENV).ok().as_deref())
-}
-
+#[cfg(test)]
 fn step_trace_enabled_from_value(value: Option<&str>) -> bool {
     value.is_some_and(|value| value == "1")
 }
 
-pub(crate) fn trace_detail_filter_from_env() -> Result<
-    Option<openwepp_hillslope_orchestrator::DirectLanedActiveTraceDetailFilter>,
-    HillslopeCliError,
-> {
-    match std::env::var(ACTIVE_TRACE_DETAIL_ENV) {
-        Ok(value) => trace_detail_filter_from_value(Some(&value)),
-        Err(std::env::VarError::NotPresent) => trace_detail_filter_from_value(None),
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: ACTIVE_TRACE_DETAIL_ENV,
-            detail: "expected UTF-8 one-based sim_day:lane selector".to_string(),
-        }),
-    }
-}
-
+#[cfg(test)]
 fn trace_detail_filter_from_value(
     value: Option<&str>,
 ) -> Result<
@@ -191,18 +182,7 @@ fn trace_detail_filter_from_value(
     ))
 }
 
-pub(crate) fn mesh_policy_from_env()
--> Result<openwepp_hillslope_orchestrator::DirectLanedActiveMeshPolicy, HillslopeCliError> {
-    match std::env::var(ACTIVE_MESH_TARGET_DX_ENV) {
-        Ok(value) => mesh_policy_from_target_dx_value(Some(&value)),
-        Err(std::env::VarError::NotPresent) => mesh_policy_from_target_dx_value(None),
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: ACTIVE_MESH_TARGET_DX_ENV,
-            detail: "expected UTF-8 finite positive target dx in meters".to_string(),
-        }),
-    }
-}
-
+#[cfg(test)]
 fn mesh_policy_from_target_dx_value(
     value: Option<&str>,
 ) -> Result<openwepp_hillslope_orchestrator::DirectLanedActiveMeshPolicy, HillslopeCliError> {
@@ -225,17 +205,7 @@ fn mesh_policy_from_target_dx_value(
         })
 }
 
-pub(crate) fn max_dt_s_from_env() -> Result<f64, HillslopeCliError> {
-    match std::env::var(ACTIVE_MAX_DT_ENV) {
-        Ok(value) => max_dt_s_from_value(Some(&value)),
-        Err(std::env::VarError::NotPresent) => max_dt_s_from_value(None),
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: ACTIVE_MAX_DT_ENV,
-            detail: "expected UTF-8 finite positive max dt in seconds".to_string(),
-        }),
-    }
-}
-
+#[cfg(test)]
 fn max_dt_s_from_value(value: Option<&str>) -> Result<f64, HillslopeCliError> {
     let Some(value) = value else {
         return Ok(openwepp_hillslope_orchestrator::LANED_ACTIVE_MAX_DT_S);

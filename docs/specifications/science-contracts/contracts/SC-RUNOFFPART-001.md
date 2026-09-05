@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 48
+contract_version: 49
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Erosion/hydraulics consumers requiring runoff duration, volume, and peak discharge
   - Comparator/replay surfaces using Tier-A single-OFE runoff acceptance signals
 evidence_level: static
-last_reviewed: 2026-06-14
+last_reviewed: 2026-09-01
 supersedes: []
 superseded_by: []
 ---
@@ -1039,3 +1039,35 @@ row requiring new binding promotion.
 | `2026-07-01` | `19` | `Claude Code` | MOFEFID-DC01 amendment: added `REF-RUNOFFPART-BASELINE-RUNON-FIN` (baseline `fin`/`xfin` runon-admission source intent, ADR-0024) and `INV-RUNOFFPART-031` (runon re-infiltration: WB14 supply includes area-scaled upstream surface+lateral carry; dry-runon hourly time-base synthesis; single-OFE bit-identity; erosion decreasing-flow boundary stays in the `INV-RUNOFFPART-030` hold). Executes the promotion anticipated by `REF-RUNOFFPART-LEGACY-FIN-INFIL`; evidence: MOFEFID-A01 F-A2 + A02 probe (−10.1 pp lower bound). |
 | `2026-07-02` | `20` | `Claude Code` | MOFEFID-B02 amendment: `INV-RUNOFFPART-032` — published `QOFE == Q` on all WB13 rows (post-`wepp_260516` convention), with `H.pass.runvol` and peak byte-invariant via the retained per-OFE local-length basis; operator-authorized B7 disposition. Downstream volume recovery recipe updated (`Q(outlet)*A_total`, not `QOFE*per_OFE_area`). |
 | `2026-08-02` | `21` | `Codex` | SNOW-SURFACE-EB-04W2B amendment: added `INV-RUNOFFPART-033`, binding positive typed snowfall to shared snow-consumer activation and independent fail-closed daily SWE storage closure while preserving the warm all-rain inactive path. |
+
+## Accepted Stage-3 Routed-Liquid Amendment
+
+`INV-RUNOFFPART-034` — WB12/WB14 consumes the accepted non-CoE Stage-3 /
+surface-liquid owner as the sole routed-snow liquid source. The producer-owned
+24 hourly depths close to the same daily `snow.routed_melt_m` under the
+existing `INV-RUNOFFPART-019`--`022` authority and flow through the same
+infiltration/runoff partition used by downstream publication. CoE, a Stage-3
+diagnostic opportunity, SWE differencing, raw precipitation, uniform daily
+retiming, or a state/default substitute is invalid. Exact source receipt,
+support, owner, event, destination, order, and exact-one transfer custody are
+preserved into WB14 and Lane D.
+
+The real-runner obligation is to prove hourly/daily source closure, same-pass
+capacity partition, explicit zeroes, accepted-only source identity, Lane-D
+per-OFE consumption, and fail-closed rejection of every alias above.
+
+`OBL-RUNOFFPART-P-013` / `OBL-RUNOFFPART-C-005` — Publish and consume the one
+accepted Stage-3/surface-liquid 24-bin source through WB14 and Lane D; prove
+daily closure, capacity partition, exact zeroes, owner identity, and rejected
+CoE/SWE-delta/raw-precipitation/uniform aliases.
+
+### Profile integration
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Join accepted surface-liquid receipt, publish 24-bin WB14 input and daily scalar, partition infiltration/runoff, hand accepted source to Lane D. |
+| branch/guard | Exact accepted owner/hourly closure or typed failure; no state/default/CoE/scalar reconstruction. |
+| invariant guard map | `INV-RUNOFFPART-034` -> source join, hourly/daily validator, WB14 capacity partition, Lane-D handoff. |
+| test vector | `P-013/C-005`: positive/zero source, daily closure, capacity/noncapacity, alias/retiming/owner poisons, rollback. |
+| binding exposure | `RUNOFFPART-STAGE3-ACCEPTED-ROUTED-LIQUID`, active, `new-INV`, IDs `034/P-013/C-005`, dual review/verification. |
+| change log | 2026-09-01, contract 49: bound accepted non-CoE Stage-3 routed liquid into WB14 and Lane D. |

@@ -12,122 +12,9 @@ pub(crate) use owner_finalization::{
 };
 pub(super) use owner_finalization::*;
 
-struct CoveredFixedPointPolicy {
-    max_iterations: usize,
-    temperature_abs_k: f64,
-    temperature_rel: f64,
-    humidity_abs_kg_kg: f64,
-    humidity_rel: f64,
-    flux_abs_w_m2: f64,
-    flux_rel: f64,
-    vapor_abs_kg_m2_s: f64,
-    vapor_rel: f64,
-    depth_abs_m: f64,
-    state_temperature_abs_k: f64,
-    mass_abs_kg_m2: f64,
-    energy_abs_j_m2: f64,
-}
-
-// Reviewed execution policy for the covered outer solve. Each norm is kept in
-// its native units; no mixed-unit scalar tolerance is used.
-const COVERED_FIXED_POINT_POLICY: CoveredFixedPointPolicy = CoveredFixedPointPolicy {
-    // The 60-second coupled floor can require more contractions than the
-    // former subsecond cadence. Keep the reviewed norms unchanged and allow
-    // the deterministic iteration to reach them; exhaustion remains
-    // fail-closed.
-    max_iterations: 96,
-    temperature_abs_k: 1.0e-8,
-    temperature_rel: 1.0e-10,
-    humidity_abs_kg_kg: 1.0e-12,
-    humidity_rel: 1.0e-8,
-    flux_abs_w_m2: 1.0e-7,
-    flux_rel: 1.0e-9,
-    vapor_abs_kg_m2_s: 1.0e-12,
-    vapor_rel: 1.0e-6,
-    depth_abs_m: 1.0e-9,
-    state_temperature_abs_k: 1.0e-8,
-    mass_abs_kg_m2: 1.0e-6,
-    energy_abs_j_m2: 1.0e-6,
-};
-
 #[cfg(test)]
 std::thread_local! {
-    static FORCE_COVERED_FIXED_POINT_EXHAUSTION: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
     static FORCE_COVERED_FULL_PROVISIONAL_ENVELOPE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
-    static COVERED_RECEIPT_RESEAL_DENSITY_MODE: std::cell::Cell<u8> = const { std::cell::Cell::new(0) };
-    static COVERED_RECEIPT_RESEAL_DENSITY_CALLS: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
-}
-
-#[cfg(test)]
-pub(crate) struct ForceCoveredFixedPointExhaustionGuardV1;
-
-#[cfg(test)]
-impl Drop for ForceCoveredFixedPointExhaustionGuardV1 {
-    fn drop(&mut self) {
-        FORCE_COVERED_FIXED_POINT_EXHAUSTION.with(|forced| forced.set(false));
-    }
-}
-
-#[cfg(test)]
-pub(crate) fn force_covered_fixed_point_exhaustion_for_test(
-) -> ForceCoveredFixedPointExhaustionGuardV1 {
-    FORCE_COVERED_FIXED_POINT_EXHAUSTION.with(|forced| forced.set(true));
-    ForceCoveredFixedPointExhaustionGuardV1
-}
-
-#[cfg(test)]
-fn covered_fixed_point_exhaustion_forced_for_test() -> bool {
-    FORCE_COVERED_FIXED_POINT_EXHAUSTION.with(std::cell::Cell::get)
-}
-
-#[cfg(test)]
-pub(crate) struct CoveredReceiptResealDensityGuardV1;
-
-#[cfg(test)]
-impl Drop for CoveredReceiptResealDensityGuardV1 {
-    fn drop(&mut self) {
-        COVERED_RECEIPT_RESEAL_DENSITY_MODE.with(|mode| mode.set(0));
-        COVERED_RECEIPT_RESEAL_DENSITY_CALLS.with(|calls| calls.set(0));
-    }
-}
-
-#[cfg(test)]
-fn begin_covered_receipt_reseal_density_mode_v1(mode: u8) -> CoveredReceiptResealDensityGuardV1 {
-    COVERED_RECEIPT_RESEAL_DENSITY_MODE.with(|value| value.set(mode));
-    COVERED_RECEIPT_RESEAL_DENSITY_CALLS.with(|calls| calls.set(0));
-    CoveredReceiptResealDensityGuardV1
-}
-
-#[cfg(test)]
-pub(crate) fn force_covered_receipt_reseal_density_ulp_once_for_test(
-) -> CoveredReceiptResealDensityGuardV1 {
-    begin_covered_receipt_reseal_density_mode_v1(1)
-}
-
-#[cfg(test)]
-pub(crate) fn force_covered_receipt_reseal_density_noncontraction_for_test(
-) -> CoveredReceiptResealDensityGuardV1 {
-    begin_covered_receipt_reseal_density_mode_v1(2)
-}
-
-#[cfg(test)]
-fn apply_covered_receipt_reseal_density_perturbation_for_test(
-    states: &mut BTreeMap<u32, DirectSnowStage3PersistentState>,
-) {
-    let mode = COVERED_RECEIPT_RESEAL_DENSITY_MODE.with(std::cell::Cell::get);
-    let call = COVERED_RECEIPT_RESEAL_DENSITY_CALLS.with(|calls| {
-        let call = calls.get();
-        calls.set(call.saturating_add(1));
-        call
-    });
-    if mode == 0 || (mode == 1 && call != 0) {
-        return;
-    }
-    if let Some(state) = states.values_mut().find(|state| !state.layers.is_empty()) {
-        state.layers[0].density_kg_m3 =
-            f64::from_bits(state.layers[0].density_kg_m3.to_bits().saturating_add(1));
-        state.fingerprint = Wb11HydrologyKernel::stage3_persistent_state_fingerprint(state);
-    }
 }
 
 #[cfg(test)]
@@ -155,12 +42,38 @@ fn covered_full_provisional_envelope_forced_for_test() -> bool {
 #[cfg(test)]
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct CoveredProvisionalPhysicalAuditV1 {
+    pub opaque_physical_projection:
+        crate::land_surface_energy_shadow::CanonicalCoveredPrivatePhysicalProjectionV1,
+    pub complete_physical_projection_sha256: Option<Digest32>,
     pub precipitation_sets: BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>,
     pub corrected_boundaries:
         BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
     pub lse_states: BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
     pub transaction_id: TransactionId,
     pub soil_candidates: Vec<SoilThermalTileCandidate>,
+    pub physical_endpoint_captured: bool,
+    pub soil_candidate: Option<DirectSoilThermalCandidate>,
+    pub soil_continuation: Option<Option<DirectSoilThermalUnpublishedContinuationResultV2>>,
+    pub batch_boundaries_by_lane: Option<BTreeMap<u32, Stage3SnowSurfaceBoundaryReceiptV1>>,
+    pub carrier_source_receipts:
+        Option<BTreeMap<(OfeId, TileId), CoveredCarrierInitialGuessV1>>,
+    pub open_snow_candidates:
+        Option<BTreeMap<(OfeId, TileId), OpenSnowTileBoundaryCandidateV1>>,
+    pub terminal_soil_trials:
+        Option<BTreeMap<u32, physical_outcome_ledger::TerminalSnowBottomSoilTrialResultV1>>,
+    pub terminal_soil_credits: Option<BTreeMap<u32, SoilThermalTopBoundaryCreditV1>>,
+    surface_custody: Option<CoveredPhysicalSurfaceCustodyV1>,
+    pub beginning_stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pub ending_stage3_by_lane: Option<BTreeMap<u32, DirectSnowStage3PersistentState>>,
+    pub stage3_refreeze_by_lane: BTreeMap<u32, f64>,
+    pub wet_canopy_destinations: BTreeSet<(OfeId, TileId)>,
+    pub stage3_surface_destinations: Vec<(OfeId, TileId)>,
+    pub wb14_child_receipt_set_sha256: String,
+    pub wb14_parent_receipt_set_sha256: Option<String>,
+    pub wb14_child_replay_bytes: Vec<u8>,
+    pub wb14_parent_replay_bytes: Option<Vec<u8>>,
+    pub surface_ofe_topology: Vec<OfeId>,
+    pub stage3_covered_native: bool,
 }
 
 #[cfg(test)]
@@ -190,6 +103,11 @@ pub(crate) fn begin_covered_provisional_physical_audit_v1(
 }
 
 #[cfg(test)]
+fn covered_provisional_physical_audit_enabled_v1() -> bool {
+    COVERED_PROVISIONAL_PHYSICAL_AUDIT.with(|audit| audit.borrow().is_some())
+}
+
+#[cfg(test)]
 pub(crate) fn take_covered_provisional_physical_audit_v1(
 ) -> Vec<CoveredProvisionalPhysicalAuditV1> {
     COVERED_PROVISIONAL_PHYSICAL_AUDIT.with(|audit| audit.borrow_mut().take().unwrap_or_default())
@@ -204,6 +122,275 @@ fn record_covered_provisional_physical_audit_v1(
             values.push(value);
         }
     });
+}
+
+#[cfg(test)]
+fn record_covered_physical_endpoint_audit_v1(value: &CoveredCarrierPhysicalPhaseResultV1) {
+    COVERED_PROVISIONAL_PHYSICAL_AUDIT.with(|audit| {
+        let mut audit = audit.borrow_mut();
+        let Some(values) = audit.as_mut() else {
+            return;
+        };
+        if let Some(record) = values
+            .iter_mut()
+            .rev()
+            .find(|record| !record.physical_endpoint_captured)
+        {
+            record.physical_endpoint_captured = true;
+            record.soil_candidate = Some(value.validated_soil_ending.candidate().clone());
+            record.soil_continuation =
+                Some(value.validated_soil_ending.continuation().cloned());
+            record.batch_boundaries_by_lane = Some(value.batch_boundaries_by_lane.clone());
+            record.carrier_source_receipts = Some(value.carrier_source_receipts.clone());
+            record.open_snow_candidates = Some(value.open_snow_candidates.clone());
+            record.terminal_soil_trials = Some(value.terminal_soil_trials.clone());
+            record.terminal_soil_credits = Some(value.terminal_soil_credits.clone());
+            record.surface_custody = Some(value.surface_custody.clone());
+            record.complete_physical_projection_sha256 =
+                canonical_complete_physical_projection_v1(record);
+        }
+    });
+}
+
+#[cfg(test)]
+fn record_covered_provisional_stage3_endpoint_audit_v1(
+    ending_stage3_by_lane: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    stage3_refreeze_by_lane: &BTreeMap<u32, f64>,
+) {
+    COVERED_PROVISIONAL_PHYSICAL_AUDIT.with(|audit| {
+        let mut audit = audit.borrow_mut();
+        let Some(values) = audit.as_mut() else {
+            return;
+        };
+        if let Some(value) = values
+            .iter_mut()
+            .rev()
+            .find(|value| value.ending_stage3_by_lane.is_none())
+        {
+            value.ending_stage3_by_lane = Some(ending_stage3_by_lane.clone());
+            value.stage3_refreeze_by_lane = stage3_refreeze_by_lane.clone();
+            value.complete_physical_projection_sha256 =
+                canonical_complete_physical_projection_v1(value);
+        }
+    });
+}
+
+#[cfg(test)]
+fn canonical_complete_physical_projection_v1(
+    value: &CoveredProvisionalPhysicalAuditV1,
+) -> Option<Digest32> {
+    fn bytes(out: &mut Vec<u8>, value: &[u8]) {
+        out.extend_from_slice(&(value.len() as u64).to_be_bytes());
+        out.extend_from_slice(value);
+    }
+    fn text(out: &mut Vec<u8>, value: &str) {
+        bytes(out, value.as_bytes());
+    }
+    fn float(out: &mut Vec<u8>, value: f64) {
+        out.extend_from_slice(&value.to_bits().to_be_bytes());
+    }
+    fn digest(out: &mut Vec<u8>, value: Digest32) {
+        out.extend_from_slice(value.as_bytes());
+    }
+
+    let soil_candidate = value.soil_candidate.as_ref()?;
+    let soil_continuation = value.soil_continuation.as_ref()?;
+    let boundaries = value.batch_boundaries_by_lane.as_ref()?;
+    let carriers = value.carrier_source_receipts.as_ref()?;
+    let open_snow = value.open_snow_candidates.as_ref()?;
+    let terminal_trials = value.terminal_soil_trials.as_ref()?;
+    let terminal_credits = value.terminal_soil_credits.as_ref()?;
+    let surface = value.surface_custody.as_ref()?;
+    let ending_stage3 = value.ending_stage3_by_lane.as_ref()?;
+    let mut out = b"OPENWEPP_CANONICAL_COVERED_COMPLETE_PHYSICAL_PROJECTION_V1\0".to_vec();
+    digest(&mut out, value.opaque_physical_projection.sha256);
+    out.extend_from_slice(&value.transaction_id.0.to_be_bytes());
+    for count in [
+        value.precipitation_sets.len(),
+        value.corrected_boundaries.len(),
+        value.lse_states.len(),
+        value.soil_candidates.len(),
+        boundaries.len(),
+        carriers.len(),
+        open_snow.len(),
+        terminal_trials.len(),
+        terminal_credits.len(),
+        value.beginning_stage3_by_lane.len(),
+        ending_stage3.len(),
+    ] {
+        out.extend_from_slice(&(count as u64).to_be_bytes());
+    }
+    for (lane, set) in &value.precipitation_sets {
+        out.extend_from_slice(&lane.to_be_bytes());
+        digest(&mut out, set.receipt_sha256);
+    }
+    for ((ofe, tile), boundary) in &value.corrected_boundaries {
+        text(&mut out, ofe.as_str());
+        text(&mut out, tile.as_str());
+        for scalar in [
+            boundary.snow_temperature_k,
+            boundary.latent_heat_j_kg,
+            boundary.sensible_to_canopy_air_w_m2,
+            boundary.vapor_to_canopy_air_kg_m2_s,
+            boundary.net_longwave_w_m2,
+            boundary.shortwave_absorbed_w_m2,
+            boundary.precipitation_advection_w_m2,
+            boundary.snow_vis_albedo,
+            boundary.snow_nir_albedo,
+        ] {
+            float(&mut out, scalar);
+        }
+        text(&mut out, boundary.carrier_receipt_id.as_str());
+        text(&mut out, boundary.stage3_albedo_state_sha256.as_str());
+        text(&mut out, boundary.forcing_receipt_sha256.as_str());
+        for optional in [
+            boundary.optical_receipt_sha256.as_ref(),
+            boundary.reciprocal_longwave_receipt_sha256.as_ref(),
+            boundary.final_canopy_boundary_receipt_sha256.as_ref(),
+        ] {
+            out.push(u8::from(optional.is_some()));
+            if let Some(optional) = optional {
+                text(&mut out, optional.as_str());
+            }
+        }
+    }
+    for candidate in &value.soil_candidates {
+        text(&mut out, candidate.owner_id.as_str());
+        text(&mut out, candidate.beginning_state_sha256.as_str());
+        text(&mut out, candidate.ofe_id.as_str());
+        text(&mut out, candidate.tile_id.as_str());
+        out.extend_from_slice(&(candidate.layers.len() as u64).to_be_bytes());
+        for layer in &candidate.layers {
+            text(&mut out, layer.layer_id.as_str());
+            for scalar in [
+                layer.beginning_enthalpy_j_m2_ofe_ground,
+                layer.ground_heat_credit_j_m2_ofe_ground,
+                layer.infiltration_enthalpy_credit_j_m2_ofe_ground,
+                layer.ending_enthalpy_j_m2_ofe_ground,
+                layer.ending_temperature_k,
+            ] {
+                float(&mut out, scalar);
+            }
+        }
+    }
+    match soil_candidate {
+        DirectSoilThermalCandidate::V1(candidate) => {
+            out.push(1);
+            text(&mut out, candidate.state_sha256.as_str());
+        }
+        DirectSoilThermalCandidate::V2(candidate) => {
+            out.push(2);
+            text(&mut out, candidate.unpublished_trial_sha256().as_str());
+        }
+    }
+    match soil_continuation {
+        Some(continuation) => {
+            out.push(1);
+            text(
+                &mut out,
+                continuation
+                    .physical_trial()
+                    .unpublished_trial_sha256()
+                    .as_str(),
+            );
+            bytes(
+                &mut out,
+                &serde_json::to_vec(continuation.accumulated_operands()).ok()?,
+            );
+        }
+        None => out.push(0),
+    }
+    for (lane, boundary) in boundaries {
+        out.extend_from_slice(&lane.to_be_bytes());
+        out.extend_from_slice(&boundary.support.start_ns().get().to_be_bytes());
+        out.extend_from_slice(&boundary.support.end_ns().get().to_be_bytes());
+        for scalar in [
+            boundary.sensible_energy_j_m2,
+            boundary.vapor_mass_kg_m2,
+            boundary.latent_energy_j_m2,
+            boundary.shortwave_energy_j_m2,
+            boundary.net_longwave_energy_j_m2,
+            boundary.precipitation_advection_j_m2,
+            boundary.snow_soil_heat_j_m2,
+            boundary.latent_heat_j_kg,
+        ] {
+            float(&mut out, scalar);
+        }
+        digest(&mut out, boundary.beginning_stage3_state_sha256);
+        match boundary.identity {
+            Stage3BoundaryIdentity::Provisional {
+                carrier_receipt_sha256,
+            } => {
+                out.push(0);
+                digest(&mut out, carrier_receipt_sha256);
+            }
+            Stage3BoundaryIdentity::Final {
+                provisional_carrier_receipt_sha256,
+                optical_receipt_sha256,
+                reciprocal_longwave_receipt_sha256,
+                final_destination_receipt_sha256,
+                final_lane_receipt_sha256,
+            } => {
+                out.push(1);
+                for value in [
+                    provisional_carrier_receipt_sha256,
+                    optical_receipt_sha256,
+                    reciprocal_longwave_receipt_sha256,
+                    final_destination_receipt_sha256,
+                    final_lane_receipt_sha256,
+                ] {
+                    digest(&mut out, value);
+                }
+            }
+        }
+    }
+    for ((ofe, tile), carrier) in carriers {
+        text(&mut out, ofe.as_str());
+        text(&mut out, tile.as_str());
+        digest(&mut out, carrier.diagnostic_sha256);
+    }
+    for ((ofe, tile), candidate) in open_snow {
+        text(&mut out, ofe.as_str());
+        text(&mut out, tile.as_str());
+        bytes(&mut out, &serde_json::to_vec(candidate).ok()?);
+    }
+    for (lane, trial) in terminal_trials {
+        out.extend_from_slice(&lane.to_be_bytes());
+        digest(&mut out, trial.receipt.receipt_sha256);
+    }
+    for (lane, credit) in terminal_credits {
+        out.extend_from_slice(&lane.to_be_bytes());
+        bytes(&mut out, &serde_json::to_vec(credit).ok()?);
+    }
+    out.extend_from_slice(&surface.transaction_id.0.to_be_bytes());
+    out.extend_from_slice(&(surface.ofe_topology.len() as u64).to_be_bytes());
+    for ofe_id in &surface.ofe_topology {
+        text(&mut out, ofe_id.as_str());
+    }
+    text(&mut out, &surface.wb14_child_receipt_set_sha256);
+    bytes(&mut out, &surface.wb14_child_replay_bytes);
+    match (
+        &surface.wb14_parent_receipt_set_sha256,
+        &surface.wb14_parent_replay_bytes,
+    ) {
+        (Some(receipt), Some(replay)) => {
+            out.push(1);
+            text(&mut out, receipt);
+            bytes(&mut out, replay);
+        }
+        (None, None) => out.push(0),
+        _ => return None,
+    }
+    for states in [&value.beginning_stage3_by_lane, ending_stage3] {
+        for (lane, state) in states {
+            out.extend_from_slice(&lane.to_be_bytes());
+            bytes(
+                &mut out,
+                &Wb11HydrologyKernel::serialize_stage3_persistent_state(state).ok()?,
+            );
+        }
+    }
+    Some(digest_bytes(&out))
 }
 
 #[derive(Clone, Debug, PartialEq)]

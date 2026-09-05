@@ -1,0 +1,42 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-fc552493dc3c6cc2)
+
+running 1 test
+test hillslope::tests::stage3_laned_release_qualification_matrix_1_10_19_ofe ... STAGE3_RELEASE_QUALIFICATION {"binary_path":"/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-fc552493dc3c6cc2","binary_sha256":"306335f4d44a2641b92de0d91d6a0bbc722c78e9d756a73abf76a92fc7162a19","bootstrap":{"base_seed_u64":5717114463218258739,"confidence":0.95,"method":"ordinary_nonparametric_batch_resampling_with_replacement_type7_percentiles","replicates":10000,"surface_seed_derivation":"base XOR statistic_tag XOR OFE_count; tags wall_median=0, wall_p95=0x9500, cpu_median=0xc000, cpu_p95=0xc950"},"clock_tick_hz":100,"counter_overhead":{"accepted_canonical_map_and_lane_d_call_counters":"enabled","adaptive_parent_telemetry":"enabled","disabled_counter_arm":false,"nested_exclusive_subsystem_profiler":"enabled","one_millisecond_active_rss_sampler":"enabled_and_included_in_process_cpu","posture":"included_unsubtracted","qualification_audit":"enabled"},"cpu_affinity":"0","cpu_affinity_logical_count":1,"measured_batches":30,"minimum_batch_ns":250000000,"process_cpu_method":"linux_proc_self_stat_utime_plus_stime_ticks","record":"stage3_release_scale_protocol_v1","rss_method":{"current":"linux_proc_self_status_VmRSS before fixture, sampled every 1ms across fixture/run, and after cleanup per iteration","hard_peak":"max(sampled active VmRSS, isolated-process VmHWM); both required","process_lifetime_peak":"linux_proc_self_status_VmHWM supplements active sampling to cover freed transients","return_tolerance_kib":"8192 + 1024 * OFE_count"},"source":{"git_head":"a28c55c2d0f06e0c4aab58642f1009f70f82b3d3","working_tree_sha256":"7799dd273c360976b54e30844cd0942fec8346c188b63b7583fd7ccf1a01d6bd"},"subsystem_attribution_semantics":{"lane_d_fraction":"exclusive Lane-D routed-day envelope","native_vegetation_et_fraction":"whole snow-free native vegetation/ET successor transaction envelope; conservative upper bound, not isolated component time","remaining_runner_fraction":"exclusive remainder of the timed runner transaction","stage3_lse_soil_fraction":"remaining Stage3 day-preparation/LSE/soil transaction envelope after nested scopes; conservative upper bound, not isolated component time"},"surface_isolation":"one fresh child test process per OFE surface","timed_scope":"completed_execute_hillslope_run_with_runtime_policy_only; exclusive profiler begins immediately before and is taken immediately after that wall scope","wall_clock_method":"thread-local nested exclusive profiler using std::time::Instant monotonic elapsed time; total_elapsed is the reported batch wall sample","warmup_batches":5}
+
+running 1 test
+test hillslope::tests::stage3_laned_release_qualification_matrix_1_10_19_ofe ... FAILED
+
+failures:
+
+failures:
+    hillslope::tests::stage3_laned_release_qualification_matrix_1_10_19_ofe
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 235 filtered out; finished in 5.35s
+
+
+thread 'hillslope::tests::stage3_laned_release_qualification_matrix_1_10_19_ofe' (1411211) panicked at crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:2495:5:
+assertion `left == right` failed: exact two-OFE routed HBP topology
+  left: 1
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'hillslope::tests::stage3_laned_release_qualification_matrix_1_10_19_ofe' (1411161) panicked at crates/openwepp-runner/src/hillslope/tests03/stage3_long_run_qualification.rs:2883:9:
+isolated 1-OFE qualification surface failed
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    hillslope::tests::stage3_laned_release_qualification_matrix_1_10_19_ofe
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 235 filtered out; finished in 9.34s
+
+error: test failed, to rerun pass `-p openwepp-runner --lib`
+__RUN_METADATA__ exit_code=101 duration_sec=13

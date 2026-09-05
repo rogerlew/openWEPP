@@ -13,8 +13,10 @@ fn five_minute_projection_names_closure_and_source_completeness_guards() {
     for required in [
         "WAT5_INTERVALS_PER_HOUR",
         "WAT5_INTERVALS_PER_DAY",
-        "positive additional supply lacks 300-second timing",
-        "positive authoritative WB14 hour has zero raw support",
+        "Wat5AdditionalSupplySegmentV1",
+        "compute_wb14_subhourly_profile_with_exact_segments",
+        "reconcile_wat5_zero_raw_generation_hour_v1",
+        "rainfall_and_exact_typed_additional_segments_saturation_hourly_zero_order_hold",
         "hourly_closure_residual_m",
         "hourly_zero_order_hold",
         "first_active_subinterval",

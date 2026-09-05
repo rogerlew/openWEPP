@@ -437,18 +437,38 @@ impl DirectSnowStage3V11ShadowAttachment {
                 "restartable Stage-3/V11 parent is still in progress",
             ));
         }
-        let candidate =
+        if self.pending_candidate.is_none() {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "missing staged Stage-3/V11 parent",
+            ));
+        }
+        if self.pending_publication_day.is_none() {
+            return Err(
+            DirectSnowStage3V11AttachmentError::Identity(
+                "missing completed Stage-3 publication day",
+            ));
+        }
+        self.validate_candidate_for_install(
             self.pending_candidate
-                .take()
+                .as_ref()
                 .ok_or(DirectSnowStage3V11AttachmentError::Identity(
                     "missing staged Stage-3/V11 parent",
-                ))?;
+                ))?,
+            self.pending_publication_day.as_ref(),
+        )?;
+        let candidate = self
+            .pending_candidate
+            .take()
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "missing staged Stage-3/V11 parent",
+            ))?;
         let publication_day = self.pending_publication_day.take().ok_or(
             DirectSnowStage3V11AttachmentError::Identity(
                 "missing completed Stage-3 publication day",
             ),
         )?;
-        self.install_candidate_with_publication(candidate, publication_day)
+        self.adopt_validated_candidate_inner(candidate, Some(publication_day));
+        Ok(())
     }
 
     pub(crate) fn pending_publication_completion_inputs(
@@ -946,6 +966,7 @@ impl DirectSnowStage3V11ShadowAttachment {
                             .to_vec()
                     },
                     None,
+                    None,
                     true,
                 )?;
                 let finalized = finalized.ok_or(
@@ -1057,18 +1078,20 @@ impl DirectSnowStage3V11ShadowAttachment {
         self.install_candidate_inner(candidate, None)
     }
 
-    fn install_candidate_with_publication(
-        &mut self,
-        candidate: DirectSnowStage3V11ParentCandidate,
-        publication_day: crate::direct_runtime::Stage3AcceptedPublicationDayV1,
-    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
-        self.install_candidate_inner(candidate, Some(publication_day))
-    }
-
     fn install_candidate_inner(
         &mut self,
         candidate: DirectSnowStage3V11ParentCandidate,
         publication_day: Option<crate::direct_runtime::Stage3AcceptedPublicationDayV1>,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        self.validate_candidate_for_install(&candidate, publication_day.as_ref())?;
+        self.adopt_validated_candidate_inner(candidate, publication_day);
+        Ok(())
+    }
+
+    fn validate_candidate_for_install(
+        &self,
+        candidate: &DirectSnowStage3V11ParentCandidate,
+        publication_day: Option<&crate::direct_runtime::Stage3AcceptedPublicationDayV1>,
     ) -> Result<(), DirectSnowStage3V11AttachmentError> {
         if candidate.ending_state.receipt_chain.len() != self.committed.receipt_chain.len() + 1
             || candidate.ending_state.receipt_chain[..self.committed.receipt_chain.len()]
@@ -1082,7 +1105,7 @@ impl DirectSnowStage3V11ShadowAttachment {
         candidate
             .parent_receipt
             .validate_against_ending(&candidate.ending_state)?;
-        if let Some(publication_day) = &publication_day {
+        if let Some(publication_day) = publication_day {
             publication_day
                 .validate_for_install(
                     candidate.parent_receipt.day_index,
@@ -1169,9 +1192,16 @@ impl DirectSnowStage3V11ShadowAttachment {
                 "parent receipt installation terminal-event membership join",
             ));
         }
+        Ok(())
+    }
+
+    fn adopt_validated_candidate_inner(
+        &mut self,
+        candidate: DirectSnowStage3V11ParentCandidate,
+        publication_day: Option<crate::direct_runtime::Stage3AcceptedPublicationDayV1>,
+    ) {
         self.committed = candidate.ending_state;
         self.committed_publication_day = publication_day;
-        Ok(())
     }
 
     /// Seal one fully installed day for the runner's transaction-private,

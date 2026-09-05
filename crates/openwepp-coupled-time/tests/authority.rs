@@ -114,6 +114,180 @@ fn rejected_slab_is_atomic_and_authenticated() {
     assert_eq!(bad.unwrap_err(), CoupledTimeError::OwnerCandidate);
     assert_eq!(c, before);
 }
+
+fn candidate_for_initial_clock(c: &CoupledClockStateV1) -> CoupledSlabCandidateV1 {
+    let con = constraint(c, 10);
+    CoupledSlabCandidateV1::new(
+        c,
+        segment(c),
+        TimeSupport::new(t(0), t(10)).unwrap(),
+        &con,
+        vec![owner("A", b"accepted"), owner("B", b"b")],
+        vec![LedgerEntryV1::new("water".into(), "kg".into(), d(80), d(80), d(81)).unwrap()],
+    )
+    .unwrap()
+}
+
+#[test]
+fn validated_slab_proof_accepts_on_an_exact_in_process_clock_clone() {
+    let source = clock(10);
+    let candidate = candidate_for_initial_clock(&source);
+    let mut exact_clone = source.clone();
+
+    let receipt = accept_slab(&mut exact_clone, candidate).unwrap();
+
+    assert_eq!(receipt.support(), TimeSupport::new(t(0), t(10)).unwrap());
+    assert_eq!(source.accepted_until(), t(0));
+    assert_eq!(exact_clone.accepted_until(), t(10));
+}
+
+#[test]
+fn validated_slab_proof_rejects_an_independently_constructed_equivalent_clock_atomically() {
+    let source = clock(10);
+    let candidate = candidate_for_initial_clock(&source);
+    let mut foreign = clock(10);
+    assert_eq!(foreign, source);
+    let before = foreign.clone();
+
+    assert_eq!(
+        accept_slab(&mut foreign, candidate),
+        Err(CoupledTimeError::OwnerCandidate)
+    );
+    assert_eq!(foreign, before);
+}
+
+#[test]
+fn validated_slab_proof_rejects_segment_and_scheduled_once_revision_changes_atomically() {
+    let mut changed_segment = clock(10);
+    let segment_candidate = candidate_for_initial_clock(&changed_segment);
+    changed_segment.admit_active_segment_end(t(5)).unwrap();
+    let segment_before = changed_segment.clone();
+    assert_eq!(
+        accept_slab(&mut changed_segment, segment_candidate),
+        Err(CoupledTimeError::ParentMismatch)
+    );
+    assert_eq!(changed_segment, segment_before);
+
+    let mut changed_scheduled = clock(10);
+    let scheduled_candidate = candidate_for_initial_clock(&changed_scheduled);
+    changed_scheduled
+        .record_scheduled_once("daily".into(), t(0), d(82))
+        .unwrap();
+    let scheduled_before = changed_scheduled.clone();
+    assert_eq!(
+        accept_slab(&mut changed_scheduled, scheduled_candidate),
+        Err(CoupledTimeError::OwnerCandidate)
+    );
+    assert_eq!(changed_scheduled, scheduled_before);
+
+    let mut scheduled_left = clock(10);
+    let mut scheduled_right = scheduled_left.clone();
+    scheduled_left
+        .record_scheduled_once("left".into(), t(0), d(87))
+        .unwrap();
+    scheduled_right
+        .record_scheduled_once("right".into(), t(0), d(88))
+        .unwrap();
+    let divergent_candidate = candidate_for_initial_clock(&scheduled_left);
+    let divergent_before = scheduled_right.clone();
+    assert_eq!(
+        accept_slab(&mut scheduled_right, divergent_candidate),
+        Err(CoupledTimeError::OwnerCandidate)
+    );
+    assert_eq!(scheduled_right, divergent_before);
+}
+
+#[test]
+fn validated_slab_proof_rejects_reuse_after_prior_slab_acceptance_atomically() {
+    let mut c = clock(10);
+    let candidate = candidate_for_initial_clock(&c);
+    accept_slab(&mut c, candidate.clone()).unwrap();
+    let before = c.clone();
+
+    assert_eq!(
+        accept_slab(&mut c, candidate),
+        Err(CoupledTimeError::ParentMismatch)
+    );
+    assert_eq!(c, before);
+}
+
+#[test]
+fn restart_invalidates_pre_restart_proof_and_fresh_validation_succeeds() {
+    let source = clock(10);
+    let pre_restart_candidate = candidate_for_initial_clock(&source);
+    let restart = CoupledTimeRestartV2::new(
+        d(83),
+        d(84),
+        source,
+        DiagnosticReductionV1::new("proof".into(), "1".into()).unwrap(),
+        None,
+        vec![],
+    )
+    .unwrap();
+    let bytes = restart.to_canonical_json().unwrap();
+    let restored = CoupledTimeRestartV2::from_canonical_json(&bytes, d(83), d(84), d(4)).unwrap();
+    let (mut restored_clock, _, _, _) = restored.into_parts();
+    let before = restored_clock.clone();
+
+    assert_eq!(
+        accept_slab(&mut restored_clock, pre_restart_candidate),
+        Err(CoupledTimeError::OwnerCandidate)
+    );
+    assert_eq!(restored_clock, before);
+
+    let fresh = candidate_for_initial_clock(&restored_clock);
+    accept_slab(&mut restored_clock, fresh).unwrap();
+    assert_eq!(restored_clock.accepted_until(), t(10));
+}
+
+#[test]
+fn live_validation_authority_is_omitted_from_clock_candidate_and_restart_wire() {
+    let c = clock(10);
+    let candidate = candidate_for_initial_clock(&c);
+    let clock_json = serde_json::to_string(&c).unwrap();
+    let candidate_json = serde_json::to_string(&candidate).unwrap();
+    assert!(!clock_json.contains("incarnation"));
+    assert!(!candidate_json.contains("validation_proof"));
+
+    let restart = CoupledTimeRestartV2::new(
+        d(85),
+        d(86),
+        c,
+        DiagnosticReductionV1::new("wire".into(), "1".into()).unwrap(),
+        None,
+        vec![],
+    )
+    .unwrap();
+    let bytes = restart.to_canonical_json().unwrap();
+    let text = std::str::from_utf8(&bytes).unwrap();
+    assert!(!text.contains("incarnation"));
+    assert!(!text.contains("validation_proof"));
+}
+
+#[test]
+fn slab_acceptance_source_consumes_the_proof_without_reconstruction_or_payload_clone() {
+    let source = include_str!("../src/transaction.rs");
+    let start = source.find("pub fn accept_slab(").unwrap();
+    let tail = &source[start..];
+    let end = tail
+        .find("\n#[derive(Debug, Clone, PartialEq, Serialize)]")
+        .unwrap();
+    let body = &tail[..end];
+    for forbidden in [
+        "CoupledSlabCandidateV1::new",
+        "owner_set_digest(",
+        "ledger_digest(",
+        "serde_json",
+        ".clone()",
+        ".accepted_slab_receipts\n        .iter()",
+    ] {
+        assert!(
+            !body.contains(forbidden),
+            "accept_slab reintroduced forbidden duplicate work: {forbidden}"
+        );
+    }
+}
+
 #[test]
 fn accepted_receipt_authenticates_reduction_and_atomic_parent_outbox() {
     let mut c = clock(10);

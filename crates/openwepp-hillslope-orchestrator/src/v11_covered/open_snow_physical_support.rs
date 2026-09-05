@@ -117,124 +117,6 @@ mod stage3_phase_forcing_reconstruction_tests {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-struct TerminalEndpointExternalLedgerV1 {
-    energy_j_m2: [f64; 6],
-    vapor_kg_m2: f64,
-}
-
-impl TerminalEndpointExternalLedgerV1 {
-    fn ordered_add(self, ending: Self) -> Self {
-        Self {
-            energy_j_m2: std::array::from_fn(|index| {
-                self.energy_j_m2[index] + ending.energy_j_m2[index]
-            }),
-            vapor_kg_m2: self.vapor_kg_m2 + ending.vapor_kg_m2,
-        }
-    }
-
-    fn matches(self, other: Self) -> bool {
-        self.energy_j_m2
-            .iter()
-            .zip(other.energy_j_m2)
-            .all(|(actual, expected)| (actual - expected).abs() <= 1.0e-6)
-            && (self.vapor_kg_m2 - other.vapor_kg_m2).abs() <= 1.0e-9
-    }
-}
-
-fn accepted_terminal_endpoint_timing_v1(
-    entry_seconds: f64,
-    terminal_seconds: f64,
-    unevaluated_seconds: f64,
-    hour_offset_seconds: f64,
-    complete_evaluated_seconds: f64,
-    support_seconds: f64,
-) -> bool {
-    unevaluated_seconds.abs() <= 1.0e-6
-        && (entry_seconds + terminal_seconds - support_seconds).abs() <= 1.0e-6
-        && (hour_offset_seconds - support_seconds).abs() <= 1.0e-6
-        && (complete_evaluated_seconds - support_seconds).abs() <= 1.0e-6
-}
-
-fn validate_accepted_terminal_endpoint_composition_v1(
-    evaluation: &crate::hydrology::DirectSnowStage3EvaluationDiagnostics,
-    reconciliation: &crate::hydrology::DirectSnowStage3OperatorReconciliation,
-    event: &DirectSnowTerminalEventResult,
-    support_seconds: f64,
-) -> Result<bool, DirectV11RealConsumerError> {
-    if !event.event_occurred {
-        return Ok(false);
-    }
-    if !accepted_terminal_endpoint_timing_v1(
-        event.terminal_entry_offset_seconds,
-        event.evaluated_seconds,
-        event.unevaluated_seconds,
-        event.hour_offset_seconds,
-        evaluation.evaluated_seconds,
-        support_seconds,
-    ) {
-        return Err(DirectV11RealConsumerError::Identity(
-            "terminal endpoint accepted prefix/terminal chronology",
-        ));
-    }
-    let mut prefix_seconds = 0.0;
-    let mut prefix = TerminalEndpointExternalLedgerV1 {
-        energy_j_m2: [0.0; 6],
-        vapor_kg_m2: 0.0,
-    };
-    for tuple in reconciliation.tuples.iter().filter(|tuple| {
-        tuple.applicable
-            && tuple.elapsed_start_seconds + tuple.duration_seconds
-                <= event.terminal_entry_offset_seconds + 1.0e-9
-    }) {
-        prefix_seconds += tuple.duration_seconds;
-        prefix = prefix.ordered_add(TerminalEndpointExternalLedgerV1 {
-            energy_j_m2: [
-                tuple.sensible_flux_w_m2 * tuple.duration_seconds,
-                tuple.net_shortwave_w_m2 * tuple.duration_seconds,
-                tuple.latent_flux_w_m2 * tuple.duration_seconds,
-                tuple.net_longwave_w_m2 * tuple.duration_seconds,
-                tuple.precipitation_advected_flux_w_m2 * tuple.duration_seconds,
-                tuple.snow_soil_heat_flux_w_m2 * tuple.duration_seconds,
-            ],
-            vapor_kg_m2: tuple.vapor_mass_exchange_kg_m2,
-        });
-    }
-    if (prefix_seconds - event.terminal_entry_offset_seconds).abs() > 1.0e-6 {
-        return Err(DirectV11RealConsumerError::Identity(
-            "terminal endpoint accepted prefix chronology",
-        ));
-    }
-    let terminal = TerminalEndpointExternalLedgerV1 {
-        energy_j_m2: [
-            event.sensible_energy_j_m2,
-            event.shortwave_energy_j_m2,
-            event.latent_energy_j_m2,
-            event.longwave_energy_j_m2,
-            event.advected_energy_j_m2,
-            event.snow_soil_heat_energy_j_m2,
-        ],
-        vapor_kg_m2: event.deposition_kg_m2 - event.sublimation_kg_m2,
-    };
-    let complete = TerminalEndpointExternalLedgerV1 {
-        energy_j_m2: [
-            evaluation.complete_arm_sensible_j_m2,
-            evaluation.complete_arm_shortwave_j_m2,
-            evaluation.complete_arm_latent_j_m2,
-            evaluation.complete_arm_longwave_j_m2,
-            evaluation.complete_arm_advected_j_m2,
-            evaluation.complete_arm_snow_soil_heat_j_m2,
-        ],
-        vapor_kg_m2: evaluation.complete_arm_vapor_mass_exchange_kg_m2,
-    };
-    if !prefix.ordered_add(terminal).matches(complete) {
-        return Err(DirectV11RealConsumerError::Identity(
-            "terminal endpoint accepted prefix/terminal ledger composition",
-        ));
-    }
-    Ok(true)
-}
-
 include!("open_snow_physical_reconstruction_helpers.rs");
 
 struct SnowSoilReceiptInputs<'a> {
@@ -258,140 +140,7 @@ struct SnowSoilReceiptInputs<'a> {
     ending_bottom_temperature_k: f64,
 }
 
-#[derive(Clone, Debug, PartialEq)]
-struct CoveredPhaseConsistentCnTrialOperandV1 {
-    support: openwepp_coupled_time::TimeSupport,
-    lane_id: u32,
-    ofe_id: OfeId,
-    topology_identity_sha256: Digest32,
-    configuration_identity_sha256: Digest32,
-    beginning_snow_owner_identity_sha256: Digest32,
-    beginning_soil_owner_identity_sha256: Digest32,
-    snow_candidate_heat_j_m2_ofe_ground: f64,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-struct CoveredPhaseConsistentPhysicalArtifactsV1 {
-    stage3_candidate: BTreeMap<u32, DirectSnowStage3PersistentState>,
-    stage3_support_images: BTreeMap<u32, CoveredExactFloorTerminalPhaseSupportImageV1>,
-    corrected_boundaries: BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-    lse_states: BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
-    precipitation_sets: BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>,
-    transaction_id: TransactionId,
-    soil_candidates: Vec<openwepp_land_surface_energy::SoilThermalTileCandidate>,
-    soil_candidate: DirectSoilThermalCandidate,
-    cn_trial_operands: BTreeMap<u32, CoveredPhaseConsistentCnTrialOperandV1>,
-    snow_enthalpy_material_owner: Option<
-        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
-    >,
-}
-
-fn covered_soil_layer_enthalpy_coordinate_v1(
-    layer: DirectSoilThermalLayerReadView<'_>,
-) -> Result<f64, DirectV11RealConsumerError> {
-    match layer.exact_carry() {
-        None => Ok(layer.enthalpy_high_j_m2_ofe_ground()),
-        Some(carry) => openwepp_land_surface_energy::ExactDyadicEnthalpy::exact_sum_binary64(
-            layer.enthalpy_high_j_m2_ofe_ground(),
-            carry,
-            &[],
-        )
-        .and_then(|value| value.round_to_f64())
-        .map_err(|_| DirectV11RealConsumerError::Identity("V2 soil exact enthalpy coordinate")),
-    }
-}
-
-impl CoveredPhaseConsistentCnTrialOperandV1 {
-    fn from_sealed_receipt(
-        receipt: &SnowSoilHeatReceiptV1,
-        snow_candidate_heat_j_m2_ofe_ground: f64,
-    ) -> Result<Self, DirectV11RealConsumerError> {
-        crate::snow_stage3_v11_attachment::validate_snow_soil_heat_receipt(receipt)
-            .map_err(|error| DirectV11RealConsumerError::from_stage3_physical_custody(&error))?;
-        if !snow_candidate_heat_j_m2_ofe_ground.is_finite() {
-            return Err(DirectV11RealConsumerError::AdaptiveRefinement(
-                "phase-consistent CN trial energy",
-            ));
-        }
-        Ok(Self {
-            support: receipt.support,
-            lane_id: receipt.lane_id,
-            ofe_id: receipt.ofe_id.clone(),
-            topology_identity_sha256: receipt.topology_identity_sha256,
-            configuration_identity_sha256: receipt.configuration_identity_sha256,
-            beginning_snow_owner_identity_sha256: receipt.beginning_snow_owner_identity_sha256,
-            beginning_soil_owner_identity_sha256: receipt.beginning_soil_owner_identity_sha256,
-            snow_candidate_heat_j_m2_ofe_ground,
-        })
-    }
-
-    fn validate_against(
-        &self,
-        receipt: &SnowSoilHeatReceiptV1,
-    ) -> Result<(), DirectV11RealConsumerError> {
-        if self.support != receipt.support
-            || self.lane_id != receipt.lane_id
-            || self.ofe_id != receipt.ofe_id
-            || self.topology_identity_sha256 != receipt.topology_identity_sha256
-            || self.configuration_identity_sha256 != receipt.configuration_identity_sha256
-            || self.beginning_snow_owner_identity_sha256
-                != receipt.beginning_snow_owner_identity_sha256
-            || self.beginning_soil_owner_identity_sha256
-                != receipt.beginning_soil_owner_identity_sha256
-            || !self.snow_candidate_heat_j_m2_ofe_ground.is_finite()
-        {
-            return Err(DirectV11RealConsumerError::Identity(
-                "phase-consistent CN trial immutable join",
-            ));
-        }
-        Ok(())
-    }
-}
-
 impl DirectV11SnowCoveredRealConsumerStack<'_> {
-    fn initial_unpublished_soil_iteration_candidate_v1(
-        &self,
-        support: TimeSupport,
-    ) -> Result<DirectSoilThermalCandidate, DirectV11RealConsumerError> {
-        match &self.beginning.inner.soil_thermal {
-            DirectSoilThermalResident::V1(beginning) => {
-                DirectSoilThermalCandidate::from_v1(beginning.clone()).map_err(|error| {
-                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-                })
-            }
-            DirectSoilThermalResident::V2(_) => {
-                let prepared = self
-                    .beginning
-                    .prepare_next_soil_thermal_support_v2(
-                        support.start_ns().get(),
-                        support.end_ns().get(),
-                    )
-                    .map_err(DirectV11RealConsumerError::Runtime)?;
-                let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
-                    prepared.beginning_owner(),
-                    &self.beginning.inner.lse_configuration,
-                    Vec::new(),
-                )
-                .map_err(|error| {
-                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-                })?;
-                let trial = openwepp_land_surface_energy::advance_soil_thermal_trial_v2(
-                    &prepared,
-                    expected.accepted_operands(),
-                    expected.temperature_projections(),
-                )
-                .map_err(|_| {
-                    DirectV11RealConsumerError::Identity(
-                        "initial unpublished V2 covered soil trial",
-                    )
-                })?;
-                DirectSoilThermalCandidate::from_v2(trial).map_err(|error| {
-                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-                })
-            }
-        }
-    }
-
     fn unpublished_soil_candidate_for_covered_iteration_v1(
         &self,
         support: TimeSupport,
@@ -472,44 +221,6 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         }
     }
 
-    fn unpublished_soil_candidate_for_covered_envelope_v1(
-        &self,
-        support: TimeSupport,
-        envelope: &UncommittedCoveredV8OwnerEnvelope,
-        top_boundary_credits: &[SoilThermalTopBoundaryCreditV1],
-    ) -> Result<DirectSoilThermalCandidate, DirectV11RealConsumerError> {
-        let operands = crate::land_surface_energy_shadow::physical_soil_energy_operands_v2(
-            crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_from_pre_ingress_candidates(
-                envelope.transaction_id(),
-                support.start_ns().get(),
-                support.end_ns().get(),
-                envelope.hydrology().pre_ingress_soil_thermal_candidates(),
-            )
-            .map_err(|error| {
-                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                    DirectV9RealConsumerError::LandSurfaceShadow(error),
-                ))
-            })?,
-            support.start_ns().get(),
-            support.end_ns().get(),
-            &self.beginning.inner.lse_configuration.owner_id,
-            &self.beginning.inner.surface_configuration.owner_id,
-            envelope.hydrology().pre_ingress_soil_thermal_candidates(),
-            envelope.hydrology().surface_ingress(),
-        )
-        .map_err(|error| {
-            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                DirectV9RealConsumerError::LandSurfaceShadow(error),
-            ))
-        })?;
-        self.unpublished_soil_candidate_for_covered_iteration_v1(
-            support,
-            envelope.transaction_id(),
-            envelope.hydrology().soil_thermal_candidates(),
-            &operands,
-            top_boundary_credits,
-        )
-    }
 }
 
 fn seal_snow_soil_heat_receipt(
@@ -954,43 +665,6 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         Ok(receipts)
     }
 
-    fn snow_soil_heat_receipts_for_candidate_v1(
-        &self,
-        support: TimeSupport,
-        trial_stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
-        trial_soil: &DirectSoilThermalCandidate,
-    ) -> Result<BTreeMap<u32, SnowSoilHeatReceiptV1>, DirectV11RealConsumerError> {
-        match trial_soil {
-            DirectSoilThermalCandidate::V1(candidate) => {
-                self.snow_soil_heat_receipts(support, trial_stage3, candidate)
-            }
-            DirectSoilThermalCandidate::V2(_) => {
-                self.snow_soil_heat_receipts_v2(support, trial_stage3, trial_soil)
-            }
-        }
-    }
-
-    fn retain_terminal_limiting_snow_soil_receipts(
-        &self,
-        mut next: BTreeMap<u32, SnowSoilHeatReceiptV1>,
-        previous: &BTreeMap<u32, SnowSoilHeatReceiptV1>,
-        trial_stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
-    ) -> BTreeMap<u32, SnowSoilHeatReceiptV1> {
-        if self.terminal_endpoint_mode {
-            for (lane_id, state) in trial_stage3 {
-                if state.layers.is_empty()
-                    && !crate::hydrology::stage3_has_represented_ice(state)
-                    && state.detached_retained_liquid_kg_m2.to_bits() == 0.0_f64.to_bits()
-                {
-                    if let Some(limiting) = previous.get(lane_id) {
-                        next.insert(*lane_id, limiting.clone());
-                    }
-                }
-            }
-        }
-        next
-    }
-
     fn terminal_snow_soil_heat_receipts(
         &self,
         support: openwepp_coupled_time::TimeSupport,
@@ -1014,6 +688,13 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             let beginning = self.stage3_beginning_by_lane.get(lane_id).ok_or(
                 DirectV11RealConsumerError::Identity("terminal snow-soil beginning lane"),
             )?;
+            // A terminal->terminal adaptive step retains the accepted trial
+            // receipt as its sole snow--soil custody.  This event-integrated
+            // heat receipt is reserved for the resolved->dormant transition;
+            // emitting both receipts would double-own the same exchange.
+            if crate::hydrology::stage3_is_terminal_event_domain(beginning) {
+                continue;
+            }
             let limiting_receipt =
                 limiting
                     .get(lane_id)
@@ -1208,75 +889,6 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         .map(Some)
     }
 
-    fn soil_top_boundary_credits(
-        &self,
-        receipts: &BTreeMap<u32, SnowSoilHeatReceiptV1>,
-    ) -> Result<Vec<SoilThermalTopBoundaryCreditV1>, DirectV11RealConsumerError> {
-        receipts
-            .values()
-            .map(|receipt| {
-                crate::snow_stage3_v11_attachment::validate_snow_soil_heat_receipt(receipt)
-                    .map_err(|error| {
-                        DirectV11RealConsumerError::from_stage3_physical_custody(&error)
-                    })?;
-                let beginning_soil = self.beginning.inner.soil_thermal.read_view();
-                let beginning_ofe = beginning_soil
-                    .ordered_ofes()
-                    .into_iter()
-                    .find(|value| value.ofe_id() == &receipt.ofe_id)
-                    .ok_or(DirectV11RealConsumerError::Identity(
-                        "soil credit beginning OFE",
-                    ))?;
-                let first_layer = beginning_ofe.ordered_layers().into_iter().next().ok_or(
-                    DirectV11RealConsumerError::Identity("soil credit first layer"),
-                )?;
-                crate::snow_stage3_v11_attachment::validate_snow_soil_heat_receipt_installed_join(
-                    receipt,
-                    first_layer.layer_id(),
-                    receipt.snow_candidate_ending_identity_sha256,
-                    receipt.soil_candidate_ending_identity_sha256,
-                )
-                .map_err(|error| {
-                    DirectV11RealConsumerError::from_stage3_physical_custody(&error)
-                })?;
-                Ok(SoilThermalTopBoundaryCreditV1 {
-                    lane_id: receipt.lane_id,
-                    ofe_id: receipt.ofe_id.clone(),
-                    first_layer_id: first_layer.layer_id().clone(),
-                    beginning_owner_id: self.beginning.inner.soil_thermal.owner_id().clone(),
-                    beginning_configuration_sha256: self
-                        .beginning
-                        .inner
-                        .soil_thermal
-                        .configuration_sha256()
-                        .clone(),
-                    beginning_state_sha256: self
-                        .beginning
-                        .inner
-                        .soil_thermal
-                        .state_sha256()
-                        .clone(),
-                    support_start_ns: i64::try_from(receipt.support.start_ns().get()).map_err(
-                        |_| DirectV11RealConsumerError::Identity("soil heat support start"),
-                    )?,
-                    support_end_ns: i64::try_from(receipt.support.end_ns().get()).map_err(
-                        |_| DirectV11RealConsumerError::Identity("soil heat support end"),
-                    )?,
-                    accepted_positive_downward_j_m2_ofe_ground: receipt
-                        .accepted_heat_j_m2_ofe_ground,
-                    soil_thermal_credit_j_m2_ofe_ground: receipt
-                        .soil_candidate_heat_j_m2_ofe_ground,
-                    snow_soil_heat_receipt_sha256: Sha256Digest::try_new(digest32_hex(
-                        receipt.receipt_sha256,
-                    ))
-                    .map_err(|_| {
-                        DirectV11RealConsumerError::Identity("soil heat receipt digest")
-                    })?,
-                })
-            })
-            .collect()
-    }
-
     fn validate_snow_soil_heat_receipt_iterate_joins(
         &self,
         receipts: &BTreeMap<u32, SnowSoilHeatReceiptV1>,
@@ -1396,10 +1008,18 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         let child_replay = self.last_wb14_child_replay_bytes.as_deref().ok_or(
             DirectV11RealConsumerError::Identity("covered terminal reuse WB14 child replay"),
         )?;
-        let trial_binding = crate::direct_runtime::wb14_child_replay_binding(child_replay)
-            .map_err(|_| {
+        let native_inactive_binding =
+            crate::direct_runtime::stage3_covered_native_inactive_child_custody_binding(
+                child_replay,
+                &self.beginning.inner.surface_configuration().ofe_topology,
+            )
+            .map_err(DirectV11RealConsumerError::SurfaceLiquidReplay)?;
+        let trial_binding = match native_inactive_binding {
+            Some(binding) => binding,
+            None => crate::direct_runtime::wb14_child_replay_binding(child_replay).map_err(|_| {
                 DirectV11RealConsumerError::Identity("covered terminal reuse WB14 trial binding")
-            })?;
+            })?,
+        };
         validate_covered_terminal_reuse_trial_binding_v1(
             trial_binding,
             self.wb14_coupled_child_binding,
@@ -1407,10 +1027,18 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             endpoint.wb14_replay_trial_sha256,
             endpoint.wb14_replay_beginning_owner_set_sha256,
         )?;
-        crate::direct_runtime::validate_wb14_child_replay_binding(child_replay, trial_binding)
-            .map_err(|_| {
-                DirectV11RealConsumerError::Identity("covered terminal reuse WB14 child validation")
-            })?;
+        if native_inactive_binding.is_none() {
+            crate::direct_runtime::validate_wb14_child_replay_binding(
+                child_replay,
+                trial_binding,
+                &self.beginning.inner.surface_configuration().ofe_topology,
+            )
+            .map_err(DirectV11RealConsumerError::SurfaceLiquidReplay)?;
+        } else if self.last_wb14_parent_replay_bytes.is_some() {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered inactive-native parent replay",
+            ));
+        }
         if let Some(parent) = self.last_wb14_parent_replay_bytes.as_deref() {
             crate::direct_runtime::validate_wb14_parent_replay(child_replay, parent).map_err(
                 |_| DirectV11RealConsumerError::Identity("covered terminal reuse WB14 parent"),
@@ -1490,40 +1118,71 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             covered_ordinary_physical_authority_v1(input)?,
             self.terminal_endpoint_mode,
         )?;
-        let child_replay = self.last_wb14_child_replay_bytes.as_deref().ok_or(
-            DirectV11RealConsumerError::Identity("covered ordinary reuse WB14 child replay"),
-        )?;
-        let (rebound_child, rebound_parent) =
-            crate::direct_runtime::rebind_wb14_replay_to_accepted_slab(
-                child_replay,
-                self.finalize_wb14_parent_interval,
+        if seed
+            .envelope
+            .hydrology()
+            .surface_ingress()
+            .is_stage3_covered_native_inactive()
+        {
+            let child_replay = self.last_wb14_child_replay_bytes.as_deref().ok_or(
+                DirectV11RealConsumerError::Identity(
+                    "covered inactive-native child custody replay",
+                ),
+            )?;
+            let rebound_child =
+                crate::direct_runtime::rebind_stage3_covered_native_inactive_child_custody(
+                    child_replay,
+                    self.wb14_coupled_child_binding,
+                    &self.beginning.inner.surface_configuration().ofe_topology,
+                )
+                .map_err(|_| {
+                    DirectV11RealConsumerError::Identity(
+                        "covered inactive-native child custody reseal",
+                    )
+                })?;
+            self.last_wb14_child_receipt_set_sha256 =
+                Some(digest32_hex(digest_bytes(&rebound_child)));
+            self.last_wb14_parent_receipt_set_sha256 = None;
+            self.last_wb14_child_replay_bytes = Some(rebound_child);
+            self.last_wb14_parent_replay_bytes = None;
+        } else {
+            let child_replay = self.last_wb14_child_replay_bytes.as_deref().ok_or(
+                DirectV11RealConsumerError::Identity("covered ordinary reuse WB14 child replay"),
+            )?;
+            let (rebound_child, rebound_parent) =
+                crate::direct_runtime::rebind_wb14_replay_to_accepted_slab(
+                    child_replay,
+                    self.finalize_wb14_parent_interval,
+                    self.wb14_coupled_child_binding,
+                )
+                .map_err(|_| {
+                    DirectV11RealConsumerError::Identity("covered ordinary reuse WB14 child reseal")
+                })?;
+            crate::direct_runtime::validate_wb14_child_replay_binding(
+                &rebound_child,
                 self.wb14_coupled_child_binding,
+                &self.beginning.inner.surface_configuration().ofe_topology,
             )
             .map_err(|_| {
-                DirectV11RealConsumerError::Identity("covered ordinary reuse WB14 child reseal")
+                DirectV11RealConsumerError::Identity("covered ordinary reuse WB14 child validation")
             })?;
-        crate::direct_runtime::validate_wb14_child_replay_binding(
-            &rebound_child,
-            self.wb14_coupled_child_binding,
-        )
-        .map_err(|_| {
-            DirectV11RealConsumerError::Identity("covered ordinary reuse WB14 child validation")
-        })?;
-        if let Some(parent) = rebound_parent.as_deref() {
-            crate::direct_runtime::validate_wb14_parent_replay(&rebound_child, parent).map_err(
-                |_| {
-                    DirectV11RealConsumerError::Identity(
-                        "covered ordinary reuse WB14 parent validation",
-                    )
-                },
-            )?;
+            if let Some(parent) = rebound_parent.as_deref() {
+                crate::direct_runtime::validate_wb14_parent_replay(&rebound_child, parent).map_err(
+                    |_| {
+                        DirectV11RealConsumerError::Identity(
+                            "covered ordinary reuse WB14 parent validation",
+                        )
+                    },
+                )?;
+            }
+            self.last_wb14_child_receipt_set_sha256 =
+                Some(digest32_hex(digest_bytes(&rebound_child)));
+            self.last_wb14_parent_receipt_set_sha256 = rebound_parent
+                .as_ref()
+                .map(|bytes| digest32_hex(digest_bytes(bytes)));
+            self.last_wb14_child_replay_bytes = Some(rebound_child);
+            self.last_wb14_parent_replay_bytes = rebound_parent;
         }
-        self.last_wb14_child_receipt_set_sha256 = Some(digest32_hex(digest_bytes(&rebound_child)));
-        self.last_wb14_parent_receipt_set_sha256 = rebound_parent
-            .as_ref()
-            .map(|bytes| digest32_hex(digest_bytes(bytes)));
-        self.last_wb14_child_replay_bytes = Some(rebound_child);
-        self.last_wb14_parent_replay_bytes = rebound_parent;
         let ending_stage3 =
             self.ending_stage3_by_lane
                 .as_ref()
@@ -1536,7 +1195,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         let destinations = self.last_final_boundary_receipts.as_ref().ok_or(
             DirectV11RealConsumerError::Identity("covered ordinary reuse boundary receipts"),
         )?;
-        let soil = self.last_snow_soil_heat_receipts.as_ref().ok_or(
+        let _soil = self.last_snow_soil_heat_receipts.as_ref().ok_or(
             DirectV11RealConsumerError::Identity("covered ordinary reuse snow-soil receipts"),
         )?;
         let ending_snow_owner_bytes =
@@ -1546,26 +1205,27 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 lanes,
                 destinations,
             )?;
-        let soil_credits = self.soil_top_boundary_credits(soil)?;
-        let (output, candidate, support_receipt) = finalize_v11_imported_segment(
+        let (output, candidate, support_receipt) =
+            finalize_v11_imported_segment_with_soil_continuation(
             &self.beginning,
             input,
             &seed.envelope,
             None,
-            None,
-            None,
+            Some(&seed.physical_ending),
+            Some(&seed.soil_candidate),
+            seed.soil_continuation.as_ref(),
             ending_snow_owner_bytes,
             self.day_index,
             self.interval_index,
             self.interval,
-            &soil_credits,
+                &seed.soil_top_boundary_credits,
             self.last_physical_outcome_ledgers.as_ref().ok_or(
                 DirectV11RealConsumerError::Identity(
                     "covered ordinary reuse physical outcome ledgers",
                 ),
             )?,
-            AcceptedPublicationFinalizationPostureV1::RetainFinal,
-        )?;
+                AcceptedPublicationFinalizationPostureV1::RetainFinal,
+            )?;
         self.last_support_receipt = Some(support_receipt);
         self.ending = Some(candidate);
         self.last_publication_retained = Some(true);

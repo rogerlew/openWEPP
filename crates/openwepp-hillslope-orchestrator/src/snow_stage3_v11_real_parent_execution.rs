@@ -13,6 +13,7 @@ fn execute_real_v11_parent(
     interval_index: usize,
     forcing_receipt: Digest32,
     ending_snow_owner_bytes: Vec<u8>,
+    native_inactive_wb14_prefix: Option<crate::direct_runtime::ValidatedNativeInactiveWb14PrefixV1>,
     deferred_native_v2_soil_custody: Option<
         crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1,
     >,
@@ -120,6 +121,12 @@ fn execute_real_v11_parent(
         },
         ending_snow_owner_bytes.clone(),
     );
+    let provisional_stack = match native_inactive_wb14_prefix {
+        Some(prefix) => provisional_stack
+            .try_with_native_inactive_wb14_prefix(prefix)
+            .map_err(DirectSnowStage3V11AttachmentError::Owner)?,
+        None => provisional_stack,
+    };
     let provisional_stack = match deferred_native_v2_soil_custody.as_ref() {
         Some(custody) => provisional_stack
             .try_with_deferred_native_v2_soil_custody(custody.clone())
@@ -153,12 +160,11 @@ fn execute_real_v11_parent(
         beginning_snow_owner_sha256,
         ending_snow_owner_sha256: stage3_snow_owner_sha256_v1(final_clock.owners())?,
     };
-    let final_stack = DirectV11RealConsumerStack::new_parent_child_with_ending_snow_owner(
-        beginning_consumer,
-        &prepared.v11_interval,
-        day_index,
-        interval_index,
-        support.end_ns() == beginning_clock.parent_support().end_ns(),
+    // `prepare_snow_free_physical_reuse` consumes the private
+    // `SnowFreePhysicalReuseSeedV1`; its final executor independently rejects
+    // a `snow-free physical reuse ending owners` mismatch before publication.
+    let final_stack = crate::v9_real_consumer_shadow::prepare_snow_free_physical_reuse(
+        provisional_executor.stack,
         crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
             proposed_upper_bound_s_bits: support.duration_s_bits(),
             coupled_parent_transaction_sha256: *parent_id.digest().as_bytes(),
@@ -169,14 +175,8 @@ fn execute_real_v11_parent(
             child_support_start_ns: support.start_ns().get(),
             child_support_end_ns: support.end_ns().get(),
         },
-        ending_snow_owner_bytes,
-    );
-    let final_stack = match deferred_native_v2_soil_custody {
-        Some(custody) => final_stack
-            .try_with_deferred_native_v2_soil_custody(custody)
-            .map_err(DirectSnowStage3V11AttachmentError::Owner)?,
-        None => final_stack,
-    };
+    )
+    .map_err(DirectSnowStage3V11AttachmentError::Owner)?;
     let mut final_executor =
         crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack: final_stack };
     let final_segment = execute_direct_v11_segment(
@@ -197,21 +197,25 @@ fn execute_real_v11_parent(
         final_segment,
         beginning_consumer,
     )?;
-    let mut consumer = final_executor.stack.take_staged_ending().ok_or(
-        DirectSnowStage3V11AttachmentError::Identity("missing staged real-consumer ending"),
-    )?;
+    let mut consumer = final_executor
+        .stack
+        .commit_selected_publication_and_take_staged_ending()
+        .map_err(DirectSnowStage3V11AttachmentError::Owner)?;
     let finalized = if finalize_parent_at_endpoint {
         if final_clock.accepted_until() != final_clock.parent_support().end_ns() {
             return Err(DirectSnowStage3V11AttachmentError::Identity(
                 "snow-free V11 parent finalization before endpoint",
             ));
         }
-        let mut finalized = parent.clone().finalize(&context.vegetation_configuration)?;
-        install_v11_parent_finalization_owner_transition(
+        let (mut finalized, finalized_handoff) = parent
+            .clone()
+            .finalize_with_validated_handoff(&context.vegetation_configuration)?;
+        install_v11_parent_finalization_owner_transition_with_validated_handoff(
             &mut final_clock,
             &mut consumer,
             &context.vegetation_configuration,
             &mut finalized,
+            finalized_handoff,
         )?;
         Some(finalized)
     } else {

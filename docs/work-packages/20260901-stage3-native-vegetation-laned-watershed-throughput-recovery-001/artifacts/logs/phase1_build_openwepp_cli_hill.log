@@ -1,0 +1,36 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-biogeochemistry v0.1.0 (/workdir/openWEPP/crates/openwepp-biogeochemistry)
+   Compiling openwepp-coupled-time v0.1.0 (/workdir/openWEPP/crates/openwepp-coupled-time)
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openWEPP/crates/openwepp-vegetation)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-persisted-restart-v1 v0.1.0 (/workdir/openWEPP/crates/openwepp-persisted-restart-v1)
+   Compiling openwepp-runner v0.1.0 (/workdir/openWEPP/crates/openwepp-runner)
+    Finished `release` profile [optimized] target(s) in 4m 16s
+	Command being timed: "nix develop -c cargo build --release -p openwepp-runner --bin openwepp-cli-hill"
+	User time (seconds): 669.16
+	System time (seconds): 6.85
+	Percent of CPU this job got: 260%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:19.94
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3666392
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 308
+	Minor (reclaiming a frame) page faults: 3417386
+	Voluntary context switches: 57146
+	Involuntary context switches: 17221
+	Swaps: 0
+	File system inputs: 417768
+	File system outputs: 982256
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

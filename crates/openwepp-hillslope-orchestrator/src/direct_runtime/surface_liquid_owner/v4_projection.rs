@@ -96,6 +96,130 @@ fn parse_canonical_beginning_lse_v3(
     Ok(state)
 }
 
+struct ValidatedV4InputBytes {
+    projection_v3: Vec<u8>,
+    beginning_lse_v3: Vec<u8>,
+    beginning_exact_surface_owner: Vec<u8>,
+    exact_surface_owner: Vec<u8>,
+    exact_surface_receipt: Vec<u8>,
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn validate_typed_v4_inputs(
+    configuration: &SurfaceLiquidConfigurationV2,
+    projection_v3: &SurfaceLiquidCompleteOwnerProjectionV3,
+    beginning_lse_v3: &LandSurfaceEnergyV3State,
+    beginning_owner: &LseSurfaceEnthalpyOwnerEnvelopeV1,
+    owner: &LseSurfaceEnthalpyOwnerEnvelopeV1,
+    receipt: &LseSurfaceEnthalpyEnergyCreditReceiptV1,
+) -> Result<ValidatedV4InputBytes, LseSurfaceEnthalpyErrorV1> {
+    beginning_owner.validate()?;
+    owner.validate()?;
+    let v3_identity = projection_v3.identity();
+    if v3_identity.transaction_id != receipt.transaction_id
+        || v3_identity.predecessor_transaction_id != receipt.predecessor_transaction_id
+        || v3_identity.support_start_ns != receipt.support_start_ns
+        || v3_identity.support_end_ns != receipt.support_end_ns
+        || owner.state_sha256 != receipt.ending_owner_state_sha256
+        || owner.receipt_chain_sha256 != receipt.receipt_sha256
+    {
+        return Err(LseSurfaceEnthalpyErrorV1::Identity(
+            "projection V3/exact owner/receipt join",
+        ));
+    }
+    let projection_v3_bytes = projection_v3
+        .canonical_bytes(configuration)
+        .map_err(|_| LseSurfaceEnthalpyErrorV1::Identity("projection V3 bytes"))?;
+    let beginning_lse_v3_state_bytes = beginning_lse_v3
+        .to_json()
+        .map_err(|_| LseSurfaceEnthalpyErrorV1::Identity("beginning LSE V3 bytes"))?;
+    parse_canonical_beginning_lse_v3(&beginning_lse_v3_state_bytes)?;
+    let beginning_exact_surface_owner_bytes = beginning_owner.canonical_bytes()?;
+    let exact_surface_owner_bytes = owner.canonical_bytes()?;
+    let exact_surface_receipt_bytes = serde_json::to_vec(receipt)
+        .map_err(|error| LseSurfaceEnthalpyErrorV1::Serialization(error.to_string()))?;
+    parse_canonical_exact_surface_receipt(&exact_surface_receipt_bytes)?;
+
+    let litter_receipts = projection_v3
+        .replay_litter_phase_receipts(configuration)
+        .map_err(|_| LseSurfaceEnthalpyErrorV1::Identity("nested litter receipt replay"))?;
+    let ingress_receipts = projection_v3
+        .replay_current_ingress_receipts()
+        .map_err(|_| LseSurfaceEnthalpyErrorV1::Identity("nested ingress receipt replay"))?;
+    let expected_operands = reconstruct_surface_energy_operands_v1(
+        configuration,
+        receipt.transaction_id,
+        receipt.predecessor_transaction_id,
+        receipt.support_start_ns,
+        receipt.support_end_ns,
+        &litter_receipts,
+        &ingress_receipts,
+    )
+    .map_err(|_| LseSurfaceEnthalpyErrorV1::Identity("nested exact operand replay"))?;
+    let ending_surface = SurfaceLiquidOwnerEnvelopeV2::from_canonical_bytes(
+        configuration.parent(),
+        Some(configuration),
+        projection_v3.envelope_bytes(),
+    )
+    .map_err(|_| LseSurfaceEnthalpyErrorV1::Identity("nested ending surface owner"))?;
+    let ending_surface_records = ending_surface
+        .v2_state()
+        .ok_or(LseSurfaceEnthalpyErrorV1::Identity(
+            "nested ending surface owner is not V2",
+        ))?
+        .records();
+    if owner.records.len() != ending_surface_records.len()
+        || owner.records.iter().any(|exact| {
+            ending_surface_records
+                .iter()
+                .find(|record| record.key == exact.surface_key)
+                .is_none_or(|record| {
+                    record.surface_enthalpy_j_m2_tile.to_bits()
+                        != exact.enthalpy_hi_j_m2_tile.to_bits()
+                })
+        })
+    {
+        return Err(LseSurfaceEnthalpyErrorV1::Identity(
+            "exact high mirrors do not match nested V3 ending surface owner",
+        ));
+    }
+    if beginning_owner.records.len() != beginning_lse_v3.0.tiles.len()
+        || beginning_owner.records.iter().any(|exact| {
+            beginning_lse_v3
+                .0
+                .tiles
+                .iter()
+                .find(|tile| {
+                    tile.ofe_id == exact.surface_key.ofe_id
+                        && tile.tile_id == exact.surface_key.tile_id
+                })
+                .is_none_or(|tile| {
+                    tile.surface_enthalpy_j_m2_tile_ground.to_bits()
+                        != exact.enthalpy_hi_j_m2_tile.to_bits()
+                })
+        })
+        || beginning_owner.records.iter().any(|record| {
+            record.last_accepted_transaction_id != beginning_lse_v3.0.last_accepted_transaction_id
+        })
+        || beginning_owner.frozen_lse_v3_state_sha256 != beginning_lse_v3.0.state_sha256
+        || beginning_owner.frozen_surface_owner_v2_sha256.as_str()
+            != v3_identity.beginning_surface_owner_sha256
+        || owner.frozen_surface_owner_v2_sha256.as_str() != projection_v3.envelope_sha256()
+    {
+        return Err(LseSurfaceEnthalpyErrorV1::Identity(
+            "nested projection/owner/receipt replay",
+        ));
+    }
+    receipt.validate_independent(beginning_owner, owner, &expected_operands)?;
+    Ok(ValidatedV4InputBytes {
+        projection_v3: projection_v3_bytes,
+        beginning_lse_v3: beginning_lse_v3_state_bytes,
+        beginning_exact_surface_owner: beginning_exact_surface_owner_bytes,
+        exact_surface_owner: exact_surface_owner_bytes,
+        exact_surface_receipt: exact_surface_receipt_bytes,
+    })
+}
+
 impl SurfaceLiquidCompleteOwnerProjectionV4 {
     pub fn new(
         configuration: &SurfaceLiquidConfigurationV2,
@@ -105,33 +229,14 @@ impl SurfaceLiquidCompleteOwnerProjectionV4 {
         exact_surface_owner: &LseSurfaceEnthalpyOwnerEnvelopeV1,
         exact_surface_receipt: &LseSurfaceEnthalpyEnergyCreditReceiptV1,
     ) -> Result<Self, LseSurfaceEnthalpyErrorV1> {
-        beginning_exact_surface_owner.validate()?;
-        exact_surface_owner.validate()?;
-        let v3_identity = projection_v3.identity();
-        if v3_identity.transaction_id != exact_surface_receipt.transaction_id
-            || v3_identity.predecessor_transaction_id
-                != exact_surface_receipt.predecessor_transaction_id
-            || v3_identity.support_start_ns != exact_surface_receipt.support_start_ns
-            || v3_identity.support_end_ns != exact_surface_receipt.support_end_ns
-            || exact_surface_owner.state_sha256 != exact_surface_receipt.ending_owner_state_sha256
-            || exact_surface_owner.receipt_chain_sha256 != exact_surface_receipt.receipt_sha256
-        {
-            return Err(LseSurfaceEnthalpyErrorV1::Identity(
-                "projection V3/exact owner/receipt join",
-            ));
-        }
-        let projection_v3_bytes = projection_v3
-            .canonical_bytes(configuration)
-            .map_err(|_| LseSurfaceEnthalpyErrorV1::Identity("projection V3 bytes"))?;
-        let beginning_lse_v3_state_bytes = beginning_lse_v3
-            .to_json()
-            .map_err(|_| LseSurfaceEnthalpyErrorV1::Identity("beginning LSE V3 bytes"))?;
-        parse_canonical_beginning_lse_v3(&beginning_lse_v3_state_bytes)?;
-        let beginning_exact_surface_owner_bytes =
-            beginning_exact_surface_owner.canonical_bytes()?;
-        let exact_surface_owner_bytes = exact_surface_owner.canonical_bytes()?;
-        let exact_surface_receipt_bytes = serde_json::to_vec(exact_surface_receipt)
-            .map_err(|error| LseSurfaceEnthalpyErrorV1::Serialization(error.to_string()))?;
+        let validated = validate_typed_v4_inputs(
+            configuration,
+            projection_v3,
+            beginning_lse_v3,
+            beginning_exact_surface_owner,
+            exact_surface_owner,
+            exact_surface_receipt,
+        )?;
         let mut value = Self {
             schema: SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V4_SCHEMA.to_owned(),
             schema_sha256: SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V4_SCHEMA_SHA256.to_owned(),
@@ -148,16 +253,36 @@ impl SurfaceLiquidCompleteOwnerProjectionV4 {
                 exact_surface_owner_state_sha256: exact_surface_owner.state_sha256.to_string(),
                 exact_surface_receipt_sha256: exact_surface_receipt.receipt_sha256.to_string(),
             },
-            projection_v3_bytes,
-            beginning_lse_v3_state_bytes,
-            beginning_exact_surface_owner_bytes,
-            exact_surface_owner_bytes,
-            exact_surface_receipt_bytes,
+            projection_v3_bytes: validated.projection_v3,
+            beginning_lse_v3_state_bytes: validated.beginning_lse_v3,
+            beginning_exact_surface_owner_bytes: validated.beginning_exact_surface_owner,
+            exact_surface_owner_bytes: validated.exact_surface_owner,
+            exact_surface_receipt_bytes: validated.exact_surface_receipt,
             projection_sha256: ZERO_SHA256.to_owned(),
         };
         value.projection_sha256 = value.recomputed_sha256()?;
-        value.validate(configuration, beginning_lse_v3.0.state_sha256.as_str())?;
         Ok(value)
+    }
+
+    pub(crate) fn new_with_validated_canonical_bytes(
+        configuration: &SurfaceLiquidConfigurationV2,
+        projection_v3: &SurfaceLiquidCompleteOwnerProjectionV3,
+        beginning_lse_v3: &LandSurfaceEnergyV3State,
+        beginning_exact_surface_owner: &LseSurfaceEnthalpyOwnerEnvelopeV1,
+        exact_surface_owner: &LseSurfaceEnthalpyOwnerEnvelopeV1,
+        exact_surface_receipt: &LseSurfaceEnthalpyEnergyCreditReceiptV1,
+    ) -> Result<(Self, Vec<u8>), LseSurfaceEnthalpyErrorV1> {
+        let value = Self::new(
+            configuration,
+            projection_v3,
+            beginning_lse_v3,
+            beginning_exact_surface_owner,
+            exact_surface_owner,
+            exact_surface_receipt,
+        )?;
+        let bytes = serde_json::to_vec(&value)
+            .map_err(|error| LseSurfaceEnthalpyErrorV1::Serialization(error.to_string()))?;
+        Ok((value, bytes))
     }
 
     fn recomputed_sha256(&self) -> Result<String, LseSurfaceEnthalpyErrorV1> {

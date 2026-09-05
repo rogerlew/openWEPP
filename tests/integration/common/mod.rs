@@ -10,10 +10,11 @@ pub(crate) fn bind_complete_stage3_owner_seed(request: &HillslopeRunRequest) {
 
 #[allow(dead_code)]
 pub(crate) fn bind_adaptive_stage3_owner_seed(request: &HillslopeRunRequest) {
-    bind_frozen_litter_v3_stage3_owner_seed(
-        request,
-        Stage3TestFixtureSeedProfile::AdaptiveNoStrataOwner,
-    );
+    // Ordinary CLI contracts exercise the production forest-litter surface.
+    // That surface requires its native configured vegetation occupancy; the
+    // historical no-strata fixture is a bare/open diagnostic posture and is
+    // not a valid forest-litter production owner.
+    bind_frozen_litter_v3_stage3_owner_seed(request, Stage3TestFixtureSeedProfile::CompleteOwner);
 }
 
 /// Author the retained V1 bootstrap-provenance wire whose checked production

@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::collections::BTreeMap;
 
 use openwepp_coupled_time::{Digest32, ModelTimeNs, TimeSupport};
@@ -20,6 +21,97 @@ use super::{
     DirectDayFrame, DirectPublicationDayInput, DirectRunFrame, DirectRuntimeError,
     Stage3AcceptedPublicationDayV1,
 };
+
+/// Result-blind observation of successful outer-frame adoption.  This audit
+/// records only after the validated committed frame and its attachment have
+/// both replaced the live runner state.
+#[doc(hidden)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct SnowStage3V11AttachmentAdoptionAuditV1 {
+    pub native_inactive_prefix_validation_count: u64,
+    pub native_inactive_prefix_receipt_counts: Vec<usize>,
+    pub accepted_history_append_count: u64,
+    pub appended_support_sha256: Vec<Digest32>,
+    pub staged_history_append_attempt_count: u64,
+    pub successful_adoption_count: u64,
+    pub accepted_support_sha256: Vec<Digest32>,
+}
+
+thread_local! {
+    static SNOW_STAGE3_V11_ATTACHMENT_ADOPTION_AUDIT: RefCell<Option<SnowStage3V11AttachmentAdoptionAuditV1>> = const { RefCell::new(None) };
+}
+
+#[doc(hidden)]
+pub fn begin_snow_stage3_v11_attachment_adoption_audit_v1() {
+    SNOW_STAGE3_V11_ATTACHMENT_ADOPTION_AUDIT.with(|audit| {
+        assert!(
+            audit
+                .replace(Some(SnowStage3V11AttachmentAdoptionAuditV1::default()))
+                .is_none(),
+            "nested Stage-3/V11 attachment-adoption audit"
+        );
+    });
+}
+
+#[doc(hidden)]
+pub fn take_snow_stage3_v11_attachment_adoption_audit_v1() -> SnowStage3V11AttachmentAdoptionAuditV1
+{
+    SNOW_STAGE3_V11_ATTACHMENT_ADOPTION_AUDIT.with(|audit| {
+        audit
+            .replace(None)
+            .expect("Stage-3/V11 attachment-adoption audit was not begun")
+    })
+}
+
+fn record_snow_stage3_v11_attachment_adoption_v1(
+    accepted_support_sha256: Digest32,
+    installed_history: Vec<Digest32>,
+) {
+    SNOW_STAGE3_V11_ATTACHMENT_ADOPTION_AUDIT.with(|audit| {
+        let mut audit = audit.borrow_mut();
+        let Some(audit) = audit.as_mut() else {
+            return;
+        };
+        audit.successful_adoption_count = audit
+            .successful_adoption_count
+            .checked_add(1)
+            .expect("Stage-3/V11 attachment-adoption audit count overflow");
+        audit.accepted_support_sha256.push(accepted_support_sha256);
+        audit.accepted_history_append_count = u64::try_from(installed_history.len())
+            .expect("Stage-3/V11 installed history count width");
+        audit.appended_support_sha256 = installed_history;
+    });
+}
+
+pub(crate) fn record_snow_stage3_v11_accepted_history_append_v1(accepted_support_sha256: Digest32) {
+    SNOW_STAGE3_V11_ATTACHMENT_ADOPTION_AUDIT.with(|audit| {
+        let mut audit = audit.borrow_mut();
+        let Some(audit) = audit.as_mut() else {
+            return;
+        };
+        audit.staged_history_append_attempt_count = audit
+            .staged_history_append_attempt_count
+            .checked_add(1)
+            .expect("Stage-3/V11 staged-history append audit count overflow");
+        let _ = accepted_support_sha256;
+    });
+}
+
+pub(crate) fn record_snow_stage3_v11_native_inactive_prefix_validation_v1(receipt_count: usize) {
+    SNOW_STAGE3_V11_ATTACHMENT_ADOPTION_AUDIT.with(|audit| {
+        let mut audit = audit.borrow_mut();
+        let Some(audit) = audit.as_mut() else {
+            return;
+        };
+        audit.native_inactive_prefix_validation_count = audit
+            .native_inactive_prefix_validation_count
+            .checked_add(1)
+            .expect("Stage-3/V11 native inactive-prefix audit count overflow");
+        audit
+            .native_inactive_prefix_receipt_counts
+            .push(receipt_count);
+    });
+}
 
 impl DirectRunFrame {
     /// Seal the just-committed complete day into bounded qualification and
@@ -352,6 +444,10 @@ impl DirectRunFrame {
             ) = attachment
                 .pending_publication_completion_inputs(day_index)
                 .map_err(attachment_runtime_error("publication_inputs"))?;
+            completed_frame.laned_active.clone_from(&self.laned_active);
+            completed_frame
+                .laned_active_summary
+                .clone_from(&self.laned_active_summary);
             let publication_day = Stage3AcceptedPublicationDayV1::try_complete(
                 &mut completed_frame,
                 day_index,
@@ -364,6 +460,8 @@ impl DirectRunFrame {
                 &ending_stage3,
                 &surface_configuration,
             )?;
+            let laned_active = self.laned_active.clone();
+            let laned_active_summary = publication_day.laned_active_summary().cloned();
             attachment
                 .complete_pending_publication_day(publication_day)
                 .map_err(attachment_runtime_error("publication_complete"))?;
@@ -371,6 +469,8 @@ impl DirectRunFrame {
                 .commit_staged_day()
                 .map_err(attachment_runtime_error("commit"))?;
             self.promote_snow_stage3_v11_committed_frame(attachment)?;
+            self.laned_active = laned_active;
+            self.laned_active_summary = laned_active_summary.map(Box::new);
         }
         Ok(())
     }
@@ -401,6 +501,14 @@ impl DirectRunFrame {
                 detail: "committed real-consumer frame identity".into(),
             });
         }
+        let accepted_support_sha256 = attachment
+            .committed
+            .real_consumer
+            .latest_accepted_publication_support_digest_v1();
+        let installed_history = attachment
+            .committed
+            .real_consumer
+            .accepted_publication_support_digests_v1();
         // The V11 real consumer, not the day-oriented compatibility frame,
         // owns every accepted hydrology transition. Promote that exact
         // committed frame before publication can observe it, while retaining
@@ -408,6 +516,18 @@ impl DirectRunFrame {
         // provider/GSI day and Stage-3 state.
         *self = committed_frame;
         self.snow_stage3_v11_attachment = Some(Box::new(attachment));
+        if let Some(accepted_support_sha256) = accepted_support_sha256 {
+            record_snow_stage3_v11_attachment_adoption_v1(
+                accepted_support_sha256,
+                installed_history,
+            );
+        }
+        #[cfg(test)]
+        if let Some(accepted_support_sha256) = accepted_support_sha256 {
+            crate::v9_real_consumer_shadow::record_canonical_covered_accepted_parent_adoption_v1(
+                accepted_support_sha256,
+            );
+        }
         Ok(())
     }
 }

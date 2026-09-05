@@ -777,13 +777,14 @@ struct AdaptiveCoveredTrialV1 {
     consumer: Box<DirectV10RealConsumerShadow>,
     clock: Box<CoupledClockStateV1>,
     stage3: Box<BTreeMap<u32, DirectSnowStage3PersistentState>>,
-    snow_enthalpy_material_owner: Option<
-        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
-    >,
+    snow_enthalpy_material_owner:
+        Option<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
     snow_enthalpy_material_owners:
         Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
     receipts: Vec<Stage3CoupledSubslabReceiptV1>,
     composed_children: Vec<AdaptiveCoveredTrialMemoEntryV1>,
+    qualification_accepted_covered_maps:
+        Vec<crate::snow_stage3_v11_attachment::ReleaseQualificationAcceptedCoveredMapV1>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -909,8 +910,7 @@ where
     let mut receipts = Vec::new();
     let mut parcels = Vec::new();
     let mut accepted_group = None;
-    let mut deferred_native_v2_soil_custody =
-        beginning_deferred_native_v2_soil_custody.cloned();
+    let mut deferred_native_v2_soil_custody = beginning_deferred_native_v2_soil_custody.cloned();
     for (offset, support) in supports.iter().copied().enumerate() {
         if support.start_ns() != clock.accepted_until() || accepted_group.is_some() {
             return Err(DirectSnowStage3V11AttachmentError::Terminal(
@@ -937,48 +937,93 @@ where
                 .then_some(*lane)
             })
             .collect::<BTreeSet<_>>();
-        let projected = prepared
-            .coupled_subslab(support, child_ordinal)?
-            .retain_active_snow_lanes(&active_lanes)?;
-        let actual = if stage3
-            .values()
-            .any(crate::hydrology::stage3_is_terminal_event_domain)
-        {
-            let terminal = try_actual_terminal_subslab_with_evidence::<M>(
-                context,
-                &parent,
-                &consumer,
-                deferred_native_v2_soil_custody.as_ref(),
-                &clock,
-                &projected,
-                day_index,
-                interval_index,
-                forcing_receipt,
-                &stage3,
-                &pending,
-                f64::from_bits(support.duration_s_bits()),
-                child_ordinal,
-                event_ordinal,
-                evidence,
-            )?;
-            if let Some(actual) = terminal {
-                actual
+        let actual = {
+            let projected = prepared
+                .coupled_subslab(support, child_ordinal)?
+                .retain_active_snow_lanes(&active_lanes)?;
+            if stage3
+                .values()
+                .any(crate::hydrology::stage3_is_terminal_event_domain)
+            {
+                let terminal = try_actual_terminal_subslab_with_evidence::<M>(
+                    context,
+                    &parent,
+                    &consumer,
+                    deferred_native_v2_soil_custody.as_ref(),
+                    &clock,
+                    &projected,
+                    day_index,
+                    interval_index,
+                    forcing_receipt,
+                    &stage3,
+                    &pending,
+                    f64::from_bits(support.duration_s_bits()),
+                    child_ordinal,
+                    event_ordinal,
+                    evidence,
+                )?;
+                if let Some(actual) = terminal {
+                    actual
+                } else {
+                    let solid_reappearance = stage3.iter().any(|(lane, state)| {
+                        crate::hydrology::stage3_is_terminal_event_domain(state)
+                            && projected
+                                .support_forcing_by_lane
+                                .get(lane)
+                                .is_some_and(|forcing| forcing.forcing.snowfall_m > 0.0)
+                    });
+                    if !solid_reappearance {
+                        return Err(DirectSnowStage3V11AttachmentError::Terminal(
+                            "adaptive terminal path lost terminal domain",
+                        ));
+                    }
+                    if deferred_native_v2_soil_custody.is_some() {
+                        return Err(DirectSnowStage3V11AttachmentError::Identity(
+                            "deferred native V2 soil custody left terminal domain",
+                        ));
+                    }
+                    let ordinary = execute_adaptive_covered_trial_v1(
+                        context,
+                        &parent,
+                        &consumer,
+                        &clock,
+                        prepared,
+                        day_index,
+                        interval_index,
+                        forcing_receipt,
+                        &stage3,
+                        None,
+                        &pending,
+                        None,
+                        &[support],
+                        child_ordinal,
+                    )?;
+                    ActualTerminalSubslabV1 {
+                        parent: *ordinary.parent,
+                        consumer: *ordinary.consumer,
+                        clock: *ordinary.clock,
+                        stage3: *ordinary.stage3,
+                        receipts: ordinary.receipts,
+                        group: None,
+                        parcels: Vec::new(),
+                        deferred_native_v2_soil_custody: None,
+                    }
+                }
             } else {
-                let solid_reappearance = stage3.iter().any(|(lane, state)| {
-                    crate::hydrology::stage3_is_terminal_event_domain(state)
-                        && projected
-                            .support_forcing_by_lane
-                            .get(lane)
-                            .is_some_and(|forcing| forcing.forcing.snowfall_m > 0.0)
-                });
-                if !solid_reappearance {
+                // A terminal-domain lane may leave the terminal control volume at
+                // an accepted composed endpoint (for example when snowfall makes
+                // a reappeared pack thermally resolved). Continue the remaining
+                // composed support through the ordinary covered owner path from
+                // that exact accepted state; restarting terminal integration
+                // would apply the wrong control-volume contract.
+                if receipts.is_empty() {
                     return Err(DirectSnowStage3V11AttachmentError::Terminal(
-                        "adaptive terminal path lost terminal domain",
+                        "adaptive terminal path missing entry terminal domain",
                     ));
                 }
                 if deferred_native_v2_soil_custody.is_some() {
                     return Err(DirectSnowStage3V11AttachmentError::Identity(
-                        "deferred native V2 soil custody left terminal domain",
+                        "deferred native V2 soil custody entered ordinary covered path",
                     ));
                 }
                 let ordinary = execute_adaptive_covered_trial_v1(
@@ -1008,53 +1053,9 @@ where
                     deferred_native_v2_soil_custody: None,
                 }
             }
-        } else {
-            // A terminal-domain lane may leave the terminal control volume at
-            // an accepted composed endpoint (for example when snowfall makes
-            // a reappeared pack thermally resolved).  Continue the remaining
-            // composed support through the ordinary covered owner path from
-            // that exact accepted state; restarting terminal integration
-            // would apply the wrong control-volume contract.
-            if receipts.is_empty() {
-                return Err(DirectSnowStage3V11AttachmentError::Terminal(
-                    "adaptive terminal path missing entry terminal domain",
-                ));
-            }
-            if deferred_native_v2_soil_custody.is_some() {
-                return Err(DirectSnowStage3V11AttachmentError::Identity(
-                    "deferred native V2 soil custody entered ordinary covered path",
-                ));
-            }
-            let ordinary = execute_adaptive_covered_trial_v1(
-                context,
-                &parent,
-                &consumer,
-                &clock,
-                prepared,
-                day_index,
-                interval_index,
-                forcing_receipt,
-                &stage3,
-                None,
-                &pending,
-                None,
-                &[support],
-                child_ordinal,
-            )?;
-            ActualTerminalSubslabV1 {
-                parent: *ordinary.parent,
-                consumer: *ordinary.consumer,
-                clock: *ordinary.clock,
-                stage3: *ordinary.stage3,
-                receipts: ordinary.receipts,
-                group: None,
-                parcels: Vec::new(),
-                deferred_native_v2_soil_custody: None,
-            }
         };
         let mut actual = actual;
-        let next_deferred_native_v2_soil_custody =
-            actual.deferred_native_v2_soil_custody.take();
+        let next_deferred_native_v2_soil_custody = actual.deferred_native_v2_soil_custody.take();
         if deferred_native_v2_soil_custody.is_some()
             && next_deferred_native_v2_soil_custody.is_none()
         {
@@ -1130,6 +1131,7 @@ fn execute_adaptive_covered_trial_v1(
     let mut snow_enthalpy_material_owners = Vec::new();
     let mut receipts = Vec::with_capacity(supports.len());
     let mut composed_children = Vec::with_capacity(supports.len());
+    let mut qualification_accepted_covered_maps = Vec::new();
     for (offset, support) in supports.iter().copied().enumerate() {
         if support.start_ns() != clock.accepted_until() {
             return Err(DirectSnowStage3V11AttachmentError::Identity(
@@ -1188,70 +1190,99 @@ fn execute_adaptive_covered_trial_v1(
             receipt,
             _deferred_native_v2_soil_custody,
             next_snow_enthalpy_material_owner,
-        ) =
-            if let Some(memoized) = memoized {
-                let AdaptiveCoveredTrialV1 {
-                    parent,
-                    consumer,
-                    clock,
-                    stage3,
-                    snow_enthalpy_material_owner,
-                    snow_enthalpy_material_owners: _,
-                    mut receipts,
-                    composed_children,
-                } = *memoized;
-                if receipts.len() != 1
-                    || receipts[0].support != support
-                    || !composed_children.is_empty()
-                {
-                    return Err(DirectSnowStage3V11AttachmentError::Identity(
-                        "adaptive covered physical trial memo result",
-                    ));
-                }
-                let receipt = receipts.remove(0);
-                // Memoized ordinary covered trials cannot carry terminal
-                // custody: custody is transient and deliberately excluded
-                // from the memo/checkpoint representation.
-                (
-                    *parent,
-                    *consumer,
-                    *clock,
-                    *stage3,
-                    receipt,
-                    None,
-                    snow_enthalpy_material_owner,
-                )
-            } else {
-                let subslab = prepared
-                    .coupled_subslab(support, ordinal)?
-                    .retain_active_snow_lanes(&active_lanes)?;
-                let selected_upper_bound_s = f64::from_bits(support.duration_s_bits());
-                #[cfg(test)]
-                let subslab_started = std::time::Instant::now();
-                let result = execute_covered_real_v11_subslab(
-                    context,
-                    &parent,
-                    &consumer,
-                    None,
-                    &clock,
-                    &subslab,
-                    day_index,
-                    interval_index,
-                    forcing_receipt,
-                    std::mem::take(&mut *stage3),
-                    snow_enthalpy_material_owner.as_ref(),
-                    pending_terminal_parcels,
-                    selected_upper_bound_s,
-                    None,
-                )?;
-                #[cfg(test)]
-                record_adaptive_performance_span_v1(
-                    "covered_complete_owner_subslab",
-                    support.duration_ns(),
-                    subslab_started,
+            qualification_accepted_covered_map,
+        ) = if let Some(memoized) = memoized {
+            let AdaptiveCoveredTrialV1 {
+                parent,
+                consumer,
+                clock,
+                stage3,
+                snow_enthalpy_material_owner,
+                snow_enthalpy_material_owners: _,
+                mut receipts,
+                composed_children,
+                mut qualification_accepted_covered_maps,
+            } = *memoized;
+            if receipts.len() != 1
+                || receipts[0].support != support
+                || !composed_children.is_empty()
+                || qualification_accepted_covered_maps.len() > 1
+                || qualification_accepted_covered_maps
+                    .first()
+                    .is_some_and(|record| record.support != support)
+            {
+                return Err(DirectSnowStage3V11AttachmentError::Identity(
+                    "adaptive covered physical trial memo result",
+                ));
+            }
+            let receipt = receipts.remove(0);
+            // Memoized ordinary covered trials cannot carry terminal
+            // custody: custody is transient and deliberately excluded
+            // from the memo/checkpoint representation.
+            (
+                *parent,
+                *consumer,
+                *clock,
+                *stage3,
+                receipt,
+                None,
+                snow_enthalpy_material_owner,
+                qualification_accepted_covered_maps.pop(),
+            )
+        } else {
+            let subslab = prepared
+                .coupled_subslab(support, ordinal)?
+                .retain_active_snow_lanes(&active_lanes)?;
+            let selected_upper_bound_s = f64::from_bits(support.duration_s_bits());
+            #[cfg(test)]
+            let subslab_started = std::time::Instant::now();
+            let qualification_map_scope =
+                crate::snow_stage3_v11_attachment::begin_release_qualification_covered_map_scope_v1(
+                    support,
                 );
-                result
-            };
+            let result = execute_covered_real_v11_subslab(
+                context,
+                &parent,
+                &consumer,
+                None,
+                &clock,
+                &subslab,
+                day_index,
+                interval_index,
+                forcing_receipt,
+                std::mem::take(&mut *stage3),
+                snow_enthalpy_material_owner.as_ref(),
+                pending_terminal_parcels,
+                selected_upper_bound_s,
+                None,
+            )?;
+            let qualification_accepted_covered_map = qualification_map_scope.finish();
+            #[cfg(test)]
+            record_adaptive_performance_span_v1(
+                "covered_complete_owner_subslab",
+                support.duration_ns(),
+                subslab_started,
+            );
+            let (
+                next_parent,
+                next_consumer,
+                next_clock,
+                next_stage3,
+                receipt,
+                deferred_native_v2_soil_custody,
+                next_snow_enthalpy_material_owner,
+            ) = result;
+            (
+                next_parent,
+                next_consumer,
+                next_clock,
+                next_stage3,
+                receipt,
+                deferred_native_v2_soil_custody,
+                next_snow_enthalpy_material_owner,
+                qualification_accepted_covered_map,
+            )
+        };
         if !receipt.terminal_events.is_empty() {
             return Err(DirectSnowStage3V11AttachmentError::Terminal(
                 "adaptive ordinary trial crossed terminal event",
@@ -1268,6 +1299,9 @@ fn execute_adaptive_covered_trial_v1(
         }
         snow_enthalpy_material_owner = next_snow_enthalpy_material_owner;
         receipts.push(receipt);
+        if let Some(record) = qualification_accepted_covered_map {
+            qualification_accepted_covered_maps.push(record);
+        }
         if supports.len() > 1 {
             composed_children.push(AdaptiveCoveredTrialMemoEntryV1 {
                 key: memo_key,
@@ -1287,6 +1321,12 @@ fn execute_adaptive_covered_trial_v1(
                         ),
                     )?],
                     composed_children: Vec::new(),
+                    qualification_accepted_covered_maps: qualification_accepted_covered_maps
+                        .last()
+                        .copied()
+                        .filter(|record| record.support == support)
+                        .into_iter()
+                        .collect(),
                 }),
             });
         }
@@ -1300,6 +1340,7 @@ fn execute_adaptive_covered_trial_v1(
         snow_enthalpy_material_owners,
         receipts,
         composed_children,
+        qualification_accepted_covered_maps,
     });
     #[cfg(test)]
     record_adaptive_performance_span_v1(
@@ -1859,8 +1900,9 @@ fn execute_covered_real_v11_parent_with_evidence<M>(
     beginning_snow_enthalpy_material_owner: Option<
         crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
     >,
-    beginning_snow_enthalpy_material_owner_chronology:
-        Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
+    beginning_snow_enthalpy_material_owner_chronology: Vec<
+        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    >,
     beginning_terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
     failure_injection: Option<Stage3V11FailureInjection>,
     evidence: &mut M::State,
@@ -2036,6 +2078,38 @@ where
                         "unreachable terminal receiver posture",
                     ));
                 };
+                let native_inactive_wb14_prefix = if snow_free_successor_receipts.is_empty()
+                    && !owner_joins.is_empty()
+                    && consumer.frozen_litter_v3_resident().is_some()
+                    && consumer.frozen_litter_v4_resident().is_some()
+                {
+                    Some(
+                        crate::direct_runtime::validate_native_inactive_wb14_prefix_v1(
+                            &owner_joins,
+                            &event_groups,
+                            prepared.support,
+                            &context.surface_liquid_configuration,
+                        )
+                        .map_err(|error| {
+                            DirectSnowStage3V11AttachmentError::Owner(
+                                DirectV11RealConsumerError::SurfaceLiquidReplay(
+                                    crate::DirectSurfaceLiquidError::canonical_failure(
+                                        error.canonical_surface_liquid_error_code(),
+                                        crate::DirectSurfaceLiquidPhase::Restart,
+                                        crate::DirectSurfaceLiquidErrorContext::default(),
+                                        crate::DirectSurfaceLiquidRollbackHashes {
+                                            beginning_owner_sha256: None,
+                                            attempted_owner_sha256: None,
+                                        },
+                                        format!("native inactive WB14 prefix validation: {error}"),
+                                    ),
+                                ),
+                            )
+                        })?,
+                    )
+                } else {
+                    None
+                };
                 let beginning_pending_terminal_parcels = pending_terminal_parcels.clone();
                 let next = execute_adaptive_snow_free_successor_v1(
                     context,
@@ -2047,6 +2121,7 @@ where
                     interval_index,
                     forcing_receipt,
                     ending_snow_owner_bytes,
+                    native_inactive_wb14_prefix,
                     deferred_native_v2_soil_custody.clone(),
                 )?;
                 // A deferred soil candidate is custody, not state. Keep it
@@ -2155,8 +2230,7 @@ where
                 let event_ordinal = u64::try_from(clock.event_ordinal()).map_err(|_| {
                     DirectSnowStage3V11AttachmentError::Identity("terminal event ordinal width")
                 })?;
-                let terminal_trial_beginning_soil_custody =
-                    deferred_native_v2_soil_custody.clone();
+                let terminal_trial_beginning_soil_custody = deferred_native_v2_soil_custody.clone();
                 let (accepted, maximum_scaled_error) =
                     match select_adaptive_terminal_candidate_v1::<M>(
                         context,
@@ -2197,12 +2271,9 @@ where
                         "duplicate deferred native V2 soil custody",
                     ));
                 }
-                let beginning_terminal_soil_custody =
-                    deferred_native_v2_soil_custody.take();
+                let beginning_terminal_soil_custody = deferred_native_v2_soil_custody.take();
                 let terminal_soil_custody = actual.deferred_native_v2_soil_custody.take();
-                if beginning_terminal_soil_custody.is_some()
-                    && terminal_soil_custody.is_none()
-                {
+                if beginning_terminal_soil_custody.is_some() && terminal_soil_custody.is_none() {
                     return Err(DirectSnowStage3V11AttachmentError::Identity(
                         "deferred native V2 soil custody lost by accepted terminal trial",
                     ));
@@ -2283,8 +2354,16 @@ where
                     }
                 }
                 expected_child_beginning = complete_owner_set_digest(clock.owners())?;
-                let remaining_quanta =
+                let ceiling_remaining_quanta =
                     (candidate_ceiling.get() - clock.accepted_until().get()) / ADAPTIVE_MIN_STEP_NS;
+                let parent_remaining_quanta = (prepared.support.end_ns().get()
+                    - clock.accepted_until().get())
+                    / ADAPTIVE_MIN_STEP_NS;
+                let remaining_quanta = if ceiling_remaining_quanta == 0 {
+                    parent_remaining_quanta
+                } else {
+                    ceiling_remaining_quanta
+                };
                 adaptive_trial_quanta = if maximum_scaled_error < 0.125 {
                     adaptive_test_growth_quanta(candidate_quanta, remaining_quanta)
                 } else {
@@ -2296,10 +2375,12 @@ where
                         None::<&Stage3AdaptiveParentRequestReceiptV1>
                     );
                 }
-                interrupt!(
-                    DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
-                    None::<&Stage3AdaptiveParentRequestReceiptV1>
-                );
+                if clock.accepted_until() < prepared.support.end_ns() {
+                    interrupt!(
+                        DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
+                        None::<&Stage3AdaptiveParentRequestReceiptV1>
+                    );
+                }
                 continue;
             }
             if snow_reappearance {
@@ -2388,6 +2469,9 @@ where
                     "adaptive accepted ending complete-owner clock join",
                 ));
             }
+            crate::snow_stage3_v11_attachment::record_release_qualification_accepted_covered_maps_v1(
+                &accepted.qualification_accepted_covered_maps,
+            );
             parent = *accepted.parent;
             consumer = *accepted.consumer;
             clock = *accepted.clock;
@@ -2398,18 +2482,29 @@ where
                     snow_enthalpy_material_owner_chronology.push(owner);
                 }
             }
+            let prior_owner_join_count = owner_joins.len();
             owner_joins.extend(accepted.receipts);
-            for accepted_ordinal in 1..=owner_joins.len() {
-                if failure_injection
-                    == Some(Stage3V11FailureInjection::SubslabAccepted(accepted_ordinal))
+            if let Some(Stage3V11FailureInjection::SubslabAccepted(accepted_ordinal)) =
+                failure_injection
+            {
+                if accepted_ordinal > prior_owner_join_count
+                    && accepted_ordinal <= owner_joins.len()
                 {
                     return Err(DirectSnowStage3V11AttachmentError::Identity(
                         "injected coupled subslab rollback",
                     ));
                 }
             }
-            let remaining_quanta =
+            let ceiling_remaining_quanta =
                 (candidate_ceiling.get() - clock.accepted_until().get()) / ADAPTIVE_MIN_STEP_NS;
+            let parent_remaining_quanta = (prepared.support.end_ns().get()
+                - clock.accepted_until().get())
+                / ADAPTIVE_MIN_STEP_NS;
+            let remaining_quanta = if ceiling_remaining_quanta == 0 {
+                parent_remaining_quanta
+            } else {
+                ceiling_remaining_quanta
+            };
             adaptive_trial_quanta = if maximum_scaled_error < 0.125 {
                 adaptive_test_growth_quanta(candidate_quanta, remaining_quanta)
             } else {
@@ -2421,10 +2516,12 @@ where
                     None::<&Stage3AdaptiveParentRequestReceiptV1>
                 );
             }
-            interrupt!(
-                DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
-                None::<&Stage3AdaptiveParentRequestReceiptV1>
-            );
+            if clock.accepted_until() < prepared.support.end_ns() {
+                interrupt!(
+                    DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
+                    None::<&Stage3AdaptiveParentRequestReceiptV1>
+                );
+            }
         }
         Ok(AdaptiveParentLoopOutcomeV1::Complete(Box::new(
             AdaptiveParentExecutionStateV1 {

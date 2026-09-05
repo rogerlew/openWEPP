@@ -10,7 +10,10 @@ v33--v57 production dispatch with one canonical solver per physical regime;
 older solver versions cannot remain as eligibility, convergence, or recovery
 fallbacks. Lane D per-OFE MOFE execution, the native RHESSys-derived vegetation
 and ET process model, non-CoE Stage 3 snow, and frozen-litter source authority
-are protected requirements. Status: `QUEUED — SCAFFOLDED — PRE-IMPLEMENTATION`.
+are protected requirements. Status: `EXECUTED — TERMINAL HOLD; BOUNDED
+CORRECTNESS RETAINED; RELEASE/PERFORMANCE QUALIFICATION FAILED`. Revision 61
+and the independently reviewed revision-31 component-dependency replay both
+failed prospectively frozen release conjuncts and were fully reverted.
 
 ## 20260830-frozen-forest-litter-phase-authority-001
 

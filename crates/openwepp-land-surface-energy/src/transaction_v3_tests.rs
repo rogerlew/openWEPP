@@ -41,6 +41,7 @@ fn litter_beginning() -> BeginningLitterPhaseState {
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn column() -> CoveredColumnInputs {
     let litter = litter_beginning();
     let ground = OpenSurfaceProblem {

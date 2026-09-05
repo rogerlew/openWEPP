@@ -1,0 +1,29 @@
+{
+  "schema": "openwepp-stage3-representative-long-run-workload-v1",
+  "purpose": "deterministic throughput and closure qualification; not an independent century climate-science claim",
+  "authoritative_components": {
+    "topology_soil_runfile": "tests/fixtures/erosion_multi_ofe_p102",
+    "native_management": "tests/fixtures/cancov_forest/marcell_conifer_mn/p8.man.yaml",
+    "stage3_seed": "exact typed owner sidecar authored from the live expanded frame"
+  },
+  "ofe_count": 10,
+  "ofe_areas_m2": [100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0],
+  "season_year": {
+    "start_year": 2001,
+    "year_count": 1,
+    "expected_day_count": 365
+  },
+  "century": {
+    "start_year": 2000,
+    "year_count": 100,
+    "end_year_inclusive": 2099,
+    "expected_day_count": 36525,
+    "expected_leap_day_count": 25
+  },
+  "calendar_policy": "proleptic Gregorian; divisible by 4 except centuries not divisible by 400",
+  "forcing_policy": "repeat the authenticated 365-day ReappearanceRoutingBgc seasonal forcing; on leap years February 29 repeats February 28 forcing while retaining its distinct calendar identity",
+  "management_policy": "one native-forest rotation year repeated exactly year_count times for every OFE",
+  "required_execution": "release real hillslope runner with native vegetation, non-CoE Stage 3, exact owner sidecar, and default-eligible Lane D",
+  "required_outputs": ["manifest", "PASS/HBP", "WAT", "WAT5", "Stage3 archive"],
+  "prohibited_shortcuts": ["shadow-only Lane D", "legacy vegetation", "PMET-only ET", "CoE generation", "incomplete-day extrapolation"]
+}

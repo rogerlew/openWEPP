@@ -7,6 +7,10 @@ rust-version.workspace = true
 repository.workspace = true
 publish = false
 
+[features]
+default = []
+test-support = []
+
 [lints]
 workspace = true
 

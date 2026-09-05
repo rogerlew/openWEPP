@@ -1,0 +1,71 @@
+Starting program: /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-f3ac7362b66e03e8 --ignored --exact hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile --nocapture --test-threads=1
+warning: File "/nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libthread_db.so.1" auto-loading has been declined by your `auto-load safe-path' set to "$debugdir:$datadir/auto-load".
+To enable execution of this file add
+	add-auto-load-safe-path /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libthread_db.so.1
+line to your configuration file "/home/roger/.config/gdb/gdbinit".
+To completely disable this security protection add
+	set auto-load safe-path /
+line to your configuration file "/home/roger/.config/gdb/gdbinit".
+For more information about this security protection see the
+"Auto-loading safe path" section in the GDB manual.  E.g., run from the shell:
+	info "(gdb)Auto-loading safe path"
+warning: Unable to find libthread_db matching inferior's thread library, thread debugging will not be available.
+
+Thread 1 "openwepp_runner" received signal SIGINT, Interrupt.
+0x00007ffff7d2320d in syscall () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+
+Thread 2 "hillslope::test" stopped.
+0x0000555555aa65ec in serde_core::ser::impls::<impl serde_core::ser::Serialize for alloc::vec::Vec<T>>::serialize ()
+
+Thread 2 (LWP 3938225 "hillslope::test"):
+#0  0x0000555555aa65ec in serde_core::ser::impls::<impl serde_core::ser::Serialize for alloc::vec::Vec<T>>::serialize ()
+#1  0x0000555555ab3f88 in serde_json::ser::to_vec ()
+#2  0x0000555555db4636 in openwepp_hillslope_orchestrator::v9_real_consumer_shadow::frozen_litter_v3_adoption::FrozenLitterV3Resident::accepted_publication_supports_canonical_bytes ()
+#3  0x0000555555d27912 in openwepp_hillslope_orchestrator::v9_real_consumer_shadow::v11_covered::covered_boxed_execution_v1 ()
+#4  0x0000555555d74c4f in openwepp_hillslope_orchestrator::v9_real_consumer_shadow::v11_covered::DirectV11SnowCoveredRealConsumerStack::execute_shared_covered_carrier_physical_v1 ()
+#5  0x0000555555d69f0d in openwepp_hillslope_orchestrator::v9_real_consumer_shadow::v11_covered::DirectV11SnowCoveredRealConsumerStack::execute_shared_covered_carrier_engine_v1 ()
+#6  0x0000555555edc634 in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::stage3_boxed_execution_v1 ()
+#7  0x0000555555fa3399 in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::evaluate_covered_terminal_candidate_with_evidence_v1::{{closure}} ()
+#8  0x0000555555fc6b75 in openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::runoff_reconciliation::stage3_solver::evaluation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::evaluate_stage3_sequential_melt_shadow_with_evidence::{{closure}} ()
+#9  0x0000555555fc9792 in openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::runoff_reconciliation::stage3_solver::terminal_event::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::solve_terminal_enthalpy_event_with_evidence ()
+#10 0x0000555555fc2e93 in openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::runoff_reconciliation::stage3_solver::evaluation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::evaluate_stage3_sequential_melt_shadow_with_evidence ()
+#11 0x0000555555fe46c3 in openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::runoff_reconciliation::stage3_solver::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::evaluate_stage3_persistent_day_internal_with_evidence ()
+#12 0x0000555555fd49ff in openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::runoff_reconciliation::stage3_solver::support::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::evaluate_stage3_terminal_support_with_trial_provider_and_evidence_v1 ()
+#13 0x0000555555fa1d3e in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::evaluate_covered_terminal_candidate_with_evidence_v1 ()
+#14 0x0000555555eda7a7 in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::stage3_boxed_execution_v1 ()
+#15 0x0000555555f96c30 in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::try_actual_terminal_single_subslab_with_evidence ()
+#16 0x0000555555ee3035 in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::stage3_boxed_execution_v1 ()
+#17 0x0000555555f12e68 in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::execute_adaptive_terminal_path_v1 ()
+#18 0x0000555555f4eb09 in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::select_adaptive_terminal_candidate_v1 ()
+#19 0x0000555555f7bcec in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::execute_covered_real_v11_parent_with_evidence::{{closure}} ()
+#20 0x0000555555f31d9d in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment::execute_prepared_day_resumable_v2 ()
+#21 0x0000555555f281bb in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment::stage_prepared_day ()
+#22 0x0000555555c6acb0 in openwepp_hillslope_orchestrator::direct_runtime::snow_stage3_v11_scheduler::<impl openwepp_hillslope_orchestrator::direct_runtime::DirectRunFrame>::prepare_snow_stage3_v11_day_from_provider ()
+#23 0x0000555556787035 in openwepp_runner::hillslope::execute_direct_publication_stream::{{closure}} ()
+#24 0x000055555677b238 in openwepp_runner::hillslope::execute_direct_publication_stream ()
+#25 0x00005555567494c0 in openwepp_runner::hillslope::execute_selected_hillslope_days ()
+#26 0x00005555567c1823 in openwepp_runner::hillslope::execute_hillslope_run_with_runtime_policy ()
+#27 0x00005555568021e6 in openwepp_runner::hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ()
+#28 0x000055555693d139 in core::ops::function::FnOnce::call_once ()
+#29 0x0000555556ed21eb in test::__rust_begin_short_backtrace::<core::result::Result<(), alloc::string::String>, fn() -> core::result::Result<(), alloc::string::String>> ()
+#30 0x0000555556ee0392 in <test::types::RunnableTest>::run ()
+#31 0x0000555556ed84d2 in test::run_test_in_process ()
+#32 0x0000555556edbf30 in std::sys::backtrace::__rust_begin_short_backtrace::<test::run_test::{closure#1}, ()> ()
+#33 0x0000555556eccf80 in <std::thread::lifecycle::spawn_unchecked<test::run_test::{closure#1}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} ()
+#34 0x0000555556e7ba89 in <std::sys::thread::unix::Thread>::new::thread_start ()
+#35 0x00007ffff7c9dd53 in start_thread () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+#36 0x00007ffff7d2563c in __clone3 () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+
+Thread 1 (LWP 3938222 "openwepp_runner"):
+#0  0x00007ffff7d2320d in syscall () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+#1  0x0000555556ecc9d6 in <std::sync::mpmc::list::Channel<test::event::CompletedTest>>::recv::{closure#1} ()
+#2  0x0000555556ecdc47 in <std::sync::mpmc::list::Channel<test::event::CompletedTest>>::recv ()
+#3  0x0000555556ed31fc in test::run_tests::<test::console::run_tests_console::{closure#2}> ()
+#4  0x0000555556ec69e3 in test::console::run_tests_console ()
+#5  0x0000555556eda2d5 in test::test_main ()
+#6  0x0000555556ed835b in test::test_main_static ()
+#7  0x000055555688deb3 in std::sys::backtrace::__rust_begin_short_backtrace ()
+#8  0x000055555688de79 in std::rt::lang_start::{{closure}} ()
+#9  0x0000555556e73af7 in std::rt::lang_start_internal ()
+#10 0x0000555556ba88f5 in main ()
+[Inferior 1 (process 3938222) killed]

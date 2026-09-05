@@ -1,0 +1,466 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+warning: function `record_adaptive_parent_fixed_point_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:468:15
+    |
+468 | pub(crate) fn record_adaptive_parent_fixed_point_v1(completed_iterations: usize) {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `record_adaptive_parent_fixed_point_phase_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:487:15
+    |
+487 | pub(crate) fn record_adaptive_parent_fixed_point_phase_v1(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `covered_fixed_point_limiter_audit_enabled_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:690:15
+    |
+690 | pub(crate) fn covered_fixed_point_limiter_audit_enabled_v1() -> bool {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `record_covered_fixed_point_limiter_sample_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:694:15
+    |
+694 | pub(crate) fn record_covered_fixed_point_limiter_sample_v1(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `record_covered_fixed_point_limit_detail_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:765:15
+    |
+765 | pub(crate) fn record_covered_fixed_point_limit_detail_v1(detail: CoveredFixedPointLimitDetailV1) {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `record_covered_fixed_point_iteration_audit_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:773:15
+    |
+773 | pub(crate) fn record_covered_fixed_point_iteration_audit_v1(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:359:18
+    |
+359 |     PhysicalOnly(ProvisionalCoveredV8PhysicalEvaluationV1),
+    |     ------------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+359 -     PhysicalOnly(ProvisionalCoveredV8PhysicalEvaluationV1),
+359 +     PhysicalOnly(()),
+    |
+
+warning: struct `PreparedCoveredCanopySoilInputV1` is never constructed
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:362:8
+    |
+362 | struct PreparedCoveredCanopySoilInputV1(DirectV9ShadowIntervalInput);
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `into_physical` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:374:8
+    |
+364 | impl CanopySoilEvaluationV1 {
+    | --------------------------- method in this implementation
+...
+374 |     fn into_physical(
+    |        ^^^^^^^^^^^^^
+
+warning: associated items `prepare_covered_canopy_soil_input` and `construct_prepared_covered_interval_physical_with_duration_and_soil_beginning` are never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/direct_v9_real_consumer_shadow_impl.rs:1117:8
+     |
+  51 | impl DirectV9RealConsumerShadow {
+     | ------------------------------- associated items in this implementation
+...
+1117 |     fn prepare_covered_canopy_soil_input(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1139 |     fn construct_prepared_covered_interval_physical_with_duration_and_soil_beginning(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `precipitation_parcel_sets_from_physical`, `open_snow_boundaries_by_destination`, `seal_final_open_snow_boundaries`, and `corrected_covered_boundaries_from_physical` are never used
+    --> crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:1319:8
+     |
+1131 | impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
+     | -------------------------------------------------- methods in this implementation
+...
+1319 |     fn precipitation_parcel_sets_from_physical(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1956 |     fn open_snow_boundaries_by_destination(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2135 |     fn seal_final_open_snow_boundaries(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2252 |     fn corrected_covered_boundaries_from_physical(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `ProvisionalCoveredIterationEvidenceV1` is never constructed
+  --> crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs:19:8
+   |
+19 | struct ProvisionalCoveredIterationEvidenceV1 {
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `build_covered_carrier_physical_value_with_soil_beginning_v1` and `build_provisional_covered_iteration_evidence_v1` are never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs:388:8
+    |
+119 | impl DirectV11SnowCoveredRealConsumerStack<'_> {
+    | ---------------------------------------------- methods in this implementation
+...
+388 |     fn build_covered_carrier_physical_value_with_soil_beginning_v1(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+444 |     fn build_provisional_covered_iteration_evidence_v1(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `select_identity_replayed_soil_candidate_v1` is never used
+  --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_receipt_reseal_helpers.rs:19:4
+   |
+19 | fn select_identity_replayed_soil_candidate_v1(
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `TerminalEndpointExternalLedgerV1` is never constructed
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:121:8
+    |
+121 | struct TerminalEndpointExternalLedgerV1 {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `ordered_add` and `matches` are never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:127:8
+    |
+126 | impl TerminalEndpointExternalLedgerV1 {
+    | ------------------------------------- methods in this implementation
+127 |     fn ordered_add(self, ending: Self) -> Self {
+    |        ^^^^^^^^^^^
+...
+136 |     fn matches(self, other: Self) -> bool {
+    |        ^^^^^^^
+
+warning: function `accepted_terminal_endpoint_timing_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:145:4
+    |
+145 | fn accepted_terminal_endpoint_timing_v1(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_accepted_terminal_endpoint_composition_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:159:4
+    |
+159 | fn validate_accepted_terminal_endpoint_composition_v1(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `CoveredPhaseConsistentCnTrialOperandV1` is never constructed
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:262:8
+    |
+262 | struct CoveredPhaseConsistentCnTrialOperandV1 {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `CoveredPhaseConsistentPhysicalArtifactsV1` is never constructed
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:274:8
+    |
+274 | struct CoveredPhaseConsistentPhysicalArtifactsV1 {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `covered_soil_layer_enthalpy_coordinate_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:289:4
+    |
+289 | fn covered_soil_layer_enthalpy_coordinate_v1(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated items `from_sealed_receipt` and `validate_against` are never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:305:8
+    |
+304 | impl CoveredPhaseConsistentCnTrialOperandV1 {
+    | ------------------------------------------- associated items in this implementation
+305 |     fn from_sealed_receipt(
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+328 |     fn validate_against(
+    |        ^^^^^^^^^^^^^^^^
+
+warning: methods `initial_unpublished_soil_iteration_candidate_v1`, `unpublished_soil_candidate_for_covered_iteration_v1`, and `unpublished_soil_candidate_for_covered_envelope_v1` are never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:352:8
+    |
+351 | impl DirectV11SnowCoveredRealConsumerStack<'_> {
+    | ---------------------------------------------- methods in this implementation
+352 |     fn initial_unpublished_soil_iteration_candidate_v1(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+395 |     fn unpublished_soil_candidate_for_covered_iteration_v1(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+475 |     fn unpublished_soil_candidate_for_covered_envelope_v1(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `snow_soil_heat_receipts_for_candidate_v1`, `retain_terminal_limiting_snow_soil_receipts`, and `soil_top_boundary_credits` are never used
+    --> crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:957:8
+     |
+ 593 | impl DirectV11SnowCoveredRealConsumerStack<'_> {
+     | ---------------------------------------------- methods in this implementation
+...
+ 957 |     fn snow_soil_heat_receipts_for_candidate_v1(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+ 973 |     fn retain_terminal_limiting_snow_soil_receipts(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1211 |     fn soil_top_boundary_credits(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `CoveredExactFloorTerminalPhaseSupportImageV1` is never constructed
+ --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:4:8
+  |
+4 | struct CoveredExactFloorTerminalPhaseSupportImageV1 {
+  |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variants `NativeNonCoe` and `AuthenticatedCoe` are never constructed
+  --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:29:5
+   |
+28 | enum CanonicalStage3SnowEnergyOwnerV1 {
+   |      -------------------------------- variants in this enum
+29 |     NativeNonCoe,
+   |     ^^^^^^^^^^^^
+30 |     AuthenticatedCoe {
+   |     ^^^^^^^^^^^^^^^^
+   |
+   = note: `CanonicalStage3SnowEnergyOwnerV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: variants `Tightened10x` and `Loosened2x` are never constructed
+  --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:38:5
+   |
+37 | enum CanonicalCoveredToleranceScaleV1 {
+   |      -------------------------------- variants in this enum
+38 |     Tightened10x,
+   |     ^^^^^^^^^^^^
+39 |     Nominal,
+40 |     Loosened2x,
+   |     ^^^^^^^^^^
+   |
+   = note: `CanonicalCoveredToleranceScaleV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: multiple variants are never constructed
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:96:5
+    |
+ 95 | enum CanonicalCoveredCoordinateV1 {
+    |      ---------------------------- variants in this enum
+ 96 |     SnowTemperature,
+    |     ^^^^^^^^^^^^^^^
+ 97 |     TopSoilTemperature,
+    |     ^^^^^^^^^^^^^^^^^^
+ 98 |     HeatFlux,
+    |     ^^^^^^^^
+ 99 |     VaporFlux,
+    |     ^^^^^^^^^
+100 |     SnowWater,
+    |     ^^^^^^^^^
+101 |     Energy,
+    |     ^^^^^^
+102 |     Density,
+    |     ^^^^^^^
+103 |     Thickness,
+    |     ^^^^^^^^^
+104 |     SpecificHumidity,
+    |     ^^^^^^^^^^^^^^^^
+    |
+    = note: `CanonicalCoveredCoordinateV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: variants `MixedPhase`, `ThawRefreeze`, and `WetCanopy` are never constructed
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:134:5
+    |
+132 | enum CanonicalCoveredDerivedActiveSetV1 {
+    |      ---------------------------------- variants in this enum
+133 |     StrictlyFrozen,
+134 |     MixedPhase,
+    |     ^^^^^^^^^^
+135 |     ThawRefreeze,
+    |     ^^^^^^^^^^^^
+136 |     WetCanopy,
+    |     ^^^^^^^^^
+    |
+    = note: `CanonicalCoveredDerivedActiveSetV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: enum `CanonicalAuthenticPhysicsPoisonV1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:140:6
+    |
+140 | enum CanonicalAuthenticPhysicsPoisonV1 {
+    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variants `DuplicateRole`, `OutOfOrderRole`, `UnchargedAuthenticMap`, `SecondFixedPointPredictor`, `ReplayAfterFinal`, and `StepExceedsFinalReserve` are never constructed
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:148:5
+    |
+147 | enum CanonicalCoveredChargePoisonV1 {
+    |      ------------------------------ variants in this enum
+148 |     DuplicateRole,
+    |     ^^^^^^^^^^^^^
+149 |     OutOfOrderRole,
+    |     ^^^^^^^^^^^^^^
+150 |     UnchargedAuthenticMap,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+151 |     SecondFixedPointPredictor,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+152 |     ReplayAfterFinal,
+    |     ^^^^^^^^^^^^^^^^
+153 |     StepExceedsFinalReserve,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `CanonicalCoveredChargePoisonV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: variants `AuthenticMapFailure`, `UnexpectedPhysicalEvaluation`, and `ThinPackV22` are never constructed
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:178:5
+    |
+162 | enum CanonicalStage3ProductionErrorV1 {
+    |      -------------------------------- variants in this enum
+...
+178 |     AuthenticMapFailure,
+    |     ^^^^^^^^^^^^^^^^^^^
+179 |     UnexpectedPhysicalEvaluation,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+180 |     ThinPackV22,
+    |     ^^^^^^^^^^^
+    |
+    = note: `CanonicalStage3ProductionErrorV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: method `with_tolerance_scale` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:195:8
+    |
+194 | impl CanonicalStage3OpenSnowExecutionInputV1 {
+    | -------------------------------------------- method in this implementation
+195 |     fn with_tolerance_scale(self, scale: CanonicalCoveredToleranceScaleV1) -> Self {
+    |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: associated items `evaluate`, `replace_continuous_candidate_for_sensitivity`, `inject_raw_continuous_delta`, `inject_raw_operand_poison`, and `inject_charge_receipt_poison` are never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:238:8
+    |
+237 | impl CanonicalCoveredAuthenticPhysicalMapV1 {
+    | ------------------------------------------- associated items in this implementation
+238 |     fn evaluate(
+    |        ^^^^^^^^
+...
+301 |     fn replace_continuous_candidate_for_sensitivity(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+324 |     fn inject_raw_continuous_delta(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+338 |     fn inject_raw_operand_poison(&mut self, poison: CanonicalAuthenticPhysicsPoisonV1) {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+352 |     fn inject_charge_receipt_poison(&mut self, poison: CanonicalCoveredChargePoisonV1) {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `execute_one_volume_enthalpy_adaptive` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:372:8
+    |
+371 | impl CanonicalThinPackV22TerminalResultV1 {
+    | ----------------------------------------- associated function in this implementation
+372 |     fn execute_one_volume_enthalpy_adaptive(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `canonical_covered_active_set` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:470:4
+    |
+470 | fn canonical_covered_active_set(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `finalize_v11_imported_segment` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:1789:15
+     |
+1789 | pub(crate) fn finalize_v11_imported_segment(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_and_validate_surface_liquid_closure` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs:816:15
+    |
+816 | pub(super) fn capture_and_validate_surface_liquid_closure(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_surface_liquid_closure_operands_with_input` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs:1296:15
+     |
+1296 | pub(super) fn validate_surface_liquid_closure_operands_with_input(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `validate_stage3_persistent_cumulative_closure` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs:778:19
+    |
+ 16 | impl Wb11HydrologyKernel {
+    | ------------------------ associated function in this implementation
+...
+778 |     pub(crate) fn validate_stage3_persistent_cumulative_closure(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unreachable `pub` item
+  --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v3_projection.rs:65:1
+   |
+65 | pub struct SurfaceLiquidCandidateOnlyUnpublishedSoilV1 {
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(super)`
+   |
+   = help: or consider exporting it for use by other crates
+   = note: requested on the command line with `-W unreachable-pub`
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 41 warnings (run `cargo fix --lib -p openwepp-hillslope-orchestrator` to apply 1 suggestion)
+warning: function `step_trace_enabled` is never used
+   --> crates/openwepp-runner/src/hillslope/laned_active.rs:139:15
+    |
+139 | pub(crate) fn step_trace_enabled() -> bool {
+    |               ^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `trace_detail_filter_from_env` is never used
+   --> crates/openwepp-runner/src/hillslope/laned_active.rs:149:15
+    |
+149 | pub(crate) fn trace_detail_filter_from_env() -> Result<
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `mesh_policy_from_env` is never used
+   --> crates/openwepp-runner/src/hillslope/laned_active.rs:207:15
+    |
+207 | pub(crate) fn mesh_policy_from_env()
+    |               ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `max_dt_s_from_env` is never used
+   --> crates/openwepp-runner/src/hillslope/laned_active.rs:243:15
+    |
+243 | pub(crate) fn max_dt_s_from_env() -> Result<f64, HillslopeCliError> {
+    |               ^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-runner` (lib test) generated 4 warnings
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-f3ac7362b66e03e8)
+
+running 1 test
+test hillslope::tests::explicit_stage3_runner_fixture_bootstraps_before_day_execution ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 215 filtered out; finished in 0.03s
+
+	Command being timed: "timeout 1200 env RUST_MIN_STACK=67108864 nix develop -c cargo test --release -p openwepp-runner --lib hillslope::tests::explicit_stage3_runner_fixture_bootstraps_before_day_execution -- --exact --nocapture"
+	User time (seconds): 1.13
+	System time (seconds): 0.28
+	Percent of CPU this job got: 88%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.60
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 306464
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 74405
+	Voluntary context switches: 45541
+	Involuntary context switches: 118
+	Swaps: 0
+	File system inputs: 320
+	File system outputs: 616
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+COMMAND_EXIT=0

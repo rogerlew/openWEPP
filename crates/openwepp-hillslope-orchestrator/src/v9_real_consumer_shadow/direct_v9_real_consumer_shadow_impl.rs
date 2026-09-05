@@ -18,12 +18,9 @@ fn direct_v9_select_v8_soil_beginning_v44<'a>(
         requested_source,
         physical_only_or_v11,
     ) {
-        (
-            true,
-            Some(_),
-            DirectV9V8SoilBeginningSourceV44::ResidentAuthenticatedOwner,
-            _,
-        ) => Ok(resident.read_view()),
+        (true, Some(_), DirectV9V8SoilBeginningSourceV44::ResidentAuthenticatedOwner, _) => {
+            Ok(resident.read_view())
+        }
         (true, _, _, _) => Err(DirectV9RealConsumerError::Identity(
             "V44 projected soil must not enter Stage3-covered V8",
         )),
@@ -33,12 +30,9 @@ fn direct_v9_select_v8_soil_beginning_v44<'a>(
             DirectV9V8SoilBeginningSourceV44::UnpublishedPhysicalCandidate,
             _,
         ) => Ok(candidate.read_view()),
-        (
-            false,
-            None,
-            DirectV9V8SoilBeginningSourceV44::ResidentAuthenticatedOwner,
-            true,
-        ) => Ok(resident.read_view()),
+        (false, None, DirectV9V8SoilBeginningSourceV44::ResidentAuthenticatedOwner, true) => {
+            Ok(resident.read_view())
+        }
         (false, None, DirectV9V8SoilBeginningSourceV44::LegacyV1Owner, false) => {
             Ok(DirectSoilThermalReadView::V1(resident.v1()?))
         }
@@ -304,6 +298,11 @@ impl DirectV9RealConsumerShadow {
     }
 
     #[must_use]
+    pub(crate) const fn surface_configuration(&self) -> &DirectSurfaceLiquidConfiguration {
+        &self.surface_configuration
+    }
+
+    #[must_use]
     pub const fn biogeochemistry(&self) -> &BiogeochemistryState {
         &self.biogeochemistry
     }
@@ -554,15 +553,15 @@ impl DirectV9RealConsumerShadow {
         )?;
         let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
         let fixed_point_history = match (unpublished_soil_candidate, wb14_coupled_child_binding) {
-            (Some(candidate), Some(binding)) => self
-                .soil_thermal
-                .validate_unpublished_fixed_point_v2(
+            (Some(candidate), Some(binding)) => {
+                self.soil_thermal.validate_unpublished_fixed_point_v2(
                     &self.lse_configuration,
                     candidate,
                     unpublished_soil_continuation,
                     binding.child_support_start_ns,
                     binding.child_support_end_ns,
-                )?,
+                )?
+            }
             (Some(candidate), None) if candidate.v2().is_ok() => {
                 return Err(DirectV9RealConsumerError::Identity(
                     "native V2 unpublished physical support binding",
@@ -574,28 +573,28 @@ impl DirectV9RealConsumerShadow {
             None
         } else {
             match unpublished_soil_candidate {
-            Some(candidate) => {
-                let binding =
-                    wb14_coupled_child_binding.ok_or(DirectV9RealConsumerError::Identity(
-                        "native V2 unpublished physical support binding",
-                    ))?;
-                Some(
-                    self.soil_thermal
-                        .prepare_unpublished_physical_beginning_v2(
-                            &self.lse_configuration,
-                            candidate,
-                            unpublished_soil_continuation,
-                            binding.child_support_start_ns,
-                            binding.child_support_end_ns,
-                        )?,
-                )
-            }
-            None if unpublished_soil_continuation.is_some() => {
-                return Err(DirectV9RealConsumerError::Identity(
-                    "native V2 unpublished continuation without candidate",
-                ));
-            }
-            None => None,
+                Some(candidate) => {
+                    let binding =
+                        wb14_coupled_child_binding.ok_or(DirectV9RealConsumerError::Identity(
+                            "native V2 unpublished physical support binding",
+                        ))?;
+                    Some(
+                        self.soil_thermal
+                            .prepare_unpublished_physical_beginning_v2(
+                                &self.lse_configuration,
+                                candidate,
+                                unpublished_soil_continuation,
+                                binding.child_support_start_ns,
+                                binding.child_support_end_ns,
+                            )?,
+                    )
+                }
+                None if unpublished_soil_continuation.is_some() => {
+                    return Err(DirectV9RealConsumerError::Identity(
+                        "native V2 unpublished continuation without candidate",
+                    ));
+                }
+                None => None,
             }
         };
         let v8_soil_beginning_source = if fixed_point_history {
@@ -1308,18 +1307,29 @@ impl DirectV9RealConsumerShadow {
                     && binding.production_lane_id == map.ofe_lane.lane_id
                     && binding.ordered_soil_layer_ids == map.layer_ids
             });
-        if self.surface_configuration.ofe_bindings.len() != self.hydrology_frame.lanes.len()
-            || self.layer_maps.len() != self.hydrology_frame.lanes.len()
-            || self.biogeochemistry.last_transaction_id
-                != self.vegetation_state.0.last_transaction_id
-            || !lse_transaction_matches
-            || !soil_transaction_matches
-            || !complete_accepted_lineage
-            || !mapping_matches
+        let invalid_coordinate = if self.surface_configuration.ofe_bindings.len()
+            != self.hydrology_frame.lanes.len()
         {
-            return Err(DirectV9RealConsumerError::Identity(
-                "incomplete or mixed complete-owner state",
-            ));
+            Some("incomplete or mixed complete-owner state: surface/hydrology OFE cardinality")
+        } else if self.layer_maps.len() != self.hydrology_frame.lanes.len() {
+            Some("incomplete or mixed complete-owner state: soil/hydrology lane cardinality")
+        } else if self.biogeochemistry.last_transaction_id
+            != self.vegetation_state.0.last_transaction_id
+        {
+            Some("incomplete or mixed complete-owner state: biogeochemistry/vegetation transaction")
+        } else if !lse_transaction_matches {
+            Some("incomplete or mixed complete-owner state: land-surface-energy/vegetation transaction")
+        } else if !soil_transaction_matches {
+            Some("incomplete or mixed complete-owner state: soil-thermal/vegetation transaction")
+        } else if !complete_accepted_lineage {
+            Some("incomplete or mixed complete-owner state: accepted interval complete lineage")
+        } else if !mapping_matches {
+            Some("incomplete or mixed complete-owner state: surface/soil lane mapping")
+        } else {
+            None
+        };
+        if let Some(coordinate) = invalid_coordinate {
+            return Err(DirectV9RealConsumerError::Identity(coordinate));
         }
         Ok(())
     }

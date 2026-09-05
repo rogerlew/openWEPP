@@ -217,6 +217,7 @@ fn sealed_day() -> Stage3AcceptedPublicationDayV1 {
         ordered_support_receipt_set_sha256: digest_bytes(b"support-set"),
         lane_frames: vec![DirectDayFrame::seed(identity, 0, 0).expect("test day frame")],
         stage3_surface_temperature_c_by_lane: vec![None],
+        laned_active_summary: None,
         receipt_sha256: digest_bytes(b"committed-publication-receipt"),
     }
 }
@@ -498,6 +499,246 @@ fn accepted_publication_source_contains_no_forbidden_operand_fabrication() {
     }
     assert!(!source.contains(concat!(".hydrology", "()")));
     assert!(!source.contains(concat!("UnifiedRealHydrology", "Candidate")));
+}
+
+fn accepted_wb14_partition_fixture() -> AcceptedLaneDay {
+    let mut accepted = AcceptedLaneDay {
+        ingress_m: 0.014,
+        local_liquid_m: 0.010,
+        runon_m: 0.004,
+        infiltration_m: 0.008,
+        retained_surface_liquid_m: 0.001,
+        runoff_m: 0.005,
+        ..AcceptedLaneDay::default()
+    };
+    accepted.hourly_runoff_m[2] = 0.002;
+    accepted.hourly_runoff_m[9] = 0.003;
+    accepted
+}
+
+fn accepted_wb14_partition_day() -> DirectDayFrame {
+    let identity = DirectRunIdentity::new(91, 92, 1, 1).expect("WB14 identity");
+    let mut day = DirectDayFrame::seed(identity, 0, 0).expect("WB14 day");
+    day.runon_carry = DirectRunonCarryState {
+        runon_input_m: 0.004,
+        subsurface_carry_m: 0.007,
+    };
+    day.liquid_input_shadow_projection = Some(DirectLiquidInputShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        liquid_input_m: 0.010,
+    });
+    day.runon_carry_shadow_projection = Some(DirectRunonCarryShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        runon_input_m: 0.004,
+        subsurface_carry_m: 0.007,
+    });
+    day.infiltration_depression_shadow_projection =
+        Some(DirectInfiltrationDepressionShadowProjection {
+            lane_index: 0,
+            day_index: 0,
+            cumulative_infiltration_m: 0.008,
+            depression_storage_delta_m: 0.001,
+        });
+    day.saturation_addback_shadow_projection = Some(DirectSaturationAddbackShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        surface_saturation_runoff_m: 0.0,
+    });
+    day.subsurface_compute_shadow_projection = Some(DirectSubsurfaceComputeShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        soil_water_before_m: 0.0,
+        soil_water_after_m: 0.0,
+        lateral_flow_m: 0.0,
+        tile_drainage_m: 0.0,
+        subsurface_loss_m: 0.0,
+        lateral_target_m: 0.0,
+        drainage_target_m: 0.0,
+        lateral_capacity_m: 0.0,
+        hourly_lateral_carry_m: [0.0; 24],
+        hourly_saturation_carry_m: [0.0; 24],
+        layer_state_after: Vec::new(),
+        lateral_layer_withdrawal_m: Vec::new(),
+    });
+    day
+}
+
+#[test]
+fn accepted_wb14_partition_preserves_exact_bins_and_excludes_subsurface_carry() {
+    let accepted = accepted_wb14_partition_fixture();
+    let mut day = accepted_wb14_partition_day();
+
+    install_accepted_wb14_partition_inputs(&mut day, &accepted)
+        .expect("sealed accepted WB14 partition source");
+
+    assert_eq!(day.wb14_hourly_excess_m, accepted.hourly_runoff_m);
+    assert_eq!(
+        day.runoff_partition_inputs.runon_input_m.to_bits(),
+        accepted.runon_m.to_bits(),
+        "the distinct subsurface carry must not become surface runon",
+    );
+    assert_eq!(
+        day.runon_carry.subsurface_carry_m.to_bits(),
+        0.007_f64.to_bits(),
+        "the carry remains available to subsurface/storage accounting",
+    );
+    day.run_r4a_runoff_partition_span()
+        .expect("accepted partition");
+    day.run_r7d6_peak_runoff_span()
+        .expect("accepted WB14 peak timing");
+    assert!((day.runoff_partition.q_runoff_m - accepted.runoff_m).abs() < 1.0e-15);
+    assert_eq!(day.peak_runoff.peak_hour_index, Some(9));
+    assert!((day.peak_runoff.peak_runoff_rate_m_s - 0.003 / 3_600.0).abs() < 1.0e-18);
+}
+
+#[test]
+fn accepted_wb14_partition_rejects_subsurface_carry_as_a_surface_bin() {
+    let mut accepted = accepted_wb14_partition_fixture();
+    accepted.hourly_runoff_m[7] = 0.007;
+    let mut day = accepted_wb14_partition_day();
+    let before_inputs = day.runoff_partition_inputs;
+    let before_hourly = day.wb14_hourly_excess_m;
+
+    let error = install_accepted_wb14_partition_inputs(&mut day, &accepted)
+        .expect_err("subsurface carry cannot be appended to accepted WB14 runoff");
+
+    assert!(
+        error
+            .to_string()
+            .contains("accepted WB14 hourly/daily runoff closure")
+    );
+    assert_eq!(day.runoff_partition_inputs, before_inputs);
+    assert_eq!(day.wb14_hourly_excess_m, before_hourly);
+}
+
+#[test]
+fn accepted_wb14_partition_poison_rolls_back_without_mutation() {
+    let mut accepted = accepted_wb14_partition_fixture();
+    accepted.hourly_runoff_m[2] = -0.002;
+    let mut day = accepted_wb14_partition_day();
+    day.runoff_partition_inputs.liquid_input_m = 0.123;
+    day.wb14_hourly_excess_m[23] = 0.456;
+    let before_inputs = day.runoff_partition_inputs;
+    let before_hourly = day.wb14_hourly_excess_m;
+
+    install_accepted_wb14_partition_inputs(&mut day, &accepted)
+        .expect_err("negative accepted timing must reject");
+
+    assert_eq!(day.runoff_partition_inputs, before_inputs);
+    assert_eq!(day.wb14_hourly_excess_m, before_hourly);
+}
+
+fn replace_test_r4a_partition_scalar(day: &mut DirectDayFrame, partition_runoff_m: f64) {
+    let mut state = day.runoff_partition;
+    state.partition_runoff_m = partition_runoff_m;
+    state.q_runoff_m = partition_runoff_m + state.surface_saturation_runoff_m;
+    state.closure_residual_m = -partition_runoff_m;
+    let downstream = DirectRunoffDownstreamOperands::from(state);
+    day.runoff_partition = state;
+    day.runoff_downstream_operands = downstream;
+    day.runoff_shadow_projection = Some(DirectRunoffShadowProjection {
+        lane_index: day.lane_index,
+        day_index: day.day_index,
+        liquid_input_m: downstream.liquid_input_m,
+        runon_input_m: downstream.runon_input_m,
+        cumulative_infiltration_m: downstream.cumulative_infiltration_m,
+        depression_storage_delta_m: downstream.depression_storage_delta_m,
+        surface_saturation_runoff_m: downstream.surface_saturation_runoff_m,
+        partition_runoff_m: downstream.partition_runoff_m,
+        q_runoff_m: downstream.q_runoff_m,
+        closure_residual_m: downstream.closure_residual_m,
+    });
+    day.water.runoff_m = state.q_runoff_m;
+}
+
+fn accepted_zero_wb14_partition_day() -> (AcceptedLaneDay, DirectDayFrame) {
+    let accepted = AcceptedLaneDay::default();
+    let mut day = accepted_wb14_partition_day();
+    install_accepted_wb14_partition_inputs(&mut day, &accepted).expect("zero accepted WB14");
+    day.run_r4a_runoff_partition_span()
+        .expect("zero accepted partition");
+    (accepted, day)
+}
+
+#[test]
+fn accepted_wb14_scalar_reconciliation_accepts_below_and_at_contract_bound() {
+    let tolerance_m = ACCEPTED_WB14_INTERVAL_CLOSURE_TOLERANCE_M * 24.0;
+    for residual_m in [tolerance_m * 0.5, tolerance_m] {
+        let (accepted, mut day) = accepted_zero_wb14_partition_day();
+        replace_test_r4a_partition_scalar(&mut day, residual_m);
+
+        reconcile_accepted_wb14_partition_scalar(&mut day, &accepted)
+            .expect("TOL-WATBAL-009 boundary is accepted");
+
+        assert_eq!(day.runoff_partition.partition_runoff_m.to_bits(), 0);
+        assert_eq!(day.runoff_partition.q_runoff_m.to_bits(), 0);
+        assert_eq!(
+            day.runoff_shadow_projection
+                .expect("reconciled R4A shadow")
+                .q_runoff_m
+                .to_bits(),
+            0,
+        );
+    }
+}
+
+#[test]
+fn accepted_wb14_scalar_reconciliation_preserves_subthreshold_positive_source() {
+    let mut accepted = AcceptedLaneDay {
+        ingress_m: 1.0e-15,
+        local_liquid_m: 1.0e-15,
+        runoff_m: 1.0e-15,
+        ..AcceptedLaneDay::default()
+    };
+    accepted.hourly_runoff_m[17] = 1.0e-15;
+    let mut day = accepted_wb14_partition_day();
+    install_accepted_wb14_partition_inputs(&mut day, &accepted)
+        .expect("positive subthreshold accepted WB14");
+    day.run_r4a_runoff_partition_span()
+        .expect("positive subthreshold partition");
+    replace_test_r4a_partition_scalar(&mut day, 0.0);
+
+    reconcile_accepted_wb14_partition_scalar(&mut day, &accepted)
+        .expect("positive hourly source is preserved");
+
+    assert_eq!(
+        day.runoff_partition.partition_runoff_m.to_bits(),
+        1.0e-15_f64.to_bits(),
+    );
+    assert_eq!(
+        day.wb14_hourly_excess_m[17].to_bits(),
+        1.0e-15_f64.to_bits()
+    );
+}
+
+#[test]
+fn accepted_wb14_scalar_material_mismatch_fails_without_mutation() {
+    let tolerance_m = ACCEPTED_WB14_INTERVAL_CLOSURE_TOLERANCE_M * 24.0;
+    let above_tolerance_m = f64::from_bits(tolerance_m.to_bits() + 1);
+    let (accepted, mut day) = accepted_zero_wb14_partition_day();
+    replace_test_r4a_partition_scalar(&mut day, above_tolerance_m);
+    let before_state = day.runoff_partition;
+    let before_downstream = day.runoff_downstream_operands;
+    let before_shadow = day.runoff_shadow_projection;
+    let before_water = day.water.clone();
+    let before_hourly = day.wb14_hourly_excess_m;
+
+    let error = reconcile_accepted_wb14_partition_scalar(&mut day, &accepted)
+        .expect_err("material R4A/WB14 mismatch must reject");
+
+    assert!(matches!(
+        error,
+        DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "stage3_publication.accepted_wb14_partition_runoff_m"
+        }
+    ));
+    assert_eq!(day.runoff_partition, before_state);
+    assert_eq!(day.runoff_downstream_operands, before_downstream);
+    assert_eq!(day.runoff_shadow_projection, before_shadow);
+    assert_eq!(day.water, before_water);
+    assert_eq!(day.wb14_hourly_excess_m, before_hourly);
 }
 
 include!("stage3_committed_publication_tests_tail.rs");

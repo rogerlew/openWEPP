@@ -84,15 +84,6 @@ impl SnowFreeHalfHourStaticConfigurationRestartV1 {
     }
 
     pub fn restore(&self) -> Result<SnowFreeHalfHourStaticConfiguration, GsiForcingRestartError> {
-        if self
-            .destinations
-            .windows(2)
-            .any(|pair| (&pair[0].ofe_id, &pair[0].tile_id) >= (&pair[1].ofe_id, &pair[1].tile_id))
-        {
-            return Err(GsiForcingRestartError::Ordering(
-                "forcing destination canonical order",
-            ));
-        }
         let value = SnowFreeHalfHourStaticConfiguration {
             run_id: self.run_id.clone(),
             co2_pa: f("forcing.co2_pa", &self.co2_pa)?,
@@ -927,5 +918,122 @@ impl SnowFreeHalfHourProviderCursorRestartV1 {
             .map_err(|_| GsiForcingRestartError::Identity("cursor serialization"))?;
         SnowFreeHalfHourProviderCursor::restore_json(&bytes, configuration, expected_next_day_index)
             .map_err(|_| GsiForcingRestartError::Identity("provider cursor"))
+    }
+}
+
+#[cfg(test)]
+mod static_configuration_restart_tests {
+    use super::*;
+
+    fn physical_configuration(ofe_count: usize) -> SnowFreeHalfHourStaticConfiguration {
+        SnowFreeHalfHourStaticConfiguration {
+            run_id: "restart-scale-proof".to_owned(),
+            co2_pa: 42.0,
+            reference_height_m: 24.0,
+            gsi_owner_configuration_sha256: "a".repeat(64),
+            destinations: (1..=ofe_count)
+                .map(|lane_id| SnowFreeHalfHourDestination {
+                    ofe_id: format!("ofe-{lane_id}"),
+                    tile_id: format!("tile-{lane_id}"),
+                    wb14_configuration_sha256: format!("{lane_id:064x}"),
+                })
+                .collect(),
+        }
+    }
+
+    fn assert_physical_projection_restore(ofe_count: usize) {
+        let configuration = physical_configuration(ofe_count);
+        let projected = SnowFreeHalfHourStaticConfigurationRestartV1::project(&configuration)
+            .expect("project physical topology");
+        let restored = projected.restore().expect("restore physical topology");
+        assert_eq!(restored, configuration);
+    }
+
+    fn assert_rejected_without_mutation(projected: &SnowFreeHalfHourStaticConfigurationRestartV1) {
+        let before = projected.clone();
+        assert!(projected.restore().is_err());
+        assert_eq!(*projected, before);
+    }
+
+    #[test]
+    fn static_configuration_restart_accepts_one_ofe_physical_order() {
+        assert_physical_projection_restore(1);
+    }
+
+    #[test]
+    fn static_configuration_restart_accepts_nine_ofe_physical_order() {
+        assert_physical_projection_restore(9);
+    }
+
+    #[test]
+    fn static_configuration_restart_accepts_ten_ofe_physical_order() {
+        assert_physical_projection_restore(10);
+    }
+
+    #[test]
+    fn static_configuration_restart_accepts_nineteen_ofe_physical_order() {
+        assert_physical_projection_restore(19);
+    }
+
+    #[test]
+    fn static_configuration_restart_rejects_duplicate_destination_without_mutation() {
+        let mut projected =
+            SnowFreeHalfHourStaticConfigurationRestartV1::project(&physical_configuration(10))
+                .expect("project physical topology");
+        projected.destinations[9].ofe_id = projected.destinations[8].ofe_id.clone();
+        projected.destinations[9].tile_id = projected.destinations[8].tile_id.clone();
+        assert_rejected_without_mutation(&projected);
+    }
+
+    #[test]
+    fn static_configuration_restart_rejects_omission_with_stale_digest() {
+        let mut projected =
+            SnowFreeHalfHourStaticConfigurationRestartV1::project(&physical_configuration(10))
+                .expect("project physical topology");
+        projected.destinations.pop().expect("destination to omit");
+        assert_rejected_without_mutation(&projected);
+    }
+
+    #[test]
+    fn static_configuration_restart_rejects_substitution_with_stale_digest() {
+        let mut projected =
+            SnowFreeHalfHourStaticConfigurationRestartV1::project(&physical_configuration(10))
+                .expect("project physical topology");
+        projected.destinations[9].ofe_id = "ofe-foreign".to_owned();
+        assert_rejected_without_mutation(&projected);
+    }
+
+    #[test]
+    fn static_configuration_restart_rejects_reorder_with_stale_digest() {
+        let mut projected =
+            SnowFreeHalfHourStaticConfigurationRestartV1::project(&physical_configuration(10))
+                .expect("project physical topology");
+        projected.destinations.swap(8, 9);
+        assert_rejected_without_mutation(&projected);
+    }
+
+    #[test]
+    fn static_configuration_restart_rejects_stale_configuration_digest() {
+        let mut projected =
+            SnowFreeHalfHourStaticConfigurationRestartV1::project(&physical_configuration(10))
+                .expect("project physical topology");
+        projected.configuration_sha256 = Sha256Hex::try_new("0".repeat(64)).expect("digest");
+        assert_rejected_without_mutation(&projected);
+    }
+
+    #[test]
+    fn static_configuration_restart_accepts_intentionally_resealed_physical_order() {
+        let original =
+            SnowFreeHalfHourStaticConfigurationRestartV1::project(&physical_configuration(10))
+                .expect("project original topology");
+        let mut reordered = physical_configuration(10);
+        reordered.destinations.swap(8, 9);
+        let resealed = SnowFreeHalfHourStaticConfigurationRestartV1::project(&reordered)
+            .expect("project intentionally resealed topology");
+        assert_ne!(resealed.configuration_sha256, original.configuration_sha256);
+        assert_eq!(
+            resealed.restore().expect("restore resealed topology"),
+            reordered
+        );
     }
 }

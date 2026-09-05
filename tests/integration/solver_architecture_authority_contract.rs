@@ -90,7 +90,6 @@ fn repository_authoring_instructions_bind_solver_changes_to_the_standard() {
 fn stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture() {
     let package = normalized(&format!("{RECOVERY_PACKAGE}/package.md"));
     for required in [
-        "Status: `QUEUED — SCAFFOLDED — PRE-IMPLEMENTATION`",
         "Binding architecture rule: no accretive solvers",
         "This package applies accepted ADR-0044",
         "The package must replace the v33--v57 accretive solver architecture",
@@ -103,11 +102,58 @@ fn stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture() {
     }
 
     let kickoff = normalized(&format!("{RECOVERY_PACKAGE}/prompts/active/kickoff.md"));
-    assert!(kickoff.contains("QUEUED — DO NOT EXECUTE UNTIL EXPLICITLY STARTED"));
     assert!(kickoff.contains("No accretive solver dispatch"));
     assert!(kickoff.contains("do not create V58"));
 
     let roadmap = text("docs/ROADMAP.md");
     assert!(roadmap.contains("0044-prohibit-accretive-production-solver-dispatch.md"));
     assert!(roadmap.contains("replace—not extend—the accretive v33–v57 solver dispatch"));
+}
+
+#[test]
+fn stage3_canonical_replacement_authority_is_nonversioned_and_anti_accretive() {
+    let contract =
+        normalized("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
+    for required in [
+        "ADR-0044 Canonical Covered-Solver Amendment",
+        "It is not version 58",
+        "INV-SNOWENERGY-082",
+        "TOL-SNOWENERGY-007",
+        "at most eight authentic physical maps",
+        "Coordinate finite differences",
+        "same solver",
+        "OBL-SNOWENERGY-C-050",
+        "historical and superseded",
+    ] {
+        assert!(contract.contains(required), "contract missing: {required}");
+    }
+
+    for (path, required) in [
+        (
+            "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "INV-LANDSURFACEENERGY-152",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+            "INV-COUPLEDTIME-027",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+            "INV-SURFACELIQUID-032",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+            "INV-RUNOFFPART-034",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md",
+            "INV-OFEROUTE-015",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+            "INV-WATBAL-105",
+        ),
+    ] {
+        assert!(text(path).contains(required), "{path} missing {required}");
+    }
 }

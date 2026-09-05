@@ -1,9 +1,8 @@
-# Artifact queue
+# Artifact inventory
 
-Status: `SCAFFOLDED`
+Status: `EXECUTED — TERMINAL HOLD EVIDENCE POPULATED`
 
-The following artifacts are required during execution and are intentionally
-absent until they can contain direct evidence rather than placeholders:
+The following required artifacts contain the package's direct evidence:
 
 - `inherited-worktree-and-runtime-inventory.md`
 - `solver-chain-deletion-map.md`

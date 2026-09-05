@@ -1,0 +1,25 @@
+CLIHILL-E-011 runtime surface failure for snow_stage3_v11_owner_seed: HS-SIMOUT-E-001 direct production requires inputs.snow_stage3_v11_owner_seed (or the legacy-discovery snow_stage3_v11_owner_seed.json); no fixture/default owner seed is admitted
+Command exited with non-zero status 1
+	Command being timed: "/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/openwepp-cli-hill --run-dir /workdir/openWEPP/tests/fixtures/laned_shadow_h2637 --run-file p2637.run.toml --output-dir /tmp/phase1_h2637_output_nodirect --manifest-path /tmp/phase1_h2637_manifest_nodirect.json"
+	User time (seconds): 0.01
+	System time (seconds): 0.00
+	Percent of CPU this job got: 67%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.02
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 12136
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1763
+	Voluntary context switches: 3
+	Involuntary context switches: 2
+	Swaps: 0
+	File system inputs: 16
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

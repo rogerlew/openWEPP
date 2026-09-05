@@ -299,7 +299,7 @@ fn v130_retains_production_and_claim_holds() {
     }
     for required in [
         "v140 owner amendment selects an exact 60-second adaptive Stage-3 floor",
-        "v29 retains bounded vapor/phase custody, the exact 60-second fallback",
+        "non-versioned ADR-0044 amendments bind one canonical covered solver",
         "production",
         "cutover",
     ] {
@@ -576,7 +576,7 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
         assert!(snow.contains(required), "{CONTRACT} missing {required}");
     }
     for required in [
-        "contract_version: 29",
+        "contract_version: 58",
         "Version 18 defines the persistent Stage 3 snow--soil conductive boundary",
         "`m_v,raw`",
         "Signed bounded vapor transfer",
@@ -736,7 +736,5 @@ fn v131_retains_fail_closed_authority_gaps_and_protected_boundaries() {
     assert!(
         index.contains("v140 owner amendment selects an exact 60-second adaptive Stage-3 floor")
     );
-    assert!(
-        index.contains("v29 retains bounded vapor/phase custody, the exact 60-second fallback")
-    );
+    assert!(index.contains("non-versioned ADR-0044 amendments bind one canonical covered solver"));
 }

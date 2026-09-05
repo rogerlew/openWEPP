@@ -272,15 +272,9 @@ mod terminal_custody_lane_set_tests {
             .split("pub fn authenticate_soil_thermal_prepared_beginning_install_authority_v4(")
             .next()
             .expect("V49 authority body");
-        assert!(v3.contains(
-            "authenticate_soil_thermal_prepared_beginning_install_authority_v3("
-        ));
-        assert!(v3.contains(
-            "install_soil_thermal_accepted_v2_from_authenticated_beginning_v3("
-        ));
-        assert!(!v3.contains(
-            "authenticate_soil_thermal_prepared_beginning_install_authority_v2("
-        ));
+        assert!(v3.contains("authenticate_soil_thermal_prepared_beginning_install_authority_v3("));
+        assert!(v3.contains("install_soil_thermal_accepted_v2_from_authenticated_beginning_v3("));
+        assert!(!v3.contains("authenticate_soil_thermal_prepared_beginning_install_authority_v2("));
         assert!(!v3.contains("install_soil_thermal_accepted_v2("));
 
         let finalization = source
@@ -357,7 +351,7 @@ mod terminal_custody_lane_set_tests {
             validate_accepted_vegetation_candidate_transaction_lineage_v1(
                 true, reused, 40, 41, 41, 41, 41,
             )
-            .expect("V2 accepted candidate is the exact support transaction");
+            .expect("native-V2 accepted candidate is the exact support transaction");
         }
     }
 
@@ -382,15 +376,42 @@ mod terminal_custody_lane_set_tests {
     }
 
     #[test]
-    fn v1_accepted_vegetation_lineage_postures_remain_unchanged() {
-        validate_accepted_vegetation_candidate_transaction_lineage_v1(
-            false, true, 40, 41, 41, 40, 40,
-        )
-        .expect("V1 reused candidate retains predecessor lineage");
-        validate_accepted_vegetation_candidate_transaction_lineage_v1(
-            false, false, 40, 41, 41, 41, 41,
-        )
-        .expect("V1 fresh candidate retains accepted lineage");
+    fn v1_reused_vegetation_lineage_admits_only_exact_staged_or_accepted_revision() {
+        for transaction in [40, 41] {
+            validate_accepted_vegetation_candidate_transaction_lineage_v1(
+                false,
+                true,
+                40,
+                41,
+                41,
+                transaction,
+                transaction,
+            )
+            .expect("V1 reused physical revision has exact staged or accepted lineage");
+        }
+    }
+
+    #[test]
+    fn accepted_vegetation_lineage_rejects_noncontiguous_or_split_support_identity() {
+        for (v2, reused, parent, accepted, envelope, outer, inner) in [
+            (false, true, 40, 40, 40, 40, 40),
+            (false, true, 40, 42, 42, 42, 42),
+            (false, true, 40, 41, 40, 41, 41),
+            (false, true, 40, 41, 41, 39, 39),
+            (false, true, 40, 41, 41, 42, 42),
+            (false, true, 40, 41, 41, 40, 41),
+            (false, false, 40, 41, 41, 40, 40),
+            (true, true, 40, 41, 41, 40, 40),
+        ] {
+            assert!(matches!(
+                validate_accepted_vegetation_candidate_transaction_lineage_v1(
+                    v2, reused, parent, accepted, envelope, outer, inner,
+                ),
+                Err(DirectV11RealConsumerError::Identity(
+                    "accepted vegetation candidate transaction lineage"
+                ))
+            ));
+        }
     }
 
     #[test]
@@ -411,29 +432,58 @@ mod terminal_custody_lane_set_tests {
 
     #[test]
     fn deferred_native_v2_outward_lineage_retains_exact_outer_predecessor() {
-        let predecessor = deferred_native_v2_outward_parent_transaction_v1(
+        let source = validate_deferred_native_v2_three_domain_transaction_custody_v1(
             42,
-            TransactionId(42),
-            Some(TransactionId(41)),
+            42,
+            Some(TransactionId(42)),
+            Some(TransactionId(42)),
         )
-        .expect("contiguous outer transaction successor");
-        assert_eq!(predecessor, 41);
-        assert_eq!(predecessor.checked_add(1), Some(42));
+        .expect("same-source soil successor");
+        assert_eq!(source, 42);
+
+        let split_source = validate_deferred_native_v2_three_domain_transaction_custody_v1(
+            42,
+            42,
+            Some(TransactionId(44)),
+            Some(TransactionId(44)),
+        )
+        .expect("authenticated three-domain split retains exact outer source");
+        assert_eq!(split_source, 42);
+
+        let receipt_free_source =
+            validate_deferred_native_v2_three_domain_transaction_custody_v1(42, 42, None, None)
+                .expect("sealed receipt-free native V2 beginning");
+        assert_eq!(receipt_free_source, 42);
+    }
+
+    #[test]
+    fn deferred_native_v2_record_lineage_follows_only_sealed_parent_posture() {
+        assert_eq!(
+            accepted_record_transaction_from_sealed_physical_posture_v1(false, 41, 42),
+            41,
+            "partial child retains the persistent record predecessor",
+        );
+        assert_eq!(
+            accepted_record_transaction_from_sealed_physical_posture_v1(true, 41, 42),
+            42,
+            "final child stamps accepted non-vegetation records",
+        );
     }
 
     #[test]
     fn deferred_native_v2_outward_lineage_rejects_advanced_or_poisoned_transactions() {
-        for (accepted, outer, predecessor) in [
-            (42, 41, Some(40)),
-            (40, 41, Some(40)),
-            (41, 41, Some(39)),
-            (41, 42, Some(40)),
-            (41, 41, None),
+        for (accepted, candidate_source, resident, predecessor) in [
+            (42, 41, Some(44), Some(44)),
+            (42, 42, Some(44), Some(43)),
+            (42, 42, Some(45), Some(44)),
+            (42, 42, Some(44), None),
+            (42, 42, None, Some(44)),
         ] {
             assert!(matches!(
-                deferred_native_v2_outward_parent_transaction_v1(
+                validate_deferred_native_v2_three_domain_transaction_custody_v1(
                     accepted,
-                    TransactionId(outer),
+                    candidate_source,
+                    resident.map(TransactionId),
                     predecessor.map(TransactionId),
                 ),
                 Err(DirectV11RealConsumerError::Identity(
@@ -446,18 +496,33 @@ mod terminal_custody_lane_set_tests {
     #[test]
     fn deferred_native_v2_transaction_refusal_precedes_outward_lineage_mutation() {
         let mut outward_parent = 41;
-        let result = deferred_native_v2_outward_parent_transaction_v1(
+        let result = validate_deferred_native_v2_three_domain_transaction_custody_v1(
             42,
-            TransactionId(41),
-            Some(TransactionId(40)),
+            41,
+            Some(TransactionId(44)),
+            Some(TransactionId(44)),
         );
-        if let Ok(predecessor) = result {
-            outward_parent = predecessor;
+        if let Ok(source) = result {
+            outward_parent = source;
         }
         assert_eq!(
             outward_parent, 41,
             "refusal leaves staged lineage untouched"
         );
+    }
+
+    #[test]
+    fn reused_native_v2_physical_ending_refreshes_exact_envelope_non_soil_owners() {
+        let source = include_str!("owner_finalization.rs");
+        let body = source
+            .rsplit("if v2_soil && reused_precomputed_physical_ending {")
+            .next()
+            .expect("reused native-V2 physical ending branch")
+            .split("candidate.vegetation_state = project_v9_runtime_to_v10")
+            .next()
+            .expect("reused native-V2 refresh body");
+        assert!(body.contains("restage_unpublished_v2_carrier_owners_without_acceptance_count_v1"));
+        assert!(!body.contains("candidate.inner.vegetation_state = project_v8_runtime_to_v9"));
     }
 }
 
@@ -1320,6 +1385,7 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
 /// construction differs between snow-free and covered segments.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum AcceptedPublicationFinalizationPostureV1 {
+    PrivateNoHistory,
     RetainFinal,
     RetainFinalWithDeferredNativeV2Soil {
         pre_event_authority_sha256: Digest32,
@@ -1354,28 +1420,66 @@ fn accepted_v2_soil_candidate_for_v11_segment(
             )
             .map_err(DirectV11RealConsumerError::Runtime)?
     };
-    let mut child_supports = soil_top_boundary_credits
-        .iter()
-        .map(|credit| (credit.support_start_ns, credit.support_end_ns))
-        .collect::<BTreeSet<_>>()
-        .into_iter()
-        .collect::<Vec<_>>();
     let envelopes = compositional_envelopes.unwrap_or(std::slice::from_ref(envelope));
     if envelopes.is_empty() {
         return Err(DirectV11RealConsumerError::Identity(
             "V2 accepted soil empty carrier composition",
         ));
     }
-    if child_supports.is_empty() && envelopes.len() == 1 {
-        child_supports.push((
-            i64::try_from(input.support.start_ns().get()).map_err(|_| {
-                DirectV11RealConsumerError::Identity("V2 accepted soil support start")
-            })?,
-            i64::try_from(input.support.end_ns().get()).map_err(|_| {
-                DirectV11RealConsumerError::Identity("V2 accepted soil support end")
-            })?,
-        ));
-    }
+    let child_supports = envelopes
+        .iter()
+        .map(|child| {
+            let candidates = child.hydrology().pre_ingress_soil_thermal_candidates();
+            let first = candidates
+                .first()
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "V2 accepted soil child physical support",
+                ))?;
+            let support = match first.beginning_identity {
+                openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V2 {
+                    support_start_ns,
+                    support_end_ns,
+                    ..
+                } => (support_start_ns, support_end_ns),
+                openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V1 {
+                    ..
+                } => {
+                    return Err(DirectV11RealConsumerError::Identity(
+                        "V2 accepted soil child physical beginning",
+                    ));
+                }
+            };
+            if candidates
+                .iter()
+                .any(|candidate| match candidate.beginning_identity {
+                    openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V2 {
+                        support_start_ns,
+                        support_end_ns,
+                        ..
+                    } => (support_start_ns, support_end_ns) != support,
+                    openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V1 {
+                        ..
+                    } => true,
+                })
+            {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "V2 accepted soil child physical support",
+                ));
+            }
+            Ok((
+                i64::try_from(support.0).map_err(|_| {
+                    DirectV11RealConsumerError::Identity("V2 accepted soil support start")
+                })?,
+                i64::try_from(support.1).map_err(|_| {
+                    DirectV11RealConsumerError::Identity("V2 accepted soil support end")
+                })?,
+            ))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let credited_supports = soil_top_boundary_credits
+        .iter()
+        .map(|credit| (credit.support_start_ns, credit.support_end_ns))
+        .collect::<BTreeSet<_>>();
     if child_supports.len() != envelopes.len()
         || child_supports.first().is_none_or(|support| {
             u128::try_from(support.0).ok() != Some(input.support.start_ns().get())
@@ -1384,6 +1488,9 @@ fn accepted_v2_soil_candidate_for_v11_segment(
             u128::try_from(support.1).ok() != Some(input.support.end_ns().get())
         })
         || child_supports.windows(2).any(|pair| pair[0].1 != pair[1].0)
+        || credited_supports
+            .iter()
+            .any(|support| !child_supports.contains(support))
     {
         return Err(DirectV11RealConsumerError::Identity(
             "V2 accepted soil child support partition",
@@ -1502,22 +1609,9 @@ fn accepted_v2_soil_candidate_for_v11_segment(
             },
         );
     }
-    operands.sort_by(|left, right| {
-        (
-            &left.ofe_id,
-            &left.layer_id,
-            left.source_kind,
-            left.ordinal,
-            &left.debit_credit_identity_sha256,
-        )
-            .cmp(&(
-                &right.ofe_id,
-                &right.layer_id,
-                right.source_kind,
-                right.ordinal,
-                &right.debit_credit_identity_sha256,
-            ))
-    });
+    // The envelopes are already in authenticated child-support order. Assign
+    // parent ordinals before canonical grouping so equal local ordinals from
+    // adjacent children cannot interleave and destroy the terminal suffix.
     let mut ordinals = BTreeMap::new();
     for operand in &mut operands {
         let ordinal = ordinals
@@ -1582,20 +1676,16 @@ fn validate_accepted_vegetation_candidate_transaction_lineage_v1(
     candidate_outer_transaction: u128,
     candidate_inner_transaction: u128,
 ) -> Result<(), DirectV11RealConsumerError> {
-    let expected_candidate_transaction = if v2_soil {
-        if envelope_transaction != accepted_transaction {
-            return Err(DirectV11RealConsumerError::Identity(
-                "accepted vegetation candidate transaction lineage",
-            ));
-        }
-        accepted_transaction
-    } else if reused_precomputed_physical_ending {
-        parent_transaction
+    let candidate_transaction_is_admitted = if v2_soil || !reused_precomputed_physical_ending {
+        candidate_outer_transaction == accepted_transaction
     } else {
-        accepted_transaction
+        candidate_outer_transaction == parent_transaction
+            || candidate_outer_transaction == accepted_transaction
     };
-    if candidate_outer_transaction != expected_candidate_transaction
-        || candidate_inner_transaction != expected_candidate_transaction
+    if parent_transaction.checked_add(1) != Some(accepted_transaction)
+        || envelope_transaction != accepted_transaction
+        || candidate_outer_transaction != candidate_inner_transaction
+        || !candidate_transaction_is_admitted
     {
         return Err(DirectV11RealConsumerError::Identity(
             "accepted vegetation candidate transaction lineage",
@@ -1616,22 +1706,32 @@ fn validate_native_v2_preinstall_soil_posture_v1(
     Ok(())
 }
 
-fn deferred_native_v2_outward_parent_transaction_v1(
+fn validate_deferred_native_v2_three_domain_transaction_custody_v1(
     accepted_transaction: u128,
-    outer_transaction: TransactionId,
-    outer_predecessor_transaction: Option<TransactionId>,
+    candidate_source_transaction: u128,
+    resident_soil_transaction: Option<TransactionId>,
+    prepared_soil_predecessor_transaction: Option<TransactionId>,
 ) -> Result<u128, DirectV11RealConsumerError> {
-    let predecessor = outer_predecessor_transaction.ok_or(DirectV11RealConsumerError::Identity(
-        "deferred terminal native V2 transaction custody",
-    ))?;
-    if outer_transaction.0 != accepted_transaction
-        || predecessor.0.checked_add(1) != Some(outer_transaction.0)
+    if candidate_source_transaction == accepted_transaction
+        && prepared_soil_predecessor_transaction == resident_soil_transaction
     {
-        return Err(DirectV11RealConsumerError::Identity(
-            "deferred terminal native V2 transaction custody",
-        ));
+        return Ok(accepted_transaction);
     }
-    Ok(predecessor.0)
+    Err(DirectV11RealConsumerError::Identity(
+        "deferred terminal native V2 transaction custody",
+    ))
+}
+
+const fn accepted_record_transaction_from_sealed_physical_posture_v1(
+    advances_persistent_parent_interval: bool,
+    persistent_predecessor_transaction: u128,
+    accepted_transaction: u128,
+) -> u128 {
+    if advances_persistent_parent_interval {
+        accepted_transaction
+    } else {
+        persistent_predecessor_transaction
+    }
 }
 
 fn native_v2_physical_ending_matches_final_replay_v1(
@@ -1748,50 +1848,6 @@ pub(crate) fn install_v2_soil_from_authenticated_prepared_beginning_v2(
 }
 
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-pub(crate) fn finalize_v11_imported_segment(
-    beginning: &DirectV10RealConsumerShadow,
-    input: &V11ImportedV10SegmentInput,
-    envelope: &UncommittedCoveredV8OwnerEnvelope,
-    compositional_envelopes: Option<&[UncommittedCoveredV8OwnerEnvelope]>,
-    precomputed_physical_ending: Option<&DirectV10RealConsumerShadow>,
-    precomputed_soil_candidate: Option<&DirectSoilThermalCandidate>,
-    ending_snow_owner_bytes: Vec<u8>,
-    day_index: usize,
-    interval_index: usize,
-    publication_interval: &DirectV11SnowCoveredSegmentInput,
-    soil_top_boundary_credits: &[SoilThermalTopBoundaryCreditV1],
-    physical_outcome_ledgers: &BTreeMap<
-        u32,
-        physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1,
-    >,
-    publication_posture: AcceptedPublicationFinalizationPostureV1,
-) -> Result<
-    (
-        V11ImportedV10SegmentOutput,
-        DirectV10RealConsumerShadow,
-        LseSupportAdmissibilityReceiptV1,
-    ),
-    DirectV11RealConsumerError,
-> {
-    finalize_v11_imported_segment_with_soil_continuation(
-        beginning,
-        input,
-        envelope,
-        compositional_envelopes,
-        precomputed_physical_ending,
-        precomputed_soil_candidate,
-        None,
-        ending_snow_owner_bytes,
-        day_index,
-        interval_index,
-        publication_interval,
-        soil_top_boundary_credits,
-        physical_outcome_ledgers,
-        publication_posture,
-    )
-}
-
-#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
     beginning: &DirectV10RealConsumerShadow,
     input: &V11ImportedV10SegmentInput,
@@ -1827,10 +1883,7 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
         ))?
         .state_bytes;
     let (support_configuration, support_beginning) =
-        crate::v9_real_consumer_shadow::v11_support_lse_beginning(
-            beginning,
-            staged_lse_bytes,
-        )?;
+        crate::v9_real_consumer_shadow::v11_support_lse_beginning(beginning, staged_lse_bytes)?;
     let support_receipt = LseSupportAdmissibilityReceiptV1::admit(
         support_configuration,
         support_beginning,
@@ -1924,13 +1977,11 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
         DirectSoilThermalResident::V2(_)
     );
     if v2_soil && reused_precomputed_physical_ending {
-        candidate.inner.vegetation_state = project_v8_runtime_to_v9(
-            envelope.vegetation().ending_state(),
-            &candidate.inner.vegetation_configuration,
-        )
-        .map_err(|error| {
-            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
-        })?;
+        super::super::restage_unpublished_v2_carrier_owners_without_acceptance_count_v1(
+            &mut candidate,
+            &beginning.inner.lse_state,
+            envelope,
+        )?;
     }
     candidate.vegetation_state = project_v9_runtime_to_v10(
         candidate.inner.vegetation_state(),
@@ -1955,11 +2006,11 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
     })?;
 
-    // Reused V1 carrier trials retain parent-normalized owner candidates.  A
-    // native-V2 endpoint instead retains the selected unpublished candidate
-    // sealed to the support envelope transaction.  Require that distinction
-    // before rebasing the remaining staged owner lineages; no physical value
-    // or V2 soil candidate is reconstructed here.
+    // Reused V1 physical images can carry either the exact parent-staged
+    // revision or the exact accepted support revision, depending on whether
+    // their physical builder already applied segment-local lineage. Both
+    // projections must agree and the accepted envelope remains exact. V2 and
+    // freshly assembled candidates admit only the accepted revision.
     let parent_transaction = input.beginning.0.last_transaction_id;
     let accepted_transaction =
         parent_transaction
@@ -1981,7 +2032,8 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
         AcceptedPublicationFinalizationPostureV1::DeferTerminalProvisional { .. }
             | AcceptedPublicationFinalizationPostureV1::RetainFinalWithDeferredNativeV2Soil { .. }
     );
-    let mut outward_staged_parent_transaction = input.beginning.0.last_transaction_id;
+    let outward_staged_parent_transaction = input.beginning.0.last_transaction_id;
+    let mut outward_staged_record_transaction = outward_staged_parent_transaction;
     if v2_soil && defer_native_v2_soil_install && precomputed_soil_candidate.is_none() {
         return Err(DirectV11RealConsumerError::Identity(
             "deferred terminal native V2 soil requires selected candidate",
@@ -1989,10 +2041,24 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
     }
     if v2_soil {
         if reused_precomputed_physical_ending {
+            let inactive_native_surface = envelope
+                .hydrology()
+                .surface_ingress()
+                .is_stage3_covered_native_inactive()
+                .then(|| {
+                    candidate
+                        .inner
+                        .hydrology_frame
+                        .surface_liquid_shadow
+                        .clone()
+                });
             normalize_v11_staged_parent_lineage(&mut candidate, accepted_transaction)?;
+            if let Some(surface) = inactive_native_surface {
+                candidate.inner.hydrology_frame.surface_liquid_shadow = surface;
+            }
         }
         let authenticated_outer_owner_transition =
-            authenticate_v50_covered_v8_outer_owner_transition_v1(beginning, envelope)?;
+            authenticate_v50_covered_v8_outer_owner_transition_v1(beginning, envelope, &candidate)?;
         let outer_owner_transition_authority = candidate
             .authenticate_soil_thermal_outer_owner_transition_v2(
                 &authenticated_outer_owner_transition,
@@ -2007,12 +2073,24 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
             precomputed_soil_continuation,
         )?;
         if defer_native_v2_soil_install {
-            let outer = prepared.beginning_owner();
-            outward_staged_parent_transaction = deferred_native_v2_outward_parent_transaction_v1(
-                accepted_transaction,
-                outer.transaction_id,
-                outer.expected_predecessor_transaction_id,
-            )?;
+            let prepared_soil = prepared.beginning_owner();
+            let resident_soil_transaction = prepared_soil.state.last_accepted_transaction_id;
+            let _authenticated_soil_source_transaction =
+                validate_deferred_native_v2_three_domain_transaction_custody_v1(
+                    accepted_transaction,
+                    candidate.vegetation_state.0.last_transaction_id,
+                    resident_soil_transaction,
+                    prepared_soil.expected_predecessor_transaction_id,
+                )?;
+            outward_staged_record_transaction =
+                accepted_record_transaction_from_sealed_physical_posture_v1(
+                    envelope
+                        .hydrology()
+                        .surface_ingress()
+                        .advances_persistent_parent_interval(),
+                    input.beginning.0.last_transaction_id,
+                    accepted_transaction,
+                );
         }
         if reused_precomputed_physical_ending {
             let authenticated_beginning_soil_owner = beginning
@@ -2081,13 +2159,14 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
                 // resident supplied as `beginning`.
                 let authoritative_outer_beginning = candidate.clone();
                 let transaction_authority = candidate
-                    .authenticate_soil_thermal_unpublished_continuation_install_authority_v2(
+                    .authenticate_soil_thermal_unpublished_continuation_install_authority_v3(
+                        &authoritative_outer_beginning,
                         continuation,
                         prepared.beginning_owner(),
                     )
                     .map_err(DirectV11RealConsumerError::Runtime)?;
                 candidate
-                    .install_soil_thermal_accepted_v2_from_unpublished_continuation(
+                    .install_soil_thermal_accepted_v2_from_unpublished_continuation_v3(
                         &authoritative_outer_beginning,
                         continuation,
                         prepared.beginning_owner(),
@@ -2162,25 +2241,76 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
     // whose logical owners are normalized to the parent transaction. For V2,
     // this helper deliberately leaves the installed exact-carry soil resident
     // untouched while rebasing vegetation, LSE, surface, and BGC lineage.
-    normalize_v11_staged_parent_lineage(&mut candidate, outward_staged_parent_transaction)?;
+    let inactive_native_surface = envelope
+        .hydrology()
+        .surface_ingress()
+        .is_stage3_covered_native_inactive()
+        .then(|| {
+            candidate
+                .inner
+                .hydrology_frame
+                .surface_liquid_shadow
+                .clone()
+        });
+    normalize_v11_staged_parent_lineage_with_record_transaction_v1(
+        &mut candidate,
+        outward_staged_parent_transaction,
+        outward_staged_record_transaction,
+    )?;
+    if let Some(surface) = inactive_native_surface {
+        candidate.inner.hydrology_frame.surface_liquid_shadow = surface;
+    }
     let snow = V11OwnerEnvelope::try_new("snow".to_owned(), ending_snow_owner_bytes)?;
     // WB14 can retain an in-parent working state whose effective surface
     // owner is newer than the frame shadow. Publish the same effective owner
     // that the immediate snow-liquid receiver consumes; otherwise a wider
     // accepted support can expose a stale predecessor byte string even
     // though its physical candidate and ledger are valid.
-    let surface = candidate.effective_surface_liquid_state_for_zero_duration_receiver()?;
-    let surface_bytes = surface
-        .canonical_bytes(&candidate.inner.surface_configuration)
-        .map_err(|error| {
-            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                DirectV9RealConsumerError::Serialization(error.to_string()),
-            ))
-        })?;
+    let stage3_covered_native_inactive = envelope
+        .hydrology()
+        .surface_ingress()
+        .is_stage3_covered_native_inactive();
+    let surface_bytes = if stage3_covered_native_inactive {
+        let physical =
+            beginning
+                .frozen_litter_v3
+                .as_ref()
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "represented-snow inactive V3 surface owner",
+                ))?;
+        physical
+            .surface_owner()
+            .canonical_bytes(
+                &candidate.inner.surface_configuration,
+                Some(physical.surface_configuration()),
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                    DirectV9RealConsumerError::Serialization(error.to_string()),
+                ))
+            })?
+    } else if let Some(physical) = candidate.frozen_litter_v3.as_ref() {
+        physical
+            .surface_owner()
+            .canonical_bytes(
+                physical.surface_configuration().parent(),
+                Some(physical.surface_configuration()),
+            )
+            .map_err(DirectV10RealConsumerError::SurfaceLiquidV2)?
+    } else {
+        candidate
+            .effective_surface_liquid_state_for_zero_duration_receiver()?
+            .canonical_bytes(&candidate.inner.surface_configuration)
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                    DirectV9RealConsumerError::Serialization(error.to_string()),
+                ))
+            })?
+    };
     let beginning_hydrology_adapter = RealHydrologyShadowAdapter::try_from_day_start(
         &beginning.inner.hydrology_frame,
         day_index,
-        TransactionId(outward_staged_parent_transaction),
+        TransactionId(outward_staged_record_transaction),
         f64::from_bits(input.duration_s_bits),
         candidate.inner.surface_configuration.owner_id.clone(),
         &candidate.inner.layer_maps,
@@ -2191,7 +2321,7 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
     let hydrology_adapter = RealHydrologyShadowAdapter::try_from_day_start(
         envelope.hydrology().ending_frame(),
         day_index,
-        TransactionId(outward_staged_parent_transaction),
+        TransactionId(outward_staged_record_transaction),
         f64::from_bits(input.duration_s_bits),
         candidate.inner.surface_configuration.owner_id.clone(),
         &candidate.inner.layer_maps,
@@ -2203,10 +2333,34 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
         ("snow".to_owned(), snow),
         (
             "land_surface_energy".to_owned(),
-            V11OwnerEnvelope::try_new(
-                "land_surface_energy".to_owned(),
-                candidate.canonical_v11_lse_owner_bytes()?,
-            )?,
+            if stage3_covered_native_inactive {
+                // Represented snow keeps the native V3/V4 successor resident
+                // inactive. Publish the active covered LSE owner consumed by
+                // the immediate support-liquid receiver.
+                v11_owner_envelope(
+                    "land_surface_energy",
+                    candidate.physical_lse_state_for_zero_duration_receiver(),
+                )?
+            } else if let Some(exact) = candidate.frozen_litter_v4.as_ref() {
+                let physical = candidate.frozen_litter_v3.as_ref().ok_or(
+                    DirectV11RealConsumerError::Identity(
+                        "native V4 ending requires physical resident",
+                    ),
+                )?;
+                V11OwnerEnvelope::try_new(
+                    "land_surface_energy".to_owned(),
+                    exact
+                        .v11_complete_lse_owner_bytes(physical)
+                        .map_err(DirectV11RealConsumerError::Runtime)?,
+                )?
+            } else if let Some(resident) = candidate.frozen_litter_v3.as_ref() {
+                v11_owner_envelope("land_surface_energy", resident.lse_state())?
+            } else {
+                v11_owner_envelope(
+                    "land_surface_energy",
+                    candidate.physical_lse_state_for_zero_duration_receiver(),
+                )?
+            },
         ),
         (
             "surface_liquid".to_owned(),
@@ -2246,20 +2400,30 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
         "vegetation".to_owned(),
         accepted_v11_vegetation_owner(input, &segment_ending)?,
     );
-    let ending_owner_states = accepted_ending_owners
+    #[allow(unused_mut)] // A cfg(test) duplicate-owner poison exercises the real digest guard.
+    let mut ending_owner_states = accepted_ending_owners
         .values()
         .map(V11OwnerEnvelope::to_owner_state)
         .collect::<Result<Vec<_>, _>>()?;
+    #[cfg(test)]
+    canonical_covered_complete_owner_set_boundary_v1();
+    #[cfg(test)]
+    if matches!(
+        canonical_covered_parity_poison_v1(),
+        Some(CanonicalCoveredPhysicalParityPoisonV1::CompleteOwnerSet)
+    ) {
+        if let Some(owner) = ending_owner_states.first().cloned() {
+            ending_owner_states.push(owner);
+        }
+    }
     let ending_complete_owner_set_sha256 =
-        openwepp_coupled_time::complete_owner_set_digest(&ending_owner_states).map_err(|_| {
-            DirectV11RealConsumerError::Identity("accepted publication ending complete-owner set")
-        })?;
+        openwepp_coupled_time::complete_owner_set_digest(&ending_owner_states)?;
     match publication_posture {
         AcceptedPublicationFinalizationPostureV1::RetainFinal
         | AcceptedPublicationFinalizationPostureV1::RetainFinalWithDeferredNativeV2Soil {
             ..
         } => {
-            candidate.retain_accepted_publication_support(
+            let publication_capability = candidate.prepare_accepted_publication_support(
                 day_index,
                 interval_index,
                 input,
@@ -2273,6 +2437,7 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
                 envelope.hydrology(),
                 Some(physical_outcome_ledgers),
             )?;
+            candidate.push_validated_accepted_publication_support(publication_capability)?;
         }
         AcceptedPublicationFinalizationPostureV1::DeferTerminalProvisional {
             pre_event_authority_sha256,
@@ -2283,6 +2448,7 @@ pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
                 ));
             }
         }
+        AcceptedPublicationFinalizationPostureV1::PrivateNoHistory => {}
     }
     let output = V11ImportedV10SegmentOutput {
         ending: segment_ending,
@@ -2406,9 +2572,19 @@ pub(crate) fn normalize_v11_staged_parent_lineage(
     staged: &mut DirectV10RealConsumerShadow,
     parent: u128,
 ) -> Result<(), DirectV11RealConsumerError> {
-    normalize_v8_parent_lineage(&mut staged.vegetation_state.0, parent);
-    normalize_v8_parent_lineage(&mut staged.inner.vegetation_state.0, parent);
-    let transaction = (parent != 0).then_some(TransactionId(parent));
+    normalize_v11_staged_parent_lineage_with_record_transaction_v1(staged, parent, parent)
+}
+
+fn normalize_v11_staged_parent_lineage_with_record_transaction_v1(
+    staged: &mut DirectV10RealConsumerShadow,
+    vegetation_parent: u128,
+    record_parent: u128,
+) -> Result<(), DirectV11RealConsumerError> {
+    let represented_snow_native_surface_is_inactive =
+        staged.frozen_litter_v3.is_some() || staged.frozen_litter_v4.is_some();
+    normalize_v8_parent_lineage(&mut staged.vegetation_state.0, vegetation_parent);
+    normalize_v8_parent_lineage(&mut staged.inner.vegetation_state.0, vegetation_parent);
+    let transaction = (record_parent != 0).then_some(TransactionId(record_parent));
     staged.inner.lse_state.last_accepted_transaction_id = transaction;
     staged.inner.lse_state.state_sha256 =
         staged.inner.lse_state.canonical_sha256().map_err(|error| {
@@ -2426,7 +2602,9 @@ pub(crate) fn normalize_v11_staged_parent_lineage(
         .ok_or(DirectV11RealConsumerError::Identity(
             "missing staged surface-liquid owner",
         ))?;
-    if staged.inner.wb14_parent_working_state.is_none() {
+    if staged.inner.wb14_parent_working_state.is_none()
+        && !represented_snow_native_surface_is_inactive
+    {
         for record in &mut surface.records {
             record.last_accepted_transaction_id = transaction;
         }
@@ -2439,7 +2617,7 @@ pub(crate) fn normalize_v11_staged_parent_lineage(
             ))
         })?;
     }
-    staged.inner.biogeochemistry.last_transaction_id = parent;
+    staged.inner.biogeochemistry.last_transaction_id = record_parent;
     if let DirectSoilThermalResident::V1(soil) = &mut staged.inner.soil_thermal {
         soil.last_accepted_transaction_id = transaction;
         let soil_transaction = transaction.ok_or(DirectV11RealConsumerError::Identity(
@@ -2765,187 +2943,6 @@ fn validate_v11_nitrogen_protocol_cardinality(
     Ok(false)
 }
 
-#[cfg(test)]
-mod nitrogen_protocol_cardinality_tests {
-    use super::*;
-    use crate::land_surface_energy_shadow::strict_v8_endpoint::endpoint_rollback_tests::{
-        endpoint_fixture, two_ofe_routed_endpoint_fixture,
-    };
-
-    #[test]
-    fn empty_protocol_is_admissible_and_every_partial_empty_protocol_rejects() {
-        assert!(validate_v11_nitrogen_protocol_cardinality(0, 0, 0).expect("empty protocol"));
-        for counts in [
-            (0, 0, 1),
-            (0, 1, 0),
-            (1, 0, 0),
-            (0, 1, 1),
-            (1, 0, 1),
-            (1, 1, 0),
-        ] {
-            assert!(
-                validate_v11_nitrogen_protocol_cardinality(counts.0, counts.1, counts.2).is_err(),
-                "partial-empty poison {counts:?}",
-            );
-        }
-        assert!(!validate_v11_nitrogen_protocol_cardinality(1, 1, 1).expect("nonempty protocol"));
-    }
-
-    #[test]
-    fn bgc_ofe_resolution_uses_explicit_vegetation_tile_mapping() {
-        let mut fixture = two_ofe_routed_endpoint_fixture();
-        for tile in &mut fixture.lse_configuration.ofes[0].tiles {
-            tile.vegetation_tile_id = openwepp_kernel_contract::TileId::try_new(format!(
-                "upper-open-{}",
-                tile.tile_id.as_str()
-            ))
-            .expect("upper open vegetation tile");
-        }
-        let lower_forest = fixture.lse_configuration.ofes[1]
-            .tiles
-            .iter_mut()
-            .find(|tile| tile.tile_id.as_str() == "lower-forest")
-            .expect("lower forest tile");
-        assert_ne!(lower_forest.tile_id, lower_forest.vegetation_tile_id);
-        assert_eq!(
-            v11_bgc_bearing_ofe(
-                &fixture.vegetation_configuration.expected_occupancies(),
-                &fixture.lse_configuration,
-            )
-            .expect("open first OFE and vegetated second OFE"),
-            "ofe-2"
-        );
-    }
-
-    #[test]
-    fn bgc_ofe_resolution_admits_multi_tile_stratum_within_one_ofe() {
-        let mut fixture = endpoint_fixture();
-        let second_tile = openwepp_kernel_contract::TileId::try_new("open").expect("tile");
-        fixture.vegetation_configuration.strata[0]
-            .tile_ids
-            .push(second_tile);
-        assert_eq!(
-            v11_bgc_bearing_ofe(
-                &fixture.vegetation_configuration.expected_occupancies(),
-                &fixture.lse_configuration,
-            )
-            .expect("one stratum on multiple vegetation tiles"),
-            "ofe-1"
-        );
-    }
-
-    #[test]
-    fn bgc_ofe_resolution_rejects_two_covered_vegetated_ofes() {
-        let fixture = two_ofe_routed_endpoint_fixture();
-        assert!(
-            v11_bgc_bearing_ofe(
-                &fixture.vegetation_configuration.expected_occupancies(),
-                &fixture.lse_configuration,
-            )
-            .is_err()
-        );
-    }
-
-    #[test]
-    fn repeated_local_lse_tile_ids_do_not_replace_vegetation_mapping() {
-        let mut fixture = two_ofe_routed_endpoint_fixture();
-        for tile in &mut fixture.lse_configuration.ofes[0].tiles {
-            tile.vegetation_tile_id = openwepp_kernel_contract::TileId::try_new(format!(
-                "upper-open-{}",
-                tile.tile_id.as_str()
-            ))
-            .expect("upper open vegetation tile");
-        }
-        let repeated = fixture.lse_configuration.ofes[0].tiles[0].tile_id.clone();
-        fixture.lse_configuration.ofes[1].tiles[0].tile_id = repeated;
-        assert_eq!(
-            v11_bgc_bearing_ofe(
-                &fixture.vegetation_configuration.expected_occupancies(),
-                &fixture.lse_configuration,
-            )
-            .expect("repeated local LSE IDs with unique vegetation mapping"),
-            "ofe-2"
-        );
-    }
-
-    #[test]
-    fn bgc_linkage_uses_pre_hash_three_stratum_nonassociative_order() {
-        use openwepp_coupled_time::{
-            AcceptedSlabId, ModelTimeNs, ParentTransactionId, SegmentId, TimeSupport,
-        };
-        use openwepp_kernel_contract::{MineralNitrogenKey, SoilLayerId};
-
-        let key = MineralNitrogenKey {
-            layer_id: SoilLayerId::try_new("layer-1").expect("layer"),
-            species: MineralNitrogenSpecies::Ammonium,
-        };
-        let shared = V11SharedResourceKey {
-            resource: V11SharedResourceKind::Ammonium,
-            owner_id: "bgc".into(),
-            ofe_id: "ofe-2".into(),
-            layer_id: "layer-1".into(),
-            source_id: "nh4".into(),
-            amount_basis: "kg_n_m2".into(),
-        };
-        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1)).expect("support");
-        let values = [
-            0.001_626_199_161_107_315_3,
-            0.000_000_038_444_775_879_237_09,
-            0.000_000_016_590_450_830_746_63,
-        ];
-        let make = |ordinal: u8, stratum: &str, amount: f64| V11ResourceDebit {
-            receipt_id: Digest32::from_bytes([ordinal; 32]),
-            parent_transaction_id: ParentTransactionId::from_digest(Digest32::from_bytes([9; 32])),
-            segment_id: SegmentId::from_digest(Digest32::from_bytes([8; 32])),
-            accepted_slab_id: AcceptedSlabId::from_digest(Digest32::from_bytes([7; 32])),
-            support,
-            owner_id: "bgc".into(),
-            resource_key: V11ResourceKey::MineralNitrogen(key.clone()),
-            ofe_id: "ofe-2".into(),
-            tile_id: "stratum_scoped".into(),
-            occupancy_id: stratum.into(),
-            layer_id: "layer-1".into(),
-            source_id: "nh4".into(),
-            amount_basis: "kg_n_m2".into(),
-            request: amount,
-            authorization: amount,
-            final_use: amount,
-        };
-        let debits = vec![
-            make(2, "stratum-b", values[1]),
-            make(1, "stratum-c", values[2]),
-            make(3, "stratum-a", values[0]),
-        ];
-        let ids = v11_linked_debit_ids(&debits, &shared, true);
-        assert_eq!(
-            ids,
-            vec![
-                Digest32::from_bytes([3; 32]),
-                Digest32::from_bytes([2; 32]),
-                Digest32::from_bytes([1; 32])
-            ]
-        );
-        let semantic = ids.iter().fold(0.0_f64, |sum, id| {
-            sum + debits
-                .iter()
-                .find(|debit| debit.receipt_id == *id)
-                .expect("linked")
-                .final_use
-        });
-        let alternate_permutation = debits
-            .iter()
-            .map(|debit| debit.final_use)
-            .fold(0.0_f64, |sum, value| sum + value);
-        assert_eq!(
-            semantic.to_bits(),
-            0.001_626_254_196_334_025_4_f64.to_bits()
-        );
-        assert_eq!(
-            alternate_permutation.to_bits(),
-            0.001_626_254_196_334_025_1_f64.to_bits()
-        );
-        assert_ne!(semantic.to_bits(), alternate_permutation.to_bits());
-    }
-}
+include!("owner_finalization_nitrogen_protocol_tests.rs");
 
 include!("owner_finalization_resource_transitions.rs");

@@ -14,7 +14,7 @@ use crate::carbon_nitrogen::MaterialTransfer;
 use crate::diagnostics::CoupledSolvePass;
 use crate::v8_persistent::{
     UncommittedV8PersistentPhase, V8OccupancyCarbonOperands, V8OccupancyCarbonReceipt,
-    ValidatedV8CarbonPass,
+    ValidatedV8CarbonPass, ValidatedV8ProjectionBeginning,
 };
 use crate::v8_state::{
     V8_MODEL_SHA256, V8CoupledOwnedState, V8OccupancyState, V8TileCanopyAirState,
@@ -125,11 +125,11 @@ impl ValidatedV8FinalStatePass {
         configuration: &VegetationConfiguration,
         beginning: &V8CoupledOwnedState,
     ) -> Result<Self, VegetationError> {
-        Self::try_new_with_duration_bits(
+        let validated = ValidatedV8ProjectionBeginning::try_new(configuration, beginning)?;
+        Self::try_new_with_validated_beginning(
             bindings,
             tiles,
-            configuration,
-            beginning,
+            &validated,
             configuration.dt_s.to_bits(),
         )
     }
@@ -142,24 +142,25 @@ impl ValidatedV8FinalStatePass {
         beginning: &V8CoupledOwnedState,
         duration_s_bits: u64,
     ) -> Result<Self, VegetationError> {
-        Self::try_new_with_duration_bits(bindings, tiles, configuration, beginning, duration_s_bits)
+        let validated = ValidatedV8ProjectionBeginning::try_new(configuration, beginning)?;
+        Self::try_new_with_validated_beginning(bindings, tiles, &validated, duration_s_bits)
     }
 
-    fn try_new_with_duration_bits(
+    /// Construct the final member of a projection receipt family after the
+    /// exact immutable configuration/beginning pair has already been
+    /// validated. Payload, binding, duration, and lineage checks remain fresh.
+    pub(crate) fn try_new_with_validated_beginning(
         bindings: &[V8ComponentOccupancyBinding],
         tiles: Vec<V8FinalTileReceipt>,
-        configuration: &VegetationConfiguration,
-        beginning: &V8CoupledOwnedState,
+        validated: &ValidatedV8ProjectionBeginning<'_>,
         duration_s_bits: u64,
     ) -> Result<Self, VegetationError> {
+        let configuration = validated.configuration();
+        let beginning = validated.beginning();
         let duration_s = f64::from_bits(duration_s_bits);
         if !duration_s.is_finite() || duration_s <= 0.0 {
             return Err(VegetationError::Domain("V11 support duration"));
         }
-        configuration.validate_v8()?;
-        beginning.validate(configuration).map_err(|error| {
-            VegetationError::Receipt(format!("invalid V8 beginning state: {error}"))
-        })?;
         let expected_transaction = TransactionId(
             beginning
                 .last_transaction_id
@@ -260,6 +261,146 @@ impl ValidatedV8FinalStatePass {
     }
 }
 
+/// One atomically validated family of V8 projection receipts.
+///
+/// The public family constructor retains a full validation boundary. Its
+/// private implementation carries a non-serializable borrow of the exact
+/// immutable configuration and beginning revision across only the three
+/// sibling receipt admissions, avoiding repeated canonical reconstruction.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ValidatedV8ProjectionFamily {
+    potential: ValidatedV8CarbonPass,
+    capped: ValidatedV8CarbonPass,
+    final_state: ValidatedV8FinalStatePass,
+}
+
+impl ValidatedV8ProjectionFamily {
+    #[allow(clippy::too_many_arguments)]
+    pub fn try_new(
+        model_definition_sha256: String,
+        configuration_sha256: String,
+        transaction_id: TransactionId,
+        vegetation_beginning_state_sha256: String,
+        interval_s: f64,
+        potential_occupancies: Vec<V8OccupancyCarbonReceipt>,
+        capped_occupancies: Vec<V8OccupancyCarbonReceipt>,
+        bindings: &[V8ComponentOccupancyBinding],
+        final_tiles: Vec<V8FinalTileReceipt>,
+        configuration: &VegetationConfiguration,
+        beginning: &V8CoupledOwnedState,
+    ) -> Result<Self, VegetationError> {
+        Self::try_new_with_duration_bits(
+            model_definition_sha256,
+            configuration_sha256,
+            transaction_id,
+            vegetation_beginning_state_sha256,
+            interval_s,
+            potential_occupancies,
+            capped_occupancies,
+            bindings,
+            final_tiles,
+            configuration,
+            beginning,
+            configuration.dt_s.to_bits(),
+        )
+    }
+
+    /// V11 projection-family admission using the authenticated coupled-time
+    /// duration while retaining the immutable nominal configuration identity.
+    #[allow(clippy::too_many_arguments)]
+    pub fn try_new_v11(
+        model_definition_sha256: String,
+        configuration_sha256: String,
+        transaction_id: TransactionId,
+        vegetation_beginning_state_sha256: String,
+        interval_s: f64,
+        potential_occupancies: Vec<V8OccupancyCarbonReceipt>,
+        capped_occupancies: Vec<V8OccupancyCarbonReceipt>,
+        bindings: &[V8ComponentOccupancyBinding],
+        final_tiles: Vec<V8FinalTileReceipt>,
+        configuration: &VegetationConfiguration,
+        beginning: &V8CoupledOwnedState,
+        duration_s_bits: u64,
+    ) -> Result<Self, VegetationError> {
+        Self::try_new_with_duration_bits(
+            model_definition_sha256,
+            configuration_sha256,
+            transaction_id,
+            vegetation_beginning_state_sha256,
+            interval_s,
+            potential_occupancies,
+            capped_occupancies,
+            bindings,
+            final_tiles,
+            configuration,
+            beginning,
+            duration_s_bits,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn try_new_with_duration_bits(
+        model_definition_sha256: String,
+        configuration_sha256: String,
+        transaction_id: TransactionId,
+        vegetation_beginning_state_sha256: String,
+        interval_s: f64,
+        potential_occupancies: Vec<V8OccupancyCarbonReceipt>,
+        capped_occupancies: Vec<V8OccupancyCarbonReceipt>,
+        bindings: &[V8ComponentOccupancyBinding],
+        final_tiles: Vec<V8FinalTileReceipt>,
+        configuration: &VegetationConfiguration,
+        beginning: &V8CoupledOwnedState,
+        duration_s_bits: u64,
+    ) -> Result<Self, VegetationError> {
+        let validated = ValidatedV8ProjectionBeginning::try_new(configuration, beginning)?;
+        let potential = ValidatedV8CarbonPass::try_new_with_validated_beginning(
+            model_definition_sha256.clone(),
+            configuration_sha256.clone(),
+            transaction_id,
+            vegetation_beginning_state_sha256.clone(),
+            CoupledSolvePass::Potential,
+            interval_s,
+            potential_occupancies,
+            &validated,
+            duration_s_bits,
+        )?;
+        let capped = ValidatedV8CarbonPass::try_new_with_validated_beginning(
+            model_definition_sha256,
+            configuration_sha256,
+            transaction_id,
+            vegetation_beginning_state_sha256,
+            CoupledSolvePass::Capped,
+            interval_s,
+            capped_occupancies,
+            &validated,
+            duration_s_bits,
+        )?;
+        let final_state = ValidatedV8FinalStatePass::try_new_with_validated_beginning(
+            bindings,
+            final_tiles,
+            &validated,
+            duration_s_bits,
+        )?;
+        Ok(Self {
+            potential,
+            capped,
+            final_state,
+        })
+    }
+
+    #[must_use]
+    pub fn into_parts(
+        self,
+    ) -> (
+        ValidatedV8CarbonPass,
+        ValidatedV8CarbonPass,
+        ValidatedV8FinalStatePass,
+    ) {
+        (self.potential, self.capped, self.final_state)
+    }
+}
+
 /// Validate the sole canonical component-to-occupancy binding contract used by
 /// both prephysics projection and final V8 receipt construction.
 pub fn validate_v8_component_bindings(
@@ -267,6 +408,13 @@ pub fn validate_v8_component_bindings(
     configuration: &VegetationConfiguration,
 ) -> Result<BTreeMap<V8LseComponentId, OccupancyId>, VegetationError> {
     configuration.validate_v8()?;
+    validate_v8_component_bindings_after_configuration(bindings, configuration)
+}
+
+fn validate_v8_component_bindings_after_configuration(
+    bindings: &[V8ComponentOccupancyBinding],
+    configuration: &VegetationConfiguration,
+) -> Result<BTreeMap<V8LseComponentId, OccupancyId>, VegetationError> {
     let expected_occupancies = configuration.expected_occupancies();
     let configured_ranks = configuration
         .strata

@@ -184,14 +184,18 @@ pub fn validate_frozen_litter_projection_v3(
     if &replay_authority != authority {
         return Err(FrozenLitterProjectionRestartError::Identity);
     }
+    let soil_thermal_owner_envelope_bytes = projection
+        .soil_thermal_owner_envelope_bytes()
+        .ok_or(FrozenLitterProjectionRestartError::Projection)?;
+    let soil_thermal_restart_identity_bytes = projection
+        .soil_thermal_restart_identity_bytes()
+        .ok_or(FrozenLitterProjectionRestartError::Projection)?;
     Ok(ValidatedFrozenLitterProjectionV3 {
         authority: replay_authority,
         ending_surface_owner_bytes: projection.envelope_bytes().to_vec(),
         wb14_parent_working_state_bytes: projection.wb14_parent_working_state_bytes().to_vec(),
-        soil_thermal_owner_envelope_bytes: projection.soil_thermal_owner_envelope_bytes().to_vec(),
-        soil_thermal_restart_identity_bytes: projection
-            .soil_thermal_restart_identity_bytes()
-            .to_vec(),
+        soil_thermal_owner_envelope_bytes: soil_thermal_owner_envelope_bytes.to_vec(),
+        soil_thermal_restart_identity_bytes: soil_thermal_restart_identity_bytes.to_vec(),
     })
 }
 

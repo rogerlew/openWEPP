@@ -270,7 +270,9 @@ struct ProjectionFixture {
     legacy_envelope_bytes: Vec<u8>,
 }
 
-fn fixture() -> ProjectionFixture {
+fn fixture_with_soil_transaction_id(
+    soil_thermal_transaction_id: TransactionId,
+) -> ProjectionFixture {
     let configuration = configuration_v2();
     let beginning = owner_v2(&configuration);
     let legacy_envelope_bytes = beginning
@@ -329,11 +331,17 @@ fn fixture() -> ProjectionFixture {
         parent_start,
         support_end,
     );
-    let (soil_owner, soil_restart) =
-        soil_owner_and_restart(&configuration, transaction_id, parent_start, support_end);
+    let (soil_owner, soil_restart) = soil_owner_and_restart(
+        &configuration,
+        soil_thermal_transaction_id,
+        parent_start,
+        support_end,
+    );
     let identity = SurfaceLiquidCompleteOwnerProjectionIdentityV3 {
         run_id: configuration.parent().run_id,
         transaction_id,
+        soil_thermal_run_id: soil_owner.run_id.clone(),
+        soil_thermal_transaction_id: soil_owner.transaction_id,
         predecessor_transaction_id: None,
         soil_thermal_predecessor_transaction_id: soil_owner.expected_predecessor_transaction_id,
         parent_support_start_ns: parent_start,
@@ -362,6 +370,10 @@ fn fixture() -> ProjectionFixture {
         projection,
         legacy_envelope_bytes,
     }
+}
+
+fn fixture() -> ProjectionFixture {
+    fixture_with_soil_transaction_id(TransactionId(703))
 }
 
 #[test]
@@ -404,6 +416,107 @@ fn canonical_roundtrip_binds_every_exact_frame_and_preserves_v2_bytes() {
             .expect("unchanged V2 bytes"),
         fixture.legacy_envelope_bytes
     );
+}
+
+#[test]
+fn split_physical_source_and_soil_target_are_bound_without_rebasing() {
+    let fixture = fixture_with_soil_transaction_id(TransactionId(704));
+    assert_eq!(
+        fixture.projection.identity().transaction_id,
+        TransactionId(703)
+    );
+    assert_eq!(
+        fixture.projection.identity().soil_thermal_transaction_id,
+        TransactionId(704)
+    );
+    let bytes = fixture
+        .projection
+        .canonical_bytes(&fixture.configuration)
+        .expect("split-authority projection bytes");
+    SurfaceLiquidCompleteOwnerProjectionV3::from_canonical_bytes(&fixture.configuration, &bytes)
+        .expect("split physical-source/soil-target replay");
+
+    let mut swapped = fixture.projection.clone();
+    swapped.identity.soil_thermal_transaction_id = swapped.identity.transaction_id;
+    swapped.projection_sha256 = swapped
+        .recomputed_sha256()
+        .expect("resealed swapped poison");
+    assert!(swapped.validate(&fixture.configuration).is_err());
+
+    let mut stale = fixture.projection.clone();
+    stale.identity.soil_thermal_transaction_id = TransactionId(702);
+    stale.projection_sha256 = stale.recomputed_sha256().expect("resealed stale poison");
+    assert!(stale.validate(&fixture.configuration).is_err());
+
+    let mut rebased = fixture.projection.clone();
+    rebased.identity.transaction_id = rebased.identity.soil_thermal_transaction_id;
+    rebased.projection_sha256 = rebased.recomputed_sha256().expect("resealed rebase poison");
+    assert!(rebased.validate(&fixture.configuration).is_err());
+}
+
+#[test]
+fn pre_soil_target_projection_bytes_fail_closed() {
+    let fixture = fixture();
+    let bytes = fixture
+        .projection
+        .canonical_bytes(&fixture.configuration)
+        .expect("canonical projection");
+    let mut wire: serde_json::Value = serde_json::from_slice(&bytes).expect("projection wire");
+    wire.as_object_mut()
+        .expect("projection object")
+        .remove("soil_thermal_transaction_id");
+    let omitted = serde_json::to_vec(&wire).expect("old pre-production wire");
+    assert!(
+        SurfaceLiquidCompleteOwnerProjectionV3::from_canonical_bytes(
+            &fixture.configuration,
+            &omitted,
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn promoted_owner_support_contains_exact_child_local_candidate_support() {
+    let candidate = SurfaceLiquidCandidateOnlyUnpublishedSoilV1 {
+        original_prepared_owner_sha256: typed_digest('1').to_string(),
+        soil_thermal_run_id: "soil-run".into(),
+        predecessor_unpublished_trial_sha256: typed_digest('2').to_string(),
+        physical_beginning_state_sha256: typed_digest('3').to_string(),
+        soil_thermal_transaction_id: TransactionId(43),
+        soil_thermal_predecessor_transaction_id: Some(TransactionId(42)),
+        soil_thermal_receipt_chain_sha256: typed_digest('4').to_string(),
+        original_support_start_ns: 1_800,
+        original_support_end_ns: 1_920,
+        child_support_start_ns: 1_860,
+        child_support_end_ns: 1_920,
+    };
+    assert!(publishable_soil_support_matches(
+        120,
+        1_920,
+        1_860,
+        1_920,
+        Some(&candidate),
+    ));
+    assert!(!publishable_soil_support_matches(
+        1_801,
+        1_920,
+        1_860,
+        1_920,
+        Some(&candidate),
+    ));
+    assert!(!publishable_soil_support_matches(
+        120,
+        1_921,
+        1_860,
+        1_920,
+        Some(&candidate),
+    ));
+    assert!(publishable_soil_support_matches(
+        1_860, 1_920, 1_860, 1_920, None,
+    ));
+    assert!(!publishable_soil_support_matches(
+        120, 1_920, 1_860, 1_920, None,
+    ));
 }
 
 #[test]
@@ -502,12 +615,18 @@ fn mixed_identity_cross_version_and_digest_poisons_fail_closed() {
 fn soil_carry_substitution_and_wb14_ice_donation_are_rejected() {
     let fixture = fixture();
     let mut carry = fixture.projection.clone();
+    let SurfaceLiquidV3SoilCustodyV1::Publishable {
+        owner_envelope_bytes,
+        ..
+    } = &mut carry.soil_custody
+    else {
+        panic!("ordinary fixture must retain publishable soil custody");
+    };
     let mut owner: SoilThermalOwnerEnvelopeV2 =
-        serde_json::from_slice(&carry.soil_thermal_owner_envelope_bytes).expect("soil owner frame");
+        serde_json::from_slice(owner_envelope_bytes).expect("soil owner frame");
     owner.state.ofes[0].ordered_layers[0].enthalpy_carry =
         ExactDyadicEnthalpy::from_f64(0.25).expect("exact carry");
-    carry.soil_thermal_owner_envelope_bytes =
-        serde_json::to_vec(&owner).expect("poisoned soil frame");
+    *owner_envelope_bytes = serde_json::to_vec(&owner).expect("poisoned soil frame");
     carry.identity.receipt_chain_sha256 = carry
         .recomputed_receipt_chain_sha256()
         .expect("resealed chain");

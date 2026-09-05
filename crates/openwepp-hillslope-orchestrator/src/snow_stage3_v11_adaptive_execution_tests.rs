@@ -144,46 +144,41 @@ mod adaptive_trial_failure_classification_tests {
     }
 
     #[test]
-    fn exact_floor_terminal_phase_midpoint_is_retained_only_as_v33_diagnostic_oracle() {
+    fn exact_floor_historical_midpoint_is_deleted_from_canonical_controller() {
         let controller = include_str!("v11_covered/open_snow.rs");
-        let numerics = include_str!("v11_covered/fixed_point.rs");
-        let helper = "covered_exact_floor_terminal_phase_iterate_v1";
-        assert!(numerics.contains(helper), "missing retained v31 oracle");
-        assert_eq!(controller.matches(helper).count(), 0);
-        assert!(!controller.contains("let phase_iterate ="));
+        let canonical = include_str!("v11_covered/canonical_covered_solver.rs");
+        assert!(canonical.contains("CanonicalCoveredMapRoleV1::FixedPointPredictor"));
+        assert!(!controller.contains("covered_exact_floor_terminal_phase_iterate_v1"));
     }
 
     #[test]
-    fn vapor_active_set_images_are_captured_above_floor_and_remain_unpublished() {
+    fn physical_active_sets_are_derived_inside_authentic_map() {
         let controller = include_str!("v11_covered/open_snow.rs");
-        let numerics = include_str!("v11_covered/fixed_point.rs");
+        let canonical = include_str!("v11_covered/canonical_covered_solver.rs");
         for symbol in [
-            "CoveredVaporActiveSetInterfaceV1",
-            "covered_vapor_active_set_interface_v1",
-            "covered_vapor_active_set_branch_entry_v1",
-            "COVERED_VAPOR_ACTIVE_SET_MIN_SUPPORT_NS",
+            "CanonicalCoveredDerivedActiveSetV1::StrictlyFrozen",
+            "CanonicalCoveredDerivedActiveSetV1::MixedPhase",
+            "CanonicalCoveredDerivedActiveSetV1::ThawRefreeze",
+            "CanonicalCoveredDerivedActiveSetV1::WetCanopy",
         ] {
-            assert!(numerics.contains(symbol), "missing v32 symbol {symbol}");
+            assert!(canonical.contains(symbol), "missing canonical active set {symbol}");
         }
         assert!(!controller.contains("let active_set_iterate ="));
     }
 
     #[test]
-    fn v33_exact_cycle_uses_only_physical_residual_trials_and_authentic_replay() {
+    fn canonical_controller_uses_one_bounded_map_chronology_without_replay() {
         let controller = include_str!("v11_covered/open_snow.rs");
-        let solver = include_str!("v11_covered/phase_consistent_coupled_solve.rs");
+        let solver = include_str!("v11_covered/canonical_covered_solver.rs");
         for symbol in [
-            "PhaseConsistentCoupledSolveV1",
-            "phase_consistent_coupled_solve_v1",
-            "phase_consistent_coupled_authentic_final_evaluation_v1",
-            "phase_consistent_coupled_authentic_final_replay_reseal_v1",
+            "CANONICAL_COVERED_MAX_AUTHENTIC_MAPS: u8 = 8",
+            "CanonicalCoveredMapRoleV1::Initial",
+            "CanonicalCoveredMapRoleV1::FixedPointPredictor",
+            "CanonicalCoveredMapRoleV1::MultisecantTrial(5)",
+            "CanonicalCoveredMapRoleV1::FinalAccepted",
         ] {
-            assert!(solver.contains(symbol), "missing v33 solver symbol {symbol}");
+            assert!(solver.contains(symbol), "missing canonical solver symbol {symbol}");
         }
-        assert!(solver.contains("phase_consistent_coupled_active_set_transition_reset_v1"));
-        assert!(solver.contains("CoveredPhaseConsistentResidualInputsV1"));
-        assert!(solver.contains("CoveredPhysicalEvaluationBudgetV1"));
-        assert!(solver.contains("CoveredConvergenceAdmissionV1::CoupledAuthentic"));
         assert!(!controller.contains("phase_consistent_coupled_trial_maps_v1"));
     }
 

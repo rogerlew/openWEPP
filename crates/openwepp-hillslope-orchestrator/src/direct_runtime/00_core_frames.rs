@@ -1314,6 +1314,9 @@ impl DirectLaneFrame {
     }
 }
 
+#[cfg(test)]
+include!("00_core_frames_test_projection.rs");
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectErosionDailyConsumers {
     pub canopy_cover_fraction: f64,

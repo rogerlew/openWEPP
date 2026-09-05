@@ -1,522 +1,27 @@
-// Contract binding: SC-SURFACELIQUID-001@8 INV-SURFACELIQUID-012..014.
-#[test]
-#[allow(clippy::too_many_lines)]
-fn mixed_open_covered_stack_executes_complete_ofe_ground_boundary() {
-    std::thread::Builder::new()
-        .name("mixed-covered-open-boundary".to_owned())
-        .stack_size(64 * 1024 * 1024)
-        .spawn(|| {
-            exercise_complete_wb14_cadence(
-                0.005, 8.0, true, None, false, None, false, false, false, false,
-            );
-        })
-        .expect("spawn mixed covered/open boundary fixture")
-        .join()
-        .expect("join mixed covered/open boundary fixture");
+include!("v9_real_consumer_shadow_wb14_covered_physical_tests.rs");
+
+#[derive(Clone)]
+pub(super) struct RealNativeInactivePrefixFixtureV1 {
+    pub receipts: Vec<crate::snow_stage3_v11_attachment::Stage3CoupledSubslabReceiptV1>,
+    pub terminal_groups: Vec<crate::snow_stage3_v11_attachment::Stage3V11TerminalEventGroupV1>,
+    pub parent_support: openwepp_coupled_time::TimeSupport,
+    pub surface_configuration: crate::DirectSurfaceLiquidConfiguration,
 }
 
-#[test]
-#[allow(clippy::too_many_lines)]
-fn two_900_second_complete_owner_children_publish_one_parent() {
-    exercise_complete_wb14_cadence(
-        0.02, 8.0, false, None, false, None, false, false, false, false,
-    );
+std::thread_local! {
+    static CAPTURE_REAL_NATIVE_INACTIVE_PREFIX_V1: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    static REAL_NATIVE_INACTIVE_PREFIX_V1: std::cell::RefCell<Option<RealNativeInactivePrefixFixtureV1>> = const { std::cell::RefCell::new(None) };
 }
 
-#[test]
-#[allow(clippy::too_many_lines)]
-fn one_1800_second_child_matches_complete_historical_candidate() {
-    exercise_complete_wb14_cadence(
-        0.08, 8.0, false, None, false, None, false, false, false, false,
-    );
+pub(super) fn begin_real_native_inactive_prefix_capture_v1() {
+    CAPTURE_REAL_NATIVE_INACTIVE_PREFIX_V1.with(|capture| capture.set(true));
+    REAL_NATIVE_INACTIVE_PREFIX_V1.with(|fixture| *fixture.borrow_mut() = None);
 }
 
-#[test]
-#[allow(clippy::too_many_lines)]
-fn coupled_hard_boundary_truncates_selected_900_second_child() {
-    exercise_complete_wb14_cadence(
-        0.02,
-        8.0,
-        false,
-        Some(60_000_000_000),
-        false,
-        None,
-        false,
-        false,
-        false,
-        false,
-    );
-}
-
-#[test]
-#[allow(clippy::too_many_lines)]
-fn latest_accepted_stage3_state_changes_next_wb14_proposal() {
-    exercise_complete_wb14_cadence(
-        0.010_000_001,
-        0.0,
-        false,
-        Some(60_000_000_000),
-        true,
-        None,
-        false,
-        false,
-        false,
-        false,
-    );
-}
-
-#[test]
-#[allow(clippy::too_many_lines)]
-fn resolved_snow_and_snow_free_lanes_publish_one_atomic_parent() {
-    std::thread::Builder::new()
-        .name("resolved-and-snow-free-lanes".to_owned())
-        .stack_size(64 * 1024 * 1024)
-        .spawn(|| {
-            exercise_complete_wb14_cadence(
-                0.08,
-                8.0,
-                false,
-                None,
-                false,
-                Some(0.0),
-                false,
-                false,
-                false,
-                false,
-            );
-        })
-        .expect("spawn resolved/snow-free lane fixture")
-        .join()
-        .expect("join resolved/snow-free lane fixture");
-}
-
-#[test]
-#[allow(clippy::too_many_lines)]
-fn two_resolved_snow_lanes_choose_common_earliest_cadence() {
-    std::thread::Builder::new()
-        .name("two-resolved-snow-lanes".to_owned())
-        .stack_size(64 * 1024 * 1024)
-        .spawn(|| {
-            exercise_complete_wb14_cadence(
-                0.08,
-                8.0,
-                true,
-                None,
-                false,
-                Some(0.005),
-                false,
-                false,
-                false,
-                false,
-            );
-        })
-        .expect("spawn two resolved snow-lane fixture")
-        .join()
-        .expect("join two resolved snow-lane fixture");
-}
-
-#[test]
-#[allow(clippy::too_many_lines)]
-fn interior_terminal_event_runs_covered_event_and_snow_free_remainder() {
-    std::thread::Builder::new()
-        .name("interior-terminal-event-owner-path".to_owned())
-        .stack_size(64 * 1024 * 1024)
-        .spawn(|| {
-            exercise_complete_wb14_cadence(
-                0.000_6, 0.0, false, None, false, None, true, false, false, false,
-            );
-        })
-        .expect("spawn interior terminal-event fixture")
-        .join()
-        .expect("join interior terminal-event fixture");
-}
-
-#[test]
-fn solid_precipitation_reappears_through_the_adaptive_owner_path() {
-    std::thread::Builder::new()
-        .name("solid-reappearance-owner-path".to_owned())
-        .stack_size(64 * 1024 * 1024)
-        .spawn(|| {
-            exercise_complete_wb14_cadence(
-                0.0, 0.0, false, None, false, None, false, false, true, false,
-            );
-        })
-        .expect("spawn solid-reappearance fixture")
-        .join()
-        .expect("join solid-reappearance fixture");
-}
-
-mod adaptive_production_path_coverage {
-    include!("snow_stage3_v11_adaptive_production_tests.rs");
-}
-
-#[test]
-fn interior_terminal_event_capture_reproduces_below_carrier_domain() {
-    std::thread::Builder::new()
-        .name("child1-real-discrete-fixture".to_owned())
-        .stack_size(64 * 1024 * 1024)
-        .spawn(|| {
-            exercise_complete_wb14_cadence(
-                0.000_6, 0.0, false, None, false, None, true, true, false, false,
-            );
-        })
-        .expect("spawn Child-1 real discrete fixture")
-        .join()
-        .expect("join Child-1 real discrete fixture");
-}
-
-#[allow(
-    clippy::cast_possible_truncation,
-    clippy::cast_sign_loss,
-    clippy::too_many_lines,
-    reason = "test-only exact event ticks are checked finite, positive, integral, and parent-bounded before conversion"
-)]
-#[inline(never)]
-fn run_real_discrete_endpoint_probes(
-    shadow: &DirectV10RealConsumerShadow,
-    beginning_clock: &CoupledClockStateV1,
-    prepared: &PreparedStage3V11SupportV1,
-    stage3_beginning_by_lane: &BTreeMap<u32, DirectSnowStage3PersistentState>,
-    selected_seconds: f64,
-) {
-    const TERMINAL_ENERGY_COMPARISON_TOLERANCE_J_M2: f64 = 1.0e-6;
-    let beginning_terminal_parcels = BTreeMap::new();
-    let classify =
-        |endpoint: &crate::snow_stage3_v11_attachment::RealDiscreteCompleteEndpointEvidenceV1| {
-            use crate::discrete_terminal_support_root::EndpointTerminalClass;
-            let duration_s = f64::from_bits(endpoint.support.duration_s_bits());
-            let evaluated_s = f64::from_bits(endpoint.event_evaluated_seconds_bits);
-            let event_offset_s = f64::from_bits(endpoint.event_hour_offset_seconds_bits);
-            let unevaluated_s = f64::from_bits(endpoint.event_unevaluated_seconds_bits);
-            let admissible_terminal_ledger =
-                f64::from_bits(endpoint.terminal_unallocated_energy_bits)
-                    <= TERMINAL_ENERGY_COMPARISON_TOLERANCE_J_M2;
-            if endpoint.event_occurred
-                && evaluated_s.to_bits() == duration_s.to_bits()
-                && event_offset_s.to_bits() == duration_s.to_bits()
-                && unevaluated_s <= 1.0e-6
-                && endpoint.end_ice_bits == 0.0_f64.to_bits()
-                && admissible_terminal_ledger
-            {
-                EndpointTerminalClass::TerminalAtEndpoint
-            } else if endpoint.event_occurred
-                && event_offset_s > 0.0
-                && event_offset_s < duration_s
-                && endpoint.end_ice_bits == 0.0_f64.to_bits()
-                && admissible_terminal_ledger
-            {
-                let event_ns = event_offset_s * 1_000_000_000.0;
-                if event_ns.is_finite() && event_ns.fract() == 0.0 {
-                    EndpointTerminalClass::CrossedTerminal {
-                        event_tick: ModelTimeNs::new(
-                            endpoint.support.start_ns().get() + event_ns as u128,
-                        ),
-                    }
-                } else {
-                    EndpointTerminalClass::Invalid
-                }
-            } else if !endpoint.event_occurred
-                && f64::from_bits(endpoint.terminal_unallocated_energy_bits)
-                    <= TERMINAL_ENERGY_COMPARISON_TOLERANCE_J_M2
-                && f64::from_bits(endpoint.end_ice_bits) > 0.0
-            {
-                EndpointTerminalClass::PreTerminal
-            } else {
-                EndpointTerminalClass::Invalid
-            }
-        };
-    let mut evaluate = |endpoint_tick: u128| {
-        let endpoint =
-            crate::snow_stage3_v11_attachment::evaluate_real_discrete_complete_endpoint_v1(
-                shadow,
-                beginning_clock,
-                prepared,
-                0,
-                0,
-                stage3_beginning_by_lane,
-                &beginning_terminal_parcels,
-                selected_seconds,
-                1,
-                1,
-                ModelTimeNs::new(endpoint_tick),
-            )
-            .expect("real discrete complete endpoint probe");
-        eprintln!(
-            "CHILD1_REAL_DISCRETE_EVALUATED tick={} class={:?} event={} ice_bits={:#018x} liquid_bits={:#018x} deposition_bits={:#018x} melt_bits={:#018x} unallocated_bits={:#018x} energy_closure_bits={:#018x} ice_closure_bits={:#018x} water_closure_bits={:#018x} owner_count={}",
-            endpoint_tick,
-            classify(&endpoint),
-            endpoint.event_occurred,
-            endpoint.end_ice_bits,
-            endpoint.end_liquid_bits,
-            endpoint.deposition_bits,
-            endpoint.melt_bits,
-            endpoint.terminal_unallocated_energy_bits,
-            endpoint.energy_closure_residual_bits,
-            endpoint.ice_closure_residual_bits,
-            endpoint.water_closure_residual_bits,
-            endpoint.owner_count,
-        );
-        endpoint
-    };
-    let find_first_non_preterminal = |mut lower: u128,
-                                      mut upper: u128,
-                                      evaluate: &mut dyn FnMut(u128) -> crate::snow_stage3_v11_attachment::RealDiscreteCompleteEndpointEvidenceV1| {
-        assert_eq!(classify(&evaluate(lower)), crate::discrete_terminal_support_root::EndpointTerminalClass::PreTerminal);
-        assert_eq!(classify(&evaluate(upper)), crate::discrete_terminal_support_root::EndpointTerminalClass::Invalid);
-        while lower + 1 < upper {
-            let middle = lower + (upper - lower) / 2;
-            if classify(&evaluate(middle))
-                == crate::discrete_terminal_support_root::EndpointTerminalClass::PreTerminal
-            {
-                lower = middle;
-            } else {
-                upper = middle;
-            }
-        }
-        upper
-    };
-    let first = find_first_non_preterminal(60_000_000_000, 900_000_000_000, &mut evaluate);
-    let second = find_first_non_preterminal(93_750_000_000, 1_799_999_999_999, &mut evaluate);
-    assert_eq!(
-        first, second,
-        "material comparison must be bracket-independent"
-    );
-    let mut typed_batch_endpoint = |tick: ModelTimeNs| {
-        let candidate = evaluate(tick.get());
-        Ok(
-            crate::discrete_terminal_support_root::BatchEndpointEvaluation {
-                tick,
-                lane_classes: BTreeMap::from([(1, classify(&candidate))]),
-                candidate: Some(candidate),
-            },
-        )
-    };
-    assert_eq!(
-        crate::discrete_terminal_support_root::integer_bisection(
-            ModelTimeNs::new(0),
-            beginning_clock.parent_support().end_ns(),
-            ModelTimeNs::new(60_000_000_000),
-            ModelTimeNs::new(900_000_000_000),
-            None,
-            &mut typed_batch_endpoint,
-        ),
-        Err(crate::discrete_terminal_support_root::DiscreteRootError::InvalidEndpoint),
-        "the batch-shaped real endpoint must return a typed failure rather than a root"
-    );
-    let selected = first;
-    let mut boundary_candidates = Vec::new();
-    for tick in [selected - 1, selected, selected + 1] {
-        let endpoint = evaluate(tick);
-        assert_ne!(
-            classify(&endpoint),
-            crate::discrete_terminal_support_root::EndpointTerminalClass::TerminalAtEndpoint
-        );
-        assert!(!endpoint.event_occurred);
-        assert!(f64::from_bits(endpoint.end_ice_bits) > 0.0);
-        boundary_candidates.push((tick, endpoint));
-    }
-    let previous = &boundary_candidates[0].1;
-    let candidate = &boundary_candidates[1].1;
-    let next = &boundary_candidates[2].1;
-    assert_eq!(
-        classify(previous),
-        crate::discrete_terminal_support_root::EndpointTerminalClass::PreTerminal
-    );
-    assert_eq!(
-        classify(candidate),
-        crate::discrete_terminal_support_root::EndpointTerminalClass::Invalid
-    );
-    assert_eq!(
-        classify(next),
-        crate::discrete_terminal_support_root::EndpointTerminalClass::Invalid
-    );
-    assert!(
-        f64::from_bits(candidate.terminal_unallocated_energy_bits)
-            > TERMINAL_ENERGY_COMPARISON_TOLERANCE_J_M2
-    );
-    assert_eq!(candidate.end_ice_bits, candidate.deposition_bits);
-    assert_eq!(candidate.melt_bits, 0.6_f64.to_bits());
-    let competition_inputs =
-        crate::snow_terminal_phase_competition::inputs_from_real_endpoint(candidate);
-    let complementarity =
-        crate::snow_terminal_phase_competition::simultaneous_complementarity(competition_inputs)
-            .expect("real complementarity allocation");
-    let residual_frost =
-        crate::snow_terminal_phase_competition::residual_surface_frost(competition_inputs)
-            .expect("real residual-frost allocation");
-    assert!(
-        complementarity.ending_pack_ice_kg_m2 <= 1.0e-9
-            || complementarity.unallocated_energy_j_m2 <= 1.0e-6
-    );
-    assert_eq!(
-        residual_frost.ending_pack_ice_kg_m2.to_bits(),
-        0.0_f64.to_bits()
-    );
-    assert_eq!(
-        residual_frost.ending_surface_frost_kg_m2.to_bits(),
-        candidate.deposition_bits
-    );
-    let evaluate_complete_complementarity = |tick: u128| {
-        crate::snow_stage3_v11_attachment::evaluate_real_phase_complementarity_endpoint_v1(
-            shadow,
-            beginning_clock,
-            prepared,
-            0,
-            0,
-            stage3_beginning_by_lane,
-            &beginning_terminal_parcels,
-            selected_seconds,
-            1,
-            1,
-            ModelTimeNs::new(tick),
-        )
-        .expect("real complete-owner phase-complementarity endpoint")
-    };
-    let complete_complementarity_boundary = evaluate_complete_complementarity(selected);
-    assert_eq!(
-        complete_complementarity_boundary.end_ice_bits,
-        complementarity.ending_pack_ice_kg_m2.to_bits()
-    );
-    assert_eq!(
-        complete_complementarity_boundary.end_liquid_bits,
-        complementarity.ending_liquid_kg_m2.to_bits()
-    );
-    assert_eq!(
-        complete_complementarity_boundary.terminal_unallocated_energy_bits,
-        0.0_f64.to_bits()
-    );
-    let trajectory_beginning = crate::snow_terminal_phase_trajectory::TrajectoryState {
-        pack_ice_kg_m2: f64::from_bits(candidate.start_ice_bits),
-        surface_frost_kg_m2: 0.0,
-        liquid_kg_m2: f64::from_bits(candidate.start_liquid_bits),
-        cold_content_j_m2: f64::from_bits(candidate.start_cold_content_bits),
-    };
-    let trajectory_segment =
-        crate::snow_terminal_phase_trajectory::segment_from_real_endpoint(candidate);
-    let released_trajectory = crate::snow_terminal_phase_trajectory::released_ordered_trajectory(
-        trajectory_beginning,
-        &[trajectory_segment],
-    )
-    .expect("real released-order trajectory");
-    let frost_hybrid = crate::snow_terminal_phase_trajectory::event_driven_frost_hybrid(
-        trajectory_beginning,
-        &[trajectory_segment],
-    )
-    .expect("real frost-hybrid trajectory");
-    let resolved_complementarity =
-        crate::snow_terminal_phase_trajectory::time_resolved_complementarity(
-            trajectory_beginning,
-            &[trajectory_segment],
-        )
-        .expect("real time-resolved complementarity");
-    let (tagged_frost, tagged_envelope) =
-        crate::snow_terminal_phase_trajectory::existing_snow_frost_subtype(
-            trajectory_beginning,
-            &[trajectory_segment],
-        )
-        .expect("real tagged-frost trajectory");
-    assert_eq!(released_trajectory.events.len(), 2);
-    assert_eq!(
-        released_trajectory.ending.pack_ice_kg_m2.to_bits(),
-        candidate.deposition_bits
-    );
-    assert_eq!(
-        frost_hybrid.ending.surface_frost_kg_m2.to_bits(),
-        0.0_f64.to_bits()
-    );
-    assert_eq!(
-        frost_hybrid.ending.pack_ice_kg_m2.to_bits(),
-        complementarity.ending_pack_ice_kg_m2.to_bits()
-    );
-    assert_eq!(
-        resolved_complementarity.ending.pack_ice_kg_m2.to_bits(),
-        complementarity.ending_pack_ice_kg_m2.to_bits()
-    );
-    assert_eq!(tagged_frost.ending, frost_hybrid.ending);
-    assert_eq!(
-        crate::snow_terminal_phase_trajectory::TaggedSnowOwnerEnvelope::restore(
-            &tagged_envelope.canonical_bytes(),
-        ),
-        Ok(tagged_envelope)
-    );
-    let expected_latent_heat =
-        openwepp_meteorology::surface_energy::latent_heat_for_surface_temperature(
-            openwepp_unit_boundary::TemperatureCelsius::try_new(0.0)
-                .expect("terminal surface temperature"),
-        )
-        .expect("terminal latent heat")
-        .as_joules_per_kilogram();
-    assert!(
-        (trajectory_segment.latent_heat_j_kg - expected_latent_heat).abs()
-            <= 1.0e-9 * expected_latent_heat
-    );
-    assert_eq!(
-        crate::snow_terminal_phase_trajectory::released_ordered_trajectory(
-            trajectory_beginning,
-            &[trajectory_segment],
-        )
-        .expect("real trajectory replay"),
-        released_trajectory
-    );
-    for energy_delta_j_m2 in [-1.0e-3, -1.0e-6, 0.0, 1.0e-6, 1.0e-3] {
-        let perturbed = crate::snow_terminal_phase_trajectory::ForcingSegment {
-            complete_energy_j_m2: trajectory_segment.complete_energy_j_m2 + energy_delta_j_m2,
-            ..trajectory_segment
-        };
-        crate::snow_terminal_phase_trajectory::released_ordered_trajectory(
-            trajectory_beginning,
-            &[perturbed],
-        )
-        .expect("nearby released-order forcing");
-        crate::snow_terminal_phase_trajectory::event_driven_frost_hybrid(
-            trajectory_beginning,
-            &[perturbed],
-        )
-        .expect("nearby frost-hybrid forcing");
-        crate::snow_terminal_phase_trajectory::time_resolved_complementarity(
-            trajectory_beginning,
-            &[perturbed],
-        )
-        .expect("nearby resolved-complementarity forcing");
-    }
-    for energy_delta_j_m2 in [-1.0e-3, -1.0e-6, 0.0, 1.0e-6, 1.0e-3] {
-        let perturbed = crate::snow_terminal_phase_competition::TerminalPhaseInputs {
-            non_vapor_energy_j_m2: competition_inputs.non_vapor_energy_j_m2 + energy_delta_j_m2,
-            complete_energy_j_m2: competition_inputs.complete_energy_j_m2 + energy_delta_j_m2,
-            ..competition_inputs
-        };
-        crate::snow_terminal_phase_competition::simultaneous_complementarity(perturbed)
-            .expect("nearby real-energy perturbation");
-    }
-    let parent_endpoint = evaluate(900_000_000_000);
-    let parent_complementarity =
-        crate::snow_terminal_phase_competition::simultaneous_complementarity(
-            crate::snow_terminal_phase_competition::inputs_from_real_endpoint(&parent_endpoint),
-        )
-        .expect("real parent-end complementarity allocation");
-    assert_eq!(
-        parent_complementarity.event,
-        crate::snow_terminal_phase_competition::TerminalEventChronology::Interior
-    );
-    assert!(parent_complementarity.ending_pack_ice_kg_m2 <= 1.0e-9);
-    let complete_complementarity_parent = evaluate_complete_complementarity(900_000_000_000);
-    assert!(complete_complementarity_parent.event_occurred);
-    assert_eq!(
-        f64::from_bits(complete_complementarity_parent.end_ice_bits),
-        0.0
-    );
-    assert_eq!(
-        complete_complementarity_parent.end_liquid_bits,
-        parent_complementarity.ending_liquid_kg_m2.to_bits()
-    );
-    assert_eq!(
-        evaluate(selected),
-        *candidate,
-        "exact endpoint replay must be byte-identical"
-    );
-    eprintln!(
-        "CHILD1_TERMINAL_PHASE_COMPETITION tick={selected} complementarity={complementarity:?} residual_frost={residual_frost:?} released_trajectory={released_trajectory:?} frost_hybrid={frost_hybrid:?} resolved_complementarity={resolved_complementarity:?} tagged_frost={tagged_frost:?} parent_end={parent_complementarity:?}",
-    );
+pub(super) fn take_real_native_inactive_prefix_capture_v1()
+-> Option<RealNativeInactivePrefixFixtureV1> {
+    CAPTURE_REAL_NATIVE_INACTIVE_PREFIX_V1.with(|capture| capture.set(false));
+    REAL_NATIVE_INACTIVE_PREFIX_V1.with(|fixture| fixture.borrow_mut().take())
 }
 
 #[allow(
@@ -537,10 +42,19 @@ fn exercise_complete_wb14_cadence(
     production_only: bool,
 ) {
     let equilibrium_fixture = adaptive_production_path_coverage::equilibrium_fixture_requested();
+    let parity_case = adaptive_production_path_coverage::canonical_parity_case_requested();
     let positive_covered_rain = runtime_swe_m.to_bits() == 0.005_f64.to_bits()
         && include_child_17
         && second_lane_swe_m.is_none();
-    let (shadow, fixture) = if equilibrium_fixture {
+    let thaw_refreeze_rain = matches!(
+        parity_case,
+        Some(
+            crate::v9_real_consumer_shadow::v11_covered::
+                CanonicalCoveredPhysicalParityCaseV1::NativeThawRefreeze
+        )
+    );
+    let positive_liquid_forcing = positive_covered_rain || thaw_refreeze_rain;
+    let (mut shadow, fixture) = if equilibrium_fixture {
         let mut fixture = endpoint_fixture();
         let temperature_k: f64 = 273.15;
         let humidity = equilibrium_canopy_specific_humidity(101_325.0);
@@ -661,7 +175,10 @@ fn exercise_complete_wb14_cadence(
             );
         let snow_forcing = fixture.receipt.forcing().clone();
         fixture.receipt = V8CanopyForcingReceipt::try_new(
-            fixture.vegetation_configuration.configuration_sha256.clone(),
+            fixture
+                .vegetation_configuration
+                .configuration_sha256
+                .clone(),
             fixture.vegetation_state.state_sha256.clone(),
             fixture.lse_configuration.configuration_sha256.clone(),
             fixture.forcing.forcing_sha256.clone(),
@@ -698,6 +215,53 @@ fn exercise_complete_wb14_cadence(
     } else {
         v10_shadow_fixture()
     };
+    let parity_poison =
+        crate::v9_real_consumer_shadow::v11_covered::canonical_covered_parity_poison_v1();
+    let ordinarily_native = parity_case.is_some_and(|case| {
+        !matches!(
+            case,
+            crate::v9_real_consumer_shadow::v11_covered::
+                CanonicalCoveredPhysicalParityCaseV1::Ordinary
+        )
+    });
+    let substitute_native_ordinary = parity_poison
+        == Some(
+            crate::v9_real_consumer_shadow::v11_covered::
+                CanonicalCoveredPhysicalParityPoisonV1::NativeOrdinarySubstitution,
+        );
+    let half_native = parity_poison
+        == Some(
+            crate::v9_real_consumer_shadow::v11_covered::
+                CanonicalCoveredPhysicalParityPoisonV1::HalfNativeCustody,
+        );
+    if ordinarily_native || substitute_native_ordinary || half_native {
+        shadow = super::v3_publication_retention_tests::migrate_shadow_to_native_v2_soil(
+            &shadow,
+            adaptive_production_path_coverage::short_support_duration_ns(),
+        );
+        let (physical, exact) =
+            super::v3_publication_retention_tests::native_v4_resident_pair_fixture(&shadow);
+        shadow
+            .install_frozen_litter_v4_resident(physical, exact)
+            .expect("install native V3/V4 parity residents");
+        shadow.inner.authority = super::CoveredColumnAuthority::V11SnowCovered;
+        let native_lse = shadow
+            .canonical_v11_lse_owner_bytes()
+            .expect("canonical native V4 LSE owner bytes");
+        let native_complete = shadow
+            .canonical_v11_parent_owner_state_bytes()
+            .expect("canonical native complete-owner join");
+        assert_eq!(
+            native_complete.get("land_surface_energy"),
+            Some(&native_lse),
+            "installed native fixture must stage the exact V4 LSE owner",
+        );
+        if half_native {
+            shadow.poison_half_native_frozen_litter_custody_for_test();
+        } else if substitute_native_ordinary {
+            shadow.poison_substitute_native_frozen_litter_custody_for_test();
+        }
+    }
     let short_support = adaptive_production_path_coverage::short_support_requested();
     let support_end_ns = if short_support {
         adaptive_production_path_coverage::short_support_duration_ns()
@@ -745,8 +309,10 @@ fn exercise_complete_wb14_cadence(
     }
     interval.lse_forcing.snow_present_at_beginning = !solid_reappearance;
     interval.lse_forcing.snow_present_at_end = true;
-    if positive_covered_rain {
-        interval.vegetation_forcing.rain_kg_m2 = 0.3;
+    if positive_liquid_forcing {
+        let covered_rain_kg_m2 = if thaw_refreeze_rain { 0.03 } else { 0.3 };
+        let open_rain_kg_m2 = if thaw_refreeze_rain { 0.005 } else { 0.05 };
+        interval.vegetation_forcing.rain_kg_m2 = covered_rain_kg_m2;
         let covered_tiles = shadow
             .inner
             .vegetation_configuration
@@ -773,7 +339,7 @@ fn exercise_complete_wb14_cadence(
                 destination_tile_id: covered.key.tile_id.clone(),
                 start_s: 0.0,
                 end_s: support_seconds,
-                amount_kg_m2_destination_tile_ground: 0.3,
+                amount_kg_m2_destination_tile_ground: covered_rain_kg_m2,
                 temperature_provider:
                     openwepp_land_surface_energy::LiquidTemperatureProvider::HarderPomeroyHourly,
                 temperature_k: Some(272.15),
@@ -802,7 +368,7 @@ fn exercise_complete_wb14_cadence(
                 destination_tile_id: open.key.tile_id.clone(),
                 start_s: 0.0,
                 end_s: support_seconds,
-                amount_kg_m2_destination_tile_ground: 0.05,
+                amount_kg_m2_destination_tile_ground: open_rain_kg_m2,
                 temperature_provider:
                     openwepp_land_surface_energy::LiquidTemperatureProvider::HarderPomeroyHourly,
                 temperature_k: Some(272.15),
@@ -822,7 +388,77 @@ fn exercise_complete_wb14_cadence(
     let migrated =
         migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
             .expect("migration");
-    let owners = initial_v11_owners(&shadow, &migrated.state);
+    let mut owners = initial_v11_owners(&shadow, &migrated.state);
+    if ordinarily_native && !substitute_native_ordinary {
+        let native = shadow
+            .canonical_v11_parent_owner_state_bytes()
+            .expect("native parity beginning complete-owner bytes");
+        for owner_id in ["land_surface_energy", "soil_thermal"] {
+            owners.insert(
+                owner_id.to_owned(),
+                V11OwnerEnvelope::try_new(
+                    owner_id.to_owned(),
+                    native
+                        .get(owner_id)
+                        .expect("native parity owner bytes")
+                        .clone(),
+                )
+                .expect("native parity V11 owner envelope"),
+            );
+        }
+        let lse_owner: serde_json::Value = serde_json::from_slice(
+            &owners
+                .get("land_surface_energy")
+                .expect("native parity LSE owner")
+                .state_bytes,
+        )
+        .expect("native parity LSE owner JSON");
+        let resident = shadow
+            .frozen_litter_v3_resident()
+            .expect("native parity V3 resident");
+        assert_eq!(
+            lse_owner
+                .get("configuration_sha256")
+                .and_then(serde_json::Value::as_str),
+            Some(resident.lse_configuration().configuration_sha256.as_str()),
+            "native parity LSE support configuration join",
+        );
+        assert_eq!(
+            lse_owner
+                .get("state_sha256")
+                .and_then(serde_json::Value::as_str),
+            Some(resident.lse_state().0.state_sha256.as_str()),
+            "native parity LSE support state join",
+        );
+        let soil_owner: serde_json::Value = serde_json::from_slice(
+            &owners
+                .get("soil_thermal")
+                .expect("native parity soil owner")
+                .state_bytes,
+        )
+        .expect("native parity soil owner JSON");
+        let native_soil_state_sha256 = shadow
+            .soil_thermal_v2()
+            .expect("native parity V2 soil resident")
+            .owner()
+            .state
+            .state_sha256
+            .as_str();
+        assert_eq!(
+            soil_owner
+                .get("owner")
+                .and_then(|owner| owner.get("state"))
+                .and_then(|state| state.get("state_sha256"))
+                .and_then(serde_json::Value::as_str),
+            Some(native_soil_state_sha256),
+            "native parity soil support state join",
+        );
+        assert_eq!(
+            native_soil_state_sha256,
+            shadow.inner.soil_thermal.state_sha256().as_str(),
+            "native V2 and active soil resident must expose the same state digest",
+        );
+    }
     let clock_owners = owners
         .values()
         .map(|owner| owner.to_owner_state().expect("clock owner"))
@@ -878,6 +514,26 @@ fn exercise_complete_wb14_cadence(
     if let Some(layer) = stage3_inputs.snow_layers.first_mut() {
         layer.temperature_c = -stage3_cold_delta_k;
         layer.cold_content_j_m2 = runtime_swe_m * 1_000.0 * 2_100.0 * stage3_cold_delta_k;
+        match adaptive_production_path_coverage::canonical_parity_case_requested() {
+            Some(
+                crate::v9_real_consumer_shadow::v11_covered::
+                    CanonicalCoveredPhysicalParityCaseV1::NativeMixedPhase,
+            ) => {
+                layer.temperature_c = 0.0;
+                layer.cold_content_j_m2 = 0.0;
+                layer.liquid_water_m = runtime_swe_m * 0.2;
+            }
+            Some(
+                crate::v9_real_consumer_shadow::v11_covered::
+                    CanonicalCoveredPhysicalParityCaseV1::NativeThawRefreeze,
+            ) => {
+                layer.temperature_c = -2.0;
+                layer.cold_content_j_m2 = runtime_swe_m * 1_000.0 * 2_100.0 * 2.0;
+                layer.liquid_water_m = 0.0;
+                layer.refrozen_liquid_m = 0.0;
+            }
+            _ => {}
+        }
     }
     let stage3_beginning = if terminal_event {
         Wb11HydrologyKernel::initialize_stage3_persistent_state_with_terminal_event(
@@ -893,12 +549,17 @@ fn exercise_complete_wb14_cadence(
     }
     .expect("persistent Stage-3 beginning");
     let mut stage3_hourly = DirectSnowHourlyForcing::zero();
-    if positive_covered_rain {
-        stage3_hourly.active_precipitation_m = 0.000_4;
-        stage3_hourly.rain_m = 0.000_3;
-        stage3_hourly.snowfall_m = 0.000_1;
+    if positive_liquid_forcing {
+        let scale = if thaw_refreeze_rain { 0.1 } else { 1.0 };
+        stage3_hourly.active_precipitation_m = 0.000_4 * scale;
+        stage3_hourly.rain_m = 0.000_3 * scale;
+        stage3_hourly.snowfall_m = 0.000_1 * scale;
         stage3_hourly.rain_fraction = 1.0;
         stage3_hourly.hydrometeor_temperature_c = Some(-1.0);
+        if thaw_refreeze_rain {
+            stage3_hourly.active_precipitation_m = stage3_hourly.rain_m;
+            stage3_hourly.snowfall_m = 0.0;
+        }
     }
     if terminal_event {
         stage3_hourly.radiation_mj_m2 = 1_000.0;
@@ -918,14 +579,12 @@ fn exercise_complete_wb14_cadence(
     };
     let mut stage3_inputs_by_lane = BTreeMap::from([(1, stage3_inputs.clone())]);
     let mut stage3_forcing_by_lane = BTreeMap::from([(1, stage3_forcing)]);
-    let carrier_forcing_by_lane = BTreeMap::from([(
-        1,
-        if equilibrium_fixture {
-            equilibrium_child2c_carrier_forcing()
-        } else {
-            child2c_carrier_forcing()
-        },
-    )]);
+    let carrier_forcing = if equilibrium_fixture {
+        equilibrium_child2c_carrier_forcing()
+    } else {
+        child2c_carrier_forcing()
+    };
+    let carrier_forcing_by_lane = BTreeMap::from([(1, carrier_forcing)]);
     let mut stage3_beginning_by_lane = BTreeMap::from([(1, stage3_beginning.clone())]);
     let mut preliminary_stage3_inputs_by_lane = if terminal_event {
         let mut value = stage3_inputs.clone();
@@ -1049,9 +708,7 @@ fn exercise_complete_wb14_cadence(
     let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(support_end_ns))
         .expect("open-snow support");
     let snow_surface_reference_humidity = if equilibrium_fixture {
-        equilibrium_stage3_reference_specific_humidity(
-            covered_interval.lse_forcing.air_pressure_pa,
-        )
+        equilibrium_stage3_reference_specific_humidity(covered_interval.lse_forcing.air_pressure_pa)
     } else {
         covered_interval.lse_forcing.air_specific_humidity_kg_kg
     };
@@ -1419,22 +1076,23 @@ fn exercise_complete_wb14_cadence(
         }
     }
 
-    let identities = shadow
-        .inner
-        .surface_configuration
-        .ofe_bindings
-        .iter()
-        .map(|binding| {
-            (
-                binding.production_lane_id,
-                shadow
-                    .inner
-                    .surface_configuration
-                    .records
-                    .iter()
-                    .filter(|record| record.key.ofe_id == binding.ofe_id)
-                    .map(|record| {
-                        let solid_parcels = solid_reappearance.then(|| {
+    let identities =
+        shadow
+            .inner
+            .surface_configuration
+            .ofe_bindings
+            .iter()
+            .map(|binding| {
+                (
+                    binding.production_lane_id,
+                    shadow
+                        .inner
+                        .surface_configuration
+                        .records
+                        .iter()
+                        .filter(|record| record.key.ofe_id == binding.ofe_id)
+                        .map(|record| {
+                            let solid_parcels = solid_reappearance.then(|| {
                             vec![crate::runtime_inputs::SnowFreeSolidPrecipitationParcelReceipt {
                                 parcel_id: format!(
                                     "solid-reappearance:{}:{}",
@@ -1456,20 +1114,20 @@ fn exercise_complete_wb14_cadence(
                                 enthalpy_j_m2: 0.0,
                             }]
                         });
-                        PreparedStage3V11SupportIdentityV1::new_with_phase_parcels(
-                            record.key.ofe_id.as_str().to_owned(),
-                            record.key.tile_id.as_str().to_owned(),
-                            "a".repeat(64),
-                            Digest32::from_bytes([13; 32]),
-                            Vec::new(),
-                            solid_parcels.unwrap_or_default(),
-                            Digest32::from_bytes([14; 32]),
-                        )
-                    })
-                    .collect::<Vec<_>>(),
-            )
-        })
-        .collect::<BTreeMap<_, _>>();
+                            PreparedStage3V11SupportIdentityV1::new_with_phase_parcels(
+                                record.key.ofe_id.as_str().to_owned(),
+                                record.key.tile_id.as_str().to_owned(),
+                                "a".repeat(64),
+                                Digest32::from_bytes([13; 32]),
+                                Vec::new(),
+                                solid_parcels.unwrap_or_default(),
+                                Digest32::from_bytes([14; 32]),
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
     let mut snow_free_parent_interval = base_interval.clone();
     snow_free_parent_interval
         .lse_forcing
@@ -1515,9 +1173,29 @@ fn exercise_complete_wb14_cadence(
             .expect("accepted coupled hard boundary");
     }
     let mut beginning_owners = initial_v11_owners(&shadow, &migrated.state);
+    if ordinarily_native && !substitute_native_ordinary {
+        let native = shadow
+            .canonical_v11_parent_owner_state_bytes()
+            .expect("native parity beginning complete-owner bytes");
+        for owner_id in ["land_surface_energy", "soil_thermal"] {
+            beginning_owners.insert(
+                owner_id.to_owned(),
+                V11OwnerEnvelope::try_new(
+                    owner_id.to_owned(),
+                    native
+                        .get(owner_id)
+                        .expect("native parity beginning owner bytes")
+                        .clone(),
+                )
+                .expect("native parity beginning owner envelope"),
+            );
+        }
+    }
     if solid_reappearance {
-        let beginning_snow_owner_bytes = crate::v9_real_consumer_shadow::v11_covered::
-            canonical_stage3_snow_owner_bytes_v11(&stage3_beginning_by_lane)
+        let beginning_snow_owner_bytes =
+            crate::v9_real_consumer_shadow::v11_covered::canonical_stage3_snow_owner_bytes_v11(
+                &stage3_beginning_by_lane,
+            )
             .expect("solid-reappearance beginning snow owner bytes");
         beginning_owners.insert(
             "snow".to_owned(),
@@ -1600,6 +1278,34 @@ fn exercise_complete_wb14_cadence(
     let rollback_consumer = shadow.clone();
     let rollback_clock = beginning_clock.clone();
     let rollback_stage3 = stage3_beginning.clone();
+    let rollback_parent_bytes =
+        serde_json::to_vec(&rollback_parent.checkpoint()).expect("rollback parent canonical bytes");
+    let rollback_consumer_owner_bytes = rollback_consumer
+        .canonical_v11_parent_owner_state_bytes()
+        .ok();
+    let rollback_v3_history = rollback_consumer
+        .frozen_litter_v3
+        .as_ref()
+        .map(|resident| {
+            Ok::<_, crate::DirectSurfaceLiquidError>((
+                resident.accepted_publication_supports_canonical_bytes()?,
+                resident.restart_wb14_parent_working_state_bytes()?,
+            ))
+        })
+        .transpose()
+        .expect("rollback V3 history canonical bytes");
+    let rollback_v4_history = rollback_consumer.frozen_litter_v4.as_ref().map(|resident| {
+        resident
+            .accepted_publication_supports_canonical_bytes()
+            .to_vec()
+    });
+    let rollback_clock_bytes =
+        serde_json::to_vec(&rollback_clock).expect("rollback clock canonical bytes");
+    let rollback_stage3_bytes =
+        crate::v9_real_consumer_shadow::v11_covered::canonical_stage3_snow_owner_bytes_v11(
+            &stage3_beginning_by_lane,
+        )
+        .expect("rollback Stage3 canonical owner bytes");
     let injections = if include_child_17 {
         vec![
             Stage3V11FailureInjection::OutcomeLedgerBuilt(1),
@@ -1678,7 +1384,10 @@ fn exercise_complete_wb14_cadence(
         );
         if let (Ok(_), Ok(captured)) = (&no_evidence_result, &result) {
             let (_, _, ending_clock, _, _, _, event_groups, terminal_parcels) = captured;
-            assert_eq!(ending_clock.accepted_until(), ModelTimeNs::new(support_end_ns));
+            assert_eq!(
+                ending_clock.accepted_until(),
+                ModelTimeNs::new(support_end_ns)
+            );
             assert_eq!(event_groups.len(), 1);
             let group = &event_groups[0];
             assert_eq!(group.tick, ModelTimeNs::new(540_000_000_000));
@@ -1699,10 +1408,12 @@ fn exercise_complete_wb14_cadence(
                     .contains(&parcel.parcel_digest)
             );
             assert!(!evidence.provider_calls.is_empty());
-            assert!(evidence
-                .provider_calls
-                .iter()
-                .all(|call| call.request.support.duration_ns() >= 60_000_000_000));
+            assert!(
+                evidence
+                    .provider_calls
+                    .iter()
+                    .all(|call| call.request.support.duration_ns() >= 60_000_000_000)
+            );
             assert_eq!(shadow, rollback_consumer);
             assert_eq!(beginning_clock, rollback_clock);
             assert_eq!(stage3_beginning, rollback_stage3);
@@ -1747,14 +1458,17 @@ fn exercise_complete_wb14_cadence(
             assert_eq!(stage3_beginning, rollback_stage3);
             return;
         }
-        assert!(matches!(
-            &no_evidence_result,
-            Err(DirectSnowStage3V11AttachmentError::Stage3(
-                DirectSnowStage3EvaluationError::TerminalNumerics(
-                    crate::SnowTerminalNumericsFailure::BelowCarrierDomain
-                )
-            ))
-        ), "unexpected uncaptured result: {no_evidence_result:?}; captured result: {result:?}");
+        assert!(
+            matches!(
+                &no_evidence_result,
+                Err(DirectSnowStage3V11AttachmentError::Stage3(
+                    DirectSnowStage3EvaluationError::TerminalNumerics(
+                        crate::SnowTerminalNumericsFailure::BelowCarrierDomain
+                    )
+                ))
+            ),
+            "unexpected uncaptured result: {no_evidence_result:?}; captured result: {result:?}"
+        );
         assert!(matches!(
             result,
             Err(DirectSnowStage3V11AttachmentError::Stage3(
@@ -1853,9 +1567,11 @@ fn exercise_complete_wb14_cadence(
         assert!(evidence.coupling_iterations.iter().all(|iteration| {
             let request = &iteration.hook.request;
             let comparison_shape = if request.coupling_iteration == 0 {
-                iteration.hook.comparisons.is_none() && request.ending_snow_hint.is_none()
+                iteration.hook.comparisons.is_none()
+                    && request.ending_snow_hint.is_none()
             } else {
-                iteration.hook.comparisons.is_some() && request.ending_snow_hint.is_some()
+                iteration.hook.comparisons.is_some()
+                    && request.ending_snow_hint.is_some()
             };
             comparison_shape
                 && evidence
@@ -1865,7 +1581,8 @@ fn exercise_complete_wb14_cadence(
                         call.request.support == request.support
                             && call.request.role == request.role
                             && call.request.attempt_ordinal == request.attempt_ordinal
-                            && call.request.coupling_iteration == request.coupling_iteration
+                            && call.request.coupling_iteration
+                                == request.coupling_iteration
                             && call.request.lane_id == request.lane_id
                             && call.request.beginning_joint.receipt_sha256()
                                 == request.beginning_joint.receipt_sha256()
@@ -2273,16 +1990,7 @@ fn exercise_complete_wb14_cadence(
         assert_eq!(stage3_beginning, rollback_stage3);
         return;
     }
-    let (
-        _,
-        ending_consumer,
-        ending_clock,
-        finalized_parent,
-        ending_stage3,
-        subslabs,
-        event_groups,
-        terminal_parcels,
-    ) = execute_covered_real_v11_parent(
+    let execution = execute_covered_real_v11_parent(
         &context,
         &parent,
         &shadow,
@@ -2294,8 +2002,68 @@ fn exercise_complete_wb14_cadence(
         stage3_beginning_by_lane.clone(),
         BTreeMap::new(),
         None,
-    )
-    .expect("synchronized covered parent cadence");
+    );
+    if crate::v9_real_consumer_shadow::v11_covered::canonical_covered_parity_poison_active_for_test(
+    ) {
+        let active_poison = crate::v9_real_consumer_shadow::v11_covered::
+            canonical_covered_parity_poison_v1();
+        if let Err(error) = &execution {
+            crate::v9_real_consumer_shadow::v11_covered::
+                record_canonical_covered_outer_attachment_rejection_for_test(error);
+        }
+        assert!(
+            execution.is_err(),
+            "covered parity poison {active_poison:?} was not rejected",
+        );
+        let rollback = serde_json::to_vec(&parent.checkpoint())
+            .is_ok_and(|bytes| bytes == rollback_parent_bytes)
+            && shadow.canonical_v11_parent_owner_state_bytes().ok()
+                == rollback_consumer_owner_bytes
+            && shadow
+                .frozen_litter_v3
+                .as_ref()
+                .map(|resident| {
+                    Some((
+                        resident
+                            .accepted_publication_supports_canonical_bytes()
+                            .ok()?,
+                        resident.restart_wb14_parent_working_state_bytes().ok()?,
+                    ))
+                })
+                .flatten()
+                == rollback_v3_history
+            && shadow.frozen_litter_v4.as_ref().map(|resident| {
+                resident
+                    .accepted_publication_supports_canonical_bytes()
+                    .to_vec()
+            }) == rollback_v4_history
+            && serde_json::to_vec(&beginning_clock)
+                .is_ok_and(|bytes| bytes == rollback_clock_bytes)
+            && crate::v9_real_consumer_shadow::v11_covered::canonical_stage3_snow_owner_bytes_v11(
+                &stage3_beginning_by_lane,
+            )
+            .is_ok_and(|bytes| bytes == rollback_stage3_bytes);
+        crate::v9_real_consumer_shadow::v11_covered::
+            record_canonical_covered_parity_rollback_for_test(rollback);
+        return;
+    }
+    let (
+        _,
+        ending_consumer,
+        ending_clock,
+        finalized_parent,
+        ending_stage3,
+        subslabs,
+        event_groups,
+        terminal_parcels,
+    ) = execution.expect("synchronized covered parent cadence");
+    if ordinarily_native && !terminal_event {
+        super::frozen_litter_v4_adoption::record_represented_snow_endpoint_retention_v1(
+            &shadow,
+            &ending_consumer,
+        )
+        .expect("represented-snow endpoint retains exact V3/V4 resident revisions");
+    }
     if production_only {
         let comparison = ending_consumer
             .adaptive_complete_owner_comparison_v1(
@@ -2307,6 +2075,18 @@ fn exercise_complete_wb14_cadence(
             .expect("final complete-owner physical comparison");
         adaptive_production_path_coverage::record_final_physical_comparison(comparison);
     }
+    CAPTURE_REAL_NATIVE_INACTIVE_PREFIX_V1.with(|capture| {
+        if capture.get() {
+            REAL_NATIVE_INACTIVE_PREFIX_V1.with(|fixture| {
+                *fixture.borrow_mut() = Some(RealNativeInactivePrefixFixtureV1 {
+                    receipts: subslabs.clone(),
+                    terminal_groups: event_groups.clone(),
+                    parent_support: support,
+                    surface_configuration: shadow.inner.surface_configuration.clone(),
+                });
+            });
+        }
+    });
     if terminal_event {
         if second_lane_swe_m.is_none() {
             // The parent returns retained custody evidence, not pending
@@ -2367,8 +2147,8 @@ fn exercise_complete_wb14_cadence(
     assert_eq!(finalized_parent.accepted_segments.len(), subslabs.len());
     assert_eq!(
         ending_consumer.inner.accepted_interval_count(),
-        shadow.inner.accepted_interval_count() + 1,
-        "thirty coupled slabs publish exactly one persistent parent interval",
+        shadow.inner.accepted_interval_count() + u64::from(!ordinarily_native),
+        "ordinary coverage publishes one WB14 interval; represented-snow native coverage publishes none",
     );
     // The historical one-child endpoint remains a fixture oracle for local
     // carrier checks above, but adaptive production installs the resolved
@@ -2411,11 +2191,13 @@ fn exercise_complete_wb14_cadence(
             .iter()
             .all(|receipt| receipt.wb14_parent_receipt_set_sha256.is_none())
     );
-    assert!(
+    assert_eq!(
         subslabs
             .last()
             .and_then(|receipt| receipt.wb14_parent_receipt_set_sha256)
-            .is_some()
+            .is_some(),
+        !ordinarily_native,
+        "only the ordinary route advances and publishes a WB14 parent receipt set",
     );
     let mut poisoned = subslabs[0].clone();
     poisoned.selected_upper_bound_s_bits ^= 1;
@@ -2447,7 +2229,10 @@ fn exercise_complete_wb14_cadence(
             .expect("solid-reappearance ending lane");
         assert!(!crate::hydrology::stage3_has_represented_ice(beginning));
         assert!(crate::hydrology::stage3_has_represented_ice(ending));
-        assert_eq!(ending.cumulative_snowfall_kg_m2.to_bits(), 50.0_f64.to_bits());
+        assert_eq!(
+            ending.cumulative_snowfall_kg_m2.to_bits(),
+            50.0_f64.to_bits()
+        );
         assert_eq!(
             ending_clock.accepted_event_receipts().len(),
             beginning_clock.accepted_event_receipts().len() + subslabs.len() + 1,

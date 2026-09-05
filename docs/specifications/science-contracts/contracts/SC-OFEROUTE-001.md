@@ -4,7 +4,7 @@ title: Hillslope OFE-by-OFE Overland-Flow Routing Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 51
+contract_version: 53
 producer_scope:
   - Space/time-variant overland-flow resistance (skin/form/wave/vegetation) surfaces
   - 1-D kinematic-wave routing state (depth, unit discharge) per OFE per sub-timestep
@@ -14,7 +14,7 @@ consumer_scope:
   - Inter-OFE water transfer seam (SC-RUNOFFPART-001 INV-RUNOFFPART-028/029)
   - Erosion continuity consumers that read peak/duration and routed-hydrograph shape surfaces (SC-SED-001)
 evidence_level: static
-last_reviewed: 2026-07-11
+last_reviewed: 2026-09-01
 supersedes: []
 superseded_by: []
 ---
@@ -720,3 +720,53 @@ satisfied by an un-implemented subsystem.
 | `2026-07-02` | `8` | `Claude Code` | MOFEFID-D7 review disposition (Codex execution review): WITHDREW `GAP-OFEROUTE-004` — the solver-side shock-lag attribution was an artifact of a forcing bug (`run_iwagaki` fed the lateral rate into the skin-term rainfall intensity `I`; Iwagaki has no rain). With `I=0`, Case-4 timing/rise reproduce at k_o~200 and the residual is operand-limited on the unspecified k_o. Corrected `INV-OFEROUTE-011` (Case 1 downgraded to PARTIAL — steady magnitude reproduces but rising-limb shape fails ~40 %; zero cases cleanly reproduce). Reconciled `INV-OFEROUTE-002` / `GAP-OFEROUTE-002` — the skin `I`/`nu` convention is NOT confirmed by D-val (k_o-dominated; audit open). Invariant remains open. |
 | `2026-07-02` | `9` | `Codex` | MOFEFID-D8 defect closure: confirmed the local Shen & Li rainfall-intensity unit convention against R-63 with a low-`k_o` regression and removed silent negative-`I` normalization from the pure skin helper; corrected solver hydrograph sampling to interpolate within solver steps; reclassified Case 2 as Ks-operand-limited, Case 3 as comparator-surface/operand boundary, Case 1 rising-limb lag as Green-Ampt operand-limited, and opened `GAP-OFEROUTE-005` for Case 4 shock peak/timing resolution sensitivity after sampled metric correction. `INV-OFEROUTE-011` remains partial; no production wiring. |
 | `2026-07-04` | `10` | `Claude Code` | **Operator-directed activation gate.** Opened `GAP-OFEROUTE-006` and `INV-OFEROUTE-012` requiring that, before production activation, the active surface router be COUPLED to the subsurface — subsurface excess (return flow / saturation excess) entering the routing as a source term, and baseflow conserved/exported — so an active router closes the full hillslope water balance on the subsurface-dominated steep-wet-forest hillslopes that are openWEPP's target (H2637 routes ~99% as lateral flow). The Lane D solver forcing is currently rainfall-excess + upstream SURFACE hydrograph only (`kinematic_wave::Forcing`); the contract had scoped subsurface entirely out. Added `OBL-OFEROUTE-P-006`, a Test-Vector Obligation naming the required **subsurface-excess-to-runoff fixture** + a subsurface-dominated closure vector, a Branch/Guard gate row, and refined the scope boundary (subsurface flow PHYSICS stays `SC-SUBHYD-001`; the exfiltration/baseflow COUPLING seam is an activation requirement here). Coupling-seam ownership/design is `GAP-OFEROUTE-006` (design-open). **Scope-expanding amendment — Codex ratification recommended.** |
+
+## Accepted Stage-3 Lane-D Source Amendment
+
+`INV-OFEROUTE-014` — On the active non-CoE Stage-3 path, each OFE's Lane-D
+snow/liquid source must originate from the accepted Stage-3/surface-liquid/
+runoff owner and its exact 24-bin timing receipt. The bins close to the daily
+metre-depth scalar within the existing `1e-12 m` guard, are converted from
+lane-area depth to mesh-plan-area depth exactly once, and are consumed by the
+real `route_single_ofe_with_step_trace` cascade in OFE order. CoE, diagnostic,
+shadow, legacy vegetation, daily-scalar synthesis, uniform retiming, aggregate
+hillslope substitution, or a reordered/cloned OFE cannot carry the source.
+Existing conservation, CFL, subsurface/baseflow activation, erosion-shape, and
+DC01 exclusion gates remain unchanged.
+
+`INV-OFEROUTE-015` — The active-owner decision must precede Stage-3 day-zero
+surface bootstrap. For active Lane D, project the validated persisted
+SurfaceLiquid configuration to local-only ingress by removing every inter-OFE
+runon destination before any support executes, recompute its configuration
+identity, and reconstruct the day-zero owned state from the exact same keyed
+physical liquid values. The projection is admissible only at a day-zero
+checkpoint with zero accepted continuations and no prior transaction identity.
+It changes routing ownership, not physical storage. The unmodified persisted
+configuration remains authoritative for inactive/rollback execution. After the
+projection, SurfaceLiquid cannot emit or consume `UpstreamRunon`; the Lane-D
+cascade is the sole inter-OFE surface owner under `INV-OFEROUTE-009`. Late
+clearing, publication-only filtering, destination omission without identity
+recomputation, non-day-zero rebinding, or retaining both paths fails closed.
+
+`OBL-OFEROUTE-P-008` / `OBL-OFEROUTE-C-005` — Produce and consume the accepted
+Stage-3 hourly source on the real runner. Prove unequal-area 1/10/19-OFE
+lineage, adjacent handoff, factor-1000 and area-swap poisons, router closure,
+and final output consumption before activation.
+
+`OBL-OFEROUTE-P-009` — Prove active selection occurs before Stage-3 bootstrap,
+the projected configuration has no runon destinations or accepted
+`UpstreamRunon` receipts, keyed day-zero liquid is bit-identical, inactive
+bootstrap retains the persisted digest and destinations, and non-day-zero or
+transaction-bearing state rejects without mutation.
+
+### Profile integration
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Join accepted Stage-3/RUNOFFPART 24-bin source, convert lane-area depth to mesh basis once, route OFEs upstream-to-downstream, close, publish. |
+| branch/guard | Active Stage-3 + Lane D requires exact accepted source; any CoE/diagnostic/scalar/aggregate/reordered source fails. |
+| invariant guard map | `INV-OFEROUTE-014/015` -> pre-bootstrap active projection, source-receipt join, basis converter, `route_single_ofe_with_step_trace`, output consumer. |
+| test vector | `P-008/P-009/C-005`: active/inactive day-zero projection, poison chronology, unequal 1/10/19 OFEs, adjacent handoff, factor-1000, area swap, old source, final consumer. |
+| binding exposure | `OFEROUTE-STAGE3-ACCEPTED-SOURCE`, active, `new-INV`, IDs `014/015/P-008/P-009/C-005`, dual review/verification. |
+| gap | Existing activation/coupling gaps, including subsurface/baseflow, remain binding and are not closed by this amendment. |
+| change log | 2026-09-02, contract 53: bind active-owner selection before Stage-3 day-zero surface bootstrap so Lane D exclusively owns inter-OFE surface transfer; contract 52 bound the accepted non-CoE Stage-3 source to real routing. |

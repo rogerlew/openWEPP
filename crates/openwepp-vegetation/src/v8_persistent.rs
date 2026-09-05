@@ -19,6 +19,43 @@ use crate::transaction::NitrogenArbiter;
 use crate::v8_state::{V8_MODEL_SHA256, V8CoupledOwnedState};
 use crate::{VegetationConfiguration, VegetationError};
 
+/// Opaque, process-local proof that one immutable V8 configuration/beginning
+/// pair passed its complete semantic validation.
+///
+/// This proof is deliberately non-serializable and borrows the exact source
+/// revisions. It exists only to avoid repeating the same canonical-digest and
+/// topology validation while constructing the potential, capped, and final
+/// receipts for one projection family.
+#[derive(Debug)]
+pub(crate) struct ValidatedV8ProjectionBeginning<'a> {
+    configuration: &'a VegetationConfiguration,
+    beginning: &'a V8CoupledOwnedState,
+}
+
+impl<'a> ValidatedV8ProjectionBeginning<'a> {
+    pub(crate) fn try_new(
+        configuration: &'a VegetationConfiguration,
+        beginning: &'a V8CoupledOwnedState,
+    ) -> Result<Self, VegetationError> {
+        configuration.validate_v8()?;
+        beginning.validate(configuration).map_err(|error| {
+            VegetationError::Receipt(format!("invalid V8 beginning state: {error}"))
+        })?;
+        Ok(Self {
+            configuration,
+            beginning,
+        })
+    }
+
+    pub(crate) const fn configuration(&self) -> &VegetationConfiguration {
+        self.configuration
+    }
+
+    pub(crate) const fn beginning(&self) -> &V8CoupledOwnedState {
+        self.beginning
+    }
+}
+
 /// One exact occupancy carbon receipt from a separately accepted V8 solve.
 #[derive(Clone, Debug, PartialEq)]
 pub struct V8OccupancyCarbonReceipt {
@@ -71,7 +108,8 @@ impl ValidatedV8CarbonPass {
         configuration: &VegetationConfiguration,
         beginning: &V8CoupledOwnedState,
     ) -> Result<Self, VegetationError> {
-        Self::try_new_with_duration_bits(
+        let validated = ValidatedV8ProjectionBeginning::try_new(configuration, beginning)?;
+        Self::try_new_with_validated_beginning(
             model_definition_sha256,
             configuration_sha256,
             transaction_id,
@@ -79,8 +117,7 @@ impl ValidatedV8CarbonPass {
             pass,
             interval_s,
             occupancies,
-            configuration,
-            beginning,
+            &validated,
             configuration.dt_s.to_bits(),
         )
     }
@@ -99,7 +136,8 @@ impl ValidatedV8CarbonPass {
         beginning: &V8CoupledOwnedState,
         duration_s_bits: u64,
     ) -> Result<Self, VegetationError> {
-        Self::try_new_with_duration_bits(
+        let validated = ValidatedV8ProjectionBeginning::try_new(configuration, beginning)?;
+        Self::try_new_with_validated_beginning(
             model_definition_sha256,
             configuration_sha256,
             transaction_id,
@@ -107,14 +145,15 @@ impl ValidatedV8CarbonPass {
             pass,
             interval_s,
             occupancies,
-            configuration,
-            beginning,
+            &validated,
             duration_s_bits,
         )
     }
 
+    /// Construct one member of a projection receipt family after the exact
+    /// immutable configuration/beginning pair has already been validated.
     #[allow(clippy::too_many_arguments)]
-    fn try_new_with_duration_bits(
+    pub(crate) fn try_new_with_validated_beginning(
         model_definition_sha256: String,
         configuration_sha256: String,
         transaction_id: TransactionId,
@@ -122,14 +161,11 @@ impl ValidatedV8CarbonPass {
         pass: CoupledSolvePass,
         interval_s: f64,
         occupancies: Vec<V8OccupancyCarbonReceipt>,
-        configuration: &VegetationConfiguration,
-        beginning: &V8CoupledOwnedState,
+        validated: &ValidatedV8ProjectionBeginning<'_>,
         duration_s_bits: u64,
     ) -> Result<Self, VegetationError> {
-        configuration.validate_v8()?;
-        beginning.validate(configuration).map_err(|error| {
-            VegetationError::Receipt(format!("invalid V8 beginning state: {error}"))
-        })?;
+        let configuration = validated.configuration;
+        let beginning = validated.beginning;
         if model_definition_sha256 != V8_MODEL_SHA256
             || configuration_sha256 != configuration.configuration_sha256
             || beginning.model_definition_sha256 != model_definition_sha256

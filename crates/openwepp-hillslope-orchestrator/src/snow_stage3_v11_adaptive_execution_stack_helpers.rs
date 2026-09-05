@@ -32,9 +32,12 @@ fn execute_adaptive_snow_free_successor_v1(
     interval_index: usize,
     forcing_receipt: Digest32,
     ending_snow_owner_bytes: Vec<u8>,
-    deferred_native_v2_soil_custody:
-        Option<crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1>,
+    native_inactive_wb14_prefix: Option<crate::direct_runtime::ValidatedNativeInactiveWb14PrefixV1>,
+    deferred_native_v2_soil_custody: Option<
+        crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1,
+    >,
 ) -> Result<Box<AdaptiveSnowFreeSuccessorExecutionV1>, DirectSnowStage3V11AttachmentError> {
+    let _qualification_native_vegetation_et_scope = crate::snow_stage3_v11_attachment::enter_release_qualification_native_vegetation_et_scope_v1();
     let (parent, consumer, clock, _, accepted_support) = execute_real_v11_parent(
         context,
         parent,
@@ -45,6 +48,7 @@ fn execute_adaptive_snow_free_successor_v1(
         interval_index,
         forcing_receipt,
         ending_snow_owner_bytes,
+        native_inactive_wb14_prefix,
         deferred_native_v2_soil_custody,
         false,
     )?;
@@ -82,9 +86,7 @@ mod transient_native_v2_soil_custody_tests {
             .next()
             .expect("typed custody fields");
         assert!(declaration.contains("DirectSoilThermalCandidate"));
-        assert!(declaration.contains(
-            "DirectSoilThermalUnpublishedContinuationResultV2"
-        ));
+        assert!(declaration.contains("DirectSoilThermalUnpublishedContinuationResultV2"));
 
         let restart = include_str!("snow_stage3_v11_restart.rs");
         assert!(!restart.contains("deferred_native_v2_soil_custody"));
@@ -142,9 +144,7 @@ mod transient_native_v2_soil_custody_tests {
             .nth(1)
             .expect("adaptive interruption macro");
         assert!(interruption.contains("deferred_native_v2_soil_custody.is_none()"));
-        assert!(adaptive.contains(
-            "Memoized ordinary covered trials cannot carry terminal"
-        ));
+        assert!(adaptive.contains("Memoized ordinary covered trials cannot carry terminal"));
     }
 
     #[test]
@@ -168,9 +168,7 @@ mod transient_native_v2_soil_custody_tests {
             .expect("post-success custody replacement");
         assert!(handoff < returned && returned < replace);
         assert!(path.contains("custody lost between terminal children"));
-        assert!(path.contains(
-            "beginning_deferred_native_v2_soil_custody.cloned()"
-        ));
+        assert!(path.contains("beginning_deferred_native_v2_soil_custody.cloned()"));
         assert!(!path.contains("serde"));
     }
 
@@ -191,9 +189,7 @@ mod transient_native_v2_soil_custody_tests {
             2,
             "both direct/composed trials use one immutable beginning",
         );
-        assert!(selection.contains(
-            "beginning_deferred_native_v2_soil_custody: Option<"
-        ));
+        assert!(selection.contains("beginning_deferred_native_v2_soil_custody: Option<"));
 
         let adaptive = include_str!("snow_stage3_v11_adaptive_execution.rs");
         let acceptance = adaptive
@@ -206,7 +202,10 @@ mod transient_native_v2_soil_custody_tests {
         let consume = acceptance
             .find("deferred_native_v2_soil_custody.take()")
             .expect("accepted custody consume");
-        assert!(refine < consume, "a rejected trial cannot consume outer custody");
+        assert!(
+            refine < consume,
+            "a rejected trial cannot consume outer custody"
+        );
     }
 
     #[test]
@@ -246,14 +245,14 @@ mod transient_native_v2_soil_custody_tests {
         assert!(body.contains("compose_accepted_outer_candidate"));
         assert!(body.contains("seal_soil_thermal_accepted_candidate_v2"));
         assert_eq!(
-            body.matches("install_soil_thermal_accepted_v2_from_unpublished_continuation")
+            body.matches("install_pending_parent_finalization_soil_close_v1")
                 .count(),
             1,
         );
         assert_eq!(
             body.matches("normalize_v11_staged_parent_lineage").count(),
-            2,
-            "the cloned install host enters and exits accepted support lineage exactly once",
+            0,
+            "pending parent-finalization authority must not rebase the install host",
         );
         assert!(body.contains("beginning_non_soil_owner_bytes"));
         assert!(body.contains("ending_non_soil_owner_bytes"));
@@ -277,11 +276,15 @@ mod transient_native_v2_soil_custody_tests {
         let retain = body
             .find("candidate_consumer.retain_accepted_publication_zero_duration_event")
             .expect("sealed accepted publication");
-        let parent_replace = body.find("*parent = candidate_parent").expect("parent replace");
+        let parent_replace = body
+            .find("*parent = candidate_parent")
+            .expect("parent replace");
         let consumer_replace = body
             .find("*consumer = candidate_consumer")
             .expect("consumer replace");
-        let clock_replace = body.find("*clock = candidate_clock").expect("clock replace");
+        let clock_replace = body
+            .find("*clock = candidate_clock")
+            .expect("clock replace");
         let digest_refresh = body
             .find("*expected_child_beginning = ending_owner_set")
             .expect("owner digest refresh");
@@ -316,6 +319,28 @@ mod transient_native_v2_soil_custody_tests {
         assert!(body.contains("deferred native V2 parent-end exact soil mutation"));
         assert!(body.contains("deferred native V2 parent-end event owner join"));
         assert!(source.contains("deferred native V2 soil custody survived parent handoff"));
+    }
+
+    #[test]
+    fn parent_end_native_v2_close_requires_pending_finalization_authority_without_rebasing() {
+        let source = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+        let body = source
+            .rsplit("fn close_deferred_native_v2_soil_at_parent_end_v1")
+            .next()
+            .expect("parent-end native V2 close")
+            .split("fn finalize_adaptive_parent_execution_state_v1")
+            .next()
+            .expect("parent-end native V2 close body");
+        assert!(body.contains("authorize_pending_parent_finalization_soil_close_v1"));
+        assert!(body.contains("install_pending_parent_finalization_soil_close_v1"));
+        assert!(body.contains("validate_after_soil_close_v1"));
+        assert!(source.contains("parent.clone().finalize"));
+        assert!(
+            !body.contains(
+                "authenticate_soil_thermal_unpublished_continuation_install_authority_v2"
+            )
+        );
+        assert!(!body.contains("normalize_v11_staged_parent_lineage"));
     }
 }
 
@@ -934,8 +959,7 @@ fn adaptive_interruption_outcome_v2(
         terminal_parcels: pending_terminal_parcels.clone(),
         receipt_chain: checkpoint.day_candidate.receipt_chain.clone(),
         snow_enthalpy_material_owner: snow_enthalpy_material_owner.cloned(),
-        snow_enthalpy_material_owner_chronology:
-            snow_enthalpy_material_owner_chronology.to_vec(),
+        snow_enthalpy_material_owner_chronology: snow_enthalpy_material_owner_chronology.to_vec(),
     });
     checkpoint.support_owner_joins = owner_joins.to_vec();
     checkpoint.support_event_groups = event_groups.to_vec();
@@ -961,9 +985,8 @@ struct AdaptiveParentExecutionStateV1 {
     consumer: DirectV10RealConsumerShadow,
     clock: CoupledClockStateV1,
     stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
-    snow_enthalpy_material_owner: Option<
-        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
-    >,
+    snow_enthalpy_material_owner:
+        Option<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
     snow_enthalpy_material_owner_chronology:
         Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
     owner_joins: Vec<Stage3CoupledSubslabReceiptV1>,
@@ -998,8 +1021,9 @@ fn initialize_adaptive_parent_execution_v1(
     beginning_snow_enthalpy_material_owner: Option<
         crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
     >,
-    beginning_snow_enthalpy_material_owner_chronology:
-        Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
+    beginning_snow_enthalpy_material_owner_chronology: Vec<
+        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    >,
     beginning_terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
     failure_injection: Option<Stage3V11FailureInjection>,
     restart: Option<Box<DirectSnowStage3V11InProgressExecutionV2>>,
@@ -1217,6 +1241,268 @@ fn initialize_adaptive_parent_execution_v1(
     )))
 }
 
+#[derive(Debug)]
+pub(crate) struct PendingV11ParentFinalizationSoilCloseAuthorityV1 {
+    parent_checkpoint: openwepp_vegetation::v11::V11ParentTransactionCheckpoint,
+    clock_before: CoupledClockStateV1,
+    finalized_before_soil: V11ParentCandidate,
+    non_soil_owner_bytes: BTreeMap<String, Vec<u8>>,
+    continuation: crate::v9_real_consumer_shadow::DirectSoilThermalUnpublishedContinuationResultV2,
+    prepared_beginning: openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+    accepted: crate::v9_real_consumer_shadow::SoilThermalAcceptedCandidateV2,
+    seals: crate::v9_real_consumer_shadow::SoilThermalOrchestratorSealsV2,
+    physical_transaction_authority:
+        crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2,
+    consumed: bool,
+}
+
+impl PendingV11ParentFinalizationSoilCloseAuthorityV1 {
+    pub(crate) fn source_transaction_id(&self) -> openwepp_kernel_contract::TransactionId {
+        self.physical_transaction_authority.source_transaction_id
+    }
+
+    pub(crate) fn physical_transaction_authority(
+        &self,
+    ) -> crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2 {
+        self.physical_transaction_authority
+    }
+
+    pub(crate) fn continuation(
+        &self,
+    ) -> &crate::v9_real_consumer_shadow::DirectSoilThermalUnpublishedContinuationResultV2 {
+        &self.continuation
+    }
+
+    pub(crate) fn prepared_beginning(
+        &self,
+    ) -> &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2 {
+        &self.prepared_beginning
+    }
+
+    pub(crate) fn accepted(
+        &self,
+    ) -> &crate::v9_real_consumer_shadow::SoilThermalAcceptedCandidateV2 {
+        &self.accepted
+    }
+
+    pub(crate) fn seals(&self) -> &crate::v9_real_consumer_shadow::SoilThermalOrchestratorSealsV2 {
+        &self.seals
+    }
+
+    pub(crate) fn validate_install_candidate(
+        &self,
+        candidate: &DirectV10RealConsumerShadow,
+    ) -> Result<(), crate::v9_real_consumer_shadow::DirectV10RealConsumerError> {
+        if self.consumed
+            || self.prepared_beginning != *self.continuation.original_prepared().beginning_owner()
+            || self
+                .physical_transaction_authority
+                .soil_thermal_transaction_id
+                != self.prepared_beginning.transaction_id
+        {
+            return Err(
+                crate::v9_real_consumer_shadow::DirectV10RealConsumerError::Runtime(
+                    crate::v9_real_consumer_shadow::DirectV9RealConsumerError::Identity(
+                        "pending parent-finalization soil-close authority",
+                    ),
+                ),
+            );
+        }
+        candidate.validate_soil_thermal_unpublished_continuation_custody_v2(&self.continuation)?;
+        let mut current = candidate.canonical_owner_state_bytes().map_err(|_| {
+            crate::v9_real_consumer_shadow::DirectV10RealConsumerError::Runtime(
+                crate::v9_real_consumer_shadow::DirectV9RealConsumerError::Identity(
+                    "pending parent-finalization soil-close canonical owner set",
+                ),
+            )
+        })?;
+        current.remove("soil_thermal");
+        if current != self.non_soil_owner_bytes {
+            return Err(
+                crate::v9_real_consumer_shadow::DirectV10RealConsumerError::Runtime(
+                    crate::v9_real_consumer_shadow::DirectV9RealConsumerError::Identity(
+                        "pending parent-finalization soil-close non-soil source",
+                    ),
+                ),
+            );
+        }
+        Ok(())
+    }
+
+    pub(crate) fn mark_consumed(&mut self) {
+        self.consumed = true;
+    }
+
+    fn validate_after_soil_close_v1(
+        self,
+        context: &DirectSnowStage3V11StaticContext,
+        parent: &V11ParentTransaction,
+        consumer: &DirectV10RealConsumerShadow,
+        clock: &CoupledClockStateV1,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        if !self.consumed
+            || clock.parent_transaction_id() != self.clock_before.parent_transaction_id()
+            || clock.accepted_until() != self.clock_before.accepted_until()
+            || clock.parent_support() != self.clock_before.parent_support()
+            || clock.accepted_event_receipts().len()
+                != self.clock_before.accepted_event_receipts().len() + 1
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "pending parent-finalization soil-close consumption",
+            ));
+        }
+        let mut current_non_soil = consumer.canonical_owner_state_bytes()?;
+        current_non_soil.remove("soil_thermal");
+        if current_non_soil != self.non_soil_owner_bytes {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "pending parent-finalization soil-close non-soil mutation",
+            ));
+        }
+
+        let finalized_after_soil = parent.clone().finalize(&context.vegetation_configuration)?;
+        if finalized_after_soil.parent_transaction_id
+            != self.finalized_before_soil.parent_transaction_id
+            || finalized_after_soil.beginning_state_sha256
+                != self.finalized_before_soil.beginning_state_sha256
+            || finalized_after_soil.ending_state != self.finalized_before_soil.ending_state
+            || finalized_after_soil.accepted_segments
+                != self.finalized_before_soil.accepted_segments
+            || finalized_after_soil.accepted_segment_checkpoints
+                != self.finalized_before_soil.accepted_segment_checkpoints
+            || finalized_after_soil.cumulative_debits
+                != self.finalized_before_soil.cumulative_debits
+            || finalized_after_soil.material_transfers
+                != self.finalized_before_soil.material_transfers
+            || finalized_after_soil.beginning_complete_owners
+                != self.finalized_before_soil.beginning_complete_owners
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "pending parent-finalization soil-close re-finalization",
+            ));
+        }
+        let before_non_soil = self
+            .finalized_before_soil
+            .ending_complete_owners
+            .iter()
+            .filter(|owner| owner.owner_id() != "soil_thermal")
+            .map(|owner| (owner.owner_id(), owner))
+            .collect::<BTreeMap<_, _>>();
+        let after_non_soil = finalized_after_soil
+            .ending_complete_owners
+            .iter()
+            .filter(|owner| owner.owner_id() != "soil_thermal")
+            .map(|owner| (owner.owner_id(), owner))
+            .collect::<BTreeMap<_, _>>();
+        if before_non_soil != after_non_soil {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "pending parent-finalization soil-close ending owner set",
+            ));
+        }
+        let checkpoint_after = parent.checkpoint();
+        if checkpoint_after.parent_transaction_id != self.parent_checkpoint.parent_transaction_id
+            || checkpoint_after.accepted_until_ns != self.parent_checkpoint.accepted_until_ns
+            || checkpoint_after.accepted_segments != self.parent_checkpoint.accepted_segments
+            || checkpoint_after
+                .accepted_zero_duration_owner_transitions
+                .len()
+                != self
+                    .parent_checkpoint
+                    .accepted_zero_duration_owner_transitions
+                    .len()
+                    + 1
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "pending parent-finalization soil-close checkpoint",
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn authorize_pending_parent_finalization_soil_close_v1(
+    context: &DirectSnowStage3V11StaticContext,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    parent: &V11ParentTransaction,
+    consumer: &DirectV10RealConsumerShadow,
+    clock: &CoupledClockStateV1,
+    continuation: &crate::v9_real_consumer_shadow::DirectSoilThermalUnpublishedContinuationResultV2,
+    accepted: crate::v9_real_consumer_shadow::SoilThermalAcceptedCandidateV2,
+    seals: crate::v9_real_consumer_shadow::SoilThermalOrchestratorSealsV2,
+) -> Result<PendingV11ParentFinalizationSoilCloseAuthorityV1, DirectSnowStage3V11AttachmentError> {
+    let parent_checkpoint = parent.checkpoint();
+    let finalized_before_soil = parent.clone().finalize(&context.vegetation_configuration)?;
+    let source_transaction_id = consumer
+        .validate_pending_v11_parent_finalization_source_v1(
+            &context.vegetation_configuration,
+            &finalized_before_soil.ending_state,
+        )
+        .map_err(DirectSnowStage3V11AttachmentError::Owner)?;
+    if clock.parent_transaction_id() != parent.parent_transaction_id()
+        || clock.accepted_until() != prepared.support.end_ns()
+        || clock.accepted_until() != clock.parent_support().end_ns()
+        || parent_checkpoint.accepted_until_ns != clock.accepted_until().get()
+        || parent_checkpoint.finalized
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "pending parent-finalization soil-close parent clock",
+        ));
+    }
+
+    let staged_owners = parent_checkpoint
+        .staged_complete_owners
+        .values()
+        .map(V11OwnerEnvelope::to_owner_state)
+        .collect::<Result<Vec<_>, _>>()?;
+    if staged_owners != clock.owners() {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "pending parent-finalization soil-close staged owner set",
+        ));
+    }
+    let before_non_vegetation = staged_owners
+        .iter()
+        .filter(|owner| owner.owner_id() != "vegetation")
+        .map(|owner| (owner.owner_id(), owner))
+        .collect::<BTreeMap<_, _>>();
+    let finalized_non_vegetation = finalized_before_soil
+        .ending_complete_owners
+        .iter()
+        .filter(|owner| owner.owner_id() != "vegetation")
+        .map(|owner| (owner.owner_id(), owner))
+        .collect::<BTreeMap<_, _>>();
+    if before_non_vegetation != finalized_non_vegetation {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "pending parent-finalization soil-close finalized owner set",
+        ));
+    }
+
+    let mut non_soil_owner_bytes = consumer.canonical_owner_state_bytes()?;
+    non_soil_owner_bytes.remove("soil_thermal");
+    let prepared_beginning = continuation.original_prepared().beginning_owner().clone();
+    let physical_transaction_authority =
+        crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            source_transaction_id,
+            prepared_beginning.transaction_id,
+        )
+        .map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Identity(
+                "pending parent-finalization soil-close physical transaction",
+            )
+        })?;
+    Ok(PendingV11ParentFinalizationSoilCloseAuthorityV1 {
+        parent_checkpoint,
+        clock_before: clock.clone(),
+        finalized_before_soil,
+        non_soil_owner_bytes,
+        continuation: continuation.clone(),
+        prepared_beginning,
+        accepted,
+        seals,
+        physical_transaction_authority,
+        consumed: false,
+    })
+}
+
 #[allow(clippy::too_many_arguments)]
 #[inline(never)]
 fn close_deferred_native_v2_soil_at_parent_end_v1(
@@ -1238,18 +1524,18 @@ fn close_deferred_native_v2_soil_at_parent_end_v1(
             "deferred native V2 soil close before exact parent endpoint",
         ));
     }
-    let continuation = retained.continuation().ok_or(
-        DirectSnowStage3V11AttachmentError::Identity(
-            "deferred native V2 parent-end continuation",
-        ),
-    )?;
-    let authenticated =
-        crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1::try_new(
-            consumer,
-            retained.candidate().clone(),
-            Some(continuation.clone()),
-        )
-        .map_err(DirectSnowStage3V11AttachmentError::Owner)?;
+    let continuation =
+        retained
+            .continuation()
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "deferred native V2 parent-end continuation",
+            ))?;
+    let authenticated = crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1::try_new(
+        consumer,
+        retained.candidate().clone(),
+        Some(continuation.clone()),
+    )
+    .map_err(DirectSnowStage3V11AttachmentError::Owner)?;
     if &authenticated != retained {
         return Err(DirectSnowStage3V11AttachmentError::Identity(
             "deferred native V2 parent-end custody reauthentication",
@@ -1259,11 +1545,11 @@ fn close_deferred_native_v2_soil_at_parent_end_v1(
     let authoritative_beginning = consumer.clone();
     let mut candidate_consumer = consumer.clone();
     let mut beginning_non_soil_owner_bytes = consumer.canonical_owner_state_bytes()?;
-    beginning_non_soil_owner_bytes.remove("soil_thermal").ok_or(
-        DirectSnowStage3V11AttachmentError::Identity(
+    beginning_non_soil_owner_bytes
+        .remove("soil_thermal")
+        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
             "deferred native V2 parent-end beginning soil owner bytes",
-        ),
-    )?;
+        ))?;
     let accepted = continuation
         .compose_accepted_outer_candidate(consumer.lse_configuration())
         .map_err(|error| {
@@ -1272,7 +1558,7 @@ fn close_deferred_native_v2_soil_at_parent_end_v1(
                     crate::v9_real_consumer_shadow::DirectV10RealConsumerError::Runtime(error),
                 ),
             )
-    })?;
+        })?;
     let prepared_beginning = continuation.original_prepared().beginning_owner();
     let seals = crate::v9_real_consumer_shadow::seal_soil_thermal_accepted_candidate_v2(
         prepared_beginning,
@@ -1283,26 +1569,22 @@ fn close_deferred_native_v2_soil_at_parent_end_v1(
             crate::v9_real_consumer_shadow::DirectV11RealConsumerError::Runtime(
                 crate::v9_real_consumer_shadow::DirectV10RealConsumerError::Runtime(error),
             ),
-            )
-        })?;
-    let transaction_authority = candidate_consumer
-        .authenticate_soil_thermal_unpublished_continuation_install_authority_v2(
-            continuation,
-            prepared_beginning,
         )
-        .map_err(|error| {
-            DirectSnowStage3V11AttachmentError::Owner(
-                crate::v9_real_consumer_shadow::DirectV11RealConsumerError::Runtime(error),
-            )
-        })?;
+    })?;
+    let mut pending_finalization_authority = authorize_pending_parent_finalization_soil_close_v1(
+        context,
+        prepared,
+        parent,
+        consumer,
+        clock,
+        continuation,
+        accepted,
+        seals,
+    )?;
     candidate_consumer
-        .install_soil_thermal_accepted_v2_from_unpublished_continuation(
+        .install_pending_parent_finalization_soil_close_v1(
             &authoritative_beginning,
-            continuation,
-            prepared_beginning,
-            transaction_authority,
-            accepted,
-            seals,
+            &mut pending_finalization_authority,
         )
         .map_err(|error| {
             DirectSnowStage3V11AttachmentError::Owner(
@@ -1388,11 +1670,11 @@ fn close_deferred_native_v2_soil_at_parent_end_v1(
     )?;
     let mut candidate_clock = clock.clone();
     let mut queue = EventQueueV1::new(tick, vec![event])?;
-    let accepted_event = queue
-        .apply_next(&mut candidate_clock)?
-        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+    let accepted_event = queue.apply_next(&mut candidate_clock)?.ok_or(
+        DirectSnowStage3V11AttachmentError::Identity(
             "deferred native V2 parent-end event application",
-        ))?;
+        ),
+    )?;
     if queue.apply_next(&mut candidate_clock)?.is_some()
         || accepted_event.beginning_owner_set_digest() != beginning_owner_set
         || accepted_event.ending_owner_set_digest() != ending_owner_set
@@ -1412,6 +1694,12 @@ fn close_deferred_native_v2_soil_at_parent_end_v1(
         &mutation_set,
     )?;
     candidate_consumer.retain_accepted_publication_zero_duration_event(&accepted_event)?;
+    pending_finalization_authority.validate_after_soil_close_v1(
+        context,
+        &candidate_parent,
+        &candidate_consumer,
+        &candidate_clock,
+    )?;
 
     *parent = candidate_parent;
     *consumer = candidate_consumer;
@@ -1500,8 +1788,9 @@ fn finalize_adaptive_parent_execution_v1(
     snow_enthalpy_material_owner: Option<
         crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
     >,
-    snow_enthalpy_material_owner_chronology:
-        Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
+    snow_enthalpy_material_owner_chronology: Vec<
+        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    >,
     owner_joins: Vec<Stage3CoupledSubslabReceiptV1>,
     event_groups: Vec<Stage3V11TerminalEventGroupV1>,
     terminal_parcels: Vec<DirectSnowStage3V11TerminalParcel>,
@@ -1513,12 +1802,15 @@ fn finalize_adaptive_parent_execution_v1(
             "injected post-owner-join rollback",
         ));
     }
-    let mut finalized = parent.clone().finalize(&context.vegetation_configuration)?;
-    install_v11_parent_finalization_owner_transition(
+    let (mut finalized, finalized_handoff) = parent
+        .clone()
+        .finalize_with_validated_handoff(&context.vegetation_configuration)?;
+    install_v11_parent_finalization_owner_transition_with_validated_handoff(
         &mut clock,
         &mut consumer,
         &context.vegetation_configuration,
         &mut finalized,
+        finalized_handoff,
     )?;
     let adaptive_support_receipt = adaptive_receipts.finalize(&clock, prepared.support)?;
     validate_adaptive_parent_publication_crossjoin_v1(

@@ -414,11 +414,14 @@ mod soil_thermal_v2_cutover_tests {
             .ofes
             .iter()
             .enumerate()
-            .map(|(index, ofe)| SoilThermalUnpublishedCoordinateV2 {
-                ofe_id: ofe.ofe_id.clone(),
-                layer_id: ofe.ordered_layers[0].layer_id.clone(),
-                proposed_total_enthalpy_j_m2_ofe_ground: 20.0 + index as f64,
-                proposed_temperature_k: 270.0 + index as f64,
+            .map(|(index, ofe)| {
+                let index = f64::from(u32::try_from(index).expect("bounded test OFE count"));
+                SoilThermalUnpublishedCoordinateV2 {
+                    ofe_id: ofe.ofe_id.clone(),
+                    layer_id: ofe.ordered_layers[0].layer_id.clone(),
+                    proposed_total_enthalpy_j_m2_ofe_ground: 20.0 + index,
+                    proposed_temperature_k: 270.0 + index,
+                }
             })
             .collect::<Vec<_>>();
         let projection =

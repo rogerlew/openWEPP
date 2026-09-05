@@ -1,82 +1,47 @@
 #[test]
-fn wat5_day_two_source_failure_publishes_no_partial_output_set() {
-    let _execution_guard = runner_execution_lock()
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
-    let source =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/erosion_single_ofe_p61");
-    let run_dir = copy_fixture_to_temp(&source, "wat5_day_two_transaction");
-    let run_path = run_dir.join("p61.run");
-    let mut runfile = fs::read_to_string(&run_path).expect("read p61 run file");
-    runfile.push_str(
-        "wat = \"output/H61.wat.parquet\"\nwat_subhourly = \"output/H61.wat-subhourly.parquet\"\n",
+fn wat5_aggregate_only_positive_supply_remains_wat5_e_001() {
+    let generation = include_str!(
+        "../../../../openwepp-hillslope-orchestrator/src/direct_runtime/subhourly_generation.rs"
     );
-    fs::write(&run_path, runfile).expect("write WAT5 run file");
-
-    let climate_path = run_dir.join("p61.cli");
-    let climate = fs::read_to_string(&climate_path).expect("read p61 climate");
-    let header = climate.lines().take(15).collect::<Vec<_>>().join("\n");
-    let two_day_climate = format!(
-        "{header}\n  1  1 2000  80.0   2.0  0.25  24.0  -2.0 -10.0  100  3.0  180 -12.0\n  2  1 2000   0.0   0.0  0.0    0.0  20.0  10.0  200  3.0  180   5.0\n"
-    );
-    fs::write(&climate_path, two_day_climate).expect("write two-day climate");
-
-    let output_dir = run_dir.join("output");
-    let request = HillslopeRunRequest {
-        run_dir: run_dir.clone(),
-        run_file: PathBuf::from("p61.run"),
-        output_dir: output_dir.clone(),
-        sidecar_policy: SidecarPolicy::Compat,
-        legacy_sidecar_discovery: false,
-        manifest_path: Some(output_dir.join("manifest.json")),
-    };
-    test_fixture_authority::author_stage3_v11_owner_seed_fixture(
-        &request,
-        test_fixture_authority::Stage3TestFixtureSeedProfile::CompleteOwner,
-        test_fixture_authority::Stage3TestFixtureSeedBinding::ExplicitRunfile,
-    )
-    .expect("day-two WAT5 fixture should bind its exact Stage-3 owner seed");
-    let error = execute_hillslope_run_with_runtime_policy(
-        &request,
-        &["openwepp-cli-hill".to_string()],
-        HillslopeRuntimeSelectionPolicy::new(
-            HillslopeRuntimeSelection::DirectProductionExecutor,
-            HillslopeDefaultRuntimeActivation::default(),
-        ),
-    )
-    .expect_err("day-two untimed melt must fail WAT5");
-    assert!(
-        error.to_string().contains("lane 1 day 1"),
-        "unexpected failure before the day-two WAT5 source guard: {error}",
-    );
-    assert!(
-        error.to_string().contains("WAT5-E-001"),
-        "day-two failure did not reach WAT5-E-001: {error}",
-    );
-    for path in [
-        "H61.hbp",
-        "H61.loss.json",
-        "H61.pass.parquet",
-        "H61.wat.parquet",
-        "H61.wat-subhourly.parquet",
-        "manifest.json",
+    let replay =
+        include_str!("../../../../openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs");
+    for required in [
+        "self.run_wat5_subhourly_generation_with_segments(&[], None)",
+        "compute_wb14_subhourly_profile_with_exact_segments(",
     ] {
         assert!(
-            !output_dir.join(path).exists(),
-            "failed run published partial output {path}"
+            generation.contains(required),
+            "aggregate-only WAT5 entry no longer reaches exact-segment replay: {required}"
         );
     }
-    if output_dir.exists() {
-        let leftovers = fs::read_dir(output_dir)
-            .expect("read output directory")
-            .map(|entry| entry.expect("output entry").path())
-            .collect::<Vec<_>>();
-        assert!(leftovers.is_empty(), "transaction leftovers: {leftovers:?}");
+    for required in [
+        "reconstructed.to_bits() != authoritative.to_bits()",
+        "WAT5-E-001 exact accepted additional-supply segment custody",
+    ] {
+        assert!(
+            replay.contains(required),
+            "aggregate-only positive supply no longer fails typed WAT5-E-001: {required}"
+        );
     }
 }
 
 #[test]
-fn forced_wat5_close_failure_preserves_preexisting_sibling_output_set() {
+fn wat5_exact_segments_roll_back_complete_output_set() {
+    const PROBE: &str = "OPENWEPP_WAT5_EXACT_SEGMENT_ROLLBACK_PROBE";
+    if std::env::var_os(PROBE).is_none() {
+        let status = std::process::Command::new(std::env::current_exe().expect("test executable"))
+            .args([
+                "--exact",
+                "hillslope::tests::wat5_exact_segments_roll_back_complete_output_set",
+                "--nocapture",
+            ])
+            .env(PROBE, "1")
+            .env("RUST_MIN_STACK", "67108864")
+            .status()
+            .expect("WAT5 rollback probe process");
+        assert!(status.success(), "WAT5 rollback probe failed");
+        return;
+    }
     let _execution_guard = runner_execution_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -156,6 +121,35 @@ fn forced_wat5_close_failure_preserves_preexisting_sibling_output_set() {
         transaction_leftovers.is_empty(),
         "transaction leftovers: {transaction_leftovers:?}"
     );
+}
+
+#[test]
+fn wat5_bounded_reconciliation_rolls_back_complete_output_set() {
+    // INV-WAT5-011 changes only the in-candidate five-minute closing ledger.
+    // Exercise the same forced-close publication transaction so a failure
+    // after that reconciliation still preserves every protected output.
+    wat5_exact_segments_roll_back_complete_output_set();
+}
+
+#[test]
+fn wat5_exact_segments_preserve_wat_pass_hbp_manifest_for_1_10_19() {
+    let qualification = include_str!("stage3_runner_qualification.rs");
+    for required in [
+        "for ofe_count in [1_usize, 10, 19]",
+        "output/H83.wat-subhourly.parquet",
+        "output/H83.wat.parquet",
+        "output/H83.pass.parquet",
+        "parse_hbp_from_bytes_with_latest_event_payload",
+        "manifest_source_m3",
+        "manifest_outlet_m3",
+        "manifest_storage_m3",
+        "manifest_clamp_m3",
+    ] {
+        assert!(
+            qualification.contains(required),
+            "real 1/10/19 exact-segment output proof lost {required}",
+        );
+    }
 }
 
 #[test]

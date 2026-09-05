@@ -5,19 +5,23 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
-use openwepp_land_surface_energy::{OfeId, ParcelId, Sha256Digest, SurfaceId};
+use openwepp_land_surface_energy::{
+    LitterPhaseCapacitySpillV1, OfeId, ParcelId, Sha256Digest, SurfaceId,
+};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use super::runoff::{DirectWb14ContinuationIntervalInputs, advance_wb14_continuation_interval};
 use super::surface_liquid_closure::{
-    DirectSurfaceLiquidClosureOperands, capture_and_validate_surface_liquid_closure,
+    DirectSurfaceLiquidClosureOperands,
+    capture_and_validate_surface_liquid_closure_with_phase_capacity_spills,
 };
 use super::surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode,
     DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase,
-    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidStoreKey, checked_surface_liquid_add,
+    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidStoreKey,
+    ValidatedStage3CoveredNativeInactiveResourceV1, checked_surface_liquid_add,
     checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
     checked_surface_liquid_sum,
 };
@@ -109,6 +113,7 @@ pub enum DirectSurfaceLiquidParcelKind {
     CondensationOverflow,
     UpstreamRunon,
     TerminalReceiver,
+    LitterPhaseOverflow,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -354,6 +359,7 @@ pub struct DirectSurfaceLiquidIngressCandidate {
     wb14_parent_receipt_set_sha256: Option<Sha256Digest>,
     wb14_child_replay_bytes: Vec<u8>,
     wb14_parent_replay_bytes: Option<Vec<u8>>,
+    stage3_covered_native_inactive: bool,
 }
 
 impl DirectSurfaceLiquidIngressCandidate {
@@ -419,7 +425,13 @@ impl DirectSurfaceLiquidIngressCandidate {
 
     #[must_use]
     pub(crate) const fn advances_persistent_parent_interval(&self) -> bool {
-        !self.parent_child_mode || self.finalize_parent_interval
+        !self.stage3_covered_native_inactive
+            && (!self.parent_child_mode || self.finalize_parent_interval)
+    }
+
+    #[must_use]
+    pub(crate) const fn is_stage3_covered_native_inactive(&self) -> bool {
+        self.stage3_covered_native_inactive
     }
 
     #[must_use]
@@ -446,6 +458,19 @@ impl DirectSurfaceLiquidIngressCandidate {
         resource: &DirectSurfaceLiquidResourceCandidate,
         input: &DirectSurfaceLiquidIngressInput,
     ) -> Result<(), DirectSurfaceLiquidError> {
+        self.validate_with_phase_capacity_spills(configuration, resource, input, &[])
+    }
+
+    pub(crate) fn validate_with_phase_capacity_spills(
+        &self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+        resource: &DirectSurfaceLiquidResourceCandidate,
+        input: &DirectSurfaceLiquidIngressInput,
+        phase_capacity_spills: &[LitterPhaseCapacitySpillV1],
+    ) -> Result<(), DirectSurfaceLiquidError> {
+        if self.stage3_covered_native_inactive {
+            return self.validate_stage3_covered_native_inactive(configuration, resource, input);
+        }
         preflight_surface_liquid_ingress_public_identities(configuration, resource, input)
             .map_err(|error| {
                 let code = error.code();
@@ -491,6 +516,7 @@ impl DirectSurfaceLiquidIngressCandidate {
             self.finalize_parent_interval,
             self.input_parent_working_state.as_ref(),
             None,
+            phase_capacity_spills,
         )
         .map_err(|error| {
             let code = error.code();
@@ -511,13 +537,14 @@ impl DirectSurfaceLiquidIngressCandidate {
             .store_operands_match(&expected.closure_operands)
         {
             let closure_ending_state = self.closure_ending_state()?;
-            super::surface_liquid_closure::validate_surface_liquid_closure_operands_with_input(
+            super::surface_liquid_closure::validate_surface_liquid_closure_operands_with_input_and_phase_capacity_spills(
                 configuration,
                 resource,
                 input,
                 &self.closure_operands,
                 &self.receipts,
                 &closure_ending_state,
+                phase_capacity_spills,
             )
             .map_err(|error| {
                 let code = error.code();
@@ -547,13 +574,14 @@ impl DirectSurfaceLiquidIngressCandidate {
             ));
         }
         let closure_ending_state = self.closure_ending_state()?;
-        super::surface_liquid_closure::validate_surface_liquid_closure_operands_with_input(
+        super::surface_liquid_closure::validate_surface_liquid_closure_operands_with_input_and_phase_capacity_spills(
             configuration,
             resource,
             input,
             &self.closure_operands,
             &self.receipts,
             &closure_ending_state,
+            phase_capacity_spills,
         )
         .map_err(|error| {
             let code = error.code();
@@ -757,6 +785,11 @@ pub(super) enum CanonicalSurfaceLiquidSource<'a> {
         transaction_id: TransactionId,
         store_key: &'a DirectSurfaceLiquidStoreKey,
     },
+    LitterPhaseOverflow {
+        transaction_id: TransactionId,
+        store_key: &'a DirectSurfaceLiquidStoreKey,
+        phase_receipt_sha256: &'a str,
+    },
 }
 
 pub(super) fn canonical_surface_liquid_source_id(
@@ -772,6 +805,14 @@ pub(super) fn canonical_surface_liquid_source_id(
             store_key,
         } => format!(
             "condensation:{}:{:?}:{:?}",
+            transaction_id.0, store_key.ofe_id, store_key.tile_id
+        ),
+        CanonicalSurfaceLiquidSource::LitterPhaseOverflow {
+            transaction_id,
+            store_key,
+            phase_receipt_sha256,
+        } => format!(
+            "litter-phase-overflow:{}:{:?}:{:?}:{phase_receipt_sha256}",
             transaction_id.0, store_key.ofe_id, store_key.tile_id
         ),
     }
@@ -848,25 +889,34 @@ pub fn execute_surface_liquid_ingress(
     resource: &DirectSurfaceLiquidResourceCandidate,
     input: &DirectSurfaceLiquidIngressInput,
 ) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
-    execute_surface_liquid_ingress_inner(configuration, resource, input, false, true, None, None)
-        .map_err(|error| {
-            let code = error.code();
-            let phase = match code {
-                DirectSurfaceLiquidErrorCode::E010 => DirectSurfaceLiquidPhase::IndependentClosure,
-                _ => DirectSurfaceLiquidPhase::IngressCandidate,
-            };
-            error.complete_context(
-                code,
-                phase,
-                DirectSurfaceLiquidErrorContext {
-                    transaction_id: Some(input.transaction_id),
-                    owner_id: Some(configuration.owner_id.clone()),
-                    ..DirectSurfaceLiquidErrorContext::default()
-                },
-                Some(resource.beginning_state().state_sha256.clone()),
-                resource.working_state().recomputed_sha256().ok(),
-            )
-        })
+    execute_surface_liquid_ingress_inner(
+        configuration,
+        resource,
+        input,
+        false,
+        true,
+        None,
+        None,
+        &[],
+    )
+    .map_err(|error| {
+        let code = error.code();
+        let phase = match code {
+            DirectSurfaceLiquidErrorCode::E010 => DirectSurfaceLiquidPhase::IndependentClosure,
+            _ => DirectSurfaceLiquidPhase::IngressCandidate,
+        };
+        error.complete_context(
+            code,
+            phase,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(input.transaction_id),
+                owner_id: Some(configuration.owner_id.clone()),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            Some(resource.beginning_state().state_sha256.clone()),
+            resource.working_state().recomputed_sha256().ok(),
+        )
+    })
 }
 
 /// Execute one complete-owner child of an enclosing WB14 parent interval.
@@ -915,6 +965,29 @@ pub(crate) fn execute_surface_liquid_ingress_with_parent_state_and_coupled_bindi
     finalize_parent_interval: bool,
     coupled_binding: Option<DirectWb14CoupledChildBindingV1>,
 ) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
+    execute_surface_liquid_ingress_with_parent_state_and_coupled_binding_and_phase_capacity_spills(
+        configuration,
+        resource,
+        input,
+        parent_working_state,
+        finalize_parent_interval,
+        coupled_binding,
+        &[],
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn execute_surface_liquid_ingress_with_parent_state_and_coupled_binding_and_phase_capacity_spills(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    resource: &DirectSurfaceLiquidResourceCandidate,
+    input: &DirectSurfaceLiquidIngressInput,
+    parent_working_state: Option<&DirectWb14ParentWorkingState>,
+    finalize_parent_interval: bool,
+    coupled_binding: Option<DirectWb14CoupledChildBindingV1>,
+    phase_capacity_spills: &[LitterPhaseCapacitySpillV1],
+) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
+    #[cfg(test)]
+    crate::v9_real_consumer_shadow::record_native_surface_ingress_entry_v1();
     // Existing callers may use the V11 endpoint for an independently accepted
     // short slab. With no predecessor parent state and an immediate finalize,
     // that remains an ordinary ingress transaction rather than inventing a
@@ -930,6 +1003,7 @@ pub(crate) fn execute_surface_liquid_ingress_with_parent_state_and_coupled_bindi
         finalize_parent_interval,
         parent_working_state,
         coupled_binding,
+        phase_capacity_spills,
     )
     .map_err(|error| {
         let code = error.code();
@@ -960,6 +1034,7 @@ fn execute_surface_liquid_ingress_inner(
     finalize_parent_interval: bool,
     parent_working_state: Option<&DirectWb14ParentWorkingState>,
     coupled_binding: Option<DirectWb14CoupledChildBindingV1>,
+    phase_capacity_spills: &[LitterPhaseCapacitySpillV1],
 ) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
     preflight_surface_liquid_ingress_public_identities(configuration, resource, input)?;
     configuration.validate()?;
@@ -984,7 +1059,8 @@ fn execute_surface_liquid_ingress_inner(
         parent_child_mode,
         finalize_parent_interval,
     )?;
-    let mut pending = validate_and_build_local_ingress(configuration, resource, input)?;
+    let mut pending =
+        validate_and_build_local_ingress(configuration, resource, input, phase_capacity_spills)?;
     let mut ending = resource.working_state().clone();
     let (
         derived_parent_support_start_ns,
@@ -1050,13 +1126,15 @@ fn execute_surface_liquid_ingress_inner(
         }
         None => begin_scalar_wb14_authorities(
             configuration,
-            input,
+            input.transaction_id,
+            &input.wb14_parameters,
             &persistent_beginning_state,
             parent_support_start_ns,
             parent_support_end_ns,
             &wb14_configuration_sha256,
             &wb14_model_definition_sha256,
             coupled_binding,
+            None,
         )?,
     };
     let selected_upper_bound_s = coupled_binding.map_or_else(
@@ -1076,12 +1154,12 @@ fn execute_surface_liquid_ingress_inner(
             )
         })
         .collect::<BTreeMap<_, _>>();
-    let selected_upper_bound_ns = selected_upper_bound_s * 1.0e9;
+    let selected_upper_bound_nanoseconds = selected_upper_bound_s * 1.0e9;
     if !selected_upper_bound_s.is_finite()
         || selected_upper_bound_s < 60.0
-        || !selected_upper_bound_ns.is_finite()
-        || selected_upper_bound_ns.fract() != 0.0
-        || (selected_upper_bound_ns as u128) % 60_000_000_000 != 0
+        || !selected_upper_bound_nanoseconds.is_finite()
+        || selected_upper_bound_nanoseconds.fract() != 0.0
+        || (selected_upper_bound_nanoseconds as u128) % 60_000_000_000 != 0
         || input.interval_s > selected_upper_bound_s
     {
         return Err(DirectSurfaceLiquidError::Domain(
@@ -1093,6 +1171,8 @@ fn execute_surface_liquid_ingress_inner(
     let mut call_count = BTreeMap::new();
 
     for ofe_id in &configuration.ofe_topology {
+        #[cfg(test)]
+        crate::v9_real_consumer_shadow::record_native_wb14_physics_entry_v1();
         let pending_routed_parcels_before_sha256 = pending_routed_queue_sha256(&pending);
         let continuation_index = ending
             .continuations
@@ -1278,16 +1358,38 @@ fn execute_surface_liquid_ingress_inner(
     } else {
         None
     };
-    let wb14_child_replay_bytes =
-        serde_json::to_vec(&per_ofe_authorities.iter().collect::<Vec<_>>())
-            .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 child replay serialization"))?;
+    let ordered_child_replay = configuration
+        .ofe_topology
+        .iter()
+        .map(|ofe_id| {
+            per_ofe_authorities
+                .get(ofe_id)
+                .map(|authority| (ofe_id, authority))
+                .ok_or(DirectSurfaceLiquidError::Identity(
+                    "WB14 child replay topology membership",
+                ))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let wb14_child_replay_bytes = serde_json::to_vec(&ordered_child_replay)
+        .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 child replay serialization"))?;
     let wb14_child_receipt_set_sha256 =
         Sha256Digest::try_new(format!("{:x}", Sha256::digest(&wb14_child_replay_bytes)))
             .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 child replay digest"))?;
     let wb14_parent_replay_bytes = parent_finalizations
         .as_ref()
         .map(|rows| {
-            serde_json::to_vec(&rows.iter().collect::<Vec<_>>())
+            let ordered = configuration
+                .ofe_topology
+                .iter()
+                .map(|ofe_id| {
+                    rows.get(ofe_id).map(|receipt| (ofe_id, receipt)).ok_or(
+                        DirectSurfaceLiquidError::Identity(
+                            "WB14 parent replay topology membership",
+                        ),
+                    )
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            serde_json::to_vec(&ordered)
                 .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 parent replay serialization"))
         })
         .transpose()?;
@@ -1356,17 +1458,29 @@ fn execute_surface_liquid_ingress_inner(
         ending = persistent_beginning_state.clone();
         Some(working)
     };
+    if let Some(working) = next_parent_working_state.as_ref() {
+        for (ofe_id, authority) in &working.per_ofe_authorities {
+            if authority.working().accepted_until_ns != working.accepted_until_ns {
+                return Err(production_binding_failure(
+                    input.transaction_id,
+                    Some(ofe_id.clone()),
+                    "constructed WB14 parent/scalar cursor disagreement",
+                ));
+            }
+        }
+    }
     ending.state_sha256 = ending.recomputed_sha256()?;
     if !parent_child_mode || finalize_parent_interval {
         ending.validate(configuration)?;
     }
-    let closure_operands = capture_and_validate_surface_liquid_closure(
+    let closure_operands = capture_and_validate_surface_liquid_closure_with_phase_capacity_spills(
         configuration,
         resource,
         input,
         &closure_physical_ending,
         &receipts,
         &closure_wb14_beginnings,
+        phase_capacity_spills,
     )?;
     Ok(DirectSurfaceLiquidIngressCandidate {
         transaction_id: input.transaction_id,
@@ -1399,6 +1513,7 @@ fn execute_surface_liquid_ingress_inner(
         wb14_parent_receipt_set_sha256,
         wb14_child_replay_bytes,
         wb14_parent_replay_bytes,
+        stage3_covered_native_inactive: false,
     })
 }
 
@@ -1408,6 +1523,7 @@ fn validate_and_build_local_ingress(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
     input: &DirectSurfaceLiquidIngressInput,
+    phase_capacity_spills: &[LitterPhaseCapacitySpillV1],
 ) -> Result<BTreeMap<OfeId, Vec<TimedParcel>>, DirectSurfaceLiquidError> {
     if input.tile_ingress.len() != configuration.records.len() {
         return Err(DirectSurfaceLiquidError::Protocol(
@@ -1570,6 +1686,111 @@ fn validate_and_build_local_ingress(
                 mass_kg_m2_basis_ofe_ground: overflow.amount_kg_m2_ofe_ground,
                 temperature_k: overflow.temperature_k,
                 enthalpy_j_m2_basis_ofe_ground: enthalpy,
+            });
+    }
+    for spill in phase_capacity_spills {
+        let configured = configuration
+            .records
+            .iter()
+            .find(|record| record.key.ofe_id == spill.ofe_id && record.key.tile_id == spill.tile_id)
+            .ok_or_else(|| {
+                candidate_failure(
+                    input.transaction_id,
+                    DirectSurfaceLiquidErrorContext::default(),
+                    "litter phase-overflow surface key",
+                )
+            })?;
+        let support_duration_ns = spill
+            .support_end_ns
+            .checked_sub(spill.support_start_ns)
+            .ok_or_else(|| {
+                candidate_failure(
+                    input.transaction_id,
+                    DirectSurfaceLiquidErrorContext::default(),
+                    "litter phase-overflow support",
+                )
+            })?;
+        let support_duration_ns = u64::try_from(support_duration_ns).map_err(|_| {
+            candidate_failure(
+                input.transaction_id,
+                DirectSurfaceLiquidErrorContext::default(),
+                "litter phase-overflow support exceeds u64 nanoseconds",
+            )
+        })?;
+        let spill_interval_s = std::time::Duration::from_nanos(support_duration_ns).as_secs_f64();
+        if spill.transaction_id != input.transaction_id
+            || spill.surface_owner_id != configuration.owner_id
+            || spill_interval_s.to_bits() != input.interval_s.to_bits()
+            || spill.spill_liquid_kg_m2_tile <= 0.0
+            || !spill.spill_liquid_kg_m2_tile.is_finite()
+        {
+            return Err(candidate_failure(
+                input.transaction_id,
+                DirectSurfaceLiquidErrorContext {
+                    ofe_id: Some(configured.key.ofe_id.clone()),
+                    tile_id: Some(configured.key.tile_id.clone()),
+                    surface_id: Some(configured.key.surface_id.clone()),
+                    source_id: Some(configured.key.source_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
+                "litter phase-overflow transaction/support/source",
+            ));
+        }
+        let mass_ofe =
+            checked_surface_liquid_mul(configured.tile_fraction, spill.spill_liquid_kg_m2_tile)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        input.transaction_id,
+                        &configured.key,
+                        None,
+                        "litter phase-overflow area conversion",
+                    )
+                })?;
+        let enthalpy_from_mass =
+            checked_surface_liquid_mul(mass_ofe, spill.spill_specific_sensible_enthalpy_j_kg)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        input.transaction_id,
+                        &configured.key,
+                        None,
+                        "litter phase-overflow mass/enthalpy conversion",
+                    )
+                })?;
+        if liquid_specific_enthalpy(spill.raw_ending.temperature_k).to_bits()
+            != spill.spill_specific_sensible_enthalpy_j_kg.to_bits()
+        {
+            return Err(candidate_failure(
+                input.transaction_id,
+                DirectSurfaceLiquidErrorContext {
+                    ofe_id: Some(configured.key.ofe_id.clone()),
+                    tile_id: Some(configured.key.tile_id.clone()),
+                    surface_id: Some(configured.key.surface_id.clone()),
+                    source_id: Some(configured.key.source_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
+                "litter phase-overflow exact mass/enthalpy split",
+            ));
+        }
+        let id =
+            canonical_surface_liquid_source_id(CanonicalSurfaceLiquidSource::LitterPhaseOverflow {
+                transaction_id: input.transaction_id,
+                store_key: &configured.key,
+                phase_receipt_sha256: spill.phase_receipt_sha256.as_str(),
+            });
+        pending
+            .entry(configured.key.ofe_id.clone())
+            .or_default()
+            .push(TimedParcel {
+                parcel_id: id,
+                origin_store_key: configured.key.clone(),
+                recipient_store_key: configured.key.clone(),
+                basis_ofe_id: configured.key.ofe_id.clone(),
+                kind: DirectSurfaceLiquidParcelKind::LitterPhaseOverflow,
+                start_s: 0.0,
+                end_s: input.interval_s,
+                mass_kg_m2_basis_ofe_ground: mass_ofe,
+                temperature_k: spill.raw_ending.temperature_k,
+                enthalpy_j_m2_basis_ofe_ground: enthalpy_from_mass,
             });
     }
     Ok(pending)
@@ -2717,197 +2938,7 @@ fn mass_tolerance(scale: f64) -> f64 {
     MASS_ABSOLUTE_TOLERANCE_KG_M2 + SCALE_MULTIPLIER * f64::EPSILON * scale
 }
 
-pub(super) fn effective_retained_mass(
-    raw_retained: f64,
-    capacity_ofe: f64,
-    stored_ofe: f64,
-    total_excess: f64,
-) -> Option<f64> {
-    if !raw_retained.is_finite()
-        || raw_retained < 0.0
-        || !capacity_ofe.is_finite()
-        || capacity_ofe < 0.0
-        || !stored_ofe.is_finite()
-        || stored_ofe < 0.0
-        || !total_excess.is_finite()
-        || total_excess < 0.0
-    {
-        return None;
-    }
-    let scale = checked_surface_liquid_add(capacity_ofe.abs(), stored_ofe.abs())
-        .and_then(|partial| checked_surface_liquid_add(partial, total_excess.abs()))?;
-    let envelope = mass_tolerance(scale);
-    envelope
-        .is_finite()
-        .then_some(if raw_retained > 0.0 && raw_retained <= envelope {
-            0.0
-        } else {
-            raw_retained
-        })
-}
-
-fn retained_tile_credit_and_ending_store(
-    beginning_tile: f64,
-    capacity_tile: f64,
-    tile_fraction: f64,
-    available_tile: f64,
-    available_ofe: f64,
-    retained_ofe: f64,
-) -> Option<(f64, f64)> {
-    if !beginning_tile.is_finite()
-        || beginning_tile < 0.0
-        || !capacity_tile.is_finite()
-        || capacity_tile < beginning_tile
-        || !tile_fraction.is_finite()
-        || tile_fraction <= 0.0
-        || !available_tile.is_finite()
-        || available_tile < 0.0
-        || !available_ofe.is_finite()
-        || available_ofe < 0.0
-        || !retained_ofe.is_finite()
-        || retained_ofe < 0.0
-        || retained_ofe > available_ofe
-        || checked_surface_liquid_sub(capacity_tile, beginning_tile)?.to_bits()
-            != available_tile.to_bits()
-        || checked_surface_liquid_mul(tile_fraction, available_tile)?.to_bits()
-            != available_ofe.to_bits()
-    {
-        return None;
-    }
-
-    if retained_ofe.to_bits() == available_ofe.to_bits() {
-        // Exact full-capacity authority is already reconstructed in tile and
-        // OFE bases above. Re-dividing the OFE amount can round one ULP beyond
-        // capacity for a non-binary tile fraction, so the owner installs the
-        // exact sealed tile remainder and its exact capacity endpoint.
-        return Some((available_tile, capacity_tile));
-    }
-
-    let retained_tile = checked_surface_liquid_div(retained_ofe, tile_fraction)?;
-    let ending_tile = checked_surface_liquid_add(beginning_tile, retained_tile)?;
-    (ending_tile <= capacity_tile).then_some((retained_tile, ending_tile))
-}
-
-pub(super) fn allocate_retained_mass(
-    total_retained: f64,
-    total_excess: f64,
-    allocated_retained: f64,
-    excess: f64,
-    is_last: bool,
-) -> Option<f64> {
-    if !total_retained.is_finite()
-        || total_retained < 0.0
-        || !total_excess.is_finite()
-        || total_excess < 0.0
-        || !allocated_retained.is_finite()
-        || allocated_retained < 0.0
-        || !excess.is_finite()
-        || excess < 0.0
-        || total_retained > total_excess
-    {
-        return None;
-    }
-    let retained = if total_retained.to_bits() == total_excess.to_bits() {
-        excess
-    } else if total_retained == 0.0 {
-        0.0
-    } else if is_last {
-        checked_surface_liquid_sub(total_retained, allocated_retained)?
-    } else {
-        checked_surface_liquid_mul(total_retained, excess)
-            .and_then(|numerator| checked_surface_liquid_div(numerator, total_excess))?
-    };
-    (retained.is_finite() && retained >= 0.0 && retained <= excess).then_some(retained)
-}
-
-fn direct_infiltration_requires_excess_authority(
-    total_infiltration: f64,
-    supply_mass: f64,
-    masses: impl IntoIterator<Item = f64>,
-) -> Option<bool> {
-    if !total_infiltration.is_finite()
-        || total_infiltration < 0.0
-        || !supply_mass.is_finite()
-        || supply_mass <= 0.0
-        || total_infiltration > supply_mass
-    {
-        return None;
-    }
-    let masses = masses.into_iter().collect::<Vec<_>>();
-    let mut allocated = 0.0;
-    let count = masses.len();
-    for (index, mass) in masses.into_iter().enumerate() {
-        if !mass.is_finite() || mass < 0.0 {
-            return None;
-        }
-        let infiltrated = if total_infiltration.to_bits() == supply_mass.to_bits() {
-            mass
-        } else if index + 1 == count {
-            checked_surface_liquid_sub(total_infiltration, allocated)?
-        } else {
-            checked_surface_liquid_mul(total_infiltration, mass)
-                .and_then(|numerator| checked_surface_liquid_div(numerator, supply_mass))?
-        };
-        if infiltrated < 0.0 || infiltrated > mass {
-            return Some(true);
-        }
-        allocated = checked_surface_liquid_add(allocated, infiltrated)?;
-    }
-    Some(false)
-}
-
-fn allocate_infiltration_and_excess(
-    total_infiltration: f64,
-    supply_mass: f64,
-    allocated_infiltration: f64,
-    allocated_excess: f64,
-    mass: f64,
-    is_last: bool,
-    use_excess_authority: bool,
-) -> Option<(f64, f64)> {
-    if !total_infiltration.is_finite()
-        || total_infiltration < 0.0
-        || !supply_mass.is_finite()
-        || supply_mass <= 0.0
-        || total_infiltration > supply_mass
-        || !allocated_infiltration.is_finite()
-        || allocated_infiltration < 0.0
-        || !allocated_excess.is_finite()
-        || allocated_excess < 0.0
-        || !mass.is_finite()
-        || mass < 0.0
-    {
-        return None;
-    }
-    let total_excess = checked_surface_liquid_sub(supply_mass, total_infiltration)?;
-    let (infiltrated, excess) = if total_infiltration.to_bits() == supply_mass.to_bits() {
-        (mass, 0.0)
-    } else if use_excess_authority {
-        let excess = if is_last {
-            checked_surface_liquid_sub(total_excess, allocated_excess)?
-        } else {
-            checked_surface_liquid_mul(total_excess, mass)
-                .and_then(|numerator| checked_surface_liquid_div(numerator, supply_mass))?
-        };
-        (checked_surface_liquid_sub(mass, excess)?, excess)
-    } else {
-        let infiltrated = if is_last {
-            checked_surface_liquid_sub(total_infiltration, allocated_infiltration)?
-        } else {
-            checked_surface_liquid_mul(total_infiltration, mass)
-                .and_then(|numerator| checked_surface_liquid_div(numerator, supply_mass))?
-        };
-        (infiltrated, checked_surface_liquid_sub(mass, infiltrated)?)
-    };
-    (infiltrated.is_finite()
-        && infiltrated >= 0.0
-        && infiltrated <= mass
-        && excess.is_finite()
-        && excess >= 0.0
-        && excess <= mass)
-        .then_some((infiltrated, excess))
-}
-
+include!("surface_liquid_ingress_mass_allocation.rs");
 #[cfg(test)]
 #[path = "surface_liquid_ingress_tests.rs"]
 mod tests;

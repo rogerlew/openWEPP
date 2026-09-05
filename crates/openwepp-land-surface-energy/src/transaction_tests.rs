@@ -398,6 +398,85 @@ mod tests {
     }
 
     #[test]
+    fn potential_request_batch_constructor_preserves_error_precedence() {
+        let valid_request = WaterAmount {
+            key: identity().ground_key(),
+            amount_kg_m2_stand_ground: 0.25,
+        };
+        let identity_error = |detail| LandSurfaceEnergyError::WaterIdentityOrBound {
+            class: crate::WaterErrorClass::Identity,
+            detail,
+        };
+        let cardinality_error = |detail| LandSurfaceEnergyError::WaterIdentityOrBound {
+            class: crate::WaterErrorClass::Cardinality,
+            detail,
+        };
+
+        assert_eq!(
+            PotentialWaterRequestBatch::try_new(
+                TransactionId(0),
+                digest('b'),
+                vec![valid_request.clone()],
+            ),
+            Err(identity_error(
+                "empty or zero-transaction potential request batch"
+            )),
+        );
+        assert_eq!(
+            PotentialWaterRequestBatch::try_new(TransactionId(41), digest('b'), Vec::new()),
+            Err(cardinality_error(
+                "empty or zero-transaction potential request batch"
+            )),
+        );
+
+        let mut wrong_transaction = valid_request.clone();
+        wrong_transaction.key.transaction_id = TransactionId(42);
+        assert_eq!(
+            PotentialWaterRequestBatch::try_new(
+                TransactionId(41),
+                digest('b'),
+                vec![wrong_transaction],
+            ),
+            Err(identity_error("water key transaction mismatch")),
+        );
+
+        let mut nonfinite = valid_request.clone();
+        nonfinite.amount_kg_m2_stand_ground = f64::NAN;
+        assert_eq!(
+            PotentialWaterRequestBatch::try_new(
+                TransactionId(41),
+                digest('b'),
+                vec![nonfinite],
+            ),
+            Err(LandSurfaceEnergyError::NonFinite(
+                "invalid or duplicate potential request"
+            )),
+        );
+
+        let mut negative = valid_request.clone();
+        negative.amount_kg_m2_stand_ground = -0.25;
+        assert_eq!(
+            PotentialWaterRequestBatch::try_new(
+                TransactionId(41),
+                digest('b'),
+                vec![negative],
+            ),
+            Err(LandSurfaceEnergyError::WaterIdentityOrBound {
+                class: crate::WaterErrorClass::Bound,
+                detail: "invalid or duplicate potential request",
+            }),
+        );
+        assert_eq!(
+            PotentialWaterRequestBatch::try_new(
+                TransactionId(41),
+                digest('b'),
+                vec![valid_request.clone(), valid_request],
+            ),
+            Err(cardinality_error("invalid or duplicate potential request")),
+        );
+    }
+
+    #[test]
     fn stale_potential_and_producer_residual_evasion_fail_closed() {
         let phase = solve_open_potential_phase(identity(), &problem(), None).expect("potential");
         let mut altered_batch = phase.request_batch.clone();

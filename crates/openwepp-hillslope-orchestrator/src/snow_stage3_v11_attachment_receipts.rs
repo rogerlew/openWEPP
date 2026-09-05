@@ -1134,55 +1134,6 @@ impl DirectSnowStage3V11ParentReceipt {
 }
 
 #[cfg(test)]
-mod wb14_parent_finalization_placement_tests {
-    use super::*;
-
-    fn support(start_ns: u128, end_ns: u128) -> TimeSupport {
-        TimeSupport::new(ModelTimeNs::new(start_ns), ModelTimeNs::new(end_ns))
-            .expect("positive support")
-    }
-
-    #[test]
-    fn nonfinal_and_final_subslabs_bind_replay_to_exact_parent_end() {
-        let parent = support(0, 1_800_000_000_000);
-        let nonfinal = support(0, 60_000_000_000);
-        let final_subslab = support(1_740_000_000_000, 1_800_000_000_000);
-
-        assert!(wb14_parent_finalization_placement_is_valid_v1(
-            parent, nonfinal, false,
-        ));
-        assert!(wb14_parent_finalization_placement_is_valid_v1(
-            parent,
-            final_subslab,
-            true,
-        ));
-        assert!(
-            !wb14_parent_finalization_placement_is_valid_v1(parent, nonfinal, true),
-            "nonfinal subslab must not carry parent replay",
-        );
-        assert!(
-            !wb14_parent_finalization_placement_is_valid_v1(parent, final_subslab, false),
-            "parent-end subslab must carry parent replay",
-        );
-    }
-
-    #[test]
-    fn restarted_active_prefix_may_end_before_snow_free_parent_finalization() {
-        let parent = support(5_400_000_000_000, 7_200_000_000_000);
-        let restored_last_covered = support(6_240_000_000_000, 6_300_000_000_000);
-        assert!(wb14_parent_finalization_placement_is_valid_v1(
-            parent,
-            restored_last_covered,
-            false,
-        ));
-        assert!(
-            !wb14_parent_finalization_placement_is_valid_v1(parent, restored_last_covered, true,),
-            "restart must not move snow-free parent finalization onto the covered prefix",
-        );
-    }
-}
-
-#[cfg(test)]
 #[path = "snow_stage3_v11_terminal_event_ordinal_tests.rs"]
 mod terminal_event_ordinal_tests;
 #[derive(Clone, Debug, PartialEq, serde::Deserialize, Serialize)]
@@ -1460,6 +1411,9 @@ pub struct Stage3CoupledSubslabReceiptV1 {
     pub wb14_replay_beginning_owner_set_sha256: Digest32,
     pub wb14_child_receipt_set_sha256: Digest32,
     pub wb14_parent_receipt_set_sha256: Option<Digest32>,
+    /// Independently authenticated surface-configuration order. Lane IDs are
+    /// opaque and cannot substitute for this physical OFE topology.
+    pub wb14_ofe_topology: Vec<OfeId>,
     pub wb14_child_replay_bytes: Vec<u8>,
     pub wb14_parent_replay_bytes: Option<Vec<u8>>,
     pub destination_receipts: BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
@@ -1532,14 +1486,27 @@ impl Stage3CoupledSubslabReceiptV1 {
                     "covered subslab retained boundary sets",
                 )
             })?;
-        let replay_binding = crate::direct_runtime::wb14_child_replay_binding(
-            &self.wb14_child_replay_bytes,
-        )
-        .map_err(|_| {
-            DirectSnowStage3V11AttachmentError::Identity(
-                "covered subslab WB14 replay binding",
+        let inactive_native_binding =
+            crate::direct_runtime::stage3_covered_native_inactive_child_custody_binding(
+                &self.wb14_child_replay_bytes,
+                &self.wb14_ofe_topology,
             )
-        })?;
+            .map_err(|_| {
+                DirectSnowStage3V11AttachmentError::Identity(
+                    "covered subslab inactive child custody",
+                )
+            })?;
+        let replay_binding = match inactive_native_binding {
+            Some(binding) => binding,
+            None => crate::direct_runtime::wb14_child_replay_binding(
+                &self.wb14_child_replay_bytes,
+            )
+            .map_err(|_| {
+                DirectSnowStage3V11AttachmentError::Identity(
+                    "covered subslab WB14 replay binding",
+                )
+            })?,
+        };
         if replay_binding.child_support_start_ns < self.support.start_ns().get()
             || replay_binding.child_support_end_ns != self.support.end_ns().get()
             || replay_binding.child_support_start_ns >= replay_binding.child_support_end_ns
@@ -1548,37 +1515,71 @@ impl Stage3CoupledSubslabReceiptV1 {
                 "covered subslab WB14 physical-child support",
             ));
         }
-        crate::direct_runtime::validate_wb14_child_replay_binding(
-            &self.wb14_child_replay_bytes,
-            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
-                proposed_upper_bound_s_bits: self.selected_upper_bound_s_bits,
-                coupled_parent_transaction_sha256: *self
-                    .owner_join
-                    .parent_transaction_sha256
-                    .as_bytes(),
-                accepted_slab_sha256: *self.wb14_replay_trial_sha256.as_bytes(),
-                parent_beginning_complete_owner_set_sha256: *self
-                    .wb14_replay_beginning_owner_set_sha256
-                    .as_bytes(),
-                parent_support_start_ns: self.parent_support.start_ns().get(),
-                parent_support_end_ns: self.parent_support.end_ns().get(),
-                child_support_start_ns: replay_binding.child_support_start_ns,
-                child_support_end_ns: replay_binding.child_support_end_ns,
-            },
-        )
-        .map_err(|_| {
-            DirectSnowStage3V11AttachmentError::Identity("covered subslab WB14 replay/coupled join")
-        })?;
-        if let Some(parent_bytes) = &self.wb14_parent_replay_bytes {
-            crate::direct_runtime::validate_wb14_parent_replay(
+        let expected_wb14_topology = &self.wb14_ofe_topology;
+        let receipt_ofes = self
+            .lane_receipts
+            .values()
+            .map(|receipt| receipt.ofe_id.clone())
+            .collect::<BTreeSet<_>>();
+        let replay_ofes = expected_wb14_topology.iter().cloned().collect::<BTreeSet<_>>();
+        if receipt_ofes.len() != self.lane_receipts.len()
+            || replay_ofes.len() != expected_wb14_topology.len()
+            || receipt_ofes != replay_ofes
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "covered subslab WB14 replay/lane topology",
+            ));
+        }
+        let expected_binding = crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+            proposed_upper_bound_s_bits: self.selected_upper_bound_s_bits,
+            coupled_parent_transaction_sha256: *self
+                .owner_join
+                .parent_transaction_sha256
+                .as_bytes(),
+            accepted_slab_sha256: *self.wb14_replay_trial_sha256.as_bytes(),
+            parent_beginning_complete_owner_set_sha256: *self
+                .wb14_replay_beginning_owner_set_sha256
+                .as_bytes(),
+            parent_support_start_ns: self.parent_support.start_ns().get(),
+            parent_support_end_ns: self.parent_support.end_ns().get(),
+            child_support_start_ns: replay_binding.child_support_start_ns,
+            child_support_end_ns: replay_binding.child_support_end_ns,
+        };
+        if replay_binding != expected_binding {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "covered subslab child custody/coupled join",
+            ));
+        }
+        if inactive_native_binding.is_some() {
+            if self.wb14_parent_replay_bytes.is_some()
+                || self.wb14_parent_receipt_set_sha256.is_some()
+            {
+                return Err(DirectSnowStage3V11AttachmentError::Identity(
+                    "covered subslab inactive WB14 parent custody",
+                ));
+            }
+        } else {
+            crate::direct_runtime::validate_wb14_child_replay_binding(
                 &self.wb14_child_replay_bytes,
-                parent_bytes,
+                expected_binding,
+                expected_wb14_topology,
             )
             .map_err(|_| {
                 DirectSnowStage3V11AttachmentError::Identity(
-                    "covered subslab WB14 parent finalization replay",
+                    "covered subslab WB14 replay/coupled join",
                 )
             })?;
+            if let Some(parent_bytes) = &self.wb14_parent_replay_bytes {
+                crate::direct_runtime::validate_wb14_parent_replay(
+                    &self.wb14_child_replay_bytes,
+                    parent_bytes,
+                )
+                .map_err(|_| {
+                    DirectSnowStage3V11AttachmentError::Identity(
+                        "covered subslab WB14 parent finalization replay",
+                    )
+                })?;
+            }
         }
         if self.accepted_slab_sha256 != self.owner_join.accepted_slab_sha256
             || self.wb14_child_receipt_set_sha256 != self.owner_join.wb14_child_receipt_set_sha256

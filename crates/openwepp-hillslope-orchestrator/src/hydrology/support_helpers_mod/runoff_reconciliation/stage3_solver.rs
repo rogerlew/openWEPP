@@ -2375,8 +2375,11 @@ impl Wb11HydrologyKernel {
             if index + 1 == active_layer_count
                 || (layers[index].density_kg_m3 - layers[index + 1].density_kg_m3).abs()
                     > WB11_ZERO_THRESHOLD
-                || (layers[index].settle_day_count - layers[index + 1].settle_day_count).abs()
-                    > WB11_ZERO_THRESHOLD
+                // These fragments came from one logical layer.  Settling age is
+                // a discrete chronology coordinate, so only the bit-identical
+                // halves of that layer may be rejoined here.
+                || layers[index].settle_day_count.to_bits()
+                    != layers[index + 1].settle_day_count.to_bits()
                 || (layers[index].temperature_c - layers[index + 1].temperature_c).abs()
                     > WB11_ZERO_THRESHOLD
             {
@@ -2412,18 +2415,30 @@ impl Wb11HydrologyKernel {
         projected.mass_swe_m = mass_swe_m;
         projected.density_kg_m3 = mass_swe_m * STAGE3_RHO_WATER_KG_M3 / summed_thickness_m;
         projected.thickness_m = mass_swe_m * STAGE3_RHO_WATER_KG_M3 / projected.density_kg_m3;
-        projected.settle_day_count = if mass_swe_m > WB11_ZERO_THRESHOLD {
-            (upper.settle_day_count * upper.mass_swe_m + lower.settle_day_count * lower.mass_swe_m)
-                / mass_swe_m
-        } else {
-            0.0
-        };
+        // `coalesce_stage3_thermal_fragments` admits only fragments whose
+        // chronology bits are identical.  Preserve that envelope coordinate
+        // exactly instead of recomputing it through a mass-weighted expression
+        // that can move an integer-valued age by one ULP.
+        projected.settle_day_count = upper.settle_day_count;
         projected.liquid_water_m = upper.liquid_water_m + lower.liquid_water_m;
         projected.cold_content_j_m2 = cold_content_j_m2;
         projected.temperature_c =
             Self::stage3_temperature_from_cold_content_values(mass_swe_m, cold_content_j_m2);
         projected.refrozen_liquid_m = upper.refrozen_liquid_m + lower.refrozen_liquid_m;
         projected
+    }
+
+    #[cfg(test)]
+    pub(super) fn coalesce_stage3_thermal_fragments_for_test(
+        layers: &mut Vec<DirectSnowLayerState>,
+        cold_content_by_layer: &mut Vec<f64>,
+        active_layer_count: usize,
+    ) -> usize {
+        Self::coalesce_stage3_thermal_fragments(
+            layers,
+            cold_content_by_layer,
+            active_layer_count,
+        )
     }
 
     fn stage3_control_volume_state(

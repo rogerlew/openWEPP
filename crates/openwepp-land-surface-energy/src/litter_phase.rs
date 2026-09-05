@@ -6,8 +6,9 @@ use std::f64::consts::PI;
 
 use crate::{
     BeginningLitterPhaseState, EndingLitterPhaseState, FinalizedLitterVapor,
-    LandSurfaceEnergyError, LitterPhaseConfiguration, LitterPhaseTransfer, LitterVaporEnvironment,
-    LitterVaporReceipt, PostVaporLitterState, RawLitterVapor,
+    LandSurfaceEnergyError, LitterPhaseCapacitySpillV1, LitterPhaseConfiguration,
+    LitterPhaseReceipt, LitterPhaseTransfer, LitterVaporEnvironment, LitterVaporReceipt,
+    PostVaporLitterState, RawLitterVapor,
     physics::{
         LITTER_FUSION_ENTHALPY_J_KG, LITTER_ICE_DENSITY_KG_M3, LITTER_ICE_HEAT_CAPACITY_J_KG_K,
         LITTER_ICE_TIMESCALE_S, LITTER_ICE_VOLUMETRIC_CAPACITY, REFERENCE_TEMPERATURE_K,
@@ -15,6 +16,153 @@ use crate::{
         sublimation_enthalpy_j_kg, vaporization_enthalpy_j_kg,
     },
 };
+
+#[derive(Clone, Copy)]
+struct LitterPhaseCapacitySplitV1 {
+    spill_liquid_kg_m2_tile: f64,
+    spill_specific_sensible_enthalpy_j_kg: f64,
+    spill_sensible_energy_j_m2_tile: f64,
+    retained_ending: EndingLitterPhaseState,
+}
+
+fn checked_phase_value(value: f64, detail: &'static str) -> Result<f64, LandSurfaceEnergyError> {
+    if value.is_finite() {
+        Ok(value)
+    } else {
+        Err(LandSurfaceEnergyError::FrozenLitterPhaseClosure(detail))
+    }
+}
+
+fn litter_phase_capacity_split_v1(
+    configuration: LitterPhaseConfiguration,
+    raw_ending: EndingLitterPhaseState,
+) -> Result<Option<LitterPhaseCapacitySplitV1>, LandSurfaceEnergyError> {
+    validate_litter_phase_configuration(configuration)?;
+    if raw_ending.liquid_kg_m2_tile <= configuration.liquid_capacity_kg_m2_tile {
+        return Ok(None);
+    }
+    let spill_liquid_kg_m2_tile = checked_phase_value(
+        raw_ending.liquid_kg_m2_tile - configuration.liquid_capacity_kg_m2_tile,
+        "phase-capacity spill mass subtraction",
+    )?;
+    if spill_liquid_kg_m2_tile <= 0.0 {
+        return Err(LandSurfaceEnergyError::FrozenLitterPhaseClosure(
+            "phase-capacity spill must be positive",
+        ));
+    }
+    let spill_specific_sensible_enthalpy_j_kg = checked_phase_value(
+        WATER_HEAT_CAPACITY_J_KG_K * (raw_ending.temperature_k - REFERENCE_TEMPERATURE_K),
+        "phase-capacity spill specific sensible enthalpy",
+    )?;
+    let spill_sensible_energy_j_m2_tile = checked_phase_value(
+        spill_liquid_kg_m2_tile * spill_specific_sensible_enthalpy_j_kg,
+        "phase-capacity spill sensible energy",
+    )?;
+    if spill_liquid_kg_m2_tile != 0.0
+        && spill_specific_sensible_enthalpy_j_kg != 0.0
+        && spill_sensible_energy_j_m2_tile == 0.0
+    {
+        return Err(LandSurfaceEnergyError::FrozenLitterPhaseClosure(
+            "phase-capacity spill sensible-energy underflow",
+        ));
+    }
+    let retained_liquid_kg_m2_tile = checked_phase_value(
+        raw_ending.liquid_kg_m2_tile - spill_liquid_kg_m2_tile,
+        "phase-capacity retained liquid subtraction",
+    )?;
+    let retained_sensible_energy_j_m2_tile = checked_phase_value(
+        raw_ending.sensible_energy_j_m2_tile - spill_sensible_energy_j_m2_tile,
+        "phase-capacity retained energy subtraction",
+    )?;
+    let retained_heat_capacity_j_m2_k = checked_phase_value(
+        configuration.dry_heat_capacity_j_m2_k
+            + retained_liquid_kg_m2_tile * WATER_HEAT_CAPACITY_J_KG_K
+            + raw_ending.ice_kg_m2_tile * LITTER_ICE_HEAT_CAPACITY_J_KG_K,
+        "phase-capacity retained heat capacity",
+    )?;
+    if retained_liquid_kg_m2_tile.to_bits() != configuration.liquid_capacity_kg_m2_tile.to_bits()
+        || retained_heat_capacity_j_m2_k <= 0.0
+    {
+        return Err(LandSurfaceEnergyError::FrozenLitterPhaseClosure(
+            "phase-capacity retained mass/capacity identity",
+        ));
+    }
+    let retained_temperature_k = checked_phase_value(
+        REFERENCE_TEMPERATURE_K
+            + retained_sensible_energy_j_m2_tile / retained_heat_capacity_j_m2_k,
+        "phase-capacity retained temperature",
+    )?;
+    if !(200.0..=350.0).contains(&retained_temperature_k) {
+        return Err(LandSurfaceEnergyError::FrozenLitterPhaseClosure(
+            "phase-capacity retained temperature domain",
+        ));
+    }
+    Ok(Some(LitterPhaseCapacitySplitV1 {
+        spill_liquid_kg_m2_tile,
+        spill_specific_sensible_enthalpy_j_kg,
+        spill_sensible_energy_j_m2_tile,
+        retained_ending: EndingLitterPhaseState {
+            liquid_kg_m2_tile: retained_liquid_kg_m2_tile,
+            ice_kg_m2_tile: raw_ending.ice_kg_m2_tile,
+            sensible_energy_j_m2_tile: retained_sensible_energy_j_m2_tile,
+            temperature_k: retained_temperature_k,
+            heat_capacity_j_m2_k: retained_heat_capacity_j_m2_k,
+        },
+    }))
+}
+
+/// Derive the only phase ending eligible for persistent surface-owner
+/// installation. This does not alter or reseal the raw phase receipt.
+pub fn retained_litter_phase_ending_v1(
+    configuration: LitterPhaseConfiguration,
+    raw_ending: EndingLitterPhaseState,
+) -> Result<EndingLitterPhaseState, LandSurfaceEnergyError> {
+    Ok(litter_phase_capacity_split_v1(configuration, raw_ending)?
+        .map_or(raw_ending, |split| split.retained_ending))
+}
+
+/// Bind a positive raw post-phase capacity excess to its immutable phase
+/// receipt and exact retained-state split.
+pub fn litter_phase_capacity_spill_v1(
+    receipt: &LitterPhaseReceipt,
+) -> Result<Option<LitterPhaseCapacitySpillV1>, LandSurfaceEnergyError> {
+    let Some(split) = litter_phase_capacity_split_v1(receipt.configuration, receipt.ending)? else {
+        return Ok(None);
+    };
+    Ok(Some(LitterPhaseCapacitySpillV1 {
+        phase_receipt_sha256: receipt.receipt_sha256.clone(),
+        lse_configuration_sha256: receipt.identity.lse_configuration_sha256.clone(),
+        transaction_id: receipt.identity.transaction_id,
+        ofe_id: receipt.identity.ofe_id.clone(),
+        tile_id: receipt.identity.tile_id.clone(),
+        surface_owner_id: receipt.identity.surface_owner_id.clone(),
+        support_start_ns: receipt.identity.support_start_ns,
+        support_end_ns: receipt.identity.support_end_ns,
+        liquid_capacity_kg_m2_tile: receipt.configuration.liquid_capacity_kg_m2_tile,
+        raw_ending: receipt.ending,
+        spill_liquid_kg_m2_tile: split.spill_liquid_kg_m2_tile,
+        spill_specific_sensible_enthalpy_j_kg: split.spill_specific_sensible_enthalpy_j_kg,
+        spill_sensible_energy_j_m2_tile: split.spill_sensible_energy_j_m2_tile,
+        retained_ending: split.retained_ending,
+    }))
+}
+
+pub fn validate_litter_phase_capacity_spill_v1(
+    receipt: &LitterPhaseReceipt,
+    spill: &LitterPhaseCapacitySpillV1,
+) -> Result<(), LandSurfaceEnergyError> {
+    let expected = litter_phase_capacity_spill_v1(receipt)?.ok_or(
+        LandSurfaceEnergyError::FrozenLitterPhaseClosure(
+            "phase-capacity spill supplied for within-capacity ending",
+        ),
+    )?;
+    if &expected != spill {
+        return Err(LandSurfaceEnergyError::FrozenLitterTransaction(
+            "phase-capacity spill receipt/source/support substitution",
+        ));
+    }
+    Ok(())
+}
 
 fn finite(value: f64, detail: &'static str) -> Result<f64, LandSurfaceEnergyError> {
     if value.is_finite() {

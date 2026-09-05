@@ -1456,6 +1456,22 @@ pub struct DirectSurfaceLiquidResourceCandidate {
     expected_predecessor: Option<TransactionId>,
 }
 
+/// Same-call proof that the owned represented-snow inactive resource completed
+/// full validation and has not crossed a mutation or serialization boundary.
+pub(crate) struct ValidatedStage3CoveredNativeInactiveResourceV1 {
+    candidate: DirectSurfaceLiquidResourceCandidate,
+}
+
+impl ValidatedStage3CoveredNativeInactiveResourceV1 {
+    pub(crate) const fn resource(&self) -> &DirectSurfaceLiquidResourceCandidate {
+        &self.candidate
+    }
+
+    pub(crate) fn into_inner(self) -> DirectSurfaceLiquidResourceCandidate {
+        self.candidate
+    }
+}
+
 impl DirectSurfaceLiquidResourceCandidate {
     #[must_use]
     pub const fn transaction_id(&self) -> TransactionId {
@@ -1534,6 +1550,56 @@ impl DirectSurfaceLiquidResourceCandidate {
                 attempted_owner_sha256,
             )
         })
+    }
+
+    /// Retain a represented-snow native surface owner when all physical work is zero.
+    pub(crate) fn try_new_stage3_covered_native_inactive(
+        configuration: &DirectSurfaceLiquidConfiguration,
+        arbitration: &DirectSurfaceLiquidArbitration,
+        finalized_uses: &[WaterAmount],
+        condensation_credits: &[CondensationCredit],
+    ) -> Result<ValidatedStage3CoveredNativeInactiveResourceV1, DirectSurfaceLiquidError> {
+        preflight_resource_phase_public_identities(
+            configuration,
+            arbitration,
+            finalized_uses,
+            condensation_credits,
+        )?;
+        preflight_resource_phase_inputs(
+            configuration,
+            arbitration,
+            finalized_uses,
+            condensation_credits,
+        )?;
+        validate_arbitration(configuration, arbitration)?;
+        validate_finalized_uses(arbitration, finalized_uses)?;
+        if finalized_uses
+            .iter()
+            .any(|row| row.amount_kg_m2_stand_ground.to_bits() != 0.0_f64.to_bits())
+            || !condensation_credits.is_empty()
+            || arbitration
+                .authorizations
+                .iter()
+                .any(|row| row.amount_kg_m2_stand_ground.to_bits() != 0.0_f64.to_bits())
+        {
+            return Err(DirectSurfaceLiquidError::Closure(
+                "Stage3CoveredNative inactive surface resource has nonzero work",
+            ));
+        }
+        let candidate = Self {
+            transaction_id: arbitration.transaction_id,
+            beginning_state: arbitration.beginning_state.clone(),
+            working_state: arbitration.beginning_state.clone(),
+            finalized_uses: finalized_uses.to_vec(),
+            condensation_credits: Vec::new(),
+            condensation_overflow: Vec::new(),
+            requests: arbitration.requests.clone(),
+            authorizations: arbitration.authorizations.clone(),
+            request_store_keys: arbitration.request_store_keys.clone(),
+            expected_predecessor: arbitration.expected_predecessor,
+        };
+        candidate.validate(configuration)?;
+        Ok(ValidatedStage3CoveredNativeInactiveResourceV1 { candidate })
     }
 }
 
@@ -1836,6 +1902,8 @@ pub fn apply_surface_liquid_resource_phase(
     finalized_uses: &[WaterAmount],
     condensation_credits: &[CondensationCredit],
 ) -> Result<DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidError> {
+    #[cfg(test)]
+    crate::v9_real_consumer_shadow::record_native_surface_resource_entry_v1();
     let beginning_owner_sha256 = Some(
         super::surface_liquid_attachment::surface_liquid_raw_state_sha256(
             arbitration.beginning_state(),
@@ -2865,69 +2933,7 @@ fn restart_binding_failure(
     )
 }
 
-fn validate_same_ofe_value<T: Eq>(
-    values: &mut BTreeMap<OfeId, T>,
-    ofe_id: OfeId,
-    value: T,
-    error: &'static str,
-) -> Result<(), DirectSurfaceLiquidError> {
-    match values.entry(ofe_id) {
-        std::collections::btree_map::Entry::Vacant(entry) => {
-            entry.insert(value);
-        }
-        std::collections::btree_map::Entry::Occupied(entry) if entry.get() != &value => {
-            return Err(DirectSurfaceLiquidError::Identity(error));
-        }
-        std::collections::btree_map::Entry::Occupied(_) => {}
-    }
-    Ok(())
-}
-
-fn configured_ofes(configuration: &DirectSurfaceLiquidConfiguration) -> Vec<OfeId> {
-    configuration.ofe_topology.clone()
-}
-
-fn require_positive(value: f64, field: &'static str) -> Result<(), DirectSurfaceLiquidError> {
-    if value.is_finite() && value > 0.0 {
-        Ok(())
-    } else {
-        Err(DirectSurfaceLiquidError::Domain(field))
-    }
-}
-
-fn require_nonnegative(value: f64, field: &'static str) -> Result<(), DirectSurfaceLiquidError> {
-    if value.is_finite() && value >= 0.0 {
-        Ok(())
-    } else {
-        Err(DirectSurfaceLiquidError::Domain(field))
-    }
-}
-
-fn f64_bits(value: f64) -> String {
-    format!("{:016x}", value.to_bits())
-}
-
-fn parse_f64_bits(value: &str) -> Result<f64, DirectSurfaceLiquidError> {
-    if value.len() != 16
-        || !value
-            .bytes()
-            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
-    {
-        return Err(DirectSurfaceLiquidError::Schema(
-            "canonical f64 must be 16 lowercase hexadecimal digits",
-        ));
-    }
-    let bits = u64::from_str_radix(value, 16)
-        .map_err(|_| DirectSurfaceLiquidError::Schema("canonical f64 parse"))?;
-    Ok(f64::from_bits(bits))
-}
-
-fn is_sha256(value: &str) -> bool {
-    value.len() == 64
-        && value
-            .bytes()
-            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
-}
+include!("surface_liquid_owner/validation_helpers.rs");
 
 include!("surface_liquid_zero_duration_snow.rs");
 

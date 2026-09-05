@@ -30,13 +30,18 @@ pub(crate) fn execute_direct_v11_segment<
         .stack
         .v11_bgc_debit_scope(&configuration.imported_v10)
         .map_err(V11ExecutionError::Executor)?;
-    openwepp_vegetation::v11::execute_v11_segment_with_bgc_scope(
+    let candidate = openwepp_vegetation::v11::execute_v11_segment_with_bgc_scope(
         configuration,
         parent,
         receipt,
         Some(&scope),
         executor,
-    )
+    )?;
+    executor
+        .stack
+        .authenticate_outer_validated_candidate(&candidate)
+        .map_err(V11ExecutionError::Executor)?;
+    Ok(candidate)
 }
 
 #[cfg(test)]
@@ -76,7 +81,8 @@ pub(crate) fn accept_direct_v11_segment(
         beginning.lse_configuration(),
     )
     .map_err(|_| openwepp_vegetation::v11::V11Error::ResourceDebit)?;
-    parent.accept_segment_with_bgc_scope(configuration, candidate, Some(&scope))
+    parent.accept_segment_with_bgc_scope(configuration, candidate, Some(&scope))?;
+    Ok(())
 }
 use thiserror::Error;
 
@@ -100,6 +106,13 @@ pub trait DirectV11ImportedStack {
         &mut self,
         input: &V11ImportedV10SegmentInput,
     ) -> Result<V11ImportedV10SegmentOutput, Self::Error>;
+
+    fn authenticate_outer_validated_candidate(
+        &mut self,
+        _candidate: &openwepp_vegetation::v11::V11AcceptedSegmentCandidate,
+    ) -> Result<(), Self::Error> {
+        Ok(())
+    }
 }
 
 pub(crate) trait DirectV11BgcScopeProvider {
@@ -277,13 +290,6 @@ impl SnowStage3OwnerExecutor for DirectV11SnowStage3OwnerExecutor<'_> {
             &self.accepted_slab,
             &mut executor,
         )?;
-        let ending_shadow =
-            executor
-                .stack
-                .take_staged_ending()
-                .ok_or(DirectV11OwnerExecutionError::Invariant(
-                    "typed owner stack did not return a staged ending",
-                ))?;
         let mut parent = self.parent.clone();
         accept_direct_v11_segment(
             &mut parent,
@@ -291,6 +297,9 @@ impl SnowStage3OwnerExecutor for DirectV11SnowStage3OwnerExecutor<'_> {
             segment.clone(),
             &acceptance_beginning,
         )?;
+        let ending_shadow = executor
+            .stack
+            .commit_selected_publication_and_take_staged_ending()?;
         let ending_owners = Self::ending_owner_set(&segment.ending_resource_owners)?;
         let receipt = SnowStage3OwnerExecutionReceipt::from_owner_set(
             "direct-v11-real-consumer-stack",

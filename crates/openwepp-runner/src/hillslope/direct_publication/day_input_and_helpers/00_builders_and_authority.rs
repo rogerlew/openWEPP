@@ -31,7 +31,6 @@ struct DirectProductionSnowPartitionResult {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-#[cfg(test)]
 pub(crate) enum DirectLanedActiveDefaultEligibility {
     Complete,
     Absent,
@@ -43,7 +42,6 @@ impl DirectProductionDayInputBuilder<'_> {
     /// when every scheduled lane carries native `routing_coefficients`;
     /// no-lane authority is a protected legacy/off fallback, and mixed
     /// authority must fail closed before streaming.
-    #[cfg(test)]
     pub(crate) fn laned_active_default_eligibility(&self) -> DirectLanedActiveDefaultEligibility {
         let present = self
             .lane_authority
@@ -66,81 +64,58 @@ impl DirectProductionDayInputBuilder<'_> {
     /// rev-20/21/36 authority extraction as the shadow (fail-closed on
     /// missing native `routing_coefficients`). Dynamic `LAI`/`canhgt` comes
     /// from the live post-growth day frame at consumption time.
-    #[cfg(test)]
     pub(crate) fn laned_active_config(
         &self,
     ) -> Result<openwepp_hillslope_orchestrator::DirectLanedActiveConfig, HillslopeCliError> {
         let lanes = self
-            .laned_geometry_with_selector("OPENWEPP_LANED_ACTIVE")?
-            .into_iter()
-            .zip(self.lane_authority.iter())
-            .map(
-                |(geometry, lane)| openwepp_hillslope_orchestrator::DirectLanedActiveLaneConfig {
-                    slplen_m: geometry.slplen_m,
-                    width_m: geometry.width_m,
-                    mean_gradient: geometry.mean_gradient,
-                    skin_friction_coefficient_ko: geometry.routing.skin_friction_coefficient_ko,
-                    form_drag_coefficient: geometry.routing.form_drag_coefficient,
-                    roughness_element_height_m: geometry.routing.roughness_element_height_m,
-                    roughness_concentration: geometry.routing.roughness_concentration,
-                    vegetation_drag_coefficient: geometry.routing.vegetation_drag_coefficient,
-                    canopy_height_m: lane.evapotranspiration.canopy_height_m,
-                },
-            )
-            .collect();
-        let mesh_policy = crate::hillslope::laned_active::mesh_policy_from_env()?;
-        let max_dt_s = crate::hillslope::laned_active::max_dt_s_from_env()?;
-        let trace_enabled = crate::hillslope::laned_active::trace_enabled();
-        let trace_detail_filter = crate::hillslope::laned_active::trace_detail_filter_from_env()?;
-        let step_trace_enabled = crate::hillslope::laned_active::step_trace_enabled();
-        Ok(openwepp_hillslope_orchestrator::DirectLanedActiveConfig {
-            lanes,
-            mesh_policy,
-            max_dt_s,
-            trace_enabled,
-            trace_detail_filter,
-            step_trace_enabled,
-        })
-    }
-
-    #[cfg(test)]
-    fn laned_geometry_with_selector(
-        &self,
-        selector: &'static str,
-    ) -> Result<Vec<crate::hillslope::laned_shadow::LanedShadowLaneGeometry>, HillslopeCliError>
-    {
-        self.lane_authority
+            .lane_authority
             .iter()
             .enumerate()
-            .map(|(lane_index, lane)| {
-                let routing = lane.ofe_routing.ok_or_else(|| {
-                    HillslopeCliError::RuntimeSurfaceFailure {
-                        surface: "laned_shadow_routing_coefficients",
-                        detail: format!(
-                            "{SIMOUT_GUARD_ID} {selector} requires a complete, schedule-consistent routing coefficient extension for every MOFE landuse; lane {} is missing or has inconsistent route_* authority symbols",
-                            lane_index + 1
-                        ),
-                    }
-                })?;
-                let seed = &lane.erosion.erosion_inputs.wave1_operand_seed;
-                let mean_gradient = seed
-                    .segments
-                    .iter()
-                    .map(|segment| {
-                        segment.a / 2.0
-                            * (segment.xl * segment.xl - segment.xu * segment.xu)
-                            + segment.b * (segment.xl - segment.xu)
+            .map(
+                |(lane_index, lane)| {
+                    let routing = lane.ofe_routing.ok_or_else(|| {
+                        HillslopeCliError::RuntimeSurfaceFailure {
+                            surface: "laned_active_routing_coefficients",
+                            detail: format!(
+                                "{SIMOUT_GUARD_ID} authenticated Lane-D ownership requires a complete, schedule-consistent native routing coefficient extension for every MOFE landuse; lane {} is missing or inconsistent",
+                                lane_index + 1
+                            ),
+                        }
+                    })?;
+                    let seed = &lane.erosion.erosion_inputs.wave1_operand_seed;
+                    let mean_gradient = seed
+                        .segments
+                        .iter()
+                        .map(|segment| {
+                            segment.a / 2.0
+                                * (segment.xl * segment.xl - segment.xu * segment.xu)
+                                + segment.b * (segment.xl - segment.xu)
+                        })
+                        .sum::<f64>()
+                        .max(0.001);
+                    Ok(openwepp_hillslope_orchestrator::DirectLanedActiveLaneConfig {
+                        slplen_m: seed.slplen_m,
+                        width_m: seed.field_width_m,
+                        mean_gradient,
+                        skin_friction_coefficient_ko: routing.skin_friction_coefficient_ko,
+                        form_drag_coefficient: routing.form_drag_coefficient,
+                        roughness_element_height_m: routing.roughness_element_height_m,
+                        roughness_concentration: routing.roughness_concentration,
+                        vegetation_drag_coefficient: routing.vegetation_drag_coefficient,
+                        canopy_height_m: lane.evapotranspiration.canopy_height_m,
                     })
-                    .sum::<f64>()
-                    .max(0.001);
-                Ok(crate::hillslope::laned_shadow::LanedShadowLaneGeometry {
-                    slplen_m: seed.slplen_m,
-                    width_m: seed.field_width_m,
-                    mean_gradient,
-                    routing: routing.into_laned_shadow(),
-                })
-            })
-            .collect()
+                },
+            )
+            .collect::<Result<Vec<_>, HillslopeCliError>>()?;
+        Ok(openwepp_hillslope_orchestrator::DirectLanedActiveConfig {
+            lanes,
+            mesh_policy:
+                openwepp_hillslope_orchestrator::DirectLanedActiveMeshPolicy::production_default(),
+            max_dt_s: openwepp_hillslope_orchestrator::LANED_ACTIVE_MAX_DT_S,
+            trace_enabled: false,
+            trace_detail_filter: None,
+            step_trace_enabled: false,
+        })
     }
 }
 
@@ -175,7 +150,6 @@ struct DirectProductionTypedLaneSeedAuthority {
     growth: DirectProductionGrowthAuthority,
     erosion: DirectProductionErosionAuthority,
     snow_frost: DirectProductionSnowFrostAuthority,
-    #[cfg(test)]
     ofe_routing: Option<DirectProductionOfeRoutingCoefficientAuthority>,
 }
 
@@ -206,7 +180,6 @@ struct DirectProductionLaneDayInputAuthority {
     hydrology_projection: DirectHydrologyProjectionInputs,
     erosion: DirectProductionErosionAuthority,
     snow_frost: DirectProductionSnowFrostAuthority,
-    #[cfg(test)]
     ofe_routing: Option<DirectProductionOfeRoutingCoefficientAuthority>,
 }
 
@@ -381,7 +354,6 @@ struct DirectProductionWinterHourlyGeometry {
     azimuth: f64,
 }
 
-#[cfg(test)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct DirectProductionOfeRoutingCoefficientAuthority {
     skin_friction_coefficient_ko: f64,
@@ -389,19 +361,6 @@ struct DirectProductionOfeRoutingCoefficientAuthority {
     roughness_element_height_m: f64,
     roughness_concentration: f64,
     vegetation_drag_coefficient: f64,
-}
-
-#[cfg(test)]
-impl DirectProductionOfeRoutingCoefficientAuthority {
-    fn into_laned_shadow(self) -> crate::hillslope::laned_shadow::LanedShadowRoutingCoefficients {
-        crate::hillslope::laned_shadow::LanedShadowRoutingCoefficients {
-            skin_friction_coefficient_ko: self.skin_friction_coefficient_ko,
-            form_drag_coefficient: self.form_drag_coefficient,
-            roughness_element_height_m: self.roughness_element_height_m,
-            roughness_concentration: self.roughness_concentration,
-            vegetation_drag_coefficient: self.vegetation_drag_coefficient,
-        }
-    }
 }
 
 impl DirectProductionWinterHourlyGeometry {
@@ -710,7 +669,6 @@ fn direct_production_day_input_authority_from_typed_seed(
         hydrology_projection: seed.hydrology_projection,
         erosion: seed.erosion,
         snow_frost: seed.snow_frost,
-        #[cfg(test)]
         ofe_routing: seed.ofe_routing,
     }
 }
@@ -768,7 +726,6 @@ fn direct_production_typed_lane_seed_authority(
             surface: "direct_production_typed_seed",
             detail: error.to_string(),
         })?;
-    #[cfg(test)]
     let ofe_routing =
         direct_production_optional_lane_routing_coefficient_authority(&management_projection)?;
     let mut pmetpara_projection_source = pmetpara.clone();
@@ -850,12 +807,10 @@ fn direct_production_typed_lane_seed_authority(
             &frost_projection,
             climate_request,
         )?,
-        #[cfg(test)]
         ofe_routing,
     })
 }
 
-#[cfg(test)]
 fn direct_production_optional_lane_routing_coefficient_authority(
     projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
 ) -> Result<Option<DirectProductionOfeRoutingCoefficientAuthority>, HillslopeCliError> {
@@ -914,7 +869,6 @@ fn direct_production_optional_lane_routing_coefficient_authority(
     Ok(lane_authority)
 }
 
-#[cfg(test)]
 fn direct_production_optional_slot_crop_routing_coefficient_authority(
     projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     slot_index: usize,
@@ -1009,7 +963,6 @@ fn direct_production_optional_slot_crop_routing_coefficient_authority(
     Ok(Some(authority))
 }
 
-#[cfg(test)]
 fn validate_direct_production_routing_coefficient_authority(
     context: &str,
     authority: DirectProductionOfeRoutingCoefficientAuthority,

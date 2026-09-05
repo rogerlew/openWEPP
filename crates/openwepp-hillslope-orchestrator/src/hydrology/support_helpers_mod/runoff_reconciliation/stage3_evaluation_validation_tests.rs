@@ -547,5 +547,92 @@ fn nonexhausting_melt_has_exact_zero_terminal_energy() {
     assert_eq!(exhausting_unallocated.to_bits(), 2.0_f64.to_bits());
 }
 
+#[test]
+fn thermal_fragment_rejoin_preserves_exact_settling_chronology_bits() {
+    let settle_day_count = 12.0_f64;
+    let mut layers = vec![
+        DirectSnowLayerState {
+            mass_swe_m: 0.1125,
+            thickness_m: 0.25,
+            density_kg_m3: 450.0,
+            settle_day_count,
+            temperature_c: -4.0,
+            liquid_water_m: 0.0,
+            cold_content_j_m2: 945_000.0,
+            refrozen_liquid_m: 0.0,
+        },
+        DirectSnowLayerState {
+            mass_swe_m: 0.0675,
+            thickness_m: 0.15,
+            density_kg_m3: 450.0,
+            settle_day_count,
+            temperature_c: -4.0,
+            liquid_water_m: 0.0,
+            cold_content_j_m2: 567_000.0,
+            refrozen_liquid_m: 0.0,
+        },
+    ];
+    let mut cold_content_by_layer = layers
+        .iter()
+        .map(|layer| layer.cold_content_j_m2)
+        .collect::<Vec<_>>();
+
+    let active_layer_count = Wb11HydrologyKernel::coalesce_stage3_thermal_fragments_for_test(
+        &mut layers,
+        &mut cold_content_by_layer,
+        2,
+    );
+
+    assert_eq!(active_layer_count, 1);
+    assert_eq!(layers.len(), 1);
+    assert_eq!(layers[0].settle_day_count.to_bits(), settle_day_count.to_bits());
+}
+
+#[test]
+fn thermal_fragment_rejoin_rejects_adjacent_ulp_settling_chronology() {
+    let settle_day_count = 12.0_f64;
+    let adjacent_settle_day_count = f64::from_bits(settle_day_count.to_bits() + 1);
+    let mut layers = vec![
+        DirectSnowLayerState {
+            mass_swe_m: 0.1125,
+            thickness_m: 0.25,
+            density_kg_m3: 450.0,
+            settle_day_count,
+            temperature_c: -4.0,
+            liquid_water_m: 0.0,
+            cold_content_j_m2: 945_000.0,
+            refrozen_liquid_m: 0.0,
+        },
+        DirectSnowLayerState {
+            mass_swe_m: 0.0675,
+            thickness_m: 0.15,
+            density_kg_m3: 450.0,
+            settle_day_count: adjacent_settle_day_count,
+            temperature_c: -4.0,
+            liquid_water_m: 0.0,
+            cold_content_j_m2: 567_000.0,
+            refrozen_liquid_m: 0.0,
+        },
+    ];
+    let mut cold_content_by_layer = layers
+        .iter()
+        .map(|layer| layer.cold_content_j_m2)
+        .collect::<Vec<_>>();
+
+    let active_layer_count = Wb11HydrologyKernel::coalesce_stage3_thermal_fragments_for_test(
+        &mut layers,
+        &mut cold_content_by_layer,
+        2,
+    );
+
+    assert_eq!(active_layer_count, 2);
+    assert_eq!(layers.len(), 2);
+    assert_eq!(layers[0].settle_day_count.to_bits(), settle_day_count.to_bits());
+    assert_eq!(
+        layers[1].settle_day_count.to_bits(),
+        adjacent_settle_day_count.to_bits()
+    );
+}
+
 #[path = "stage3_solver/stage3_evaluation_validation_tests/persistent_tests.rs"]
 mod persistent_tests;

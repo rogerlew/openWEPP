@@ -95,6 +95,28 @@ pub struct EndingLitterPhaseState {
     pub heat_capacity_j_m2_k: f64,
 }
 
+/// Exact post-phase liquid-capacity spill tied to the immutable raw phase
+/// receipt. The raw ending remains receipt authority; only `retained_ending`
+/// is eligible for installation in the surface owner.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LitterPhaseCapacitySpillV1 {
+    pub phase_receipt_sha256: Sha256Digest,
+    pub lse_configuration_sha256: Sha256Digest,
+    pub transaction_id: TransactionId,
+    pub ofe_id: OfeId,
+    pub tile_id: TileId,
+    pub surface_owner_id: ResourceOwnerId,
+    pub support_start_ns: u128,
+    pub support_end_ns: u128,
+    pub liquid_capacity_kg_m2_tile: f64,
+    pub raw_ending: EndingLitterPhaseState,
+    pub spill_liquid_kg_m2_tile: f64,
+    pub spill_specific_sensible_enthalpy_j_kg: f64,
+    pub spill_sensible_energy_j_m2_tile: f64,
+    pub retained_ending: EndingLitterPhaseState,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct LitterPhaseClosure {
@@ -147,6 +169,10 @@ pub struct LitterPhaseReceipt {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AcceptedLitterPhaseCandidate {
+    /// Immutable raw bounded-phase image sealed by `receipt`.
     pub ending: EndingLitterPhaseState,
+    /// Within-capacity state eligible for surface-owner installation.
+    pub retained_ending: EndingLitterPhaseState,
+    pub capacity_spill: Option<LitterPhaseCapacitySpillV1>,
     pub receipt: LitterPhaseReceipt,
 }

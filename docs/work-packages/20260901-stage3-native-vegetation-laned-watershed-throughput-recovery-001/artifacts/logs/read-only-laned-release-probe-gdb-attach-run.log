@@ -1,0 +1,9 @@
+
+running 1 test
+test hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ... STAGE3_LANED_RELEASE_PROBE {"accepted_microstep_count":4,"accepted_publication_support_count":56,"bootstrap_wall_us":31242,"committed_day_count":1,"covered_parent_support_count":4,"direct_trial_count":20,"fixed_point_evaluation_count":0,"fixture_wall_us":3124,"laned_clamp_m3":0.0,"laned_days_routed":1,"laned_days_seen":1,"laned_end_window_storage_m3":0.0016956104824910018,"laned_outlet_m3":0.8471105124736579,"laned_source_m3":0.8488061229561478,"record":"stage3_laned_release_one_ofe_positive_baseline_v1","rss_kib":139324,"run_wall_us":37526781,"snow_free_parent_support_count":44,"split_child_trial_count":32,"total_parent_support_count":48,"validation_wall_us":2136}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 216 filtered out; finished in 37.57s
+
+exit_code=0
+completed_at=2026-09-02T14:21:41Z

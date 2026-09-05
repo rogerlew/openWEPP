@@ -192,6 +192,137 @@ fn covered_finite_difference_value(
     }
 }
 
+#[cfg(test)]
+std::thread_local! {
+    static COVERED_JACOBIAN_FULL_PROBE_AUDIT: std::cell::Cell<Option<u32>> = const { std::cell::Cell::new(None) };
+    static FORCE_COMPLETE_COVERED_JACOBIAN_PROBES: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+#[cfg(test)]
+fn begin_covered_jacobian_full_probe_audit() {
+    FORCE_COMPLETE_COVERED_JACOBIAN_PROBES.with(|force| force.set(false));
+    COVERED_JACOBIAN_FULL_PROBE_AUDIT.with(|audit| audit.set(Some(0)));
+}
+
+#[cfg(test)]
+fn begin_forced_complete_covered_jacobian_probe_audit() {
+    FORCE_COMPLETE_COVERED_JACOBIAN_PROBES.with(|force| force.set(true));
+    COVERED_JACOBIAN_FULL_PROBE_AUDIT.with(|audit| audit.set(Some(0)));
+}
+
+#[cfg(test)]
+fn take_covered_jacobian_full_probe_audit() -> u32 {
+    FORCE_COMPLETE_COVERED_JACOBIAN_PROBES.with(|force| force.set(false));
+    COVERED_JACOBIAN_FULL_PROBE_AUDIT.with(|audit| audit.take().unwrap_or_default())
+}
+
+#[cfg(test)]
+fn force_complete_covered_jacobian_probes() -> bool {
+    FORCE_COMPLETE_COVERED_JACOBIAN_PROBES.with(std::cell::Cell::get)
+}
+
+#[cfg(not(test))]
+const fn force_complete_covered_jacobian_probes() -> bool {
+    false
+}
+
+struct ValidatedCoveredIterationMap<'a> {
+    validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+    evaluation: CoveredColumnEvaluation,
+}
+
+impl<'a> ValidatedCoveredIterationMap<'a> {
+    fn evaluate(
+        validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+        trial: &[f64],
+    ) -> Result<Self, LandSurfaceEnergyError> {
+        Ok(Self {
+            validated,
+            evaluation: evaluate_covered_column_validated(validated, trial, None, None)?,
+        })
+    }
+
+    fn into_jacobian_base(self, trial: &[f64]) -> ValidatedCoveredJacobianBase<'a> {
+        let frozen = freeze_covered_branches(&self.evaluation);
+        ValidatedCoveredJacobianBase {
+            validated: self.validated,
+            trial: trial.to_vec(),
+            evaluation: self.evaluation,
+            frozen,
+        }
+    }
+}
+
+struct ValidatedCoveredJacobianBase<'a> {
+    validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+    trial: Vec<f64>,
+    evaluation: CoveredColumnEvaluation,
+    frozen: CoveredFrozenBranches,
+}
+
+#[cfg(test)]
+impl<'a> ValidatedCoveredJacobianBase<'a> {
+    fn evaluate(
+        validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+        trial: &[f64],
+    ) -> Result<Self, LandSurfaceEnergyError> {
+        Ok(ValidatedCoveredIterationMap::evaluate(validated, trial)?
+            .into_jacobian_base(trial))
+    }
+}
+
+#[cfg(test)]
+fn record_covered_jacobian_full_probe_audit() {
+    COVERED_JACOBIAN_FULL_PROBE_AUDIT.with(|audit| {
+        if let Some(count) = audit.get() {
+            audit.set(Some(count.saturating_add(1)));
+        }
+    });
+}
+
+#[cfg(not(test))]
+fn record_covered_jacobian_full_probe_audit() {}
+
+/// Returns the ordered normalized residuals for one admitted Jacobian probe.
+///
+/// Under represented snow, ground and soil temperatures are exact identity
+/// anchors and cannot affect any other residual.  Reuse is therefore confined
+/// to those columns and to this validated solve; every other probe executes the
+/// complete evaluator.
+fn covered_jacobian_probe_residuals(
+    base: &ValidatedCoveredJacobianBase<'_>,
+    probe: &[f64],
+    column_index: usize,
+) -> Result<Vec<f64>, LandSurfaceEnergyError> {
+    let validated = base.validated;
+    let current = &base.evaluation;
+    let frozen = Some(&base.frozen);
+    if probe.len() != base.trial.len() || column_index >= probe.len() {
+        record_covered_jacobian_full_probe_audit();
+        return Ok(
+            evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals,
+        );
+    }
+    if probe.iter().enumerate().any(|(index, value)| {
+        index != column_index && value.to_bits() != base.trial[index].to_bits()
+    }) {
+        record_covered_jacobian_full_probe_audit();
+        return Ok(
+            evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals,
+        );
+    }
+    if !force_complete_covered_jacobian_probes() {
+        if let Some(anchor_k) = validated.stage3_identity_anchor_k(column_index) {
+            let mut residuals = current.normalized_residuals.clone();
+            let raw_residual = probe[column_index] - anchor_k;
+            residuals[column_index] = raw_residual / STAGE3_COVERED_IDENTITY_TOLERANCE_K;
+            return Ok(residuals);
+        }
+    }
+    record_covered_jacobian_full_probe_audit();
+    Ok(evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals)
+}
+
 pub(crate) fn covered_failure_residuals(
     beginning: &CoveredColumnInputs,
     detail: &CoveredColumnEvaluation,
@@ -361,6 +492,8 @@ fn solve_covered_column_impl(
             "covered_initial_trial",
         ));
     }
+    let validated_evaluation_inputs =
+        ValidatedCoveredEvaluationInputs::try_new_after_caps_validated(beginning, caps)?;
     let inactive_hydraulic_anchors = initial_trial.clone();
     let mut x = initial_trial;
     let mut last_steps = None;
@@ -368,10 +501,12 @@ fn solve_covered_column_impl(
     let mut pivot = None;
     let mut matrix_norm = None;
     for iteration in 0..=MAX_NEWTON_ITERATIONS {
-        let detail = evaluate_covered_column(beginning, &x, caps, None)?;
+        let iteration_map =
+            ValidatedCoveredIterationMap::evaluate(&validated_evaluation_inputs, &x)?;
+        let detail = &iteration_map.evaluation;
         let norm = normalized_infinity_norm(&detail.normalized_residuals);
         let v10_nonpositive_assimilation = beginning.authority.admits_nonpositive_assimilation()
-            && v10_nonpositive_assimilation_active(&detail);
+            && v10_nonpositive_assimilation_active(detail);
         let v10_initial_final_acceptance = allow_v10_initial_final_acceptance
             && iteration == 0
             && caps.is_some()
@@ -383,18 +518,18 @@ fn solve_covered_column_impl(
             return accept_covered_candidate(
                 beginning,
                 x,
-                detail,
+                iteration_map.evaluation,
                 iteration,
                 backtracking_count,
                 last_steps.unwrap_or_default(),
             );
         }
         if iteration == MAX_NEWTON_ITERATIONS {
-            let (occupancy_id, active_bounds) = covered_failure_metadata(beginning, &detail, &x);
+            let (occupancy_id, active_bounds) = covered_failure_metadata(beginning, detail, &x);
             return Ok(CoveredColumnSolveOutcome::Rejected(NumericalFailure {
                 kind: NumericalFailureKind::IterationLimit,
                 iterations: iteration,
-                ordered_residuals: covered_failure_residuals(beginning, &detail),
+                ordered_residuals: covered_failure_residuals(beginning, detail),
                 normalized_residuals: detail.normalized_residuals.clone(),
                 occupancy_id,
                 active_bounds,
@@ -405,7 +540,8 @@ fn solve_covered_column_impl(
                 matrix_norm,
             }));
         }
-        let frozen = freeze_covered_branches(&detail);
+        let jacobian_base = iteration_map.into_jacobian_base(&x);
+        let detail = &jacobian_base.evaluation;
         let units: Vec<f64> = (0..beginning.occupancies.len())
             .flat_map(|_| [1000.0, 1000.0, 1000.0, 1000.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
             .chain([1.0, 0.001, 1.0])
@@ -431,30 +567,42 @@ fn solve_covered_column_impl(
             )?;
             // Preserve the canonical minus-then-plus evaluation order while
             // never evaluating a constitutively inadmissible boundary probe.
-            let minus_detail = covered_trial_is_valid(
+            let minus_residuals = covered_trial_is_valid(
                 &minus,
                 beginning.occupancies.len(),
                 ground_uses_liquid_vapor_phase_domain,
             )
-            .then(|| evaluate_covered_column(beginning, &minus, caps, Some(&frozen)))
+            .then(|| {
+                covered_jacobian_probe_residuals(
+                    &jacobian_base,
+                    &minus,
+                    column_index,
+                )
+            })
             .transpose()?;
-            let plus_detail = covered_trial_is_valid(
+            let plus_residuals = covered_trial_is_valid(
                 &plus,
                 beginning.occupancies.len(),
                 ground_uses_liquid_vapor_phase_domain,
             )
-            .then(|| evaluate_covered_column(beginning, &plus, caps, Some(&frozen)))
+            .then(|| {
+                covered_jacobian_probe_residuals(
+                    &jacobian_base,
+                    &plus,
+                    column_index,
+                )
+            })
             .transpose()?;
             for row in 0..x.len() {
                 jacobian[row][column_index] = covered_finite_difference_value(
                     stencil,
                     detail.normalized_residuals[row],
-                    minus_detail
+                    minus_residuals
                         .as_ref()
-                        .map(|value| value.normalized_residuals[row]),
-                    plus_detail
+                        .map(|value| value[row]),
+                    plus_residuals
                         .as_ref()
-                        .map(|value| value.normalized_residuals[row]),
+                        .map(|value| value[row]),
                     perturbations[column_index],
                 )?;
             }
@@ -521,11 +669,11 @@ fn solve_covered_column_impl(
             Ok(value) => value,
             Err(evidence) => {
                 let (occupancy_id, active_bounds) =
-                    covered_failure_metadata(beginning, &detail, &x);
+                    covered_failure_metadata(beginning, detail, &x);
                 return Ok(CoveredColumnSolveOutcome::Rejected(NumericalFailure {
                     kind: NumericalFailureKind::SingularPivot,
                     iterations: iteration,
-                    ordered_residuals: covered_failure_residuals(beginning, &detail),
+                    ordered_residuals: covered_failure_residuals(beginning, detail),
                     normalized_residuals: detail.normalized_residuals.clone(),
                     occupancy_id,
                     active_bounds,
@@ -560,18 +708,23 @@ fn solve_covered_column_impl(
         let mut full_trial_refusal =
             (!full_trial_is_valid).then_some(CoveredFullTrialNoUpdateRefusal::DomainInvalid);
         if complete_current_residuals_pass && full_trial_is_valid {
-            let prospective_detail = evaluate_covered_column(beginning, &prospective, caps, None)?;
+            let prospective_detail = evaluate_covered_column_validated(
+                &validated_evaluation_inputs,
+                &prospective,
+                None,
+                None,
+            )?;
             let prospective_steps = covered_step_norms(
                 &delta,
                 beginning.occupancies.len(),
-                &detail,
+                detail,
                 &prospective_detail,
             );
             if prospective_steps.accepted() {
                 return accept_covered_candidate(
                     beginning,
                     x,
-                    detail,
+                    jacobian_base.evaluation,
                     iteration,
                     backtracking_count,
                     prospective_steps,
@@ -599,15 +752,19 @@ fn solve_covered_column_impl(
                 ) {
                     return CoveredHalvedTrialProbe::DomainInvalid;
                 }
-                let Ok(trial_detail) = evaluate_covered_column(beginning, &trial, caps, None)
-                else {
+                let Ok(trial_detail) = evaluate_covered_column_validated(
+                    &validated_evaluation_inputs,
+                    &trial,
+                    None,
+                    None,
+                ) else {
                     return CoveredHalvedTrialProbe::EvaluationIncomplete;
                 };
                 let applied: Vec<f64> = delta.iter().map(|value| factor * value).collect();
                 let steps = covered_step_norms(
                     &applied,
                     beginning.occupancies.len(),
-                    &detail,
+                    detail,
                     &trial_detail,
                 );
                 CoveredHalvedTrialProbe::Complete(steps)
@@ -616,7 +773,7 @@ fn solve_covered_column_impl(
             return accept_covered_candidate(
                 beginning,
                 x,
-                detail,
+                jacobian_base.evaluation,
                 iteration,
                 backtracking_count + exponent,
                 steps,
@@ -638,14 +795,19 @@ fn solve_covered_column_impl(
             ) {
                 continue;
             }
-            let Ok(trial_detail) = evaluate_covered_column(beginning, &trial, caps, None) else {
+            let Ok(trial_detail) = evaluate_covered_column_validated(
+                &validated_evaluation_inputs,
+                &trial,
+                None,
+                None,
+            ) else {
                 continue;
             };
             let applied: Vec<f64> = delta.iter().map(|value| factor * value).collect();
             let steps = covered_step_norms(
                 &applied,
                 beginning.occupancies.len(),
-                &detail,
+                detail,
                 &trial_detail,
             );
             rejected_step_norms = Some(steps);
@@ -659,11 +821,11 @@ fn solve_covered_column_impl(
             last_steps = Some(steps);
             backtracking_count += exponent;
         } else {
-            let (occupancy_id, active_bounds) = covered_failure_metadata(beginning, &detail, &x);
+            let (occupancy_id, active_bounds) = covered_failure_metadata(beginning, detail, &x);
             return Ok(CoveredColumnSolveOutcome::Rejected(NumericalFailure {
                 kind: NumericalFailureKind::BacktrackingLimit,
                 iterations: iteration,
-                ordered_residuals: covered_failure_residuals(beginning, &detail),
+                ordered_residuals: covered_failure_residuals(beginning, detail),
                 normalized_residuals: detail.normalized_residuals.clone(),
                 occupancy_id,
                 active_bounds,

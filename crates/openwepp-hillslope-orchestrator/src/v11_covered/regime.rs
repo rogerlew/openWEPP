@@ -13,12 +13,15 @@ impl<'a> DirectV11RealConsumerStack<'a> {
             interval_index,
             finalize_wb14_parent_interval: true,
             wb14_coupled_child_binding: None,
+            native_inactive_wb14_prefix: None,
             ending: None,
             last_support_receipt: None,
             #[cfg(test)]
             last_hydrology_candidate: None,
             ending_snow_owner_bytes: None,
             deferred_native_v2_soil_custody: None,
+            snow_free_physical_reuse_pending: None,
+            snow_free_physical_reuse_seed: None,
         }
     }
 
@@ -88,10 +91,46 @@ impl<'a> DirectV11RealConsumerStack<'a> {
         value
     }
 
+    pub(crate) fn try_with_native_inactive_wb14_prefix(
+        mut self,
+        prefix: crate::direct_runtime::ValidatedNativeInactiveWb14PrefixV1,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        if self.native_inactive_wb14_prefix.is_some()
+            || self.wb14_coupled_child_binding.is_none()
+            || self.beginning.frozen_litter_v3_resident().is_none()
+            || self.beginning.frozen_litter_v4_resident().is_none()
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "native inactive WB14 prefix stack posture",
+            ));
+        }
+        self.native_inactive_wb14_prefix = Some(prefix);
+        Ok(self)
+    }
+
     /// Consume the isolated staged ending only after the V11 parent accepts
     /// the corresponding segment candidate.
     pub fn take_staged_ending(&mut self) -> Option<DirectV10RealConsumerShadow> {
+        self.invalidate_snow_free_physical_reuse();
         self.ending.take()
+    }
+
+    pub(crate) fn commit_selected_publication_and_take_staged_ending(
+        &mut self,
+    ) -> Result<DirectV10RealConsumerShadow, DirectV11RealConsumerError> {
+        let mut ending = self
+            .ending
+            .take()
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "missing selected staged real-consumer ending",
+            ))?;
+        if let Err(error) = self.install_selected_snow_free_publication_v1(&mut ending) {
+            self.ending = Some(ending);
+            return Err(error);
+        }
+        #[cfg(any(test, feature = "persisted-restart-v1"))]
+        crate::v9_real_consumer_shadow::record_snow_free_outer_accepted_publication_v1();
+        Ok(ending)
     }
 
     #[must_use]

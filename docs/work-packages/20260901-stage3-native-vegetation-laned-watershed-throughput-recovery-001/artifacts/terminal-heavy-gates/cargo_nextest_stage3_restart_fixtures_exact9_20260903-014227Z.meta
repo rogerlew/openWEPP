@@ -1,0 +1,14 @@
+exit=0
+status=PASS
+source_identity=a28c55c2d0f06e0c4aab58642f1009f70f82b3d3 (DIRTY)
+start_utc=2026-09-03T01:42:27Z
+end_utc=2026-09-03T01:55:24Z
+elapsed_sec=777
+command=env RUST_MIN_STACK=67108864 nix develop -c cargo nextest run --package openwepp-persisted-restart-v1 --features fixtures --no-fail-fast --no-capture --filterset test\(/adaptive_microstep_boundary_round_trips_and_resumes_byte_identically/\)\|test\(/before_terminal_event_round_trips_and_resumes_byte_identically/\)\|test\(/after_terminal_event_round_trips_and_resumes_byte_identically/\)\|test\(/before_terminal_receiver_round_trips_and_resumes_byte_identically/\)\|test\(/after_terminal_receiver_round_trips_and_resumes_byte_identically/\)\|test\(/before_snow_reappearance_round_trips_and_resumes_byte_identically/\)\|test\(/after_snow_reappearance_round_trips_and_resumes_byte_identically/\)\|test\(/cross_midnight_owner_and_receipt_state_is_byte_identically_after_restart/\)\|test\(/production_attachment_round_trips_canonical_v2_and_rejects_poison/\)
+summary_line=     Summary [ 773.464s] 8 tests run: 8 passed (3 slow), 90 skipped
+fixtures=9
+filterset=test(/adaptive_microstep_boundary_round_trips_and_resumes_byte_identically/)|test(/before_terminal_event_round_trips_and_resumes_byte_identically/)|test(/after_terminal_event_round_trips_and_resumes_byte_identically/)|test(/before_terminal_receiver_round_trips_and_resumes_byte_identically/)|test(/after_terminal_receiver_round_trips_and_resumes_byte_identically/)|test(/before_snow_reappearance_round_trips_and_resumes_byte_identically/)|test(/after_snow_reappearance_round_trips_and_resumes_byte_identically/)|test(/cross_midnight_owner_and_receipt_state_is_byte_identically_after_restart/)|test(/production_attachment_round_trips_canonical_v2_and_rejects_poison/)
+log=docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/terminal-heavy-gates/cargo_nextest_stage3_restart_fixtures_exact9_20260903-014227Z.log
+meta=docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/terminal-heavy-gates/cargo_nextest_stage3_restart_fixtures_exact9_20260903-014227Z.meta
+status_exit=0
+command_exit=0

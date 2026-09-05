@@ -8,7 +8,7 @@ use openwepp_land_surface_energy::{
     BeginningLitterPhaseState, EndingLitterPhaseState, LandSurfaceEnergyConfiguration,
     LandSurfaceEnergyError, LandSurfaceEnergyV3State, LitterPhaseConfiguration, LitterVaporReceipt,
     OfeId, PostVaporLitterState, SurfaceConfiguration, V3PhaseFreeCoveredEvaluation,
-    V3PhaseFreeSurfaceEnergyLedger, apply_bounded_litter_phase,
+    V3PhaseFreeSurfaceEnergyLedger, apply_bounded_litter_phase, retained_litter_phase_ending_v1,
 };
 use thiserror::Error;
 
@@ -112,7 +112,8 @@ impl FrozenLitterV3PhaseFreeInput {
 pub(crate) struct ProjectedFrozenLitterV3Phase {
     pub phase_adjusted_owner: SurfaceLiquidOwnerEnvelopeV2,
     pub closure: Vec<SurfaceLiquidOwnerClosureRecordV2>,
-    pub endings: Vec<EndingLitterPhaseState>,
+    pub raw_endings: Vec<EndingLitterPhaseState>,
+    pub retained_endings: Vec<EndingLitterPhaseState>,
 }
 
 pub(crate) fn checked_support_seconds(
@@ -172,7 +173,8 @@ pub(crate) fn project_frozen_litter_v3_phase(
     }
     let mut seen = BTreeSet::new();
     let mut transfers = Vec::with_capacity(phase_inputs.len());
-    let mut endings = Vec::with_capacity(phase_inputs.len());
+    let mut raw_endings = Vec::with_capacity(phase_inputs.len());
+    let mut retained_endings = Vec::with_capacity(phase_inputs.len());
     for ((configured, input), owner_record) in
         configured_litter
             .iter()
@@ -259,8 +261,10 @@ pub(crate) fn project_frozen_litter_v3_phase(
         }
         let (transfer, ending) =
             apply_bounded_litter_phase(input.configuration, input.accepted_post_vapor, interval_s)?;
+        let retained = retained_litter_phase_ending_v1(input.configuration, ending)?;
         transfers.push(transfer);
-        endings.push(ending);
+        raw_endings.push(ending);
+        retained_endings.push(retained);
     }
 
     let mut phase_index = 0_usize;
@@ -288,11 +292,18 @@ pub(crate) fn project_frozen_litter_v3_phase(
             .ok_or(FrozenLitterV3RuntimeError::Identity(
                 "missing ordered litter phase input",
             ))?;
-        let ending = endings
-            .get(phase_index)
-            .ok_or(FrozenLitterV3RuntimeError::Identity(
-                "missing ordered litter phase ending",
-            ))?;
+        let raw_ending =
+            raw_endings
+                .get(phase_index)
+                .ok_or(FrozenLitterV3RuntimeError::Identity(
+                    "missing ordered litter phase ending",
+                ))?;
+        let retained_ending =
+            retained_endings
+                .get(phase_index)
+                .ok_or(FrozenLitterV3RuntimeError::Identity(
+                    "missing ordered retained litter phase ending",
+                ))?;
         let vapor = input.accepted_vapor;
         let transfer = transfers
             .get(phase_index)
@@ -305,14 +316,20 @@ pub(crate) fn project_frozen_litter_v3_phase(
         let ice_vapor_credit = (-vapor.ice_signed_mass_kg_m2).max(0.0);
         records.push(SurfaceLiquidStateRecordV2 {
             key: record.key.clone(),
-            liquid_kg_m2_tile: ending.liquid_kg_m2_tile,
-            litter_ice_kg_m2_tile: ending.ice_kg_m2_tile,
-            surface_enthalpy_j_m2_tile: ending.sensible_energy_j_m2_tile,
+            liquid_kg_m2_tile: retained_ending.liquid_kg_m2_tile,
+            litter_ice_kg_m2_tile: retained_ending.ice_kg_m2_tile,
+            surface_enthalpy_j_m2_tile: retained_ending.sensible_energy_j_m2_tile,
             last_accepted_transaction_id: record.last_accepted_transaction_id,
         });
+        let spill = raw_ending.liquid_kg_m2_tile - retained_ending.liquid_kg_m2_tile;
+        if !spill.is_finite() || spill < 0.0 {
+            return Err(FrozenLitterV3RuntimeError::Closure(
+                "phase-capacity spill mass",
+            ));
+        }
         closure.push(SurfaceLiquidOwnerClosureRecordV2 {
             key: record.key.clone(),
-            liquid_debit_kg_m2_tile: liquid_vapor_debit + transfer.freeze_kg_m2,
+            liquid_debit_kg_m2_tile: liquid_vapor_debit + transfer.freeze_kg_m2 + spill,
             liquid_credit_kg_m2_tile: liquid_vapor_credit + transfer.melt_kg_m2,
             ice_debit_kg_m2_tile: ice_vapor_debit + transfer.melt_kg_m2,
             ice_credit_kg_m2_tile: ice_vapor_credit + transfer.freeze_kg_m2,
@@ -342,6 +359,7 @@ pub(crate) fn project_frozen_litter_v3_phase(
     Ok(ProjectedFrozenLitterV3Phase {
         phase_adjusted_owner,
         closure,
-        endings,
+        raw_endings,
+        retained_endings,
     })
 }

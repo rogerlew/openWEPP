@@ -1,0 +1,59 @@
+Ran 2026-09-04
+Evidence class: exact CPU-0 release diagnostic
+Rust manifest SHA-256: b71377b40c408db71ce49a6ae1280f57100df2447936c673a0001896dff4c73d
+Release test binary SHA-256: 2300fbcfc62efd88fb5d70c8cc798dd2f33d79ce3266b9437f18cb30365bc968
+Command: timeout 1800 taskset -c 0 env RUST_MIN_STACK=67108864 CARGO_PROFILE_RELEASE_LTO=false nix develop -c cargo test --release -p openwepp-runner --lib hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile -- --ignored --exact --nocapture --test-threads=1
+Exit: 0
+Release build: 7m 25s
+Test elapsed: 4.97s
+
+STAGE3_LANED_RELEASE_PROBE selected exact fields:
+run_wall_us=4946852
+qualification_telemetry_total_wall_us=4946852
+rss_kib=61212
+laned_source_m3=0.8488061229561478
+laned_outlet_m3=0.8471105124736579
+laned_end_window_storage_m3=0.0016956104824910018
+laned_clamp_m3=0.0
+total_parent_support_count=48
+accepted_publication_support_count=56
+direct_trial_count=20
+split_child_trial_count=32
+accepted_microstep_count=4
+qualification_counters_complete=true
+qualification_scopes_balanced=true
+
+terminal_precomputed_package_profile:
+total_call_count=108
+total_wall_us=29937
+carrier_chain_identity_validation_count=216
+carrier_chain_identity_validation_wall_us=118
+endpoint_coalescence_validation_inclusive_count=108
+endpoint_coalescence_validation_inclusive_wall_us=388
+payload_map_clone_count=648
+payload_map_clone_wall_us=327
+payload_vector_clone_count=216
+payload_vector_clone_wall_us=13433
+payload_phase_clone_count=108
+payload_phase_clone_wall_us=14590
+payload_assembly_count=108
+payload_assembly_wall_us=6
+pre_event_authority_seal_count=108
+pre_event_authority_seal_wall_us=948
+audit_clone_count=0
+audit_clone_wall_us=0
+identity_evidence_count=108
+identity_evidence_wall_us=140
+same_payload_distinct_accepted_slab_group_count=20
+
+Authentic call-site ordinals covered all three production calls in
+snow_stage3_v11_terminal_execution.rs at lines 1973, 2308, and 1708. Each
+reported repeated slab-independent payload identity with different accepted-
+slab identities; the runner independently grouped 20 such payload identities.
+For example, ordinals 0--2 shared physical-payload digest
+3cc68a71a915ef2f1e6eddc2573c057832afdbab02b72d80399f482ec01073b1
+while accepted-slab digests differed between ordinal 0 and ordinals 1--2.
+
+Disposition: REJECTED_AND_REVERTED. The identity condition passed, but the
+entire authentic construction envelope measured only 29,937 us, below the
+prospective 100,000 us removable-work floor. No production gain is claimed.

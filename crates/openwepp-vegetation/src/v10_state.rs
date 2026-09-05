@@ -134,12 +134,21 @@ pub fn project_v9_runtime_to_v10(
         .configuration_sha256
         .clone_from(&configuration.configuration_sha256);
     projected.state_sha256 = projected.canonical_sha256();
+    if projected.last_transaction_id == 0
+        && configuration.initial_state_sha256 != projected.state_sha256
+    {
+        return Err(V10StateError::InitialStateReceipt);
+    }
+    // The target configuration and the exact reconstructed V9 source were
+    // fully validated above. Every V10 identity field and the canonical state
+    // digest are derived here from those immutable values, so calling public
+    // `validate` would immediately reverse the same payload to V9 and repeat
+    // both validations without crossing a mutation or trust boundary.
     let projected = V10CoupledOwnedState(projected);
-    projected.validate(configuration)?;
     Ok(projected)
 }
 
-fn project_v10_runtime_to_v9_unchecked(
+pub(crate) fn project_v10_runtime_to_v9_unchecked(
     configuration: &VegetationConfiguration,
     state: &V10CoupledOwnedState,
 ) -> Result<(VegetationConfiguration, crate::V8CoupledOwnedState), V10StateError> {

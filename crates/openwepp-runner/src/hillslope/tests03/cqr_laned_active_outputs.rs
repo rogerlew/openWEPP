@@ -669,9 +669,7 @@ fn cqr_stage3_one_day_qualification_with_telemetry() {
         .fold(0.0_f64, f64::max);
     let receipt_reseal_max_abs_temperature_residual_k = fixed_point_audit
         .iter()
-        .map(|entry| {
-            f64::from_bits(entry.receipt_reseal_max_abs_temperature_residual_bits)
-        })
+        .map(|entry| f64::from_bits(entry.receipt_reseal_max_abs_temperature_residual_bits))
         .fold(0.0_f64, f64::max);
     eprintln!(
         "STAGE3_LIMITING_REJECTIONS fixed_point_nonconverged={fixed_point_nonconverged} comparison_rejections={comparison_rejections} comparison_scaled={comparison_scaled_rejections} comparison_discrete={comparison_discrete_rejections} comparison_by_owner_path={comparison_rejections_by_owner_path:?}",
@@ -918,19 +916,13 @@ fn cqr_laned_active_pure_selector_decisions_cover_priority_and_configuration() {
         (
             true,
             false,
-            DirectLanedActiveDefaultEligibility::Mixed {
-                present: 1,
-                absent: 1,
-            },
+            DirectLanedActiveDefaultEligibility::Complete,
             true,
         ),
         (
             false,
             true,
-            DirectLanedActiveDefaultEligibility::Mixed {
-                present: 1,
-                absent: 1,
-            },
+            DirectLanedActiveDefaultEligibility::Complete,
             false,
         ),
         (
@@ -963,6 +955,31 @@ fn cqr_laned_active_pure_selector_decisions_cover_priority_and_configuration() {
     .expect_err("mixed default authority must fail closed");
     assert!(mixed.to_string().contains("2 lane(s) with coefficients"));
     assert!(mixed.to_string().contains("3 lane(s) without coefficients"));
+    for (active, disabled, eligibility) in [
+        (true, false, DirectLanedActiveDefaultEligibility::Absent),
+        (false, true, DirectLanedActiveDefaultEligibility::Absent),
+        (
+            true,
+            false,
+            DirectLanedActiveDefaultEligibility::Mixed {
+                present: 1,
+                absent: 1,
+            },
+        ),
+        (
+            false,
+            true,
+            DirectLanedActiveDefaultEligibility::Mixed {
+                present: 1,
+                absent: 1,
+            },
+        ),
+    ] {
+        assert!(
+            resolve_laned_active_decision(active, disabled, eligibility).is_err(),
+            "explicit active/disable must not bypass native coefficient authority"
+        );
+    }
 
     assert!(
         resolve_laned_active_configuration(true, true, false)
@@ -1062,6 +1079,7 @@ fn cqr_laned_active_configure_subprocess_probe() {
     if std::env::var("CQR_HA08_CONFIGURE_PROBE").as_deref() != Ok("1") {
         return;
     }
+    let case = std::env::var("CQR_HA08_CONFIGURE_CASE").unwrap_or_else(|_| "default".into());
     let source =
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/laned_shadow_h2637");
     let run_dir = copy_fixture_to_temp(&source, "cqr_ha08_configure_active");
@@ -1108,14 +1126,41 @@ fn cqr_laned_active_configure_subprocess_probe() {
         seed_authority: &seed_authority,
     })
     .expect("production frame");
+    let unconfigured_frame = frame.clone();
     let builder =
         DirectProductionDayInputBuilder::new(&climate_request, &climate_span, &seed_authority)
             .expect("day input builder");
-    assert_eq!(
-        configure_laned_active_execution(&mut frame, &builder).expect("active configuration"),
-        (true, false)
-    );
-    assert!(frame.laned_active.is_some());
+    match case.as_str() {
+        "default" | "active" => {
+            assert_eq!(
+                configure_laned_active_execution(&mut frame, &builder)
+                    .expect("active configuration"),
+                (true, false)
+            );
+            assert!(frame.laned_active.is_some());
+        }
+        "disable" => {
+            assert_eq!(
+                configure_laned_active_execution(&mut frame, &builder)
+                    .expect("coefficient-complete rollback configuration"),
+                (false, false)
+            );
+            assert_eq!(
+                frame, unconfigured_frame,
+                "active-disable rollback must leave every protected run-frame owner byte-equivalent before execution"
+            );
+        }
+        "conflict" => {
+            let error = configure_laned_active_execution(&mut frame, &builder)
+                .expect_err("active and active-disable must conflict");
+            assert!(error.to_string().contains("mutually exclusive"));
+            assert_eq!(
+                frame, unconfigured_frame,
+                "selector conflict must not mutate the protected run frame"
+            );
+        }
+        other => panic!("unknown configure selector case {other}"),
+    }
     let _ = std::fs::remove_dir_all(run_dir);
 }
 
@@ -1123,16 +1168,35 @@ fn cqr_laned_active_configure_subprocess_probe() {
 fn cqr_laned_active_configure_wrapper_builds_authoritative_active_config_without_routing() {
     let test_name =
         "hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_configure_subprocess_probe";
-    let status = std::process::Command::new(std::env::current_exe().expect("test executable"))
-        .args(["--exact", test_name, "--nocapture"])
-        .env("CQR_HA08_CONFIGURE_PROBE", "1")
-        .env("OPENWEPP_LANED_ACTIVE", "1")
-        .env_remove("OPENWEPP_LANED_ACTIVE_DISABLE")
-        .env_remove("OPENWEPP_LANED_SHADOW")
-        .env_remove("OPENWEPP_LANED_SHADOW_PROFILE")
-        .status()
-        .expect("configure probe process");
-    assert!(status.success(), "configure subprocess failed");
+    for case in ["default", "active", "disable", "conflict"] {
+        let mut command =
+            std::process::Command::new(std::env::current_exe().expect("test executable"));
+        command
+            .args(["--exact", test_name, "--nocapture"])
+            .env("CQR_HA08_CONFIGURE_PROBE", "1")
+            .env("CQR_HA08_CONFIGURE_CASE", case)
+            .env_remove("OPENWEPP_LANED_ACTIVE")
+            .env_remove("OPENWEPP_LANED_ACTIVE_DISABLE")
+            .env_remove("OPENWEPP_LANED_SHADOW")
+            .env_remove("OPENWEPP_LANED_SHADOW_PROFILE");
+        match case {
+            "active" => {
+                command.env("OPENWEPP_LANED_ACTIVE", "1");
+            }
+            "disable" => {
+                command.env("OPENWEPP_LANED_ACTIVE_DISABLE", "1");
+            }
+            "conflict" => {
+                command
+                    .env("OPENWEPP_LANED_ACTIVE", "1")
+                    .env("OPENWEPP_LANED_ACTIVE_DISABLE", "1");
+            }
+            "default" => {}
+            _ => unreachable!(),
+        }
+        let status = command.status().expect("configure probe process");
+        assert!(status.success(), "configure subprocess {case} failed");
+    }
 }
 
 fn execute_scoped_selector_fixture(
@@ -1200,10 +1264,7 @@ fn cqr_selector_subprocess_probe() {
     };
     let (result, temp) = execute_scoped_selector_fixture(&format!("cqr_ha08_{case}"));
     assert!(
-        matches!(
-            case.as_str(),
-            "conflict" | "disable" | "shadow" | "shadow_only" | "profile"
-        ),
+        matches!(case.as_str(), "shadow" | "shadow_only" | "profile"),
         "unknown selector probe {case}"
     );
     let error = result.expect_err("retired Lane-D selector must fail closed at the V11 owner");
@@ -1225,7 +1286,7 @@ fn cqr_selector_subprocess_probe() {
 #[test]
 fn cqr_laned_active_selectors_cover_disable_conflict_shadow_and_profile_paths() {
     let test_name = "hillslope::tests::cqr_laned_active_outputs::cqr_selector_subprocess_probe";
-    for case in ["conflict", "disable", "shadow", "shadow_only", "profile"] {
+    for case in ["shadow", "shadow_only", "profile"] {
         let status = std::process::Command::new(std::env::current_exe().expect("test executable"))
             .args(["--exact", test_name, "--nocapture"])
             .env("CQR_HA08_SELECTOR_CASE", case)
@@ -1234,11 +1295,6 @@ fn cqr_laned_active_selectors_cover_disable_conflict_shadow_and_profile_paths() 
             .env_remove("OPENWEPP_LANED_SHADOW")
             .env_remove("OPENWEPP_LANED_SHADOW_PROFILE")
             .envs(match case {
-                "conflict" => vec![
-                    ("OPENWEPP_LANED_ACTIVE", "1"),
-                    ("OPENWEPP_LANED_ACTIVE_DISABLE", "1"),
-                ],
-                "disable" => vec![("OPENWEPP_LANED_ACTIVE_DISABLE", "1")],
                 "shadow" => vec![
                     ("OPENWEPP_LANED_ACTIVE", "1"),
                     ("OPENWEPP_LANED_SHADOW", "1"),

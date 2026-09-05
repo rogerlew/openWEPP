@@ -37,7 +37,8 @@ use openwepp_vegetation::v11::{
     V11AdmittedResourceFlux, V11BgcDebitScope, V11CoupledOwnedState, V11ImportedV10SegmentInput,
     V11ImportedV10SegmentOutput, V11LseSupportReceiptEnvelope, V11OwnerEnvelope, V11ResourceDebit,
     V11ResourceKey, V11SharedResourceKey, V11SharedResourceKind, V11SharedResourceOwnerTransition,
-    VegetationConfigurationV11, project_v11_parent_finalization_to_v10,
+    ValidatedV11ParentFinalizationV1, VegetationConfigurationV11,
+    project_v11_parent_finalization_to_v10,
 };
 use openwepp_vegetation::{
     NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, SnowFreeForcing, V8CoupledOwnedState,
@@ -92,7 +93,10 @@ use crate::snow_stage3_v11_attachment::{
     Stage3PrecipitationDestinationV1, Stage3PrecipitationEnthalpyProviderV1,
     Stage3PrecipitationPhaseParcelSetV1, Stage3PrecipitationPhaseParcelV1,
     Stage3PrecipitationPhaseV1, Stage3PrecipitationSourceV1,
+    begin_adaptive_parent_fixed_point_phase_v1 as profile_start,
     reconstruct_precipitation_mass_and_advected_heat,
+    record_adaptive_parent_profile_detail_v1 as profile_record,
+    validate_precipitation_phase_parcel_set,
 };
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter, RealHydrologyShadowError,
@@ -112,6 +116,12 @@ pub(crate) use canonical_owner_bytes::{
 #[path = "v11_covered/mod.rs"]
 mod v11_covered;
 #[cfg(test)]
+pub(crate) use frozen_litter_v4_adoption::{
+    CoveredNativePhysicalPathAuditV1, begin_covered_native_physical_path_audit_v1,
+    record_native_surface_ingress_entry_v1, record_native_surface_resource_entry_v1,
+    record_native_wb14_physics_entry_v1, take_covered_native_physical_path_audit_v1,
+};
+#[cfg(test)]
 pub(crate) use v11_covered::audit_covered_carrier_support;
 pub(crate) use v11_covered::normalize_v11_staged_parent_lineage;
 pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1;
@@ -119,6 +129,14 @@ pub(crate) use v11_covered::physical_outcome_ledger::ledger_set_digest as stage3
 pub use v11_covered::physical_outcome_ledger::{
     Stage3PhysicalOutcomeClosureAuditV1, begin_stage3_physical_outcome_closure_audit_v1,
     take_stage3_physical_outcome_closure_audit_v1,
+};
+#[cfg(test)]
+pub(crate) use v11_covered::{
+    CanonicalCoveredFinalConstructorStageV1, CanonicalCoveredPhysicalParityPoisonV1,
+    canonical_covered_final_constructor_boundary_v1,
+    canonical_covered_final_validation_boundary_v1, canonical_covered_parity_poison_v1,
+    record_canonical_covered_accepted_parent_adoption_v1,
+    record_canonical_covered_successful_history_append_v1,
 };
 #[cfg(test)]
 pub(crate) use v11_covered::{
@@ -417,16 +435,50 @@ include!("v9_real_consumer_shadow_equilibrium_fixture.rs");
 
 include!("v9_real_consumer_shadow_publication_retention.rs");
 include!("v9_real_consumer_shadow_root_zone_configuration.rs");
+#[path = "v9_real_consumer_shadow/accepted_publication_support_capability.rs"]
+mod accepted_publication_support_capability;
+use accepted_publication_support_capability::{
+    AcceptedPublicationHistoryLiveRevisionV1, PreparedStage3AcceptedPublicationSupportV1,
+    ValidatedStage3AcceptedPublicationSupportV1,
+};
+#[cfg(test)]
+pub(crate) use accepted_publication_support_capability::{
+    AcceptedPublicationLiveRevisionPoisonV1, AcceptedPublicationSupportCapabilityAuditV1,
+    begin_accepted_publication_support_capability_audit_v1,
+    take_accepted_publication_support_capability_audit_v1,
+};
 #[path = "v9_real_consumer_shadow/frozen_litter_v3_adoption.rs"]
 mod frozen_litter_v3_adoption;
 pub use frozen_litter_v3_adoption::FrozenLitterV3Resident;
+pub(crate) use frozen_litter_v3_adoption::ValidatedV9ToV8ProjectionV1;
 #[path = "v9_real_consumer_shadow/frozen_litter_v4_adoption.rs"]
 mod frozen_litter_v4_adoption;
 pub use frozen_litter_v4_adoption::FrozenLitterV4Resident;
 #[path = "v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs"]
 mod frozen_litter_v3_publication_retention;
+#[path = "v9_real_consumer_shadow/snow_free_physical_reuse.rs"]
+mod snow_free_physical_reuse;
 #[cfg(any(test, feature = "restart-authority-evidence"))]
 pub(crate) use frozen_litter_v3_publication_retention::FrozenLitterV3PublicationSupportV1;
+#[cfg(any(test, feature = "persisted-restart-v1"))]
+pub(crate) use snow_free_physical_reuse::record_snow_free_outer_accepted_publication_v1;
+pub(crate) use snow_free_physical_reuse::{
+    SnowFreePhysicalReusePendingV1, SnowFreePhysicalReuseSeedV1, prepare_snow_free_physical_reuse,
+};
+#[cfg(test)]
+pub(crate) use snow_free_physical_reuse::{
+    record_snow_free_ingress_operation_v1, record_snow_free_phase_operation_v1,
+    record_snow_free_provider_projection_v1, record_snow_free_routing_operation_v1,
+    record_snow_free_vapor_operation_v1, record_snow_free_wb14_operations_v1,
+};
+#[cfg(feature = "persisted-restart-v1")]
+pub use snow_free_physical_reuse::{
+    restart_authority_execute_fresh_snow_free_segment_v1,
+    restart_authority_v11_parent_owner_envelopes_v1,
+};
+#[cfg(test)]
+#[path = "v9_real_consumer_shadow/accepted_publication_support_capability_tests.rs"]
+mod accepted_publication_support_capability_tests;
 #[cfg(test)]
 #[path = "v9_real_consumer_shadow/v3_publication_retention_tests.rs"]
 mod v3_publication_retention_tests;
@@ -546,6 +598,7 @@ pub(crate) fn v11_support_lse_beginning<'a>(
         &inner_lse_bytes,
         resident_bytes.as_deref(),
         exact_resident_bytes.as_deref(),
+        beginning.inner.authority == CoveredColumnAuthority::V11SnowCovered,
     )? {
         V11SupportLseSelection::Legacy => Ok((
             &beginning.inner.lse_configuration,
@@ -576,7 +629,11 @@ fn select_v11_support_lse_bytes(
     legacy_lse_bytes: &[u8],
     native_v3_lse_bytes: Option<&[u8]>,
     native_v4_lse_bytes: Option<&[u8]>,
+    allow_covered_inner_with_inactive_native_v4: bool,
 ) -> Result<V11SupportLseSelection, DirectV11RealConsumerError> {
+    if allow_covered_inner_with_inactive_native_v4 && staged_lse_bytes == legacy_lse_bytes {
+        return Ok(V11SupportLseSelection::Legacy);
+    }
     if let Some(native_v4) = native_v4_lse_bytes {
         return (staged_lse_bytes == native_v4)
             .then_some(V11SupportLseSelection::NativeV4)
@@ -606,7 +663,7 @@ mod covered_support_receipt_selection_tests {
     #[test]
     fn covered_receipt_selects_exact_legacy_staged_bytes() {
         assert_eq!(
-            select_v11_support_lse_bytes(b"legacy", b"legacy", Some(b"native"), None)
+            select_v11_support_lse_bytes(b"legacy", b"legacy", Some(b"native"), None, false)
                 .expect("legacy bytes"),
             V11SupportLseSelection::Legacy,
         );
@@ -615,7 +672,7 @@ mod covered_support_receipt_selection_tests {
     #[test]
     fn covered_receipt_selects_exact_native_v3_staged_bytes() {
         assert_eq!(
-            select_v11_support_lse_bytes(b"native", b"legacy", Some(b"native"), None)
+            select_v11_support_lse_bytes(b"native", b"legacy", Some(b"native"), None, false)
                 .expect("native V3 bytes"),
             V11SupportLseSelection::NativeV3,
         );
@@ -629,6 +686,7 @@ mod covered_support_receipt_selection_tests {
                 b"legacy",
                 Some(b"native-v3"),
                 Some(b"native-v4"),
+                false,
             )
             .expect("native V4 bytes"),
             V11SupportLseSelection::NativeV4,
@@ -644,6 +702,7 @@ mod covered_support_receipt_selection_tests {
                     b"legacy",
                     Some(b"native-v3"),
                     Some(b"native-v4"),
+                    false,
                 )
                 .is_err()
             );
@@ -651,9 +710,26 @@ mod covered_support_receipt_selection_tests {
     }
 
     #[test]
+    fn represented_snow_selects_active_inner_with_inactive_native_v4() {
+        assert_eq!(
+            select_v11_support_lse_bytes(
+                b"covered-inner",
+                b"covered-inner",
+                Some(b"native-v3"),
+                Some(b"native-v4"),
+                true,
+            )
+            .expect("represented-snow active inner LSE"),
+            V11SupportLseSelection::Legacy,
+        );
+    }
+
+    #[test]
     fn covered_receipt_rejects_mismatched_or_missing_native_owner() {
         for native in [None, Some(b"native".as_slice())] {
-            assert!(select_v11_support_lse_bytes(b"poison", b"legacy", native, None).is_err());
+            assert!(
+                select_v11_support_lse_bytes(b"poison", b"legacy", native, None, false).is_err()
+            );
         }
     }
 
@@ -669,7 +745,7 @@ mod covered_support_receipt_selection_tests {
             Vec::<Vec<u8>>::new(),
         );
         assert!(
-            select_v11_support_lse_bytes(&staged, &legacy, Some(&native), None).is_err(),
+            select_v11_support_lse_bytes(&staged, &legacy, Some(&native), None, false).is_err(),
             "mismatch must fail before receipt construction or publication",
         );
         assert_eq!(
@@ -677,6 +753,26 @@ mod covered_support_receipt_selection_tests {
             before,
             "pure selection failure preserves all owner bytes and publishes nothing",
         );
+    }
+}
+
+struct ImportedStackProfileScopeV1 {
+    phase: &'static str,
+    started: Option<std::time::Instant>,
+}
+
+impl ImportedStackProfileScopeV1 {
+    fn begin(phase: &'static str) -> Self {
+        Self {
+            phase,
+            started: profile_start(),
+        }
+    }
+}
+
+impl Drop for ImportedStackProfileScopeV1 {
+    fn drop(&mut self) {
+        profile_record(self.phase, self.started.take());
     }
 }
 
@@ -688,6 +784,14 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         &mut self,
         input: &V11ImportedV10SegmentInput,
     ) -> Result<V11ImportedV10SegmentOutput, Self::Error> {
+        if self.snow_free_physical_reuse_pending.is_some()
+            || self.snow_free_physical_reuse_seed.is_some()
+        {
+            return self.execute_snow_free_physical_reuse(input);
+        }
+        #[cfg(any(test, feature = "persisted-restart-v1"))]
+        snow_free_physical_reuse::record_snow_free_physical_execution_v1();
+        let entry_profile = ImportedStackProfileScopeV1::begin("imported entry validation");
         if input.configuration != self.beginning.vegetation_configuration
             || input.beginning != self.beginning.vegetation_state
             || input.duration_s_bits != input.support.duration_s_bits()
@@ -727,6 +831,10 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         .map_err(|error| {
             DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
         })?;
+        drop(entry_profile);
+        let physical_candidate_profile =
+            ImportedStackProfileScopeV1::begin("imported physical candidate");
+        let physical_setup_profile = ImportedStackProfileScopeV1::begin("imported physical setup");
         let mut candidate = self.beginning.clone();
         // This imported stack is the explicit snow-free V11 successor. A
         // preceding covered/terminal segment leaves the retained carrier
@@ -737,12 +845,40 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         // V8, owns the exact inactive hydraulic anchors required by a
         // structurally zero occupancy while retaining the snow-free boundary.
         install_imported_v10_snow_free_authority(&mut candidate);
-        let frozen_litter_v4 = if candidate.frozen_litter_v4.is_some() {
+        match self.native_inactive_wb14_prefix {
+            Some(prefix) => candidate
+                .stage_frozen_litter_wb14_parent_after_native_inactive_prefix_v1(
+                    self.day_index,
+                    self.interval_index,
+                    self.interval,
+                    self.wb14_coupled_child_binding
+                        .ok_or(DirectV11RealConsumerError::Identity(
+                            "native inactive prefix coupled-child binding",
+                        ))?,
+                    prefix,
+                ),
+            None => candidate.stage_frozen_litter_wb14_parent_from_inner_v1(),
+        }
+        .map_err(DirectV11RealConsumerError::Runtime)?;
+        let deferred_v4_soil_candidate = self
+            .deferred_native_v2_soil_custody
+            .as_ref()
+            .map(DeferredNativeV2SoilCustodyV1::candidate);
+        let deferred_v4_soil_continuation = self
+            .deferred_native_v2_soil_custody
+            .as_ref()
+            .and_then(DeferredNativeV2SoilCustodyV1::continuation);
+        drop(physical_setup_profile);
+        let frozen_evaluation_profile =
+            ImportedStackProfileScopeV1::begin("imported frozen evaluation");
+        let mut frozen_litter_v4 = if candidate.frozen_litter_v4.is_some() {
             let binding =
                 self.wb14_coupled_child_binding
                     .ok_or(DirectV11RealConsumerError::Identity(
                         "native frozen-litter V4 requires coupled-child binding",
                     ))?;
+            let frozen_preparation_profile =
+                ImportedStackProfileScopeV1::begin("imported frozen preparation");
             let fixed = candidate.prepare_frozen_litter_v3_fixed_final(
                 self.day_index,
                 self.interval_index,
@@ -750,14 +886,21 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
                 input.duration_s_bits,
                 self.finalize_wb14_parent_interval,
                 binding,
+                deferred_v4_soil_candidate,
+                deferred_v4_soil_continuation,
             )?;
+            drop(frozen_preparation_profile);
+            let frozen_execute_accept_profile =
+                ImportedStackProfileScopeV1::begin("imported frozen execute accept");
             let accepted = candidate.execute_and_accept_frozen_litter_v4(
                 &fixed,
                 input.support.start_ns().get(),
                 input.support.end_ns().get(),
                 self.finalize_wb14_parent_interval,
                 binding,
+                deferred_v4_soil_continuation,
             )?;
+            drop(frozen_execute_accept_profile);
             Some((fixed, accepted))
         } else {
             None
@@ -769,6 +912,8 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
                     .ok_or(DirectV11RealConsumerError::Identity(
                         "native frozen-litter V3 requires coupled-child binding",
                     ))?;
+            let frozen_preparation_profile =
+                ImportedStackProfileScopeV1::begin("imported frozen preparation");
             let fixed = candidate.prepare_frozen_litter_v3_fixed_final(
                 self.day_index,
                 self.interval_index,
@@ -776,7 +921,12 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
                 input.duration_s_bits,
                 self.finalize_wb14_parent_interval,
                 binding,
+                None,
+                None,
             )?;
+            drop(frozen_preparation_profile);
+            let frozen_execute_accept_profile =
+                ImportedStackProfileScopeV1::begin("imported frozen execute accept");
             let accepted = candidate.execute_and_accept_frozen_litter_v3(
                 &fixed,
                 input.support.start_ns().get(),
@@ -784,17 +934,16 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
                 self.finalize_wb14_parent_interval,
                 binding,
             )?;
+            drop(frozen_execute_accept_profile);
             Some((fixed, accepted))
         } else {
             None
         };
+        drop(frozen_evaluation_profile);
+        let envelope_construction_profile =
+            ImportedStackProfileScopeV1::begin("imported envelope construction");
         let deferred_soil = self.deferred_native_v2_soil_custody.as_ref();
         let envelope = if let Some((fixed, accepted)) = frozen_litter_v4.as_ref() {
-            if deferred_soil.is_some() {
-                return Err(DirectV11RealConsumerError::Identity(
-                    "native frozen-litter V4 deferred soil custody is not yet joined",
-                ));
-            }
             candidate.construct_frozen_litter_v3_complete_envelope(
                 self.day_index,
                 input.duration_s_bits,
@@ -833,9 +982,16 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
                     DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
                 })?
         };
+        drop(envelope_construction_profile);
+        let envelope_validation_profile =
+            ImportedStackProfileScopeV1::begin("imported envelope validation");
         envelope.validate().map_err(|error| {
             DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
         })?;
+        drop(envelope_validation_profile);
+        drop(physical_candidate_profile);
+        let accepted_candidate_profile =
+            ImportedStackProfileScopeV1::begin("imported accepted candidate");
 
         let mut resource_debits = v11_nitrogen_resource_debits(
             &envelope,
@@ -858,12 +1014,6 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
                     .ok_or(DirectV11RealConsumerError::Identity(
                         "deferred native V2 soil final continuation",
                     ))?;
-            candidate
-                .inner
-                .accept_envelope_preserving_native_v2_soil(envelope.transaction_id(), &envelope)
-                .map_err(|error| {
-                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-                })?;
             let accepted = continuation
                 .compose_accepted_outer_candidate(&self.beginning.inner.lse_configuration)
                 .map_err(|error| {
@@ -876,15 +1026,57 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
             .map_err(|error| {
                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
             })?;
+            candidate
+                .validate_soil_thermal_accepted_v2_from_unpublished_continuation(
+                    continuation.physical_trial(),
+                    continuation,
+                    continuation.original_prepared().beginning_owner(),
+                    &accepted,
+                )
+                .map_err(DirectV11RealConsumerError::Runtime)?;
+            candidate
+                .inner
+                .accept_envelope_preserving_native_v2_soil(envelope.transaction_id(), &envelope)
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+                })?;
+            candidate.vegetation_state = project_v9_runtime_to_v10(
+                candidate.inner.vegetation_state(),
+                &candidate.vegetation_configuration,
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::V10(error))
+            })?;
+            candidate.lse_state = project_validated_v1_runtime_to_v2(
+                &candidate.inner.lse_configuration,
+                candidate.inner.lse_state(),
+                &candidate.lse_configuration,
+                &openwepp_land_surface_energy::Sha256Digest::try_new(
+                    candidate
+                        .vegetation_configuration
+                        .configuration_sha256
+                        .clone(),
+                )
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(
+                        error,
+                    ))
+                })?,
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
+            })?;
+            let authoritative_complete_envelope = candidate.clone();
             let transaction_authority = candidate
-                .authenticate_soil_thermal_unpublished_continuation_install_authority_v2(
+                .authenticate_soil_thermal_unpublished_continuation_install_authority_v3(
+                    &authoritative_complete_envelope,
                     continuation,
                     continuation.original_prepared().beginning_owner(),
                 )
                 .map_err(DirectV11RealConsumerError::Runtime)?;
             candidate
-                .install_soil_thermal_accepted_v2_from_unpublished_continuation(
-                    &self.beginning,
+                .install_soil_thermal_accepted_v2_from_unpublished_continuation_v3(
+                    &authoritative_complete_envelope,
                     continuation,
                     continuation.original_prepared().beginning_owner(),
                     transaction_authority,
@@ -892,6 +1084,15 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
                     seals,
                 )
                 .map_err(DirectV11RealConsumerError::Runtime)?;
+            if let Some((_, accepted)) = frozen_litter_v4.as_mut() {
+                candidate
+                    .accept_promoted_candidate_only_frozen_litter_v4(
+                        &self.beginning,
+                        continuation.original_prepared().beginning_owner(),
+                        accepted,
+                    )
+                    .map_err(DirectV11RealConsumerError::Runtime)?;
+            }
         } else if let Some((_, accepted)) = frozen_litter_v4.as_ref() {
             candidate
                 .accept_frozen_litter_v3_complete_envelope(
@@ -953,6 +1154,9 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
             })?;
         }
+        drop(accepted_candidate_profile);
+        let owner_publication_profile =
+            ImportedStackProfileScopeV1::begin("imported owner publication");
 
         let segment_ending = candidate.vegetation_state.clone();
         normalize_v11_staged_parent_lineage(&mut candidate, input.beginning.0.last_transaction_id)?;
@@ -1083,20 +1287,29 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
                     "accepted publication ending complete-owner set",
                 )
             })?;
-        candidate.retain_accepted_publication_support(
-            self.day_index,
-            self.interval_index,
-            input,
-            ending_complete_owner_set_sha256,
-            support_receipt.clone(),
-            self.interval.lse_forcing.clone(),
-            self.interval.vegetation_forcing.clone(),
-            self.interval.wb14_parameters.clone(),
-            resource_debits.clone(),
-            envelope.vegetation().material_proposals().to_vec(),
-            envelope.hydrology(),
-            None,
-        )?;
+        let prepared_publication_support = candidate
+            .prepare_unvalidated_accepted_publication_support(
+                self.day_index,
+                self.interval_index,
+                input,
+                ending_complete_owner_set_sha256,
+                support_receipt.clone(),
+                self.interval.lse_forcing.clone(),
+                self.interval.vegetation_forcing.clone(),
+                self.interval.wb14_parameters.clone(),
+                resource_debits.clone(),
+                envelope.vegetation().material_proposals().to_vec(),
+                envelope.hydrology(),
+                None,
+            )?;
+        let deferred_publication_support = if self.wb14_coupled_child_binding.is_some() {
+            Some(prepared_publication_support)
+        } else {
+            let capability = prepared_publication_support
+                .validate_and_mint(candidate.accepted_publication_history.live_revision_v1())?;
+            candidate.push_validated_accepted_publication_support(capability)?;
+            None
+        };
 
         if frozen_litter_v3.is_some()
             && candidate
@@ -1136,13 +1349,95 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
             ending_resource_owners,
             material_transfers: envelope.vegetation().material_proposals().to_vec(),
         };
-        self.last_support_receipt = Some(support_receipt);
         #[cfg(test)]
         {
             self.last_hydrology_candidate = Some(envelope.hydrology().clone());
         }
+        drop(owner_publication_profile);
+        let install_profile = ImportedStackProfileScopeV1::begin("imported install");
+        let physical_reuse_pending = match self.wb14_coupled_child_binding {
+            Some(provisional_binding) => Some(SnowFreePhysicalReusePendingV1::stage(
+                input,
+                provisional_binding,
+                deferred_publication_support.ok_or(DirectV11RealConsumerError::Identity(
+                    "deferred accepted publication prepared support",
+                ))?,
+                candidate.clone(),
+                output.clone(),
+                &self.beginning,
+                self.interval,
+                self.day_index,
+                self.interval_index,
+                self.finalize_wb14_parent_interval,
+                self.native_inactive_wb14_prefix,
+                self.ending_snow_owner_bytes.clone(),
+                self.deferred_native_v2_soil_custody.clone(),
+                self.ending.clone(),
+                self.last_support_receipt.clone(),
+            )),
+            None => None,
+        };
+        self.last_support_receipt = Some(support_receipt);
         self.ending = Some(candidate);
+        self.snow_free_physical_reuse_pending = physical_reuse_pending;
+        drop(install_profile);
         Ok(output)
+    }
+
+    fn authenticate_outer_validated_candidate(
+        &mut self,
+        candidate: &openwepp_vegetation::v11::V11AcceptedSegmentCandidate,
+    ) -> Result<(), Self::Error> {
+        self.authenticate_snow_free_outer_candidate(candidate)
+    }
+}
+
+#[cfg(test)]
+mod native_v4_deferred_soil_join_source_guards {
+    #[test]
+    fn v4_uses_the_authenticated_deferred_join_and_v3_remains_refused() {
+        let source = include_str!("v9_real_consumer_shadow.rs");
+        let body = source
+            .split("let deferred_soil = self.deferred_native_v2_soil_custody.as_ref();")
+            .nth(1)
+            .expect("deferred native-V2 soil branch")
+            .split("let segment_ending = candidate.vegetation_state.clone();")
+            .next()
+            .expect("snow-free acceptance body");
+        assert!(!body.contains("native frozen-litter V4 deferred soil custody is not yet joined"));
+        assert!(body.contains("native frozen-litter V3 deferred soil custody is not yet joined"));
+
+        let replay = body
+            .find("validate_soil_thermal_accepted_v2_from_unpublished_continuation")
+            .expect("continuation replay validation");
+        let accept = body[replay..]
+            .find("accept_envelope_preserving_native_v2_soil")
+            .map(|offset| replay + offset)
+            .expect("non-soil envelope acceptance");
+        let vegetation = body[accept..]
+            .find("project_v9_runtime_to_v10")
+            .map(|offset| accept + offset)
+            .expect("V10 vegetation projection");
+        let lse = body[vegetation..]
+            .find("project_validated_v1_runtime_to_v2")
+            .map(|offset| vegetation + offset)
+            .expect("V10 LSE projection");
+        let authenticate = body[lse..]
+            .find("authenticate_soil_thermal_unpublished_continuation_install_authority_v3")
+            .map(|offset| lse + offset)
+            .expect("three-domain install authentication");
+        let install = body[authenticate..]
+            .find("install_soil_thermal_accepted_v2_from_unpublished_continuation_v3")
+            .map(|offset| authenticate + offset)
+            .expect("three-domain continuation install");
+        assert!(replay < accept && accept < vegetation && vegetation < lse);
+        assert!(lse < authenticate && authenticate < install);
+        assert!(
+            !body.contains(
+                "authenticate_soil_thermal_unpublished_continuation_install_authority_v2("
+            )
+        );
+        assert!(!body.contains("install_soil_thermal_accepted_v2_from_unpublished_continuation("));
     }
 }
 
@@ -1202,6 +1497,42 @@ fn publication_owner_chain_after_event_handoffs(
 }
 
 impl DirectV10RealConsumerShadow {
+    pub(crate) const fn surface_configuration(&self) -> &DirectSurfaceLiquidConfiguration {
+        self.inner.surface_configuration()
+    }
+
+    pub(crate) fn validate_pending_v11_parent_finalization_source_v1(
+        &self,
+        configuration: &VegetationConfigurationV11,
+        finalized: &V11CoupledOwnedState,
+    ) -> Result<TransactionId, DirectV11RealConsumerError> {
+        let predecessor = self.vegetation_state.0.last_transaction_id;
+        let source = TransactionId(finalized.last_parent_transaction_id);
+        if source.0 == 0
+            || source.0 == predecessor
+            || self.lse_state.0.last_accepted_transaction_id != Some(source)
+            || self.inner.biogeochemistry.last_transaction_id != source.0
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "pending V11 parent-finalization record source",
+            ));
+        }
+
+        let mut projected = self.clone();
+        projected.accept_v11_parent_finalization(configuration, finalized)?;
+        normalize_v8_parent_lineage(&mut projected.vegetation_state.0, predecessor);
+        normalize_v8_parent_lineage(&mut projected.inner.vegetation_state.0, predecessor);
+        if projected.vegetation_state != self.vegetation_state
+            || projected.inner.vegetation_state != self.inner.vegetation_state
+            || projected.inner.biogeochemistry != self.inner.biogeochemistry
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "pending V11 parent-finalization lineage-only projection",
+            ));
+        }
+        Ok(source)
+    }
+
     pub(crate) fn accept_v11_parent_finalization(
         &mut self,
         configuration: &VegetationConfigurationV11,
@@ -1212,32 +1543,77 @@ impl DirectV10RealConsumerShadow {
             &self.vegetation_state,
             finalized,
         )?;
+        let (v9_configuration, v9_state) =
+            project_v10_runtime_to_v9(&v10_configuration, &v10_state).map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::V10(error))
+            })?;
+        self.accept_projected_v11_parent_finalization(
+            configuration,
+            finalized,
+            v10_configuration,
+            v10_state,
+            v9_configuration,
+            v9_state,
+        )
+    }
+
+    pub(crate) fn accept_v11_parent_finalization_with_validated_handoff(
+        &mut self,
+        configuration: &VegetationConfigurationV11,
+        finalized: &V11CoupledOwnedState,
+        handoff: ValidatedV11ParentFinalizationV1,
+    ) -> Result<V11OwnerEnvelope, DirectV11RealConsumerError> {
+        let (v10_configuration, v10_state, v9_configuration, v9_state) =
+            handoff.project_to_v10(configuration, &self.vegetation_state, finalized)?;
+        self.accept_projected_v11_parent_finalization(
+            configuration,
+            finalized,
+            v10_configuration,
+            v10_state,
+            v9_configuration,
+            v9_state,
+        )
+    }
+
+    fn accept_projected_v11_parent_finalization(
+        &mut self,
+        _configuration: &VegetationConfigurationV11,
+        finalized: &V11CoupledOwnedState,
+        v10_configuration: VegetationConfiguration,
+        v10_state: V10CoupledOwnedState,
+        v9_configuration: VegetationConfiguration,
+        v9_state: V9CoupledOwnedState,
+    ) -> Result<V11OwnerEnvelope, DirectV11RealConsumerError> {
         if v10_configuration != self.vegetation_configuration {
             return Err(DirectV11RealConsumerError::Identity(
                 "V11 parent finalization V10 configuration",
             ));
         }
-        let (v9_configuration, v9_state) =
-            project_v10_runtime_to_v9(&v10_configuration, &v10_state).map_err(|error| {
-                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::V10(error))
-            })?;
         if v9_configuration != self.inner.vegetation_configuration {
             return Err(DirectV11RealConsumerError::Identity(
                 "V11 parent finalization V9 configuration",
             ));
         }
         let prior_transaction = self.vegetation_state.0.last_transaction_id;
-        if finalized.last_parent_transaction_id
-            != prior_transaction
+        let expected_transaction =
+            prior_transaction
                 .checked_add(1)
                 .ok_or(DirectV11RealConsumerError::Identity(
                     "V11 parent finalization transaction overflow",
-                ))?
-            || !matches!(
-                self.inner.biogeochemistry.last_transaction_id,
-                value if value == prior_transaction || value == finalized.last_parent_transaction_id
-            )
-        {
+                ))?;
+        if finalized.last_parent_transaction_id != expected_transaction {
+            return Err(DirectV11RealConsumerError::Identity(
+                if finalized.last_parent_transaction_id <= prior_transaction {
+                    "V11 parent finalization nonadvancing vegetation predecessor"
+                } else {
+                    "V11 parent finalization skipped vegetation predecessor"
+                },
+            ));
+        }
+        if !matches!(
+            self.inner.biogeochemistry.last_transaction_id,
+            value if value == prior_transaction || value == finalized.last_parent_transaction_id
+        ) {
             return Err(DirectV11RealConsumerError::Identity(
                 "V11 parent finalization BGC predecessor",
             ));
@@ -1252,8 +1628,8 @@ impl DirectV10RealConsumerShadow {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub(crate) fn retain_accepted_publication_support(
-        &mut self,
+    pub(crate) fn prepare_accepted_publication_support(
+        &self,
         day_index: usize,
         interval_index: usize,
         input: &V11ImportedV10SegmentInput,
@@ -1268,8 +1644,8 @@ impl DirectV10RealConsumerShadow {
         physical_outcome_ledgers: Option<
             &BTreeMap<u32, v11_covered::physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>,
         >,
-    ) -> Result<(), DirectV11RealConsumerError> {
-        let accepted = Stage3AcceptedPublicationSupportV1::try_new(
+    ) -> Result<ValidatedStage3AcceptedPublicationSupportV1, DirectV11RealConsumerError> {
+        Stage3AcceptedPublicationSupportV1::try_new(
             day_index,
             interval_index,
             input,
@@ -1282,8 +1658,61 @@ impl DirectV10RealConsumerShadow {
             material_transfers,
             hydrology,
             physical_outcome_ledgers,
-        )?;
-        self.accepted_publication_history.push_support(accepted)
+            self.accepted_publication_history.live_revision_v1(),
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn prepare_unvalidated_accepted_publication_support(
+        &self,
+        day_index: usize,
+        interval_index: usize,
+        input: &V11ImportedV10SegmentInput,
+        ending_complete_owner_set_sha256: Digest32,
+        lse_support_receipt: LseSupportAdmissibilityReceiptV1,
+        lse_forcing: LandSurfaceForcing,
+        vegetation_forcing: SnowFreeForcing,
+        wb14_parameters: Vec<DirectOfeWb14Parameters>,
+        resource_debits: Vec<V11ResourceDebit>,
+        material_transfers: Vec<openwepp_vegetation::carbon_nitrogen::MaterialTransfer>,
+        hydrology: &crate::land_surface_energy_shadow::UnifiedRealHydrologyCandidate,
+        physical_outcome_ledgers: Option<
+            &BTreeMap<u32, v11_covered::physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>,
+        >,
+    ) -> Result<PreparedStage3AcceptedPublicationSupportV1, DirectV11RealConsumerError> {
+        #[cfg(test)]
+        v11_covered::record_canonical_covered_publication_retain_entry_v1();
+        #[cfg(test)]
+        let ending_complete_owner_set_sha256 = if matches!(
+            v11_covered::canonical_covered_parity_poison_v1(),
+            Some(v11_covered::CanonicalCoveredPhysicalParityPoisonV1::PublicationSupport)
+        ) {
+            Digest32::zero()
+        } else {
+            ending_complete_owner_set_sha256
+        };
+        Stage3AcceptedPublicationSupportV1::prepare(
+            day_index,
+            interval_index,
+            input,
+            ending_complete_owner_set_sha256,
+            lse_support_receipt,
+            lse_forcing,
+            vegetation_forcing,
+            wb14_parameters,
+            resource_debits,
+            material_transfers,
+            hydrology,
+            physical_outcome_ledgers,
+        )
+    }
+
+    pub(crate) fn push_validated_accepted_publication_support(
+        &mut self,
+        capability: ValidatedStage3AcceptedPublicationSupportV1,
+    ) -> Result<(), DirectV11RealConsumerError> {
+        self.accepted_publication_history
+            .push_validated_support(capability)
     }
 
     pub(crate) fn accepted_publication_supports_for_day(
@@ -1353,28 +1782,16 @@ impl DirectV10RealConsumerShadow {
         Ok(())
     }
 
-    #[cfg(any(
-        test,
-        feature = "restart-authority-evidence",
-        feature = "persisted-restart-v1"
-    ))]
+    #[cfg(test)]
     fn restore_accepted_publication_authority(
         &mut self,
         supports: Vec<Stage3AcceptedPublicationSupportV1>,
         event_handoffs: Vec<AcceptedEventReceiptV1>,
     ) -> Result<(), DirectV11RealConsumerError> {
-        let supports = supports
-            .into_iter()
-            .map(std::sync::Arc::new)
-            .collect::<Vec<_>>();
-        validate_accepted_publication_authority(&supports, &event_handoffs)?;
-        self.accepted_publication_history.replace(
-            supports
-                .into_iter()
-                .map(|support| (*support).clone())
-                .collect(),
-            &event_handoffs,
-        )
+        let mut restored = AcceptedPublicationHistoryV1::default();
+        restored.replace(supports, &event_handoffs)?;
+        self.accepted_publication_history = restored;
+        Ok(())
     }
 
     pub(crate) fn next_transaction_id(&self) -> Result<TransactionId, DirectV11RealConsumerError> {
@@ -2017,18 +2434,18 @@ impl DirectV10RealConsumerShadow {
                     "accepted publication support wire operands",
                 ))
             })?;
-        let shared_supports = supports
-            .iter()
-            .cloned()
-            .map(std::sync::Arc::new)
-            .collect::<Vec<_>>();
-        let traversed =
-            validate_accepted_publication_authority(&shared_supports, &wire.event_handoffs)
-                .map_err(|_| {
-                    DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
-                        "accepted publication authority wire chronology",
-                    ))
-                })?;
+        let mut restored_history = AcceptedPublicationHistoryV1::default();
+        restored_history
+            .replace(supports, &wire.event_handoffs)
+            .map_err(|_| {
+                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
+                    "accepted publication authority wire chronology",
+                ))
+            })?;
+        let traversed = restored_history
+            .inner
+            .tail_authority
+            .traversed_ending_owner_sha256;
         if wire.schema_version != 2
             || canonical != bytes
             || wire.receipt_sha256 != digest_bytes(&preimage)
@@ -2038,12 +2455,8 @@ impl DirectV10RealConsumerShadow {
                 DirectV9RealConsumerError::Identity("accepted publication support wire seal"),
             ));
         }
-        self.restore_accepted_publication_authority(supports, wire.event_handoffs)
-            .map_err(|_| {
-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
-                    "accepted publication support wire chronology",
-                ))
-            })
+        self.accepted_publication_history = restored_history;
+        Ok(())
     }
 
     /// Ending complete-owner digest reached by traversing every retained
@@ -2396,204 +2809,7 @@ fn validate_repository_day_projection(
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-fn project_live_vegetation_forcing(
-    provider: &SnowFreeForcing,
-    hydrology: &RealHydrologyShadowAdapter,
-    soil_thermal: DirectSoilThermalReadView<'_>,
-    root_zone: Option<&DirectRootZoneHydraulicConfiguration>,
-    surface_configuration: &DirectSurfaceLiquidConfiguration,
-    lse_configuration: &LandSurfaceEnergyConfiguration,
-    vegetation_configuration: &VegetationConfiguration,
-    vegetation_state: &V9CoupledOwnedState,
-    receipt_vegetation_configuration_sha256: String,
-    hydrology_snapshot_sha256: Sha256Digest,
-    transaction_id: TransactionId,
-    day_index: usize,
-    interval_index: u8,
-) -> Result<(SnowFreeForcing, Option<V10RootZoneReceiptSet>), DirectV9RealConsumerError> {
-    let mut forcing = provider.clone();
-    // V10 does not consume the legacy global ground scalars. Shortwave optics
-    // come from each LSE tile, while reciprocal longwave uses the current
-    // coupled ground trial. Canonical zeros prevent caller control and permit
-    // heterogeneous tile configurations.
-    forcing.ground_albedo_vis = 0.0;
-    forcing.ground_albedo_nir = 0.0;
-    forcing.longwave_up_w_m2 = 0.0;
-    for layer in &mut forcing.soil_layers {
-        let water_values = hydrology
-            .layer_facts()
-            .iter()
-            .filter(|(source, _)| source.layer_id == layer.layer_id)
-            .map(|(_, fact)| fact.liquid_supply_kg_m2)
-            .collect::<Vec<_>>();
-        let temperature_values = soil_thermal
-            .ordered_ofes()
-            .into_iter()
-            .filter_map(|ofe| {
-                ofe.ordered_layers()
-                    .into_iter()
-                    .find(|candidate| candidate.layer_id() == &layer.layer_id)
-                    .map(DirectSoilThermalLayerReadView::temperature_k)
-            })
-            .collect::<Vec<_>>();
-        let water = if root_zone.is_some() {
-            water_values
-                .first()
-                .copied()
-                .ok_or(DirectV9RealConsumerError::Identity(
-                    "vegetation soil-water projection",
-                ))?
-        } else {
-            common_provider_value(&water_values, "vegetation soil-water projection")?
-        };
-        let temperature = if root_zone.is_some() {
-            temperature_values
-                .first()
-                .copied()
-                .ok_or(DirectV9RealConsumerError::Identity(
-                    "vegetation soil-temperature projection",
-                ))?
-        } else {
-            common_provider_value(
-                &temperature_values,
-                "vegetation soil-temperature projection",
-            )?
-        };
-        layer.water_beginning_kg_m2 = water;
-        layer.temperature_k = temperature;
-    }
-    if let Some(root_zone) = root_zone {
-        let mut receipts = Vec::new();
-        for occupancy_id in vegetation_state.0.occupancies.keys() {
-            let stratum = vegetation_configuration
-                .strata
-                .iter()
-                .find(|value| value.stratum_id == occupancy_id.stratum_id)
-                .ok_or(DirectV9RealConsumerError::Identity(
-                    "root-zone occupancy/stratum join",
-                ))?;
-            let geometry = root_zone
-                .ordered_strata
-                .iter()
-                .find(|value| value.stratum_id == stratum.stratum_id)
-                .ok_or(DirectV9RealConsumerError::Identity(
-                    "root-zone stratum geometry",
-                ))?;
-            for root in &stratum.root_layers {
-                if root.root_fraction == 0.0 {
-                    continue;
-                }
-                for configured in root_zone
-                    .ordered_layers
-                    .iter()
-                    .filter(|value| value.layer_id == root.layer_id)
-                {
-                    let source = crate::vegetation_real_hydrology_shadow::RealHydrologySourceKey {
-                        ofe_lane: crate::vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId {
-                            lane_index: configured.production_lane_index,
-                            lane_id: configured.production_lane_id,
-                        },
-                        layer_id: configured.layer_id.clone(),
-                    };
-                    let fact = hydrology.layer_facts().get(&source).ok_or(
-                        DirectV9RealConsumerError::Identity("root-zone live hydrology layer"),
-                    )?;
-                    let mut top_m = 0.0;
-                    for value in root_zone.ordered_layers.iter().take_while(|value| {
-                        (
-                            value.production_lane_index,
-                            value.production_lane_id,
-                            &value.layer_id,
-                        ) != (
-                            configured.production_lane_index,
-                            configured.production_lane_id,
-                            &configured.layer_id,
-                        )
-                    }) {
-                        if value.production_lane_index == configured.production_lane_index
-                            && value.production_lane_id == configured.production_lane_id
-                        {
-                            let prior = crate::vegetation_real_hydrology_shadow::RealHydrologySourceKey {
-                                ofe_lane: crate::vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId {
-                                    lane_index: value.production_lane_index,
-                                    lane_id: value.production_lane_id,
-                                },
-                                layer_id: value.layer_id.clone(),
-                            };
-                            top_m += hydrology
-                                .layer_facts()
-                                .get(&prior)
-                                .ok_or(DirectV9RealConsumerError::Identity(
-                                    "root-zone predecessor hydrology layer",
-                                ))?
-                                .layer_thickness_m;
-                        }
-                    }
-                    let source_values = root_zone_hydraulic_values(
-                        fact,
-                        configured,
-                        top_m,
-                        geometry.root_tissue_lateral_path_m,
-                    )?;
-                    let matching_ofes = surface_configuration
-                        .ofe_bindings
-                        .iter()
-                        .filter(|binding| {
-                            binding.production_lane_index == configured.production_lane_index
-                                && binding.production_lane_id == configured.production_lane_id
-                                && lse_configuration.ofes.iter().any(|ofe| {
-                                    ofe.ofe_id == binding.ofe_id
-                                        && ofe.tiles.iter().any(|tile| {
-                                            tile.vegetation_tile_id == occupancy_id.tile_id
-                                        })
-                                })
-                        })
-                        .collect::<Vec<_>>();
-                    // Root-zone configuration is complete over production
-                    // lanes, while a vegetation occupancy exists only on OFEs
-                    // containing that configured topology tile. A snow-free
-                    // or open-only lane therefore contributes no receipt for
-                    // this occupancy; it is not an identity failure.
-                    for ofe in matching_ofes {
-                        receipts.push(root_zone_hydraulic_receipt(
-                            V10RootZoneReceiptKey {
-                                ofe_id: ofe.ofe_id.clone(),
-                                production_lane_index: configured.production_lane_index,
-                                production_lane_id: configured.production_lane_id,
-                                occupancy_id: occupancy_id.clone(),
-                                stratum_id: stratum.stratum_id.clone(),
-                                layer_id: root.layer_id.clone(),
-                            },
-                            source_values,
-                            root.lateral_root_length_m,
-                        )?);
-                    }
-                }
-            }
-        }
-        return Ok((
-            forcing,
-            Some(V10RootZoneReceiptSet::try_new(
-                root_zone.restart_identity_sha256().map_err(|_| {
-                    DirectV9RealConsumerError::Identity("root-zone configuration identity")
-                })?,
-                lse_configuration
-                    .hydrology_configuration
-                    .configuration_sha256
-                    .clone(),
-                receipt_vegetation_configuration_sha256,
-                lse_configuration.configuration_sha256.clone(),
-                hydrology_snapshot_sha256,
-                transaction_id,
-                day_index,
-                interval_index,
-                receipts,
-            )?),
-        ));
-    }
-    Ok((forcing, None))
-}
+include!("v9_real_consumer_shadow/live_vegetation_forcing.rs");
 
 include!("v9_real_consumer_shadow_soil_thermal.rs");
 #[cfg(test)]

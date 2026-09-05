@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 30
+contract_version: 31
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -1121,6 +1121,13 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
 - `OBL-VEGETATION-C-005`: current GSI/ET/litter/runtime consumers remain active
   until a later real-consumer cutover proves the adapter and retires duplicate
   ownership atomically.
+- `OBL-VEGETATION-C-006`: prove trusted in-process parent finalization may
+  reuse only the exact immutable V10/V11 state revision whose full semantic
+  validation already succeeded. Mutation or lineage normalization consumes
+  the proof and requires a new digest and validation. Restart/checkpoint,
+  external bytes, durable publication, and every untrusted V11 executor return
+  retain fresh full semantic validation, canonical reconstruction, and atomic
+  rollback.
 
 ### Child 2C canonical invariants
 
@@ -1453,7 +1460,7 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
 `INV-VEGETATION-120`, `INV-VEGETATION-121`, `INV-VEGETATION-122`,
 `INV-VEGETATION-123`, `INV-VEGETATION-124`, `INV-VEGETATION-125`,
 `INV-VEGETATION-126`, `INV-VEGETATION-127`, `INV-VEGETATION-128`,
-`INV-VEGETATION-133`,
+`INV-VEGETATION-133`, `INV-VEGETATION-134`,
 `VEG-E-095`, `VEG-E-096`, `VEG-E-097`, `VEG-E-098`, `VEG-E-099`,
 `VEG-E-100`, and `VEG-E-133`.
 
@@ -1477,6 +1484,7 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
 | `BEI-VEGETATION-014` | V10 nonpositive-assimilation amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-118, INV-VEGETATION-119, INV-VEGETATION-120` | `flagged-binding-addition` | Exact dark/low-light behavior and immutable V9-to-V10 migration. |
 | `BEI-VEGETATION-015` | V11 segmented-support amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-121, INV-VEGETATION-122, INV-VEGETATION-123, INV-VEGETATION-124, INV-VEGETATION-125, INV-VEGETATION-126, INV-VEGETATION-127, INV-VEGETATION-128` | `flagged-binding-addition` | Immutable V10 import, common slab duration, staged resources/materials, additive restart, exact compatibility, and atomic parent finalization. |
 | `BEI-VEGETATION-016` | V9 SHA-256 provider-equivalence correction | `active` | `maps-to-existing-INV` | `INV-VEGETATION-116, INV-VEGETATION-133` | `flagged-binding-addition` | Preserves exact V9 generation-host provenance while admitting a one-object SHA-256 provider substitution only under known-answer, remaining-runtime, protected-byte, and complete-output equality proofs. |
+| `BEI-VEGETATION-017` | Validated In-Memory Vegetation-State Handoff Amendment below | `active` | `maps-to-existing-INV` | `INV-VEGETATION-134, OBL-VEGETATION-C-006` | `flagged-binding-addition` | Private immutable revision-bound typestate may remove duplicate trusted in-process validation; every mutation and restart/external/untrusted boundary retains full validation. |
 | `BEI-VEGETATION-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `flagged-binding-addition` | Shared canopy-air carrier, sealed exposure, exact-once canopy fluxes, and event-bounded snow regime. |
 
 ## Gap Register and Promotability Labels
@@ -2922,6 +2930,7 @@ beginning, or aliasing parent/segment identity is rejected.
 | `INV-VEGETATION-126` | One parent finalization increments once and atomically installs complete owners. |
 | `INV-VEGETATION-127` | Additive restart reconstructs chronology/custody and prevents replay. |
 | `INV-VEGETATION-128` | One full-support V11 segment matches every V10 non-identity payload and branch. |
+| `INV-VEGETATION-134` | A private immutable nonserializable validated handoff may reuse full semantic validation only for the exact same V10/V11 state revision, bound to schema/model/configuration/state digest, transaction/predecessor/support, and owner lineage. Mutation or lineage normalization consumes the proof and requires a fresh digest and validation. Restart/checkpoint, external bytes, durable publication, and every untrusted V11 executor return always receive full semantic validation and canonical reconstruction before use. |
 | `VEG-E-121` | Invalid source, nonexact cadence, changed migration value, or alias rejects. |
 | `VEG-E-122` | Wrong slab/participant/support/duration or local conversion rejects before solve. |
 | `VEG-E-123` | Stale beginning, gap/overlap, retry mutation, or predecessor mismatch rejects. |
@@ -2930,6 +2939,52 @@ beginning, or aliasing parent/segment identity is rejected.
 | `VEG-E-126` | Segment/duplicate/partial/stale finalization or increment rejects atomically. |
 | `VEG-E-127` | Restart schema/authority/receipt/cursor/owner mismatch or replay rejects. |
 | `VEG-E-128` | Any unexplained full-support physical/branch mismatch keeps V11 non-promotable. |
+
+### Validated in-memory V10/V11 state handoff
+
+`INV-VEGETATION-134` permits a private typed handoff to carry an already
+completed semantic validation only for the exact immutable V10 or V11 state
+revision inside one trusted process. It binds the schema/model and
+configuration identity, complete state and owner-envelope digest,
+transaction, predecessor, accepted support, and owner lineage. The wrapper
+owns or immutably borrows the state, has no mutable dereference, public or
+unchecked constructor, serialized representation, or restart representation,
+and cannot be reconstructed from a digest alone.
+
+An internal parent finalizer may consume that exact handoff instead of
+recomputing the same canonical digest or reparsing the same state. Any field
+mutation, owner replacement, parent-lineage normalization, configuration
+change, transaction change, or support change consumes the proof. The changed
+state must compute its new digest and pass the complete semantic validator
+before a new handoff exists. Any optional cached canonical bytes/digest are
+derived during validation, keyed to the exact configuration and revision,
+required to equal fresh canonical serialization, and discarded on mutation.
+
+The untrusted `V11SegmentExecutor` boundary is unchanged: every returned
+ending state is independently and fully validated against the input
+configuration before it can be staged or finalized. Deserialization,
+restart/checkpoint restore, external bytes, and durable publication likewise
+perform full parse, canonical reconstruction, digest computation, custody
+validation, and restart chronology validation. A producer proof, cached
+digest, or in-memory wrapper cannot bypass any of those checks. Failure remains
+atomic and preserves all beginning state, owner, receipt, checkpoint,
+reduction, and publication bytes.
+
+`OBL-VEGETATION-C-006` — Prove one validation of an unchanged trusted
+in-process state revision, zero duplicate digest/canonicalization during its
+parent finalization, fresh digest and validation after lineage normalization
+or any mutation, proof nontransfer across state/configuration/transaction/
+support, independent full validation of every untrusted executor return, full
+restart parse-reserialize and chronology replay, byte-identical accepted
+outputs, and byte-exact rollback for every poison.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Fully validate one immutable V10/V11 revision, mint a private revision-bound handoff, and consume it only before any mutation; validate the resulting revision anew. |
+| branch/guard | No proof crosses mutation, executor, restart, checkpoint, external-byte, or durable-publication boundaries. Cached bytes/digests are derived evidence only. |
+| invariant guard map | `INV-VEGETATION-134` -> private validated typestate, configuration/state/lineage binding, mutation invalidation, untrusted-executor validator, restart semantic validator, and rollback. |
+| test vector | `OBL-VEGETATION-C-006`: validation-once, lineage mutation, cross-state/config/transaction/support proof poisons, untrusted return validation, restart parse-reserialize, accepted-byte equality, rollback. |
+| binding exposure | `BEI-VEGETATION-017`, active, `maps-to-existing-INV`, IDs `134/C-006`, dual review/verification. |
 
 V11 introduces no constitutive or calibration claim. It authorizes no canopy-
 snow carrier, selector/default, activation, publication, deployment, or cutover.
@@ -3007,6 +3062,7 @@ constitutive behavior unchanged.
 | Date | Version | Author | Change |
 |---|---:|---|---|
 | 2026-08-29 | 30 | Codex | Bound accepted terminal composition to every exact physical child's ordered resource/material custody, canonical same-key enclosing debit folds, the exact sequential BGC ending, and an audit-only one-ULP binary64 regrouping bound with one-bit-over rejection. |
+| 2026-09-02 | 31 | Codex | Admitted only private immutable nonserializable validation-once handoffs for unchanged trusted in-process V10/V11 state revisions; retained fresh full validation after mutation and at every restart, external, durable, and untrusted-executor boundary. |
 | 2026-08-27 | 29 owner amendment | Codex | Replaced the provisional 0.6-second positive-support floor with exactly 60 seconds (`60_000_000_000 ns`). Vegetation physics, conservation/custody, phase/topology, receipt, rollback, and fail-closed obligations remain unchanged; stable ordinary supports must accept substantially larger steps. Prior floor-dependent evidence is superseded and awaits rerun. |
 | 2026-08-20 | 15 | Codex | Drafted immutable-V10 V11 segmented support, staged custody, additive restart, exact compatibility, and one atomic parent finalization. |
 | 2026-08-20 | 16 | Codex | Superseded nonimplementable V11 restart V1 with additive V2 complete typed checkpoint/owner/reduction/publication authority after implementation inventory exposed the closed-schema contradiction. |

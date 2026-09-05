@@ -1075,9 +1075,44 @@ impl DirectV10RealConsumerShadow {
     pub fn canonical_owner_state_bytes(
         &self,
     ) -> Result<BTreeMap<String, Vec<u8>>, DirectV11RealConsumerError> {
-        self.vegetation_state
-            .validate(&self.vegetation_configuration)
-            .map_err(DirectV10RealConsumerError::from)?;
+        self.canonical_owner_state_bytes_with_endpoint_profile_v1(false, None)
+    }
+
+    pub(crate) fn canonical_owner_state_bytes_for_carrier_endpoint_v1(
+        &self,
+        validated_vegetation: &super::v11_covered::ValidatedCarrierVegetationOwnerV10V1<'_>,
+    ) -> Result<BTreeMap<String, Vec<u8>>, DirectV11RealConsumerError> {
+        self.canonical_owner_state_bytes_with_endpoint_profile_v1(true, Some(validated_vegetation))
+    }
+
+    fn canonical_owner_state_bytes_with_endpoint_profile_v1(
+        &self,
+        record_endpoint_profile: bool,
+        validated_vegetation: Option<&super::v11_covered::ValidatedCarrierVegetationOwnerV10V1<'_>>,
+    ) -> Result<BTreeMap<String, Vec<u8>>, DirectV11RealConsumerError> {
+        let profile_start_if_enabled = || {
+            if record_endpoint_profile {
+                profile_start()
+            } else {
+                None
+            }
+        };
+        if let Some(validated) = validated_vegetation {
+            if !validated.matches(&self.vegetation_state, &self.vegetation_configuration) {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "carrier endpoint vegetation validation proof",
+                ));
+            }
+        } else {
+            let vegetation_validation_started = profile_start_if_enabled();
+            self.vegetation_state
+                .validate(&self.vegetation_configuration)
+                .map_err(DirectV10RealConsumerError::from)?;
+            profile_record(
+                "carrier owner vegetation validation",
+                vegetation_validation_started,
+            );
+        }
         #[derive(Serialize)]
         struct HydrologyLayerProjection {
             layer_index: usize,
@@ -1108,6 +1143,7 @@ impl DirectV10RealConsumerShadow {
             day_count: usize,
             lanes: Vec<HydrologyLaneProjection>,
         }
+        let hydrology_projection_started = profile_start_if_enabled();
         let frame = self.inner.hydrology_frame();
         let hydrology = HydrologyProjection {
             schema: "OPENWEPP_DIRECT_HYDROLOGY_OWNER_PROJECTION_V1",
@@ -1149,6 +1185,10 @@ impl DirectV10RealConsumerShadow {
                 })
                 .collect(),
         };
+        profile_record(
+            "carrier owner hydrology projection",
+            hydrology_projection_started,
+        );
         let surface =
             frame
                 .surface_liquid_shadow
@@ -1163,45 +1203,53 @@ impl DirectV10RealConsumerShadow {
             wb14_parent_working_state:
                 Option<&'a crate::direct_runtime::DirectWb14ParentWorkingState>,
         }
-        let persistent_owner = serde_json::from_slice(
-            &surface
-                .canonical_bytes(&self.inner.surface_configuration)
-                .map_err(|error| {
-                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                        DirectV9RealConsumerError::Serialization(error.to_string()),
-                    ))
-                })?,
-        )?;
+        let surface_canonical_started = profile_start_if_enabled();
+        let persistent_owner_bytes = surface
+            .canonical_bytes(&self.inner.surface_configuration)
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                    DirectV9RealConsumerError::Serialization(error.to_string()),
+                ))
+            })?;
+        profile_record("carrier owner surface canonical", surface_canonical_started);
+        let surface_encoding_started = profile_start_if_enabled();
+        let persistent_owner = serde_json::from_slice(&persistent_owner_bytes)?;
         let surface_projection = SurfaceLiquidProjection {
             schema: "OPENWEPP_SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V2",
             persistent_owner,
             wb14_parent_working_state: self.inner.wb14_parent_working_state.as_ref(),
         };
+        profile_record("carrier owner surface encoding", surface_encoding_started);
+        let vegetation_encoding_started = profile_start_if_enabled();
+        let vegetation_bytes = serde_json::to_vec(&self.vegetation_state)?;
+        profile_record(
+            "carrier owner vegetation encoding",
+            vegetation_encoding_started,
+        );
+        let other_encoding_started = profile_start_if_enabled();
+        let lse_bytes = serde_json::to_vec(&self.lse_state)?;
+        profile_record("carrier owner other encoding", other_encoding_started);
+        let surface_encoding_started = profile_start_if_enabled();
+        let surface_projection_bytes = serde_json::to_vec(&surface_projection)?;
+        profile_record("carrier owner surface encoding", surface_encoding_started);
+        let other_encoding_started = profile_start_if_enabled();
+        let hydrology_bytes = serde_json::to_vec(&hydrology)?;
+        let bgc_bytes = serde_json::to_vec(&self.inner.biogeochemistry)?;
+        profile_record("carrier owner other encoding", other_encoding_started);
+        let soil_encoding_started = profile_start_if_enabled();
+        let soil_thermal_bytes = self
+            .inner
+            .soil_thermal
+            .canonical_active_owner_bytes()
+            .map_err(DirectV10RealConsumerError::Runtime)?;
+        profile_record("carrier owner soil encoding", soil_encoding_started);
         let mut owners = BTreeMap::new();
-        owners.insert(
-            "vegetation".to_owned(),
-            serde_json::to_vec(&self.vegetation_state)?,
-        );
-        owners.insert(
-            "land_surface_energy".to_owned(),
-            serde_json::to_vec(&self.lse_state)?,
-        );
-        owners.insert(
-            "surface_liquid".to_owned(),
-            serde_json::to_vec(&surface_projection)?,
-        );
-        owners.insert("hydrology".to_owned(), serde_json::to_vec(&hydrology)?);
-        owners.insert(
-            "bgc".to_owned(),
-            serde_json::to_vec(&self.inner.biogeochemistry)?,
-        );
-        owners.insert(
-            "soil_thermal".to_owned(),
-            self.inner
-                .soil_thermal
-                .canonical_active_owner_bytes()
-                .map_err(DirectV10RealConsumerError::Runtime)?,
-        );
+        owners.insert("vegetation".to_owned(), vegetation_bytes);
+        owners.insert("land_surface_energy".to_owned(), lse_bytes);
+        owners.insert("surface_liquid".to_owned(), surface_projection_bytes);
+        owners.insert("hydrology".to_owned(), hydrology_bytes);
+        owners.insert("bgc".to_owned(), bgc_bytes);
+        owners.insert("soil_thermal".to_owned(), soil_thermal_bytes);
         Ok(owners)
     }
 }

@@ -109,6 +109,8 @@ mod v8_projection;
 mod v8_rollback;
 pub(super) use covered_derived_ingress::CoveredIngressSchedule;
 pub(crate) use covered_forest::CoveredForestShadowResult;
+#[cfg(test)]
+pub(crate) use covered_v8_owner::CanonicalCoveredPrivatePhysicalProjectionV1;
 pub(crate) use covered_v8_owner::{
     CoveredCarrierComponentState, CoveredLseIterationState, FixedCapCanopyReleasesByDestination,
     ProvisionalCoveredV8PhysicalEvaluationV1, construct_frozen_litter_v3_owner_envelope_v11,

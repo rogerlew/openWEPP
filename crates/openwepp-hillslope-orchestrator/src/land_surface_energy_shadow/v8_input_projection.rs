@@ -1525,7 +1525,6 @@ pub(crate) fn validate_native_v2_soil_support_join(
     }
     Ok(())
 }
-
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn project_v8_runtime_inputs_with_carriers(
     vegetation_configuration: &VegetationConfiguration,
@@ -1604,6 +1603,7 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
     soil_thermal.validate()?;
     let hydrology_snapshot_sha256 =
         unified_beginning_hydrology_snapshot_sha256(soil_adapter, surface_configuration)?;
+    let soil_thermal_snapshot_sha256 = soil_thermal.snapshot_sha256()?;
     canopy_forcing.validate_digest()?;
     validate_cross_owner_lineage(
         vegetation_configuration,
@@ -1615,6 +1615,7 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
         transaction_id,
         canopy_forcing,
         &hydrology_snapshot_sha256,
+        &soil_thermal_snapshot_sha256,
         day_index,
         interval_index,
     )?;
@@ -1806,7 +1807,7 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
         lse_state_sha256: lse_state.state_sha256.clone(),
         lse_forcing_sha256: lse_forcing.forcing_sha256.clone(),
         hydrology_snapshot_sha256,
-        soil_thermal_snapshot_sha256: soil_thermal.snapshot_sha256()?,
+        soil_thermal_snapshot_sha256,
         soil_thermal_beginning: soil_thermal.clone(),
         transaction_id,
         tiles,
@@ -1824,6 +1825,7 @@ fn validate_cross_owner_lineage(
     transaction_id: TransactionId,
     canopy_forcing: &V8CanopyForcingReceipt,
     hydrology_snapshot_sha256: &Sha256Digest,
+    soil_thermal_snapshot_sha256: &Sha256Digest,
     day_index: usize,
     interval_index: u8,
 ) -> Result<(), V8InputProjectionError> {
@@ -1885,7 +1887,7 @@ fn validate_cross_owner_lineage(
         "cross-owner canopy hydrology snapshot",
     )?;
     cross_owner(
-        canopy_forcing.soil_thermal_snapshot_sha256 == soil_thermal.snapshot_sha256()?,
+        &canopy_forcing.soil_thermal_snapshot_sha256 == soil_thermal_snapshot_sha256,
         "cross-owner canopy soil-thermal snapshot",
     )?;
     cross_owner(

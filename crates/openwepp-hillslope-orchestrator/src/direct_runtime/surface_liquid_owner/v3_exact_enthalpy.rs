@@ -5,7 +5,10 @@
 
 #![allow(clippy::missing_errors_doc)]
 
-use std::{collections::BTreeMap, fmt};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fmt,
+};
 
 use openwepp_kernel_contract::{ResourceOwnerId, TransactionId};
 use openwepp_land_surface_energy::{
@@ -26,6 +29,8 @@ pub const LSE_SURFACE_ENTHALPY_EXACT_CARRY_V1_DEFINITION_SHA256: &str =
     "add7641bb5e7e60cd4b15243f95d5eef03b45446fe898975bc89c55164b085de";
 pub const LSE_SURFACE_ENTHALPY_ENERGY_CREDIT_RECEIPT_V1_TAG: &str =
     "OPENWEPP_LSE_SURFACE_ENTHALPY_ENERGY_CREDIT_RECEIPT_V1";
+pub(crate) const LSE_SURFACE_ENTHALPY_ENERGY_CREDIT_RECEIPT_V1_SCHEMA_SHA256: &str =
+    "5eeea38461a864279f344977d1fe19554f282488f6ee5faca45fa185c28e633d";
 const ZERO_SHA256: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -67,7 +72,15 @@ impl From<ExactDyadicEnthalpyError> for LseSurfaceEnthalpyErrorV1 {
 pub enum LseSurfaceEnthalpyEnergyOperandKindV1 {
     PhaseFreeSurfaceEnergy,
     LitterFusionEnergy,
+    LitterPhaseCapacitySpillEnergy,
     RetainedIngressTileCredit,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum LseSurfaceEnthalpyEndingPostureV1 {
+    ParentLocalPartial,
+    PersistentParentFinal,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -120,8 +133,11 @@ pub struct LseSurfaceEnthalpyEnergyCreditReceiptV1 {
     pub exact_carry_definition_sha256: Sha256Digest,
     pub transaction_id: TransactionId,
     pub predecessor_transaction_id: Option<TransactionId>,
+    pub parent_support_start_ns: u128,
+    pub parent_support_end_ns: u128,
     pub support_start_ns: u128,
     pub support_end_ns: u128,
+    pub ending_posture: LseSurfaceEnthalpyEndingPostureV1,
     pub beginning_owner_state_sha256: Sha256Digest,
     pub ending_owner_state_sha256: Sha256Digest,
     pub predecessor_receipt_chain_sha256: Sha256Digest,
@@ -150,6 +166,49 @@ pub struct LseSurfaceEnthalpyAcceptedCandidateV1 {
     pub receipt: LseSurfaceEnthalpyEnergyCreditReceiptV1,
 }
 
+fn derive_ending_posture(
+    parent_support_start_ns: u128,
+    parent_support_end_ns: u128,
+    support_start_ns: u128,
+    support_end_ns: u128,
+) -> Result<LseSurfaceEnthalpyEndingPostureV1, LseSurfaceEnthalpyErrorV1> {
+    if parent_support_start_ns >= parent_support_end_ns
+        || parent_support_start_ns > support_start_ns
+        || support_start_ns >= support_end_ns
+        || support_end_ns > parent_support_end_ns
+    {
+        return Err(LseSurfaceEnthalpyErrorV1::Identity(
+            "exact-surface parent/child support bounds",
+        ));
+    }
+    Ok(if support_end_ns < parent_support_end_ns {
+        LseSurfaceEnthalpyEndingPostureV1::ParentLocalPartial
+    } else {
+        LseSurfaceEnthalpyEndingPostureV1::PersistentParentFinal
+    })
+}
+
+fn ending_transaction_marker(
+    posture: LseSurfaceEnthalpyEndingPostureV1,
+    transaction_id: TransactionId,
+    predecessor_transaction_id: Option<TransactionId>,
+) -> Option<TransactionId> {
+    match posture {
+        LseSurfaceEnthalpyEndingPostureV1::ParentLocalPartial => predecessor_transaction_id,
+        LseSurfaceEnthalpyEndingPostureV1::PersistentParentFinal => Some(transaction_id),
+    }
+}
+
+fn markers_match_ending_posture(
+    posture: LseSurfaceEnthalpyEndingPostureV1,
+    transaction_id: TransactionId,
+    predecessor_transaction_id: Option<TransactionId>,
+    markers: impl IntoIterator<Item = Option<TransactionId>>,
+) -> bool {
+    let expected = ending_transaction_marker(posture, transaction_id, predecessor_transaction_id);
+    markers.into_iter().all(|marker| marker == expected)
+}
+
 impl LseSurfaceEnthalpyEnergyCreditReceiptV1 {
     fn recomputed_sha256(&self) -> Result<Sha256Digest, LseSurfaceEnthalpyErrorV1> {
         let mut value = self.clone();
@@ -165,11 +224,18 @@ impl LseSurfaceEnthalpyEnergyCreditReceiptV1 {
         beginning.validate()?;
         ending.validate()?;
         if self.receipt_tag != LSE_SURFACE_ENTHALPY_ENERGY_CREDIT_RECEIPT_V1_TAG
-            || self.schema_sha256.as_str() != LSE_SURFACE_ENTHALPY_OWNER_V1_SCHEMA_SHA256
+            || self.schema_sha256.as_str()
+                != LSE_SURFACE_ENTHALPY_ENERGY_CREDIT_RECEIPT_V1_SCHEMA_SHA256
             || self.exact_carry_definition_sha256.as_str()
                 != LSE_SURFACE_ENTHALPY_EXACT_CARRY_V1_DEFINITION_SHA256
             || self.transaction_id.0 == 0
-            || self.support_start_ns >= self.support_end_ns
+            || self.ending_posture
+                != derive_ending_posture(
+                    self.parent_support_start_ns,
+                    self.parent_support_end_ns,
+                    self.support_start_ns,
+                    self.support_end_ns,
+                )?
             || self.beginning_owner_state_sha256 != beginning.state_sha256
             || self.ending_owner_state_sha256 != ending.state_sha256
             || self.predecessor_receipt_chain_sha256 != beginning.receipt_chain_sha256
@@ -238,6 +304,11 @@ fn validate_owner_lineage(
     ending: &LseSurfaceEnthalpyOwnerEnvelopeV1,
     receipt: &LseSurfaceEnthalpyEnergyCreditReceiptV1,
 ) -> Result<(), LseSurfaceEnthalpyErrorV1> {
+    let ending_marker = ending_transaction_marker(
+        receipt.ending_posture,
+        receipt.transaction_id,
+        receipt.predecessor_transaction_id,
+    );
     if beginning.owner_tag != ending.owner_tag
         || beginning.schema_sha256 != ending.schema_sha256
         || beginning.exact_carry_definition_sha256 != ending.exact_carry_definition_sha256
@@ -252,7 +323,7 @@ fn validate_owner_lineage(
             .any(|(left, right)| {
                 left.surface_key != right.surface_key
                     || left.last_accepted_transaction_id != receipt.predecessor_transaction_id
-                    || right.last_accepted_transaction_id != Some(receipt.transaction_id)
+                    || right.last_accepted_transaction_id != ending_marker
             })
     {
         return Err(LseSurfaceEnthalpyErrorV1::Identity(
@@ -278,12 +349,20 @@ fn validate_operand_structure(
             "operand support or owner cardinality",
         ));
     }
+    let record_rank = records
+        .iter()
+        .enumerate()
+        .map(|(rank, record)| (record.surface_key.clone(), rank))
+        .collect::<BTreeMap<_, _>>();
     let mut previous = None;
     let mut common_source_owner = None;
     let mut retained_ordinals = Vec::new();
     for operand in operands {
-        let identity = (&operand.surface_key, operand.kind, operand.ordinal);
-        if previous.as_ref().is_some_and(|prior| prior >= &identity)
+        let topology_rank = record_rank.get(&operand.surface_key).copied().ok_or(
+            LseSurfaceEnthalpyErrorV1::Identity("exact-surface credit operand seal"),
+        )?;
+        let identity = (topology_rank, operand.kind, operand.ordinal);
+        if previous.is_some_and(|prior| prior >= identity)
             || operand.transaction_id != transaction_id
             || operand.predecessor_transaction_id != predecessor_transaction_id
             || operand.support_start_ns != support_start_ns
@@ -292,9 +371,6 @@ fn validate_operand_structure(
             || operand.basis != "tile_ground"
             || !operand.energy_j_m2_tile_ground.is_finite()
             || operand.source_receipt_sha256.as_str() == ZERO_SHA256
-            || !records
-                .iter()
-                .any(|record| record.surface_key == operand.surface_key)
             || expected_source_owner_id.is_some_and(|expected| expected != &operand.source_owner_id)
         {
             return Err(LseSurfaceEnthalpyErrorV1::Identity(
@@ -344,6 +420,14 @@ fn validate_operand_structure(
                 operand.kind == LseSurfaceEnthalpyEnergyOperandKindV1::LitterFusionEnergy
             })
             .collect::<Vec<_>>();
+        let spill = per_key
+            .iter()
+            .copied()
+            .filter(|operand| {
+                operand.kind
+                    == LseSurfaceEnthalpyEnergyOperandKindV1::LitterPhaseCapacitySpillEnergy
+            })
+            .collect::<Vec<_>>();
         let retained_count = per_key
             .iter()
             .filter(|operand| {
@@ -368,16 +452,26 @@ fn validate_operand_structure(
                     "exactly one fusion operand",
                 ));
             }
+            if spill.len() > 1
+                || spill.first().is_some_and(|operand| {
+                    operand.ordinal != 0 || operand.energy_j_m2_tile_ground >= 0.0
+                })
+            {
+                return Err(LseSurfaceEnthalpyErrorV1::Cardinality(
+                    "litter phase-capacity spill operand",
+                ));
+            }
             if phase
                 .iter()
                 .chain(fusion.iter())
+                .chain(spill.iter())
                 .any(|operand| operand.source_receipt_sha256 != phase[0].source_receipt_sha256)
             {
                 return Err(LseSurfaceEnthalpyErrorV1::Identity(
                     "phase/fusion source receipt join",
                 ));
             }
-        } else if !phase.is_empty() || !fusion.is_empty() {
+        } else if !phase.is_empty() || !fusion.is_empty() || !spill.is_empty() {
             return Err(LseSurfaceEnthalpyErrorV1::Identity(
                 "litter-only phase/fusion operands",
             ));
@@ -509,6 +603,56 @@ fn wire_digest(value: &str) -> Result<Sha256Digest, LseSurfaceEnthalpyErrorV1> {
 }
 
 impl LseSurfaceEnthalpyOwnerEnvelopeV1 {
+    fn validate_topology_ranked_exact_surface_order(
+        &self,
+        lse_v3: &LandSurfaceEnergyV3State,
+        surface_configuration: &SurfaceLiquidConfigurationV2,
+        surface_v2: &SurfaceLiquidOwnerEnvelopeV2,
+    ) -> Result<(), LseSurfaceEnthalpyErrorV1> {
+        let surface_state = surface_v2
+            .v2_state()
+            .ok_or(LseSurfaceEnthalpyErrorV1::Identity(
+                "surface owner is not V2",
+            ))?;
+        let topology_rank = surface_configuration
+            .parent()
+            .ofe_topology
+            .iter()
+            .enumerate()
+            .map(|(rank, ofe_id)| (ofe_id.clone(), rank))
+            .collect::<BTreeMap<_, _>>();
+        if topology_rank.len() != surface_configuration.parent().ofe_topology.len()
+            || self.configuration_sha256.as_str() != surface_configuration.configuration_sha256()
+            || self.records.len() != surface_configuration.records().len()
+            || self.records.len() != surface_state.records().len()
+            || self.records.len() != lse_v3.0.tiles.len()
+        {
+            return Err(LseSurfaceEnthalpyErrorV1::Cardinality(
+                "topology-ranked exact-surface owner",
+            ));
+        }
+        for ((exact, configured), surface) in self
+            .records
+            .iter()
+            .zip(surface_configuration.records())
+            .zip(surface_state.records())
+        {
+            if exact.surface_key != configured.key
+                || exact.surface_key != surface.key
+                || !topology_rank.contains_key(&exact.surface_key.ofe_id)
+                || !lse_v3.0.tiles.iter().any(|tile| {
+                    tile.ofe_id == exact.surface_key.ofe_id
+                        && tile.tile_id == exact.surface_key.tile_id
+                })
+            {
+                return Err(LseSurfaceEnthalpyErrorV1::Identity(
+                    "topology-ranked exact-surface order",
+                ));
+            }
+        }
+        Ok(())
+    }
+
     pub fn validate_frozen_parent_join(
         &self,
         lse_configuration: &LandSurfaceEnergyConfiguration,
@@ -528,6 +672,11 @@ impl LseSurfaceEnthalpyOwnerEnvelopeV1 {
             .ok_or(LseSurfaceEnthalpyErrorV1::Identity(
                 "surface owner is not V2",
             ))?;
+        self.validate_topology_ranked_exact_surface_order(
+            lse_v3,
+            surface_configuration,
+            surface_v2,
+        )?;
         if self.run_id != surface_configuration.parent().run_id.to_string()
             || self.configuration_sha256.as_str() != surface_configuration.configuration_sha256()
             || self.frozen_lse_v3_state_sha256 != lse_v3.0.state_sha256
@@ -669,21 +818,17 @@ impl LseSurfaceEnthalpyOwnerEnvelopeV1 {
                 "owner schema or cardinality",
             ));
         }
-        let mut previous = None;
+        let mut keys = BTreeSet::new();
         for record in &self.records {
             if !record.enthalpy_hi_j_m2_tile.is_finite() {
                 return Err(LseSurfaceEnthalpyErrorV1::Domain("nonfinite high mirror"));
             }
             record.enthalpy_carry.validate()?;
-            if previous
-                .as_ref()
-                .is_some_and(|key| key >= &record.surface_key)
-            {
+            if !keys.insert(record.surface_key.clone()) {
                 return Err(LseSurfaceEnthalpyErrorV1::Cardinality(
-                    "unordered surface keys",
+                    "duplicate surface keys",
                 ));
             }
-            previous = Some(record.surface_key.clone());
         }
         if self.state_sha256 != self.recomputed_state_sha256()? {
             return Err(LseSurfaceEnthalpyErrorV1::Identity("owner state digest"));
@@ -713,7 +858,7 @@ impl LseSurfaceEnthalpyOwnerEnvelopeV1 {
         &self.records
     }
 
-    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    #[allow(clippy::too_many_arguments)]
     pub fn advance_exact(
         &self,
         lse_v3_candidate: &LandSurfaceEnergyV3State,
@@ -726,12 +871,50 @@ impl LseSurfaceEnthalpyOwnerEnvelopeV1 {
         expected_operands: &[LseSurfaceEnthalpyAcceptedEnergyOperandV1],
         accepted_operands: Vec<LseSurfaceEnthalpyAcceptedEnergyOperandV1>,
     ) -> Result<LseSurfaceEnthalpyAcceptedCandidateV1, LseSurfaceEnthalpyErrorV1> {
+        self.advance_exact_with_parent_support(
+            lse_v3_candidate,
+            surface_configuration,
+            surface_v2_candidate,
+            transaction_id,
+            predecessor_transaction_id,
+            support_start_ns,
+            support_end_ns,
+            support_start_ns,
+            support_end_ns,
+            expected_operands,
+            accepted_operands,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    pub fn advance_exact_with_parent_support(
+        &self,
+        lse_v3_candidate: &LandSurfaceEnergyV3State,
+        surface_configuration: &SurfaceLiquidConfigurationV2,
+        surface_v2_candidate: &SurfaceLiquidOwnerEnvelopeV2,
+        transaction_id: TransactionId,
+        predecessor_transaction_id: Option<TransactionId>,
+        parent_support_start_ns: u128,
+        parent_support_end_ns: u128,
+        support_start_ns: u128,
+        support_end_ns: u128,
+        expected_operands: &[LseSurfaceEnthalpyAcceptedEnergyOperandV1],
+        accepted_operands: Vec<LseSurfaceEnthalpyAcceptedEnergyOperandV1>,
+    ) -> Result<LseSurfaceEnthalpyAcceptedCandidateV1, LseSurfaceEnthalpyErrorV1> {
         self.validate()?;
-        if transaction_id.0 == 0 || support_start_ns >= support_end_ns {
+        if transaction_id.0 == 0 {
             return Err(LseSurfaceEnthalpyErrorV1::Identity(
                 "transaction or support",
             ));
         }
+        let ending_posture = derive_ending_posture(
+            parent_support_start_ns,
+            parent_support_end_ns,
+            support_start_ns,
+            support_end_ns,
+        )?;
+        let ending_marker =
+            ending_transaction_marker(ending_posture, transaction_id, predecessor_transaction_id);
         let current_predecessor = self
             .records
             .first()
@@ -755,6 +938,26 @@ impl LseSurfaceEnthalpyOwnerEnvelopeV1 {
                 .ok_or(LseSurfaceEnthalpyErrorV1::Identity(
                     "candidate surface owner is not V2",
                 ))?;
+        self.validate_topology_ranked_exact_surface_order(
+            lse_v3_candidate,
+            surface_configuration,
+            surface_v2_candidate,
+        )?;
+        if !markers_match_ending_posture(
+            ending_posture,
+            transaction_id,
+            predecessor_transaction_id,
+            std::iter::once(lse_v3_candidate.0.last_accepted_transaction_id).chain(
+                surface_state
+                    .records()
+                    .iter()
+                    .map(|record| record.last_accepted_transaction_id),
+            ),
+        ) {
+            return Err(LseSurfaceEnthalpyErrorV1::Identity(
+                "candidate parent-local transaction posture",
+            ));
+        }
         validate_operand_structure(
             expected_operands,
             &self.records,
@@ -826,7 +1029,7 @@ impl LseSurfaceEnthalpyOwnerEnvelopeV1 {
                 surface_key: beginning.surface_key.clone(),
                 enthalpy_hi_j_m2_tile: high,
                 enthalpy_carry: carry,
-                last_accepted_transaction_id: Some(transaction_id),
+                last_accepted_transaction_id: ending_marker,
             });
         }
         if !grouped.is_empty() {
@@ -852,12 +1055,17 @@ impl LseSurfaceEnthalpyOwnerEnvelopeV1 {
         ending.state_sha256 = ending.recomputed_state_sha256()?;
         let mut receipt = LseSurfaceEnthalpyEnergyCreditReceiptV1 {
             receipt_tag: LSE_SURFACE_ENTHALPY_ENERGY_CREDIT_RECEIPT_V1_TAG.to_owned(),
-            schema_sha256: self.schema_sha256.clone(),
+            schema_sha256: wire_digest(
+                LSE_SURFACE_ENTHALPY_ENERGY_CREDIT_RECEIPT_V1_SCHEMA_SHA256,
+            )?,
             exact_carry_definition_sha256: self.exact_carry_definition_sha256.clone(),
             transaction_id,
             predecessor_transaction_id,
+            parent_support_start_ns,
+            parent_support_end_ns,
             support_start_ns,
             support_end_ns,
+            ending_posture,
             beginning_owner_state_sha256: beginning_state_sha256,
             ending_owner_state_sha256: ending.state_sha256.clone(),
             predecessor_receipt_chain_sha256,
@@ -904,4 +1112,116 @@ impl LseSurfaceEnthalpyOwnerEnvelopeV1 {
 
 pub fn refuse_lse_surface_enthalpy_v1_downgrade() -> Result<(), LseSurfaceEnthalpyErrorV1> {
     Err(LseSurfaceEnthalpyErrorV1::DowngradeProhibited)
+}
+
+#[cfg(test)]
+mod parent_local_chronology_tests {
+    use super::*;
+
+    const PARENT_START: u128 = 1_000;
+    const PARENT_END: u128 = 4_000;
+    const TRANSACTION: TransactionId = TransactionId(19);
+    const PREDECESSOR: Option<TransactionId> = Some(TransactionId(18));
+
+    #[test]
+    fn first_middle_and_final_child_postures_are_derived_from_sealed_bounds() {
+        assert_eq!(
+            derive_ending_posture(PARENT_START, PARENT_END, PARENT_START, 2_000)
+                .expect("first partial child"),
+            LseSurfaceEnthalpyEndingPostureV1::ParentLocalPartial,
+        );
+        assert_eq!(
+            derive_ending_posture(PARENT_START, PARENT_END, 2_000, 3_000)
+                .expect("middle partial child"),
+            LseSurfaceEnthalpyEndingPostureV1::ParentLocalPartial,
+        );
+        assert_eq!(
+            derive_ending_posture(PARENT_START, PARENT_END, 3_000, PARENT_END)
+                .expect("final child"),
+            LseSurfaceEnthalpyEndingPostureV1::PersistentParentFinal,
+        );
+    }
+
+    #[test]
+    fn wrong_parent_bounds_and_caller_selected_posture_fail_closed() {
+        for bounds in [
+            (PARENT_START, PARENT_START, PARENT_START, PARENT_START),
+            (PARENT_START, PARENT_END, PARENT_START - 1, 2_000),
+            (PARENT_START, PARENT_END, 2_000, 2_000),
+            (PARENT_START, PARENT_END, 3_000, PARENT_END + 1),
+        ] {
+            assert!(derive_ending_posture(bounds.0, bounds.1, bounds.2, bounds.3).is_err());
+        }
+        let derived = derive_ending_posture(PARENT_START, PARENT_END, 2_000, 3_000)
+            .expect("derived partial posture");
+        assert_ne!(
+            derived,
+            LseSurfaceEnthalpyEndingPostureV1::PersistentParentFinal,
+            "a caller-selected final posture cannot replace derived support posture",
+        );
+    }
+
+    #[test]
+    fn partial_retains_predecessor_and_final_stamps_once_without_mixed_markers() {
+        assert!(markers_match_ending_posture(
+            LseSurfaceEnthalpyEndingPostureV1::ParentLocalPartial,
+            TRANSACTION,
+            PREDECESSOR,
+            [PREDECESSOR, PREDECESSOR, PREDECESSOR],
+        ));
+        assert!(!markers_match_ending_posture(
+            LseSurfaceEnthalpyEndingPostureV1::ParentLocalPartial,
+            TRANSACTION,
+            PREDECESSOR,
+            [PREDECESSOR, Some(TRANSACTION), PREDECESSOR],
+        ));
+        assert!(markers_match_ending_posture(
+            LseSurfaceEnthalpyEndingPostureV1::PersistentParentFinal,
+            TRANSACTION,
+            PREDECESSOR,
+            [Some(TRANSACTION), Some(TRANSACTION), Some(TRANSACTION)],
+        ));
+        assert!(!markers_match_ending_posture(
+            LseSurfaceEnthalpyEndingPostureV1::PersistentParentFinal,
+            TRANSACTION,
+            PREDECESSOR,
+            [Some(TRANSACTION), PREDECESSOR, Some(TRANSACTION)],
+        ));
+    }
+
+    #[test]
+    fn old_receipt_wire_and_marker_poison_leave_inputs_byte_exact() {
+        let old_wire = serde_json::json!({
+            "receipt_tag": LSE_SURFACE_ENTHALPY_ENERGY_CREDIT_RECEIPT_V1_TAG,
+            "schema_sha256": LSE_SURFACE_ENTHALPY_OWNER_V1_SCHEMA_SHA256,
+            "exact_carry_definition_sha256": LSE_SURFACE_ENTHALPY_EXACT_CARRY_V1_DEFINITION_SHA256,
+            "transaction_id": TRANSACTION,
+            "predecessor_transaction_id": PREDECESSOR,
+            "support_start_ns": PARENT_START,
+            "support_end_ns": PARENT_END,
+            "beginning_owner_state_sha256": ZERO_SHA256,
+            "ending_owner_state_sha256": ZERO_SHA256,
+            "predecessor_receipt_chain_sha256": ZERO_SHA256,
+            "accepted_operands": [],
+            "receipt_sha256": ZERO_SHA256,
+        });
+        assert!(
+            serde_json::from_value::<LseSurfaceEnthalpyEnergyCreditReceiptV1>(old_wire).is_err(),
+            "pre-amendment receipt bytes must not acquire inferred defaults",
+        );
+
+        let markers = vec![PREDECESSOR, Some(TRANSACTION), PREDECESSOR];
+        let before = serde_json::to_vec(&markers).expect("beginning marker bytes");
+        assert!(!markers_match_ending_posture(
+            LseSurfaceEnthalpyEndingPostureV1::ParentLocalPartial,
+            TRANSACTION,
+            PREDECESSOR,
+            markers.iter().copied(),
+        ));
+        assert_eq!(
+            serde_json::to_vec(&markers).expect("ending marker bytes"),
+            before,
+            "failed candidate validation must not mutate beginning markers",
+        );
+    }
 }

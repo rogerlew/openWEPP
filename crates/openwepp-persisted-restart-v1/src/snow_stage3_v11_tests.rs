@@ -30,6 +30,243 @@ use crate::{
 
 include!("snow_stage3_v11_v3_tests.rs");
 
+#[test]
+fn restored_direct_v10_owner_executes_only_a_fresh_snow_free_stack() {
+    use openwepp_coupled_time::{
+        ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, LedgerEntryV1,
+        ParentAuthorityV1, ParentIntervalId, SegmentId, StepConstraintV1, accept_slab,
+        complete_owner_set_digest, reduce_constraints,
+    };
+    use openwepp_hillslope_orchestrator::{
+        DirectWb14CoupledChildBindingV1,
+        v9_real_consumer_shadow::{
+            DirectV9ShadowIntervalInput, restart_authority_execute_fresh_snow_free_segment_v1,
+            restart_authority_v11_parent_owner_envelopes_v1,
+        },
+    };
+    use openwepp_kernel_contract::TransactionId;
+    use openwepp_vegetation::v11::{V11ParentTransaction, migrate_v10_runtime_to_v11};
+
+    const END_NS: u128 = 900_000_000_000;
+    let fixture = restart_authority_owner_fixture();
+    let (run, topology) = checkpoint_identities_v1(
+        &fixture.committed,
+        fixture.runtime.shadow.root_zone_hydraulic_configuration(),
+    )
+    .unwrap();
+    let context = ExpectedRestartStaticContext {
+        run_identity_sha256: &run,
+        topology_sha256: &topology,
+        vegetation_configuration: fixture
+            .runtime
+            .shadow
+            .restart_authority_vegetation_configuration(),
+        vegetation_owner_id: fixture
+            .runtime
+            .shadow
+            .restart_authority_vegetation_owner_id(),
+        soil_thermal_owner_id: &fixture
+            .runtime
+            .shadow
+            .restart_authority_soil_thermal()
+            .unwrap()
+            .owner_id,
+        soil_thermal_configuration_sha256: &fixture
+            .runtime
+            .shadow
+            .restart_authority_soil_thermal()
+            .unwrap()
+            .configuration_sha256,
+        lse_configuration: fixture.runtime.shadow.restart_authority_lse_configuration(),
+        surface_liquid_configuration: fixture
+            .runtime
+            .shadow
+            .restart_authority_surface_configuration(),
+        gsi_configuration: fixture.runtime.shadow.gsi_owner_configuration(),
+        forcing_static_configuration: fixture.runtime.shadow.provider_static_configuration(),
+        root_zone_hydraulic_configuration: fixture
+            .runtime
+            .shadow
+            .root_zone_hydraulic_configuration(),
+        phase_plan: &fixture
+            .runtime
+            .shadow
+            .restart_authority_hydrology_frame()
+            .phase_plan,
+        phase_plan_sha256: &fixture.phase_plan_sha256,
+        day_inputs: &fixture.day_inputs,
+        day_input_digests: &fixture.day_input_digests,
+    };
+    let mut checkpoint = DirectV10RealConsumerCheckpointV1 {
+        schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
+        version: 1,
+        run_identity_sha256: run.clone(),
+        topology_sha256: topology.clone(),
+        phase: DirectV10CheckpointPhaseV1::BetweenDays {
+            next_day_index: WireDayIndex(0),
+            accepted_interval_count: AcceptedIntervalCount::try_new(0).unwrap(),
+            committed: fixture.committed.clone(),
+        },
+        payload_sha256: Sha256Hex::try_new("0".repeat(64)).unwrap(),
+    };
+    checkpoint.seal().unwrap();
+    let isolated =
+        admit_checkpoint_v1(&to_canonical_bytes(&checkpoint).unwrap(), &context).unwrap();
+    let restored = DirectV10RestartHost::from_isolated(isolated, &context).unwrap();
+    let restored_shadow = restored.shadow();
+
+    let migrated = migrate_v10_runtime_to_v11(
+        restored_shadow.restart_authority_vegetation_configuration(),
+        restored_shadow.vegetation_state(),
+    )
+    .unwrap();
+    let owners = restart_authority_v11_parent_owner_envelopes_v1(restored_shadow).unwrap();
+    let owner_states = owners
+        .values()
+        .map(|owner| owner.to_owner_state().unwrap())
+        .collect::<Vec<_>>();
+    let owner_digest = complete_owner_set_digest(&owner_states).unwrap();
+    let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(END_NS)).unwrap();
+    let interval_id = ParentIntervalId::derive(
+        digest_bytes(b"restart-run"),
+        digest_bytes(b"restart-forcing"),
+        digest_bytes(b"restart-policy"),
+        support,
+    )
+    .unwrap();
+    let parent_id = openwepp_coupled_time::ParentTransactionId::derive(
+        digest_bytes(b"restart-run"),
+        40,
+        interval_id,
+        owner_digest,
+    )
+    .unwrap();
+    let authority = ParentAuthorityV1::new(
+        digest_bytes(b"restart-run"),
+        digest_bytes(b"restart-forcing"),
+        digest_bytes(b"restart-policy"),
+        40,
+        support,
+        owner_digest,
+    )
+    .unwrap();
+    let participants = owners.keys().cloned().collect::<Vec<_>>();
+    let mut clock = CoupledClockStateV1::new(
+        authority,
+        owner_states.clone(),
+        "restored-snow-free".to_owned(),
+        participants.clone(),
+        digest_bytes(b"restart-clock"),
+        Vec::new(),
+    )
+    .unwrap();
+    let constraint = StepConstraintV1::new(
+        parent_id,
+        ModelTimeNs::new(0),
+        ModelTimeNs::new(END_NS),
+        "vegetation".to_owned(),
+        ConstraintClass::HardBoundary,
+        digest_bytes(b"restart-constraint"),
+        digest_bytes(b"restart-forcing"),
+        digest_bytes(b"restart-policy"),
+    )
+    .unwrap();
+    let reduction = reduce_constraints(
+        &[constraint],
+        parent_id,
+        ModelTimeNs::new(0),
+        ModelTimeNs::new(END_NS),
+        None,
+    )
+    .unwrap();
+    let mut participant_bytes = Vec::new();
+    for participant in &participants {
+        participant_bytes.extend_from_slice(participant.as_bytes());
+        participant_bytes.push(0);
+    }
+    let segment = SegmentId::derive(
+        parent_id,
+        0,
+        support,
+        digest_bytes(b"restored-snow-free"),
+        digest_bytes(&participant_bytes),
+    )
+    .unwrap();
+    let joined = digest_bytes(b"restart-ledger");
+    let ledger = LedgerEntryV1::new(
+        "vegetation".to_owned(),
+        "owner".to_owned(),
+        joined,
+        joined,
+        digest_bytes(b"restart-lineage"),
+    )
+    .unwrap();
+    let slab = CoupledSlabCandidateV1::new(
+        &clock,
+        segment,
+        support,
+        &reduction,
+        owner_states,
+        vec![ledger],
+    )
+    .unwrap();
+    let receipt = accept_slab(&mut clock, slab).unwrap();
+    let parent = V11ParentTransaction::new_with_complete_owners(
+        &migrated.configuration,
+        &migrated.state,
+        parent_id,
+        ModelTimeNs::new(0),
+        owners,
+    )
+    .unwrap();
+
+    let mut lse_forcing = fixture.runtime.endpoint.forcing.clone();
+    lse_forcing.interval_s = 900.0;
+    lse_forcing.transaction_id = TransactionId(41);
+    lse_forcing.precipitation_parcels.clear();
+    lse_forcing.runon_parcels.clear();
+    lse_forcing.forcing_sha256 = lse_forcing.canonical_sha256().unwrap();
+    let interval = DirectV9ShadowIntervalInput {
+        lse_forcing,
+        vegetation_forcing: fixture.runtime.endpoint.receipt.forcing().clone(),
+        wb14_parameters: vec![DirectOfeWb14Parameters {
+            ofe_id: OfeId::try_new("ofe-1").unwrap(),
+            effective_conductivity_m_s: 1.0e-6,
+            matric_potential_m: 0.1,
+            infiltration_storage_capacity_m: 0.04,
+        }],
+    };
+    let binding = DirectWb14CoupledChildBindingV1 {
+        proposed_upper_bound_s_bits: 1_800.0_f64.to_bits(),
+        coupled_parent_transaction_sha256: *parent_id.digest().as_bytes(),
+        accepted_slab_sha256: *receipt.slab_id().digest().as_bytes(),
+        parent_beginning_complete_owner_set_sha256: *owner_digest.as_bytes(),
+        parent_support_start_ns: 0,
+        parent_support_end_ns: 1_800_000_000_000,
+        child_support_start_ns: 0,
+        child_support_end_ns: END_NS,
+    };
+    let (candidate, ending, audit) = restart_authority_execute_fresh_snow_free_segment_v1(
+        restored_shadow,
+        &interval,
+        0,
+        0,
+        false,
+        binding,
+        &migrated.configuration,
+        &parent,
+        &receipt,
+    )
+    .unwrap();
+    assert_eq!(candidate.accepted_slab_receipt, receipt);
+    assert_eq!(candidate.ending_resource_owners.len(), 7);
+    assert_eq!(ending.restart_authority_accepted_interval_count(), 0);
+    assert_eq!(audit.physical_execution_count, 1);
+    assert_eq!(audit.identity_reseal_count, 0);
+    assert_eq!(audit.final_publication_append_count, 0);
+    assert_eq!(audit.outer_accepted_publication_count, 0);
+}
+
 fn snow_free_state(lane_id: u32) -> DirectSnowStage3PersistentState {
     DirectSnowStage3PersistentState {
         schema_version: 1,
@@ -1022,6 +1259,32 @@ fn exercise_adaptive_restart_posture_inner(
                 .posture(),
             posture
         );
+        if matches!(
+            posture,
+            DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary
+        ) {
+            let current = interrupted
+                .restart_authority_in_progress_execution_v2()
+                .unwrap()
+                .support_current()
+                .unwrap();
+            let parent = current
+                .real_consumer
+                .restart_authority_wb14_parent_canonical_bytes()
+                .unwrap();
+            let represented_snow = current.stage3_by_lane.values().any(|state| {
+                openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::restart_authority_stage3_has_represented_ice_v2(state)
+            });
+            let parent_complete = current.coupled_clock.accepted_until()
+                == current.coupled_clock.parent_support().end_ns();
+            if !represented_snow {
+                assert_eq!(
+                    parent.is_some(),
+                    !parent_complete,
+                    "snow-free adaptive boundary WB14 parent follows final posture"
+                );
+            }
+        }
     }
     let (run, topology) = checkpoint_identities_v1(
         &fixture.owners.committed,

@@ -24,6 +24,10 @@ const EXACT_CARRY_PRODUCTION_PATHS: &[&str] = &[
     "crates/openwepp-land-surface-energy/src/owner_envelope.rs",
     "crates/openwepp-land-surface-energy/src/transaction.rs",
 ];
+const COMPONENT_DEPENDENCY_REPLAY_PRODUCTION_PATHS: &[&str] = &[
+    "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+];
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -37,11 +41,457 @@ fn read_existing(paths: &[&str]) -> String {
         .join("\n")
 }
 
+fn rust_char_literal_end(bytes: &[u8], start: usize) -> Option<usize> {
+    let quote = if bytes.get(start) == Some(&b'\'') {
+        start
+    } else if bytes.get(start) == Some(&b'b') && bytes.get(start + 1) == Some(&b'\'') {
+        start + 1
+    } else {
+        return None;
+    };
+    let mut cursor = quote + 1;
+    let first = *bytes.get(cursor)?;
+    if first == b'\\' {
+        cursor += 1;
+        match *bytes.get(cursor)? {
+            b'u' if bytes.get(cursor + 1) == Some(&b'{') => {
+                cursor += 2;
+                while bytes.get(cursor).is_some_and(|byte| *byte != b'}') {
+                    cursor += 1;
+                }
+                cursor += usize::from(bytes.get(cursor) == Some(&b'}'));
+            }
+            b'x' => cursor += 3,
+            _ => cursor += 1,
+        }
+    } else {
+        if matches!(first, b'\'' | b'\n' | b'\r') {
+            return None;
+        }
+        let scalar_length = match first {
+            0x00..=0x7f => 1,
+            0xc0..=0xdf => 2,
+            0xe0..=0xef => 3,
+            0xf0..=0xf7 => 4,
+            _ => return None,
+        };
+        cursor += scalar_length;
+    }
+    (bytes.get(cursor) == Some(&b'\'')).then_some(cursor + 1)
+}
+
+fn rust_code_mask(source: &str) -> String {
+    let bytes = source.as_bytes();
+    let mut masked = bytes.to_vec();
+    let mut index = 0;
+    while index < bytes.len() {
+        let raw_prefix_length = if bytes[index] == b'r' {
+            Some(1)
+        } else if index + 1 < bytes.len() && bytes[index] == b'b' && bytes[index + 1] == b'r' {
+            Some(2)
+        } else {
+            None
+        };
+        let raw_delimiter = raw_prefix_length.and_then(|prefix_length| {
+            let mut quote = index + prefix_length;
+            while quote < bytes.len() && bytes[quote] == b'#' {
+                quote += 1;
+            }
+            (quote < bytes.len() && bytes[quote] == b'"')
+                .then_some((quote, quote - index - prefix_length))
+        });
+        if let Some((opening_quote, hash_count)) = raw_delimiter {
+            let mut end = opening_quote + 1;
+            while end < bytes.len() {
+                if bytes[end] == b'"'
+                    && end + 1 + hash_count <= bytes.len()
+                    && bytes[end + 1..end + 1 + hash_count]
+                        .iter()
+                        .all(|byte| *byte == b'#')
+                {
+                    end += 1 + hash_count;
+                    break;
+                }
+                end += 1;
+            }
+            while index < end {
+                if bytes[index] != b'\n' {
+                    masked[index] = b' ';
+                }
+                index += 1;
+            }
+        } else if index + 1 < bytes.len() && bytes[index] == b'/' && bytes[index + 1] == b'/' {
+            while index < bytes.len() && bytes[index] != b'\n' {
+                masked[index] = b' ';
+                index += 1;
+            }
+        } else if index + 1 < bytes.len() && bytes[index] == b'/' && bytes[index + 1] == b'*' {
+            let mut depth = 1_u32;
+            masked[index] = b' ';
+            masked[index + 1] = b' ';
+            index += 2;
+            while index < bytes.len() && depth > 0 {
+                if index + 1 < bytes.len() && bytes[index] == b'/' && bytes[index + 1] == b'*' {
+                    depth += 1;
+                    masked[index] = b' ';
+                    masked[index + 1] = b' ';
+                    index += 2;
+                } else if index + 1 < bytes.len()
+                    && bytes[index] == b'*'
+                    && bytes[index + 1] == b'/'
+                {
+                    depth -= 1;
+                    masked[index] = b' ';
+                    masked[index + 1] = b' ';
+                    index += 2;
+                } else {
+                    if bytes[index] != b'\n' {
+                        masked[index] = b' ';
+                    }
+                    index += 1;
+                }
+            }
+        } else if let Some(end) = rust_char_literal_end(bytes, index) {
+            while index < end {
+                if bytes[index] != b'\n' {
+                    masked[index] = b' ';
+                }
+                index += 1;
+            }
+        } else if bytes[index] == b'"' {
+            masked[index] = b' ';
+            index += 1;
+            while index < bytes.len() {
+                let byte = bytes[index];
+                if byte != b'\n' {
+                    masked[index] = b' ';
+                }
+                index += 1;
+                if byte == b'\\' && index < bytes.len() {
+                    if bytes[index] != b'\n' {
+                        masked[index] = b' ';
+                    }
+                    index += 1;
+                } else if byte == b'"' {
+                    break;
+                }
+            }
+        } else {
+            index += 1;
+        }
+    }
+    String::from_utf8(masked).expect("masked Rust remains UTF-8")
+}
+
+fn rust_item_body<'a>(source: &'a str, marker: &str) -> Option<&'a str> {
+    let masked = rust_code_mask(source);
+    let start = masked.find(marker)?;
+    let open = masked[start..].find('{')? + start;
+    let mut depth = 0_u32;
+    for (offset, byte) in masked.as_bytes()[open..].iter().enumerate() {
+        match byte {
+            b'{' => depth += 1,
+            b'}' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(&source[open..=open + offset]);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn rust_item_attribute_cursor(masked: &str, marker_start: usize) -> usize {
+    let bytes = masked.as_bytes();
+    let mut cursor = marker_start;
+    loop {
+        while cursor > 0 && bytes[cursor - 1].is_ascii_whitespace() {
+            cursor -= 1;
+        }
+        let modifier_end = cursor;
+
+        if modifier_end > 0 && bytes[modifier_end - 1] == b')' {
+            let mut depth = 0_u32;
+            let mut open = None;
+            for index in (0..modifier_end).rev() {
+                match bytes[index] {
+                    b')' => depth += 1,
+                    b'(' => {
+                        depth -= 1;
+                        if depth == 0 {
+                            open = Some(index);
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            if let Some(open) = open {
+                let mut word_end = open;
+                while word_end > 0 && bytes[word_end - 1].is_ascii_whitespace() {
+                    word_end -= 1;
+                }
+                let mut word_start = word_end;
+                while word_start > 0
+                    && (bytes[word_start - 1].is_ascii_alphanumeric()
+                        || bytes[word_start - 1] == b'_')
+                {
+                    word_start -= 1;
+                }
+                if &masked[word_start..word_end] == "pub" {
+                    cursor = word_start;
+                    continue;
+                }
+            }
+        }
+
+        let mut word_start = modifier_end;
+        while word_start > 0
+            && (bytes[word_start - 1].is_ascii_alphanumeric() || bytes[word_start - 1] == b'_')
+        {
+            word_start -= 1;
+        }
+        if matches!(
+            &masked[word_start..modifier_end],
+            "pub" | "async" | "const" | "unsafe" | "extern" | "default"
+        ) {
+            cursor = word_start;
+            continue;
+        }
+        return cursor;
+    }
+}
+
+fn rust_item_cfg_attributes(source: &str, marker: &str) -> Option<String> {
+    let masked = rust_code_mask(source);
+    let mut cursor = rust_item_attribute_cursor(&masked, masked.find(marker)?);
+    let bytes = masked.as_bytes();
+    let mut attributes = Vec::new();
+    loop {
+        while cursor > 0 && bytes[cursor - 1].is_ascii_whitespace() {
+            cursor -= 1;
+        }
+        if cursor == 0 || bytes[cursor - 1] != b']' {
+            break;
+        }
+        let end = cursor;
+        let mut depth = 0_u32;
+        let mut open = None;
+        for index in (0..cursor).rev() {
+            match bytes[index] {
+                b']' => depth += 1,
+                b'[' => {
+                    depth -= 1;
+                    if depth == 0 {
+                        open = Some(index);
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
+        let Some(open) = open else {
+            return None;
+        };
+        if open == 0 || bytes[open - 1] != b'#' {
+            break;
+        }
+        let attribute = &masked[open - 1..end];
+        if attribute
+            .split(|character: char| !(character.is_ascii_alphanumeric() || character == '_'))
+            .any(|token| token == "cfg" || token == "cfg_attr")
+        {
+            attributes.push(attribute.to_owned());
+        }
+        cursor = open - 1;
+    }
+    Some(attributes.join("\n"))
+}
+
+fn rust_item_is_cfg_gated(source: &str, marker: &str) -> bool {
+    rust_item_cfg_attributes(source, marker).is_some_and(|attributes| !attributes.is_empty())
+}
+
+fn rust_item_is_top_level(source: &str, marker: &str) -> bool {
+    let masked = rust_code_mask(source);
+    let Some(start) = masked.find(marker) else {
+        return false;
+    };
+    let mut depth = 0_i32;
+    for byte in masked.as_bytes()[..start].iter() {
+        match byte {
+            b'{' => depth += 1,
+            b'}' => depth -= 1,
+            _ => {}
+        }
+    }
+    depth == 0
+}
+
+fn rust_item_is_unconditional_top_level(source: &str, marker: &str) -> bool {
+    rust_item_body(source, marker).is_some()
+        && !rust_item_is_cfg_gated(source, marker)
+        && rust_item_is_top_level(source, marker)
+}
+
+#[test]
+fn rust_structural_item_parser_rejects_cfg_disabled_and_test_only_decoys() {
+    let fixture = r#####"
+        // struct CommentDecoy { marker: bool }
+        const STRING_DECOY: &str = "fn StringDecoy() {}";
+        const RAW_STRING_DECOY: &str = r#"embedded "quote" before
+            #[cfg(not(any()))]
+            pub(crate) struct RawStringDecoy { marker: bool }
+        "#;
+        const RAW_BYTE_STRING_DECOY: &[u8] = br###"
+            fn RawByteStringDecoy() {}
+        "###;
+
+        #[cfg(any())]
+        pub(crate) struct DisabledDecoy {
+            marker: bool,
+        }
+
+        #[allow(dead_code)]
+        #[cfg(any(
+            test,
+            feature = "structural-decoy",
+        ))]
+        pub(in crate) async fn StackedTestDecoy() {
+            let _marker = true;
+        }
+
+        #[cfg_attr(test, cfg(any()))]
+        pub struct ConditionalCfgDecoy {
+            marker: bool,
+        }
+
+        #[allow(dead_code)]
+        pub(super) struct LiveProductionItem {
+            marker: bool,
+        }
+    "#####;
+
+    assert!(rust_item_body(fixture, "struct CommentDecoy").is_none());
+    assert!(rust_item_body(fixture, "fn StringDecoy").is_none());
+    assert!(rust_item_body(fixture, "struct RawStringDecoy").is_none());
+    assert!(rust_item_body(fixture, "fn RawByteStringDecoy").is_none());
+    for marker in [
+        "struct DisabledDecoy",
+        "fn StackedTestDecoy",
+        "struct ConditionalCfgDecoy",
+    ] {
+        assert!(rust_item_body(fixture, marker).is_some());
+        assert!(rust_item_is_cfg_gated(fixture, marker), "{marker}");
+        assert!(rust_item_is_top_level(fixture, marker), "{marker}");
+    }
+    assert!(!rust_item_is_cfg_gated(
+        fixture,
+        "struct LiveProductionItem"
+    ));
+    assert!(rust_item_is_top_level(fixture, "struct LiveProductionItem"));
+}
+
+#[test]
+fn rust_structural_item_parser_masks_char_literals_and_rejects_nested_required_decoys() {
+    let fixture = r#####"
+        fn lifetime_control<'a>(value: &'a str, other: &'static str) -> &'a str {
+            let _placeholder: &'_ str = other;
+            value
+        }
+
+        fn nested_decoy_container() {
+            let _closing_char = '}';
+            let _escaped_quote = '\'';
+
+            #[cfg(test)]
+            struct CoveredComponentTemperatureDependencyGraph {}
+            #[cfg(any(test, feature = "structural-decoy"))]
+            struct ValidatedCoveredComponentReplaySweepBase {}
+            #[cfg(any())]
+            struct ValidatedCoveredComponentProbeReplay {}
+            #[cfg_attr(test, cfg(any()))]
+            struct CoveredComponentDependencyReplayAudit {}
+            #[cfg(test)]
+            fn covered_component_temperature_probe_residuals() {}
+            #[cfg(any())]
+            fn begin_covered_component_dependency_replay_audit() {}
+            #[cfg(any(test, feature = "structural-decoy"))]
+            fn take_covered_component_dependency_replay_audit() {}
+
+            let _closing_byte = b'}';
+            let _escaped_byte_quote = b'\'';
+        }
+
+        fn covered_jacobian_probe_residuals() {
+            let _closing_char = '}';
+            let _escaped_quote = '\'';
+            #[cfg(test)]
+            {
+                covered_component_temperature_probe_residuals();
+            }
+            let covered_component_temperature_probe_residuals = false;
+            let _bare_reference = covered_component_temperature_probe_residuals;
+            if false {
+                covered_component_temperature_probe_residuals();
+            }
+            let _closing_byte = b'}';
+            let _escaped_byte_quote = b'\'';
+        }
+    "#####;
+
+    let lifetime_mask = rust_code_mask(fixture);
+    assert!(lifetime_mask.contains("<'a>"));
+    assert!(lifetime_mask.contains("&'static str"));
+    assert!(lifetime_mask.contains("&'_ str"));
+    assert!(rust_item_body(fixture, "fn lifetime_control").is_some());
+
+    for marker in [
+        "struct CoveredComponentTemperatureDependencyGraph",
+        "struct ValidatedCoveredComponentReplaySweepBase",
+        "struct ValidatedCoveredComponentProbeReplay",
+        "struct CoveredComponentDependencyReplayAudit",
+        "fn covered_component_temperature_probe_residuals",
+        "fn begin_covered_component_dependency_replay_audit",
+        "fn take_covered_component_dependency_replay_audit",
+    ] {
+        assert!(rust_item_body(fixture, marker).is_some(), "{marker}");
+        assert!(rust_item_is_cfg_gated(fixture, marker), "{marker}");
+        assert!(!rust_item_is_top_level(fixture, marker), "{marker}");
+        assert!(!rust_item_is_unconditional_top_level(fixture, marker));
+    }
+    let dispatcher = rust_item_body(fixture, "fn covered_jacobian_probe_residuals")
+        .expect("adversarial dispatcher fixture");
+    assert!(dispatcher.contains("#[cfg(test)]"));
+    assert!(
+        dispatcher
+            .matches("covered_component_temperature_probe_residuals")
+            .count()
+            >= 4,
+        "cfg-only calls, local bindings, bare references, and dead calls show why tokens cannot prove connectivity"
+    );
+}
+
 fn row<'a>(contract: &'a str, key: &str) -> &'a str {
     contract
         .lines()
         .find(|line| line.starts_with(&format!("| `{key}` |")))
         .unwrap_or_else(|| panic!("{CONTRACT} missing row {key}"))
+}
+
+fn assert_lse_registry_lifecycle(index: &str) {
+    let lifecycle = row(index, "SC-LANDSURFACEENERGY-001");
+    assert!(lifecycle.starts_with(
+        "| `SC-LANDSURFACEENERGY-001` | Land-Surface Energy-Balance Process Contract | `approved` | `active` |"
+    ));
+    assert!(
+        lifecycle.contains(
+            "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+        )
+    );
+    assert!(lifecycle.contains("| `2026-09-04` |"));
 }
 
 #[test]
@@ -103,7 +553,7 @@ fn contract_preserves_adjacent_owners_and_rejects_terminal_payload() {
 fn current_version_releases_named_authority_without_production_claims() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 16",
+        "contract_version: 31",
         "status: approved",
         "maturity: active",
         "OPENWEPP_SNOW_FREE_LSE_V1",
@@ -116,9 +566,379 @@ fn current_version_releases_named_authority_without_production_claims() {
         "provisional, surrogate, heuristic, or comparator-targeted physics",
         "authorizes no production selector/default/output",
         "calibration, empirical validation or transferability",
+        "INV-LANDSURFACEENERGY-152",
+        "OBL-LANDSURFACEENERGY-C-007",
+        "INV-LANDSURFACEENERGY-153",
+        "ParentLocalPartial",
+        "PersistentParentFinal",
+        "INV-LANDSURFACEENERGY-154",
+        "OBL-LANDSURFACEENERGY-C-009",
+        "LSE-STAGE3-NATIVE-CROSS-REGIME",
+        "OPENWEPP_SNOW_FREE_LSE_V3`\nremains exclusively snow-free",
+        "CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered",
+        "A second inner legacy LSE/hydrology envelope is forbidden",
+        "frozen-litter\nV3 physical owner",
+        "V4 exact-energy companion",
+        "only a positive\nsnow-free successor may invoke the snow-free V3/V4 litter path",
+        "INV-LANDSURFACEENERGY-155",
+        "OBL-LANDSURFACEENERGY-C-010",
+        "LSE-V2-UNPUBLISHED-CANDIDATE-BEGINNING",
+        "SoilThermalUnpublishedPhysicalBeginningV2",
+        "borrowed constitutive read surface",
+        "no `SoilThermalOwnerEnvelopeV2`, restart, checkpoint",
+        "complete original prepared owner plus every canonically accumulated",
+        "Support rebinding,\nowner-byte synthesis, private-trial promotion, intermediate or dual acceptance",
+        "INV-LANDSURFACEENERGY-156",
+        "OBL-LANDSURFACEENERGY-C-011",
+        "LSE-V3-LITTER-PHASE-CAPACITY-SPILL",
+        "LitterPhaseCapacitySpillV1",
+        "LitterPhaseCapacitySpillEnergy",
+        "The second subtraction is the authoritative remainder",
+        "`LitterPhaseOverflow` parcel",
+        "It cannot be caller synthesized or labeled as a\ncondensation credit",
+        "INV-LANDSURFACEENERGY-157",
+        "OBL-LANDSURFACEENERGY-C-012",
+        "LSE-V3-HETEROGENEOUS-SURFACE-RESOURCE-JOIN",
+        "SurfaceLiquidV2HeterogeneousResourceJoinV1",
+        "Every finalized row is accounted exactly once",
+        "INV-LANDSURFACEENERGY-158",
+        "OBL-LANDSURFACEENERGY-C-013",
+        "LSE-V16-TOPOLOGY-RANKED-EXACT-OWNER",
+        "OFE IDs are opaque",
+        "Bare envelope validation may prove schema, digest, uniqueness, and lineage",
+        "INV-LANDSURFACEENERGY-159",
+        "OBL-LANDSURFACEENERGY-C-014",
+        "LSE-V24-VALIDATED-IN-MEMORY-HANDOFF",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
+}
+
+#[test]
+fn version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation() {
+    let contract = read(CONTRACT);
+    for required in [
+        "## Validated In-Memory LSE Custody Handoff Amendment",
+        "INV-LANDSURFACEENERGY-159",
+        "OBL-LANDSURFACEENERGY-C-014",
+        "LSE-V24-VALIDATED-IN-MEMORY-HANDOFF",
+        "private nonserializable typed handoff",
+        "exact prefix count",
+        "first receipt, last receipt, and chain digest",
+        "append operation validates the new support",
+        "does not revalidate the immutable prefix",
+        "repeatedly serializing the same three nested owner envelopes",
+        "Every\nmutation or replacement consumes the proof",
+        "Restart/checkpoint\nrestore, external bytes, durable publication, and untrusted executor outputs",
+        "full prefix replay",
+        "O(1)-with-history direct install",
+        "complete rollback",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+    assert_lse_registry_lifecycle(&read(INDEX));
+    assert!(
+        read("docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md")
+            .contains("INV-SURFACELIQUID-031")
+    );
+    assert!(
+        read("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+            .contains("INV-SNOWENERGY-083")
+    );
+}
+
+#[test]
+fn version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant() {
+    let contract = read(CONTRACT);
+    for required in [
+        "contract_version: 31",
+        "## Carrier Parent-Static and Same-Map Validation-Once Amendment",
+        "extends the already admitted private validation-once custody of\n`INV-LANDSURFACEENERGY-159`; it creates no new invariant",
+        "private non-Clone, non-wire,\ngeneration-bound structural plan",
+        "Plan construction is lazy at the first structural validation",
+        "existing forcing-validation position before V8",
+        "bound to the live forcing allocation",
+        "Equal digest with a different allocation is not authority",
+        "V8 neither receives nor attests to the\n   distinct native resident's V3 LSE or V2 surface objects",
+        "ValidatedFrozenLitterV3ResidentRevisionV1",
+        "borrowed, pointer-, revision-, parent-generation-, and map-bound",
+        "surface_beginning.canonical_bytes(surface_configuration)",
+        "Ordinary maps mint and consume no\n   resident proof",
+        "direct before composed, and composed\nretains Half1 before Half2",
+        "ValidatedV8RuntimeInputProjection",
+        "projected column, solver-ready tile",
+        "hydrology snapshot, physical result",
+        "must not\nuse `Arc<DirectV10...>`",
+        "existing `Clone` implementation is authorized only as an inseparable",
+        "OBL-LANDSURFACEENERGY-C-019",
+        "exactly one\nparent-static validation, 52 exact normalized-forcing validations, and 52 fresh",
+        "Initial/history/final and\ndirect/Half1/Half2 role/path",
+        "same digest/different allocation, ingress schedule, resident revision",
+        "dynamic\nvegetation/surface/soil-hydrology state, native solver/residual, and output",
+        "through\ndynamic validation, solver/residual, and output validation",
+        "fabricated outcomes, manually incremented fixture counters, or source scanning\nalone cannot satisfy",
+        "LSE-V30-CARRIER-PARENT-STATIC-VALIDATION-ONCE",
+        "`maps-to-existing-INV`",
+        "CALIBRATION_NOT_APPLICABLE",
+        "no process physics, solver, tolerance, output, publication, or wire change",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    let invariant_rows = contract
+        .lines()
+        .filter(|line| line.starts_with("| `INV-LANDSURFACEENERGY-"))
+        .collect::<Vec<_>>();
+    assert!(invariant_rows.iter().any(|line| {
+        line.starts_with("| `INV-LANDSURFACEENERGY-159` |")
+            && line.contains("parent-static structural plan")
+            && line.contains("resident-revision-sourced native proof")
+    }));
+    assert_eq!(
+        invariant_rows
+            .iter()
+            .filter(|line| line.starts_with("| `INV-LANDSURFACEENERGY-164` |"))
+            .count(),
+        2,
+        "v31 must register INV-164 once in the authority table and once in the producer guard map",
+    );
+
+    let exposure = contract
+        .split("## Binding Exposure Index")
+        .nth(1)
+        .expect("binding exposure section")
+        .split("## Gap Register")
+        .next()
+        .expect("binding exposure body");
+    let v30_rows = exposure
+        .lines()
+        .filter(|line| line.starts_with("| `LSE-V30-CARRIER-PARENT-STATIC-VALIDATION-ONCE` |"))
+        .collect::<Vec<_>>();
+    assert_eq!(v30_rows.len(), 1);
+    assert!(v30_rows[0].contains("INV-LANDSURFACEENERGY-159"));
+    assert!(v30_rows[0].contains("OBL-LANDSURFACEENERGY-C-019"));
+
+    assert_lse_registry_lifecycle(&read(INDEX));
+}
+
+#[test]
+fn version_thirty_one_binds_component_temperature_dependency_replay() {
+    let contract = read(CONTRACT);
+    for required in [
+        "contract_version: 31",
+        "## Component-Temperature Jacobian Dependency-Replay Amendment",
+        "INV-LANDSURFACEENERGY-164",
+        "OBL-LANDSURFACEENERGY-C-020",
+        "CoveredComponentTemperatureDependencyGraph",
+        "ValidatedCoveredComponentReplaySweepBase",
+        "ValidatedCoveredComponentProbeReplay",
+        "topology-generic static transitive dependency graph",
+        "`covered-component-temperature-dependency-v1`",
+        "Expanded node and edge records are\nsorted lexically",
+        "unrecognized\nevaluator node/read or missing edge",
+        "`route.wet[o]` | first/source-distinct wet-flux evaluation",
+        "`occ.wet[o]` | second/source-distinct wet-flux evaluation",
+        "`occ.route_match[o]`",
+        "`result.ground_release`, `result.ground_stemflow`, `result.output`",
+        "`probe[o,wet]` | `route.wet[o]`, `route.finalize[o]`",
+        "`route.prepare[o]` | `route.wet/finalize[o]`, `longwave.layer[o]`, `occ.wet[o]`",
+        "the column feeds all component energy/tolerance nodes, every `occ.output[o]`",
+        "`lower.ground_output` | `shared.heat`, `shared.vapor`, `shared.tolerance`",
+        "`shared.heat` | `shared.tolerance`",
+        "`shared.vapor` | `shared.tolerance`",
+        "`result.ground_release`, `result.ground_stemflow` | `result.output`",
+        "no adjacent-only truncation",
+        "sun current, shade\ncurrent, sun maximum, shade maximum",
+        "covered_component_dependency_replay_integrity",
+        "never run the complete evaluator or another solver afterward",
+        "### Normative fallibility and canonical-crossability matrix",
+        "fallible and canonically crossable",
+        "fallible but not currently established crossable",
+        "fallible but noncrossable from an admitted replay",
+        "infallible computations or assembly under their already validated predecessors",
+        "currently that is\n`occ.leaf.current`",
+        "`occ.leaf.maximum` joins this class only after an\nauthentic counterexample",
+        "successful-base-plus-admitted-probe implication proof",
+        "whenever any unmodified canonical\ninput in the branch/bound corpus naturally makes replay or forced-complete",
+        "must not add mutation seams, fault-injection hooks, synthetic error branches",
+        "one shared canonical\nimplementation for every common node and evaluator tail",
+        "compares every record and the golden schema hash",
+        "Custody is exact, not a costly proxy check",
+        "A `Debug` string, digest length, allocation-independent hash",
+        "caps, frozen branches, graph, trial,\ncoordinate, sign, perturbation, probe and stencil",
+        "Map, solve, Newton-iteration, and sweep identities are independent authentic",
+        "One ordinal\ncopied into another field",
+        "if no such path exists, the variant, counter and claimed population are absent",
+        "`RejectedBeforeProbe` is a per-column\nstencil/admission outcome and is not a sweep short-circuit",
+        "Every hydraulic-potential, beta, shared-canopy-air, non-Stage-3",
+        "No analytic or automatic\nderivative, graph coloring",
+        "sparse Jacobian or LU",
+        "cross-sweep/iteration/map/retry cache",
+        "hardcoded two-occupancy/six-soil logic",
+        "structural expected-red has one deliberately narrow claim",
+        "It cannot establish\ndispatcher invocation, control-flow reachability, graph/evidence consumption",
+        "Empty, skeleton, token-only,\ndead-code, or disconnected declarations",
+        "exercise the real dispatcher, observe authentic sealed sweep/run counters",
+        "`2*(10*N+3+S)` ordered logical probes",
+        "`58 = 14 + 16 + 28`",
+        "eight hydraulic, four beta, and two shared-canopy-air columns",
+        "never a release-run total",
+        "`Centered|InwardLower|InwardUpper|RejectedBeforeProbe`",
+        "`logical=anchor+replay+complete`",
+        "potential and fixed-final\nsolves",
+        "same first typed error",
+        "physical_phase_wall_us.potential=353431",
+        "`run_wall_us <= 4803570`",
+        "`physical_phase_wall_us.potential <= 253431`",
+        "source `0.8488061229561478`, outlet `0.8471105124736579`, storage\n`0.0016956104824910018`, clamp `0`",
+        "exact `48/56/20/32/4` workload",
+        "JSON `rss_kib <= 65536`",
+        "fully revert the\nrevision-31 production increment",
+        "LSE-V31-COMPONENT-TEMPERATURE-DEPENDENCY-REPLAY",
+        "`maps-to-existing-INV`",
+        "CALIBRATION_NOT_APPLICABLE",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+    assert!(
+        !contract.contains("Paired physical poisons at every ordered node boundary"),
+        "v31 feasibility correction must not mandate impossible every-node poisons",
+    );
+    assert!(
+        !contract.contains("completed/failed/short-circuited"),
+        "v31 audit authority must not require a solver lifecycle state that cannot occur",
+    );
+
+    let invariant = row(&contract, "INV-LANDSURFACEENERGY-164");
+    assert!(invariant.contains("same-iteration node results"));
+    assert!(invariant.contains("forced-complete oracle"));
+
+    let exposure = row(&contract, "LSE-V31-COMPONENT-TEMPERATURE-DEPENDENCY-REPLAY");
+    assert!(exposure.contains("INV-LANDSURFACEENERGY-164"));
+    assert!(exposure.contains("OBL-LANDSURFACEENERGY-C-020"));
+    assert!(exposure.contains("| `maps-to-existing-INV` |"));
+    assert!(exposure.contains("new IDs `INV-164/C-020`"));
+    assert_lse_registry_lifecycle(&read(INDEX));
+}
+
+#[test]
+fn revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red() {
+    let solve = read(COMPONENT_DEPENDENCY_REPLAY_PRODUCTION_PATHS[0]);
+    let required = [
+        (&solve, "struct CoveredComponentTemperatureDependencyGraph"),
+        (&solve, "struct ValidatedCoveredComponentReplaySweepBase"),
+        (&solve, "struct ValidatedCoveredComponentProbeReplay"),
+        (&solve, "struct CoveredComponentDependencyReplayAudit"),
+        (&solve, "fn covered_component_temperature_probe_residuals"),
+        (&solve, "fn begin_covered_component_dependency_replay_audit"),
+        (&solve, "fn take_covered_component_dependency_replay_audit"),
+    ];
+    let missing = required
+        .iter()
+        .filter_map(|(source, marker)| {
+            (!rust_item_is_unconditional_top_level(source, marker)).then_some(*marker)
+        })
+        .collect::<Vec<_>>();
+
+    assert!(
+        missing.is_empty(),
+        "revision 31 expected-red: production dependency-replay seam is absent: {missing:?}"
+    );
+}
+
+#[test]
+fn version_twenty_three_binds_exact_surface_order_to_authenticated_topology() {
+    let contract = read(CONTRACT);
+    for required in [
+        "## Topology-Ranked V16 Exact-Surface Owner Amendment",
+        "INV-LANDSURFACEENERGY-158",
+        "OBL-LANDSURFACEENERGY-C-013",
+        "LSE-V16-TOPOLOGY-RANKED-EXACT-OWNER",
+        "surface_key.ofe_id",
+        "ofe-9 -> ofe-10",
+        "OfeId` remains an opaque identity",
+        "context-free\nvalidator therefore proves schema",
+        "does not impose lexical OFE order",
+        "authenticated frozen-\nparent/configuration join is the canonical-order authority",
+        "Duplicate, omitted,\nsubstituted, foreign, topology-relative reordered",
+        "stale configuration/digest",
+        "complete rollback",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+    assert!(
+        read("docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md")
+            .contains("INV-SURFACELIQUID-030")
+    );
+    assert_lse_registry_lifecycle(&read(INDEX));
+}
+
+#[test]
+fn version_twenty_one_binds_exact_litter_phase_capacity_spill() {
+    let contract = read(CONTRACT);
+    for required in [
+        "## Exact V3 Litter-Phase Capacity-Spill Amendment",
+        "W_raw = W_l,* - m_freeze + m_melt",
+        "m_spill,tile = W_raw - W_l,max",
+        "h_spill       = C_w*(T_raw-T_ref)",
+        "U_retained    = U_raw - Q_spill,tile",
+        "m_spill,ofe=f_t*m_spill,tile",
+        "same transaction and full accepted child",
+        "one named negative\n`LitterPhaseCapacitySpillEnergy` operand",
+        "does not invoke a second vapor/phase evaluation",
+        "preserves the complete LSE,\nsurface-liquid, exact-enthalpy, soil, WB14 parent",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    let liquid_capacity = 6.0_f64;
+    let raw_liquid = 6.125_f64;
+    let raw_temperature = 276.0_f64;
+    let water_heat_capacity = 4218.0_f64;
+    let spill = raw_liquid - liquid_capacity;
+    let specific_enthalpy = water_heat_capacity * (raw_temperature - 273.15);
+    let spill_energy = spill * specific_enthalpy;
+    let retained_liquid = raw_liquid - spill;
+    let raw_energy = 72_500.0_f64;
+    let retained_energy = raw_energy - spill_energy;
+    assert_eq!(retained_liquid.to_bits(), liquid_capacity.to_bits());
+    assert_eq!((retained_liquid + spill).to_bits(), raw_liquid.to_bits());
+    assert_eq!(
+        (retained_energy + spill_energy).to_bits(),
+        raw_energy.to_bits()
+    );
+    assert!(spill > 0.0 && spill_energy > 0.0);
+}
+
+#[test]
+fn version_twenty_two_binds_exact_heterogeneous_surface_resource_join() {
+    let contract = read(CONTRACT);
+    for required in [
+        "## Exact Heterogeneous V3 Surface-Resource Join Amendment",
+        "Native litter vapor rows already consumed by the phase receipt",
+        "The complete unmatched surface set is the ordinary set",
+        "apply the existing checked `F/f_t` debit exactly once",
+        "Zero ordinary rows are the identity join",
+        "retains native litter ice,\nsurface enthalpy high mirrors and exact carry/receipt bytes",
+        "spill remains the separate internal\n`LitterPhaseOverflow` ingress parcel",
+        "supplies no new parcel and no second enthalpy, latent,\nfusion, or exact-surface operand",
+        "Every finalized row is accounted exactly once",
+        "one resource candidate and ingress",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    let phase_adjusted_liquid = 2.5_f64;
+    let tile_fraction = 0.4_f64;
+    let ordinary_finalized_ofe = 0.2_f64;
+    let ordinary_tile_debit = ordinary_finalized_ofe / tile_fraction;
+    let ending = phase_adjusted_liquid - ordinary_tile_debit;
+    assert_eq!(ordinary_tile_debit.to_bits(), 0.5_f64.to_bits());
+    assert_eq!(ending.to_bits(), 2.0_f64.to_bits());
+    assert_eq!(
+        (ending + ordinary_tile_debit).to_bits(),
+        phase_adjusted_liquid.to_bits()
+    );
 }
 
 #[test]
@@ -280,11 +1100,7 @@ fn version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry() {
     );
     assert_eq!(wat5_credit.to_bits(), 0xbc2d_c319_224e_55f0);
 
-    let index = read(INDEX);
-    assert!(
-        row(&index, "SC-LANDSURFACEENERGY-001")
-            .contains("v16 adds a minimal LSE-owned exact per-tile surface-enthalpy companion")
-    );
+    assert_lse_registry_lifecycle(&read(INDEX));
 }
 
 #[test]
@@ -309,7 +1125,7 @@ fn version_fifteen_requires_exact_carry_production_identity() {
 fn version_sixteen_binds_exact_lse_surface_enthalpy_carry() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 16",
+        "## Version 16 LSE Surface-Enthalpy Exact-Carry Amendment",
         "INV-LANDSURFACEENERGY-151",
         "U = exact(U_hi) + R_U",
         "LseSurfaceEnthalpyOwnerEnvelopeV1",
@@ -330,11 +1146,7 @@ fn version_sixteen_binds_exact_lse_surface_enthalpy_carry() {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
 
-    let index = read(INDEX);
-    assert!(
-        row(&index, "SC-LANDSURFACEENERGY-001")
-            .contains("v16 adds a minimal LSE-owned exact per-tile surface-enthalpy companion")
-    );
+    assert_lse_registry_lifecycle(&read(INDEX));
 }
 
 #[test]
@@ -396,10 +1208,7 @@ fn version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks
     assert!(index_row.starts_with(
         "| `SC-LANDSURFACEENERGY-001` | Land-Surface Energy-Balance Process Contract | `approved` | `active` |"
     ));
-    assert!(
-        index_row
-            .contains("v16 adds a minimal LSE-owned exact per-tile surface-enthalpy companion")
-    );
+    assert_lse_registry_lifecycle(&index);
 }
 
 #[test]

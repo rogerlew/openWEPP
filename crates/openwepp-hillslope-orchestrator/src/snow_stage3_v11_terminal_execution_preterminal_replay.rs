@@ -61,15 +61,53 @@ fn prepare_preterminal_replay_step_v1(
         ))?;
     let prior_identity = &carrier_phase.transition.probe_child_identity;
     let wb14_replay_trial_sha256 = prior_identity.receipt_sha256;
-    let wb14_replay_beginning_owner_set_sha256 = Digest32::from_bytes(
-        crate::direct_runtime::wb14_child_replay_binding(&carrier_phase.wb14_child_replay_bytes)
-            .map_err(|_| {
-                DirectSnowStage3V11AttachmentError::Terminal(
-                    "adaptive endpoint WB14 replay binding",
+    let wb14_ofe_topology = &carrier_phase
+        .beginning_candidates
+        .shadow()
+        .surface_configuration()
+        .ofe_topology;
+    let boundary_ofes = carrier_phase
+        .complete_lower_boundaries
+        .keys()
+        .map(|(ofe_id, _)| ofe_id)
+        .collect::<BTreeSet<_>>();
+    if boundary_ofes.is_empty()
+        || boundary_ofes
+            .iter()
+            .any(|ofe_id| !wb14_ofe_topology.contains(ofe_id))
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Terminal(
+            "adaptive endpoint lower-boundary OFE topology",
+        ));
+    }
+    let replay_binding =
+        crate::direct_runtime::stage3_covered_native_inactive_child_custody_binding(
+            &carrier_phase.wb14_child_replay_bytes,
+            wb14_ofe_topology,
+        )
+        .map_err(|error| {
+            DirectSnowStage3V11AttachmentError::Owner(
+                crate::v9_real_consumer_shadow::DirectV11RealConsumerError::SurfaceLiquidReplay(
+                    error,
+                ),
+            )
+        })?
+        .map_or_else(
+            || {
+                crate::direct_runtime::wb14_child_replay_binding(
+                    &carrier_phase.wb14_child_replay_bytes,
                 )
-            })?
-            .parent_beginning_complete_owner_set_sha256,
-    );
+                .map_err(|error| {
+                    DirectSnowStage3V11AttachmentError::Owner(
+                        crate::v9_real_consumer_shadow::DirectV11RealConsumerError::
+                            SurfaceLiquidReplay(error),
+                    )
+                })
+            },
+            Ok,
+        )?;
+    let wb14_replay_beginning_owner_set_sha256 =
+        Digest32::from_bytes(replay_binding.parent_beginning_complete_owner_set_sha256);
     carrier_phase.transition.probe_child_identity =
         CoveredProbeChildIdentityV1::try_new(ProbeChildAuthorityV1 {
             parent_transaction_sha256: prior_identity.parent_transaction_sha256,

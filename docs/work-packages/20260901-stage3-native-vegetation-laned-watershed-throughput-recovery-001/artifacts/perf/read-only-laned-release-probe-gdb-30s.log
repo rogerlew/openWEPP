@@ -1,0 +1,70 @@
+Starting program: /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-f3ac7362b66e03e8 --ignored --exact hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile --nocapture --test-threads=1
+warning: File "/nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libthread_db.so.1" auto-loading has been declined by your `auto-load safe-path' set to "$debugdir:$datadir/auto-load".
+To enable execution of this file add
+	add-auto-load-safe-path /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libthread_db.so.1
+line to your configuration file "/home/roger/.config/gdb/gdbinit".
+To completely disable this security protection add
+	set auto-load safe-path /
+line to your configuration file "/home/roger/.config/gdb/gdbinit".
+For more information about this security protection see the
+"Auto-loading safe path" section in the GDB manual.  E.g., run from the shell:
+	info "(gdb)Auto-loading safe path"
+warning: Unable to find libthread_db matching inferior's thread library, thread debugging will not be available.
+
+Thread 1 "openwepp_runner" received signal SIGINT, Interrupt.
+0x00007ffff7d2320d in syscall () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+
+Thread 2 "hillslope::test" stopped.
+0x00007ffff7cade70 in _int_malloc () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+
+Thread 2 (LWP 3939187 "hillslope::test"):
+#0  0x00007ffff7cade70 in _int_malloc () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+#1  0x00007ffff7caef1a in _int_realloc () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+#2  0x00007ffff7cb0354 in realloc () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+#3  0x00005555555db203 in <alloc::raw_vec::RawVecInner>::finish_grow ()
+#4  0x00005555555db0e9 in <alloc::raw_vec::RawVecInner<_>>::reserve::do_reserve_and_handle::<alloc::alloc::Global> ()
+#5  0x000055555562d113 in <alloc::string::String as core::fmt::Write>::write_str ()
+#6  0x0000555555a0e3a8 in core::fmt::write ()
+#7  0x000055555562cef9 in alloc::fmt::format::format_inner ()
+#8  0x0000555556bd886e in openwepp_vegetation::transaction::state_canonical::encode ()
+#9  0x0000555556bd88aa in openwepp_vegetation::transaction::state_canonical::encode ()
+#10 0x0000555556bd88aa in openwepp_vegetation::transaction::state_canonical::encode ()
+#11 0x0000555556bd88aa in openwepp_vegetation::transaction::state_canonical::encode ()
+#12 0x0000555556bd88aa in openwepp_vegetation::transaction::state_canonical::encode ()
+#13 0x0000555556bdc351 in openwepp_vegetation::transaction::state_canonical::v8_bytes ()
+#14 0x0000555556c29b09 in openwepp_vegetation::v8_state::V8CoupledOwnedState::canonical_sha256 ()
+#15 0x0000555556c3522b in openwepp_vegetation::v10_state::V10CoupledOwnedState::validate ()
+#16 0x0000555556c35562 in openwepp_vegetation::v10_state::project_v10_runtime_to_v9 ()
+#17 0x0000555555f9367d in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::install_v11_parent_finalization_owner_transition ()
+#18 0x0000555555ed8a74 in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::execute_real_v11_parent ()
+#19 0x0000555555f33a97 in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment::execute_prepared_day_resumable_v2 ()
+#20 0x0000555555f281bb in openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment::stage_prepared_day ()
+#21 0x0000555555c6acb0 in openwepp_hillslope_orchestrator::direct_runtime::snow_stage3_v11_scheduler::<impl openwepp_hillslope_orchestrator::direct_runtime::DirectRunFrame>::prepare_snow_stage3_v11_day_from_provider ()
+#22 0x0000555556787035 in openwepp_runner::hillslope::execute_direct_publication_stream::{{closure}} ()
+#23 0x000055555677b238 in openwepp_runner::hillslope::execute_direct_publication_stream ()
+#24 0x00005555567494c0 in openwepp_runner::hillslope::execute_selected_hillslope_days ()
+#25 0x00005555567c1823 in openwepp_runner::hillslope::execute_hillslope_run_with_runtime_policy ()
+#26 0x00005555568021e6 in openwepp_runner::hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ()
+#27 0x000055555693d139 in core::ops::function::FnOnce::call_once ()
+#28 0x0000555556ed21eb in test::__rust_begin_short_backtrace::<core::result::Result<(), alloc::string::String>, fn() -> core::result::Result<(), alloc::string::String>> ()
+#29 0x0000555556ee0392 in <test::types::RunnableTest>::run ()
+#30 0x0000555556ed84d2 in test::run_test_in_process ()
+#31 0x0000555556edbf30 in std::sys::backtrace::__rust_begin_short_backtrace::<test::run_test::{closure#1}, ()> ()
+#32 0x0000555556eccf80 in <std::thread::lifecycle::spawn_unchecked<test::run_test::{closure#1}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} ()
+#33 0x0000555556e7ba89 in <std::sys::thread::unix::Thread>::new::thread_start ()
+#34 0x00007ffff7c9dd53 in start_thread () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+#35 0x00007ffff7d2563c in __clone3 () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+
+Thread 1 (LWP 3939183 "openwepp_runner"):
+#0  0x00007ffff7d2320d in syscall () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+#1  0x0000555556ecc9d6 in <std::sync::mpmc::list::Channel<test::event::CompletedTest>>::recv::{closure#1} ()
+#2  0x0000555556ecdc47 in <std::sync::mpmc::list::Channel<test::event::CompletedTest>>::recv ()
+#3  0x0000555556ed31fc in test::run_tests::<test::console::run_tests_console::{closure#2}> ()
+#4  0x0000555556ec69e3 in test::console::run_tests_console ()
+#5  0x0000555556eda2d5 in test::test_main ()
+#6  0x0000555556ed835b in test::test_main_static ()
+#7  0x000055555688deb3 in std::sys::backtrace::__rust_begin_short_backtrace ()
+#8  0x000055555688de79 in std::rt::lang_start::{{closure}} ()
+#9  0x0000555556e73af7 in std::rt::lang_start_internal ()
+#10 0x0000555556ba88f5 in main ()
+[Inferior 1 (process 3939183) killed]

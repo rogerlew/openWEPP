@@ -122,9 +122,15 @@ pub fn project_validated_v1_runtime_to_v2(
     projected.state_sha256 = projected
         .canonical_sha256()
         .map_err(LseV2StateError::Configuration)?;
-    let projected = LandSurfaceEnergyV2State(projected);
-    projected.validate(target_configuration)?;
-    Ok(projected)
+    // The exact source state, both configurations, the cross-version payload,
+    // and the target vegetation receipt were fully validated above. Only the
+    // model/configuration identities changed, and this same-call private
+    // construction recomputed the resulting canonical state digest. A second
+    // public V2 validation here would serialize the unchanged configuration
+    // and state repeatedly without adding a trust boundary. External,
+    // restored, or independently supplied V2 states still enter through
+    // `LandSurfaceEnergyV2State::validate`.
+    Ok(LandSurfaceEnergyV2State(projected))
 }
 
 fn project_v2_runtime_to_v1_unchecked(

@@ -119,6 +119,34 @@ fn assert_retired_laned_selector_rejected(name: &'static str) {
     }
 }
 
+fn assert_operational_laned_selector_admitted_at_startup(name: &'static str) {
+    clear_laned_selector_env();
+    let _cleanup = LaneDSelectorEnvCleanup;
+    // SAFETY: these tests are nextest-only and therefore process isolated.
+    unsafe { std::env::set_var(name, "1") };
+
+    let missing_run_dir = PathBuf::from("/tmp/openwepp_missing_run_dir_for_laned_selector");
+    let result = execute_hillslope_run(
+        &HillslopeRunRequest {
+            run_dir: missing_run_dir.clone(),
+            run_file: PathBuf::from("case.run"),
+            output_dir: PathBuf::from("/tmp/openwepp_missing_output_for_laned_selector"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        },
+        &["openwepp-cli-hill".to_string()],
+    );
+
+    assert!(
+        matches!(
+            result,
+            Err(HillslopeCliError::RunDirectoryMissing { path }) if path == missing_run_dir
+        ),
+        "contracted operational selector {name} must pass startup selector admission"
+    );
+}
+
 #[test]
 fn abandoned_implicit_selector_env_fails_closed_at_startup() {
     assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE_IMPLICIT");
@@ -354,20 +382,47 @@ fn run_h2637_native_active(
 }
 
 #[test]
-fn h2637_active_fails_closed_without_routing_coefficients() {
-    assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE");
+fn h2637_explicit_active_selector_is_admitted_at_startup() {
+    assert_operational_laned_selector_admitted_at_startup("OPENWEPP_LANED_ACTIVE");
+}
+
+#[test]
+fn h2637_explicit_disable_selector_is_admitted_at_startup() {
+    assert_operational_laned_selector_admitted_at_startup("OPENWEPP_LANED_ACTIVE_DISABLE");
 }
 
 #[test]
 fn h2637_active_and_shadow_are_mutually_exclusive() {
-    assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE");
     assert_retired_laned_selector_rejected("OPENWEPP_LANED_SHADOW");
 }
 
 #[test]
 fn h2637_active_and_disable_are_mutually_exclusive() {
-    assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE");
-    assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE_DISABLE");
+    clear_laned_selector_env();
+    let _cleanup = LaneDSelectorEnvCleanup;
+    // SAFETY: this test is nextest-only and therefore process isolated.
+    unsafe {
+        std::env::set_var("OPENWEPP_LANED_ACTIVE", "1");
+        std::env::set_var("OPENWEPP_LANED_ACTIVE_DISABLE", "1");
+    }
+    let result = execute_hillslope_run(
+        &HillslopeRunRequest {
+            run_dir: PathBuf::from("/tmp/openwepp_missing_run_dir_for_laned_selector_conflict"),
+            run_file: PathBuf::from("case.run"),
+            output_dir: PathBuf::from("/tmp/openwepp_missing_output_for_laned_selector_conflict"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        },
+        &["openwepp-cli-hill".to_string()],
+    );
+    match result.expect_err("active and active-disable must fail at startup") {
+        HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+            assert_eq!(surface, "laned_active_selector");
+            assert!(detail.contains("mutually exclusive"));
+        }
+        other => panic!("unexpected active/disable conflict error: {other:?}"),
+    }
 }
 
 fn run_h2637_default_expect_error(run_dir: &Path) -> String {

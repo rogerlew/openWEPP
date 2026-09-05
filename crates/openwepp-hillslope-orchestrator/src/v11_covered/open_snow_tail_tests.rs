@@ -216,8 +216,6 @@ mod component_carrier_tests {
 
 #[cfg(test)]
 mod precomputed_terminal_accepted_executor_tests {
-    use super::*;
-
     fn accepted_branch_source() -> &'static str {
         include_str!("open_snow_terminal_accepted_endpoint.rs")
     }
@@ -289,51 +287,6 @@ mod precomputed_terminal_accepted_executor_tests {
         assert!(source.contains("endpoint.beginning_pending_terminal_parcels"));
     }
 
-    #[test]
-    fn terminal_endpoint_timing_composes_prefix_and_terminal_suffix() {
-        assert!(accepted_terminal_endpoint_timing_v1(
-            300.0, 1_500.0, 0.0, 1_800.0, 1_800.0, 1_800.0,
-        ));
-        assert!(accepted_terminal_endpoint_timing_v1(
-            300.0, 600.0, 0.0, 900.0, 900.0, 900.0,
-        ));
-        assert!(accepted_terminal_endpoint_timing_v1(
-            0.0, 1_800.0, 0.0, 1_800.0, 1_800.0, 1_800.0,
-        ));
-        assert!(!accepted_terminal_endpoint_timing_v1(
-            0.0, 1_500.0, 0.0, 1_500.0, 1_800.0, 1_800.0,
-        ));
-        assert!(!accepted_terminal_endpoint_timing_v1(
-            300.0, 1_500.0, 300.0, 1_800.0, 1_800.0, 1_800.0,
-        ));
-    }
-
-    #[test]
-    fn terminal_endpoint_ledger_rejects_prefix_omission_and_substitution() {
-        let prefix = TerminalEndpointExternalLedgerV1 {
-            energy_j_m2: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
-            vapor_kg_m2: 7.0,
-        };
-        let terminal = TerminalEndpointExternalLedgerV1 {
-            energy_j_m2: [10.0, 20.0, 30.0, 40.0, 50.0, 60.0],
-            vapor_kg_m2: 70.0,
-        };
-        let complete = prefix.ordered_add(terminal);
-        assert!(prefix.ordered_add(terminal).matches(complete));
-        assert!(!terminal.matches(complete));
-
-        let substituted_terminal = TerminalEndpointExternalLedgerV1 {
-            energy_j_m2: [10.0, 20.0, 30.0, 40.0, 60.0, 50.0],
-            vapor_kg_m2: 70.0,
-        };
-        assert!(!prefix.ordered_add(substituted_terminal).matches(complete));
-        assert!(
-            !prefix
-                .ordered_add(prefix)
-                .ordered_add(terminal)
-                .matches(complete)
-        );
-    }
 }
 
 #[cfg(test)]

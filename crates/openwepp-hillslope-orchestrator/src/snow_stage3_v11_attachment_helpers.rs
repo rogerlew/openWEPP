@@ -13,11 +13,44 @@ fn owner_states_from_envelopes(
 /// vegetation transaction lineage at the already accepted parent endpoint;
 /// it is therefore a zero-duration ownership event, never another physics
 /// support or a mutation of the sealed positive slab.
+#[cfg(test)]
 fn install_v11_parent_finalization_owner_transition(
     clock: &mut CoupledClockStateV1,
     consumer: &mut DirectV10RealConsumerShadow,
     configuration: &VegetationConfigurationV11,
     finalized: &mut V11ParentCandidate,
+) -> Result<AcceptedEventReceiptV1, DirectSnowStage3V11AttachmentError> {
+    install_v11_parent_finalization_owner_transition_inner(
+        clock,
+        consumer,
+        configuration,
+        finalized,
+        None,
+    )
+}
+
+fn install_v11_parent_finalization_owner_transition_with_validated_handoff(
+    clock: &mut CoupledClockStateV1,
+    consumer: &mut DirectV10RealConsumerShadow,
+    configuration: &VegetationConfigurationV11,
+    finalized: &mut V11ParentCandidate,
+    handoff: ValidatedV11ParentFinalizationV1,
+) -> Result<AcceptedEventReceiptV1, DirectSnowStage3V11AttachmentError> {
+    install_v11_parent_finalization_owner_transition_inner(
+        clock,
+        consumer,
+        configuration,
+        finalized,
+        Some(handoff),
+    )
+}
+
+fn install_v11_parent_finalization_owner_transition_inner(
+    clock: &mut CoupledClockStateV1,
+    consumer: &mut DirectV10RealConsumerShadow,
+    configuration: &VegetationConfigurationV11,
+    finalized: &mut V11ParentCandidate,
+    handoff: Option<ValidatedV11ParentFinalizationV1>,
 ) -> Result<AcceptedEventReceiptV1, DirectSnowStage3V11AttachmentError> {
     let mut candidate_clock = clock.clone();
     let mut candidate_consumer = consumer.clone();
@@ -55,9 +88,17 @@ fn install_v11_parent_finalization_owner_transition(
             "V11 parent finalization retained BGC predecessor",
         ));
     }
-    let finalized_bgc = candidate_consumer
-        .accept_v11_parent_finalization(configuration, &candidate_finalized.ending_state)?
-        .to_owner_state()?;
+    let finalized_bgc = match handoff {
+        Some(handoff) => candidate_consumer
+            .accept_v11_parent_finalization_with_validated_handoff(
+                configuration,
+                &candidate_finalized.ending_state,
+                handoff,
+            )?,
+        None => candidate_consumer
+            .accept_v11_parent_finalization(configuration, &candidate_finalized.ending_state)?,
+    }
+    .to_owner_state()?;
     ending_by_owner.insert("bgc".to_owned(), finalized_bgc.clone());
     let finalized_bgc_slot = candidate_finalized
         .ending_complete_owners

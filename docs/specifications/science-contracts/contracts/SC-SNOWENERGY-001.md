@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 57
+contract_version: 61
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -14,7 +14,7 @@ consumer_scope:
   - Snow sublimation and melt components
   - Snow-energy diagnostics and assurance outputs
 evidence_level: static+independent_oracle+contract_vectors
-last_reviewed: 2026-08-30
+last_reviewed: 2026-09-04
 supersedes: []
 superseded_by: []
 ---
@@ -1235,6 +1235,10 @@ complete owner/receipt chronology before execution resumes.
 
 | Branch/condition | Required behavior | Guard class | Failure class |
 |---|---|---|---|
+| immutable beginning owner has no represented snow | execute the canonical snow-free support; no covered solver | physical regime | typed wrong-regime refusal on any snow operand |
+| represented snow is `<=1 kg m^-2` | execute the existing version-22 terminal one-volume enthalpy/adaptive process as the sole non-CoE thin-pack process; retain a cold solid Stage-3 owner or transfer an accepted terminal event exactly once | physical regime/event/custody | typed terminal/adaptive failure; CoE prohibited |
+| represented snow is `>1 kg m^-2` | execute `INV-SNOWENERGY-082` once with cold/mixed/thaw/refreeze as constitutive active sets | runtime/numerical | same-solver adaptive request or typed floor nonconvergence |
+| canonical eight-map budget lacks capacity for the complete next role | reject before charge; above the floor retry the same solver on smaller exact support | runtime/numerical | typed evaluation-budget exhaustion with exact rollback |
 | V56 authentic Stage 3 history is strictly frozen/noncrossing with exact static joins and budget capacity | Dispatch the temperature-primary specialization before V55; derive exact H high-plus-carry and unchanged CN Q, then require exact compound-receipt stabilization, replay, and finalization. | runtime/numerical/custody | typed refusal after first charge; zero-charge not-applicable may continue V55 |
 | V56 history crosses phase, changes branch/order/event/topology/custody, contains liquid/melt/refreeze/terminal energy, or has invalid exact-carry/restart lineage | Refuse V56 without normalization, carry deletion, or transient-witness promotion. | runtime/custody/restart | typed eligibility, owner, receipt, or restart failure with exact rollback |
 | Any required scalar is non-finite | Reject before arithmetic. | runtime | typed invalid forcing/state |
@@ -1329,6 +1333,9 @@ divide/branch threshold.
 | `INV-SNOWENERGY-034` | SNOW-TERMINAL-ENTHALPY-EVENT-NUMERICS: only `persistent_accumulation_shadow_v1` may enter an evaluation-only terminal snow domain when post-precipitation represented ice is `0 < m_i <= 1 kg m^-2`. Collapse the complete snow column to one enthalpy-bearing control volume without deleting mass: canonical cold-content deficit `Q_cc >= 0 J m^-2`, retained liquid `m_l >= 0 kg m^-2`, and material enthalpy `H=-Q_cc+L_f m_l` relative to 0 C ice. Use the existing complete bounded Stage 3 carrier and its current-state surface temperature; do not introduce a heat-capacity epsilon, clamp, fitted threshold, cold-content tax, or new flux equation. A deterministic first-order transition map is integrated with step doubling: compare one trial of `h` with two sequential trials of `h/2`, accept the two-half state only when the componentwise scaled ice/liquid/cold-content/energy norm satisfies `TOL-SNOWENERGY-001`, otherwise halve `h`; `h <= 60 s`, `h_min=1e-9 s`, at most 64 consecutive rejections, and any nonfinite/domain/nonconvergence result is typed failure with no state commit. Each trial reevaluates the carrier from its start state. Define `Delta H_cc=Q_cc,start-Q_cc,end`, positive for warming and negative for cooling. Apply energy to `Q_cc` and refreeze first, reserve bounded sublimation before melt availability, define `Q_excess=max(Q_complete+Q_refreeze-Delta H_cc,0)` and `m_melt=min(Q_excess/L_f,max(m_i-m_sublimation,0))`, then apply deposition after same-trial melt availability. Because entry is explicitly post-precipitation, the actual endpoint-solid function is `g(tau)=m_i,start+m_refrozen(tau)+m_deposition(tau)-m_sublimation(tau)-m_melt(tau)`; deposition/refreeze cannot retroactively enlarge same-trial melt availability. Require `g(0)=m_i,start`, bounded `g>=0`, and no event while deposited or refrozen solid remains. When an accepted trial first reaches the mass-root tolerance, replay from the immutable pretrial state and localize the earliest event by safeguarded bisection; preserve the positive/terminal bracket, require monotonically nonincreasing candidate solid, and stop only when both bracket width and endpoint solid satisfy `TOL-SNOWENERGY-001`, otherwise fail after 64 iterations. At the accepted upper endpoint, the complete solid identity—not a debit clamp—must establish zero ice; terminal liquid equals retained/external liquid plus melt less refreeze. The snow energy identity closes through `Delta H_cc`, fusion, refreeze, and `Q_terminal_unallocated=Q_complete+Q_refreeze-Delta H_cc-L_f m_melt >= 0`, which is explicitly censored and may be positive when sublimation exhausts solid first. No snow-domain state receives energy and no snow flux is evaluated after the event. Publish `evaluated_seconds=t_event`, `unevaluated_seconds=requested-t_event`, and censored terminal liquid/energy handoffs; neither is a land-surface recipient. This mechanics-only exception supersedes the `INV-SNOWENERGY-026` no-evaluation branch only for the named operator and terminal domain; compatibility/default paths and historical schemas remain exact. | `REF-SNOWENERGY-LIBSNOBAL`, `INV-SNOWENERGY-017/023/026/029/030`, physical conservation, deterministic numerical analysis | `[DIRECT][Static] + [INFERENCE][Static]` | exact boundary sides, step-doubling refinement, event bracket/order, joint vapor/melt, deposition/refreeze no-false-event, cooling/no-event, typed nonconvergence, atomicity, independent schema-v8 reconstruction, and production isolation | evaluation hard-fail + governance claim limit |
 
 | `INV-SNOWENERGY-035` | A default-off terminal receiver may consume only the earliest closed INV-034 event with in-tolerance unallocated energy, exact half-open support, and one atomic retained/rain/melt/refreeze liquid debit-credit-consumed join; INV-034 remains evaluation-only and CoE remains production owner. | `INV-SNOWENERGY-030/034`, physical conservation | `[INFERENCE][Static]` | receipt, energy, support, and production-isolation guards | typed terminal-receiver failure; no recipient/commit |
+| `INV-SNOWENERGY-086` | Every canonical covered charge executes one independent physical map. `Initial@0` returns a private physical-only endpoint. Each later charge must validate exact discrete custody before minting one private, non-Clone, non-wire pending adjudication map: `FixedPointAdjudication@1`, then contiguous `MultisecantAdjudication(n)@(n+1)` for `n=1..=N`, `0<=N<=5`. Only after outer `TOL-SNOWENERGY-007` closure of the adjudication candidate against its own map output and dependent-output stability against the preceding authentic map may that same pending map be consumed once as the `FinalAccepted` outcome and continue from its own physical prefix into one private publishable envelope. Outer nonclosure consumes it instead into iteration history without error; dependent-only nonclosure consumes it into typed adaptive rejection without history; constructor failure cannot reinterpret it. Thus `M=N+2`, `2<=M<=7`; no map is replayed or promoted from a completed nonfinal endpoint, and no map publishes, enqueues, exposes, or mutates live accepted state. | `INV-SNOWENERGY-082/083/084`, ADR-0044, exact transaction atomicity | `[INFERENCE][Static]` | closed charged-role dispatcher, custody-before-pending gate, non-Clone pending typestate with exclusive history/rejection/final dispositions, exact charge/endpoint/disposition/final-constructor/envelope/parent-publication counters, role/identity/ULP poisons | outer nonclosure -> history, no error; dependent-only nonclosure/role/ordinal/budget -> `DirectV11RealConsumerError::AdaptiveRefinement`; identity/regime/topology/custody/disposition/state-leak -> `DirectV11RealConsumerError::Identity`; physical and final-constructor failures retain their underlying typed variants; all failures reject with complete rollback and no fallback |
+| `INV-SNOWENERGY-087` | An accepted represented-snow prefix is consumed as authenticated chronology before the first positive snow-free child; consumption performs no under-snow litter/WB14 physics or ordinal advance, and the first snow-free physical child remains ordinal zero. | `INV-SNOWENERGY-083`, exact accepted-prefix chronology | `[INFERENCE][Static]` | real transition, exact prefix and cursor/ordinal joins, restart, poison, rollback | typed identity/cadence refusal with byte-identical rollback |
+| `INV-SNOWENERGY-088` | Each invocation of the typed feed-forward terminal evaluator executes exactly one complete carrier call through a request that contains no preceding ending-snow hint or coupling-iteration ordinal. Full/Retry/Half1/Half2/Root and every discovery/exact-endpoint outer invocation remain distinct; terminal batch and canonical final-map paths retain their own existing cadence and do not share this evaluator result. Feedback-capable evaluation is a separate typed interface selected before execution, never a runtime fallback. | `INV-SNOWENERGY-034/086`, exact dependency analysis, deterministic terminal-carrier authority | `[INFERENCE][Static] + [DIRECT][Ran]` | pre-change 400-call release count plus focused two-call capture; post-change exact call multiset; forced two-call bitwise oracle; role/support/path identity; poison and rollback | existing `Kernel`, `TurbulentTransfer`, `TerminalNumerics`, and `TerminalCustody` failures preserve their source-real order; provider-wrapper custody remains `TerminalCustody`, evaluator boundary/result mismatch is `Kernel`, and no second call, fallback, reuse, or publication is allowed |
 
 ### Guard Map
 
@@ -1400,7 +1407,7 @@ divide/branch threshold.
 | `INV-SNOWENERGY-038` | Canopy--snow--sky longwave uses one reciprocal current-trial state and exact-one exchange. | Child 2C longwave authority | `[INFERENCE][Static]` | radiation lineage | `SNOWENERGY-E-LW-001` |
 | `INV-SNOWENERGY-039` | Snow fluxes stop at the accepted event and snow-free fluxes begin only on admitted successor support. | Child 2C chronology authority | `[INFERENCE][Static]` | event/regime join | `SNOWENERGY-E-REGIME-001` |
 | `INV-SNOWENERGY-040` | Canopy-intercepted snow is outside this carrier and cannot enter its mass or energy ledgers. | Child 2C scope authority | `[INFERENCE][Static]` | scope guard | `SNOWENERGY-E-SCOPE-001` |
-| `INV-SNOWENERGY-042` | One persistent Stage 3 lane owner is OFE-ground. Complete typed tile-ground snow-surface fluxes aggregate exactly once as `sum_i(f_i X_i)` over an ordered tile set closing to one within `TOL-SNOWENERGY-002`; the tolerance never authorizes renormalization. Every contribution binds the same beginning lane-state identity, snow-surface temperature, and latent heat. Missing, duplicate, wrong-class, wrong-model, covered-subset-normalized, or restart topology/basis substitutions fail closed. Uniform terminal liquid preserves `sum_i(f_i M_i)=M_lane`; dividing the complete lane amount by every tile fraction is prohibited. | `REF-SNOWENERGY-USER-OFE-GROUND-V15`; single-column Stage 3 and terminal-receiver state semantics | `[DIRECT][Static] + [INFERENCE][Static]` | lane topology/source-set/common-state/restart guards | `SNOWENERGY-E-CARRIER-001` |
+| `INV-SNOWENERGY-042` | One persistent Stage 3 lane owner is OFE-ground. Complete typed tile-ground snow-surface fluxes aggregate exactly once as `sum_i(f_i X_i)` over an ordered tile set closing to one within `TOL-SNOWENERGY-002`; the tolerance never authorizes renormalization. Every contribution binds the same beginning lane-state identity, snow-surface temperature, and latent heat. Nonlinear canopy/LSE exchange and component carrier receipts consume exactly the `V11CanopyCovered` partition; any extra physical LSE state must be authenticated as `OpenSnow` and remain on its separate boundary path. Missing, unclassified, duplicate, wrong-class, wrong-model, covered-subset-normalized, or restart topology/basis substitutions fail closed. Uniform terminal liquid preserves `sum_i(f_i M_i)=M_lane`; dividing the complete lane amount by every tile fraction is prohibited. | `REF-SNOWENERGY-USER-OFE-GROUND-V15`; single-column Stage 3 and terminal-receiver state semantics | `[DIRECT][Static] + [INFERENCE][Static]` | lane topology/source-set/common-state/restart guards | `SNOWENERGY-E-CARRIER-001` |
 | `INV-SNOWENERGY-043` | Covered fixed-point acceptance first reconstructs and validates each candidate fingerprint independently. Schema, terminal-event model, lane, interval, layer cardinality/order, density, and stored count-like settling chronology compare exactly. Numeric state compares only under the physical-class absolute bounds in `TOL-SNOWENERGY-003`; candidate fingerprint equality is neither required nor a substitute for those comparisons. | existing Stage 3 closure scales and covered carrier temperature policy | `[DIRECT][Static] + [INFERENCE][Static]` | typed convergence/nonconvergence and stale-fingerprint guards | `SNOWENERGY-E-CARRIER-001` |
 | `INV-SNOWENERGY-054` | A failed authentic finalization rebuild applies the existing guarded support-scaled contraction only to unpublished continuous Stage 3 state, retains authentic final LSE/boundaries and converged soil, and consumes exactly one additional guarded Picard crossing before retry. Authentic candidate density is copied bitwise and never interpolated; a density difference still prevents convergence and final acceptance remains authentic-map-only. | version-23 bounded Picard authority, version-28 finalization diagnosis, physical closure | `[DIRECT][Static] + [INFERENCE][Ran]` | finalization restart/refusal, exactly-once stabilization state, candidate-density, cumulative-closure, and authentic-publication guards | typed nonconvergence/refinement; no relaxed publication |
 | `INV-SNOWENERGY-055` | At exactly `60_000_000_000 ns`, a finite authentic terminal-one-volume open-snow image below the existing `200 K` boundary domain may seed exactly one unpublished `w=0.5` phase-aware contraction only when current and authentic images derive from the same immutable beginning and exact support, retain identical schema/model/lane/cursor/layer/density/settling/initial/input/support/topology/custody/receipt identities, use complete finite support operands with the same signed-vapor disposition and independently closed component energy, and straddle only the canonical phase kink. For each image `j`, reconstruct `D_j=max(V_j,0)`, `S_j=min(max(-V_j,0),I0)`, `W_j=I0+L0+D_j-S_j+Lin_j`, and `H_j=-C0+Lf*(L0+Lin_j)+Q_j`. Form the coordinated midpoint operand vector, require its reconstruction to equal `W_*=(W_current+W_authentic)/2` and `H_*=(H_current+H_authentic)/2`, and apply the existing version-22 projection exactly: `H_*<0 -> (I,L,C,U)=(W_*,0,-H_*,0)`; `0<=H_*<Lf W_* -> (W_*-H_*/Lf,H_*/Lf,0,0)`; `H_*>=Lf W_* -> (0,W_*,0,max(H_*-Lf W_*,0))`, with exact zero-enthalpy and fusion-capacity boundary sides. Reconstruct melt, refreeze, temperature, thickness, cumulative mass/energy fields, and fingerprint from immutable beginning plus the coordinated operands; independent interpolation of ice, liquid, cold content, melt, refreeze, or any cumulative field is forbidden. Raw authentic history is retained. The midpoint cannot satisfy convergence, finalization, replay, acceptance, or publication; only a later fresh authentic image can do so under every unchanged predicate. Any poison or failed reconstruction is typed failure under the unchanged 96-iteration cap, tolerances, exact floor, rollback, and ledger rules. | version-22 canonical phase projection, `INV-SNOWENERGY-048/049/052/054`, physical conservation | `[DIRECT][Static] + [INFERENCE][Ran]` | captured `1860..1980 s` parent composed-trial mixed/frozen vector and its exact 60-second child midpoint; independent water/enthalpy and mass/energy oracles; zero-`H`/fusion-capacity exact sides; vapor-sign, nonfinite, structure, identity, receipt, and component-closure poisons; no-intermediate-publication source binding | typed refinement/nonconvergence; no component repair, tolerance, cap, floor, equation, event, custody, receipt, rollback, or publication change |
@@ -1438,6 +1445,11 @@ divide/branch threshold.
 | `INV-SNOWENERGY-079` | Version 55 acts only on the first complete, finite, side-valid, branch-bound private physical root that already satisfies every unchanged V52 full residual and derived-thickness tolerance, and before V45 finite-difference polishing spends another physical-map charge. Valid Q vector shape, finite coordinates/physical outputs, and exact canonical endpoint-receipt lineage are hard requirements: source the same charged map's own physical `Q_out` directly from the retained canonical reconstructed endpoint receipt and require `Q_coordinate - Q_out` to reproduce `R_Q` bit-for-bit. Residual subtraction alone may not source the endpoint. V55 is an optional specialization only when exactly one ordered lane Q residual is unresolved, both interval endpoints are positive and in the same binary64 domain, checked root-exclusive/own-output-inclusive cardinality succeeds, and the complete interval plus protected authentic probe and independent replay fits the remaining shared maximum-96 budget. Any miss of those specialization predicates returns `NotApplicable` before a callback or charge, leaves budget and root bundle unchanged, and continues the pre-existing V45 polishing path. After successful atomic preflight, the attempt commits immediately before its first candidate charge and may never fall back. The interval is traversed completely in deterministic root-to-output bit order with all W/H/rho, every other lane Q, all soil E/T, support, topology, custody, static receipt geometry, exact carry, phase, and density branches bit-identical. Every member receives exactly one charged `PrivateTrial` full map. Retain the first exact positive-zero `R_Q`/own-output-Q/full-residual/z/side/branch/custody witness privately but evaluate every preflighted member. No witness or any post-commit evaluation, charge, coordinate, closure, authentic receipt, replay, or finalization error fails typed with exact rollback and no fallback. The unchanged exact whole-receipt iteration, independent replay, and strict downstream finalization remain mandatory. Authentic probes/replay consume their supplied sealed receipt Q unchanged. Averaging, midpoint, interpolation, `nextafter`, sparse search, receipt/digest distance, receipt mutation/repair/reseal, uncharged maps, tolerance/cap/floor change, or private publication is forbidden. | `REF-SNOWENERGY-WGHL-V55`, `INV-SNOWENERGY-048/049/050/059/060/062/069/070/076/077/078`, unchanged V45 polishing, V52 residuals, and V35 authentic admission | `[DIRECT][Static] + [DIRECT][Ran] + [INFERENCE][Static]` | retained r139/r140 two-member miss and r142 1394-member overcapacity; hard shape/finiteness/lineage; zero-charge unresolved-count/domain/cardinality/capacity misses; behavior-identical V45 continuation; ascending/descending exact-fit attempt; atomic commit; exact-once traversal; post-charge/no-witness/residual/z/branch/side/custody poisons; authentic stabilization/replay/finalization; rollback and no-publication | typed hard refusal or unchanged V45 continuation with exact rollback; no equation, tolerance, cap, floor, event, topology, custody, receipt meaning, exact carry, physics, persistence, diagnostic, acceptance, or publication change |
 | `INV-SNOWENERGY-080` | Version 56 dispatches before V55 only for an authentic terminal-one-volume Stage 3 support whose complete observed branch is strictly frozen and noncrossing: finite positive water and density, finite `0<T_s<273.15 K`, no liquid, melt, refreeze, terminal-unallocated energy, phase-predicate transition, density/settling-branch change, layer/order change, event, topology, custody, support, or static-receipt change. Its ordered private coordinates are lane `(W,T_s,rho)` followed by top-soil `(E_soil,T_soil)`; neither snow H nor CN Q is an independent coordinate. Every charged map derives `H_exact=-exact(W)*exact(c_ice)*(exact(273.15)-exact(T_s))`, rounds `H_hi` once by IEEE-754 round-nearest-even, retains exact dyadic `R_Hcarry=H_exact-exact(H_hi)`, and evaluates unchanged energy closure from the exact sum. It derives Q once through unchanged CN physics, applies snow `+Q` and soil `-Q` once, and charges the same maximum-96 budget for every physical/Jacobian/trust/rejected/probe/replay map. Only a fresh authentic result may form an `AuthenticatedCoveredSnowMaterialOwnerV1`: unchanged Stage 3 material plus ordered high/carry, sealed by a `CoveredSnowEnthalpyCarryReceiptV1` over schema/version, support, transaction/predecessor, lanes/order, exact beginning/ending high-plus-carry, ordered energy operands, base-owner digest, receipt chain, branch, topology, and custody. The complete CN-plus-carry receipt set must stabilize exactly, then reproduce exact artifacts/receipts under one independent same-input replay and unchanged strict finalization before admission. A V54/V55 transient witness or private artifact may never become material/carry authority. `DirectSnowStage3V11SnowEnthalpyRestartV5` preserves the compound owner and carry-receipt chronology for committed, pending, and in-progress state including current support; V4 migration supplies only canonical exact zero carry, and V5 downgrade refuses unless every snow carry is exact zero. Restore revalidates the complete chronology. Ineligibility before charge may continue unchanged V55; any committed evaluation, owner, receipt, replay, finalization, migration, downgrade, or restore failure is typed with exact rollback and no publication. The 60-second floor, constitutive physics, `c_ice`, CN operation, physical ledger terms/tolerances, event chronology, topology, custody, and diagnostics are unchanged. | `REF-SNOWENERGY-WGHL-V56`, `INV-SNOWENERGY-048/049/050/059/062/069/070/076/079`, unchanged Stage 3/CN physics, exact-dyadic authority, and restart custody | `[DIRECT][Static] + [DIRECT][Ran] + [INFERENCE][Static]` | retained r144 exhaustive 21-candidate no-witness; strict frozen/noncrossing sides; exact formula/RN-even/tie/cancellation/high-plus-carry ledger vectors; Q exact-once; compound-owner and carry-receipt substitution/order/digest poisons; whole-receipt stabilization/replay/finalization; V4->V5 zero-carry migration; nonzero V5->V4 downgrade refusal; committed/pending/in-progress restore; rollback/no-publication/no-diagnostics | typed not-applicable before charge or fail-closed after commit; no equation, constitutive physics, tolerance, cap, floor, event, topology, custody weakening, receipt repair, transient-witness promotion, or diagnostic/publication change |
 | `INV-SNOWENERGY-081` | Version 57 classifies only a finite nonnegative `external_liquid_kg_m2 <= 1.0e-12 kg m^-2 OFE-ground` as neutral to the V56 strictly-frozen eligibility predicate. Equality is eligible. This predicate must not change the operand bits: the exact binary64 amount remains in `physical_delta_water_kg_m2`, every ordered energy/advection operand, receipt, replay, finalization, and independent mass/energy reconstruction. Any corresponding refreeze is eligible only when it is the same bounded external operand completely routed into existing frozen material with exact-zero ending liquid, no melt or terminal event, and unchanged phase predicate; its exact mass and latent energy remain ledgered. A negative, nonfinite, or one-bit-greater amount, unmatched refreeze, ending liquid, melt, or event is ineligible before charge. V57 may also perform the same zero-charge eligibility and coordinate conversion on the first tolerance-closed legacy root immediately before V55; it retains the shared budget already used, derives `(W,T_s,rho,E_soil,T_soil)` without a physical map, and commits before its first charged V56 evaluation. Zero-charge ineligibility continues unchanged V55; after the first V57/V56 charge, any error is typed and no fallback is permitted. The `1.0e-12 kg m^-2` eligibility bound is the unchanged minimum terminal physical snow-closure scale, one millionth of the unchanged `1.0e-6 kg m^-2` covered mass tolerance, and one thousandth of the `1.0e-9 kg m^-2` represented-layer lifecycle boundary. No external liquid or refreeze is zeroed, clamped, dropped, rerouted, repaired, or excluded from closure. Constitutive physics, physical ledger tolerances, exact high-plus-carry closure, bulk phase/event chronology, maximum 96, exact 60-second floor, topology, custody, receipts, rollback, persistence, diagnostics, and final admission are unchanged. | `REF-SNOWENERGY-WGHL-V57`, `INV-SNOWENERGY-027/048/049/050/059/062/069/070/080`, unchanged Stage 3 liquid and ledger authority | `[DIRECT][Static] + [DIRECT][Ran] + [INFERENCE][Static]` | retained r147 exact residue and budget; zero/equality/one-bit-above/negative/nonfinite eligibility; exact bounded refreeze/no-ending-liquid identity; bit-exact operand retention in independent mass/energy closure; zero-charge post-root transition at retained budget; V55 callback zero after commit; rollback/no-publication/no-diagnostics | typed not-applicable before charge or fail-closed after commit; no operand normalization, equation, physical tolerance, cap, floor, bulk phase/event, topology, custody, receipt, persistence, diagnostic, acceptance, or publication change |
+
+| `INV-SNOWENERGY-083` | Represented Stage-3 snow selects one standard covered-column physical map under native vegetation/LSE identities. That same charged map carries exact optical and snow--soil lower-boundary receipts; frozen-litter V3/V4 vapor, phase, storage, current-ingress, and WB14 remain inactive with byte-identical owners. A second inner legacy envelope is forbidden, and only the exact post-terminal snow-free child may resume litter physics. | `INV-SNOWENERGY-082`, `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-154`, `SC-SURFACELIQUID-001#INV-SURFACELIQUID-026`, ADR-0044 | `[INFERENCE][Static]` | typed regime/charge/receipt/custody/runtime/test | typed rejection and complete rollback; no equation, tolerance, budget, floor, or custody weakening |
+| `INV-SNOWENERGY-084` | Within a charged candidate-only map, an authenticated V2 unpublished soil continuation may supply only its typed read-only physical beginning to LSE/V3. It cannot become an owner/restart or accepted projection. Authentic final acceptance replays the original prepared owner, complete accumulated operands, exact selected ending, and credit chain once before one atomic owner/receipt/restart seal. | `INV-SNOWENERGY-083`, `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-155`, `SC-SURFACELIQUID-001#INV-SURFACELIQUID-027`, ADR-0044 | `[DIRECT][Static] + [INFERENCE][Static]` | candidate/charge/custody/finalization/test | typed rejection and complete rollback; no support rebind, private promotion, dual acceptance, or proxy physics |
+| `INV-SNOWENERGY-085` | A deferred native-V2 soil continuation may close at the accepted parent endpoint before the logical vegetation parent-finalization event only through one opaque pending-finalization authority. The authority binds the exact live parent checkpoint, coupled clock and owner digest, persistent vegetation predecessor, independently finalized V11 vegetation successor, equal LSE/BGC accepted-record source, exact resident/continuation/prepared/accepted/seal custody, and soil target. It authorizes only the same-tick soil owner mutation; the subsequent parent finalization must reproduce the pre-authorized V11 state and differ only by the installed soil owner. | `INV-SNOWENERGY-071/073/074/084`, coupled-time zero-duration event authority | `[INFERENCE][Static]` | custody/event-order/finalization/runtime/test | typed rejection and complete rollback; no raw-ID constructor, adjacency inference, owner rebasing, authority replay, non-soil mutation, or private publication |
+| `INV-SNOWENERGY-088` | Outer support/persistent-state validation -> feed-forward request construction -> provider attachment/projection/owner/forcing/topology validation -> sole carrier call and its physical/custody validation -> evaluator boundary/result join -> `stage3_hourly_surface_energy` boundary projection and required diagnostics -> terminal transition -> independent exact-endpoint/final completion. | runtime/type/test/profile | Request shape is compile-time structural. Existing guards retain their variants and order: outer/provider kernel-domain failures map to `DirectSnowStage3EvaluationError::Kernel`; provider-wrapper attachment/projection/identity failures retain exact `TerminalCustody` messages; the sole provider error remains `TerminalCustody("covered probe carrier fixed point")`; evaluator boundary/result mismatch is `Kernel` with `snow.terminal_trial_boundary_support_join`; surface-energy and required-diagnostics failures remain `Kernel` or `TurbulentTransfer`; terminal math remains `TerminalNumerics` or `Kernel`. No second call may replace any failure. Final-map failures retain separate `DirectV11RealConsumerError` variants under `INV-SNOWENERGY-086`. Every failure leaves no selected trial or publication. | revision-61 structural request gate; in-crate role/path/call-count, adjacent competing-poison, forced-reference, rollback tests; exact release call-multiset and retention artifact |
 
 For `INV-SNOWENERGY-057`, the exact transition detector is a rolling
 three-transition window. If `interface -> branch entry -> interface reset`
@@ -1508,6 +1520,10 @@ publication.
 | `OBL-SNOWENERGY-P-005` | sublimation exchange | Publish one bounded signed vapor mass exchange and derive its latent heat using the same `T_s`. |
 | `OBL-SNOWENERGY-P-006` | complete energy producer | Before melt-owner cutover, publish finite, unit-explicit, same-substep net radiation, sensible heat, latent heat, ground/interlayer conduction, and precipitation-advected heat with exact-one composition and independently reconstructable lineage. |
 | `OBL-SNOWENERGY-P-007` | evaluation evidence producer | Preserve raw vapor/latent opportunity separately from bounded deposition/sublimation and state endpoints; use N/A for S/F actual transfer; do not relabel raw opportunity as actual snow loss. |
+| `OBL-SNOWENERGY-C-050` | canonical covered/real-consumer validator | Enforce `INV-SNOWENERGY-082`, `TOL-SNOWENERGY-007`, both exact authorized role chronologies within the eight-map ceiling, exhaustive anti-accretion, sensitivity/poison vectors, independent closure, and the accepted non-CoE Stage-3 through Lane-D publication chain. |
+| `OBL-SNOWENERGY-C-051` | native represented-snow covered-envelope validator | Enforce `INV-SNOWENERGY-083`: typed represented-snow classification, one standard charged map under native identities, exact optical/lower-boundary receipt retention, zero frozen-litter V3/V4 phase/storage/ingress/WB14 calls, no second envelope, byte-identical inactive owners, exact snow-free transition, and rollback. |
+| `OBL-SNOWENERGY-C-052` | candidate-only unpublished-soil validator | Enforce `INV-SNOWENERGY-084`: exact continuation/predecessor/child-support authentication, typed non-owner V3 input/projection, no owner/restart bytes or intermediate install, complete final replay, one atomic seal/install, poison rejection, and rollback. |
+| `OBL-SNOWENERGY-C-053` | pending parent-finalization soil-close validator | Enforce `INV-SNOWENERGY-085`: exact parent/checkpoint/clock/endpoint/owner-set binding, predecessor and finalized vegetation identity, equal LSE/BGC record source, exact V2 continuation/prepared/accepted/seal custody, soil-only event mutation, one-use authority, post-close re-finalization equality, ordered vegetation finalization, poison rejection, and rollback. |
 | `OBL-SNOWENERGY-P-008` | terminal event producer | For enabled persistent evaluation only, publish request/version, start/end enthalpy state, accepted/rejected trials, error norm, bracket bounds, event/evaluated/unevaluated seconds, complete carrier, `Delta H_cc`, refreeze, deposition, sublimation, melt, endpoint-solid identity, terminal liquid/energy handoffs, and scale-aware closure without naming a receiving surface. |
 | `OBL-SNOWENERGY-C-001` | longwave evaluator | Apply the equations and guards in the specified order without silent unit conversion or fallback. |
 | `OBL-SNOWENERGY-C-002` | shared energy carrier | Consume `L_net` exactly once with the positive-toward-snow convention. |
@@ -1685,6 +1701,7 @@ adaptive duration proposal or acceptance rule.
 | `TOL-SNOWENERGY-004` | `OPENWEPP_STAGE3_ADAPTIVE_OWNER_TOLERANCE_V1` governs only direct-versus-composed complete-owner truncation error. Snow depth uses `1e-9 m + 5e-3*max_abs`, snow mass uses `5e-6 kg m^-2 + 5e-3*max_abs`, snow energy uses `1e-6 J m^-2 + 5e-3*max_abs`, and snow temperature uses `1e-2 K + 1e-8*max_abs`. Soil-thermal energy alone uses `1e-6 J m^-2 + 1.5e-2*max_abs`; LSE energy uses `1e-6 J m^-2 + 5e-3*max_abs`. Other complete-owner fields retain their owning-contract absolute floor and `1e-3` relative tolerance for extensive mass/depth/energy or `1e-6` for other intensive state; temperature uses `1e-2 K + 1e-8*max_abs`. These constants do not govern or relax independent mass/energy ledger closure. Exact topology, active-set, posture, ordering, schema, and thermodynamic-provider identities remain exact. | typed adaptive refinement or qualification hold |
 | `TOL-SNOWENERGY-005` | Final snow--soil receipt nonlinear termination admits only finite reconstructed-endpoint residuals `<=1e-9 J m^-2` for applied energy and `<=1e-8 K` for each ending temperature. The receipt retains the exact equal/opposite energy actually consumed and reseals only exact installed candidate identities. The energy bound is 1,000 times smaller than the unchanged physical-ledger closure threshold; it cannot excuse a sign, node, topology, support, owner, digest, mass/energy-ledger, or discrete-phase mismatch. | bounded fixed-point retry; cap exhaustion remains typed nonconvergence |
 | `TOL-SNOWENERGY-006` | A refreeze-capacity operation that selects `m_refreeze=Q_cc/L_f` may canonicalize only its finite binary64 quotient/product remainder `Q_cc-L_f*m_refreeze` in `[-1e-9,0) J m^-2` to exact `+0 J m^-2`. This threshold is 1,000 times smaller than the unchanged `1e-6 J m^-2` physical energy-ledger closure bound. It changes neither refrozen mass nor fusion energy; any more-negative result, any nonfinite operand, a non-capacity-limited branch, or arbitrary negative cold content is a typed domain failure. | exact zero canonicalization at the constitutive operation; otherwise typed domain failure |
+| `TOL-SNOWENERGY-007` | Canonical covered continuous convergence uses the quantity-specific absolute/relative table in the ADR-0044 amendment. Exact discrete envelope/custody and independent physical closure remain separate and exact/unchanged. | typed nonconvergence or same-solver adaptive request |
 
 - Analytical evidence uses an absolute tolerance of `1e-9` for dimensionless
   identity checks and `1e-6 W m^-2` for independently reconstructed fluxes.
@@ -1983,6 +2000,15 @@ operands.
 | `INV-SNOWENERGY-041` | Terminal numerical tolerances are typed, distinct, and never repair identity, support, or state. | numerical validator |
 | `INV-SNOWENERGY-043` | Covered convergence reconstructs candidate fingerprints and separates exact structure/count/density from unit-specific absolute numeric residuals. | convergence validator |
 | `INV-SNOWENERGY-044` | Lane receipt V1 is non-restorable; V2 restart schema remains undefined and blocked pending exact normative framing and replay joins. | restart schema/version guard |
+| `INV-SNOWENERGY-082` | One preselected canonical covered solver, one eight-map budget, same-solver adaptive retry, and no historical/failure selector. | canonical solver and anti-accretion guard |
+| `INV-SNOWENERGY-083` | One native-identity standard Stage-3 covered map owns represented-snow physics and exact optical/lower-boundary receipts while litter V3/V4 remains inactive and byte-retained. | regime/charge/receipt/inactive-owner/transition guards |
+| `INV-SNOWENERGY-084` | Candidate-only V2 soil continuation enters LSE/V3 only as an authenticated read-only beginning and becomes publishable only through one complete final replay. | continuation/input/projection/final-replay/single-install guards |
+| `INV-SNOWENERGY-085` | Pending V11 parent-finalization authority permits one same-tick deferred V2 soil-only close while vegetation retains its persistent predecessor. | parent/checkpoint/clock/owner-set/finalization/soil-event guards |
+| `TOL-SNOWENERGY-007` | Quantity-specific continuous convergence with exact branch/topology/custody. | production admission sensitivity guard |
+| `OBL-SNOWENERGY-C-050` | Exhaustive solver, sensitivity, closure, rollback, and real-consumer proof. | contract/static/runtime/runner gates |
+| `OBL-SNOWENERGY-C-051` | Typed classification, one charge, exact boundary receipts, zero litter/WB14 work, no second envelope, unchanged owners, transition, and rollback proof. | contract/static/runtime/runner gates |
+| `OBL-SNOWENERGY-C-052` | Exact candidate-only soil-beginning, no owner/restart bytes, complete replay, one install, poisons, and rollback proof. | contract/static/runtime/runner gates |
+| `OBL-SNOWENERGY-C-053` | Exact pending-finalization authority, soil-only event, re-finalization equality, ordered vegetation finalization, poisons, and rollback proof. | contract/static/runtime/runner gates |
 | `INV-SNOWENERGY-054` | Failed finalization uses only the guarded unpublished Stage 3 contraction, retains authentic LSE/boundary/soil operands, copies candidate density bitwise without interpolation, consumes one stabilization crossing, and publishes only an authentic map image. | fixed-point finalization and publication guards |
 | `INV-SNOWENERGY-055` | Exact-floor terminal-one-volume contraction reconstructs one coordinated `W/H` midpoint from immutable beginning plus complete support operands, projects phase canonically, retains every identity and independent closure, and remains unpublished until a fresh authentic image passes. | covered fixed-point phase-aware midpoint and publication guards |
 | `INV-SNOWENERGY-056` | Any exact support at or above 60 seconds may localize only a pure opposite-sign actual-vapor interface, set linked vapor/latent terms to exact zero, enter one authentic side under the existing support-scaled weight and authentic latent heat, reconstruct canonical `W/H`, and retain synthetic-ineligible/fresh-authentic-only publication posture. | covered fixed-point vapor-active-set, closure, identity, and publication guards |
@@ -2026,6 +2052,31 @@ operands.
 | `OBL-SNOWENERGY-C-048` | Before V55, admit the temperature-primary specialization only from exact authentic strictly frozen/noncrossing Stage 3 authority. Reconstruct exact snow enthalpy from `(W,T_s)` with round-nearest-even high plus exact dyadic carry; derive unchanged CN Q once; preserve exact ledger tolerance; seal only fresh authentic Stage 3 material plus ordered carry as one compound owner and additive carry receipt; stabilize the complete CN/carry receipt set and require independent exact replay/finalization. Persist committed, pending, and in-progress compound-owner chronology in restart V5; migrate V4 only with exact zero carry and refuse nonzero-carry downgrade. Reject transient V54/V55 witness promotion, carry/receipt repair, uncharged maps, rollback mutation, or publication. | covered frozen temperature-primary solver, Stage 3 owner/finalizer, receipt consumer, and persisted restart |
 | `OBL-SNOWENERGY-C-049` | Treat only finite nonnegative external liquid through `1.0e-12 kg m^-2 OFE-ground` as neutral to frozen-specialization eligibility while retaining its exact bits and exact contribution in every physical mass/energy operand, receipt, replay, finalization, and independent closure reconstruction. Any corresponding refreeze must equal that bounded operand, leave exact-zero ending liquid, and preserve the frozen phase/event predicates while its exact latent energy remains ledgered. Allow zero-charge coordinate conversion from the first tolerance-closed legacy root immediately before V55 with the already-used shared budget; commit before the first charged V56 map and prohibit fallback thereafter. Reject negative, nonfinite, or one-bit-above amounts, unmatched refreeze, ending liquid/melt/event, operand normalization or omission, uncharged physics, budget reset, V55 dispatch after V57 commit, rollback mutation, diagnostics, or publication. | covered frozen-specialization eligibility, post-root transition, physical ledger, and authentic receipt consumer |
 
+`OBL-SNOWENERGY-C-054` requires exact `2 <= M <= 7` charged-map accounting
+under the unchanged maximum-eight ceiling; `M` validated physical endpoints;
+one exclusive history, adaptive-rejection, or final disposition for every
+pending map; exactly one final disposition, final-constructor attempt, and
+completed envelope on success; two-map and iterative chronologies; outer and
+dependent closure against authentic same-charge evidence; ordinary/native
+physical-prefix differential equality; zero map publication; parent-only
+publication; role/ordinal/identity/topology/regime/disposition/one-ULP poisons;
+unpublishability, rollback, and no fallback.
+
+`OBL-SNOWENERGY-C-055` requires the real represented-snow-prefix to snow-free
+transition, exact terminal split and coupled proof, zero inactive litter/WB14
+work, unchanged WB14 cumulatives, first physical ordinal zero, restart
+equivalence, complete poison matrix, and byte-identical rollback.
+
+`OBL-SNOWENERGY-C-056` requires one typed feed-forward carrier call per
+evaluator invocation; direct pre-change 400-call evidence and post-change exact
+200-invocation multiset evidence; unchanged Full/Retry/Half1/Half2/Root and
+discovery/exact/batch/final chronology; bitwise equality to both calls of a
+test-only forced two-call reference with exact-zero coupling deltas;
+binding/negative-capability/cross-invocation, sole-call, and exact/final
+poisons; exact source-real error precedence, closure, publication, output, and
+rollback; unchanged `48/56/20/32/4` workload counts; and the prospective
+three-run target-plus-total/RSS keep-or-revert gate.
+
 ## Binding Exposure Index
 
 The package rows below map active package-local binding residue through version
@@ -2033,35 +2084,42 @@ The package rows below map active package-local binding residue through version
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
 |---|---|---|---|---|---|---|
+| `SNOWENERGY-ADR0044-CANONICAL-COVERED` | `docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-082, OBL-SNOWENERGY-C-050` | `flagged-binding-addition` | Non-versioned replacement of the historical v33--v57 numerical dispatch; `TOL-SNOWENERGY-007`, thin-pack version-22 process, exact custody, physical ledgers, and schema compatibility retained. |
+| `SNOWENERGY-ADR0044-NATIVE-CROSS-REGIME` | `docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-083, OBL-SNOWENERGY-C-051` | `flagged-binding-addition` | Non-versioned companion binding one native-identity standard covered map and exact boundary receipts while represented snow keeps frozen-litter V3/V4 inactive. |
+| `SNOWENERGY-ADR0044-UNPUBLISHED-SOIL-BEGINNING` | `docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-084, OBL-SNOWENERGY-C-052` | `flagged-binding-addition` | Non-versioned companion admitting an authenticated unpublished soil beginning only as candidate physical input, with one complete final owner/restart replay and install. |
+| `SNOWENERGY-ADR0044-PENDING-PARENT-FINALIZATION-SOIL-CLOSE` | `docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-085, OBL-SNOWENERGY-C-053` | `flagged-binding-addition` | Non-versioned companion authorizing one same-tick deferred native-V2 soil-only close before the already-required logical vegetation parent-finalization event. |
+| `SNOWENERGY-ADR0044-NONFINAL-PHYSICAL-ONLY` | `docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-086, OBL-SNOWENERGY-C-054` | `flagged-binding-addition` | Initial and history maps remain physical-only; the converged pending adjudication map is consumed once into complete-owner custody without another physical charge. |
+| `SNOWENERGY-ADR0044-NATIVE-INACTIVE-PREFIX-TRANSITION` | `docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-087, OBL-SNOWENERGY-C-055` | `flagged-binding-addition` | The exact first snow-free child consumes the accepted represented-snow prefix as chronology proof without adding under-snow WB14 physics, receipts, solver work, or publication. |
+| `SNOWENERGY-V61-FEED-FORWARD-TERMINAL-CARRIER` | `docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-088, OBL-SNOWENERGY-C-056` | `flagged-binding-addition` | One structurally feed-forward real carrier call replaces the generic two-call replay within each logical terminal group while all distinct adaptive/event/exact/final evaluations remain. |
 | `SNOWENERGY-CHILD2C-CARRIER` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-036, INV-SNOWENERGY-037, INV-SNOWENERGY-038, INV-SNOWENERGY-039, INV-SNOWENERGY-040, OBL-SNOWENERGY-P-010, OBL-SNOWENERGY-C-017` | `flagged-binding-addition` | Shared carrier topology, sealed exposure, weighted component longwave, typed flux lineage, and wrong-regime/scope rejection. |
 | `SNOWENERGY-V15-OFE-GROUND-LANE` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-042, OBL-SNOWENERGY-C-018` | `flagged-binding-addition` | Direct user selection of one-column-per-lane OFE-ground storage under `TOL-SNOWENERGY-002`, complete typed tile-surface flux aggregation without covered-subset renormalization, common lane snow state, terminal identity, and topology-bound restart posture; dual review and verification required. |
 | `SNOWENERGY-V16-COVERED-CONVERGENCE-RESTART` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-043, INV-SNOWENERGY-044, OBL-SNOWENERGY-C-019, OBL-SNOWENERGY-C-020` | `flagged-binding-addition` | Separates covered fixed-point comparisons under `TOL-SNOWENERGY-003`, reconstructs candidate fingerprints, and holds additive restart until a normative lane-receipt V2 wire and complete topology/owner replay join are admitted. |
 | `SNOWENERGY-V32-TERMINAL-PHASE-VAPOR-ACTIVE-SET` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-055, INV-SNOWENERGY-056, OBL-SNOWENERGY-C-023, OBL-SNOWENERGY-C-024` | `flagged-binding-addition` | Retains v31/v32 midpoint, vapor-root, and branch-entry authority as diagnostic/refusal evidence. Version 33 supersedes their production-control role only after the exact active-set root/interface/branch-entry/opposite-authentic/reset transition record repeats under unchanged joins. |
-| `SNOWENERGY-V33-PHASE-CONSISTENT-COUPLED` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-057, OBL-SNOWENERGY-C-025` | `flagged-binding-addition` | The exact transition reset invokes a private reduced solve through concrete physical residual carriers and algebraic constraints under one shared 96-evaluation budget; only fresh `CoupledAuthentic` replay/reseal may bypass Picard equality and proceed to unchanged finalization/publication guards. |
-| `SNOWENERGY-V34-STABLE-MONOTONE-COUPLED` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-058, OBL-SNOWENERGY-C-026` | `flagged-binding-addition` | Eight stable monotone raw authentic maps may invoke the unchanged v33 physical solver under exact static receipt/phase/carry-authority-and-representation joins and exact evolving high-plus-carry reconstruction, without requiring physical receipt digests or carry coordinates to remain byte-equal, under the same already-charged 96-evaluation budget; pre-root refusal destroys private trials and resumes raw authentic Picard within the remaining budget. |
-| `SNOWENERGY-V35-AUTHENTIC-RECEIPT-STABILIZATION` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-059, OBL-SNOWENERGY-C-027` | `flagged-binding-addition` | A coupled root enters charged immutable-input receipt probes until exact input/output receipt equality, then one independent same-input replay must reproduce exact residuals, artifacts, and receipts before admission; cross-input equality and probe retention are forbidden. |
-| `SNOWENERGY-V36-GEOMETRY-COMPLETE-COUPLED` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-060, OBL-SNOWENERGY-C-028` | `flagged-binding-addition` | Adds one terminal density coordinate, canonical `I/rho` thickness, and unchanged constitutive `R_rho` to the generalized physical solve under the same budget and v35 receipt/finalization path. |
-| `SNOWENERGY-V37-DERIVED-THICKNESS-CLOSURE` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-061, OBL-SNOWENERGY-C-029` | `flagged-binding-addition` | Requires canonical derived `R_z` to participate in merit and admission under the unchanged depth bound while retaining the v36 coordinate vector, one charged map, v35 receipt replay, and authentic finalization. |
-| `SNOWENERGY-V38-FINALIZATION-EQUIVALENT-MAP` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-062, OBL-SNOWENERGY-C-030` | `flagged-binding-addition` | Requires every charged coupled residual/replay to execute the authentic finalization-equivalent endpoint map directly with one Stage 3 call, projects only each OFE's first snow-coupled soil node while preserving deeper layers and exact carries bit-for-bit, and retains exact receipt stabilization plus an independent exact finalization replay. |
-| `SNOWENERGY-V39-SOIL-ENERGY-TRANSACTION-SEPARATION` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-063, OBL-SNOWENERGY-C-031` | `flagged-binding-addition` | Separates the exact outer surface-ingress/source transaction from the exact authenticated V2 soil-target transaction in soil-energy operand custody and seals both identities into each operand digest without changing physical energy or acceptance semantics. |
-| `SNOWENERGY-V40-PARITY-MONOTONE-ACTIVE-SET` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-064, OBL-SNOWENERGY-C-032` | `flagged-binding-addition` | Four consecutive exact-static nonexact rolling reset windows with strictly decreasing finite positive root drift may invoke the unchanged finalization-equivalent solver early enough to retain the same shared-budget minimum solve/replay path; no drift threshold admits a root. |
-| `SNOWENERGY-V41-ONE-WAY-PHASE-BOUNDARY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-065, OBL-SNOWENERGY-C-033` | `flagged-binding-addition` | Four exact-static rolling windows with bit-identical water and a strictly one-way enthalpy chain crossing exactly one adjacent canonical phase boundary may invoke only the unchanged solver under the same reserve; the bracket is not a tolerance, projection, or root admission. |
-| `SNOWENERGY-V42-COLD-CONTENT-EXPORT-COORDINATE` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-066, OBL-SNOWENERGY-C-034` | `flagged-binding-addition` | Adds the exact already-physical authentic cold-content-export operand to canonical support enthalpy and ordered private nonlatent contraction, preserving zero-export bytes and every unchanged solver, ledger, replay, rollback, and publication guard. |
-| `SNOWENERGY-V43-PROJECTED-BASE-CUSTODY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-067, OBL-SNOWENERGY-C-035` | `flagged-binding-addition` | Preserves the V38 top-layer numerical-coordinate sibling as a typed private fixed-point posture with exact projection custody instead of misclassifying it as ordinary base unpublished physics; every base, sequential, acceptance, installation, rollback, and publication guard remains unchanged. |
-| `SNOWENERGY-V44-UNCOMMITTED-LSE-CLOSURE-POSTURE` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-068, OBL-SNOWENERGY-C-036` | `flagged-binding-addition` | Defers weighted-OFE closure only for the charged uncommitted private LSE exchange, then requires unchanged strict receipt-probe/replay/finalization closure; projected soil coordinates remain exact-once CN operands and cannot be double-applied to the frozen Stage3-covered V8 soil control volume. |
-| `SNOWENERGY-V45-AUTHENTIC-RECEIPT-ROOT-POLISHING` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-069, OBL-SNOWENERGY-C-037` | `flagged-binding-addition` | Continues a tolerance-closed private root only through strict descent of the existing physical residual merit, carries matching artifacts, reserves authentic probe/replay capacity inside the unchanged shared 96 cap, and retains exact receipt equality plus independent same-input replay as the sole admission. |
-| `SNOWENERGY-V46-COMPLETE-STEP-BUDGET-PREFLIGHT` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-070, OBL-SNOWENERGY-C-038` | `flagged-binding-addition` | Requires dimension-complete capacity for every finite-difference Jacobian plus one trust trial before the first column charge, preventing an unusable partial polishing tail while retaining the unchanged solver, exact receipt/replay, and maximum 96. |
-| `SNOWENERGY-V47-ATOMIC-COMPLETE-OWNER-TRANSACTION-POSTURE` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-071, OBL-SNOWENERGY-C-039` | `flagged-binding-addition` | Admits native-V2 accepted-owner installation only for exact same-ID first-child custody or an exact authenticated soil-target successor whose predecessor equals the mutually equal outer source owners; no numeric adjacency, substitution, or partial install. |
-| `SNOWENERGY-V48-FIXED-POINT-FINAL-INSTALL-AUTHORITY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-072, OBL-SNOWENERGY-C-040` | `flagged-binding-addition` | Propagates explicit authenticated prepared-beginning source/soil-target authority through the real fixed-point final install while leaving generic/public installation same-ID-only. |
-| `SNOWENERGY-V49-MULTI-CHILD-PREPARED-INSTALL-AUTHORITY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-073, OBL-SNOWENERGY-C-041` | `flagged-binding-addition` | Binds exact outer source, independently advancing authenticated resident/predecessor, and exact prepared target through repeated same-parent final installs without adjacency inference or owner rebasing. |
-| `SNOWENERGY-V50-ENVELOPE-SOURCE-TRANSITION-AUTHORITY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-074, OBL-SNOWENERGY-C-042` | `flagged-binding-addition` | Anchors V49's mutually equal candidate ending source to the already validated covered V8 envelope transaction while preserving the exact heterogeneous constitutive beginning as soil custody only. |
-| `SNOWENERGY-V51-POST-CROSSING-CONTRACTION` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-075, OBL-SNOWENERGY-C-043` | `flagged-binding-addition` | Extends V41 only for the exact r132 single canonical crossing followed by alternating, strictly shrinking within-phase corrections, retaining every solver, budget, closure, receipt, event, floor, rollback, and publication guard. |
-| `SNOWENERGY-V52-CN-HEAT-COORDINATE` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-076, OBL-SNOWENERGY-C-044` | `flagged-binding-addition` | Adds the omitted continuous snow-candidate CN heat coordinate/equation to the charged coupled map while retaining exact receipt stabilization, replay, finalization, shared budget, floor, closure, rollback, and no-publication. |
-| `SNOWENERGY-V53-SAME-MAP-CN-HEAT-SEED` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-077, OBL-SNOWENERGY-C-045` | `flagged-binding-addition` | Seeds the V52 Q coordinate from the exact already-produced endpoint candidate pair associated with solver dispatch, without changing non-Q seeds or adding a map/budget charge; all V52 solve and authentic admission rules remain unchanged. |
-| `SNOWENERGY-V54-REPRESENTABLE-RECEIPT-CYCLE-WITNESS` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-078, OBL-SNOWENERGY-C-046` | `flagged-binding-addition` | Searches only the finite cycle's already-produced exact endpoint artifacts with their own receipts through charged full authentic maps and exact replay; no receipt or numerical repair is admitted. |
-| `SNOWENERGY-V55-PRIVATE-Q-LATTICE-WITNESS` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-079, OBL-SNOWENERGY-C-047` | `flagged-binding-addition` | Exhaustively evaluates the finite one-lane private Q lattice at the first tolerance-closed root before V45 polish, with atomic shared-budget reservation and exact positive-zero physical Q closure; authentic receipt stabilization, replay, and finalization remain unchanged and exact. |
-| `SNOWENERGY-V56-FROZEN-TEMPERATURE-PRIMARY-CARRY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-080, OBL-SNOWENERGY-C-048` | `flagged-binding-addition` | Dispatches a strictly frozen/noncrossing temperature-primary solve before V55, derives exact enthalpy high-plus-carry and unchanged CN Q, and admits only a fresh authenticated compound snow owner after whole-receipt stabilization, independent replay, strict finalization, and versioned restart custody. |
-| `SNOWENERGY-V57-BOUNDED-LIQUID-ELIGIBILITY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-081, OBL-SNOWENERGY-C-049` | `flagged-binding-addition` | Keeps at most `1.0e-12 kg m^-2` external-liquid roundoff eligibility-neutral without changing its physical ledger operand and permits a zero-charge, same-budget temperature-primary transition from the first legacy root immediately before V55. |
+| `SNOWENERGY-V33-PHASE-CONSISTENT-COUPLED` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-057, OBL-SNOWENERGY-C-025` | `flagged-binding-addition` | The exact transition reset invokes a private reduced solve through concrete physical residual carriers and algebraic constraints under one shared 96-evaluation budget; only fresh `CoupledAuthentic` replay/reseal may bypass Picard equality and proceed to unchanged finalization/publication guards. |
+| `SNOWENERGY-V34-STABLE-MONOTONE-COUPLED` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-058, OBL-SNOWENERGY-C-026` | `flagged-binding-addition` | Eight stable monotone raw authentic maps may invoke the unchanged v33 physical solver under exact static receipt/phase/carry-authority-and-representation joins and exact evolving high-plus-carry reconstruction, without requiring physical receipt digests or carry coordinates to remain byte-equal, under the same already-charged 96-evaluation budget; pre-root refusal destroys private trials and resumes raw authentic Picard within the remaining budget. |
+| `SNOWENERGY-V35-AUTHENTIC-RECEIPT-STABILIZATION` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-059, OBL-SNOWENERGY-C-027` | `flagged-binding-addition` | A coupled root enters charged immutable-input receipt probes until exact input/output receipt equality, then one independent same-input replay must reproduce exact residuals, artifacts, and receipts before admission; cross-input equality and probe retention are forbidden. |
+| `SNOWENERGY-V36-GEOMETRY-COMPLETE-COUPLED` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-060, OBL-SNOWENERGY-C-028` | `flagged-binding-addition` | Adds one terminal density coordinate, canonical `I/rho` thickness, and unchanged constitutive `R_rho` to the generalized physical solve under the same budget and v35 receipt/finalization path. |
+| `SNOWENERGY-V37-DERIVED-THICKNESS-CLOSURE` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-061, OBL-SNOWENERGY-C-029` | `flagged-binding-addition` | Requires canonical derived `R_z` to participate in merit and admission under the unchanged depth bound while retaining the v36 coordinate vector, one charged map, v35 receipt replay, and authentic finalization. |
+| `SNOWENERGY-V38-FINALIZATION-EQUIVALENT-MAP` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-062, OBL-SNOWENERGY-C-030` | `flagged-binding-addition` | Requires every charged coupled residual/replay to execute the authentic finalization-equivalent endpoint map directly with one Stage 3 call, projects only each OFE's first snow-coupled soil node while preserving deeper layers and exact carries bit-for-bit, and retains exact receipt stabilization plus an independent exact finalization replay. |
+| `SNOWENERGY-V39-SOIL-ENERGY-TRANSACTION-SEPARATION` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-063, OBL-SNOWENERGY-C-031` | `flagged-binding-addition` | Separates the exact outer surface-ingress/source transaction from the exact authenticated V2 soil-target transaction in soil-energy operand custody and seals both identities into each operand digest without changing physical energy or acceptance semantics. |
+| `SNOWENERGY-V40-PARITY-MONOTONE-ACTIVE-SET` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-064, OBL-SNOWENERGY-C-032` | `flagged-binding-addition` | Four consecutive exact-static nonexact rolling reset windows with strictly decreasing finite positive root drift may invoke the unchanged finalization-equivalent solver early enough to retain the same shared-budget minimum solve/replay path; no drift threshold admits a root. |
+| `SNOWENERGY-V41-ONE-WAY-PHASE-BOUNDARY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-065, OBL-SNOWENERGY-C-033` | `flagged-binding-addition` | Four exact-static rolling windows with bit-identical water and a strictly one-way enthalpy chain crossing exactly one adjacent canonical phase boundary may invoke only the unchanged solver under the same reserve; the bracket is not a tolerance, projection, or root admission. |
+| `SNOWENERGY-V42-COLD-CONTENT-EXPORT-COORDINATE` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-066, OBL-SNOWENERGY-C-034` | `flagged-binding-addition` | Adds the exact already-physical authentic cold-content-export operand to canonical support enthalpy and ordered private nonlatent contraction, preserving zero-export bytes and every unchanged solver, ledger, replay, rollback, and publication guard. |
+| `SNOWENERGY-V43-PROJECTED-BASE-CUSTODY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-067, OBL-SNOWENERGY-C-035` | `flagged-binding-addition` | Preserves the V38 top-layer numerical-coordinate sibling as a typed private fixed-point posture with exact projection custody instead of misclassifying it as ordinary base unpublished physics; every base, sequential, acceptance, installation, rollback, and publication guard remains unchanged. |
+| `SNOWENERGY-V44-UNCOMMITTED-LSE-CLOSURE-POSTURE` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-068, OBL-SNOWENERGY-C-036` | `flagged-binding-addition` | Defers weighted-OFE closure only for the charged uncommitted private LSE exchange, then requires unchanged strict receipt-probe/replay/finalization closure; projected soil coordinates remain exact-once CN operands and cannot be double-applied to the frozen Stage3-covered V8 soil control volume. |
+| `SNOWENERGY-V45-AUTHENTIC-RECEIPT-ROOT-POLISHING` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-069, OBL-SNOWENERGY-C-037` | `flagged-binding-addition` | Continues a tolerance-closed private root only through strict descent of the existing physical residual merit, carries matching artifacts, reserves authentic probe/replay capacity inside the unchanged shared 96 cap, and retains exact receipt equality plus independent same-input replay as the sole admission. |
+| `SNOWENERGY-V46-COMPLETE-STEP-BUDGET-PREFLIGHT` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-070, OBL-SNOWENERGY-C-038` | `flagged-binding-addition` | Requires dimension-complete capacity for every finite-difference Jacobian plus one trust trial before the first column charge, preventing an unusable partial polishing tail while retaining the unchanged solver, exact receipt/replay, and maximum 96. |
+| `SNOWENERGY-V47-ATOMIC-COMPLETE-OWNER-TRANSACTION-POSTURE` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-071, OBL-SNOWENERGY-C-039` | `flagged-binding-addition` | Admits native-V2 accepted-owner installation only for exact same-ID first-child custody or an exact authenticated soil-target successor whose predecessor equals the mutually equal outer source owners; no numeric adjacency, substitution, or partial install. |
+| `SNOWENERGY-V48-FIXED-POINT-FINAL-INSTALL-AUTHORITY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-072, OBL-SNOWENERGY-C-040` | `flagged-binding-addition` | Propagates explicit authenticated prepared-beginning source/soil-target authority through the real fixed-point final install while leaving generic/public installation same-ID-only. |
+| `SNOWENERGY-V49-MULTI-CHILD-PREPARED-INSTALL-AUTHORITY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-073, OBL-SNOWENERGY-C-041` | `flagged-binding-addition` | Binds exact outer source, independently advancing authenticated resident/predecessor, and exact prepared target through repeated same-parent final installs without adjacency inference or owner rebasing. |
+| `SNOWENERGY-V50-ENVELOPE-SOURCE-TRANSITION-AUTHORITY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-074, OBL-SNOWENERGY-C-042` | `flagged-binding-addition` | Anchors V49's mutually equal candidate ending source to the already validated covered V8 envelope transaction while preserving the exact heterogeneous constitutive beginning as soil custody only. |
+| `SNOWENERGY-V51-POST-CROSSING-CONTRACTION` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-075, OBL-SNOWENERGY-C-043` | `flagged-binding-addition` | Extends V41 only for the exact r132 single canonical crossing followed by alternating, strictly shrinking within-phase corrections, retaining every solver, budget, closure, receipt, event, floor, rollback, and publication guard. |
+| `SNOWENERGY-V52-CN-HEAT-COORDINATE` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-076, OBL-SNOWENERGY-C-044` | `flagged-binding-addition` | Adds the omitted continuous snow-candidate CN heat coordinate/equation to the charged coupled map while retaining exact receipt stabilization, replay, finalization, shared budget, floor, closure, rollback, and no-publication. |
+| `SNOWENERGY-V53-SAME-MAP-CN-HEAT-SEED` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-077, OBL-SNOWENERGY-C-045` | `flagged-binding-addition` | Seeds the V52 Q coordinate from the exact already-produced endpoint candidate pair associated with solver dispatch, without changing non-Q seeds or adding a map/budget charge; all V52 solve and authentic admission rules remain unchanged. |
+| `SNOWENERGY-V54-REPRESENTABLE-RECEIPT-CYCLE-WITNESS` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-078, OBL-SNOWENERGY-C-046` | `flagged-binding-addition` | Searches only the finite cycle's already-produced exact endpoint artifacts with their own receipts through charged full authentic maps and exact replay; no receipt or numerical repair is admitted. |
+| `SNOWENERGY-V55-PRIVATE-Q-LATTICE-WITNESS` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-079, OBL-SNOWENERGY-C-047` | `flagged-binding-addition` | Exhaustively evaluates the finite one-lane private Q lattice at the first tolerance-closed root before V45 polish, with atomic shared-budget reservation and exact positive-zero physical Q closure; authentic receipt stabilization, replay, and finalization remain unchanged and exact. |
+| `SNOWENERGY-V56-FROZEN-TEMPERATURE-PRIMARY-CARRY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-080, OBL-SNOWENERGY-C-048` | `flagged-binding-addition` | Dispatches a strictly frozen/noncrossing temperature-primary solve before V55, derives exact enthalpy high-plus-carry and unchanged CN Q, and admits only a fresh authenticated compound snow owner after whole-receipt stabilization, independent replay, strict finalization, and versioned restart custody. |
+| `SNOWENERGY-V57-BOUNDED-LIQUID-ELIGIBILITY` | `docs/work-packages/20260830-workspace-gate-hold-lift-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-081, OBL-SNOWENERGY-C-049` | `flagged-binding-addition` | Keeps at most `1.0e-12 kg m^-2` external-liquid roundoff eligibility-neutral without changing its physical ledger operand and permits a zero-charge, same-budget temperature-primary transition from the first legacy root immediately before V55. |
 | `SNOWENERGY-V17-PRECIPITATION-CUSTODY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-045, INV-SNOWENERGY-046, INV-SNOWENERGY-047, OBL-SNOWENERGY-P-011, OBL-SNOWENERGY-C-021` | `flagged-binding-addition` | Seals the ordered precipitation phase-parcel set, binds open-versus-covered liquid exclusivity and solid bypass, and requires mass/advection same-set reconstruction on the OFE-ground lane basis. |
 | `SNOWENERGY-V18-SNOW-SOIL-BOUNDARY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-048, INV-SNOWENERGY-049, INV-SNOWENERGY-050, OBL-SNOWENERGY-P-012, OBL-SNOWENERGY-C-022` | `flagged-binding-addition` | Binds one OFE/lane bottom-snow-to-first-soil-node Crank--Nicolson interface, exact equal/opposite custody, reconstructable receipt, and atomic rollback without tile aggregation or duplication. |
 | `SNOWENERGY-EB02-AUTHORITY` | `docs/work-packages/20260730-snow-surface-eb-02-subcanopy-longwave-contract-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-001, INV-SNOWENERGY-002, INV-SNOWENERGY-003, INV-SNOWENERGY-004, INV-SNOWENERGY-005, INV-SNOWENERGY-006, INV-SNOWENERGY-007, INV-SNOWENERGY-008, INV-SNOWENERGY-009, INV-SNOWENERGY-010, INV-SNOWENERGY-011, INV-SNOWENERGY-012, INV-SNOWENERGY-013, INV-SNOWENERGY-014` | `none` | Package-local source reconciliation and analytical artifacts are evidence; all binding equations, guards, and obligations are in this canonical contract. |
@@ -2487,7 +2545,7 @@ rollback, cap exhaustion, and authentic final replay remain unchanged.
 | `GAP-SNOWENERGY-008` | Stage 3 continued thermal/exchange evaluation below libsnobal's minimum resolved layer mass, producing 17 impossible temperatures and five valid-Kelvin vapor-pressure underflows. | `SNOW-SURFACE-EB-04C` | Apply the exact fixed resolved-layer boundary before temperature/conductivity evaluation while preserving CoE mass and persistent cold content; prove all 22 captured thermal failures pass their original boundary. | resolved in version 4; 22/22 captured failures pass their formerly rejected processing day with zero forbidden thermal errors |
 | `GAP-SNOWENERGY-009` | Multilayer density initialization used the `1e-9 m` aggregate SWE tolerance as a layer-deletion threshold, omitting represented fragments whose physical depth remained in the expected aggregate. | `SNOW-SURFACE-EB-04D` | Apply the existing `1e-9 kg m^-2` density-model zero-mass boundary after named SWE-to-mass conversion; preserve coupled state and prove both captured geometry failures pass. | resolved in version 5; both 16,437-day trajectories complete with independently reconstructed layer mass/depth closure |
 | `GAP-SNOWENERGY-010` | EB-04R transcribed the `1e-9 m` SWE-equivalent vapor-to-sublimation closure as `1e-9 kg m^-2`, conflating it with separate mass-unit predicates. | `SNOW-SURFACE-EB-04S` | Reconcile from pre-result authority, state every operand-specific tolerance in canonical units, and preserve EB-04R as an unchanged HOLD. | resolved in version 6; result-blind dimensional authority frozen before retained-output adjudication |
-| `GAP-SNOWENERGY-011` | CoE remains the production melt generator. Version 12 admits evaluation-only residual-snow enthalpy and localized solid exhaustion, but receiving-surface liquid/energy custody and post-event flux chronology remain unresolved for the target. | land-surface authority plus future atomic cutover | Implement a first-class receiving surface, exact-one ownership, linked ledgers, selectors/defaults/rollback, and real downstream consumption. | terminal snow numerics admitted; production/cutover `IMPLEMENTATION_HOLD` remains |
+| `GAP-SNOWENERGY-011` | The repository contains Stage-3 thin-pack/terminal and receiving-surface transactions, but the real non-CoE production runner and downstream Lane-D publication are not yet proven. | this package | Prove `OBL-SNOWENERGY-C-050` on the real runner with no CoE generation and exact downstream custody. | expected red; production `IMPLEMENTATION_HOLD` |
 | `GAP-SNOWENERGY-012` | Current evaluation schema-v6 can apply raw latent-energy opportunity while actual sublimation is availability-bounded. | this plausibility package and future production implementation | Quantify tuple-level capacity truncation without aliasing; production target must derive latent energy and mass from one bounded `m_v`. | characterization admitted; physical passage and persistence held when active |
 | `GAP-SNOWENERGY-013` | Surviving WEPPpy runs directly recover retained centroids, GRIDMET-enabled intent, daily parquet wind, and exact CLI equality; nearby historical code only statically reconstructs the likely centroid/GRIDMET/share/format path. Deployed identity/request/response, exact GRIDMET asset version/status, server pixel/sampling, missing/day-boundary policy, and physical exposure linkage remain absent. | source generator owner / future authority package | Supply immutable deployed/server receipt fields and two-sided forcing-to-target exposure authority; a height conversion or modeled forest class alone is insufficient. | narrowed `AUTHORITY_MISSING`; persistence held; no canopy or production correction authorized |
 
@@ -2715,7 +2773,7 @@ the repository canonical framed helper/domain and fixed vectors.
 | `INV-SNOWENERGY-038` | Canopy--snow--sky longwave uses one reciprocal current-trial state and exact-one exchange. | radiation lineage / `SNOWENERGY-E-LW-001` |
 | `INV-SNOWENERGY-039` | Snow fluxes stop at the accepted event and snow-free fluxes begin only on admitted successor support. | chronology / `SNOWENERGY-E-REGIME-001` |
 | `INV-SNOWENERGY-040` | Canopy-intercepted snow is outside this carrier and cannot enter its mass or energy ledgers. | scope guard / `SNOWENERGY-E-SCOPE-001` |
-| `INV-SNOWENERGY-042` | The single persistent Stage 3 lane owner is OFE-ground. Complete typed tile-ground snow-surface fluxes aggregate only as `sum_i(f_i X_i)` over an ordered tile set closing to one under `TOL-SNOWENERGY-002`; covered-subset renormalization, inconsistent common snow state, missing/open-surface omission, duplicate tiles, class/model substitution, or restart topology/basis substitution is prohibited. Uniform terminal-liquid projection preserves `sum_i(f_i M_i) = M_lane`; dividing the complete lane amount by every tile fraction is prohibited. | topology/area/source/state/restart guard / `SNOWENERGY-E-CARRIER-001` |
+| `INV-SNOWENERGY-042` | The single persistent Stage 3 lane owner is OFE-ground. Complete typed tile-ground snow-surface fluxes aggregate only as `sum_i(f_i X_i)` over an ordered tile set closing to one under `TOL-SNOWENERGY-002`; covered-subset renormalization, inconsistent common snow state, missing/open-surface omission, duplicate tiles, class/model substitution, or restart topology/basis substitution is prohibited. Nonlinear canopy/LSE exchange and component carrier receipts consume exactly the `V11CanopyCovered` partition. Extra physical LSE states are admissible only when each is authenticated as an `OpenSnow` destination and remains in the separate open-snow boundary path; either a missing covered state or an unclassified extra state is typed failure. Uniform terminal-liquid projection preserves `sum_i(f_i M_i) = M_lane`; dividing the complete lane amount by every tile fraction is prohibited. | topology/area/source/state/restart guard / `SNOWENERGY-E-CARRIER-001` |
 | `INV-SNOWENERGY-043` | Covered fixed-point acceptance reconstructs each candidate fingerprint independently; schema, terminal-event model, lane, interval, layer cardinality/order, density, and count-like settling state compare exactly. Numeric state uses only `TOL-SNOWENERGY-003` by physical class; fingerprints need not equal when admitted numeric state differs. | typed convergence/nonconvergence guard / `SNOWENERGY-E-CARRIER-001` |
 | `INV-SNOWENERGY-044` | Lane receipt V1 is non-restorable. Additive restart is blocked until a normative V2 schema excludes initial-guess identity and defines exact canonical framing, topology/owner joins, and test vectors. | restart schema/version guard / hard `HOLD` |
 
@@ -2766,9 +2824,10 @@ efficacy, qualification, or empirical claim follows.
 
 | ID | Gap | Disposition |
 |---|---|---|
-| `GAP-SNOWENERGY-014` | Default-off runtime carrier and actual V11 snow-covered consumer are not implemented. | later implementation package; current authority remains promotable |
+| `GAP-SNOWENERGY-014` | Runtime carrier/consumer implementation exists, but accepted Stage-3 publication bypasses production Lane D. | this package; real-consumer expected red |
 | `GAP-SNOWENERGY-015` | Deployed/server exposure receipt is not available for every retained forcing value. | typed runtime precondition; no proxy or attenuation admitted |
 | `GAP-SNOWENERGY-016` | Exact lane-receipt V2 fields, canonical framing, ordering, and test vectors are not yet defined. | `SCHEMA_UNDEFINED / IMPLEMENTATION_BLOCKED`; V1 is never restart authority |
+| `GAP-SNOWENERGY-017` | Canonical covered solver and accepted Stage-3 through real Lane-D binding are not implemented. | this package; blocks production until `OBL-SNOWENERGY-C-050` passes |
 
 ## Version 17 precipitation phase-parcel custody amendment
 
@@ -2826,6 +2885,9 @@ Validation completes before snow or soil owner mutation, and any failure uses
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 60 | 2026-09-03 | Corrected the unreachable revision-59 predeclared-final shortcut: each post-initial charge now yields one private pending adjudication map consumed exactly once into history, adaptive rejection, or same-map final-envelope construction. `FinalAccepted` is a disposition, so exact successful chronologies use two through seven physical charges beneath the unchanged maximum-eight ceiling. Contract revision 60 is metadata and creates no process-solver V60. | Revised contract-derived expected-red chronology, disposition, accounting, rollback, and no-replay vectors required before production edit |
+| 59 | 2026-09-03 | Authorized exact stable `[Initial@0, FinalAccepted@1]` chronology after initial output-versus-candidate outer closure, with independent final outer closure, initial-versus-final dependent stability, and no Predictor fallthrough on final failure. Contract revision 59 is metadata and creates no process-solver V59. | Contract-derived expected-red chronology, eligibility, final-failure, rollback, and iterative-reachability vectors required before production edit |
+| 58 | 2026-09-02 | Distinguished private nonfinal physical endpoints from the independently charged final complete envelope, with exact role ordinals, success/failure accounting, typed error mapping, native/ordinary authority, zero map-level publication, and parent-only atomic publication. Contract revision 58 is metadata and creates no process-solver V58. | Contract-derived expected red, dual review findings `CPH-A-*` / `CRB-CNFP-*`, and post-amendment verification cycle |
 | 56 | 2026-09-01 | Added a strictly frozen/noncrossing temperature-primary coupled specialization before V55. Ordered coordinates are lane `W/T_s/rho` plus top-soil `E/T`; snow H is reconstructed exactly as `-exact(W)*exact(c_ice)*(exact(273.15)-exact(T_s))`, rounded once to a binary64 high word by round-nearest-even, and retained with exact dyadic carry. Unchanged CN heat is derived and consumed once. Only fresh authentic Stage 3 material plus ordered carry may become a compound snow owner; additive carry receipts join the whole exact stabilization, independent replay, and finalization chronology. Restart V5 preserves committed, pending, and in-progress compound-owner state, admits V4 migration only with canonical zero carry, and refuses nonzero-carry downgrade. Every physical call retains the shared maximum 96 and exact 60-second floor. No transient V54/V55 witness, receipt repair, constitutive physics, ledger term/tolerance, event, topology, custody, rollback, publication, persistence diagnostic, cap, or floor change is admitted. | Exact r144 `/tmp/wghl_001d_v55_64m_r144.log`, SHA-256 `161712621295b503da41b065846304ce0e0198a26a9d9b97efa6d4012fa36c65`; exhaustive 21-member no-witness proof; contract/source expected pre-red |
 | 55 | 2026-09-01 | Added a bounded exhaustive private binary64 Q-lattice witness at the first tolerance-closed physical root, before V45 polishing. The search changes exactly one unresolved ordered Q coordinate, evaluates every representable value through a charged full `PrivateTrial` map, and atomically reserves the entire lattice plus the shared-budget authentic probe/replay charges; strict downstream finalization remains mandatory outside that physical-evaluation account. An unresolved-count, positive-domain, checked-cardinality, or capacity miss is zero-charge `NotApplicable` and continues unchanged V45 polishing. A fitting attempt commits immediately before its first candidate charge and may never fall back. Only an exact positive-zero `R_Q` own-output fixed point under every unchanged residual, derived-z, branch, side, custody, and closure guard may proceed to exact receipt stabilization, independent replay, and strict finalization. No authentic-Q enumeration, sparse search, averaging, interpolation, nextafter, receipt repair, tolerance/cap/floor change, or publication is admitted. | Retained r139; exact r140 SHA-256 `3482ada5075aa921fc1e71d0f5fa253765b009fa4e833b05f3e9edc598147628`; exact r142 SHA-256 `4c4d63a75b39494b005cacc21d1d2777c03faeebff7af503a44d80ca1ebf7473`; contract/source expected pre-red |
 | 54 | 2026-09-01 | Added a bounded exact receipt-cycle endpoint witness search after unchanged iteration proves a cycle of at most three members. Every member reconstructs complete W/H/rho/Q/E/T from its own already-produced artifact/receipt, is evaluated through one charged authentic full map under unchanged closure, and may proceed only on bit-exact receipt equality plus independent same-input/same-coordinate exact replay. Search preflights all members plus replay inside the unchanged maximum 96. No Q enumeration, averaging, interpolation, nextafter/ULP search, receipt repair, uncharged physics, tolerance/cap/floor change, or private publication. | Retained r137; exact r138 SHA-256 `28f55b679c8eaae874fdfead55c992e16ceaff559925c71b78cd63b49068a6e7`; contract/source expected pre-red |
@@ -2879,3 +2941,566 @@ Validation completes before snow or soil owner mutation, and any failure uses
 | 14 | 2026-08-20 | Bound the default-off shared V11/Stage 3 canopy-air carrier, complete turbulent residuals, reciprocal canopy--snow--sky longwave, sealed exposure wind, wrong-regime guards, and implementation-only disposition. | Child 2C authority package |
 | 15 | 2026-08-22 | Selected the prospective one-column-per-lane OFE-ground area basis, complete tile-set weighted boundary, uniform-depth terminal identity, and topology-bound restart rule; prohibited covered-subset renormalization. | Direct user authority in Stage-3/V11 covered consumer package |
 | 16 | 2026-08-22 | Admitted unit-specific covered fixed-point comparisons with independently reconstructed fingerprints and exact structural/density/count fields; reserved canonical lane receipt V2 without initial-guess identity and froze restart semantic joins. | Direct user authority and covered replay review |
+
+## ADR-0044 Canonical Covered-Solver Amendment
+
+Status: `authority amendment; implementation required`
+
+This non-versioned architecture amendment has normative precedence over the
+historical numerical-dispatch portions of versions 23 and 25 through 57. It is
+not version 58 and introduces no historical-version successor. Physical
+equations, exact-one custody, owner transactions, rollback, and persisted
+schema compatibility survive; solver-history selectors and recovery paths do
+not.
+
+`INV-SNOWENERGY-082` — Regime selection occurs before iteration from the
+immutable beginning owner and sealed forcing. Snow-free support invokes no
+covered solver. Represented snow at or below `1 kg m^-2` uses the existing
+version-22 terminal one-volume enthalpy/adaptive process as the sole non-CoE
+thin-pack process: it either retains the cold solid Stage-3 owner or transfers
+an accepted terminal event exactly once. It never invokes CoE. Every
+represented covered state above that boundary uses one canonical coupled
+water/enthalpy/LSE/top-soil solver. Strictly frozen, cold, mixed-phase,
+thaw/refreeze, density, layer-count, and terminal-crossing postures are
+constitutive active sets or physical events inside that system, never solver
+eligibility or failure history. An earliest terminal event partitions support;
+the covered child uses the same solver and the successor snow-free child uses
+no covered solver.
+
+The canonical covered solve receives one budget of at most eight authentic
+physical maps and uses at most seven: one initial map followed by at most six
+pending adjudication maps. `Initial@0` yields `A=F(x_0)` as a completed private
+physical-only endpoint. `FixedPointAdjudication@1` then charges a fresh map at
+candidate `A`, validates its complete physical, identity, and exact discrete
+custody, and only then retains its physical prefix and output `B` inside a
+private, non-Clone, non-wire pending typestate. Before any final-only
+constructor, the adjudicator checks outer `TOL-SNOWENERGY-007` closure of `A`
+against `B` and dependent-output stability between the Initial and
+adjudication maps. If all pass, that same pending map is consumed exactly once
+as the `FinalAccepted` outcome and its own physical prefix continues into the
+sole complete envelope. No physical replay or earlier-endpoint promotion
+occurs. Outer nonclosure consumes the pending result only into iteration
+history. Dependent-only nonclosure consumes the pending value into canonical
+adaptive rejection or typed floor failure without making the map iteration
+history. A physical or final-
+constructor failure retains its existing typed error; constructor failure
+cannot reinterpret the pending map as history.
+
+After outer nonclosure, every later charged map uses analytic
+constitutive derivatives or multisecant information from already charged
+authentic maps. For each multisecant coordinate `j`, form a dimensionless
+residual with the applicable `TOL-SNOWENERGY-007` scale
+`s_j=abs_j+rel_j*max(|x_{k-1,j}|,|F_{k-1,j}|,|x_{k,j}|,|F_{k,j}|)`; raw mixed-
+unit Euclidean products are prohibited. With `r_k=(F(x_k)-x_k)/s`, the
+canonical depth-one coefficient is
+`alpha_raw=-(r_k dot (r_k-r_{k-1}))/||r_k-r_{k-1}||^2` and the proposal is
+`F(x_k)+alpha*(F(x_k)-F(x_{k-1}))`. A finite negative coefficient is bounded
+below at `-0.75`; therefore `alpha=max(-0.75,min(alpha_raw,1))` for every finite
+nonzero coefficient. Negative values produce a strict convex contraction of
+the two charged authentic map outputs, and positive values remain bounded at
+`1`. The complete proposal must be finite, domain-valid, and distinct from
+both charged endpoint proposals before it may consume a map charge. Exact
+zero, a nonfinite coefficient, a zero/nonfinite denominator, or a repeated
+endpoint returns typed refinement without another map. The negative saturation
+is the one canonical depth-one multisecant safeguard and never dispatches or
+re-enters Picard or any historical solver. Fixed-point adjudication is part of
+the one canonical controller, not a fallback, and is never re-entered after a
+later multisecant adjudication. Coordinate
+snow depth remains a derived mass--density closure: its normalized residual
+contributes to coefficient selection and convergence, but the complete trial
+reconstructs it from the selected authentic ice mass and proposed density
+rather than interpolating it as an independent physical degree of freedom.
+Independent temperature, total-water, cold-energy, and density coordinates use
+the stated proposal formula exactly; derived-depth reconstruction must retain
+the existing mass--depth guard.
+The complete proposal applies the existing version-22 phase projection rather
+than holding a phase component from a different endpoint. In particular, a
+finite strictly positive proposed cold content is the cold branch
+`(I,L,C)=(W,0,C)`: its selected ice mass is the proposed total water and its
+liquid mass is exact positive zero. At exact zero cold content, the current
+authentic phase split remains the selected branch and still requires proposed
+total water not less than selected ice. This is phase-coordinate
+reconstruction, not clipping, normalization, or a second physical map.
+Coordinate
+finite differences, synthetic physical residuals, ULP/Q lattices, exact
+receipt-cycle searches, second physical replay, historical root polish, and
+fallback to Picard or another solver are prohibited. A complete next step is
+preflighted before charge. Exhaustion above the exact 60-second floor requests
+the existing adaptive smaller exact support and reruns the same solver;
+exhaustion at the floor returns a typed evaluation-budget/nonconvergence error
+with exact rollback.
+
+`TOL-SNOWENERGY-007` — For every coordinate iterated by the canonical outer
+solver, `a` is the fresh authentic output `F(x_k)` and `b` is the exact charged
+candidate `x_k`; a consecutive earlier map output may not substitute for that
+candidate. Their continuous convergence test is
+`abs(a-b) <= abs_tol + rel_tol*max(abs(a),abs(b))`:
+
+| Quantity | Absolute tolerance | Relative tolerance |
+| --- | ---: | ---: |
+| canopy and snow temperature | `1e-5 K` | `1e-9` |
+| top-soil temperature | `1e-8 K` | `0` |
+| heat flux | `1e-5 W m^-2` | `1e-8` |
+| vapor flux | `1e-10 kg m^-2 s^-1` | `1e-6` |
+| snow water/storage | `1e-6 kg m^-2` | `1e-9` |
+| snow/soil/CN energy coordinate | `1e-6 J m^-2` | `1e-10` |
+| snow density | `1e-6 kg m^-3` | `0` |
+| represented thickness | `1e-9 m` | `1e-9` |
+| specific humidity | `1e-12 kg kg^-1` | `1e-8` |
+
+The physical water and energy ledgers, represented-layer lifecycle,
+`TOL-SNOWENERGY-004` temporal truncation, and `TOL-SNOWENERGY-005` CN endpoint
+reconstruction remain independent. The exact same applied snow/soil heat debit
+is credited with the opposite sign exactly once. Schema and field order,
+IDs/order/cardinality/topology, constitutive branch and event identity,
+support ticks, transaction/predecessor/target, duplicate detection, exact-one
+custody, rollback bytes, receipt framing and ordered operand lineage, and exact
+high-plus-carry arithmetic remain exact.
+
+The outer candidate contains lane snow-surface temperature, total represented
+water, cold-content energy, density, and derived thickness. Top-soil
+temperature, heat/vapor fluxes, and specific humidity are dependent carrier
+outputs whose own candidate/output closure is completed inside the one
+authentic carrier map; their cross-map stability remains an additional output
+guard but never substitutes `F(x_k)-x_k` for an outer coordinate. Layer schema,
+terminal-event model, lane, interval, cardinality/order, density-model branch,
+and stored settling chronology remain exact. Numeric density, including each
+layer value within that unchanged branch and topology, is continuous under the
+density row above; the older exact-density convergence sentence in
+`INV-SNOWENERGY-043` is superseded for this canonical solver only.
+
+One fresh authentic accepted payload is sealed once into a new immutable
+receipt. No earlier receipt is repaired. A consumer verifies the exact envelope
+and reconstructs continuous ledgers from the sealed payload under their named
+tolerances; transfer of that accepted receipt is byte-identical. Independent
+reconstruction is arithmetic over the accepted payload and does not charge or
+invoke another physical map. Density values are continuous only within the
+same exact constitutive branch and layer topology.
+
+`OBL-SNOWENERGY-C-050` — Contract and production-seam tests must prove the
+exhaustive regime partition, both exact authorized charge-role chronologies
+within the eight-map ceiling, uncharged-call
+poisons, exact `F(x_k)`-versus-`x_k` stopping for every outer coordinate,
+counterexamples in both directions against the prohibited
+`F(x_k)`-versus-`F(x_(k-1))` substitution, dependent carrier-output stability,
+per-layer density below/at/above tolerance with exact branch/topology/settling
+poisons, dimensionless multisecant scaling and the coefficient's exact
+`-0.75`, adjacent-binary64, raw `-1`, below-`-1`, arbitrarily-negative,
+negative-contraction, positive-cap, zero, nonfinite, degenerate-history, and
+repeated-endpoint boundaries; every independent coordinate of a saturated
+proposal must equal exactly `0.25*F_k+0.75*F_(k-1)`, its derived depth must
+reconstruct exactly from selected ice and density, the step must lower the
+local affine residual norm relative to `alpha=0`, remain distinct from both
+endpoints, and consume exactly one map charge. Invalid/no-progress histories
+consume none. Tests must also prove
+absence of every v33--v57 production selector/fallback, both signs and
+absolute-/relative-dominated tolerance boundaries, next-binary64-above
+rejection, 10x tightening and 2x loosening, wrong-field/tolerance substitution,
+nonfinite and discrete-envelope poisons, independent ledgers, exact rollback,
+and real-runner consumption through native vegetation, accepted non-CoE Stage
+3, surface-liquid/runoff custody, Lane D per-OFE routing, and final publication.
+
+The numerical-dispatch portions of `INV-SNOWENERGY-052`, `054`--`059`, `064`,
+`065`, `069`, and `075`--`081`, plus mirrored obligations
+`OBL-SNOWENERGY-C-025`--`049`, are historical and superseded. Their physical
+equations and custody rules survive only where restated by active nonhistorical
+authority. Reused legacy invariant numbers `048`--`050` are not referenced by
+this amendment because their earlier semantic collision is ambiguous.
+
+Gap dispositions:
+
+- `GAP-SNOWENERGY-011`: the current repository contains the Stage-3 terminal
+  receiving-surface transaction, but production qualification remains blocked
+  until `OBL-SNOWENERGY-C-050` proves the real runner and no CoE generation;
+- `GAP-SNOWENERGY-014`: implementation exists but real Stage-3-plus-Lane-D
+  consumer proof is missing; expected red until this package's cutover;
+- `GAP-SNOWENERGY-015`: unchanged typed forcing/exposure precondition; this
+  package introduces no attenuation, proxy exposure, or new persisted receipt;
+- `GAP-SNOWENERGY-016`: unchanged schema hold. Lane receipt V1 remains
+  non-restorable, no V2 wire is inferred, and this package does not add one;
+- `GAP-SNOWENERGY-017`: canonical solver and real-consumer production binding
+  required by this amendment are implementation-pending.
+
+### Profile integration
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm steps | Preselect snow-free, thin-pack terminal V22, or represented-covered regime; charge initial map; take at most one fixed-point predictor then charged multisecant trials; charge one final authentic map; seal once; install atomically. |
+| branch/guard map | The four new canonical rows in the primary Branch and Guard Table bind regime selection, budget preflight, same-solver adaptive retry, thin-pack non-CoE behavior, and typed floor exhaustion. Historical V33--V57 rows remain provenance only and cannot select production. |
+| invariant guard map | `INV-SNOWENERGY-082` -> regime selector, canonical charge wrapper, active-set/ledger validators, receipt sealer, adaptive frontend, anti-accretion scan. |
+| tolerance map | Primary tolerance table registers `TOL-SNOWENERGY-007`; TOL-004/005 and exact custody remain independent. |
+| test-vector map | Primary obligation table and Child 2C ID table register `OBL-SNOWENERGY-C-050`; all listed sensitivity, poison, rollback, and real-consumer vectors are mandatory. |
+| binding exposure | Primary BEI registers `SNOWENERGY-ADR0044-CANONICAL-COVERED`; V33--V57 BEI rows are historical. |
+| gap register | Primary rows 011/014/016/017 distinguish implementation/consumer holds, unchanged V2 schema hold, and no proxy exposure. |
+| change log | 2026-09-01, non-versioned ADR-0044 amendment at contract 57: replace historical numerical dispatch; no V58. |
+
+The 2026-09-02 safeguard clarification above corrects two implementation-domain
+omissions in the same non-versioned canonical solver: residuals are
+dimensionless, and finite negative depth-one coefficients saturate at
+`-0.75`. The qualifying CLI01 capture at `7980..8040 s` produced
+`dot=362742.313896017557`, `norm=325841.810884757957`, and
+`alpha_raw=-1.11324667915103870`; `alpha=-0.75` changes the local squared
+residual model by `2*alpha*dot+alpha^2*norm=-360827.452672354` relative to
+zero and is therefore a strict improving convex step. This prospective
+amendment changes no physical equation, convergence tolerance, map budget,
+regime, fallback prohibition, receipt, or ownership rule.
+
+The 2026-09-02 cold-branch clarification additionally binds the same
+version-22 phase projection to multisecant trial assembly. It corrects the
+implementation-domain error in which a cold proposal interpolated `W` but
+retained a larger ice component from the current authentic endpoint, producing
+the impossible `W<I` posture during solid-snow reappearance. The correction
+changes no coordinate formula, tolerance, phase equation, map charge, regime,
+adaptive policy, or acceptance/publication rule.
+
+## ADR-0044 Native Covered-Envelope Cross-Regime Companion
+
+This is a non-versioned companion to the preceding ADR-0044 amendment. It
+does not create process version 58, change the frozen version-57 wire, or
+reactivate any quarantined version-33--57 dispatch.
+
+`INV-SNOWENERGY-083` — Regime classification is derived from the immutable
+represented Stage-3 snow state before any physical evaluation. For represented
+snow, the standard Stage-3 covered-column physics executes exactly once under
+the native vegetation/LSE owner identities and within the same canonical
+eight-map charge/adaptive budget governed by `INV-SNOWENERGY-082`. Its output
+retains the exact `Stage3SnowOpticalBoundaryReceiptV1`, typed Stage-3 snow lower
+boundary, and `CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered` debit/
+credit lineage from that same charged map.
+
+The snow-free LSE V3 evaluator remains snow-free and continues to reject a
+Stage-3 lower boundary. While snow is represented, frozen-litter V3/V4 vapor,
+liquid/ice phase, surface storage, current-ingress, and WB14 work are inactive;
+their physical and exact owner records, predecessor markers, receipt chains,
+and canonical bytes are retained. A standard covered tile result may be carried
+inside the same heterogeneous native batch only when it is the output of the
+single charged native-identity call. A second inner legacy LSE/hydrology
+envelope, uncharged physical call, copied optical receipt, or reconstructed
+lower-boundary receipt is forbidden.
+
+At the earliest accepted terminal event, the support splits exactly. The
+represented-snow child preserves inactive litter custody, and only the positive
+post-event snow-free child may invoke the V3/V4 litter path. Wrong regime or
+owner identity, missing/substituted boundary receipt, any under-snow litter or
+WB14 call/mutation, duplicate construction/charge, or failed transition rejects
+typed and restores all owner and receipt bytes. Physical equations,
+`TOL-SNOWENERGY-007`, exact branch/topology/custody comparisons, eight-map
+roles, same-solver adaptive response, 60-second floor, and publication custody
+remain unchanged.
+
+`OBL-SNOWENERGY-C-051` — Prove typed represented-snow classification, exactly
+one standard charged native-identity map, exact optical and lower-boundary
+receipt retention, zero under-snow litter V3/V4 phase/storage/ingress/WB14
+calls, absence of a second constructor/charge, unchanged inactive owner bytes,
+the exact snow-free transition, poison rejection, and complete rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Classify represented snow before charging; execute one standard Stage-3 covered map under native identities; split exactly before a snow-free successor. |
+| branch/guard | Represented snow retains litter V3/V4 bytes and receipts; missing boundary receipts, litter work, or duplicate physical construction reject. |
+| invariant guard map | `INV-SNOWENERGY-083` -> typed regime selector, canonical charge wrapper, native owner/receipt join, inactive-litter validator, and terminal split. |
+| test-vector map | `OBL-SNOWENERGY-C-051`: classification, one charge, exact optical/lower boundary, zero litter/WB14 calls, no second envelope, unchanged bytes, transition, poison, rollback. |
+| binding exposure | Primary BEI registers `SNOWENERGY-ADR0044-NATIVE-CROSS-REGIME`; no process-version increment. |
+| change log | 2026-09-01, non-versioned ADR-0044 companion: native represented-snow covered-envelope custody; unchanged equations/tolerances/budget/wire. |
+
+## ADR-0044 Candidate-Only Unpublished-Soil Companion
+
+This non-versioned companion creates no process version 58 and changes no
+accepted Stage-3 or soil restart wire.
+
+`INV-SNOWENERGY-084` — Within one charged candidate-only canonical map, a
+`DirectSoilThermalUnpublishedContinuationV2` may supply LSE/V3 only through the
+read-only `SoilThermalUnpublishedPhysicalBeginningV2` constructed under
+`INV-LANDSURFACEENERGY-155`. Construction requires exact installed-resident/
+original-prepared-owner identity, exact predecessor unpublished-trial state and
+seal lineage, and the exact contiguous next-child support. The soil transaction
+remains the authenticated prepared transaction even when the outer physical
+source transaction differs.
+
+The V3 input and projection use an exact typed candidate-only discriminator.
+The projection may retain a non-owner custody record over the original owner
+digest, predecessor-trial seal, physical beginning-state digest, transaction/
+predecessor/receipt-chain, and child support. It contains no owner, restart,
+checkpoint, accepted-receipt, or receipt-free-seal bytes and cannot be installed,
+accepted, persisted, restored, or admitted as an authentic map output.
+
+Only final authentic acceptance may replay the complete original prepared
+owner, canonical accumulated physical operands, exact selected ending, and
+complete layer-credit chain through the existing unpublished-composition path.
+That replay creates and seals exactly one V2 owner/receipt/restart/checkpoint
+bundle and performs one atomic install; the candidate-only projection is
+replaced. Support/transaction rebinding, synthetic or empty owner bytes,
+private-trial promotion, intermediate/dual acceptance, proxy physics, receipt
+repair, or identity tolerance fails typed with complete rollback.
+
+This amendment leaves the canonical charged-map count and eight-map budget,
+same-solver adaptive response, equations, physical operands, exact-carry math,
+continuous tolerances, exact discrete custody, temporal floor, topology, and
+publication path unchanged.
+
+`OBL-SNOWENERGY-C-052` — Prove exact continuation construction and child
+support, typed candidate-only V3 input/projection, absence of owner/restart
+bytes and intermediate install, complete final replay and single atomic seal,
+all rebinding/substitution/dual-acceptance poisons, and full rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Construct authenticated unpublished physical beginning; evaluate one charged private map; compose and seal owner/restart once at authentic final acceptance. |
+| branch/guard | Publishable owner+restart and unpublished non-owner beginning are mutually exclusive; no conversion/fallback between them. |
+| invariant guard map | `INV-SNOWENERGY-084` -> continuation constructor, typed V3 branch/projection, complete replay, one install. |
+| test-vector map | `OBL-SNOWENERGY-C-052`: exact child, absent owner bytes, support/trial/receipt poisons, final replay, one install, rollback. |
+| binding exposure | Primary BEI registers `SNOWENERGY-ADR0044-UNPUBLISHED-SOIL-BEGINNING`; no version increment. |
+| change log | 2026-09-01, non-versioned ADR-0044 companion: candidate-only unpublished soil beginning and single final promotion; unchanged physics/tolerances/budget/wire. |
+
+## ADR-0044 Nonfinal Physical-Only Covered-Map Companion
+
+Contract revisions 58, 59, and 60 record this authority amendment. They create no
+numerical process-solver V58, V59, or V60, change no frozen wire, and do not reactivate any
+quarantined version-33--57 solver path. Contract metadata revision and
+process-solver identity are distinct.
+
+`INV-SNOWENERGY-086` — Each canonical covered-map charge executes the same
+authoritative physical equations, operands, native represented-snow identity,
+and complete physical/custody validation. `Initial@0` returns a private typed
+physical-only endpoint containing the precipitation sets, corrected Stage-3
+boundaries, LSE state, soil candidate and operands, surface-ingress/WB14
+custody, ending Stage-3 state, coordinates, and diagnostics needed by the
+canonical iteration. It constructs no V8 receipt, vegetation persistent or
+material candidate, BGC candidate, ending joint, complete owner set, restart
+owner, or publishable envelope.
+
+Every subsequent charged physical map must complete exact physical, identity,
+and discrete-custody validation before it is retained as one private,
+non-Clone, non-wire pending adjudication value: `FixedPointAdjudication@1`,
+then contiguous `MultisecantAdjudication(n)@(n+1)` for `n=1..=N`, `0<=N<=5`.
+The pending value exposes exactly three mutually exclusive consuming
+dispositions. After candidate-versus-own-output outer closure and preceding-
+map-versus-current-map dependent stability, the final
+disposition continues that map's own physical prefix through the complete
+heterogeneous owner constructors and records the `FinalAccepted` outcome at the
+same ordinal. Outer nonclosure instead consumes it as iteration history.
+Dependent-only nonclosure consumes it as a typed adaptive rejection without
+history admission.
+Constructor failure after successful adjudication cannot reinterpret the map
+as history. Thus exact stable chronology has two charges
+`[Initial@0, FixedPointAdjudication@1 -> FinalAccepted]`; iterative chronology
+adds ordered multisecant adjudication charges until exactly one becomes the
+accepted outcome, with `M=N+2`, `2<=M<=7`.
+
+A completed physical-only endpoint cannot
+be installed, serialized, persisted, restored, published, or promoted after a
+final-envelope failure. Native represented-snow maps retain
+the exact optical/lower-boundary receipts and inactive litter custody required
+by `INV-SNOWENERGY-083`; they may not enter the snow-free inner-envelope path.
+The eight-map charge ceiling, `TOL-SNOWENERGY-007`, adaptive response, 60-second
+floor, equations, ledgers, topology, receipts, exact owner comparisons,
+rollback, and the parent-only atomic publication rule remain unchanged.
+
+No covered-map execution publishes, enqueues, exposes, or installs its
+envelope or mutates live accepted chronology. Each successful covered solve
+may return one private publishable final envelope to its enclosing adaptive
+candidate. Direct, rejected, and unselected candidates publish zero. The
+accepted composed parent alone publishes exactly once at atomic parent commit.
+Envelope-construction and parent-publication counters are distinct.
+
+| Amendment trigger | Typed failure and precedence |
+| --- | --- |
+| role, zero-based ordinal, charge order, or eight-map reserve mismatch | `DirectV11RealConsumerError::AdaptiveRefinement`, before physical execution |
+| outer nonclosure | consume the validated pending map into history; no error |
+| dependent-only nonclosure | consume the pending map into `DirectV11RealConsumerError::AdaptiveRefinement`; no history or constructor |
+| transaction, support, topology, native/ordinary posture, beginning or discrete custody, promotion, or nonfinal state-leak mismatch | `DirectV11RealConsumerError::Identity`, before pending minting or the affected constructor/exposure |
+| covered-boundary or Stage-3 physical failure | unchanged `CoveredBoundary` or `Stage3` variant; never collapsed into role failure |
+| LSE, hydrology, surface, soil, vegetation, BGC, serialization, or complete-envelope construction failure | unchanged typed `Runtime`, `Vegetation`, `Serialization`, or `Identity` variant; no fallback |
+| publication before accepted composed-parent commit or after rollback | coupled-time `ERR-CT-018 PublicationState`; expose nothing |
+
+Validation follows table order; within an unchanged downstream class, its
+existing canonical precedence remains authoritative.
+
+`OBL-SNOWENERGY-C-054` — For every successful covered solve, prove `M <= 7`
+charged physical maps, exactly `M-1` validated private iteration physical-only
+or outer-nonclosed adjudication endpoints plus one validated accepted
+adjudication physical endpoint (`M` validated physical
+endpoints total), one final-constructor attempt, and exactly one completed
+private final envelope. Prove exact charged-role chronology and same-ordinal
+`FinalAccepted` disposition, mutually exclusive pending-map final/history
+consumption, two-map stable acceptance, multisecant adjudication reachability,
+candidate-versus-own-output outer closure, preceding-versus-current dependent
+stability, dependent-only adaptation without history fallthrough, and exact
+physical-prefix equality against a
+test-only forced-complete reference for ordinary and native represented-snow
+frozen, mixed-phase, thaw/refreeze, wet-canopy, and multi-OFE cases. Reject
+role/ordinal substitution, duplicate finalization, support/transaction/
+topology/lower-boundary/precipitation/soil/beginning-owner mutation,
+native-versus-ordinary substitution, half-native custody, one-ULP physical
+endpoint mutation, cloning/dual-consuming/persisting/publishing a pending map,
+promotion/persistence/publication of a completed physical-only value, and any
+final construction failure with complete rollback and no fallback.
+For a pre-final failure, record only actual charges and successfully validated
+iteration endpoints, with zero validated final physical endpoints, zero final-
+constructor attempts, and zero completed envelopes.
+For an adjudication physical failure, record its charge but no validated endpoint,
+constructor attempt, or completed envelope. For a final-constructor failure,
+record one adjudication charge, one validated accepted physical endpoint and one
+constructor attempt, but zero completed envelopes. Every map and every failure
+publishes zero; accepted parent commit publishes once, and all rejected/direct/
+unselected paths preserve byte-identical live state.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Charge unchanged covered physics into Initial or a custody-validated pending adjudication map; consume each pending map exactly once into iteration history, typed adaptive rejection, or, after convergence, its own final envelope. |
+| branch/guard | A non-Clone/non-wire pending typestate exposes mutually exclusive consuming history/rejection/final dispositions. Completed physical-only results have no promotion, restart, install, or publication API. |
+| invariant guard map | `INV-SNOWENERGY-086` -> canonical role/ordinal dispatcher, shared physical-prefix evaluator, custody-before-pending gate, pending adjudication typestate, convergence gate, native identity branch, final envelope constructor, separate map/envelope/parent-publication counters, exact rollback guards; outer nonclosure -> history/no error, dependent-only nonclosure/role/budget -> `AdaptiveRefinement`, identity/regime/topology/custody/disposition/leak -> `Identity`, downstream physical/construction errors remain typed. |
+| test-vector map | `OBL-SNOWENERGY-C-054`: stable/iterative adjudication, success/pre-final/adjudication-physical/final-constructor counts, exact ordinals/dispositions and differential physical equality, regime/topology matrix, dual-consumption/role/identity/one-ULP poisons, zero map publication, parent-only publication, unpublishability, rollback. |
+| binding exposure | `SNOWENERGY-ADR0044-NONFINAL-PHYSICAL-ONLY`, active, `new-INV`, IDs `086/C-054`, dual review/verification. |
+| change log | 2026-09-03, contract revision 60: replaced the unreachable predeclared-final shortcut with a single-use custody-validated pending adjudication map and same-map history/rejection/final dispositions; no process-solver V60, physics, tolerance, eight-map ceiling, adaptive-response, publication, or wire change. |
+
+## ADR-0044 Native Inactive-Prefix Transition Companion
+
+This non-versioned ADR-0044 companion records contract revisions 58, 59, and
+60 without creating a numerical process-solver V58, V59, or V60 or changing the frozen Stage-3
+wire, or changing any constitutive equation, tolerance, or map budget.
+
+`INV-SNOWENERGY-087` — When an accepted represented-snow sequence terminates
+inside one parent, every snow-covered child retains the inactive litter/WB14
+posture of `INV-SNOWENERGY-083`. The exact first positive snow-free child must
+consume the complete accepted snow-covered prefix as typed chronology proof
+before entering ordinary SurfaceLiquid/WB14 work. That proof is authenticated
+against the canonical coupled slab, owner, terminal-event, topology, and
+inactive-custody receipt chain and ends exactly at the terminal split.
+
+Consuming the proof executes no Stage-3 map, litter phase/storage, ingress,
+WB14/Green--Ampt transition, routing, receipt, ledger, owner reseal, or
+publication for the represented-snow prefix. It preserves WB14 beginning
+cumulative bits and does not consume a WB14 physical ordinal. The first
+snow-free physical child is ordinal zero and owns only its positive post-event
+support. Restart/replay retains the proof, and any refusal rolls back all snow,
+litter, surface, soil, coupled-time, and publication custody exactly.
+
+`OBL-SNOWENERGY-C-055` — Record the transition expected red, then prove the real
+runner's represented-snow prefix and first snow-free successor, exact terminal
+split and coupled proof, zero inactive litter/WB14 work, unchanged WB14
+cumulatives, first physical ordinal zero, final parent closure, restart
+equivalence, and rollback. Reject missing/reordered/substituted prefix, wrong
+terminal event/topology/owner/slab/marker, gap/overlap, wrong endpoint,
+duplicate consumption, synthesized receipt, and advanced cursor without proof.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Retain native inactive custody through accepted represented-snow children, then authenticate their complete prefix before the first ordinary snow-free surface child. |
+| branch/guard | Prefix consumption is chronology-only; any under-snow physical work/receipt or nonzero first physical ordinal rejects. |
+| invariant guard map | `INV-SNOWENERGY-087` -> terminal split, accepted-prefix proof, inactive-work counters, WB14 cursor/ordinal join, restart and rollback. |
+| test-vector map | `OBL-SNOWENERGY-C-055`: real transition, exact prefix, zero work, ordinal/cumulative identity, poisons, restart, rollback. |
+| binding exposure | `SNOWENERGY-ADR0044-NATIVE-INACTIVE-PREFIX-TRANSITION`, active, `new-INV`, IDs `087/C-055`, dual review/verification. |
+| change log | 2026-09-03, non-versioned ADR-0044 companion: authenticated native inactive-prefix transition without adding a numerical solver version, under-snow physics, tolerance, or map charge. |
+
+## Revision 61 Typed Feed-Forward Terminal Carrier Evaluation
+
+Contract revision 61 changes terminal-provider scheduling only. It creates no
+numerical process-solver V61, changes no constitutive equation, tolerance,
+adaptive support, event root, physical-map budget, persisted wire, receipt, or
+owner schema, and does not reactivate any quarantined version-33--57 path.
+
+`INV-SNOWENERGY-088` — The exactly-one guard is local to one typed feed-forward
+terminal-evaluator invocation; it is not a process-global logical-group cache.
+The invocation owns its exact lane, trial support, role (`Full`, `Retry`,
+`Half1`, `Half2`, or `Root`), attempt, beginning joint and owner set,
+trial-start Stage-3 snow coordinates, forcing, topology, immutable process
+owners, and enclosing `CoveredTerminalExecutionMode`. The outer scheduler must
+invoke it independently for step doubling, retry, event discovery, and
+shortened `ExactEndpoint` replay. Equal payload bits across two outer
+invocations never authorize result reuse.
+
+The real Stage-3 terminal carrier is feed-forward: its typed request contains
+no preceding ending-snow hint and no coupling-iteration ordinal, and its output
+does not depend on either value. Each feed-forward evaluator invocation
+therefore executes exactly one complete carrier evaluation. That evaluation performs the
+unchanged Stage-3, LSE, vegetation, soil, surface-liquid/WB14, receipt, closure,
+and custody work and returns the sole authoritative result for the group after
+all existing validation succeeds.
+
+The former generic two-iteration coupling replay is not an independent
+physical trial and may not be used for feed-forward convergence, selection,
+validation repair, or fallback. A feedback-capable provider remains a distinct
+typed interface only when its request structurally consumes the preceding
+ending hint and iteration ordinal. Runtime inspection, provider failure, or
+result values may not switch between feed-forward and feedback-capable modes.
+A future real feedback dependency requires prior contract amendment.
+
+This scheduling correction preserves all coarse-versus-fine and event
+independence. `Full`/`Retry`, `Half1`, `Half2`, and `Root` remain separately
+charged at their exact supports and beginnings. `DiscoveryProbe` and shortened-
+support `ExactEndpoint` outer invocations remain separate even if every other
+request field is equal. The single-lane feed-forward evaluator and
+`CoveredTerminalBatchTrialRequestV2` are separate paths: the batch path retains
+its existing one physical batch evaluation and its independent shortened-
+support reevaluation when localization changes support. Canonical covered
+`Initial`, history/adjudication, and `FinalAccepted` chronology under
+`INV-SNOWENERGY-086` is unchanged. `FinalAccepted` consumes the physical prefix
+of its already-charged pending map; it is not a second terminal-provider replay
+and cannot consume a feed-forward evaluator result from another outer path.
+
+| Feed-forward failure/guard | Required disposition and precedence |
+| --- | --- |
+| outer support or persistent-state validation fails | existing `DirectSnowStage3EvaluationError::Kernel` or `TerminalCustody` before request construction |
+| attachment projection, beginning owner, forcing, topology, or probe-child construction fails | existing `Kernel` or exact `TerminalCustody` at its current provider-wrapper boundary; no guard is hoisted into the evaluator |
+| sole carrier evaluation fails | existing source-real `TerminalCustody("covered probe carrier fixed point")` at this evaluator seam, with the underlying carrier error retained by the attachment wrapper; no second call, fallback, selected result, or state exposure |
+| feed-forward request attempts to expose an ending hint/iteration ordinal | impossible through the request type; compile-time structural failure, not a runtime default or ignored field |
+| carrier boundary/result identity does not rejoin the invocation | existing `Kernel` domain error for `snow.terminal_trial_boundary_support_join`; no transition or selection |
+| terminal transition/numerics fails after the carrier | existing `TerminalNumerics` or `Kernel`; no outer state commit |
+| independent exact-endpoint or final-map evaluation fails | unchanged typed error at that independent boundary; no reuse of discovery or prior-invocation output; final-map `DirectV11RealConsumerError` precedence remains governed by `INV-SNOWENERGY-086` |
+| any refusal | byte-identical rollback of snow, litter, surface, soil, vegetation, coupled-time, receipt, owner, event, and publication state |
+
+`OBL-SNOWENERGY-C-056` — Pre-change direct release evidence establishes 400
+complete common-carrier map calls. A separate focused real-capture test directly
+establishes two successful, bit-identical generic-loop calls with exact-zero
+coupling deltas for each captured group. The inference that the exact release
+workload contains 200 such groups is not direct pre-change release evidence and
+must not be reported as such. Record the production seam expected red, then
+prove on exact-head that the authentic one-OFE release workload changes from
+400 complete common-carrier map calls to exactly 200 complete feed-forward
+invocations while retaining
+the exact 20 direct trials, 32 split children, four accepted microsteps,
+terminal decisions, supports, role/attempt identities, and publication
+chronology. The 20/32 counters describe adaptive trial topology and are not
+one-to-one map counts.
+
+For every real `Full`, `Retry`, `Half1`, `Half2`, and `Root` group in discovery
+and exact-endpoint modes, compare the one-call result with a test-only forced
+two-call reference and require bitwise equality to both reference results for
+the complete transition, ending joint and owner bytes, precipitation sets,
+lower boundaries, LSE/vegetation/soil/surface/WB14 evidence, receipts, ledgers,
+and diagnostics. Require exact-zero reference coupling deltas and prove the
+production request has no feedback fields. The forced reference is an oracle
+only and is unreachable from production.
+
+Independently poison the sole provider call and the exact/final evaluation;
+poison every role/support/attempt/beginning/topology/forcing/owner binding; and
+reject cross-invocation result reuse, changed support, retry rebasing, and
+partial output. Compile-time negative-capability evidence must prove that the
+feed-forward request cannot express feedback fields. Static call-site and
+runtime audit evidence must prove exactly one provider call within each
+invocation; no process-global duplicate-key registry is authorized. Every rejection must
+preserve exact error precedence and byte-identical rollback with zero selected
+trial, arena retention, owner installation, receipt, or publication. Prove
+complete mass/energy/phase/liquid/receipt/WB14 reconstruction, exact one-OFE
+source/outlet/storage/clamp, unchanged `48/56/20/32/4` workload counts, and
+unchanged ordinary canonical-map and terminal-batch cadence.
+
+This throughput correction is retained only if three exact CPU-0 release runs
+on one unchanged postimplementation binary have median `provider_carrier` at
+most `1_299_833 us` and median `run_wall_us` at most `4_234_488 us`, reductions
+of at least `750_000 us` from the prospectively bound pre-change
+`2_049_833 us` and `4_984_488 us` observations. Every run must retain exact
+science/output/count identity and peak RSS at or below `65_536 KiB`. A failure
+of either timing ceiling, exact identity, call multiset, or RSS ceiling requires
+full reversion of revision-61 production code; these engineering SLOs do not
+alter any process-physics tolerance.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Execute one complete real carrier evaluation for each structurally feed-forward logical terminal group; retain every distinct step-doubling, retry, root, exact-endpoint, and final evaluation. |
+| branch/guard | Feed-forward versus feedback-capable mode is a typed request/interface distinction made before execution; there is no runtime switch or fallback. |
+| invariant guard map | `INV-SNOWENERGY-088` -> invocation-local feed-forward request without hint/iteration, exactly-one call audit, source-real ordered guard chain, independent outer discovery/exact/batch/final paths, rollback/publication guards. |
+| test-vector map | `OBL-SNOWENERGY-C-056`: pre-change 400-call evidence, post-change exact 200-call multiset, every role/path, forced-two-call bitwise oracle, zero deltas, binding/negative-capability/cross-invocation poisons, exact/final independence, closure, publication, rollback, and numeric keep/revert gate. |
+| binding exposure | `SNOWENERGY-V61-FEED-FORWARD-TERMINAL-CARRIER`, active, `new-INV`, IDs `088/C-056`, dual review/verification. |
+| change log | 2026-09-04, contract revision 61: replace structurally dead two-call terminal-carrier coupling replay with one typed feed-forward call per logical group; no process-solver V61, physics, tolerance, adaptive, event, map-budget, wire, receipt, or owner change. |

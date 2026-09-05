@@ -245,6 +245,29 @@ mod terminal_exact_installation_source_guards {
     }
 
     #[test]
+    fn exact_terminal_installer_requires_the_typed_parent_lineage_projection() {
+        let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+        let validator = source
+            .split("fn validate_exact_terminal_installer_owner_relation_v1(")
+            .nth(1)
+            .expect("exact terminal installer owner validator")
+            .split("impl CoveredTerminalProviderRetentionV1")
+            .next()
+            .expect("exact terminal installer owner validator body");
+        assert!(validator.contains("let accepted_transaction ="));
+        assert!(validator.contains("parent_transaction\n            .checked_add(1)"));
+        assert!(validator.contains("exact_transaction != parent_transaction"));
+        assert!(validator.contains("exact_transaction != accepted_transaction"));
+        assert!(validator.contains("normalize_v11_staged_parent_lineage("));
+        assert!(validator.contains("normalized_exact.canonical_owner_state_bytes()?"));
+        assert!(validator.contains("installed.canonical_owner_state_bytes()?"));
+        assert!(!validator.contains("remove("));
+        assert!(!source.contains(
+            "exact.ending.shadow().canonical_owner_state_bytes()?\n                != installed_consumer.canonical_owner_state_bytes()?"
+        ));
+    }
+
+    #[test]
     fn obsolete_terminal_consumer_and_duplicate_ordinal_authority_are_absent() {
         let attachment = include_str!("snow_stage3_v11_attachment.rs");
         let receipts = include_str!("snow_stage3_v11_attachment_receipts.rs");
@@ -319,8 +342,9 @@ mod terminal_exact_installation_source_guards {
             0,
             "a completed physical child must not clear custody needed to authenticate its successor",
         );
-        assert!(source.contains(
-            "let (parent, consumer, clock, stage3, receipt, deferred_native_v2_soil_custody) = *outcome;"
+        let compact_source = source.split_whitespace().collect::<String>();
+        assert!(compact_source.contains(
+            "let(parent,consumer,clock,stage3,receipt,deferred_native_v2_soil_custody,snow_enthalpy_material_owner,)=*outcome;"
         ));
     }
 

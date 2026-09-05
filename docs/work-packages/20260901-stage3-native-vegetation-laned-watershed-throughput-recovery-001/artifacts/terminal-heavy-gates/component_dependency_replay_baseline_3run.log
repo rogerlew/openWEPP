@@ -1,0 +1,101 @@
+COMPONENT_DEPENDENCY_BASELINE_SOURCE_MANIFEST_BEFORE 78d756be1fa11ed85ee92b7d19e6c04427b01b122efaf7804d1b55d60536bbbe
+COMPONENT_DEPENDENCY_BASELINE_RUN 1 BEGIN
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+warning: fields `coupling_iteration` and `ending_snow_hint` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1163:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- fields in this struct
+...
+1163 |     pub coupling_iteration: u32,
+     |         ^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+   Compiling openwepp-persisted-restart-v1 v0.1.0 (/workdir/openWEPP/crates/openwepp-persisted-restart-v1)
+   Compiling openwepp-runner v0.1.0 (/workdir/openWEPP/crates/openwepp-runner)
+    Finished `release` profile [optimized] target(s) in 7m 24s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-fc552493dc3c6cc2)
+
+running 1 test
+test hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ... STAGE3_LANED_RELEASE_PROBE {"accepted_microstep_count":4,"accepted_publication_support_count":56,"bootstrap_wall_us":17905,"committed_day_count":1,"covered_parent_support_count":4,"direct_trial_count":20,"finalization_phase_wall_us":{"candidate":0,"identity_replay":0,"install":0,"sealed_source":0},"fixed_point_evaluation_count":0,"fixture_wall_us":1045,"imported_stack_phase_wall_us":{"accepted_candidate":77064,"entry_validation":1710,"envelope_construction":8178,"envelope_validation":17,"frozen_acceptance":9925,"frozen_evaluation":159051,"frozen_execute_accept":118366,"frozen_execution_setup":1271,"frozen_preparation":40679,"frozen_runtime":107146,"install":620,"owner_publication":6491,"physical_candidate":174035,"physical_setup":6783,"reuse_install":239,"reuse_reseal":13571,"reuse_validation":1398},"lane_d_wall_us":741,"laned_clamp_m3":0.0,"laned_days_routed":1,"laned_days_seen":1,"laned_end_window_storage_m3":0.0016956104824910018,"laned_outlet_m3":0.8471105124736579,"laned_source_m3":0.8488061229561478,"native_vegetation_et_wall_us":326595,"parent_phase_wall_us":{"covered_composed_trial":0,"covered_direct_trial":0,"parent":3265645,"provisional_owner":0,"provisional_physical":0,"provisional_projection":0,"provisional_receipts":0,"provisional_solver_ready":0,"publication_append":1956,"publication_full_validation":0,"reuse_validation":460,"terminal_composed_trial":1187091,"terminal_direct_trial":1696379},"physical_phase_wall_us":{"final_tile":141305,"ingress":0,"post":0,"potential":354838,"protocol":0,"request":0,"topology":170105,"unified":0},"qualification_counters_complete":true,"qualification_scopes_balanced":true,"qualification_telemetry_total_wall_us":4926758,"record":"stage3_laned_release_one_ofe_positive_baseline_v1","remaining_runner_wall_us":405477,"rss_kib":70696,"run_wall_us":4926758,"snow_free_parent_support_count":44,"split_child_trial_count":32,"stage3_lse_soil_wall_us":4193944,"terminal_candidate_phase_wall_us":{"carrier_complete":653737,"carrier_complete_adoption":124115,"carrier_complete_envelope":286010,"carrier_complete_owner":87505,"carrier_complete_projection":146789,"carrier_owner_candidate_bytes":220,"carrier_owner_ephemeral_assembly":5680,"carrier_owner_hydrology_projection":970,"carrier_owner_joint_map":841,"carrier_owner_joint_seal":2830,"carrier_owner_other_encoding":1739,"carrier_owner_soil_custody":21,"carrier_owner_soil_encoding":34631,"carrier_owner_surface_canonical":8258,"carrier_owner_surface_encoding":3243,"carrier_owner_vegetation_encoding":2665,"carrier_owner_vegetation_validation":13469,"carrier_physical":1377810,"carrier_physical_completion":230488,"carrier_physical_evidence":1021065,"carrier_physical_setup":124729,"provider_carrier":2034023,"provider_custody":10119,"provider_projection":34803,"provider_retention":15702,"result_finalization":37893,"setup":58580},"total_parent_support_count":48,"unified_phase_wall_us":{"authorization":25336,"candidate":0,"candidate_receivers":11286,"candidate_soil":33907,"candidate_surface_ingress":57769,"candidate_surface_resource":111937,"candidate_validation":2356,"entry_validation":0,"preflight":0,"protocol_validation":0},"validation_wall_us":996}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 236 filtered out; finished in 4.95s
+
+COMPONENT_DEPENDENCY_BASELINE_RUN 1 EXIT 0
+COMPONENT_DEPENDENCY_BASELINE_RUN 2 BEGIN
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+warning: fields `coupling_iteration` and `ending_snow_hint` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1163:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- fields in this struct
+...
+1163 |     pub coupling_iteration: u32,
+     |         ^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-fc552493dc3c6cc2)
+
+running 1 test
+test hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ... STAGE3_LANED_RELEASE_PROBE {"accepted_microstep_count":4,"accepted_publication_support_count":56,"bootstrap_wall_us":18059,"committed_day_count":1,"covered_parent_support_count":4,"direct_trial_count":20,"finalization_phase_wall_us":{"candidate":0,"identity_replay":0,"install":0,"sealed_source":0},"fixed_point_evaluation_count":0,"fixture_wall_us":905,"imported_stack_phase_wall_us":{"accepted_candidate":76423,"entry_validation":1701,"envelope_construction":8216,"envelope_validation":16,"frozen_acceptance":10074,"frozen_evaluation":159841,"frozen_execute_accept":119224,"frozen_execution_setup":1282,"frozen_preparation":40612,"frozen_runtime":107845,"install":612,"owner_publication":6445,"physical_candidate":174639,"physical_setup":6560,"reuse_install":239,"reuse_reseal":13645,"reuse_validation":1401},"lane_d_wall_us":742,"laned_clamp_m3":0.0,"laned_days_routed":1,"laned_days_seen":1,"laned_end_window_storage_m3":0.0016956104824910018,"laned_outlet_m3":0.8471105124736579,"laned_source_m3":0.8488061229561478,"native_vegetation_et_wall_us":326537,"parent_phase_wall_us":{"covered_composed_trial":0,"covered_direct_trial":0,"parent":3267434,"provisional_owner":0,"provisional_physical":0,"provisional_projection":0,"provisional_receipts":0,"provisional_solver_ready":0,"publication_append":1981,"publication_full_validation":0,"reuse_validation":461,"terminal_composed_trial":1185034,"terminal_direct_trial":1699628},"physical_phase_wall_us":{"final_tile":143555,"ingress":0,"post":0,"potential":353374,"protocol":0,"request":0,"topology":170037,"unified":0},"qualification_counters_complete":true,"qualification_scopes_balanced":true,"qualification_telemetry_total_wall_us":4903570,"record":"stage3_laned_release_one_ofe_positive_baseline_v1","remaining_runner_wall_us":384343,"rss_kib":54624,"run_wall_us":4903570,"snow_free_parent_support_count":44,"split_child_trial_count":32,"stage3_lse_soil_wall_us":4191947,"terminal_candidate_phase_wall_us":{"carrier_complete":652430,"carrier_complete_adoption":124174,"carrier_complete_envelope":284434,"carrier_complete_owner":87105,"carrier_complete_projection":147416,"carrier_owner_candidate_bytes":223,"carrier_owner_ephemeral_assembly":5648,"carrier_owner_hydrology_projection":968,"carrier_owner_joint_map":811,"carrier_owner_joint_seal":2865,"carrier_owner_other_encoding":1727,"carrier_owner_soil_custody":21,"carrier_owner_soil_encoding":34388,"carrier_owner_surface_canonical":8278,"carrier_owner_surface_encoding":3186,"carrier_owner_vegetation_encoding":2671,"carrier_owner_vegetation_validation":13491,"carrier_physical":1377652,"carrier_physical_completion":230173,"carrier_physical_evidence":1021350,"carrier_physical_setup":124616,"provider_carrier":2032587,"provider_custody":10390,"provider_projection":34839,"provider_retention":15549,"result_finalization":38114,"setup":59335},"total_parent_support_count":48,"unified_phase_wall_us":{"authorization":25230,"candidate":0,"candidate_receivers":11358,"candidate_soil":33927,"candidate_surface_ingress":57757,"candidate_surface_resource":111204,"candidate_validation":2438,"entry_validation":0,"preflight":0,"protocol_validation":0},"validation_wall_us":989}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 236 filtered out; finished in 4.93s
+
+COMPONENT_DEPENDENCY_BASELINE_RUN 2 EXIT 0
+COMPONENT_DEPENDENCY_BASELINE_RUN 3 BEGIN
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+warning: fields `coupling_iteration` and `ending_snow_hint` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1163:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- fields in this struct
+...
+1163 |     pub coupling_iteration: u32,
+     |         ^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-fc552493dc3c6cc2)
+
+running 1 test
+test hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ... STAGE3_LANED_RELEASE_PROBE {"accepted_microstep_count":4,"accepted_publication_support_count":56,"bootstrap_wall_us":19327,"committed_day_count":1,"covered_parent_support_count":4,"direct_trial_count":20,"finalization_phase_wall_us":{"candidate":0,"identity_replay":0,"install":0,"sealed_source":0},"fixed_point_evaluation_count":0,"fixture_wall_us":900,"imported_stack_phase_wall_us":{"accepted_candidate":77312,"entry_validation":1675,"envelope_construction":8185,"envelope_validation":17,"frozen_acceptance":9781,"frozen_evaluation":158464,"frozen_execute_accept":118233,"frozen_execution_setup":1282,"frozen_preparation":40225,"frozen_runtime":107147,"install":636,"owner_publication":6485,"physical_candidate":173194,"physical_setup":6523,"reuse_install":232,"reuse_reseal":13599,"reuse_validation":1444},"lane_d_wall_us":748,"laned_clamp_m3":0.0,"laned_days_routed":1,"laned_days_seen":1,"laned_end_window_storage_m3":0.0016956104824910018,"laned_outlet_m3":0.8471105124736579,"laned_source_m3":0.8488061229561478,"native_vegetation_et_wall_us":326048,"parent_phase_wall_us":{"covered_composed_trial":0,"covered_direct_trial":0,"parent":3256938,"provisional_owner":0,"provisional_physical":0,"provisional_projection":0,"provisional_receipts":0,"provisional_solver_ready":0,"publication_append":1938,"publication_full_validation":0,"reuse_validation":464,"terminal_composed_trial":1180667,"terminal_direct_trial":1694674},"physical_phase_wall_us":{"final_tile":140711,"ingress":0,"post":0,"potential":353431,"protocol":0,"request":0,"topology":169455,"unified":0},"qualification_counters_complete":true,"qualification_scopes_balanced":true,"qualification_telemetry_total_wall_us":4896096,"record":"stage3_laned_release_one_ofe_positive_baseline_v1","remaining_runner_wall_us":384639,"rss_kib":59364,"run_wall_us":4896095,"snow_free_parent_support_count":44,"split_child_trial_count":32,"stage3_lse_soil_wall_us":4184659,"terminal_candidate_phase_wall_us":{"carrier_complete":650707,"carrier_complete_adoption":123555,"carrier_complete_envelope":284177,"carrier_complete_owner":86937,"carrier_complete_projection":146741,"carrier_owner_candidate_bytes":221,"carrier_owner_ephemeral_assembly":5683,"carrier_owner_hydrology_projection":952,"carrier_owner_joint_map":821,"carrier_owner_joint_seal":2829,"carrier_owner_other_encoding":1728,"carrier_owner_soil_custody":21,"carrier_owner_soil_encoding":34208,"carrier_owner_surface_canonical":8197,"carrier_owner_surface_encoding":3193,"carrier_owner_vegetation_encoding":2644,"carrier_owner_vegetation_validation":13506,"carrier_physical":1372554,"carrier_physical_completion":229946,"carrier_physical_evidence":1016867,"carrier_physical_setup":124229,"provider_carrier":2025721,"provider_custody":10045,"provider_projection":34685,"provider_retention":15568,"result_finalization":38186,"setup":58544},"total_parent_support_count":48,"unified_phase_wall_us":{"authorization":25276,"candidate":0,"candidate_receivers":11252,"candidate_soil":33844,"candidate_surface_ingress":57589,"candidate_surface_resource":111232,"candidate_validation":2344,"entry_validation":0,"preflight":0,"protocol_validation":0},"validation_wall_us":1006}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 236 filtered out; finished in 4.92s
+
+COMPONENT_DEPENDENCY_BASELINE_RUN 3 EXIT 0
+COMPONENT_DEPENDENCY_BASELINE_SOURCE_MANIFEST_AFTER 78d756be1fa11ed85ee92b7d19e6c04427b01b122efaf7804d1b55d60536bbbe

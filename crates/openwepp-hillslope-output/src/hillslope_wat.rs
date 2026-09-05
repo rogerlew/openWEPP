@@ -110,6 +110,11 @@ fn stable_ipc_field_type<'a>(
                 children,
             })
         }
+        DataType::Utf8 => Ok(StableIpcFieldType {
+            type_type: arrow_ipc::Type::Utf8,
+            type_: arrow_ipc::Utf8Builder::new(fbb).finish().as_union_value(),
+            children,
+        }),
         other => Err(HillslopeWatParquetError::parquet(format!(
             "stable arrow schema encoding does not support {other:?}"
         ))),

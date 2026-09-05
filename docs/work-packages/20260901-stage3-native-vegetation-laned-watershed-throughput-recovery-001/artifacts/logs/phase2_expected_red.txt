@@ -1,0 +1,127 @@
+Phase-2 contract-first gate transcript (command-level summary; not a raw log)
+Date: 2026-09-01
+Source HEAD: a28c55c2d0f06e0c4aab58642f1009f70f82b3d3
+Tested-source worktree digest after commands and before review (the transcript
+itself is excluded to avoid a self-referential digest):
+667f21801dab4acc24effaed3018a39b4540d3201acbc6a4a75cf7e3cf05cfd7
+Package-owned paths represented: 32
+Toolchain: rustc 1.95.0 (59807616e 2026-04-14); cargo 1.95.0 (f2d3ce0bd 2026-03-21)
+
+Exact digest command (the NUL framing distinguishes untracked paths from
+content hashes):
+{ git diff --binary HEAD -- . ':(exclude)tmp' ':(exclude)docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/logs/phase2_expected_red.txt'; git ls-files --others --exclude-standard -z | while IFS= read -r -d '' package_path; do case "$package_path" in tmp/*|docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/logs/phase2_expected_red.txt) continue ;; esac; printf 'UNTRACKED\0%s\0' "$package_path"; sha256sum "$package_path"; done; } | sha256sum
+
+Command 1:
+nix develop -c cargo test --test solver_architecture_authority_contract -- --nocapture
+Exit: 0
+Result: 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out.
+
+Command 2:
+nix develop -c cargo test --test coupled_time_authority_contract --test land_surface_energy_balance_authority_contract --test surface_liquid_hydrology_custody_authority_contract --test mofe01_inter_ofe_route_contract --test wb13_daily_water_balance_output_surface_contract --test snow_stage3_adaptive_compositional_contract --test snow_surface_eb04w_accumulation_melt_diagnostics_contract -- --nocapture
+Exit: 0
+Result: 57 passed across seven exact contract suites; 0 failed.
+
+Command 3:
+nix develop -c cargo test --test stage3_native_vegetation_laned_throughput_recovery -- --nocapture
+Exit: 101 (expected red)
+Result: 0 passed; 2 failed.
+Exact absent-replacement diagnostics:
+- phase_consistent_coupled_solve.rs still exists;
+- COVERED_FIXED_POINT_POLICY remains outside the exact historical-test
+  allowlist in that production module.
+The recursive guard scans every orchestrator/runner Rust source except an exact
+historical-test allowlist and separately requires deletion of all four
+superseded production modules.
+
+Command 4:
+nix develop -c cargo test -p openwepp-hillslope-orchestrator --lib v9_real_consumer_shadow::v11_covered::covered_convergence_policy_tests::canonical_tol_snowenergy_007_crosses_only_at_literal_binary64_boundary -- --exact --nocapture
+Exit: 101 (expected red)
+Result: compilation stopped on 107 unresolved intended canonical production-seam
+symbols only. The first diagnostics are missing
+CanonicalCoveredToleranceClassV1, CanonicalCoveredToleranceScaleV1,
+CanonicalStage3PhysicalRegimeV1, CanonicalCoveredDerivedActiveSetV1,
+CanonicalStage3OpenSnowExecutionResultV1,
+CanonicalStage3OpenSnowExecutionInputV1,
+CanonicalCoveredAuthenticPhysicalMapV1, and
+canonical_stage3_open_snow_execute_v1. No unrelated compiler failure was
+reported. The exact qualified name prevents a future zero-test success after
+the seam compiles.
+
+The same expected-red source directly binds all nine TOL-SNOWENERGY-007
+classes with an independent binary64 representable-bound search, both signs,
+nominal/tightened/loosened scales, nonfinite/wrong-field poisons, the
+snow-free/thin-V22/covered partition, CoE rejection, authentic-map chronology,
+the eight-map cap and final reserve, duplicate/out-of-order/uncharged/replay
+poisons, false independent-ledger/domain/discrete guards, wrong tolerance-ID
+and cross-coordinate poisons, frozen/mixed/thaw-refreeze/wet-canopy active
+sets, typed exhaustion, atomic rollback, and no post-final replay. The CoE and
+three pre-map nonfinite input vectors require typed refusal before either
+covered-map or V22 callbacks and exact installed-owner rollback. Every refused
+tolerance vector likewise exposes and checks the installed owner. Regime
+selection and every poison drive the single
+`canonical_stage3_open_snow_execute_v1` production seam with actual
+`DirectSnowStage3PersistentState` and an authentic physical-map callback;
+snow-free and thin-pack V22 prove zero covered-map calls, and thin-pack requires
+execution and publication of the retained V22 terminal one-volume
+enthalpy/adaptive process. A balanced-brace source guard extracts the real
+`execute_imported_v10_stack` function body, fully strips Rust comments and
+ordinary/raw/byte/character literal forms, and requires exactly one
+unconditional direct call edge at the function body's top statement depth,
+direct assignment to a parsed `let name`/`let mut name` binding, balanced end
+of the complete call and statement, an initializer tail restricted to direct
+`;` or `?;` propagation with every method/closure/transformation rejected, and
+explicit use strictly afterward under
+a narrow nonrecursive return grammar: direct result return, `Ok(result)`, the
+explicit `imported_v10_output` receipt field, or at most one binding hop of
+that exact field. Unsupported patterns, arbitrary mapping calls, multi-hop,
+block/drop, argument-list/dead-branch/unused decoys, and closure/cfg prefixes
+fail. It also forbids historical controllers.
+Authentic
+persistent-state operands derive the regime, active set, physical ledgers,
+domains, and discrete custody; caller assertion flags cannot admit a result.
+
+Command 5:
+nix develop -c cargo test -p openwepp-runner --lib hillslope::tests::accepted_stage3_real_runner_routes_lane_d_and_publishes_summary -- --exact --nocapture
+Exit: 101 (expected red)
+Result: exactly one parent and one subprocess test ran; 203 tests were filtered.
+The subprocess failed at the seam preflight with:
+"production Stage-3 -> Lane-D seam is absent: laned_active module remains
+test-gated".
+No retired selector was set; all historical Lane-D selector variables were
+removed from the subprocess environment. The post-cutover portion uses one
+warm 50-mm liquid-precipitation day over two OFEs and requires positive accepted
+Stage-3 liquid, 24 hourly source bins, one topology-ordered route per OFE,
+adjacent handoff, positive routed publication, and run-level volume closure.
+It also reconstructs WAT5 accepted source, HBP routed hourly volume/peak, and
+PASS terminal volume/peak under the contract tolerances, requires routed shape
+to differ from the pre-route source, rejects cfg(test)-only module/config/call
+surfaces. Behind the expected-red production-visibility gate it executes real
+native-forest 1-, 10-, and 19-OFE runner cases with unequal areas/slopes and
+alternating authoritative soil operands. Each case authors an exact live
+Stage-3 owner sidecar, independently rebuilds and bootstraps it, and requires
+exact N-lane attachment, surface-binding, and WB14 cardinality. Each scale
+executes a factor-1000 area-unit poison; 10/19 OFEs also poison adjacent area
+association against fixed accepted results and require the typed
+`WrongAreaAssociation` rejection. Every case reads WAT5, WAT, HBP, PASS, and
+manifest outputs, reconstructs all-OFE source, terminal routed outlet/peak,
+and source+clamp=outlet+storage, and requires the public routed fingerprint to
+change under the separating poisons. Production-visibility inspection is
+token-aware: it strips nested comments and ordinary/byte/raw string plus
+character/byte-character literals, balances arbitrary scoped `pub(...)`
+visibility and the target module/items/enclosing module/block/impl stack, and
+rejects every conditional `cfg`, `cfg_attr`, or runtime `cfg!` expression
+affecting the required module, item, configure statement, or call edge.
+Embedded anti-evasion vectors cover debug, feature, compound, scoped
+visibility, nested/enclosing block, and literal-decoy forms.
+
+Command 6:
+git diff --check
+Exit: 0
+Result: clean diff hygiene.
+
+Evidence disposition:
+- Command-level summary with exact commands, exit codes, counts, and decisive
+  diagnostics. It does not claim to be a byte-for-byte raw command log.
+- Green results are canonical authority/static tests.
+- Red results are limited to the intentionally absent canonical solver/deletion
+  and authenticated real Stage-3 -> Lane-D production seams.

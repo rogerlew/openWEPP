@@ -51,12 +51,11 @@ mod accepted_publication_rotation_tests {
         tail.last_accepted_slab_sha256 = Some(Digest32::from_bytes([8; 32]));
         tail.traversed_ending_owner_sha256 = Some(Digest32::from_bytes([9; 32]));
         tail.aggregate_authority_sha256 = Digest32::from_bytes([10; 32]);
-        tail.event_ids
-            .insert(openwepp_coupled_time::ReceiptId::from_digest(
-                Digest32::from_bytes([11; 32]),
-            ));
-        tail.last_event_ordinal_by_parent.insert(stale_parent, 3);
-        tail.last_event_ordinal_by_parent.insert(parent, 4);
+        std::sync::Arc::make_mut(&mut tail.event_ids).insert(
+            openwepp_coupled_time::ReceiptId::from_digest(Digest32::from_bytes([11; 32])),
+        );
+        std::sync::Arc::make_mut(&mut tail.last_event_ordinal_by_parent).insert(stale_parent, 3);
+        std::sync::Arc::make_mut(&mut tail.last_event_ordinal_by_parent).insert(parent, 4);
         let bounded = bounded_sealed_prefix_tail_v1(tail.clone());
         assert_eq!(bounded.support_count, tail.support_count);
         assert_eq!(bounded.event_count, tail.event_count);
@@ -74,6 +73,14 @@ mod accepted_publication_rotation_tests {
 
         let checkpoint_bytes = b"canonical-materialized-wb14-checkpoint".to_vec();
         let checkpoint = PersistentCanonicalWb14ReplayV1::from_bytes(checkpoint_bytes.clone());
+        let live_revision = AcceptedPublicationHistoryLiveRevisionV1::fresh(
+            &bounded,
+            &bounded,
+            0,
+            0,
+            Some(&checkpoint),
+            None,
+        );
         let rotated_history = AcceptedPublicationHistoryV1 {
             inner: std::sync::Arc::new(AcceptedPublicationHistoryInnerV1 {
                 supports: Vec::new(),
@@ -82,6 +89,7 @@ mod accepted_publication_rotation_tests {
                 wb14_replay_checkpoint: Some(checkpoint.clone()),
                 last_child_replay_materialized: Some(checkpoint_bytes.clone().into()),
                 tail_authority: bounded.clone(),
+                live_revision,
             }),
         };
         assert_eq!(

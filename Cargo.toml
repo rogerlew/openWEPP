@@ -507,6 +507,10 @@ name = "solver_architecture_authority_contract"
 path = "tests/integration/solver_architecture_authority_contract.rs"
 
 [[test]]
+name = "stage3_native_vegetation_laned_throughput_recovery"
+path = "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs"
+
+[[test]]
 name = "quality_observatory_merged_coverage_contract"
 path = "tests/integration/quality_observatory_merged_coverage_contract.rs"
 

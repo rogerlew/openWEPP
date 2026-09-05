@@ -84,7 +84,7 @@ fn successor_contracts_bind_one_adaptive_model_and_preserve_rejected_history() {
     let surface_liquid = read(SURFACE_LIQUID);
     let package = read(PACKAGE);
     for required in [
-        "contract_version: 29",
+        "contract_version: 58",
         "INV-SNOWENERGY-048",
         "INV-SNOWENERGY-049",
         "INV-SNOWENERGY-050",
@@ -96,6 +96,8 @@ fn successor_contracts_bind_one_adaptive_model_and_preserve_rejected_history() {
         "consumes exactly one otherwise-converged Picard",
         "W = I0 + L0 + D - S + Lin",
         "Versions 19 through 21 remain historical",
+        "INV-SNOWENERGY-082",
+        "TOL-SNOWENERGY-007",
     ] {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
@@ -110,13 +112,15 @@ fn successor_contracts_bind_one_adaptive_model_and_preserve_rejected_history() {
         assert!(freeze.contains(required), "{FREEZE} missing {required}");
     }
     for required in [
-        "contract_version: 9",
+        "contract_version: 10",
         "INV-COUPLEDTIME-021",
         "INV-COUPLEDTIME-022",
         "INV-COUPLEDTIME-023",
         "INV-COUPLEDTIME-024",
         "INV-COUPLEDTIME-026",
         "OBL-COUPLEDTIME-009",
+        "INV-COUPLEDTIME-027",
+        "OBL-COUPLEDTIME-010",
         "versions 4-6 remain rejected historical candidates",
     ] {
         assert!(time.contains(required), "{TIME} missing {required}");
@@ -129,11 +133,12 @@ fn successor_contracts_bind_one_adaptive_model_and_preserve_rejected_history() {
         assert!(!package.contains(&format!("add {forbidden}")));
     }
     for required in [
-        "contract_version: 13",
+        "contract_version: 17",
         "SURFACELIQUID-V13-FACTORIZATION-LINEAGE",
         "SURFACELIQUID-V10-ADAPTIVE-GRID",
         "60_000_000_000 ns",
         "result-blind",
+        "INV-SURFACELIQUID-024",
     ] {
         assert!(
             surface_liquid.contains(required),

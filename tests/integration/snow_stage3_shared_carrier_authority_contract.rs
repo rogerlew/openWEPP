@@ -158,8 +158,8 @@ fn current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation() {
     for required in [
         "status: approved",
         "maturity: active",
-        "contract_version: 29",
-        "last_reviewed: 2026-08-30",
+        "contract_version: 58",
+        "last_reviewed: 2026-09-01",
         "INV-SNOWENERGY-042",
         "INV-SNOWENERGY-043",
         "INV-SNOWENERGY-044",
@@ -205,7 +205,9 @@ fn current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation() {
     assert!(registry.contains(
         "| `SC-SNOWENERGY-001` | Snow-Surface Energy and Sub-Canopy Longwave Contract | `approved` | `active` |"
     ));
-    assert!(registry.contains("v29 retains bounded vapor/phase custody"));
+    assert!(
+        registry.contains("non-versioned ADR-0044 amendments bind one canonical covered solver")
+    );
     assert!(!registry.contains("v14 binds the default-off shared V11/Stage 3 carrier"));
     assert_eq!(contract.matches("| `INV-SNOWENERGY-041` |").count(), 1);
     assert_eq!(contract.matches("| `INV-SNOWENERGY-042` |").count(), 2);
@@ -227,7 +229,7 @@ fn current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation() {
     let lse_contract =
         read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
     for required in [
-        "contract_version: 12",
+        "contract_version: 31",
         "INV-LANDSURFACEENERGY-124",
         "INV-LANDSURFACEENERGY-125",
         "INV-LANDSURFACEENERGY-126",

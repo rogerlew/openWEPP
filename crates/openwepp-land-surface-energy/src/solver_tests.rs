@@ -242,6 +242,143 @@ fn v10_and_v11_leaf_gas_match_frozen_dark_low_light_and_positive_vectors() {
         v11_dark_at_saturation.gas_branch,
         V10LeafGasBranch::ExactZeroPar
     );
+
+    let positive_inputs = LeafBiochemicalInputs {
+        leaf_area_m2_m2_tile: 1.0,
+        absorbed_shortwave_w_m2_tile: 300.0,
+        absorbed_par_w_m2_leaf: 180.0,
+        vcmax25: 60.0 / vcmax_factor,
+        jmax25: 100.0 / jmax_factor,
+        rd25: 1.2 / rd_factor,
+    };
+    begin_covered_leaf_trial_audit(false);
+    let exact_beta_one = leaf_trial_state(
+        positive_inputs,
+        biochemical,
+        temperature,
+        qcan,
+        1.0,
+        environment,
+        0.02,
+        100.0,
+        4.0,
+    )
+    .expect("exact-beta-one current leaf");
+    let exact_beta_one_maximum = covered_maximum_leaf_trial_state(
+        exact_beta_one,
+        1.0,
+        positive_inputs,
+        biochemical,
+        temperature,
+        qcan,
+        environment,
+        0.02,
+        100.0,
+        4.0,
+    )
+    .expect("exact-beta-one maximum leaf");
+    assert_eq!(exact_beta_one_maximum, exact_beta_one);
+    assert_eq!(take_covered_leaf_trial_audit(), 1);
+
+    let below_one = f64::from_bits(1.0_f64.to_bits() - 1);
+    begin_covered_leaf_trial_audit(false);
+    let positive_below_one = leaf_trial_state(
+        positive_inputs,
+        biochemical,
+        temperature,
+        qcan,
+        below_one,
+        environment,
+        0.02,
+        100.0,
+        4.0,
+    )
+    .expect("positive-PAR current leaf below beta one");
+    assert_eq!(
+        positive_below_one.gas_branch,
+        V10LeafGasBranch::PositiveAssimilation
+    );
+    let positive_below_one_maximum = covered_maximum_leaf_trial_state(
+        positive_below_one,
+        below_one,
+        positive_inputs,
+        biochemical,
+        temperature,
+        qcan,
+        environment,
+        0.02,
+        100.0,
+        4.0,
+    )
+    .expect("positive-PAR maximum leaf");
+    assert_eq!(take_covered_leaf_trial_audit(), 2);
+    let positive_below_one_oracle = leaf_trial_state(
+        positive_inputs,
+        biochemical,
+        temperature,
+        qcan,
+        1.0,
+        environment,
+        0.02,
+        100.0,
+        4.0,
+    )
+    .expect("positive-PAR exhaustive maximum oracle");
+    assert_eq!(positive_below_one_maximum, positive_below_one_oracle);
+
+    for (leaf_area, expected_branch) in [
+        (1.0, V10LeafGasBranch::ExactZeroPar),
+        (0.0, V10LeafGasBranch::Inactive),
+    ] {
+        let beta_independent_inputs = LeafBiochemicalInputs {
+            leaf_area_m2_m2_tile: leaf_area,
+            absorbed_shortwave_w_m2_tile: 0.0,
+            absorbed_par_w_m2_leaf: 0.0,
+            ..positive_inputs
+        };
+        begin_covered_leaf_trial_audit(false);
+        let current = leaf_trial_state(
+            beta_independent_inputs,
+            biochemical,
+            temperature,
+            qcan,
+            0.25,
+            environment,
+            0.02,
+            100.0,
+            4.0,
+        )
+        .expect("beta-independent current leaf");
+        assert_eq!(current.gas_branch, expected_branch);
+        let maximum = covered_maximum_leaf_trial_state(
+            current,
+            0.25,
+            beta_independent_inputs,
+            biochemical,
+            temperature,
+            qcan,
+            environment,
+            0.02,
+            100.0,
+            4.0,
+        )
+        .expect("beta-independent maximum leaf");
+        assert_eq!(maximum, current);
+        assert_eq!(take_covered_leaf_trial_audit(), 1);
+        let exhaustive = leaf_trial_state(
+            beta_independent_inputs,
+            biochemical,
+            temperature,
+            qcan,
+            1.0,
+            environment,
+            0.02,
+            100.0,
+            4.0,
+        )
+        .expect("beta-independent exhaustive maximum oracle");
+        assert_eq!(maximum, exhaustive);
+    }
 }
 
 #[test]
@@ -778,6 +915,26 @@ fn covered_v8_block_matches_frozen_joint_solution() {
     )
     .expect("joint block");
     assert!(residual.iter().all(|value| value.is_finite()));
+    let mut redistribution = occupancy.clone();
+    redistribution.root_layers[0].soil_potential_mm = -100_000.0;
+    assert_eq!(
+        evaluate_covered_occupancy_block(
+            &column,
+            &redistribution,
+            &block,
+            300.094_986_089_824,
+            0.013_930_509_809_668_333,
+            [
+                -24.324_096_100_383_827,
+                -34.563_785_686_988_41,
+                -56.025_633_011_908_55,
+                -29.747_436_870_633_067,
+            ],
+        ),
+        Err(LandSurfaceEnergyError::UnsupportedDomain(
+            "hydraulic_redistribution"
+        )),
+    );
     let mut fully_wet = occupancy.clone();
     fully_wet.beginning_canopy_liquid_kg_m2_tile =
         fully_wet.liquid_capacity_kg_m2_plant * (fully_wet.lai + fully_wet.sai);
@@ -830,6 +987,134 @@ fn covered_v8_block_matches_frozen_joint_solution() {
     .concat();
     let full =
         evaluate_covered_column(&column, &full_trial, None, None).expect("full covered column");
+    let mut exact_beta_one_trial = full_trial.clone();
+    exact_beta_one_trial[4] = 1.0;
+    exact_beta_one_trial[5] = 1.0;
+    begin_covered_leaf_trial_audit(false);
+    let reused_leaf_maximum = evaluate_covered_column(&column, &exact_beta_one_trial, None, None)
+        .expect("covered column with exact leaf-maximum reuse");
+    let reused_leaf_calls = take_covered_leaf_trial_audit();
+    begin_covered_leaf_trial_audit(true);
+    let exhaustive_leaf_maximum =
+        evaluate_covered_column(&column, &exact_beta_one_trial, None, None)
+            .expect("covered column with exhaustive leaf-maximum calls");
+    let exhaustive_leaf_calls = take_covered_leaf_trial_audit();
+    assert_eq!(
+        reused_leaf_maximum, exhaustive_leaf_maximum,
+        "OBL-LANDSURFACEENERGY-C-018 requires complete evaluation equality",
+    );
+    assert!(reused_leaf_calls < exhaustive_leaf_calls);
+    assert_eq!(exhaustive_leaf_calls, 4);
+
+    let mut zero_par_column = column.clone();
+    zero_par_column.authority = CoveredColumnAuthority::V10NonpositiveAssimilation;
+    zero_par_column.occupancies[0].sun.absorbed_par_w_m2_leaf = 0.0;
+    zero_par_column.occupancies[0].shade.absorbed_par_w_m2_leaf = 0.0;
+    begin_covered_leaf_trial_audit(false);
+    let zero_par_reused = evaluate_covered_column(&zero_par_column, &full_trial, None, None)
+        .expect("exact-zero-PAR complete evaluation with reuse");
+    let zero_par_reused_calls = take_covered_leaf_trial_audit();
+    begin_covered_leaf_trial_audit(true);
+    let zero_par_exhaustive = evaluate_covered_column(&zero_par_column, &full_trial, None, None)
+        .expect("exact-zero-PAR exhaustive complete evaluation");
+    let zero_par_exhaustive_calls = take_covered_leaf_trial_audit();
+    assert_eq!(zero_par_reused, zero_par_exhaustive);
+    assert_eq!(zero_par_reused_calls, 2);
+    assert_eq!(zero_par_exhaustive_calls, 4);
+    begin_covered_leaf_trial_audit(false);
+    let zero_par_reused_solve = solve_covered_column(&zero_par_column, None, full_trial.clone());
+    let zero_par_reused_solve_calls = take_covered_leaf_trial_audit();
+    begin_covered_leaf_trial_audit(true);
+    let zero_par_exhaustive_solve =
+        solve_covered_column(&zero_par_column, None, full_trial.clone());
+    let zero_par_exhaustive_solve_calls = take_covered_leaf_trial_audit();
+    assert_eq!(zero_par_reused_solve, zero_par_exhaustive_solve);
+    assert!(zero_par_reused_solve_calls < zero_par_exhaustive_solve_calls);
+
+    let mut inactive_leaf_column = column.clone();
+    inactive_leaf_column.authority = CoveredColumnAuthority::V10NonpositiveAssimilation;
+    inactive_leaf_column.occupancies[0].sun.leaf_area_m2_m2_tile = 0.0;
+    inactive_leaf_column.occupancies[0]
+        .shade
+        .leaf_area_m2_m2_tile = 0.0;
+    inactive_leaf_column.occupancies[0]
+        .sun
+        .absorbed_shortwave_w_m2_tile = 0.0;
+    inactive_leaf_column.occupancies[0]
+        .shade
+        .absorbed_shortwave_w_m2_tile = 0.0;
+    inactive_leaf_column.occupancies[0]
+        .sun
+        .absorbed_par_w_m2_leaf = 0.0;
+    inactive_leaf_column.occupancies[0]
+        .shade
+        .absorbed_par_w_m2_leaf = 0.0;
+    inactive_leaf_column.shortwave = bound_shortwave(
+        &inactive_leaf_column.occupancies,
+        inactive_leaf_column.ground.terminal_shortwave_w_m2_tile,
+        inactive_leaf_column.ground.surface_vis_albedo,
+        inactive_leaf_column.ground.surface_nir_albedo,
+    );
+    inactive_leaf_column.occupancies[0].stem_absorbed_shortwave_w_m2_tile =
+        inactive_leaf_column.shortwave.occupancies[0]
+            .stem_absorbed_w_m2_tile
+            .total();
+    begin_covered_leaf_trial_audit(false);
+    let inactive_reused = evaluate_covered_column(&inactive_leaf_column, &full_trial, None, None)
+        .expect("inactive-leaf complete evaluation with reuse");
+    let inactive_reused_calls = take_covered_leaf_trial_audit();
+    begin_covered_leaf_trial_audit(true);
+    let inactive_exhaustive =
+        evaluate_covered_column(&inactive_leaf_column, &full_trial, None, None)
+            .expect("inactive-leaf exhaustive complete evaluation");
+    let inactive_exhaustive_calls = take_covered_leaf_trial_audit();
+    assert_eq!(inactive_reused, inactive_exhaustive);
+    assert_eq!(inactive_reused_calls, 2);
+    assert_eq!(inactive_exhaustive_calls, 4);
+    assert_eq!(
+        inactive_reused.occupancies[0].gas_branches,
+        [V10LeafGasBranch::Inactive; 2]
+    );
+    begin_covered_leaf_trial_audit(false);
+    let inactive_reused_solve =
+        solve_covered_column(&inactive_leaf_column, None, full_trial.clone());
+    let inactive_reused_solve_calls = take_covered_leaf_trial_audit();
+    begin_covered_leaf_trial_audit(true);
+    let inactive_exhaustive_solve =
+        solve_covered_column(&inactive_leaf_column, None, full_trial.clone());
+    let inactive_exhaustive_solve_calls = take_covered_leaf_trial_audit();
+    assert_eq!(inactive_reused_solve, inactive_exhaustive_solve);
+    assert!(inactive_reused_solve_calls < inactive_exhaustive_solve_calls);
+
+    // Current sun then current shade must precede both maximum-demand calls.
+    // A HistoricalV8 zero-PAR failure therefore occurs on call one for sun
+    // and call two for shade, independent of the exhaustive-oracle switch.
+    for (zero_sun, expected_calls) in [(true, 1), (false, 2)] {
+        let mut ordered_error_column = column.clone();
+        if zero_sun {
+            ordered_error_column.occupancies[0]
+                .sun
+                .absorbed_par_w_m2_leaf = 0.0;
+        } else {
+            ordered_error_column.occupancies[0]
+                .shade
+                .absorbed_par_w_m2_leaf = 0.0;
+        }
+        begin_covered_leaf_trial_audit(false);
+        let reused_error = evaluate_covered_column(&ordered_error_column, &full_trial, None, None);
+        let reused_error_calls = take_covered_leaf_trial_audit();
+        begin_covered_leaf_trial_audit(true);
+        let exhaustive_error =
+            evaluate_covered_column(&ordered_error_column, &full_trial, None, None);
+        let exhaustive_error_calls = take_covered_leaf_trial_audit();
+        assert_eq!(
+            reused_error,
+            Err(LandSurfaceEnergyError::ConstitutiveDomain("ci_bracket"))
+        );
+        assert_eq!(reused_error, exhaustive_error);
+        assert_eq!(reused_error_calls, expected_calls);
+        assert_eq!(exhaustive_error_calls, expected_calls);
+    }
     let carbon = &full.occupancies[0];
     for class in 0..2 {
         assert!(carbon.gross_assimilation_umol_co2_m2_leaf_s[class].is_finite());
@@ -846,15 +1131,439 @@ fn covered_v8_block_matches_frozen_joint_solution() {
             .iter()
             .all(|value| value.is_finite())
     );
+
+    // OBL-LANDSURFACEENERGY-C-017: represented-snow ground and soil
+    // coordinates are exact identity anchors.  Their dependency-reused probe
+    // vectors and dense Jacobian columns must remain bit-identical to the
+    // complete evaluator for centered and both admitted inward stencils.
+    let mut stage3_column = column.clone();
+    stage3_column.authority = CoveredColumnAuthority::V11SnowCovered;
+    let stage3_shortwave = partition_ground_shortwave(
+        stage3_column.ground.terminal_shortwave_w_m2_tile,
+        stage3_column.ground.surface_vis_albedo,
+        stage3_column.ground.surface_nir_albedo,
+    )
+    .expect("Stage-3 ground optical partition");
+    let stage3_digest = Sha256Digest::try_new("b".repeat(64)).expect("Stage-3 digest");
+    let stage3_optical =
+        Stage3SnowOpticalBoundaryReceiptV1::try_new(Stage3SnowOpticalBoundaryReceiptInputs {
+            ofe_id: OfeId::try_new("ofe-stage3-anchor").expect("Stage-3 OFE"),
+            tile_id: TileId::try_new("tile-stage3-anchor").expect("Stage-3 tile"),
+            terminal_w_m2_tile: stage3_column.ground.terminal_shortwave_w_m2_tile,
+            absorbed_w_m2_tile: stage3_shortwave.absorbed,
+            reflected_w_m2_tile: stage3_shortwave.reflected,
+            snow_vis_albedo: stage3_column.ground.surface_vis_albedo,
+            snow_nir_albedo: stage3_column.ground.surface_nir_albedo,
+            stage3_albedo_state_sha256: stage3_digest.clone(),
+            forcing_receipt_sha256: stage3_digest.clone(),
+        })
+        .expect("Stage-3 optical receipt");
+    let stage3_common = 10 * stage3_column.occupancies.len();
+    stage3_column.stage3_lower_boundary = Some(Stage3SnowCoveredLowerBoundary {
+        snow_temperature_k: full_trial[stage3_common + 2],
+        latent_heat_j_kg: stage3_column.latent_heat_j_kg,
+        sensible_to_canopy_air_w_m2: 0.0,
+        vapor_to_canopy_air_kg_m2_s: 0.0,
+        net_longwave_w_m2: 0.0,
+        shortwave_absorbed_w_m2: stage3_shortwave.absorbed.total(),
+        precipitation_advection_w_m2: 0.0,
+        carrier_receipt_id: stage3_digest.clone(),
+        snow_vis_albedo: stage3_column.ground.surface_vis_albedo,
+        snow_nir_albedo: stage3_column.ground.surface_nir_albedo,
+        stage3_albedo_state_sha256: stage3_digest.clone(),
+        forcing_receipt_sha256: stage3_digest,
+        optical_receipt_sha256: Some(stage3_optical.receipt_sha256.clone()),
+        reciprocal_longwave_receipt_sha256: None,
+        final_canopy_boundary_receipt_sha256: None,
+    });
+    stage3_column.stage3_optical = Some(stage3_optical);
+    let validated_stage3 = ValidatedCoveredEvaluationInputs::try_new(&stage3_column, None)
+        .expect("validated Stage-3 anchor fixture");
+    begin_covered_leaf_trial_audit(false);
+    let optimized_leaf_solve = solve_covered_column(&stage3_column, None, full_trial.clone());
+    let optimized_leaf_calls = take_covered_leaf_trial_audit();
+    begin_covered_leaf_trial_audit(true);
+    let exhaustive_leaf_solve = solve_covered_column(&stage3_column, None, full_trial.clone());
+    let exhaustive_leaf_calls = take_covered_leaf_trial_audit();
+    assert_eq!(optimized_leaf_solve, exhaustive_leaf_solve);
+    assert!(optimized_leaf_calls <= exhaustive_leaf_calls);
+
+    begin_covered_jacobian_full_probe_audit();
+    let optimized_probe_solve = solve_covered_column(&stage3_column, None, full_trial.clone());
+    let optimized_probe_calls = take_covered_jacobian_full_probe_audit();
+    begin_forced_complete_covered_jacobian_probe_audit();
+    let complete_probe_solve = solve_covered_column(&stage3_column, None, full_trial.clone());
+    let complete_probe_calls = take_covered_jacobian_full_probe_audit();
+    assert_eq!(optimized_probe_solve, complete_probe_solve);
+    assert!(optimized_probe_calls < complete_probe_calls);
+
+    begin_covered_evaluation_input_validation_audit();
+    evaluate_covered_column(&stage3_column, &full_trial, None, None)
+        .expect("first public Stage-3 evaluation");
+    evaluate_covered_column(&stage3_column, &full_trial, None, None)
+        .expect("second public Stage-3 evaluation");
+    assert_eq!(
+        take_covered_evaluation_input_validation_audit(),
+        2,
+        "independent public evaluations must each admit immutable Stage-3 inputs"
+    );
+    let mut poisoned_stage3 = stage3_column.clone();
+    poisoned_stage3
+        .stage3_lower_boundary
+        .as_mut()
+        .expect("Stage-3 lower boundary")
+        .forcing_receipt_sha256 = Sha256Digest::try_new("c".repeat(64)).expect("poison digest");
+    assert_eq!(
+        evaluate_covered_column(&poisoned_stage3, &full_trial, None, None),
+        Err(LandSurfaceEnergyError::StateLineage(
+            "Stage-3 snow optical/lower-boundary identity"
+        ))
+    );
+    let mut invalid_initial_trial = full_trial.clone();
+    invalid_initial_trial[0] = f64::NAN;
+    assert_eq!(
+        solve_covered_column(&poisoned_stage3, None, invalid_initial_trial),
+        Err(LandSurfaceEnergyError::ConstitutiveDomain(
+            "covered_initial_trial"
+        )),
+        "the existing initial-trial error precedes immutable Stage-3 admission"
+    );
+    let anchor_columns: Vec<usize> = (stage3_common + 2..full_trial.len()).collect();
+    for anchor_column in anchor_columns {
+        for anchor_current in [full_trial[anchor_column], 200.0, 350.0] {
+            let mut current = full_trial.clone();
+            current[anchor_column] = anchor_current;
+            let base_proof = ValidatedCoveredJacobianBase::evaluate(&validated_stage3, &current)
+                .expect("validated Stage-3 Jacobian base");
+            let base = &base_proof.evaluation;
+            let frozen = freeze_covered_branches(base);
+            let perturbation = f64::EPSILON.sqrt() * current[anchor_column].abs().max(1.0);
+            let mut minus = current.clone();
+            let mut plus = current.clone();
+            minus[anchor_column] -= perturbation;
+            plus[anchor_column] += perturbation;
+            let stencil = covered_finite_difference_stencil(
+                &current,
+                &minus,
+                &plus,
+                stage3_column.occupancies.len(),
+                false,
+            )
+            .expect("Stage-3 anchor stencil");
+
+            begin_covered_jacobian_full_probe_audit();
+            let minus_is_valid =
+                covered_trial_is_valid(&minus, stage3_column.occupancies.len(), false);
+            let plus_is_valid =
+                covered_trial_is_valid(&plus, stage3_column.occupancies.len(), false);
+            let actual_minus = minus_is_valid
+                .then(|| covered_jacobian_probe_residuals(&base_proof, &minus, anchor_column))
+                .transpose()
+                .expect("dependency-reused minus probe");
+            let actual_plus = plus_is_valid
+                .then(|| covered_jacobian_probe_residuals(&base_proof, &plus, anchor_column))
+                .transpose()
+                .expect("dependency-reused plus probe");
+            assert_eq!(
+                take_covered_jacobian_full_probe_audit(),
+                0,
+                "Stage-3 identity anchors must not invoke the complete evaluator"
+            );
+
+            let expected_minus = minus_is_valid.then(|| {
+                evaluate_covered_column_validated(&validated_stage3, &minus, Some(&frozen), None)
+                    .expect("complete minus oracle")
+                    .normalized_residuals
+            });
+            let expected_plus = plus_is_valid.then(|| {
+                evaluate_covered_column_validated(&validated_stage3, &plus, Some(&frozen), None)
+                    .expect("complete plus oracle")
+                    .normalized_residuals
+            });
+            for row in 0..current.len() {
+                let actual_minus_value = actual_minus.as_ref().map(|values| values[row]);
+                let actual_plus_value = actual_plus.as_ref().map(|values| values[row]);
+                assert_eq!(
+                    actual_minus_value.map(f64::to_bits),
+                    expected_minus.as_ref().map(|values| values[row].to_bits()),
+                    "minus residual row {row}, anchor column {anchor_column}"
+                );
+                assert_eq!(
+                    actual_plus_value.map(f64::to_bits),
+                    expected_plus.as_ref().map(|values| values[row].to_bits()),
+                    "plus residual row {row}, anchor column {anchor_column}"
+                );
+                let actual_jacobian = covered_finite_difference_value(
+                    stencil,
+                    base.normalized_residuals[row],
+                    actual_minus_value,
+                    actual_plus_value,
+                    perturbation,
+                )
+                .expect("dependency-reused Jacobian value");
+                let expected_jacobian = covered_finite_difference_value(
+                    stencil,
+                    base.normalized_residuals[row],
+                    expected_minus.as_ref().map(|values| values[row]),
+                    expected_plus.as_ref().map(|values| values[row]),
+                    perturbation,
+                )
+                .expect("complete-evaluator Jacobian value");
+                assert_eq!(
+                    actual_jacobian.to_bits(),
+                    expected_jacobian.to_bits(),
+                    "Jacobian row {row}, anchor column {anchor_column}"
+                );
+            }
+        }
+    }
+
+    // The rejected V30 experiment must leave every hydraulic coordinate on
+    // the complete evaluator.  Preserve its differential oracle as a guard
+    // against accidentally reviving the unretained shortcut.
+    let base_stage3_proof = ValidatedCoveredJacobianBase::evaluate(&validated_stage3, &full_trial)
+        .expect("validated hydraulic Jacobian base");
+    let base_stage3 = &base_stage3_proof.evaluation;
+    let frozen_stage3 = freeze_covered_branches(base_stage3);
+    for hydraulic_column in 0..4 {
+        let perturbation = f64::EPSILON.sqrt() * full_trial[hydraulic_column].abs().max(1_000.0);
+        let mut minus = full_trial.clone();
+        let mut plus = full_trial.clone();
+        minus[hydraulic_column] -= perturbation;
+        plus[hydraulic_column] += perturbation;
+        let stencil = covered_finite_difference_stencil(
+            &full_trial,
+            &minus,
+            &plus,
+            stage3_column.occupancies.len(),
+            false,
+        )
+        .expect("hydraulic centered stencil");
+        begin_covered_jacobian_full_probe_audit();
+        let actual_minus =
+            covered_jacobian_probe_residuals(&base_stage3_proof, &minus, hydraulic_column)
+                .expect("dependency-recomputed hydraulic minus probe");
+        let actual_plus =
+            covered_jacobian_probe_residuals(&base_stage3_proof, &plus, hydraulic_column)
+                .expect("dependency-recomputed hydraulic plus probe");
+        assert_eq!(
+            take_covered_jacobian_full_probe_audit(),
+            2,
+            "hydraulic probes must retain both complete evaluations"
+        );
+        let expected_minus = evaluate_covered_column_validated(
+            &validated_stage3,
+            &minus,
+            Some(&frozen_stage3),
+            None,
+        )
+        .expect("complete hydraulic minus oracle");
+        let expected_plus =
+            evaluate_covered_column_validated(&validated_stage3, &plus, Some(&frozen_stage3), None)
+                .expect("complete hydraulic plus oracle");
+        for row in 0..full_trial.len() {
+            assert_eq!(
+                actual_minus[row].to_bits(),
+                expected_minus.normalized_residuals[row].to_bits(),
+                "minus residual row {row}, hydraulic column {hydraulic_column}"
+            );
+            assert_eq!(
+                actual_plus[row].to_bits(),
+                expected_plus.normalized_residuals[row].to_bits(),
+                "plus residual row {row}, hydraulic column {hydraulic_column}"
+            );
+            assert_eq!(
+                covered_finite_difference_value(
+                    stencil,
+                    base_stage3.normalized_residuals[row],
+                    Some(actual_minus[row]),
+                    Some(actual_plus[row]),
+                    perturbation,
+                )
+                .expect("recomputed hydraulic Jacobian")
+                .to_bits(),
+                covered_finite_difference_value(
+                    stencil,
+                    base_stage3.normalized_residuals[row],
+                    Some(expected_minus.normalized_residuals[row]),
+                    Some(expected_plus.normalized_residuals[row]),
+                    perturbation,
+                )
+                .expect("complete hydraulic Jacobian")
+                .to_bits(),
+                "Jacobian row {row}, hydraulic column {hydraulic_column}"
+            );
+        }
+    }
+
+    let mut zero_area_column = stage3_column.clone();
+    let zero_area_occupancy = &mut zero_area_column.occupancies[0];
+    zero_area_occupancy.beginning_canopy_liquid_kg_m2_tile = zero_area_occupancy
+        .liquid_capacity_kg_m2_plant
+        * (zero_area_occupancy.lai + zero_area_occupancy.sai);
+    let validated_zero_area = ValidatedCoveredEvaluationInputs::try_new(&zero_area_column, None)
+        .expect("validated zero-area column");
+    let zero_area_base_proof =
+        ValidatedCoveredJacobianBase::evaluate(&validated_zero_area, &full_trial)
+            .expect("evaluated zero-area fallback base");
+    assert_eq!(
+        zero_area_base_proof.evaluation.occupancies[0].component_areas_m2_m2_tile[0].to_bits(),
+        0.0_f64.to_bits(),
+    );
+    let zero_area_frozen = freeze_covered_branches(&zero_area_base_proof.evaluation);
+    let hydraulic_column = 0;
+    let perturbation = f64::EPSILON.sqrt() * full_trial[hydraulic_column].abs().max(1_000.0);
+    let mut zero_area_probe = full_trial.clone();
+    zero_area_probe[hydraulic_column] -= perturbation;
+    begin_covered_jacobian_full_probe_audit();
+    let zero_area_fallback =
+        covered_jacobian_probe_residuals(&zero_area_base_proof, &zero_area_probe, hydraulic_column)
+            .expect("zero-area hydraulic proof falls back to complete evaluation");
+    assert_eq!(take_covered_jacobian_full_probe_audit(), 1);
+
+    // HistoricalV8 forbids hydraulic redistribution.  Place one active layer
+    // exactly at zero flow in the complete base map so the canonical plus
+    // psi_root probe crosses into the typed failure.  Ordinary and explicitly
+    // forced complete evaluation must return the same first error, and the
+    // complete solver outcomes must agree as well.
+    let mut redistribution_column = column.clone();
+    redistribution_column.occupancies[0].root_layers[0].soil_potential_mm = full_trial[3];
+    redistribution_column.occupancies[0].root_layers[0].gravity_head_mm = 0.0;
+    let validated_redistribution =
+        ValidatedCoveredEvaluationInputs::try_new(&redistribution_column, None)
+            .expect("validated redistribution-boundary fixture");
+    let redistribution_base =
+        ValidatedCoveredJacobianBase::evaluate(&validated_redistribution, &full_trial)
+            .expect("zero-flow redistribution base");
+    let redistribution_perturbation = f64::EPSILON.sqrt() * full_trial[3].abs().max(1_000.0);
+    let mut redistribution_probe = full_trial.clone();
+    redistribution_probe[3] += redistribution_perturbation;
+    begin_covered_jacobian_full_probe_audit();
+    let optimized_redistribution_error =
+        covered_jacobian_probe_residuals(&redistribution_base, &redistribution_probe, 3);
+    assert_eq!(take_covered_jacobian_full_probe_audit(), 1);
+    begin_forced_complete_covered_jacobian_probe_audit();
+    let complete_redistribution_error =
+        covered_jacobian_probe_residuals(&redistribution_base, &redistribution_probe, 3);
+    assert_eq!(take_covered_jacobian_full_probe_audit(), 1);
+    assert_eq!(
+        optimized_redistribution_error,
+        Err(LandSurfaceEnergyError::UnsupportedDomain(
+            "hydraulic_redistribution"
+        ))
+    );
+    assert_eq!(
+        optimized_redistribution_error,
+        complete_redistribution_error
+    );
+    begin_covered_jacobian_full_probe_audit();
+    let optimized_redistribution_solve =
+        solve_covered_column(&redistribution_column, None, full_trial.clone());
+    let optimized_redistribution_complete_calls = take_covered_jacobian_full_probe_audit();
+    begin_forced_complete_covered_jacobian_probe_audit();
+    let complete_redistribution_solve =
+        solve_covered_column(&redistribution_column, None, full_trial.clone());
+    let complete_redistribution_complete_calls = take_covered_jacobian_full_probe_audit();
+    assert_eq!(
+        optimized_redistribution_solve,
+        complete_redistribution_solve
+    );
+    assert_eq!(
+        optimized_redistribution_solve,
+        Err(LandSurfaceEnergyError::UnsupportedDomain(
+            "hydraulic_redistribution"
+        ))
+    );
+    assert_eq!(
+        optimized_redistribution_complete_calls,
+        complete_redistribution_complete_calls
+    );
+    let zero_area_oracle = evaluate_covered_column_validated(
+        &validated_zero_area,
+        &zero_area_probe,
+        Some(&zero_area_frozen),
+        None,
+    )
+    .expect("zero-area complete oracle");
+    for (actual, expected) in zero_area_fallback
+        .iter()
+        .zip(&zero_area_oracle.normalized_residuals)
+    {
+        assert_eq!(actual.to_bits(), expected.to_bits());
+    }
+    let mut multi_coordinate_probe = zero_area_probe.clone();
+    multi_coordinate_probe[4] = f64::from_bits(multi_coordinate_probe[4].to_bits() + 1);
+    begin_covered_jacobian_full_probe_audit();
+    let multi_coordinate_fallback =
+        covered_jacobian_probe_residuals(&base_stage3_proof, &multi_coordinate_probe, 0)
+            .expect("multi-coordinate probe falls back to complete evaluation");
+    assert_eq!(take_covered_jacobian_full_probe_audit(), 1);
+    let multi_coordinate_oracle = evaluate_covered_column_validated(
+        &validated_stage3,
+        &multi_coordinate_probe,
+        Some(&frozen_stage3),
+        None,
+    )
+    .expect("multi-coordinate complete oracle");
+    assert_eq!(
+        multi_coordinate_fallback,
+        multi_coordinate_oracle.normalized_residuals
+    );
+    begin_covered_jacobian_full_probe_audit();
+    assert_eq!(
+        covered_jacobian_probe_residuals(&base_stage3_proof, &full_trial[..5], 0,),
+        Err(LandSurfaceEnergyError::ConstitutiveDomain(
+            "covered_trial_shape_or_bounds"
+        )),
+    );
+    assert_eq!(take_covered_jacobian_full_probe_audit(), 1);
+
+    // A beta column must retain both complete centered evaluations.
+    let non_anchor_column = 4;
+    let non_anchor_perturbation =
+        f64::EPSILON.sqrt() * full_trial[non_anchor_column].abs().max(1_000.0);
+    let mut non_anchor_minus = full_trial.clone();
+    let mut non_anchor_plus = full_trial.clone();
+    non_anchor_minus[non_anchor_column] -= non_anchor_perturbation;
+    non_anchor_plus[non_anchor_column] += non_anchor_perturbation;
+    begin_covered_jacobian_full_probe_audit();
+    covered_jacobian_probe_residuals(&base_stage3_proof, &non_anchor_minus, non_anchor_column)
+        .expect("complete non-anchor minus probe");
+    covered_jacobian_probe_residuals(&base_stage3_proof, &non_anchor_plus, non_anchor_column)
+        .expect("complete non-anchor plus probe");
+    assert_eq!(
+        take_covered_jacobian_full_probe_audit(),
+        2,
+        "non-anchor probes must retain the complete evaluator"
+    );
+
     let mut closed_bound_trial = full_trial.clone();
     closed_bound_trial[4] = 0.0;
     closed_bound_trial[5] = 1.0;
+    begin_covered_leaf_trial_audit(false);
     let closed_bound_potential = solve_covered_column(&column, None, closed_bound_trial.clone());
+    let closed_bound_reused_calls = take_covered_leaf_trial_audit();
+    begin_covered_leaf_trial_audit(true);
+    let closed_bound_exhaustive = solve_covered_column(&column, None, closed_bound_trial.clone());
+    let closed_bound_exhaustive_calls = take_covered_leaf_trial_audit();
+    assert_eq!(closed_bound_potential, closed_bound_exhaustive);
+    assert!(closed_bound_reused_calls < closed_bound_exhaustive_calls);
     assert!(
         closed_bound_potential.is_ok(),
         "an admitted beta-bound potential iterate must construct its Jacobian: {closed_bound_potential:?}"
     );
+    begin_covered_evaluation_input_validation_audit();
     let solved = solve_covered_column(&column, None, full_trial.clone()).expect("potential solve");
+    assert_eq!(
+        take_covered_evaluation_input_validation_audit(),
+        1,
+        "one immutable covered-column admission must feed every evaluation in one canonical solve"
+    );
+    assert_eq!(
+        take_covered_caps_validation_audit(),
+        1,
+        "authorization caps must be admitted exactly once per canonical solve"
+    );
     let CoveredColumnSolveOutcome::Accepted(potential) = solved else {
         panic!("potential must accept");
     };
@@ -905,6 +1614,81 @@ fn covered_v8_block_matches_frozen_joint_solution() {
         291.602_314_111_137_45,
         289.962_098_689_575_8,
     ];
+    let validated_capped = ValidatedCoveredEvaluationInputs::try_new(&column, Some(&caps))
+        .expect("validated capped hydraulic fixture");
+    let capped_base_proof =
+        ValidatedCoveredJacobianBase::evaluate(&validated_capped, &capped_trial)
+            .expect("validated capped Jacobian base");
+    let capped_frozen = freeze_covered_branches(&capped_base_proof.evaluation);
+    for capped_hydraulic_column in 0..4 {
+        let capped_perturbation =
+            f64::EPSILON.sqrt() * capped_trial[capped_hydraulic_column].abs().max(1_000.0);
+        let mut capped_minus = capped_trial.clone();
+        let mut capped_plus = capped_trial.clone();
+        capped_minus[capped_hydraulic_column] -= capped_perturbation;
+        capped_plus[capped_hydraulic_column] += capped_perturbation;
+        begin_covered_jacobian_full_probe_audit();
+        let capped_recomputed_minus = covered_jacobian_probe_residuals(
+            &capped_base_proof,
+            &capped_minus,
+            capped_hydraulic_column,
+        )
+        .expect("capped hydraulic minus recomputation");
+        let capped_recomputed_plus = covered_jacobian_probe_residuals(
+            &capped_base_proof,
+            &capped_plus,
+            capped_hydraulic_column,
+        )
+        .expect("capped hydraulic plus recomputation");
+        assert_eq!(take_covered_jacobian_full_probe_audit(), 2);
+        let capped_complete_minus = evaluate_covered_column_validated(
+            &validated_capped,
+            &capped_minus,
+            Some(&capped_frozen),
+            None,
+        )
+        .expect("capped complete minus probe oracle");
+        let capped_complete_plus = evaluate_covered_column_validated(
+            &validated_capped,
+            &capped_plus,
+            Some(&capped_frozen),
+            None,
+        )
+        .expect("capped complete plus probe oracle");
+        for row in 0..capped_trial.len() {
+            assert_eq!(
+                capped_recomputed_minus[row].to_bits(),
+                capped_complete_minus.normalized_residuals[row].to_bits(),
+                "capped minus row {row}, hydraulic column {capped_hydraulic_column}"
+            );
+            assert_eq!(
+                capped_recomputed_plus[row].to_bits(),
+                capped_complete_plus.normalized_residuals[row].to_bits(),
+                "capped plus row {row}, hydraulic column {capped_hydraulic_column}"
+            );
+            assert_eq!(
+                covered_finite_difference_value(
+                    CoveredFiniteDifferenceStencil::Centered,
+                    capped_base_proof.evaluation.normalized_residuals[row],
+                    Some(capped_recomputed_minus[row]),
+                    Some(capped_recomputed_plus[row]),
+                    capped_perturbation,
+                )
+                .expect("capped recomputed Jacobian")
+                .to_bits(),
+                covered_finite_difference_value(
+                    CoveredFiniteDifferenceStencil::Centered,
+                    capped_base_proof.evaluation.normalized_residuals[row],
+                    Some(capped_complete_minus.normalized_residuals[row]),
+                    Some(capped_complete_plus.normalized_residuals[row]),
+                    capped_perturbation,
+                )
+                .expect("capped complete Jacobian")
+                .to_bits(),
+                "capped Jacobian row {row}, hydraulic column {capped_hydraulic_column}"
+            );
+        }
+    }
     let transaction = execute_covered_potential_final(&column, full_trial, &caps, capped_trial)
         .expect("immutable potential/final transaction");
     assert_ne!(

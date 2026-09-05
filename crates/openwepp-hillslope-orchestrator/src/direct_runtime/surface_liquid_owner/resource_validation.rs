@@ -9,6 +9,62 @@ use super::{
     DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStoreKey, water_protocol_failure,
 };
 
+#[cfg(test)]
+impl super::DirectSurfaceLiquidResourceCandidate {
+    /// Exhaustive test-only framing of the opaque resource candidate.
+    pub(crate) fn canonical_private_projection_v1(
+        &self,
+    ) -> Result<Vec<u8>, DirectSurfaceLiquidError> {
+        #[derive(serde::Serialize)]
+        struct OverflowWire<'a> {
+            store_key: &'a DirectSurfaceLiquidStoreKey,
+            amount_kg_m2_ofe_ground_bits: u64,
+            temperature_k_bits: u64,
+            specific_liquid_enthalpy_j_kg_bits: u64,
+        }
+        #[derive(serde::Serialize)]
+        struct Wire<'a> {
+            schema: &'static str,
+            transaction_id: TransactionId,
+            beginning_state: &'a super::DirectSurfaceLiquidOwnedState,
+            working_state: &'a super::DirectSurfaceLiquidOwnedState,
+            finalized_uses: &'a [WaterAmount],
+            condensation_credits: &'a [CondensationCredit],
+            condensation_overflow: Vec<OverflowWire<'a>>,
+            requests: &'a [WaterAmount],
+            authorizations: &'a [openwepp_land_surface_energy::WaterAuthorization],
+            request_store_keys: &'a [DirectSurfaceLiquidStoreKey],
+            expected_predecessor: Option<TransactionId>,
+        }
+
+        serde_json::to_vec(&Wire {
+            schema: "OPENWEPP_SURFACE_LIQUID_RESOURCE_PRIVATE_PROJECTION_V1",
+            transaction_id: self.transaction_id,
+            beginning_state: &self.beginning_state,
+            working_state: &self.working_state,
+            finalized_uses: &self.finalized_uses,
+            condensation_credits: &self.condensation_credits,
+            condensation_overflow: self
+                .condensation_overflow
+                .iter()
+                .map(|value| OverflowWire {
+                    store_key: &value.store_key,
+                    amount_kg_m2_ofe_ground_bits: value.amount_kg_m2_ofe_ground.to_bits(),
+                    temperature_k_bits: value.temperature_k.to_bits(),
+                    specific_liquid_enthalpy_j_kg_bits: value
+                        .specific_liquid_enthalpy_j_kg
+                        .to_bits(),
+                })
+                .collect(),
+            requests: &self.requests,
+            authorizations: &self.authorizations,
+            request_store_keys: &self.request_store_keys,
+            expected_predecessor: self.expected_predecessor,
+        })
+        .map_err(|_| DirectSurfaceLiquidError::Schema("resource private projection"))
+    }
+}
+
 pub(super) fn preflight_resource_phase_inputs(
     configuration: &DirectSurfaceLiquidConfiguration,
     arbitration: &DirectSurfaceLiquidArbitration,

@@ -22,6 +22,7 @@ use super::*;
 const KG_M2_PER_M_WATER: f64 = 1_000.0;
 const DAY_NS: u128 = 86_400_000_000_000;
 const ACCEPTED_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
+const ACCEPTED_WB14_INTERVAL_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
 
 include!("stage3_committed_support_liquid.rs");
 include!("stage3_committed_publication_wat5.rs");
@@ -305,6 +306,7 @@ pub(crate) struct Stage3AcceptedPublicationDayV1 {
     ordered_support_receipt_set_sha256: Digest32,
     lane_frames: Vec<DirectDayFrame>,
     stage3_surface_temperature_c_by_lane: Vec<Option<f64>>,
+    laned_active_summary: Option<Box<laned_active::DirectLanedActiveRunSummary>>,
     receipt_sha256: Digest32,
 }
 
@@ -337,6 +339,13 @@ impl Stage3AcceptedPublicationDayV1 {
     #[must_use]
     pub(crate) const fn receipt_sha256(&self) -> Digest32 {
         self.receipt_sha256
+    }
+
+    #[must_use]
+    pub(crate) fn laned_active_summary(
+        &self,
+    ) -> Option<&laned_active::DirectLanedActiveRunSummary> {
+        self.laned_active_summary.as_deref()
     }
 
     pub(crate) fn validate_publication_exogenous_input(
@@ -438,6 +447,7 @@ impl Stage3AcceptedPublicationDayV1 {
 
         let mut lane_frames = Vec::with_capacity(frame.identity.lane_count);
         let mut surface_temperatures = Vec::with_capacity(frame.identity.lane_count);
+        let authenticated_lane_d_source_required = frame.laned_active.is_some();
         for lane_index in 0..frame.identity.lane_count {
             let lane =
                 frame
@@ -523,22 +533,54 @@ impl Stage3AcceptedPublicationDayV1 {
                 install_stage3_projection(&mut day, beginning_stage3, ending_stage3, &accepted)?;
             day.run_r4l_saturation_addback_span()?;
             day.run_r4a_runoff_partition_span()?;
+            reconcile_accepted_wb14_partition_scalar(&mut day, &accepted)?;
             day.run_r7d6_peak_runoff_span()?;
-            install_requested_accepted_wat5_source(
+            let accepted_wat5_profile = install_authenticated_accepted_wat5_source(
                 &mut day,
                 publication_input,
+                authenticated_lane_d_source_required,
                 supports,
-                &accepted,
+                coupled_subslabs,
                 binding,
                 surface_configuration,
             )?;
-            day.run_wat5_subhourly_generation()?;
+            if let Some(profile) = accepted_wat5_profile {
+                day.run_wat5_subhourly_generation_with_accepted_profile(profile)?;
+            }
             finish_storage_and_projection(&mut day, beginning_soil_m, &accepted)?;
             lane_frames.push(day);
             surface_temperatures.push(surface_temperature);
         }
 
-        frame.run_groundwater_day_from_lane_frames(day_index, &mut lane_frames)?;
+        let groundwater_output =
+            frame.run_groundwater_day_from_lane_frames(day_index, &mut lane_frames)?;
+        if let Some(config) = frame.laned_active.as_deref().cloned() {
+            config.validate(frame.identity.lane_count)?;
+            DirectFrameExecutor::validate_laned_active_topology(frame)?;
+            let (lane_sources, window_s) =
+                DirectFrameExecutor::laned_active_lane_sources(&lane_frames, day_index)?;
+            let books = DirectFrameExecutor::route_laned_active_day(
+                frame,
+                &config,
+                &mut lane_frames,
+                &lane_sources,
+                day_index,
+                window_s,
+            )?;
+            let mut summary = frame.laned_active_summary.take().map_or_else(
+                || {
+                    laned_active::DirectLanedActiveRunSummary::for_mesh_policy(
+                        config.mesh_policy,
+                        config.max_dt_s,
+                        config.trace_enabled,
+                    )
+                },
+                |summary| *summary,
+            );
+            laned_active::laned_active_enforce_day_closure(day_index, &books, &mut summary)?;
+            laned_active::laned_active_record_groundwater(&mut summary, groundwater_output);
+            frame.laned_active_summary = Some(Box::new(summary));
+        }
         for lane_index in 0..lane_frames.len() {
             if lane_index > 0 {
                 lane_frames[lane_index].erosion_inflow_intake =
@@ -577,6 +619,7 @@ impl Stage3AcceptedPublicationDayV1 {
             ordered_support_receipt_set_sha256: receipt_set,
             lane_frames,
             stage3_surface_temperature_c_by_lane: surface_temperatures,
+            laned_active_summary: frame.laned_active_summary.clone(),
             receipt_sha256,
         };
         value.validate_for_install(day_index, frame.identity.lane_count, ending_owner)?;
@@ -954,23 +997,53 @@ fn aggregate_accepted_lane_day(
         let ledger = support
             .ingress_ledgers()
             .iter()
-            .find(|ledger| &ledger.ofe_id == ofe_id)
-            .ok_or(stage3_publication_guard(
+            .find(|ledger| &ledger.ofe_id == ofe_id);
+        let matching_subslabs = coupled_subslabs
+            .iter()
+            .filter(|subslab| subslab.support == support.support())
+            .collect::<Vec<_>>();
+        let native_inactive_support = if ledger.is_none() && matching_subslabs.len() == 1 {
+            let subslab = matching_subslabs[0];
+            subslab
+                .validate()
+                .map_err(|_| stage3_publication_guard("accepted native inactive subslab seal"))?;
+            crate::direct_runtime::stage3_covered_native_inactive_child_custody_binding(
+                &subslab.wb14_child_replay_bytes,
+                &subslab.wb14_ofe_topology,
+            )
+            .map_err(|_| stage3_publication_guard("accepted native inactive custody marker"))?
+            .is_some_and(|binding| {
+                subslab.wb14_ofe_topology.contains(ofe_id)
+                    && binding.child_support_start_ns == support.support().start_ns().get()
+                    && binding.child_support_end_ns == support.support().end_ns().get()
+            })
+        } else {
+            false
+        };
+        if ledger.is_none()
+            && (!native_inactive_support
+                || !support.ingress_ledgers().is_empty()
+                || !support.ingress_receipts().is_empty())
+        {
+            return Err(stage3_publication_guard(
                 "accepted support OFE ingress ledger",
-            ))?;
-        add_nonnegative(
-            &mut out.ingress_m,
-            ledger.ingress_mass_kg_m2_ofe_ground / KG_M2_PER_M_WATER,
-        )?;
+            ));
+        }
+        let ingress_mass_kg_m2 = ledger.map_or(0.0, |value| value.ingress_mass_kg_m2_ofe_ground);
+        let infiltration_mass_kg_m2 =
+            ledger.map_or(0.0, |value| value.infiltration_mass_kg_m2_ofe_ground);
+        let retained_mass_kg_m2 = ledger.map_or(0.0, |value| value.retained_mass_kg_m2_ofe_ground);
+        let runoff_mass_kg_m2 = ledger.map_or(0.0, |value| value.runoff_mass_kg_m2_ofe_ground);
+        add_nonnegative(&mut out.ingress_m, ingress_mass_kg_m2 / KG_M2_PER_M_WATER)?;
         add_nonnegative(
             &mut out.infiltration_m,
-            ledger.infiltration_mass_kg_m2_ofe_ground / KG_M2_PER_M_WATER,
+            infiltration_mass_kg_m2 / KG_M2_PER_M_WATER,
         )?;
         add_nonnegative(
             &mut out.retained_surface_liquid_m,
-            ledger.retained_mass_kg_m2_ofe_ground / KG_M2_PER_M_WATER,
+            retained_mass_kg_m2 / KG_M2_PER_M_WATER,
         )?;
-        let support_runoff_m = ledger.runoff_mass_kg_m2_ofe_ground / KG_M2_PER_M_WATER;
+        let support_runoff_m = runoff_mass_kg_m2 / KG_M2_PER_M_WATER;
         add_nonnegative(&mut out.runoff_m, support_runoff_m)?;
 
         let support_seconds = support.support().duration_ns() as f64 / 1.0e9;
@@ -1038,7 +1111,7 @@ fn aggregate_accepted_lane_day(
         )?;
         let receipt_ingress_m =
             receipt_components.local_liquid_m + receipt_components.upstream_runon_m;
-        if (receipt_ingress_m - ledger.ingress_mass_kg_m2_ofe_ground / KG_M2_PER_M_WATER).abs()
+        if (receipt_ingress_m - ingress_mass_kg_m2 / KG_M2_PER_M_WATER).abs()
             > ACCEPTED_CLOSURE_TOLERANCE_M
         {
             return Err(stage3_publication_guard(
@@ -1838,10 +1911,7 @@ fn seed_accepted_upstream_day(
             cumulative_infiltration_m: accepted.infiltration_m,
             depression_storage_delta_m: accepted.retained_surface_liquid_m,
         });
-    day.runoff_partition_inputs.liquid_input_m = accepted.local_liquid_m;
-    day.runoff_partition_inputs.runon_input_m = accepted.runon_m + subsurface_carry_m;
-    day.runoff_partition_inputs.cumulative_infiltration_m = accepted.infiltration_m;
-    day.runoff_partition_inputs.depression_storage_delta_m = accepted.retained_surface_liquid_m;
+    install_accepted_wb14_partition_inputs(day, accepted)?;
     day.percolation_inputs.layers = accepted_ending_layers.to_vec();
     day.percolation_inputs.soil_water_initial_m = accepted_ending_soil_m;
     day.percolation_inputs.same_pass_infiltration_m = accepted_installed_infiltration_m();
@@ -1850,7 +1920,157 @@ fn seed_accepted_upstream_day(
         .same_pass_infiltration_m = accepted_installed_infiltration_m();
     day.water.soil_water_m = accepted_ending_soil_m;
     day.evapotranspiration_surface_shadow_projection = None;
+    Ok(())
+}
+
+/// Install the sealed accepted surface-liquid disposition at the WB14/R4A
+/// boundary without reclassifying a subsurface carry as surface runoff.
+///
+/// `accepted.hourly_runoff_m` is already the post-partition 24-bin receipt
+/// ledger. The distinct lateral/subsurface carry remains in R4J and storage
+/// accounting; appending its daily scalar to R4A would create runoff for
+/// which the accepted WB14 owner has no timing receipt.
+fn install_accepted_wb14_partition_inputs(
+    day: &mut DirectDayFrame,
+    accepted: &AcceptedLaneDay,
+) -> Result<(), DirectRuntimeError> {
+    for (field, value) in [
+        (
+            "stage3_publication.accepted_local_liquid_m",
+            accepted.local_liquid_m,
+        ),
+        (
+            "stage3_publication.accepted_surface_runon_m",
+            accepted.runon_m,
+        ),
+        (
+            "stage3_publication.accepted_infiltration_m",
+            accepted.infiltration_m,
+        ),
+        (
+            "stage3_publication.accepted_retained_surface_liquid_m",
+            accepted.retained_surface_liquid_m,
+        ),
+        ("stage3_publication.accepted_runoff_m", accepted.runoff_m),
+    ] {
+        validate_nonnegative_direct_m(field, value)?;
+    }
+    let hourly_total_m = sum_nonnegative_direct_m(
+        "stage3_publication.accepted_wb14_hourly_runoff_m",
+        &accepted.hourly_runoff_m,
+    )?;
+    if accepted.runoff_m > 0.0 && hourly_total_m == 0.0 {
+        return Err(stage3_publication_guard(
+            "positive accepted runoff missing WB14 hourly timing",
+        ));
+    }
+    if (hourly_total_m - accepted.runoff_m).abs() > ACCEPTED_CLOSURE_TOLERANCE_M {
+        return Err(stage3_publication_guard(
+            "accepted WB14 hourly/daily runoff closure",
+        ));
+    }
+    let partition_runoff_m = accepted.local_liquid_m + accepted.runon_m
+        - accepted.infiltration_m
+        - accepted.retained_surface_liquid_m;
+    validate_nonnegative_direct_m(
+        "stage3_publication.accepted_partition_runoff_m",
+        partition_runoff_m,
+    )?;
+    if (partition_runoff_m - accepted.runoff_m).abs() > ACCEPTED_CLOSURE_TOLERANCE_M {
+        return Err(stage3_publication_guard(
+            "accepted WB14 partition/daily runoff closure",
+        ));
+    }
+
+    // All validation precedes both writes so a rejected source substitution
+    // leaves the disposable candidate byte-for-byte unchanged at this seam.
+    let mut partition_inputs = day.runoff_partition_inputs;
+    partition_inputs.liquid_input_m = accepted.local_liquid_m;
+    partition_inputs.runon_input_m = accepted.runon_m;
+    partition_inputs.cumulative_infiltration_m = accepted.infiltration_m;
+    partition_inputs.depression_storage_delta_m = accepted.retained_surface_liquid_m;
+    day.runoff_partition_inputs = partition_inputs;
     day.wb14_hourly_excess_m = accepted.hourly_runoff_m;
+    Ok(())
+}
+
+/// Reconcile the independently accumulated R4A daily scalar to the sealed
+/// accepted WB14 interval ledger under `TOL-WATBAL-009`.
+///
+/// The interval depths are never changed or normalized. A positive interval
+/// source remains positive however small, an exact-zero ledger remains zero,
+/// and a mismatch beyond the contracted 24-interval arithmetic bound fails
+/// before any R4A projection is mutated.
+fn reconcile_accepted_wb14_partition_scalar(
+    day: &mut DirectDayFrame,
+    accepted: &AcceptedLaneDay,
+) -> Result<(), DirectRuntimeError> {
+    let hourly_total_m = sum_nonnegative_direct_m(
+        "stage3_publication.accepted_wb14_hourly_runoff_m",
+        &day.wb14_hourly_excess_m,
+    )?;
+    if day.wb14_hourly_excess_m != accepted.hourly_runoff_m {
+        return Err(stage3_publication_guard(
+            "accepted WB14 timing mutated before scalar reconciliation",
+        ));
+    }
+    let partition_runoff_m = day.runoff_partition.partition_runoff_m;
+    validate_nonnegative_direct_m(
+        "stage3_publication.r4a_partition_runoff_m",
+        partition_runoff_m,
+    )?;
+    let tolerance_m = ACCEPTED_WB14_INTERVAL_CLOSURE_TOLERANCE_M
+        * 24.0
+        * [hourly_total_m, accepted.runoff_m, partition_runoff_m]
+            .iter()
+            .copied()
+            .fold(1.0_f64, |scale, value| scale.max(value.abs()));
+    if (hourly_total_m - accepted.runoff_m).abs() > tolerance_m
+        || (hourly_total_m - partition_runoff_m).abs() > tolerance_m
+    {
+        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "stage3_publication.accepted_wb14_partition_runoff_m",
+        });
+    }
+
+    let surface_saturation_runoff_m = day.runoff_partition.surface_saturation_runoff_m;
+    validate_nonnegative_direct_m(
+        "stage3_publication.surface_saturation_runoff_m",
+        surface_saturation_runoff_m,
+    )?;
+    let q_runoff_m = hourly_total_m + surface_saturation_runoff_m;
+    validate_nonnegative_direct_m("stage3_publication.accepted_q_runoff_m", q_runoff_m)?;
+    let mut state = day.runoff_partition;
+    state.partition_runoff_m = hourly_total_m;
+    state.q_runoff_m = q_runoff_m;
+    state.closure_residual_m =
+        state.liquid_input_m + state.runon_input_m + state.surface_saturation_runoff_m
+            - state.cumulative_infiltration_m
+            - state.depression_storage_delta_m
+            - day.runoff_partition_inputs.frost_retained_local_liquid_m
+            - q_runoff_m;
+    validate_finite(
+        "stage3_publication.accepted_runoff_closure_residual_m",
+        state.closure_residual_m,
+    )?;
+    let downstream = DirectRunoffDownstreamOperands::from(state);
+    let shadow = DirectRunoffShadowProjection {
+        lane_index: day.lane_index,
+        day_index: day.day_index,
+        liquid_input_m: downstream.liquid_input_m,
+        runon_input_m: downstream.runon_input_m,
+        cumulative_infiltration_m: downstream.cumulative_infiltration_m,
+        depression_storage_delta_m: downstream.depression_storage_delta_m,
+        surface_saturation_runoff_m: downstream.surface_saturation_runoff_m,
+        partition_runoff_m: downstream.partition_runoff_m,
+        q_runoff_m: downstream.q_runoff_m,
+        closure_residual_m: downstream.closure_residual_m,
+    };
+
+    day.runoff_partition = state;
+    day.water.runoff_m = q_runoff_m;
+    day.runoff_downstream_operands = downstream;
+    day.runoff_shadow_projection = Some(shadow);
     Ok(())
 }
 

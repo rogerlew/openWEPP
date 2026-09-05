@@ -4,15 +4,15 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 16
+contract_version: 31
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
   - Persistent Stage 3 snow--soil lower-boundary evaluator
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
-evidence_level: static+independent_oracle
-last_reviewed: 2026-08-30
+evidence_level: static+independent_oracle+contract_vectors
+last_reviewed: 2026-09-04
 supersedes: []
 superseded_by: []
 ---
@@ -213,6 +213,7 @@ mechanics reproducible but does not make the runtime algorithm promotable.
 | post-event operand or support chronology is invalid | reject before physical evaluation | `LSEB-E-043` |
 | exact-carry schema is noncanonical, identity/receipt/restart/checkpoint join fails, an operand/high term is nonfinite, exact-total rounding overflows, or exact reconstruction fails | reject before installation and roll back the complete envelope | `LSEB-E-049` |
 | exact surface-enthalpy successor is absent or noncanonical, a V2/V3 high mirror differs, an accepted surface operand is missing/duplicated/stale, exact rounding/reconstruction fails, or restart/rollback identity does not join | reject before installation and roll back every joined owner | `LSEB-E-050` |
+| a post-phase litter-liquid candidate exceeds its configured liquid capacity and the exact typed spill mass/enthalpy cannot be constructed, joined to the phase receipt, admitted once to current ingress, or reconstructed by the exact-surface owner | reject before phase-adjusted owner sealing and roll back every joined owner | `LSEB-E-047/048/050` / `SURFACELIQUID-E-003/009..012` |
 
 Branch priority is `snow_terminal` rejection, then `snow_present` delegation,
 then `snow_free`. No temperature-only guess may override explicit snow state.
@@ -246,6 +247,18 @@ then `snow_free`. No temperature-only guess may override explicit snow state.
 | `INV-LANDSURFACEENERGY-139` | When the current complete covered residual vector passes, the full Newton trial cannot satisfy the existing no-update witness because it is domain-invalid or a governed prospective step exceeds its unchanged threshold, and the first domain-valid halved trial has every governed exact prospective step norm inside those thresholds, the solver accepts the current iterate without installing the trial. | deterministic no-update termination authority | `[INFERENCE][Static]` | runtime/test | accepted current iterate or unchanged strict-decrease/fail-closed path |
 | `INV-LANDSURFACEENERGY-150` | Every soil layer retains exact receiver-owned enthalpy `E=exact(H_hi)+R`. Each candidate exactly aggregates the beginning total plus every canonical accepted soil-internal, top-boundary, and infiltration operand, rounds once to finite binary64 nearest-even `H_hi`, and stores the exact normalized signed-dyadic remainder `R`; versioned identity, receipt, restart/checkpoint, downgrade refusal, independent reconstruction, and byte-exact rollback are mandatory. | `REF-LANDSURFACEENERGY-009/011` + `SC-SURFACELIQUID-001#INV-SURFACELIQUID-022` | `[DIRECT][Static] + [INFERENCE][Static]` | runtime/test/real-consumer | `LSEB-E-049` or hard `HOLD` pending real adoption |
 | `INV-LANDSURFACEENERGY-151` | On the frozen-litter V16 successor path, every LSE tile retains authoritative exact surface enthalpy `U=exact(U_hi)+R_U`. The LSE V3 and surface-owner V2 binary64 fields remain byte-frozen nonauthoritative high mirrors, every accepted phase-free/fusion/retained-ingress operand is aggregated exactly, the exact total is rounded once to finite nearest-even `U_hi`, and the exact normalized signed-dyadic remainder is retained through receipt, restart/checkpoint, real-consumer adoption, and byte-exact rollback. | `REF-LANDSURFACEENERGY-009/012` + `SC-SURFACELIQUID-001#INV-SURFACELIQUID-023` | `[DIRECT][Static] + [INFERENCE][Static]` | runtime/test/real-consumer | `LSEB-E-050` or hard `HOLD` pending `p61` and native-forest adoption |
+| `INV-LANDSURFACEENERGY-153` | The V16 exact-surface receipt seals a typed coupled-parent ending posture. Every accepted partial child advances exact surface energy/carry, frozen-parent digests, owner-state digest, and receipt-chain digest while retaining the exact persistent predecessor marker mirrored by LSE V3 and surface-owner V2. Only the child ending at the sealed parent endpoint uses the persistent-parent-final posture and stamps its transaction marker once across all three owners. Parent bounds, child support, posture, predecessor, mirror markers, and complete rollback are exact. | `SC-COUPLEDTIME-001#INV-COUPLEDTIME-006/024` + `SC-SURFACELIQUID-001#INV-SURFACELIQUID-012/013/014/025` | `[DIRECT][Static] + [INFERENCE][Static]` | receipt/runtime/restart/test | `LSEB-E-050` / `SURFACELIQUID-E-012` |
+| `INV-LANDSURFACEENERGY-154` | Represented Stage-3 snow is a distinct native covered-LSE regime. It executes the standard Stage-3 covered-column map exactly once under native vegetation/LSE identities and retains that same map's exact optical and snow--soil lower-boundary receipts. Snow-free V3 remains snow-free only. While snow is represented, frozen-litter V3/V4 vapor, phase, storage, current-ingress, and WB14 work are inactive and their physical/exact owner bytes are retained. A second inner legacy LSE/hydrology envelope is forbidden. | `SC-SNOWENERGY-001#INV-SNOWENERGY-083` + `SC-SURFACELIQUID-001#INV-SURFACELIQUID-026` + ADR-0044 | `[INFERENCE][Static]` | typed regime/runtime/receipt/test | `LSEB-E-020/049/050` with complete rollback |
+| `INV-LANDSURFACEENERGY-155` | A V2 unpublished soil continuation may enter a charged candidate-only LSE/V3 evaluation solely through its authenticated read-only `SoilThermalUnpublishedPhysicalBeginningV2`. It remains a non-owner and supplies no restart, checkpoint, accepted receipt, or publishable projection bytes. Final acceptance reconstructs once from the original prepared owner, the complete canonical accumulated operands, and the exact selected physical ending, then seals one V2 owner/receipt/restart bundle. | `INV-LANDSURFACEENERGY-150`, `SC-SURFACELIQUID-001#INV-SURFACELIQUID-027`, `SC-SNOWENERGY-001#INV-SNOWENERGY-084` | `[DIRECT][Static] + [INFERENCE][Static]` | typed candidate/runtime/projection/finalization/test | `LSEB-E-049` with complete rollback |
+| `INV-LANDSURFACEENERGY-156` | After the bounded V3 litter phase operator, liquid above the configured litter-liquid capacity is one typed physical spill. The retained phase state and spill exactly partition the raw phase mass and sensible enthalpy at the raw ending temperature; the spill is debited from litter once, enters current-ingress/WB14 once with exact phase-receipt, transaction, support, key, area-basis, mass, and enthalpy custody, and contributes one named negative exact-surface-energy operand. It is neither clipping nor condensation and never causes a same-support phase or flux re-solve. | `INV-LANDSURFACEENERGY-144/151`, `SC-SURFACELIQUID-001#INV-SURFACELIQUID-028`, `SC-WATBAL-001#INV-WATBAL-103` | `[DIRECT][Static] + [INFERENCE][Static]` | phase split/receipt/current-ingress/exact-surface/rollback test | `LSEB-E-047/048/050` with complete rollback |
+| `INV-LANDSURFACEENERGY-157` | A heterogeneous V3 water-protocol finalization joins the accepted native frozen-litter phase owner to ordinary surface withdrawals without replacing either custody chain. Native litter vapor rows already consumed by the phase receipt are matched and excluded exactly; every remaining ordinary finalized-use row is authenticated against its request and authorization and debits the phase-adjusted V2 liquid owner exactly once, in canonical key order, before the one current-ingress call. Native phase/spill/ice/enthalpy custody is retained unchanged and no energy operand is replayed or synthesized. | `SC-SURFACELIQUID-001#INV-SURFACELIQUID-004/018/028/029` + transaction atomicity | `[DIRECT][Static] + [INFERENCE][Static]` | typed row partition/V2 resource join/one-ingress/rollback test | `LSEB-E-047/048/050` or typed surface protocol failure with complete rollback |
+| `INV-LANDSURFACEENERGY-158` | The V16 exact-surface owner and receipt order every record/operand group by authenticated configuration topology rank of `ofe_id`, then by the existing within-OFE surface key and operand kind/ordinal. OFE IDs are opaque: neither lexical comparison nor numeric parsing is topology authority. Bare envelope validation may prove schema, digest, uniqueness, and lineage, but installable canonical order is established only at the exact configuration join; stale configuration/digest, omission, duplication, substitution, or topology-relative reorder rejects atomically. | `SC-SURFACELIQUID-001#INV-SURFACELIQUID-014/023/030` + exact-owner transaction authority | `[DIRECT][Static] + [INFERENCE][Static]` | topology-ranked owner/receipt/configuration join and multi-digit OFE tests | `LSEB-E-050` / `SURFACELIQUID-E-012` with complete rollback |
+| `INV-LANDSURFACEENERGY-159` | Trusted in-process LSE custody may move an already fully validated immutable resident/candidate revision through a private nonserializable typed handoff instead of serializing and reparsing it. The proof binds schema/model/configuration, complete state/envelope digest, transaction/predecessor/support, and—where retained publication history exists—the exact prefix count, head, tail, and chain digest. Within one admitted terminal parent, the same invariant permits: one private generation-bound plan for validated immutable configuration/topology/index facts; one per-map proof from the existing first exact forcing validation to the later validation of that pointer-identical forcing object; and one per-map borrowed proof sourced from the existing fully validated `FrozenLitterV3Resident` revision for the exact native V3 LSE and V2 surface objects. The resident proof is consumed at the existing native-validation position after V8 and ingress-schedule derivation; V8 does not attest to those distinct resident objects. Every map still validates support, duration, transaction, joint, all map-dynamic LSE/surface/vegetation/BGC/soil/hydrology/lower-boundary state, residuals, solver results, and outputs afresh. No ephemeral plan or per-map proof is digest-only, wire, cloneable, mutable, transferable, or restart-capable. The existing private validated revision may clone only inseparably with its exact immutable whole resident; it is never independently exposed as map authority. Every resident mutation fully validates the successor before atomically advancing its validated revision. Restart/checkpoint, external bytes, durable publication, and untrusted-executor returns always receive fresh full semantic validation and canonical reconstruction. | `INV-LANDSURFACEENERGY-151/153/154/156/157/158/161` + `SC-SURFACELIQUID-001#INV-SURFACELIQUID-031` + `SC-SNOWENERGY-001#INV-SNOWENERGY-083/086` + `SC-COUPLEDTIME-001#INV-COUPLEDTIME-030` | `[INFERENCE][Static]` | private validated resident/resource typestate, parent-static structural plan, per-map forcing proof, resident-revision-sourced native proof, append-only tail validator, mandatory boundary validators | `LSEB-E-040/047/048/050` with complete rollback |
+| `INV-LANDSURFACEENERGY-160` | A fully validated snow-free V11 provisional execution may transfer its immutable LSE physical ending through one private move-only proof to the final accepted-slab transaction. The final path may reseal only slab/receipt-dependent identities and must not repeat phase-free evaluation, litter phase, current ingress, WB14, soil evaluation, or any energy equation. Exact physical operands, owner bytes, support, topology, configuration, predecessor, and non-slab lineage must match; the final LSE owner and complete owner set must equal the provisional physical ending byte-for-byte. The proof is single-use and absent from restart, checkpoint, receipt, publication, and wire. | `INV-LANDSURFACEENERGY-151/153/155/156/157/159` + `SC-COUPLEDTIME-001#INV-COUPLEDTIME-029` | `[INFERENCE][Static]` | private snow-free physical-reuse typestate, exact final reseal/reconstruction, physical-provider call counter, restart and poison gates | `LSEB-E-040/047/048/050` with complete rollback |
+| `INV-LANDSURFACEENERGY-161` | Every charged covered map validates its ordinary or native physical LSE/hydrology/soil prefix and exact custody. Role and regime dispatch are orthogonal: ordinary maps execute the admitted surface/WB14 physical branch; native represented-snow maps execute the native snow/LSE/soil branch and validate byte-retained inactive litter/WB14 custody. `Initial` returns a physical-only endpoint; every later charge returns a non-Clone pending adjudication map only after custody validation. Outer nonclosure consumes it into history without error, dependent-only nonclosure into typed rejection, or full closure consumes the same physical prefix once into V8/vegetation/BGC/joint and complete-owner construction as the `FinalAccepted` disposition. No additional final physical map exists, and no completed nonfinal endpoint can be promoted. No map publishes. | `SC-SNOWENERGY-001#INV-SNOWENERGY-086` + `INV-LANDSURFACEENERGY-154/155/156/157/159` | `[INFERENCE][Static]` | custody-before-pending physical typestate, orthogonal role/regime dispatch, exclusive disposition and final-only constructors, exact differential and rollback guards | outer nonclosure -> history, no error; dependent-only nonclosure/wrong role/ordinal -> `DirectV11RealConsumerError::AdaptiveRefinement`; wrong identity/regime/topology/custody/disposition/leak -> `DirectV11RealConsumerError::Identity`; physical and final-constructor failures retain `LSEB-E-020/040/047/048/049/050`; complete rollback, no promotion/fallback |
+| `INV-LANDSURFACEENERGY-162` | In a validated represented-snow covered solve, the ground and soil temperature equations are exact identity anchors and those coordinates affect no other normalized residual. Their canonical minus-then-plus Jacobian probes may therefore reuse the current complete residual vector, replacing only the probed anchor residual with the exact full-evaluator expression. Trial-domain admission, finite-difference stencil and arithmetic, dense Jacobian bits, LU/pivot/backtracking order, convergence, diagnostics, accepted result, and first-error precedence remain identical; every other coordinate and every non-Stage-3 regime uses the complete evaluator. | `INV-LANDSURFACEENERGY-108/138/154/159` | `[INFERENCE][Static]` | private same-solve validated Stage-3 anchor proof, exact full-evaluator differential oracle, evaluator-call counter, boundary/domain poisons | any unproved dependency or identity mismatch uses the complete evaluator; no analytic derivative, approximation, fallback, or error suppression |
+| `INV-LANDSURFACEENERGY-163` | Within one covered-occupancy evaluation, the internal beta-one maximum-demand leaf state may reuse the already successful current leaf state only when every call operand is bit-identical because current beta is exact binary64 `1.0`, or when the returned private gas branch is `Inactive` or `ExactZeroPar` and that branch provably does not read beta. Sun-before-shade and current-before-maximum error precedence, equations, tolerances, residuals, branches, Jacobian, solver, and results remain bit-identical. | `INV-LANDSURFACEENERGY-108/138/162` + deterministic V10 leaf-gas branch authority | `[INFERENCE][Static]` | private same-evaluation `LeafTrialState`, exact beta predicate, beta-independent branch classifier, exhaustive-call differential oracle and call counter | every other branch or beta executes the complete beta-one call; no cross-evaluation cache, approximation, fallback, or suppressed error |
+| `INV-LANDSURFACEENERGY-164` | Within one validated represented-snow Jacobian sweep, a canonical sun-leaf, shade-leaf, wet-surface, or dry-stem temperature probe may reuse private successful same-iteration node results only when a topology-generic static transitive dependency graph proves those nodes unreachable from the sole changed coordinate. Every reachable node executes one shared canonical evaluator node/tail implementation in the exact complete-evaluator arithmetic and source order. Canonical probe construction/admission, residual order and bits, dense Jacobian/LU/pivots/bounds/backtracking, errors, trajectory, diagnostics, and output remain bit-identical. | `INV-LANDSURFACEENERGY-101/108/138/154/162` + reciprocal-longwave and liquid-routing authority | `[INFERENCE][Static]` | immutable sweep base, single-use signed-probe capability, versioned/hashed topology graph, forced-complete oracle, scoped and aggregate counters, normative fallibility/crossability matrix | ordinary ineligibility or conservatively unknown edges select complete evaluation before replay; private integrity mismatch fails typed; any post-start error returns directly; no synthetic fault hook, duplicated physics math, analytic/AD derivative, coloring, sparse solve, cache, approximation, recovery fallback, or error suppression |
 
 Guard-map enforcement in version 1 is the contract-derived integration test
 and package review. Runtime mappings are intentionally future obligations; an
@@ -278,6 +291,17 @@ evidence artifact before promotion.
 | `INV-LANDSURFACEENERGY-139` | covered-column first-domain-valid-halving no-update witness | runtime/test | after the full trial fails the existing no-update witness by domain or governed-step refusal, accept the unchanged current iterate only when the complete current residual vector and every governed first-halved prospective step pass; otherwise retain strict-decrease update or typed numerical rejection | covered solver contract/unit/runtime vectors plus interior-terminal real consumer |
 | `INV-LANDSURFACEENERGY-150` | `SoilThermalOwnerEnvelopeV2`, exact aggregation/rounding, typed energy-credit receipt, restart/checkpoint replay, complete-owner join, and real consumers | runtime/test/governance | canonical finite exact total and atomic install, or `LSEB-E-049`; blocked promotion until WAT5, `p61`, and native-forest consumers pass | exact-carry focused vectors, split-restart equivalence, rollback hashes, and three real-consumer gates |
 | `INV-LANDSURFACEENERGY-151` | `LseSurfaceEnthalpyOwnerEnvelopeV1`, exact surface-energy operand aggregation, immutable V2/V3 high-mirror join, restart/checkpoint replay, `SurfaceLiquidCompleteOwnerProjectionV4`, and real consumers | runtime/test/governance | canonical finite exact total and atomic install, or `LSEB-E-050`; blocked promotion until `p61` and native-forest consumers pass | exact surface-carry vectors, split-restart equivalence, rollback hashes, and two real-consumer gates |
+| `INV-LANDSURFACEENERGY-153` | exact-surface receipt ending-posture and parent/child-support validator plus V3/V2 mirror join | runtime/test/governance | deterministic partial/final lineage or `LSEB-E-050` / `SURFACELIQUID-E-012` with byte-exact rollback | first/middle/final child, mid-parent restart, wrong posture/bounds/mixed marker/early advance, rollback |
+| `INV-LANDSURFACEENERGY-154` | immutable represented-snow classifier, standard Stage-3 covered-column charge, native identity/receipt join, inactive-litter custody validator, and terminal split | runtime/test/governance | one charged standard map or typed rejection with byte-exact owner rollback | typed classification, zero litter-phase calls, exact optical/lower-boundary retention, no second envelope, unchanged V3/V4 bytes, snow-free transition |
+| `INV-LANDSURFACEENERGY-155` | unpublished-continuation constructor, typed V3 candidate-only soil-beginning branch, non-owner projection guard, complete outer replay, and single owner/restart install | runtime/test/governance | authenticated private read or `LSEB-E-049`; no intermediate owner; byte-exact rollback | contiguous support, predecessor-trial substitution, owner/restart-byte absence, exact final replay, one install, rollback |
+| `INV-LANDSURFACEENERGY-156` | bounded-phase raw/retained/spill splitter, typed phase-source receipt, V3 current-ingress handoff, named exact-surface debit operand, and independent mass/enthalpy replay | runtime/test/governance | exact spill and one WB14 handoff or typed `LSEB-E-047/048/050`; no owner mutation on failure | zero/below/at/above capacity, melt-created spill, mass/enthalpy and area-basis closure, receipt/support/transaction/key substitution, no-resolve, one ingress, rollback |
+| `INV-LANDSURFACEENERGY-157` | typed native-phase versus ordinary-finalized-use partition, phase-adjusted V2 resource join, canonical ordinary debit, and single current-ingress continuation | runtime/test/governance | every finalized row consumed exactly once under its original custody or typed rejection; no resource replacement or owner mutation on failure | heterogeneous open/covered batch, zero/nonzero ordinary rows, native-row replay, duplicate/omitted/foreign row, canonical order, one ingress, rollback |
+| `INV-LANDSURFACEENERGY-158` | topology-ranked V16 exact-surface owner records and accepted operand groups at the authenticated configuration join | runtime/test/governance | accept opaque multi-digit OFE identities in configuration order; reject duplicate/omitted/substituted/stale/reordered custody with rollback | topology `ofe-9 -> ofe-10`, reverse/nonmonotone IDs, within-OFE order, duplicate/omission/substitution, stale digest, rollback |
+| `INV-LANDSURFACEENERGY-159` | private immutable validated resident/resource handoff, parent-static structural plan, per-map forcing proof, and resident-revision-sourced native proof with exact pointer, revision, generation, configuration, topology, and lineage binding | runtime/test/governance | join each proof only at the validation position it replaces; every map freshly validates exact forcing once and all map-dynamic surfaces; every resident successor and every restart/external/durable/untrusted boundary receives full validation | O(1) resident install, append-tail validation, one parent-static plus one forcing/dynamic validation per map, native proof consumption only in native regimes, structural/native object poisons, proof reuse/transfer, combined first-error poisons, restart replay, rollback |
+| `INV-LANDSURFACEENERGY-160` | private snow-free provisional-physical ending consumed by the exact final accepted-slab reseal | runtime/test/governance | execute energy and coupled owner physics once; reseal only final receipt identities or reject atomically | exact direct-versus-reuse owner bytes, one provider/phase/ingress/WB14/soil call, non-slab poisons, single-use/restart rejection, rollback |
+| `INV-LANDSURFACEENERGY-162` | represented-snow ground/soil anchor classifier and exact probe-residual assembler | runtime/test | bit-identical full-evaluator residual vectors and Jacobian or complete-evaluator path; typed existing domain/error precedence | full-evaluator differential oracle, centered/inward stencil vectors, dependency poisons, evaluation-call counts, authentic runner parity |
+| `INV-LANDSURFACEENERGY-163` | private covered-leaf maximum-demand exact-reuse classifier | runtime/test | reuse only an identical successful leaf result or execute the unchanged complete beta-one call | per-branch and exact-beta differential oracle, call counts, boundary probes, typed-error precedence, authentic runner parity |
+| `INV-LANDSURFACEENERGY-164` | versioned/hashed topology-generic component-temperature graph, immutable sweep base and single-use signed-probe replay through one shared canonical evaluator tail | runtime/test | select complete evaluation before replay on ordinary ineligibility; otherwise replay reachable nodes in source order or fail directly on integrity/post-start error | forced-complete oracle, exact direct-edge graph, normative fallibility/crossability matrix, source-real error/rollback corpus, scoped/aggregate buckets, reciprocal-longwave, duplicated wet routing, terminal descendants, full-solve/release parity |
 | `INV-LANDSURFACEENERGY-041` | provenance/no-proxy review | governance | blocked promotion | baseline map + reviews |
 | `INV-LANDSURFACEENERGY-042` | future recipient-specific radiation ledger and poison vectors | runtime + test | blocked promotion on omitted, duplicated, or aliased recipient | vegetation/LSE integration package |
 | `INV-LANDSURFACEENERGY-043` | future latent mass-energy lineage join | runtime + test | blocked promotion on missing/mismatched `h_v`, duplicate debit, or amount/rate basis mismatch | vegetation/LSE integration package |
@@ -312,6 +336,62 @@ evidence artifact before promotion.
 - `OBL-LANDSURFACEENERGY-C-006`: the LSE exact-surface owner alone owns
   authoritative `U=exact(U_hi)+R_U`; frozen LSE V3 and surface-owner V2 fields
   are high mirrors only when joined through the V16 successor projection.
+- `OBL-LANDSURFACEENERGY-C-009`: prove represented-snow classification invokes
+  one standard Stage-3 covered-column map under native identities, retains its
+  exact optical/lower-boundary receipts, invokes no frozen-litter V3/V4 phase,
+  storage, ingress, or WB14 work, constructs no second inner envelope, retains
+  V3/V4 owner bytes, transitions to snow-free V3/V4 only after the exact
+  terminal split, and rolls back every owner on failure.
+- `OBL-LANDSURFACEENERGY-C-010`: prove an unpublished V2 continuation enters
+  LSE/V3 only as its typed authenticated physical read, emits no owner/restart
+  bytes and performs no intermediate install, rejects support/predecessor/
+  receipt substitution, and accepts only through one complete original-owner
+  replay and one atomic V2 owner/receipt/restart seal with full rollback.
+- `OBL-LANDSURFACEENERGY-C-011`: prove the post-phase raw litter liquid and
+  sensible enthalpy split into one within-capacity retained state and one typed
+  spill, with exact phase-receipt/transaction/support/key custody, one negative
+  exact-surface operand, one current-ingress/WB14 handoff, independent tile/OFE
+  mass and enthalpy reconstruction, no re-solve, and complete rollback.
+- `OBL-LANDSURFACEENERGY-C-012`: prove a heterogeneous V3 batch classifies and
+  consumes every finalized surface row exactly once: accepted native litter
+  vapor rows only through their phase receipts and all remaining authenticated
+  ordinary rows through one canonical debit of the phase-adjusted V2 owner
+  before one ingress. Prove no phase/spill/ice/enthalpy replacement or energy
+  replay, exact transaction/support/key/cardinality joins, and full rollback.
+- `OBL-LANDSURFACEENERGY-C-013`: prove V16 exact-owner records and operand
+  groups follow authenticated configuration-topology rank for opaque OFE IDs,
+  including `ofe-9 -> ofe-10`, and reject lexical/numeric-derived order,
+  duplicate, omission, substitution, within-OFE/operand reorder, stale
+  configuration/digest, and cross-owner topology mismatch with full rollback.
+- `OBL-LANDSURFACEENERGY-C-014`: prove a private immutable validated handoff
+  moves an unchanged frozen-litter resident and surface-resource candidate
+  without serialize/parse roundtrip or duplicate owner validation; binds the
+  exact configuration, revision, transaction, predecessor, support, and
+  publication-history prefix; validates only an authenticated appended tail;
+  invalidates on mutation; and retains fresh full validation for restart,
+  external/durable bytes, and untrusted-executor returns with full rollback.
+- `OBL-LANDSURFACEENERGY-C-015`: prove snow-free provisional/final execution
+  evaluates every LSE, litter-phase, surface-ingress/WB14, and soil physical
+  operator exactly once; the final accepted-slab path reseals identities only,
+  yields byte-identical final owners and one publication, rejects every changed
+  non-slab operand and any reused or post-restart proof, and rolls back exactly.
+- `OBL-LANDSURFACEENERGY-C-019`: on the authentic 52-map terminal-parent
+  workload, prove exactly one parent-static configuration/topology/index
+  validation, exactly 52 exact normalized-forcing validations, and exactly 52
+  fresh dynamic-map validations. Prove full-versus-admitted bitwise physical
+  and final-owner parity for every applicable Initial/history/final and
+  direct/Half1/Half2 role/path in ordinary, native, and multilane regimes;
+  ordinary maps must mint and consume zero native-resident proofs. Preserve
+  exact source call and first-error order. Independently poison structural and
+  native LSE configurations/states, structural and native surface
+  configurations/owners, generation, topology, index, support, duration,
+  transaction, joint, forcing pointer, same-digest/different-allocation,
+  resident revision, proof second-use, cross-map, cross-parent, and restart;
+  add competing-poison vectors across all ordered boundaries. Every rejection
+  has zero fallback/publication and byte-exact rollback. Executable evidence
+  must exercise the real carrier, first forcing validator, V8 structural seam,
+  ingress schedule, resident revision, and native-V3 consumer; fabricated
+  counters or source scanning alone cannot discharge this obligation.
 
 ## Symbol Alias Map
 
@@ -440,13 +520,67 @@ Real-consumer proof remains intentionally unsatisfied in version 1.
 | `INV-LANDSURFACEENERGY-122` | The successor uses only post-event snow-free operands and its exact accepted support. | chronology/operand lineage / `LSEB-E-043` |
 | `INV-LANDSURFACEENERGY-123` | Below-domain positive support rejects before Newton with exact owner rollback; zero support performs no physical solve. | preflight / `LSEB-E-041` |
 
+`OBL-LANDSURFACEENERGY-C-016` requires ordinary/native physical-prefix
+equality against a test-only forced-complete reference, zero nonfinal and one
+final V8/transaction/owner construction, exact provider counts, role/ordinal/
+identity/regime/topology/one-ULP poisons, unpublishability, and complete
+rollback without fallback.
+
+`OBL-LANDSURFACEENERGY-C-017` requires every represented-snow ground/soil
+anchor probe residual vector and dense Jacobian column to equal the complete
+covered evaluator bit-for-bit for centered and admitted inward stencils. It
+must prove unchanged minus-then-plus trial construction and domain admission,
+zero complete constitutive reevaluations for those anchor probes, complete
+reevaluation for every other coordinate and regime, dependency-invalidating
+poisons, unchanged first-error precedence, and authentic runner output/count
+parity.
+
+`OBL-LANDSURFACEENERGY-C-018` requires every field of the reused private leaf
+state, the complete covered evaluation, normalized residuals, frozen branches,
+and full solve outcome to equal an exhaustive beta-one-call oracle bit-for-bit.
+It must cover exact beta one, exact-zero-PAR, inactive, positive-PAR beta one
+ULP below one, centered and inward beta probes, call elimination only for the
+admitted cases, unchanged call order and typed-error precedence, and authentic
+runner output/count parity.
+
+`OBL-LANDSURFACEENERGY-C-020` requires an exact forced-complete differential
+oracle for every admitted component-temperature probe. It compares all replayed
+and retained node values, raw/tolerance/normalized residual vectors, dense
+Jacobian bits, branch identities, first errors, full potential/final solves,
+diagnostics, accepted output and rollback. The matrix covers centered and inward
+bounds, all wet/gas/zero-area branches, the normative fallibility/crossability
+classes, every naturally occurring first error, a real two-occupancy/six-soil-
+node Stage-3 fixture, reciprocal longwave between every component, and upper-
+wet-temperature effects routed into every lower occupancy. It requires one
+shared canonical evaluator tail, an independently enumerated complete direct-
+edge graph oracle, exact no-proxy custody, and truthful map/solve/sweep audit
+identities and lifecycle semantics. Crossable errors use source-real paired
+error/rollback vectors; noncrossable fallible nodes use implication proofs and
+authentic boundary successes; infallible nodes never receive synthetic errors.
+That fixture's full interior centered sweep reports exactly 58 ordered logical
+probes: 14 existing synthesized identity-anchor probes, 16 component dependency
+replays, and 28 complete probe evaluations. The eight hydraulic, four beta, and
+two shared-canopy-air columns retain complete evaluation.
+
 ## Binding Exposure Index
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
 |---|---|---|---|---|---|---|
 | `LSE-CHILD2C-SUCCESSOR` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-121, INV-LANDSURFACEENERGY-122, INV-LANDSURFACEENERGY-123` | `flagged-binding-addition` | Accepted event receipt, post-event-only operands, and pre-Newton covered-forest support admission; no storage arithmetic change. |
-| `LSE-V15-SOIL-THERMAL-EXACT-CARRY` | Version 15 Receiver-Owned Exact Soil-Enthalpy-Carry Amendment below | `active` | `new-INV` | `INV-LANDSURFACEENERGY-150` | `flagged-binding-addition` | Exact receiver representation and custody only; no process-physics, tolerance, chronology, or temporal-floor change. |
-| `LSE-V16-SURFACE-ENTHALPY-EXACT-CARRY` | Version 16 LSE Surface-Enthalpy Exact-Carry Amendment below | `active` | `new-INV` | `INV-LANDSURFACEENERGY-151` | `flagged-binding-addition` | Exact per-tile LSE representation/custody with frozen V2/V3 high mirrors; no process-physics, phase, tolerance, chronology, or temporal-floor change. |
+| `LSE-V15-SOIL-THERMAL-EXACT-CARRY` | Version 15 Receiver-Owned Exact Soil-Enthalpy-Carry Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-150` | `flagged-binding-addition` | Exact receiver representation and custody only; no process-physics, tolerance, chronology, or temporal-floor change. |
+| `LSE-V16-SURFACE-ENTHALPY-EXACT-CARRY` | Version 16 LSE Surface-Enthalpy Exact-Carry Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-151` | `flagged-binding-addition` | Exact per-tile LSE representation/custody with frozen V2/V3 high mirrors; no process-physics, phase, tolerance, chronology, or temporal-floor change. |
+| `LSE-STAGE3-NATIVE-CROSS-REGIME` | Represented-Snow Native-LSE Cross-Regime Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-154, OBL-LANDSURFACEENERGY-C-009` | `flagged-binding-addition` | One standard Stage-3 covered-column map under native identities; litter V3/V4 remains inactive and byte-retained until the exact snow-free transition. |
+| `LSE-V2-UNPUBLISHED-CANDIDATE-BEGINNING` | Candidate-Only V2 Soil-Beginning Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-155, OBL-LANDSURFACEENERGY-C-010` | `flagged-binding-addition` | Admits only a typed read-only unpublished soil beginning during candidate evaluation; publishable owner/restart custody is created once by complete final replay. |
+| `LSE-V3-LITTER-PHASE-CAPACITY-SPILL` | Exact V3 Litter-Phase Capacity-Spill Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-156, OBL-LANDSURFACEENERGY-C-011` | `flagged-binding-addition` | Binds one conservative post-phase liquid/enthalpy spill to current ingress and exact-surface custody; capacity normalization, condensation aliasing, and duplicate WB14 supply remain forbidden. |
+| `LSE-V3-HETEROGENEOUS-SURFACE-RESOURCE-JOIN` | Exact Heterogeneous V3 Surface-Resource Join Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-157, OBL-LANDSURFACEENERGY-C-012` | `flagged-binding-addition` | Applies only unmatched ordinary finalized uses to the accepted phase-adjusted V2 owner; native phase/vapor rows and spill custody are never replayed or replaced. |
+| `LSE-V16-TOPOLOGY-RANKED-EXACT-OWNER` | Topology-Ranked V16 Exact-Surface Owner Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-158, OBL-LANDSURFACEENERGY-C-013` | `flagged-binding-addition` | Exact owner and receipt order follows authenticated configuration topology, not lexical or parsed-numeric OFE IDs. |
+| `LSE-V24-VALIDATED-IN-MEMORY-HANDOFF` | Validated In-Memory LSE Custody Handoff Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-159, OBL-LANDSURFACEENERGY-C-014` | `flagged-binding-addition` | Private immutable revision-bound typestate may eliminate redundant trusted in-process serialization/validation; all trust boundaries retain full validation. |
+| `LSE-V25-SNOW-FREE-PHYSICAL-REUSE` | Snow-Free Final-Receipt Reseal Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-160, OBL-LANDSURFACEENERGY-C-015` | `flagged-binding-addition` | One private single-use provisional physical ending may reseal final slab identities without rerunning LSE or adjacent owner physics; exact owners, publication, restart, and rollback remain unchanged. |
+| `LSE-V27-PENDING-ADJUDICATION` | Covered pending-adjudication map amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-161, OBL-LANDSURFACEENERGY-C-016` | `flagged-binding-addition` | Initial and history maps remain physical-only; the converged pending map continues from its own LSE/hydrology/soil prefix into V8 and complete owner-envelope construction. |
+| `LSE-V28-STAGE3-ANCHOR-JACOBIAN` | Stage-3 Identity-Anchor Jacobian Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-162, OBL-LANDSURFACEENERGY-C-017` | `flagged-binding-addition` | Exact represented-snow ground/soil identity-anchor probe residuals may reuse the current complete residual vector; all probe coordinates, finite differences, solver operations, results, and errors remain bit-identical. |
+| `LSE-V29-LEAF-MAXIMUM-EXACT-REUSE` | Covered Leaf Maximum-Demand Exact-Reuse Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-163, OBL-LANDSURFACEENERGY-C-018` | `flagged-binding-addition` | A successful private current leaf state may satisfy the immediately adjacent beta-one maximum call only for bit-identical operands or a proven beta-independent branch; all other calls and all observable results remain unchanged. |
+| `LSE-V30-CARRIER-PARENT-STATIC-VALIDATION-ONCE` | Carrier Parent-Static and Same-Map Validation-Once Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-159, OBL-LANDSURFACEENERGY-C-019` | `flagged-binding-addition` | One generation-bound parent plan retains only validated immutable structure; the existing first forcing validation can authorize its later pointer-identical V8 use; and the resident's validated revision can authorize omission of only the repeated native V3/V2 validation. |
+| `LSE-V31-COMPONENT-TEMPERATURE-DEPENDENCY-REPLAY` | Component-Temperature Jacobian Dependency-Replay Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-164, OBL-LANDSURFACEENERGY-C-020` | `flagged-binding-addition` | Revision 31 introduces new IDs `INV-164/C-020`; private same-iteration evidence may replay only the transitive dependents of component-temperature probes, while all other probes and every solver operation remain complete and bit-identical. |
 
 ## Gap Register and Promotability Labels
 
@@ -1760,6 +1894,11 @@ exact-reconstruction/restart/rollback failure family.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-09-04 | 31 | Codex | Corrected the contract-first component-temperature dependency-replay feasibility after full production revert: replaced impossible every-node poisons with a normative fallibility/crossability matrix, source-real first-error/rollback evidence, one shared canonical evaluator implementation, complete direct-edge/custody/audit obligations, and retained canonical physics, complete hydraulic/beta/shared-air probes, dense solver behavior, errors, outputs, and rollback. |
+| 2026-09-04 | 30 | Codex | Extended existing `INV-LANDSURFACEENERGY-159` with one generation-bound terminal-parent structural-validation plan, one source-ordered forcing proof, and one same-map proof sourced from the native resident's validated revision; structural V8 and resident V3/V2 objects remain distinct, every map's dynamic state remains freshly validated, all trust boundaries retain full validation, and equations, tolerances, solver behavior, outputs, and wire formats are unchanged. |
+| 2026-09-04 | 28 | Codex | Admitted exact dependency reuse for represented-snow ground/soil identity-anchor Jacobian probes only; canonical probe coordinates, domain admission, finite-difference arithmetic, dense Jacobian bits, solver order, results, and errors remain unchanged. |
+| 2026-09-03 | 27 | Codex | Corrected final custody to consume the converged pending adjudication map's own LSE/hydrology/soil prefix once; no independently replayed final physical map or nonfinal promotion is authorized. |
+| 2026-09-02 | 26 | Codex | Split nonfinal covered-map physical endpoints from the independently charged final complete owner envelope; equations, operands, exact native identity, charge budget, wire, and rollback are unchanged. |
 | 2026-08-31 | 16 | Codex | Added a minimal LSE-owned exact per-tile surface-enthalpy companion `U=exact(U_hi)+R_U`, immutable V3/V2 binary64 high mirrors, exact named phase-free/fusion/retained-ingress tile-credit aggregation, one nearest-even finite high rounding, successor receipt/restart/checkpoint/projection custody, exact rollback and `p61`/native real-consumer gates, with no physics, phase, tolerance, chronology, or exact-60-floor change. |
 | 2026-08-30 | 15 | Codex | Added receiver-owned exact soil-layer enthalpy `E=exact(H_hi)+R`, canonical normalized signed-dyadic carry, exact accepted operand aggregation, one nearest-even finite high-term rounding, immutable V1-to-V2 zero-carry migration, versioned credit/restart/checkpoint custody, exact rollback, WAT5 sub-ULP and numeric/identity/restart/real-consumer gates, with no process-physics, tolerance, v14 chronology, or 60-second-floor change. |
 | 2026-08-30 | 14 | Codex | Admitted immutable snow-free forest-litter LSE V3 authority: phase-free V2 solve, separately finalized liquid/ice signed vapor, bounded 3300-second kinetic freeze/melt, exact equal-mass and fusion-energy closure with ending heat capacity, post-phase current ingress and liquid-only WB14, successor identities/restart/receipts/rollback, unchanged exact 60-second fallback, and mandatory p61/native real-consumer proof. |
@@ -1939,3 +2078,1088 @@ transitively derived receipts. V1 remains immutable and is not a V2 alias.
 This amendment remains default-off. It authorizes no production selector,
 default/output change, cutover, snow handoff, deployment, calibration, or
 empirical claim.
+
+## Canonical Stage-3 Accepted-Map Boundary Amendment
+
+`INV-LANDSURFACEENERGY-152` — When the canonical Stage-3 covered solver calls
+LSE as an authentic physical map, LSE retains its own `INV-138/139` covered
+column algorithm and `TOL-LSE-001/002` closure. The outer Stage-3 admission
+compares continuous LSE boundary payload under `TOL-SNOWENERGY-007`; it does
+not replace, relax, or select the LSE solver. The accepted payload is sealed
+once. Owner/receipt envelope, exact high-plus-carry representation, exact
+snow--soil debit/credit identity, topology, branch, transaction, and rollback
+remain exact under `INV-LANDSURFACEENERGY-150/151`.
+
+`OBL-LANDSURFACEENERGY-C-007` — The real covered consumer must reject a
+tolerance-equivalent payload with a changed branch/topology/owner envelope,
+reject any unequal or duplicated snow--soil transfer, and prove continuous
+boundary sensitivity through the actual Stage-3 admission seam without a
+second LSE algorithm or uncharged physical evaluation.
+
+### Profile integration
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | After native covered-column closure, return one authentic payload to the Stage-3 map; do not run an outer-algorithm-selected LSE successor. |
+| branch/guard | Same exact LSE branch/topology/owner envelope or typed `LSEB-E-049/050`; continuous outer comparison uses only `TOL-SNOWENERGY-007`. |
+| invariant guard map | `INV-LANDSURFACEENERGY-152` -> Stage-3 accepted-map boundary validator and exact snow--soil debit/credit join. |
+| test vector | `OBL-LANDSURFACEENERGY-C-007`: boundary/next-above, branch poison, duplicate heat, uncharged map, rollback. |
+| binding exposure | `LSE-STAGE3-CANONICAL-ACCEPTED-MAP`, active, `new-INV`, IDs `152/C-007`, dual review/verification. |
+| change log | 2026-09-01, contract 17: bound the canonical Stage-3 accepted-map boundary without changing native LSE physics or solver. |
+
+## Exact-Surface Parent-Local Chronology Amendment
+
+`INV-LANDSURFACEENERGY-153` — `LseSurfaceEnthalpyEnergyCreditReceiptV1`
+seals exact parent support bounds and one canonical ending posture:
+`ParentLocalPartial` when `child_end < parent_end`, or
+`PersistentParentFinal` when `child_end == parent_end`. The validator derives
+the posture from support; callers cannot select it independently.
+
+A partial child advances the authoritative exact `U_hi + R_U`, frozen-parent
+digests, owner-state digest, and exact receipt-chain digest, while every exact
+record retains the persistent predecessor transaction marker shared bit-for-
+bit by the frozen LSE V3 and surface-owner V2 mirrors. A final child stamps the
+child transaction exactly once across all three owners. Beginning exact-record
+markers equal the receipt predecessor in both postures. Mixed record markers,
+wrong parent bounds or posture, early physical-owner advance, final predecessor
+retention, omitted/duplicated exact operands, restart substitution, or replay
+rejects with `LSEB-E-050` / `SURFACELIQUID-E-012` and byte-exact rollback.
+
+The current pre-production V1 receipt wire adds the typed posture and parent
+bounds to its digest preimage and changes its schema digest. Earlier V1 receipt
+bytes fail closed; no implicit migration or compatibility parse is authorized.
+This is custody/chronology authority only and changes no energy equation,
+tolerance, temporal floor, or physical branch.
+
+`OBL-LANDSURFACEENERGY-C-008` — Prove first and middle partial children retain
+the predecessor while exact carry/state/receipt chain advance; the final child
+stamps the transaction once; mid-parent restart reproduces the same canonical
+bytes; wrong posture/bounds, mixed markers, early physical advance, final
+predecessor retention, and injected failure all reject with full rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Derive partial/final from sealed parent and child supports after authentic V4 physics, then advance exact carry and mirrors atomically. |
+| branch/guard | Partial retains predecessor; final stamps transaction once; mirror markers and exact owner remain identical. |
+| invariant guard map | `INV-LANDSURFACEENERGY-153` -> exact receipt schema/lineage validator, projection V4, restart, mirror join. |
+| test vector | `OBL-LANDSURFACEENERGY-C-008`: first/middle/final, split restart, marker/bounds/posture poisons, rollback. |
+| binding exposure | `LSE-V16-PARENT-LOCAL-CHRONOLOGY`, active, `new-INV`, IDs `153/C-008`, dual review/verification. |
+| change log | 2026-09-01, contract 18: typed partial/final exact-surface receipt chronology; unchanged physics/tolerances. |
+
+## Represented-Snow Native-LSE Cross-Regime Amendment
+
+`INV-LANDSURFACEENERGY-154` — Regime classification uses the immutable
+represented-snow state before any physical evaluation. `OPENWEPP_SNOW_FREE_LSE_V3`
+remains exclusively snow-free, and its V3 covered-column evaluator continues to
+reject a Stage-3 snow lower boundary. When represented Stage-3 snow owns the
+destination surface, the standard `INV-LANDSURFACEENERGY-138/139` Stage-3
+covered-column physics executes exactly once under the native vegetation and
+LSE owner identities. That charged map carries its own exact typed optical
+receipt and `CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered` lower-
+boundary receipt; neither may be copied from, inferred from, or replaced by an
+independent envelope.
+
+During that represented-snow map, snow is the sole atmospheric ground surface.
+Frozen-litter V3/V4 vapor exchange, liquid/ice phase work, surface-storage
+arithmetic, current-ingress adoption, and WB14 are inactive. The frozen-litter
+V3 physical owner, V4 exact-energy companion, their predecessor/receipt chains,
+and their canonical bytes are retained unchanged. A standard covered tile
+result may be embedded in the same heterogeneous native batch only as output of
+that one charged native-identity map; constructing or charging a second inner
+legacy LSE/hydrology envelope is forbidden.
+
+At the earliest accepted Stage-3 terminal event the parent is split exactly.
+The represented-snow child retains inactive litter custody; only a positive
+snow-free successor may invoke the snow-free V3/V4 litter path, exactly once on
+post-event operands. Missing or mismatched native identity, optical or lower-
+boundary receipt, any under-snow litter-phase/WB14 call or byte mutation, a
+second physical envelope, or failed terminal transition rejects atomically with
+the existing typed LSE/surface-custody error and byte-exact rollback. This
+amendment changes no equation, continuous tolerance, eight-map budget, temporal
+floor, or exact receipt comparison.
+
+`OBL-LANDSURFACEENERGY-C-009` — Prove typed represented-snow classification,
+one charged standard covered map, zero under-snow V3/V4 phase/storage/ingress/
+WB14 calls, exact optical and lower-boundary receipt retention, absence of a
+second constructor or charge, unchanged V3/V4 owner bytes, exact terminal
+transition to one snow-free successor call, poison rejection, and full rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Classify represented snow before evaluation; run one standard Stage-3 covered map under native identities, or the snow-free V3/V4 path after an exact terminal split. |
+| branch/guard | Represented snow keeps litter V3/V4 inactive and byte-retained; V3 rejects Stage-3 lower-boundary input; duplicate physical construction rejects. |
+| invariant guard map | `INV-LANDSURFACEENERGY-154` -> regime classifier, charged-map identity/receipt join, inactive-owner validator, and terminal split. |
+| test vector | `OBL-LANDSURFACEENERGY-C-009`: classification, zero phase calls, exact optical/lower receipt, no second envelope, unchanged bytes, transition, poison, rollback. |
+| binding exposure | `LSE-STAGE3-NATIVE-CROSS-REGIME`, active, `new-INV`, IDs `154/C-009`, dual review/verification. |
+| change log | 2026-09-01, contract 19: one native-identity Stage-3 covered map with inactive frozen-litter custody; unchanged physics/tolerances/budget. |
+
+## Candidate-Only V2 Soil-Beginning Amendment
+
+`INV-LANDSURFACEENERGY-155` — A
+`DirectSoilThermalUnpublishedContinuationV2` may construct one
+`SoilThermalUnpublishedPhysicalBeginningV2` only after authenticating the
+installed resident against the continuation's original prepared owner, the
+complete immutable owner/schema/model/run/configuration/topology identity, the
+exact predecessor unpublished trial and its ending-state/seal lineage, and the
+exact contiguous positive next-child support. Its transaction is the existing
+prepared soil transaction. Neither support nor transaction lineage may be
+rebound to the outer surface/LSE transaction.
+
+The constructed value is a borrowed constitutive read surface for one charged
+candidate-only LSE/V3 evaluation. A typed V3 soil-beginning discriminator must
+keep it distinct from the ordinary publishable owner-plus-restart branch. In
+the unpublished branch, no `SoilThermalOwnerEnvelopeV2`, restart, checkpoint,
+accepted credit receipt, receipt-free seal, or owner-shaped bytes may be
+constructed, serialized into the complete-owner projection, installed,
+persisted, or exposed as accepted custody. The candidate projection may retain
+only a typed non-owner custody record sufficient to replay the exact original
+prepared-owner digest, predecessor-trial seal, physical beginning-state digest,
+transaction/predecessor/receipt-chain identities, and child support; it cannot
+be accepted or restored as an owner.
+
+Final acceptance remains the sole promotion boundary. It must independently
+replay the complete original prepared owner plus every canonically accumulated
+accepted operand, require the exact selected physical ending and complete
+layer-credit chain, invoke the existing canonical unpublished-composition
+path, and seal exactly one `SoilThermalOwnerEnvelopeV2`, energy-credit receipt,
+restart/checkpoint identity, and atomic install. A candidate-only projection is
+replaced, never accepted beside the publishable projection. Support rebinding,
+owner-byte synthesis, private-trial promotion, intermediate or dual acceptance,
+proxy physics, receipt repair, or tolerance comparison of any identity rejects
+with `LSEB-E-049` and restores every owner byte.
+
+This amendment changes no soil constitutive equation, exact-carry arithmetic,
+physical operand, temperature projection, tolerance, Stage-3 budget, temporal
+floor, topology, or accepted restart wire. `SC-SOIL-001` process authority is
+unchanged; exact soil-thermal representation and custody remain owned here.
+
+`OBL-LANDSURFACEENERGY-C-010` — Prove the exact typed branch and constructor,
+contiguous support and predecessor-trial authentication, absence of owner/
+restart/checkpoint bytes and intermediate installation, complete accumulated-
+operand/physical-ending final replay, one owner/receipt/restart seal, rejection
+of rebinding/substitution/dual acceptance, and byte-exact rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Authenticate the continuation and construct a read-only unpublished physical beginning; evaluate privately; compose and seal the publishable V2 owner only at final acceptance. |
+| branch/guard | Exactly one of publishable owner+restart or unpublished non-owner beginning; no conversion or fallback between branches. |
+| invariant guard map | `INV-LANDSURFACEENERGY-155` -> continuation constructor, typed V3 input/projection, complete outer replay, single install. |
+| test vector | `OBL-LANDSURFACEENERGY-C-010`: exact child, support/predecessor/receipt poisons, no owner bytes, final replay, one install, rollback. |
+| binding exposure | `LSE-V2-UNPUBLISHED-CANDIDATE-BEGINNING`, active, `maps-to-existing-INV`, IDs `155/C-010`, dual review/verification. |
+| change log | 2026-09-01, contract 20: typed candidate-only unpublished V2 soil beginning and single final owner/restart promotion; unchanged physics/tolerances/wire. |
+
+## Exact V3 Litter-Phase Capacity-Spill Amendment
+
+`INV-LANDSURFACEENERGY-156` closes the already-required `litter overflow`
+handoff between bounded phase and current ingress. The existing V3 phase
+receipt remains the immutable raw bounded-phase image; it is not rewritten or
+accepted as an over-capacity surface owner. For each forest-litter tile,
+reconstruct the raw phase result from the accepted post-vapor state and phase
+receipt in the existing order:
+
+```text
+W_raw = W_l,* - m_freeze + m_melt
+W_i,end = W_i,* + m_freeze - m_melt
+U_raw = U_* + L_f*(m_freeze-m_melt)
+C_raw = C_dry + C_w*W_raw + C_i*W_i,end
+T_raw = T_ref + U_raw/C_raw.
+```
+
+If `W_raw<=W_l,max`, the typed spill is exact positive zero and the raw state
+is the retained state. If `W_raw>W_l,max`, construct one
+`LitterPhaseCapacitySpillV1` by the canonical checked binary64 operations:
+
+```text
+m_spill,tile = W_raw - W_l,max
+h_spill       = C_w*(T_raw-T_ref)
+Q_spill,tile  = m_spill,tile*h_spill
+W_retained    = W_raw - m_spill,tile
+U_retained    = U_raw - Q_spill,tile
+C_retained    = C_dry + C_w*W_retained + C_i*W_i,end
+T_retained    = T_ref + U_retained/C_retained.
+```
+
+Every operation must be finite, `m_spill,tile>0`, `0<=W_retained<=W_l,max`,
+and `C_retained>0`. The second subtraction is the authoritative remainder;
+`min`, clamp, saturation normalization, a tolerance snap, or discard is not
+the spill algorithm. Independent reconstruction must reproduce the raw phase
+mass from retained mass plus spill and the raw sensible enthalpy from retained
+enthalpy plus `Q_spill,tile`, using the declared operation order. The spill is
+liquid only; litter ice and fusion energy are not reclassified as runoff.
+
+The companion binds the original phase-receipt SHA-256, LSE configuration and
+surface-owner identity, transaction, exact child support, OFE/tile/surface/
+source key, `W_raw,U_raw,T_raw`, capacity, retained state, spill mass,
+`h_spill`, and `Q_spill`. It cannot be caller synthesized or labeled as a
+condensation credit. The phase-adjusted surface owner seals the retained state
+and its closure debits `m_spill,tile` exactly once. The V16 exact-surface owner
+adds exactly one named negative
+`LitterPhaseCapacitySpillEnergy` operand `-Q_spill,tile`, independently
+reconstructed from companion mass and temperature. This debit is in addition
+to, and ordered after, the unchanged phase-free and fusion operands.
+
+For current-ingress custody, checked area conversion produces
+`m_spill,ofe=f_t*m_spill,tile`; its parcel energy is
+`Q_spill,ofe=m_spill,ofe*h_spill`. One internally constructed
+`LitterPhaseOverflow` parcel uses the same transaction and full accepted child
+support `[0,dt)`, retains the exact source key and phase-receipt identity, and
+enters the ordinary SurfaceLiquid/WB14 mixing, infiltration, excess, retention,
+runoff, and topology routing path exactly once. The full-child support is the
+existing aggregate LSE-child timing authority; it may not be reassigned to a
+rainfall hour or another support. Any retained portion returns through the
+ordinary named retained-ingress energy receipt, never by cancelling or
+omitting the spill debit.
+
+Missing/duplicate spill, wrong phase receipt, key, capacity, transaction,
+support, area basis, sign, temperature, specific enthalpy, exact-surface
+operand, or WB14 receipt rejects before installation. A failed split, ingress,
+final replay, owner join, or publication preserves the complete LSE,
+surface-liquid, exact-enthalpy, soil, WB14 parent, receipt, and runner beginning
+bytes. The spill does not invoke a second vapor/phase evaluation, fixed point,
+water authorization, or same-support LSE solve and changes no phase equation,
+capacity, tolerance, temporal floor, or WB14 constitutive rule.
+
+`OBL-LANDSURFACEENERGY-C-011` — Prove zero/below/at/above-capacity cases,
+melt-created positive spill, exact raw-to-retained-plus-spill mass and sensible-
+enthalpy reconstruction, named negative exact-surface operand, checked tile/OFE
+basis conversion, full-child timing, one WB14 call/supply, retained/infiltrated/
+routed dispositions, phase/key/transaction/support/enthalpy substitution
+poisons, no same-support re-solve, and byte-exact rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Evaluate bounded phase once; split an over-capacity raw liquid ending into retained state plus typed spill; debit litter energy; admit the spill once to current ingress/WB14. |
+| branch/guard | `W_raw<=W_l,max` has zero spill; `W_raw>W_l,max` requires the complete typed spill and exact closure. Missing custody rejects; no clamp or condensation alias exists. |
+| invariant guard map | `INV-LANDSURFACEENERGY-156` -> pure spill splitter, phase companion, surface-owner closure, V16 exact debit, ingress receipt, WB14 and rollback joins. |
+| test vector | `OBL-LANDSURFACEENERGY-C-011`: capacity boundary sides, melt spill, exact closures, one ingress/WB14, substitutions, no-resolve, rollback. |
+| binding exposure | `LSE-V3-LITTER-PHASE-CAPACITY-SPILL`, active, `maps-to-existing-INV`, IDs `156/C-011`, dual review/verification. |
+| change log | 2026-09-01, contract 21: conservative typed post-phase litter capacity spill into current ingress; unchanged phase/WB14 equations, tolerances, floor, and prior receipt bytes. |
+
+## Exact Heterogeneous V3 Surface-Resource Join Amendment
+
+`INV-LANDSURFACEENERGY-157` governs a V3 batch containing both accepted native
+frozen-litter tiles and ordinary legacy open or covered surface withdrawals.
+The unified water protocol remains the sole authority for requests,
+authorizations, and finalized uses. The accepted native phase receipt remains
+the sole consumer of its phase-specific litter-vapor row. Match that row by
+the exact transaction, child support, OFE, tile, surface/source identity and
+checked tile-fraction/support aggregation, and remove it from further resource
+application. Its receipt-derived finalized amount `F` must satisfy the same
+`0<=F<=A<=D` custody relation as the unified protocol; `A` remains an upper
+authorization and need not be bit-identical to `F`. The finalized-use row is
+bit-identical to the receipt-derived `F`. A missing, duplicate, foreign, or
+out-of-bound native row rejects; it cannot be reclassified as ordinary.
+
+The complete unmatched surface set is the ordinary set. Every ordinary row
+must retain its original request/authorization/finalized-use identity and
+`0<=F<=A<=D`. Aggregate those rows in complete `GroundWaterKey` order and
+apply the existing checked `F/f_t` debit exactly once to the accepted
+phase-adjusted V2 liquid owner. The join is typed
+`SurfaceLiquidV2HeterogeneousResourceJoinV1`; it starts from that exact owner,
+not from an independently reconstructed legacy beginning, and produces the
+one resource candidate consumed by the existing one current-ingress call.
+Zero ordinary rows are the identity join.
+
+This is a mass-custody join, not a second LSE energy operation. The accepted
+LSE tile ending and native phase/exact-surface receipts already own vapor,
+fusion, and sensible-energy effects. The join retains native litter ice,
+surface enthalpy high mirrors and exact carry/receipt bytes, phase closure, and
+`LitterPhaseCapacitySpillV1` unchanged. The spill remains the separate internal
+`LitterPhaseOverflow` ingress parcel and never enters `finalized_uses`.
+Ordinary resource debit supplies no new parcel and no second enthalpy, latent,
+fusion, or exact-surface operand. Wholesale substitution of
+`accepted.surface_resource`, rebuilding from legacy owner bytes, phase-row
+replay, spill reclassification, capacity repair, and a second ingress are
+forbidden.
+
+The join authenticates one transaction and accepted child support, complete
+request/authorization/finalized-use cardinality, exact owner/configuration and
+predecessor lineage, row/store keys, source and area basis, finite amount, and
+canonical debit reconstruction. Every finalized row is accounted exactly once
+as soil, accepted native phase, or ordinary surface resource. Failure of the
+partition, debit, native receipt join, ingress, receiver closure, final owner
+join, or publication preserves every surface-liquid V1/V2, LSE V3/V16, soil,
+WB14 parent, spill, receipt, cursor, and runner beginning byte.
+
+`OBL-LANDSURFACEENERGY-C-012` — Prove a heterogeneous native/ordinary batch,
+zero and positive ordinary withdrawals, canonical order independence, exact
+ordinary mass closure, native-row exclusion and replay refusal, retained
+phase/spill/ice/enthalpy bytes, one resource candidate and ingress, rejection
+of omitted/duplicate/foreign/wrong-amount/transaction/support/key rows, and
+complete rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Partition finalized surface rows by accepted native phase receipt; apply the complete unmatched ordinary set once to the phase-adjusted V2 owner; execute the existing ingress once. |
+| branch/guard | Native phase rows must match and are never replayed; every other row is an authenticated ordinary finalized use. No wholesale resource replacement or untyped remainder is admitted. |
+| invariant guard map | `INV-LANDSURFACEENERGY-157` -> typed heterogeneous row partition, V2 resource join, canonical ordinary debit, one-ingress and rollback validators. |
+| test vector | `OBL-LANDSURFACEENERGY-C-012`: heterogeneous/identity cases, mass closure, native replay poison, row identity/cardinality poisons, retained receipt bytes, one ingress, rollback. |
+| binding exposure | `LSE-V3-HETEROGENEOUS-SURFACE-RESOURCE-JOIN`, active, `maps-to-existing-INV`, IDs `157/C-012`, dual review/verification. |
+| change log | 2026-09-02, contract 22: exact once-only ordinary finalized-use debit on the accepted native phase-adjusted V2 owner; unchanged LSE/phase/WB14 equations, tolerances, support, and energy receipts. |
+
+## Topology-Ranked V16 Exact-Surface Owner Amendment
+
+`INV-LANDSURFACEENERGY-158` binds canonical V16 exact-surface record and
+accepted-energy operand order to the authenticated configuration topology.
+For owner records, compare the rank of `surface_key.ofe_id` in the exact
+`SurfaceLiquidConfigurationV2.ofe_topology` first, then use the existing
+`DirectSurfaceLiquidStoreKey` order with `ofe_id` held equal. For operands,
+compare that owner-record rank first, then the existing operand kind and
+ordinal. `OfeId` remains an opaque identity. Its text is never parsed as a
+number and never compared lexically to infer topology. Therefore physical
+topology `ofe-9 -> ofe-10` is admitted exactly as configured, as are reverse,
+nonmonotone, and nonnumeric identifiers.
+
+`LseSurfaceEnthalpyOwnerEnvelopeV1` does not serialize a second topology; it
+seals the configuration digest and ordered record bytes. Its context-free
+validator therefore proves schema, digest form, unique keys, finite exact
+coordinates, state/receipt lineage, and beginning/ending sequence equality,
+but does not impose lexical OFE order. The existing authenticated frozen-
+parent/configuration join is the canonical-order authority: it validates the
+configuration and SurfaceLiquid V2 owner, requires the exact-owner record
+sequence to equal their complete topology-ranked sequence, joins LSE V3 keys,
+and rejects stale configuration or digest. Construction adopts that sequence;
+advance, receipt, restart/checkpoint, projection, and independent replay
+preserve it without sorting or rebinding.
+
+No relaxation of cardinality or custody is admitted. Duplicate, omitted,
+substituted, foreign, topology-relative reordered, or within-OFE reordered
+records; reordered operand groups; LSE/SurfaceLiquid topology disagreement;
+stale configuration/digest; or changed beginning/ending sequence rejects with
+`LSEB-E-050` / `SURFACELIQUID-E-012`. Failure preserves all exact owner/carry,
+high-mirror, physical owner, receipt, restart/checkpoint, WB14, and runner
+bytes. No schema field, energy arithmetic, constitutive result, tolerance,
+transaction, support, or chronology changes.
+
+`OBL-LANDSURFACEENERGY-C-013` — Prove exact adoption, advance, receipt,
+independent replay, restart/checkpoint, and projection for configured topology
+`ofe-9 -> ofe-10`; reverse/nonmonotone and nonnumeric opaque identifiers;
+multiple within-OFE records and operand kinds/ordinals; and unchanged exact
+energy bytes. Poison lexical/numeric-derived reorder, duplicate, omission,
+substitution, foreign OFE, within-OFE/operand reorder, stale configuration or
+digest, cross-owner topology mismatch, and beginning/ending reorder. Every
+failure proves complete rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Validate uniqueness without OFE spelling order; at the authenticated configuration join validate the complete topology-ranked owner sequence and topology-ranked operand groups. |
+| branch/guard | Configuration rank is the sole OFE ordering authority. Bare validation cannot promote bytes to installable custody, and lexical/numeric OFE inference is forbidden. |
+| invariant guard map | `INV-LANDSURFACEENERGY-158` -> exact-owner adoption/parser, frozen-parent/configuration join, receipt/restart/projection, independent replay, and installer. |
+| test vector | `OBL-LANDSURFACEENERGY-C-013`: multi-digit/opaque topology, within-OFE and operand order, duplicate/omission/substitution/reorder/stale-config poisons, rollback. |
+| binding exposure | `LSE-V16-TOPOLOGY-RANKED-EXACT-OWNER`, active, `maps-to-existing-INV`, IDs `158/C-013`, dual review/verification. |
+| change log | 2026-09-02, contract 23: authenticated configuration-topology rank replaces lexical OFE ordering for V16 exact-owner records and operands; unchanged wire schema, exact arithmetic, physics, and custody. |
+
+## Validated In-Memory LSE Custody Handoff Amendment
+
+`INV-LANDSURFACEENERGY-159` permits a trusted in-process consumer to receive
+the exact immutable object whose complete semantic validation has already
+succeeded. The authority carrier is private typed state, not serialized
+authority. It binds model/schema and authenticated configuration identity, the
+complete state or envelope digest, transaction, predecessor and support, and,
+for a retained frozen-litter publication history, the exact prefix count,
+first receipt, last receipt, and chain digest. It owns or immutably borrows the
+value, has no public or unchecked constructor and no mutable dereference, and
+cannot be persisted or reconstructed from a digest alone.
+
+Installing an unchanged `FrozenLitterV3Resident` may therefore move this typed
+validated resident directly rather than serialize and restore its complete
+publication history. An append operation validates the new support and its
+predecessor against the bound tail and produces a new validated revision; it
+does not revalidate the immutable prefix. Likewise, one fully validated V2
+surface-resource candidate may be consumed by its trusted ingress chain
+without repeatedly serializing the same three nested owner envelopes. Every
+mutation or replacement consumes the proof and requires full semantic
+validation of the resulting revision.
+
+An optional canonical byte/digest cache is derived only during validation,
+keyed to the exact configuration and immutable revision, must equal fresh
+canonical serialization, and is discarded on mutation. It is never wire,
+restart, checkpoint, receipt, or publication authority. Restart/checkpoint
+restore, external bytes, durable publication, and untrusted executor outputs
+still perform the existing full parse, canonical reconstruction, digest and
+semantic validation. In particular, the Stage 3 frozen-litter restart chain
+retains full prefix replay under `SC-SNOWENERGY-001#INV-SNOWENERGY-083`; no
+receipt, history row, owner join, or rollback check is removed.
+
+`OBL-LANDSURFACEENERGY-C-014` — Prove O(1)-with-history direct install of an
+unchanged validated resident, exact prefix retention, new-tail-only validation,
+and full restart history replay; resource-candidate validation once per
+revision and zero duplicate nested-owner serialization at trusted ingress;
+mutation/configuration/transaction/support/chain/proof-transfer poison
+rejection; byte-identical outputs; and complete rollback. Prove restart,
+external/durable bytes, and untrusted executor returns still receive fresh
+full validation.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Mint a private handoff only after complete semantic validation; move the unchanged resident/candidate or validate one appended tail; validate every changed revision anew. |
+| branch/guard | A cache is derived evidence only. Mutation invalidates it. Restart, checkpoint, external bytes, durable publication, and untrusted executor returns always take the full validator. |
+| invariant guard map | `INV-LANDSURFACEENERGY-159` -> validated resident/resource typestate, publication-prefix/tail join, revision-bound cache, mandatory boundary validators, atomic rollback. |
+| test vector | `OBL-LANDSURFACEENERGY-C-014`: 1/N-history O(1) install, tail append/poison, restart full replay, resource validation-once, zero repeat serialization, mutation/configuration/proof-transfer poisons, untrusted validation, equality, rollback. |
+| binding exposure | `LSE-V24-VALIDATED-IN-MEMORY-HANDOFF`, active, `maps-to-existing-INV`, IDs `159/C-014`, dual review/verification. |
+| change log | 2026-09-02, contract 24: admitted private immutable nonserializable validation-once handoffs while retaining complete validation at every restart, external, durable, and untrusted-executor boundary. |
+
+## Snow-Free Final-Receipt Reseal Amendment
+
+`INV-LANDSURFACEENERGY-160` admits no new physical result. The provisional
+snow-free V11 execution must first complete all existing validation and retain
+its exact immutable LSE, surface, hydrology, BGC, vegetation, and soil ending.
+A private move-only proof may then authorize the final accepted-slab pass to
+reconstruct and reseal only identities whose preimage contains the accepted
+slab receipt. Phase-free evaluation, litter phase, resource arbitration,
+current ingress, WB14, soil thermal, and every constitutive or conservation
+equation are forbidden in that final reseal.
+
+The proof binds the live beginning revision, parent/segment/slab ordinal,
+support and duration, configuration/topology, forcing and support receipt,
+beginning complete owners, all non-slab inputs, provisional slab identity, and
+the validated physical ending. Consumption requires an independently created
+final slab whose only permitted binding difference is its ending-owner-derived
+accepted-slab identity. The resealed final complete-owner bytes must equal the
+provisional physical ending exactly. The provisional pass publishes nothing;
+the final pass publishes exactly once. Missing, reused, stale, foreign,
+mutated, or restored proofs fail before owner mutation; restart always executes
+fresh physics and cannot serialize or recover the proof.
+
+`OBL-LANDSURFACEENERGY-C-015` requires forced direct-versus-reuse byte equality,
+one-call counters for every physical provider and adjacent owner operation,
+zero provisional and one final publication, exhaustive non-slab identity and
+physical-ending poisons, single-use rejection, pre/post-restart vectors, and
+complete rollback.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Fully validate one snow-free physical execution, consume one private proof to reseal final accepted-slab identities, compare exact ending owners, then publish once. |
+| branch/guard | The final reseal cannot call any physical evaluator; a missing or invalid proof is a typed failure with no replay fallback. Restart invalidates the proof and requires fresh physical execution. |
+| invariant guard map | `INV-LANDSURFACEENERGY-160` -> private physical-reuse typestate, accepted-slab-only delta validator, exact ending-owner comparison, provider/publication counters, restart and rollback gates. |
+| test vector | `OBL-LANDSURFACEENERGY-C-015`: direct/reuse equality, physical call count one, publication 0/1, non-slab/ending poisons, duplicate use, restart refusal/fresh evaluation, rollback. |
+| binding exposure | `LSE-V25-SNOW-FREE-PHYSICAL-REUSE`, active, `maps-to-existing-INV`, IDs `160/C-015`, dual review/verification. |
+| change log | 2026-09-02, contract 25: admitted one private single-use snow-free physical ending for final accepted-slab identity resealing; physical equations, exact owners, publication, restart, and rollback are unchanged. |
+
+## Covered Nonfinal Physical-Only Map Amendment
+
+`INV-LANDSURFACEENERGY-161` — The canonical covered-map evaluator retains its
+physical result in a private typed posture appropriate to the preselected
+regime. Role and regime dispatch are orthogonal. Every ordinary
+posture performs the unchanged projection, covered LSE, snow/soil lower-
+boundary, hydrology, surface/WB14-custody, and soil-candidate calculations.
+Every native represented-snow posture instead executes the existing native
+snow/LSE/soil branch, performs zero snow-free surface or WB14 physics, and
+validates byte-retained inactive litter/WB14 custody. Both validate their
+complete physical, identity, and discrete-custody relations. `Initial` stops at that validated
+endpoint. Every later charged role yields a non-Clone pending adjudication
+value only after those validations. Until that value is consumed into the final disposition, it does not
+project a V8 receipt, build vegetation
+persistent/material candidates, build a BGC candidate or ending joint, or
+construct a complete owner envelope. Outer nonclosure consumes the pending
+value into iteration history; dependent-only nonclosure consumes it into typed
+adaptive rejection. Full closure consumes the same pending value once as the
+`FinalAccepted` disposition and continues its own already-executed physical
+prefix through those custody constructors, producing a private publishable
+envelope but no enqueue, exposure, live-owner install, or publication.
+
+The represented-snow native V3/V4 branch remains distinct from the ordinary
+inner envelope: native physical-only evaluation requires both residents,
+nonempty Stage-3 native tiles, empty active litter tiles, exact optical and
+lower-boundary receipts, and byte-retained inactive litter/WB14 custody. A
+physical-only result is private, move-only, non-wire, non-owner, and has no
+installation or publication path. Wrong role, ordinal, regime, native posture,
+support, transaction, topology, forcing, soil predecessor, surface custody, or
+physical endpoint fails typed with exact rollback; duplicate or cross-
+disposition consumption and final construction failure cannot retry through a
+physical-only, history, or alternate-envelope path.
+
+| Amendment trigger | Typed failure and precedence |
+| --- | --- |
+| role, ordinal, or charged-map order mismatch | `DirectV11RealConsumerError::AdaptiveRefinement`, before LSE execution |
+| outer nonclosure | consume the pending map into history; no error |
+| dependent-only nonclosure | consume the pending map into `DirectV11RealConsumerError::AdaptiveRefinement`; no history or constructor |
+| support, transaction, topology, forcing, regime, native posture, predecessor, custody, promotion, or state-leak mismatch | `DirectV11RealConsumerError::Identity`, before pending minting or the affected constructor/exposure |
+| ordinary/native physical-prefix failure | retain the unchanged specific `LSEB-E-020/040/047/048/049/050` or nested hydrology/surface/soil error |
+| V8, vegetation, BGC, joint, serialization, or envelope construction failure | retain its unchanged typed downstream error and construct no complete envelope |
+| map-level publication attempt | coupled-time `ERR-CT-018 PublicationState`; expose nothing |
+
+Validation follows table order; downstream LSE error precedence is unchanged.
+
+`OBL-LANDSURFACEENERGY-C-016` — Compare every initial, history, rejected, and
+final-disposition physical prefix against a test-only forced-complete path
+exactly for ordinary and native represented-snow
+regimes, including precipitation, LSE, soil, surface/WB14, Stage-3, branch,
+topology, and receipt-custody fields. Prove final-only V8/vegetation/BGC/joint/
+envelope constructor counts, absence of those calls for history or rejection
+dispositions, one complete final envelope, one-ULP and identity poisons,
+unpublishability, and byte-identical rollback. Apply the SnowEnergy charge,
+physical-endpoint, exclusive-disposition, physical-failure, dependent-
+rejection, and final-constructor failure matrix exactly. Map-level
+publication is always zero; the selected composed parent publishes once only
+at atomic parent commit.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | Execute and validate one physical prefix per charged map; consume each post-initial pending value into history, rejection, or same-map final custody. |
+| branch/guard | Typed ordinary/native pending endpoints cannot cross regimes, be consumed twice, or enter owner/restart/publication APIs except through the successful final disposition. |
+| invariant guard map | `INV-LANDSURFACEENERGY-161` -> orthogonal role/regime dispatcher, ordinary/native physical-prefix evaluator, native V3/V4 custody-before-pending validator, pending disposition gates, final-only V8/vegetation/BGC/envelope constructors, separate envelope/parent-publication counters, rollback gate; outer nonclosure -> history/no error, dependent-only nonclosure/role -> `AdaptiveRefinement`, identity/regime/custody/disposition/leak -> `Identity`, downstream failures retain existing typed variants. |
+| test vector | `OBL-LANDSURFACEENERGY-C-016`: exact differential prefix, ordinary/native regime matrix, exclusive dispositions, success/failure constructor counts, role/identity/ULP poisons, zero map publication, parent-only publication, unpublishability, rollback. |
+| binding exposure | `LSE-V27-PENDING-ADJUDICATION`, active, `new-INV`, IDs `161/C-016`, dual review/verification. |
+| change log | 2026-09-03, contract 27: the converged pending adjudication map continues from its own physical prefix into complete owner custody; no final physical replay is authorized. |
+
+## Stage-3 Identity-Anchor Jacobian Amendment
+
+`INV-LANDSURFACEENERGY-162` applies only after the immutable covered-column
+inputs and the represented-snow lower boundary have passed their complete
+same-solve validation. In that regime the ground-temperature residual is
+exactly
+
+```text
+(T_ground - T_snow) / 1e-9
+```
+
+and soil-temperature residual `i` is exactly
+
+```text
+(T_i - T_i,beginning) / 1e-9.
+```
+
+The represented-snow evaluator uses the boundary snow temperature—not the
+ground coordinate—for reciprocal longwave, uses the boundary sensible and
+vapor fluxes for the shared-air equations, and performs no ground vapor,
+storage, or soil-conduction solve. Consequently each ground or soil coordinate
+changes only its matching identity-anchor residual.
+
+For one such Jacobian column, the canonical solver still constructs the exact
+current-derived minus trial first and plus trial second using the unchanged
+`sqrt(epsilon)*max(abs(x_i),unit_scale_i)` perturbation. It validates the
+current and both trials through the existing covered-trial domain rule and
+selects the unchanged centered or unique inward stencil. For each admitted
+probe it copies the current complete normalized residual vector and replaces
+only the matching anchor entry with the exact expression above, evaluated in
+the same subtraction-then-division order as the complete evaluator. The
+existing finite-difference function consumes those values; an analytic
+derivative, sparse solve, changed operation order, or tolerance shortcut is
+not authorized.
+
+Every non-anchor coordinate, every ordinary or snow-free regime, every base
+evaluation, and every prospective or backtracking evaluation retains the
+complete evaluator. Missing or unvalidated Stage-3 boundary authority cannot
+select the anchor path. If any residual dependency is introduced or cannot be
+proved exactly, the implementation must use the complete evaluator rather
+than approximate, cache across mutation, suppress an error, or install a
+fallback. Unknown/residual ordering, dense Jacobian layout and bits, pivot
+classification, LU, backtracking, convergence, diagnostics, output, receipts,
+and first-error precedence remain those of `INV-LANDSURFACEENERGY-108/138`.
+
+`OBL-LANDSURFACEENERGY-C-017` — Compare the optimized probe residual vectors
+and resulting dense Jacobian columns with forced complete-evaluator results
+bit-for-bit for ground and every soil coordinate, centered and admitted inward
+stencils, multiple current iterates, and Stage-3 boundary/soil-anchor poisons.
+Prove canonical minus-then-plus trial construction and domain rejection,
+complete-evaluator call elimination only for admitted anchor probes, complete
+reevaluation for all other coordinates/regimes, unchanged solver outcome and
+diagnostics, and authentic runner output, closure, map-count, and publication
+parity.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | For a validated represented-snow ground/soil column, construct and admit the canonical probes, replace only the matching exact anchor residual in the current complete vector, then use the existing finite-difference operation. |
+| branch/guard | Private same-solve Stage-3 proof and exact anchor index are mandatory; all other columns/regimes use the complete evaluator, and any unproved dependency forbids reuse. |
+| invariant guard map | `INV-LANDSURFACEENERGY-162` -> private validated boundary proof, ground/soil anchor classifier, exact probe-residual assembler, canonical stencil and dense-Jacobian path. |
+| test vector | `OBL-LANDSURFACEENERGY-C-017`: full-evaluator residual/Jacobian bit parity, centered/inward/domain vectors, dependency poisons, evaluation-call counts, authentic runner parity. |
+| binding exposure | `LSE-V28-STAGE3-ANCHOR-JACOBIAN`, active, `new-INV`, IDs `162/C-017`, dual review/verification. |
+| change log | 2026-09-04, contract 28: exact represented-snow ground/soil identity-anchor probe reuse; unchanged equations, probes, Jacobian, solver, errors, outputs, and custody. |
+
+## Covered Leaf Maximum-Demand Exact-Reuse Amendment
+
+`INV-LANDSURFACEENERGY-163` applies only within one invocation of the covered
+occupancy evaluator after its current sun or shade `leaf_trial_state` call has
+succeeded. The internal maximum-demand call uses the same leaf inputs,
+biochemical constants, temperature, canopy humidity, gas environment,
+boundary conductance, minimum conductance, and Medlyn parameter, changing only
+beta to exact binary64 `1.0`.
+
+The successful private `LeafTrialState` may be copied as the maximum-demand
+state only when either current beta is bit-identical to exact `1.0`, so every
+operand is identical, or its returned gas branch is `Inactive` or
+`ExactZeroPar`. Those two admitted branches complete before beta participates
+in any operation and therefore return the same state for the beta-one call.
+`RespirationDominated`, `PositiveAssimilation`, and every unclassified branch
+retain the complete beta-one evaluation unless beta itself is exact one.
+
+Current sun and shade calls remain first and keep their existing order. Each
+maximum result remains logically ordered sun then shade; a non-reused maximum
+executes the unchanged function in that position. A failed current call is
+never reused. The proof is the successful private `Copy` state in that same
+stack evaluation; it is not a public capability and cannot cross an evaluator,
+trial, Newton iteration, mutation, restart, serialization, or publication
+boundary. Leaf equations, arithmetic, gas branches, maximum demand, hydraulic
+residuals and tolerance, all other normalized residuals, finite differences,
+dense Jacobian, LU/backtracking/convergence, results, diagnostics, and typed
+first-error precedence remain bit-identical. Approximation, tolerant beta
+comparison, additional branch admission, persistent caching, and fallback are
+forbidden.
+
+`OBL-LANDSURFACEENERGY-C-018` requires a forced-exhaustive test oracle that
+always performs the beta-one calls and compares every private leaf-state field,
+complete covered evaluation and normalized residual, frozen branch, and full
+solve result bit-for-bit. It covers exact beta one, inactive,
+exact-zero-PAR, positive-PAR beta one ULP below one, centered and inward beta
+probes, success and typed-error precedence, exact call counts, and authentic
+release output, closure, map-count, and publication parity.
+
+| Profile surface | Binding |
+| --- | --- |
+| algorithm step | After a successful current leaf call, copy its private state for the adjacent beta-one maximum only for exact beta one or an admitted beta-independent branch; otherwise execute the complete maximum call. |
+| branch/guard | Exact `to_bits` beta predicate or returned `Inactive`/`ExactZeroPar` branch is mandatory; all other cases perform the existing call, with no cache or fallback. |
+| invariant guard map | `INV-LANDSURFACEENERGY-163` -> private same-evaluation leaf state, exact classifier, exhaustive-call oracle, invocation audit. |
+| test vector | `OBL-LANDSURFACEENERGY-C-018`: every-field and complete-evaluation/solve bit parity, exact-beta and branch matrix, centered/inward probes, call order/count, typed-error precedence, authentic runner parity. |
+| binding exposure | `LSE-V29-LEAF-MAXIMUM-EXACT-REUSE`, active, `new-INV`, IDs `163/C-018`, dual review/verification. |
+| change log | 2026-09-04, contract 29: exact same-evaluation reuse of already successful bit-identical or beta-independent leaf states for internal beta-one maximum demand; unchanged equations, solver, outputs, errors, and custody. |
+
+## Carrier Parent-Static and Same-Map Validation-Once Amendment
+
+This version extends the already admitted private validation-once custody of
+`INV-LANDSURFACEENERGY-159`; it creates no new invariant and no solver version.
+Within one already admitted terminal parent, one private non-Clone, non-wire,
+generation-bound structural plan may retain only successful semantic
+validation and deterministic indexes for immutable LSE and surface
+configuration plus authenticated OFE/tile/occupancy topology. It never attests
+to structural V8 state or to the distinct native resident's V3 LSE
+configuration/state or V2 surface configuration/owner. It owns no mutable
+runtime state, cannot be constructed from digests alone, and is absent from
+restart, checkpoint, serialization, receipt, publication, and external APIs.
+
+Plan construction is lazy at the first structural validation that an admitted
+charged map reaches. If the parent has no charged map, no plan is minted and no
+new validation occurs. Each plan join occurs at the exact configuration,
+topology, or index check it replaces, after every existing carrier guard that
+precedes that check; no plan join is hoisted ahead of support, duration,
+transaction, joint, or forcing errors. On first use, the canonical full
+validation at that position executes in its unchanged order. Failure returns
+the same first typed error and leaves the parent and every owner byte-identical.
+A successful plan binds the exact live parent generation, configuration,
+topology, and index-source objects. Later maps may omit only those immutable
+checks while every binding remains exact. Generation change, replacement,
+equal-digest substitution, mutation, or transfer rejects at the original check
+position without reconstructing a plan or falling back.
+
+Every charged map retains the source-real order:
+
+1. Run every existing carrier child/joint, support, duration, transaction,
+   vegetation, receipt, boundary, prepared-input, and soil-read guard in its
+   current position. Join the structural plan only when the first replaceable
+   immutable structural check is reached.
+2. At the existing forcing-validation position before V8, validate and
+   canonically normalize that map's exact forcing. That first validation may
+   mint a private move-only map proof bound to the live forcing allocation,
+   transaction, support, generation, complete semantic digest, and normalized
+   values. Equal digest with a different allocation is not authority.
+3. Execute V8 projection in its current position. It freshly validates all
+   current-map structural state and dynamic vegetation, LSE, surface, BGC,
+   soil, hydrology, lower-boundary, and join surfaces. At V8's later validation
+   of the pointer-identical forcing, consume the forcing proof instead of
+   repeating only that validation. V8 neither receives nor attests to the
+   distinct native resident's V3 LSE or V2 surface objects.
+4. Derive the ingress schedule in its current fallible position after V8 and
+   before native projection.
+5. Only in a native regime, at the existing native-validation position, join
+   the exact `FrozenLitterV3Resident` to its private
+   `ValidatedFrozenLitterV3ResidentRevisionV1`. The revision must still match
+   the resident's complete validated configuration/state/envelope digest,
+   topology, transaction/predecessor/support, publication-prefix count/head/
+   tail/chain, and exact V3-LSE/V2-surface references. That successful join may
+   mint one borrowed, pointer-, revision-, parent-generation-, and map-bound
+   proof, consumed immediately to omit only the repeated
+   `lse_beginning.validate(lse_configuration)` and
+   `surface_beginning.canonical_bytes(surface_configuration)` calls.
+6. Continue every remaining native solver-ready, topology, rebinding,
+   lower-boundary, residual, solver, output, and owner validation and every
+   physical operation exactly as before. Ordinary maps mint and consume no
+   resident proof.
+7. Consume the final map through existing finalization and atomic parent
+   commit. Rejected, history, or failed maps expose no plan/proof and mutate no
+   owner. Restart discards ephemeral authority and reconstructs a fully
+   validated resident revision through the canonical restore path.
+
+The role order remains Initial, zero or more history candidates, and one final
+candidate; each adaptive attempt retains direct before composed, and composed
+retains Half1 before Half2 with Half2 beginning from the authenticated Half1
+ending. Lazy plan creation, plan joins, forcing proof consumption, and resident
+revision joins occur only at the checks they replace. Thus support, duration,
+transaction, joint, forcing, V8, ingress-schedule, native-resident, subsequent
+dynamic/solver, and output failures retain their present relative order, and
+only the first error is returned. A stale plan paired with an earlier support,
+duration, transaction, or joint poison returns that earlier error; a native
+resident poison paired with an ingress-schedule poison returns the ingress
+error. Malformed restart input still fails at its existing boundary.
+
+The plan or proof must not contain or cache a
+`ValidatedV8RuntimeInputProjection`, projected column, solver-ready tile,
+hydrology snapshot, physical result, or dynamic owner candidate. It must not
+use `Arc<DirectV10...>` or another shared owning handle to extend the lifetime
+of a dynamic or complete DirectV10 input. A canonical digest may accompany
+pointer/generation identity as evidence but can never independently admit an
+object. The persistent resident revision is private validated custody and may
+remain with an unchanged resident across maps; it is not the ephemeral map
+proof. Its existing `Clone` implementation is authorized only as an inseparable
+private clone of the exact whole immutable resident and never as independently
+transferable admission. Every accepted resident successor is fully validated
+before its revision advances atomically, and the resident may not mutate while
+a borrowed proof exists. The plan, forcing proof, and resident map proof have no `Clone`,
+serde, wire, public or unchecked constructor, cross-map/cross-parent transfer,
+persistence, or restart restore. Second consumption and transfer are rejected;
+alternate solver selection and silent full-validation fallback are prohibited.
+
+`OBL-LANDSURFACEENERGY-C-019` requires an executable forced-full-validation
+oracle against the admitted path. On the retained authentic terminal-parent
+workload whose carrier performs 52 maps, audit evidence must report exactly one
+parent-static validation, 52 exact normalized-forcing validations, and 52 fresh
+dynamic-map validations. For each applicable regime independently, the oracle
+must enumerate and compare every required Initial/history/final and
+direct/Half1/Half2 role/path, with byte-for-byte physical and final-owner parity
+and exact call order. Native and native-multilane maps exercise the real native
+consumer; ordinary maps prove zero resident-proof mint/consume and zero native
+physical execution.
+
+Independent poisons distinguish structural versus native LSE configuration
+and state, structural versus native surface configuration and owner,
+generation, topology, index, support, duration, transaction, joint, forcing
+pointer, same digest/different allocation, ingress schedule, resident revision,
+proof second-use, cross-map, cross-parent, restart restoration, dynamic
+vegetation/surface/soil-hydrology state, native solver/residual, and output
+validation. Competing-poison vectors cross each ordered boundary through
+dynamic validation, solver/residual, and output validation and require the same
+first typed error on full and admitted paths. Every rejection has zero fallback and
+publication plus byte-exact rollback. Counters and order records must originate
+at the real carrier, first forcing validator, V8 projection, ingress scheduler,
+resident-revision join, native V3 consumer, dynamic validators, and final owner;
+fabricated outcomes, manually incremented fixture counters, or source scanning
+alone cannot satisfy the obligation.
+
+This is validation/custody architecture only. It adds no dimensional symbol,
+conversion, scalar exception, constant, empirical parameter, tolerance,
+equation, physical branch, solver, residual, output, publication field, or wire
+format. All existing units, aliases, numeric guards, closure thresholds,
+calibration posture, and constitutive-suite obligations remain unchanged.
+Calibration and identifiability are therefore `CALIBRATION_NOT_APPLICABLE` for
+this amendment; the contract-level fields remain unchanged.
+
+| Profile surface | Binding |
+| --- | --- |
+| state surface | Private non-Clone/non-wire parent structural plan, per-map exact-forcing proof, existing resident validated revision, and borrowed non-Clone resident map proof; no cached dynamic state, result, owner candidate, restart, or publication representation. |
+| algorithm step | Retain existing early carrier guards; join the lazy structural plan only at each replaced immutable check; validate forcing once before V8 and consume its proof at V8's duplicate forcing check; run V8 and fallible ingress; then join the exact resident revision and consume its proof only for the two repeated native V3/V2 validations. |
+| branch/guard | Exact pointer, revision, parent generation, map, transaction, support, configuration, topology, index, and semantic identity are mandatory as applicable. Changed, reused, or transferred authority rejects at its original validation position with no fallback; restart and every trust boundary perform canonical full validation. |
+| invariant guard map | `INV-LANDSURFACEENERGY-159` -> parent-static plan, exact-forcing proof, resident-revision-sourced native proof, authentic call-site audit, forced-full oracle, paired poison/error-order matrix, and rollback gate; `INV-LANDSURFACEENERGY-161` and `SC-COUPLEDTIME-001#INV-COUPLEDTIME-030` retain role/disposition custody. |
+| alias/unit/constant/tolerance | No new aliases, dimensional values, conversions, constants, parameters, tolerances, or numeric normalization. Existing contract tables remain authoritative. |
+| calibration | `CALIBRATION_NOT_APPLICABLE`: no parameter, observation, objective, calibration evidence, or identifiability claim changes. |
+| test vector | `OBL-LANDSURFACEENERGY-C-019`: authentic 1/52/52 audit, per-applicable-regime bitwise role/path parity, ordinary zero-native proof, exact order, structural/native identity and proof-custody poisons, paired precedence, no cache/Arc/wire/fallback surface, and byte-exact rollback. |
+| binding exposure | `LSE-V30-CARRIER-PARENT-STATIC-VALIDATION-ONCE`, active, `maps-to-existing-INV`, IDs `159/C-019`, dual review/verification. |
+| change log | 2026-09-04, contract 30: admitted parent-static, source-ordered forcing, and resident-revision-sourced native validation-once custody only; structural V8 and resident V3/V2 objects remain distinct; no process physics, solver, tolerance, output, publication, or wire change. |
+
+## Component-Temperature Jacobian Dependency-Replay Amendment
+
+`INV-LANDSURFACEENERGY-164` applies only inside one already validated
+represented-snow covered solve and one current Jacobian sweep. It changes no
+coordinate, residual, constitutive equation, physical branch, or derivative.
+The canonical coordinate order remains ten coordinates per occupancy (four
+hydraulic potentials, two beta values, then sun-leaf, shade-leaf, wet-surface,
+and dry-stem temperatures), followed by shared canopy-air temperature and
+humidity, ground temperature, and the configured soil temperatures. Canonical
+probe perturbations, minus-before-plus construction, bounds admission, and
+centered or unique inward finite differences remain unchanged.
+
+One immutable `ValidatedCoveredComponentReplaySweepBase` owns the successful
+current evaluation for one Jacobian sweep. It binds the exact validated-input
+generation and every referenced input, the exact potential or fixed-final caps
+values and posture, frozen-branch values, current-trial bits, authentic map,
+solve, Newton-iteration, and sweep identities, and the graph version/hash. It
+may be borrowed by all signed probes in that sweep but is dropped before the
+next iteration, solve, map, or retry. For each admitted minus or plus probe the
+canonical probe constructor mints a fresh non-Clone
+`ValidatedCoveredComponentProbeReplay` bound to that base, coordinate index,
+sign, perturbation bits, exact probe bits, and the actually selected stencil.
+The constructor, not a later whole-vector scan, proves the sole-coordinate
+difference and sign/stencil/bound relation. That capability is consumed exactly
+once by success or error and cannot be transferred, restored, serialized, or
+reused. Dropping either object publishes and mutates nothing.
+
+Custody is exact, not a costly proxy check. Production may use immutable borrows,
+typed generations and compact canonical seals minted where the corresponding
+object is already fully validated, but it must compare every bound identity and
+value bit exactly. A `Debug` string, digest length, allocation-independent hash,
+reconstructed approximation, whole-probe clone, or repeated full-vector scan is
+not custody. A seal must include the caps, frozen branches, graph, trial,
+coordinate, sign, perturbation, probe and stencil facts above and must be joined
+to the same successful base evaluation. The static graph descriptor is built or
+validated once for its authenticated topology/configuration generation and then
+borrowed; production must not rebuild strings, ordered maps, transitive closure,
+or a whole-input hash in every sweep or signed probe. This bounded descriptor is
+not a cross-sweep result cache: no base evaluation, probe, branch result,
+residual, solver result, or mutable map state survives its named boundary.
+
+`CoveredComponentTemperatureDependencyGraph` uses schema version
+`covered-component-temperature-dependency-v1`. Stable node IDs and direct-edge
+families are normative below; `[o]` is authenticated occupancy topology rank,
+`[k]` is a component in canonical `sun,shade,wet,stem` order, `[s]` is soil
+rank, and `[j>o]` means every lower occupancy. Expanded node and edge records are
+sorted lexically, duplicate-free, length-prefixed, and SHA-256 hashed with the
+schema version, `N`, and `S` by the contract oracle. A production
+representation may be a compact equivalent whose exact edge-set/version/
+topology join has been established outside the probe hot path. Inclusive
+transitive closure is computed from those exact directed edges in stable node
+order. The sweep base and probe capability carry and compare the same
+version/hash or an equally exact typed graph identity. An unrecognized
+evaluator node/read or missing edge marks the affected coordinate conservatively
+ineligible; unknown never proves independence.
+
+| Stable node family | Source-order computation and owned values |
+|---|---|
+| `probe[o,k]` | sole signed component-temperature coordinate change |
+| `route.prepare[o]` | top-to-bottom preliminary liquid preparation from exact incident rain |
+| `route.wet[o]` | first/source-distinct wet-flux evaluation from `trial[o,wet]` |
+| `route.finalize[o]` | first liquid finalization; throughfall, both drainages, stemflow |
+| `route.incident[o+1]`, `route.stemflow[o+1]` | ordered lower-occupancy rain and stemflow-prefix custody |
+| `longwave.layer[o]`, `longwave.column` | all areas/temperatures, reciprocal component nets and ground-facing net |
+| `occ.leaf.current[o,sun|shade]` | current surface humidity, resistance, CI/carbon and gas branch |
+| `occ.leaf.maximum[o,sun|shade]` | beta-one maximum state in exact current-before-maximum order |
+| `occ.vapor[o,sun|shade]` | current/maximum vapor rates and conductances |
+| `occ.wet[o]` | second/source-distinct wet-flux evaluation during occupancy evaluation |
+| `occ.hydraulic[o]` | source/root loop, six hydraulic residuals and tolerances |
+| `occ.sensible[o,k]`, `occ.energy[o,k]`, `occ.tolerance[o,k]` | component sensible, energy/anchor residual and exact tolerance arithmetic |
+| `occ.liquid[o]`, `occ.route_match[o]` | second liquid finalization and equality with `route.finalize[o]` |
+| `occ.output[o]` | all occupancy fields including CI/carbon, branches, water and component arrays |
+| `shared.heat`, `shared.vapor`, `shared.tolerance` | occupancy-order reductions, lower boundary and reference air |
+| `lower.ground_output` | ground-facing longwave plus represented-snow ground/soil outputs |
+| `residual.raw`, `residual.tolerance`, `residual.normalized` | canonical occupancy/shared/ground/soil rows and normalization division |
+| `result.ground_release`, `result.ground_stemflow`, `result.output` | terminal incident rain, stemflow sum and complete evaluation fields |
+
+The complete direct-edge generator is normative:
+
+| From | Required direct targets |
+|---|---|
+| `probe[o,k]` | `longwave.layer[o]` and the matching component families below |
+| `probe[o,sun|shade]` | matching `occ.leaf.current`, `occ.leaf.maximum`, `occ.vapor`, `occ.hydraulic`, `occ.sensible`, `occ.energy`, `occ.tolerance`, `occ.output` |
+| `probe[o,wet]` | `route.wet[o]`, `route.finalize[o]`, `occ.wet[o]`, matching sensible/energy/tolerance, `occ.liquid[o]`, `occ.output[o]` |
+| `probe[o,stem]` | matching sensible/energy/tolerance and `occ.output[o]` |
+| `route.incident[o]` | `route.prepare[o]`; `route.stemflow[o]` and `route.finalize[o]` feed `route.stemflow[o+1]` |
+| `route.prepare[o]` | `route.wet/finalize[o]`, `longwave.layer[o]`, `occ.wet[o]`, and every occupancy vapor/hydraulic/sensible/energy/tolerance/liquid/output node that reads area, wet fraction, store or branch |
+| `route.wet[o]` | `route.finalize[o]`; finalization feeds `route.incident/stemflow[o+1]`, `occ.route_match[o]`, and at terminal `o`, both ground-release/stemflow results |
+| `route.incident[o+1]` | the same routing chain for every `j>o` by closure; no adjacent-only truncation |
+| `longwave.layer[o]` | `longwave.column`; the column feeds all component energy/tolerance nodes, every `occ.output[o]`, `lower.ground_output`, and `result.output` |
+| each `occ.leaf.current` | matching maximum, vapor, hydraulic, energy/tolerance and output nodes |
+| each `occ.leaf.maximum` | matching vapor, hydraulic and output nodes |
+| each `occ.vapor` | matching hydraulic, energy/tolerance and output plus `shared.vapor` |
+| `occ.wet[o]` | hydraulic, wet energy/tolerance, liquid and output plus `shared.vapor` |
+| each `occ.sensible[o,k]` | matching energy/tolerance and output plus `shared.heat` |
+| `occ.hydraulic/energy/tolerance/liquid[o]` | `occ.output[o]`; both liquid finalizations feed `occ.route_match[o]` |
+| `occ.route_match[o]` | `occ.output[o]`; mismatch returns here before later occupancies/shared work |
+| each `occ.output[o]` | ordered raw/tolerance rows, shared reductions and final output |
+| `lower.ground_output` | `shared.heat`, `shared.vapor`, `shared.tolerance`, matching raw/tolerance rows and `result.output` |
+| `shared.heat` | `shared.tolerance`, matching raw/tolerance rows and `result.output` |
+| `shared.vapor` | `shared.tolerance`, matching raw/tolerance rows and `result.output` |
+| `shared.tolerance` | matching tolerance/normalized residual rows and `result.output` |
+| `result.ground_release`, `result.ground_stemflow` | `result.output` |
+| raw/tolerance rows | matching normalized row; every residual node feeds final output |
+
+Additional conservative edges may cause more replay; omitting any edge above is
+forbidden. An independent graph oracle expands the exact normative node and
+direct-edge records for at least `N=1,S=1` and the real `N=2,S=6` topology,
+compares every record and the golden schema hash, and proves that removing or
+changing any required edge fails. Any additional conservative edge is explicit,
+versioned, and present in that comparison; reachability-only tests do not close
+direct-edge completeness.
+
+The complete evaluator and replay walker call one shared canonical
+implementation for every common node and evaluator tail. Factoring may expose
+typed intermediate values but must not duplicate, mirror, translate, or reorder
+any physical, tolerance, residual, branch, or output arithmetic. The replay
+walker preserves exact source order: trial admission;
+top-rain guard; top-to-bottom `route.prepare -> route.wet -> route.finalize ->
+incident/stemflow`; reciprocal longwave; then per occupancy sun current, shade
+current, sun maximum, shade maximum, vapor, second wet, hydraulic/root,
+sensible, energy/tolerance, second liquid finalization, route-match, output;
+lower/ground work; shared heat then vapor and tolerances; ground/soil rows;
+normalization; result assembly. Every reachable node executes its existing
+expression and operation order; only unreachable successful base nodes copy.
+
+### Eligibility, integrity, mismatch, and error outcomes
+
+| Trigger at its source position | Outcome |
+|---|---|
+| non-Stage-3, non-component coordinate, inadmissible/multi-coordinate probe, or coordinate disabled for an unknown edge | Select the canonical complete evaluator before capability creation; this is ordinary selection, not error recovery. |
+| recognized component probe with every base/graph/probe join exact | Mint one per-probe capability and begin replay. |
+| graph version/hash or topology mismatch found before capability creation, with identical complete-evaluator operands | Select the complete evaluator before replay and preserve its first error. |
+| stale/foreign base, transfer, wrong coordinate/sign/probe binding, or second consumption | Reject directly with `LandSurfaceEnergyError::ConstitutiveDomain("covered_component_dependency_replay_integrity")`; no complete evaluation and no mutation. |
+| fallible reachable node or route-match fails after replay begins | Return that existing error at its source-real position; never run the complete evaluator or another solver afterward. |
+| replay succeeds | Assemble the existing result once; consume/drop the probe capability with zero publication. |
+
+### Normative fallibility and canonical-crossability matrix
+
+Here, *canonically crossable* means that a source-real input can produce a
+successful immutable base evaluation and the unchanged canonical infinitesimal
+one-coordinate component-temperature probe can then reach that existing typed
+error surface. A test-only mutation, fault injector, alternate tolerance,
+noncanonical perturbation, impossible branch, forged intermediate, or direct
+private-node call does not establish crossability.
+
+| Node/error family | Classification for a successful represented-snow base plus an admitted canonical component probe | Required assurance |
+|---|---|---|
+| `occ.leaf.current[o,sun|shade]` existing leaf-domain errors | fallible and canonically crossable | For every authentic crossable leaf error and both applicable component/occupancy positions, run the same source-real base and signed probe through replay and forced-complete modes; require the same first typed error at the same source-order position, no later node/complete fallback, and byte-exact beginning/custody rollback. |
+| `occ.leaf.maximum[o,sun|shade]` existing leaf-domain errors | fallible but not currently established crossable | A successful current-leaf base, unchanged beta-one maximum operands/branch, and admitted component probe must imply maximum-call validity. Require authentic exact-beta/branch boundary successes and exact leaf/evaluation fields. Reclassify as crossable and add the paired source-real error vector only if an authentic successful-base plus admitted-probe counterexample is first established. |
+| `route.prepare[o]`, `route.wet[o]`, `route.finalize[o]`, `occ.wet[o]`, `occ.liquid[o]` | fallible but noncrossable from an admitted replay | Prove from the successful base, immutable rain/store/area/caps/frozen inputs, admitted temperature bounds and unchanged branch that every existing domain precondition remains true. Exercise authentic zero/wet/dry, exact-capacity and routing boundary successes and compare all liquid, wet-flux, drainage, throughfall and stemflow fields exactly. |
+| `longwave.column` | fallible but noncrossable from an admitted replay | Prove successful-base finite areas/temperatures plus admitted finite bounded component temperature imply every longwave operation remains valid. Exercise authentic reciprocal multi-occupancy/zero-area/boundary successes and compare every component and ground-facing net bit exactly. |
+| `occ.hydraulic[o]` | fallible but noncrossable from an admitted replay | Prove the successful leaf/wet predecessors, immutable root/soil/caps/frozen inputs and admitted temperature bounds preserve the hydraulic/root-loop domain. Exercise authentic active/inactive, limiting-root and tolerance-boundary successes and compare all six residual/tolerance fields exactly. |
+| `occ.route_match[o]` | fallible consistency guard but noncrossable from correct replay | Prove both calls consume the same immutable routing inputs and one shared canonical liquid-finalization implementation, so equality follows by construction. Exercise authentic upper-to-every-lower routing, zero/nonzero wet drainage, and terminal routes; compare both finalizations and the match fields exactly. A forged mismatch is an integrity test, not a physical poison. |
+| `lower.ground_output` existing under-canopy resistance/domain errors | fallible but noncrossable from an admitted replay | Prove the successful base and unchanged lower-boundary/caps/frozen operands retain domain validity; exercise authentic represented-snow resistance and ground/soil boundary successes and compare every lower/ground/soil evaluation field exactly. |
+| replay trial-shape, top-rain, coordinate/bound admission, graph/topology and capability-integrity guards | pre-admission or private integrity, not a reachable physical node error | Use separate source-real malformed/boundary selection vectors for the unchanged complete-evaluator guards and real constructor/lifetime operations across authentic generations, bases and probes for private stale/foreign/wrong-coordinate/wrong-sign/wrong-perturbation/wrong-probe/wrong-stencil/second-use vectors. Never mutate private fields to create them. Require exact first error, no replay/fallback, and byte-exact rollback. |
+| `probe[o,k]`; `route.incident[o+1]`; `route.stemflow[o+1]`; `longwave.layer[o]`; `occ.vapor[o,sun|shade]`; `occ.sensible[o,k]`; `occ.energy[o,k]`; `occ.tolerance[o,k]`; `occ.output[o]`; `shared.heat`; `shared.vapor`; `shared.tolerance`; `residual.raw`; `residual.tolerance`; `residual.normalized`; `result.ground_release`; `result.ground_stemflow`; `result.output` | infallible computations or assembly under their already validated predecessors | Never invent an error. Execute or copy only as the graph authorizes, in exact source order, and compare every node value, branch, residual/tolerance, terminal route and complete evaluation/output field bit-for-bit against forced complete evaluation. |
+
+For every fallible-but-noncrossable row, the obligation is both a reviewable
+successful-base-plus-admitted-probe implication proof over each named existing
+guard and executable authentic boundary/branch success vectors with exact field
+parity. A generic assertion that the node was successful once is insufficient.
+The differential corpus is also a catch-all: whenever any unmodified canonical
+input in the branch/bound corpus naturally makes replay or forced-complete
+evaluation return an error, both modes must return the identical first existing
+typed error and leave beginning/custody bytes identical. Production and tests
+must not add mutation seams, fault-injection hooks, synthetic error branches, or
+test-only physics entry points to manufacture an otherwise unreachable error.
+
+Every hydraulic-potential, beta, shared-canopy-air, non-Stage-3, malformed,
+multi-coordinate, and unproved component probe executes the unchanged complete
+evaluator. Existing `INV-LANDSURFACEENERGY-162` synthesis remains exclusive to
+represented-snow ground and soil identity anchors. No analytic or automatic
+derivative, graph coloring, simultaneous perturbation, sparse Jacobian or LU,
+changed pivoting, approximate reuse, cross-sweep/iteration/map/retry cache,
+memoization, fallback, hardcoded two-occupancy/six-soil logic, or alternative
+solver path is authorized.
+
+The contract-first structural expected-red has one deliberately narrow claim:
+it classifies whether the seven named replay graph/evidence/audit/function
+declarations exist as unconditional top-level Rust items. It cannot establish
+dispatcher invocation, control-flow reachability, graph/evidence consumption,
+counter provenance, or any numerical behavior. Empty, skeleton, token-only,
+dead-code, or disconnected declarations may turn that source classifier green
+but are insufficient for implementation readiness and cannot satisfy
+`OBL-LANDSURFACEENERGY-C-020`. Only post-implementation executable tests that
+exercise the real dispatcher, observe authentic sealed sweep/run counters, and
+pass the forced-complete node/residual/Jacobian/full-solve oracle establish
+connectivity, consumption, and behavior.
+
+For `N` occupancies and `S` soil nodes, one full interior centered sweep retains
+`2*(10*N+3+S)` ordered logical probes. Exactly `2*(1+S)` represented-snow
+ground/soil probes use existing identity-anchor synthesis, `8*N` component-
+temperature probes use dependency replay, and `12*N+4` probes use the complete
+evaluator. Thus the real `N=2`, `S=6` fixture must report `58 = 14 + 16 + 28`.
+Its eight hydraulic, four beta, and two shared-canopy-air columns are the 14
+columns whose 28 probes remain complete. This is one named
+`N=2,S=6,fully-centered-interior` sweep observation, never a release-run total.
+
+Each sweep resets a local audit before its first column and seals it as
+`Completed` only after every required column/probe finishes, or `Failed` at the
+source-real first typed error with counts limited to work actually attempted.
+`ShortCircuited` exists and is reported only if the unchanged canonical solver
+has a real non-error path that ends an already-started sweep before all probes;
+if no such path exists, the variant, counter and claimed population are absent,
+not fabricated as an always-zero state. `RejectedBeforeProbe` is a per-column
+stencil/admission outcome and is not a sweep short-circuit. The record binds
+`Potential|FixedFinal`, `N`, `S`, every column's
+`Centered|InwardLower|InwardUpper|RejectedBeforeProbe` stencil, admitted signed
+logical-probe count, and disjoint anchor/replay/complete buckets. Centered
+columns count two signs, inward columns only their admitted sign, and rejection
+counts only probes actually attempted. Every record must satisfy
+`logical=anchor+replay+complete`.
+
+Map, solve, Newton-iteration, and sweep identities are independent authentic
+identities from the real caller/lifecycle: a map ID joins all of that map's
+potential/fixed-final solves; a solve ID identifies one actual solve within the
+map; iteration and sweep IDs identify their actual nested events. One ordinal
+copied into another field, a locally invented release label, or an address/hash
+proxy is forbidden. If the library seam lacks map context, the audited path
+receives a private typed map identity from the authenticated caller rather than
+guessing it. Ordinary production with audit collection disabled need not
+allocate records or construct histograms.
+
+A separately reset release aggregator retains every sealed source-real sweep
+record without coalescing potential/final, centered/inward, completed/failed, or
+any genuinely reachable short-circuit identity. It reports the actually
+supported disjoint lifecycle class counts, a per-sweep histogram, and aggregate
+bucket sums; it must not require or emit a lifecycle state the canonical solver
+cannot enter. Each solve/map aggregate reconciles exactly to its retained sweep
+records, including failed and inward-bound sweeps, and reset boundaries forbid
+cross-run accumulation. Release acceptance requires complete aggregation and at
+least one authentic named fully centered `N=2,S=6` completed record with
+`58/14/16/28`; the whole release aggregate does not equal those fixture values.
+
+`OBL-LANDSURFACEENERGY-C-020` binds a test-only mode that forces the complete
+evaluator for those same component probes. For potential and fixed-final
+solves, the admitted and forced paths compare every node/evaluation field,
+raw/tolerance/normalized residual bit, complete dense Jacobian, pivot and matrix
+norm, branch, iteration/backtracking trajectory, diagnostic, accepted owner and
+typed error bit-for-bit. It proves both modes consume one shared canonical
+evaluator node/tail implementation, and an independently enumerated oracle
+compares the complete normative direct-edge graph rather than only selected
+reachability. Exact custody vectors cover input generations and fields, caps,
+frozen branches, graph, trial, coordinate, sign, perturbation, probe and stencil
+without `Debug`/length/hash-only or repeated whole-input/probe proxy checks.
+
+The normative fallibility/crossability matrix governs error evidence. Every
+canonically crossable typed-error surface receives a source-real paired
+replay-versus-forced-complete first-error and rollback vector; currently that is
+`occ.leaf.current`, while `occ.leaf.maximum` joins this class only after an
+authentic counterexample proves crossability. Every fallible-but-noncrossable
+family receives the stated successful-base implication proof plus authentic
+boundary/branch success and exact-field parity. Infallible families receive
+source-ordered value/evaluation-field parity and never a synthetic error.
+Separate real pre-admission and private-integrity vectors cover trial shape,
+bounds, graph/topology identity, stale/foreign evidence, wrong bindings and
+second use. The unmodified differential corpus catches any naturally occurring
+error in either mode and requires the same first typed error, no post-replay
+complete evaluation or alternate solver fallback, and byte-exact beginning/
+custody rollback. Mutation and fault-injection hooks are forbidden.
+
+Production retention uses this exact command for baseline and candidate:
+
+```text
+timeout 1800 taskset -c 0 env RUST_MIN_STACK=67108864 CARGO_PROFILE_RELEASE_LTO=false nix develop -c cargo test --release -p openwepp-runner --lib hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile -- --ignored --exact --nocapture --test-threads=1
+```
+
+The frozen pre-v31 Rust source manifest is
+`78d756be1fa11ed85ee92b7d19e6c04427b01b122efaf7804d1b55d60536bbbe`
+before and after all three runs. The unchanged binary is
+`/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-fc552493dc3c6cc2`,
+SHA-256 `9a91c82f1799382014c3a561e79130b5f5b665bef0667a4bdff613c91d8e573f`.
+From each `STAGE3_LANED_RELEASE_PROBE` JSON record, ordered
+`(run_wall_us, physical_phase_wall_us.potential, rss_kib)` values are
+`(4926758,354838,70696)`, `(4903570,353374,54624)`, and
+`(4896095,353431,59364)`. Sort each timing field independently and select the
+middle integer: baseline medians are `run_wall_us=4903570` and
+`physical_phase_wall_us.potential=353431`.
+
+Build the candidate once; record one unchanged candidate source-manifest hash
+before/after three repetitions and one unchanged candidate binary path/hash;
+then run the identical command/environment three times. The same sorted-middle
+median requires candidate `run_wall_us <= 4803570` and
+`physical_phase_wall_us.potential <= 253431`, at least `100000 us` improvement
+in both exact JSON fields. Every candidate run must retain
+source `0.8488061229561478`, outlet `0.8471105124736579`, storage
+`0.0016956104824910018`, clamp `0`, exact `48/56/20/32/4` workload counts, the
+complete run-level sweep aggregation with a qualifying `58/14/16/28` named
+sweep, full-solve bit equality, and JSON `rss_kib <= 65536`. If either median
+ceiling fails, any identity differs, aggregation is incomplete, candidate
+source/binary identity changes, or any RSS exceeds the bound, fully revert the
+revision-31 production increment; retain no partial replay, cache, or fallback.
+
+This amendment introduces no dimensional symbol, unit, conversion, constant,
+parameter, tolerance, equation, output, publication field, or wire format.
+Calibration and identifiability remain `CALIBRATION_NOT_APPLICABLE`.
+
+| Profile surface | Binding |
+| --- | --- |
+| state surface | One immutable sweep base plus fresh non-Clone signed-probe capabilities, exact generation/input/caps/frozen/graph/trial/map/solve/iteration/sweep/coordinate/sign/perturbation/probe/stencil custody without costly proxy checks, and no persisted result or cross-boundary cache. |
+| algorithm step | Construct/admit canonical probes unchanged; for one component-temperature coordinate replay reachable nodes through the one shared canonical evaluator node/tail implementation in complete-evaluator order and reuse only proven-unreachable successful nodes; assemble the existing ordered residual vector and finite difference unchanged. |
+| branch/guard | Exact one-coordinate difference and every custody/hash join are mandatory; ordinary ineligibility chooses complete evaluation before replay, integrity violation fails typed, and any post-start error returns directly without fallback. |
+| invariant guard map | `INV-LANDSURFACEENERGY-164` -> private graph/evidence types, canonical replay walker, forced-complete oracle, exact direct-edge graph tests, normative fallibility/crossability matrix, exact bucket counters, source-real error/rollback corpus, authentic release gate. |
+| alias/unit/constant/tolerance | No new dimensional values, aliases, conversions, constants, parameters, tolerances, numerical normalization, or derivative rule. |
+| calibration | `CALIBRATION_NOT_APPLICABLE`: no parameter, observation, objective, empirical evidence, or identifiability claim changes. |
+| test vector | `OBL-LANDSURFACEENERGY-C-020`: exact forced-complete node/residual/Jacobian/full-solve parity; complete direct-edge oracle; source-real crossable first-error/rollback vectors; noncrossable implication and authentic boundary-success vectors; infallible exact-field parity; lifetime/integrity/custody; real two-occupancy/six-soil reciprocal-longwave, duplicated wet-routing and terminal-descendant fixture; truthful scoped/aggregate counters; exact release gate. |
+| binding exposure | `LSE-V31-COMPONENT-TEMPERATURE-DEPENDENCY-REPLAY`, active, `maps-to-existing-INV`; revision 31 introduced new IDs `164/C-020`; dual review/verification required. |
+| change log | 2026-09-04, contract 31: corrected contract-first feasibility after full production revert; exact same-sweep component-temperature dependency replay only, one shared canonical evaluator implementation, source-real error/rollback obligations, unchanged dense solver, trajectory and outputs. |

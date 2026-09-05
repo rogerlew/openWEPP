@@ -140,6 +140,7 @@ fn exercise_complete_owner_two_ofe_child_routes_upstream_runoff_as_downstream_ru
     .expect("two-OFE complete parent");
     let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
     let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
+    begin_accepted_publication_support_capability_audit_v1();
     let segment =
         execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
             .expect("two-OFE complete-owner child");
@@ -199,7 +200,26 @@ fn exercise_complete_owner_two_ofe_child_routes_upstream_runoff_as_downstream_ru
         }),
         "downstream disposition must retain upper parcel lineage"
     );
-    let ending = executor.stack.take_staged_ending().expect("ending owners");
+    let ending = executor
+        .stack
+        .commit_selected_publication_and_take_staged_ending()
+        .expect("ending owners");
+    let capability_audit = take_accepted_publication_support_capability_audit_v1();
+    assert_eq!(capability_audit.full_validation_attempt_count, 1);
+    assert_eq!(capability_audit.full_validation_success_count, 1);
+    assert_eq!(capability_audit.operand_seal_count, 1);
+    assert_eq!(capability_audit.receipt_seal_count, 1);
+    assert_eq!(capability_audit.capability_mint_count, 1);
+    assert_eq!(capability_audit.trusted_append_attempt_count, 1);
+    assert_eq!(capability_audit.live_revision_join_count, 1);
+    assert_eq!(capability_audit.chronology_owner_tail_join_count, 1);
+    assert_eq!(capability_audit.successful_append_count, 1);
+    assert_eq!(capability_audit.append_time_full_validation_count, 0);
+    assert_eq!(capability_audit.append_time_operand_reconstruction_count, 0);
+    assert_eq!(capability_audit.append_time_receipt_reconstruction_count, 0);
+    assert_eq!(capability_audit.append_time_serialization_count, 0);
+    assert_eq!(capability_audit.append_time_full_prefix_scan_count, 0);
+    assert_eq!(capability_audit.support_payload_clone_count, 0);
     let accepted_supports = ending
         .accepted_publication_supports_for_day(0)
         .expect("retained accepted publication support");
@@ -575,7 +595,7 @@ fn snow_free_two_ofe_parent_executes_two_routed_900_second_children() {
         );
         shadow = executor
             .stack
-            .take_staged_ending()
+            .commit_selected_publication_and_take_staged_ending()
             .expect("seven-owner child ending");
         let cursor = &shadow
             .inner

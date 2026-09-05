@@ -1,0 +1,59 @@
+COMPONENT_DEPENDENCY_CANDIDATE_SOURCE_MANIFEST_BEFORE 039a312502a5e6ef442b1e81ac78b988141199f6283fedcc86518ba78ba61abc
+COMPONENT_DEPENDENCY_CANDIDATE_RUN 1 BEGIN
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+warning: fields `coupling_iteration` and `ending_snow_hint` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1163:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- fields in this struct
+...
+1163 |     pub coupling_iteration: u32,
+     |         ^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+   Compiling openwepp-persisted-restart-v1 v0.1.0 (/workdir/openWEPP/crates/openwepp-persisted-restart-v1)
+   Compiling openwepp-runner v0.1.0 (/workdir/openWEPP/crates/openwepp-runner)
+    Finished `release` profile [optimized] target(s) in 8m 08s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-ce7ba1c0f7527921)
+
+running 1 test
+test hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ... 
+thread 'hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile' (2877202) panicked at crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification/component_replay_audit.rs:131:5:
+assertion failed: audit.sweeps.iter().any(|sweep|
+        {
+            sweep.occupancy_count == 2 && sweep.soil_count == 6 &&
+                                sweep.logical_probe_count == 58 &&
+                            sweep.identity_anchor_probe_count == 14 &&
+                        sweep.component_replay_probe_count == 16 &&
+                    sweep.complete_probe_count == 28 && sweep.completed
+        })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 237 filtered out; finished in 10.64s
+
+error: test failed, to rerun pass `-p openwepp-runner --lib`
+COMPONENT_DEPENDENCY_CANDIDATE_RUN 1 EXIT 101
+COMPONENT_DEPENDENCY_CANDIDATE_RUN 1 SOURCE_MANIFEST_AFTER 039a312502a5e6ef442b1e81ac78b988141199f6283fedcc86518ba78ba61abc
+COMPONENT_DEPENDENCY_CANDIDATE_BINARY /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-ce7ba1c0f7527921
+COMPONENT_DEPENDENCY_CANDIDATE_BINARY_SHA256 f9386eec584664f9639da281c15796730240239cd43ad2f158f4fa6d27fbeeaf
+COMPONENT_DEPENDENCY_CANDIDATE_DISPOSITION REJECTED_AFTER_RUN_1_MISSING_AUTHENTIC_COMPLETED_N2_S6_58_14_16_28_SWEEP
+COMPONENT_DEPENDENCY_CANDIDATE_RUNS_2_AND_3 NOT_RUN_AFTER_FAILED_CONJUNCT
+COMPONENT_DEPENDENCY_CANDIDATE_SOURCE_MANIFEST_AFTER 039a312502a5e6ef442b1e81ac78b988141199f6283fedcc86518ba78ba61abc

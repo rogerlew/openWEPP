@@ -122,7 +122,7 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     let contract = read(CONTRACT);
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
-        "contract_version: 16",
+        "contract_version: 25",
         "status: approved",
         "maturity: active",
         "INV-SURFACELIQUID-001",
@@ -138,7 +138,48 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
         "ordered_soil_layer_ids",
         "infiltration_soil_thermal_layer_id",
         "apply_same_pass_infiltration",
+        "INV-SURFACELIQUID-024",
+        "OBL-SURFACELIQUID-C-014",
+        "INV-SURFACELIQUID-025",
+        "ParentLocalPartial",
+        "PersistentParentFinal",
+        "INV-SURFACELIQUID-026",
+        "OBL-SURFACELIQUID-C-016",
+        "SURFACELIQUID-STAGE3-INACTIVE-LITTER-CUSTODY",
+        "inactive byte-identical custody",
+        "Litter liquid/ice vapor, phase transfer, surface-storage arithmetic",
+        "current-ingress adoption, and WB14 may neither run",
+        "only the positive\npost-event snow-free child may resume",
+        "INV-SURFACELIQUID-027",
+        "OBL-SURFACELIQUID-C-017",
+        "SURFACELIQUID-V3-UNPUBLISHED-SOIL-CUSTODY",
+        "mutually exclusive branches selected before projection",
+        "owner-envelope, restart, checkpoint, accepted-\nreceipt",
+        "fields are absent, not empty/defaulted",
+        "one ordinary publishable owner projection",
+        "INV-SURFACELIQUID-028",
+        "OBL-SURFACELIQUID-C-018",
+        "SURFACELIQUID-V3-LITTER-PHASE-CAPACITY-SPILL",
+        "LitterPhaseCapacitySpillV1",
+        "`LitterPhaseOverflow` source parcel",
+        "not\n`CondensationOverflow`",
+        "must not pass the raw state to\n`SurfaceLiquidOwnerEnvelopeV2::try_replace_v2_state`",
         "generic category plus prose detail is not the canonical payload",
+        "INV-SURFACELIQUID-029",
+        "OBL-SURFACELIQUID-C-019",
+        "SURFACELIQUID-V3-HETEROGENEOUS-FINALIZED-USE-JOIN",
+        "SurfaceLiquidV2HeterogeneousResourceJoinV1",
+        "INV-SURFACELIQUID-030",
+        "OBL-SURFACELIQUID-C-020",
+        "SURFACELIQUID-V16-TOPOLOGY-RANKED-EXACT-OWNER",
+        "INV-SURFACELIQUID-031",
+        "OBL-SURFACELIQUID-C-021",
+        "SURFACELIQUID-V24-VALIDATED-IN-MEMORY-HANDOFF",
+        "INV-SURFACELIQUID-032",
+        "OBL-SURFACELIQUID-C-022",
+        "SURFACELIQUID-V25-LANED-ACTIVE-LOCAL-ROUTING",
+        "OFE identifiers are opaque identities",
+        "bare envelope/receipt parsing may",
         "Only `state_sha256`",
         "No executable `Default`",
         "SURFACELIQUID-E-001",
@@ -166,6 +207,140 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
         read(LSE)
             .contains("Hydrology exclusively owns ponded, litter-held and soil-layer water mass")
     );
+}
+
+#[test]
+fn version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries() {
+    let contract = read(CONTRACT);
+    for required in [
+        "## Validated In-Memory Surface-Resource Handoff Amendment",
+        "INV-SURFACELIQUID-031",
+        "OBL-SURFACELIQUID-C-021",
+        "SURFACELIQUID-V24-VALIDATED-IN-MEMORY-HANDOFF",
+        "private immutable nonserializable validated handoff",
+        "no mutable dereference, public constructor, unchecked constructor",
+        "discarded with the\nproof on any mutation",
+        "Proof transfer between candidates is forbidden",
+        "restart or\ncheckpoint restore, external bytes, durable publication",
+        "untrusted executor always undergo the existing full parse",
+        "zero repeated nested-owner serialization",
+        "byte-exact rollback",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+    let index = read("docs/specifications/science-contracts/index.md");
+    assert!(index.contains(
+        "v24 admits private immutable revision-bound surface-resource validation handoffs"
+    ));
+    assert!(read(LSE).contains("INV-LANDSURFACEENERGY-159"));
+}
+
+#[test]
+fn version_twenty_five_binds_laned_active_local_surface_routing() {
+    let contract = read(CONTRACT);
+    for required in [
+        "## Lane-D-Local SurfaceLiquid Routing Posture Amendment",
+        "INV-SURFACELIQUID-032",
+        "OBL-SURFACELIQUID-C-022",
+        "SURFACELIQUID-V25-LANED-ACTIVE-LOCAL-ROUTING",
+        "all-local posture is whole-configuration semantics",
+        "Lane D alone owns downstream transfer and outlet routing",
+        "mixed/incomplete posture",
+        "zero DC01 runon",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+    assert!(
+        read("docs/specifications/science-contracts/index.md")
+            .contains("v25 admits the complete all-local SurfaceLiquid routing posture")
+    );
+}
+
+#[test]
+fn version_twenty_three_binds_exact_owner_order_to_surface_topology() {
+    let contract = read(CONTRACT);
+    for required in [
+        "## Topology-Ranked Exact-Surface Owner Amendment",
+        "INV-SURFACELIQUID-030",
+        "OBL-SURFACELIQUID-C-020",
+        "SURFACELIQUID-V16-TOPOLOGY-RANKED-EXACT-OWNER",
+        "complete `SurfaceLiquidConfigurationV2` record sequence",
+        "ofe-9 -> ofe-10",
+        "Numeric parsing, lexical sorting",
+        "bare envelope/receipt parsing may",
+        "Canonical order and complete membership are proven",
+        "Duplicate keys or topology entries",
+        "stale configuration or\ndigest",
+        "complete rollback",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+    assert!(read(LSE).contains("INV-LANDSURFACEENERGY-158"));
+    assert!(
+        read("docs/specifications/science-contracts/index.md").contains(
+            "v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank"
+        )
+    );
+}
+
+#[test]
+fn version_twenty_one_binds_phase_spill_to_one_generated_wb14_parcel() {
+    let contract = read(CONTRACT);
+    for required in [
+        "## Exact V3 Litter-Phase Capacity-Spill Custody Amendment",
+        "W_raw = W_retained + m_spill,tile",
+        "U_raw = U_retained + m_spill,tile*C_w*(T_raw-T_ref)",
+        "m_spill,ofe = f_t*m_spill,tile",
+        "one liquid debit equal to the typed tile-\nbasis spill",
+        "full accepted child `[0,dt)`",
+        "joins the ordinary\ncanonical parcel ordering and well-mixed WB14 supply once",
+        "Only a named retained-ingress receipt may return mass/enthalpy",
+        "No capacity normalization, tolerance, phase equation",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    let tile_fraction = 0.625_f64;
+    let spill_tile = 0.125_f64;
+    let temperature = 276.0_f64;
+    let specific_enthalpy = 4218.0_f64 * (temperature - 273.15_f64);
+    let spill_ofe = tile_fraction * spill_tile;
+    let enthalpy_ofe = spill_ofe * specific_enthalpy;
+    assert_eq!(spill_ofe.to_bits(), 0.078125_f64.to_bits());
+    assert_eq!(
+        enthalpy_ofe.to_bits(),
+        (spill_ofe * specific_enthalpy).to_bits()
+    );
+    assert!(enthalpy_ofe > 0.0);
+}
+
+#[test]
+fn version_twenty_two_binds_heterogeneous_finalized_use_join() {
+    let contract = read(CONTRACT);
+    for required in [
+        "## Exact Heterogeneous V3 Finalized-Use Join Amendment",
+        "consumed only by that phase\nreceipt",
+        "All unmatched surface rows form the complete ordinary set",
+        "applies the ordinary `F/f_t` liquid debit once",
+        "An empty ordinary set is bit-identical resource identity",
+        "retains native litter ice, phase-adjusted thermodynamic\ncoordinates",
+        "spill remains a separately ordered\ninternal `LitterPhaseOverflow` parcel",
+        "neither creates an ingress parcel nor supplies a new sensible,\nlatent, fusion, or exact-surface energy operand",
+        "every unified finalized row is\naccounted exactly once",
+        "one resource candidate and ingress",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    let phase_adjusted_liquid = 2.5_f64;
+    let tile_fraction = 0.4_f64;
+    let finalized = [0.08_f64, 0.12_f64];
+    let debit_ofe = finalized.into_iter().sum::<f64>();
+    let debit_tile = debit_ofe / tile_fraction;
+    let ending = phase_adjusted_liquid - debit_tile;
+    assert_eq!(debit_ofe.to_bits(), 0.2_f64.to_bits());
+    assert_eq!(debit_tile.to_bits(), 0.5_f64.to_bits());
+    assert_eq!(ending.to_bits(), 2.0_f64.to_bits());
 }
 
 #[test]
@@ -282,7 +457,9 @@ fn version_15_binds_exact_soil_energy_credit_custody_before_production() {
     assert!(read(LSE).contains("INV-LANDSURFACEENERGY-150"));
     let registry = read("docs/specifications/science-contracts/index.md");
     assert!(
-        registry.contains("v16 binds exact per-tile LSE surface enthalpy to a companion owner")
+        registry.contains(
+            "v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank"
+        )
     );
 }
 
@@ -312,7 +489,7 @@ fn version_15_requires_exact_carry_owner_receipt_and_restart_symbols() {
 fn version_16_binds_exact_surface_enthalpy_custody_before_production() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 16",
+        "## Version 16 Exact LSE Surface-Enthalpy-Carry Amendment",
         "INV-SURFACELIQUID-023",
         "U_t = exact(U_hi,t) + R_U,t",
         "LseSurfaceEnthalpyOwnerEnvelopeV1",
@@ -334,7 +511,9 @@ fn version_16_binds_exact_surface_enthalpy_custody_before_production() {
     assert!(read(LSE).contains("INV-LANDSURFACEENERGY-151"));
     let registry = read("docs/specifications/science-contracts/index.md");
     assert!(
-        registry.contains("v16 binds exact per-tile LSE surface enthalpy to a companion owner")
+        registry.contains(
+            "v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank"
+        )
     );
 }
 
@@ -409,7 +588,7 @@ fn version_9_binds_multi_lane_stage3_parent_release() {
         )
     );
     assert!(
-        registry_row.contains("v16 binds exact per-tile LSE surface enthalpy to a companion owner")
+        registry_row.contains("v25 admits the complete all-local SurfaceLiquid routing posture")
     );
     assert!(!registry.contains("multi-lane covered Stage-3 remains unauthorized"));
 }

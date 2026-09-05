@@ -119,6 +119,12 @@ impl DirectSurfaceLiquidConfiguration {
                 "OFE topology and record set mismatch",
             ));
         }
+        let lane_d_local = route_by_ofe
+            .values()
+            .all(|(destination, tile)| destination.is_none() && tile.is_none());
+        if lane_d_local {
+            return Ok(());
+        }
         for (index, ofe_id) in self.ofe_topology.iter().enumerate() {
             let ofe_context = || DirectSurfaceLiquidErrorContext {
                 owner_id: Some(self.owner_id.clone()),
