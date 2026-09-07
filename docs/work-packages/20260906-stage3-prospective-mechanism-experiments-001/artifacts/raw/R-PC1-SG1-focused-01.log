@@ -1,0 +1,1392 @@
+warning: Git tree '/tmp/openwepp-controlled-mechanisms-Hb6uS2/R' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/R-344ae65295ff
+  scratch: /tmp/openwepp-roger-R-344ae65295ff
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/R/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.23s
+────────────
+ Nextest run ID 51bb1a64-dcb8-4a56-9d6e-bcb4a1989f14 with nextest profile: full
+    Starting 150 tests across 1 binary
+        FAIL [   0.459s] (148/150) openwepp-land-surface-energy solver::tests::covered_v8_block_matches_frozen_joint_solution
+  stdout ───
+
+    running 1 test
+    test solver::tests::covered_v8_block_matches_frozen_joint_solution ... FAILED
+
+    failures:
+
+    failures:
+        solver::tests::covered_v8_block_matches_frozen_joint_solution
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.45s
+
+  stderr ───
+
+    thread 'solver::tests::covered_v8_block_matches_frozen_joint_solution' (957616) panicked at crates/openwepp-land-surface-energy/src/solver_component_dependency_replay_tests.rs:578:77:
+    PC1 inputs: ComponentClosure("Stage-3 snow optical/column absorption")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   3.484s] 150 tests run: 149 passed, 1 failed, 0 skipped
+        PASS [   0.005s] (  1/150) openwepp-land-surface-energy closure::tests::weighted_energy_integrates_absolute_rate_tolerance_over_interval
+  stdout ───
+
+    running 1 test
+    test closure::tests::weighted_energy_integrates_absolute_rate_tolerance_over_interval ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (  2/150) openwepp-land-surface-energy closure::tests::authorization_is_not_accepted_as_use_when_demand_is_lower
+  stdout ───
+
+    running 1 test
+    test closure::tests::authorization_is_not_accepted_as_use_when_demand_is_lower ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (  3/150) openwepp-land-surface-energy closure::tests::weighted_energy_rejects_invalid_interval
+  stdout ───
+
+    running 1 test
+    test closure::tests::weighted_energy_rejects_invalid_interval ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (  4/150) openwepp-land-surface-energy closure::tests::weighted_energy_scale_precedes_signed_and_cross_tile_cancellation
+  stdout ───
+
+    running 1 test
+    test closure::tests::weighted_energy_scale_precedes_signed_and_cross_tile_cancellation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (  5/150) openwepp-land-surface-energy closure::tests::weighted_energy_decomposition_exposes_residual_and_primitive_scale
+  stdout ───
+
+    running 1 test
+    test closure::tests::weighted_energy_decomposition_exposes_residual_and_primitive_scale ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] (  6/150) openwepp-land-surface-energy closure::tests::weighted_energy_relative_tolerance_has_exact_authorized_boundary
+  stdout ───
+
+    running 1 test
+    test closure::tests::weighted_energy_relative_tolerance_has_exact_authorized_boundary ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] (  7/150) openwepp-land-surface-energy closure::tests::weighted_energy_uses_canonical_tile_fraction_boundary
+  stdout ───
+
+    running 1 test
+    test closure::tests::weighted_energy_uses_canonical_tile_fraction_boundary ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] (  8/150) openwepp-land-surface-energy closure::tests::condensation_retains_signed_mass_and_energy
+  stdout ───
+
+    running 1 test
+    test closure::tests::condensation_retains_signed_mass_and_energy ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] (  9/150) openwepp-land-surface-energy closure::tests::tile_fraction_is_applied_once_after_local_closure
+  stdout ───
+
+    running 1 test
+    test closure::tests::tile_fraction_is_applied_once_after_local_closure ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.009s] ( 10/150) openwepp-land-surface-energy closure::tests::ground_heat_must_be_equal_and_opposite
+  stdout ───
+
+    running 1 test
+    test closure::tests::ground_heat_must_be_equal_and_opposite ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.004s] ( 11/150) openwepp-land-surface-energy covered_liquid::tests::liquid_reference_canonicalization_has_an_exact_bit_boundary
+  stdout ───
+
+    running 1 test
+    test covered_liquid::tests::liquid_reference_canonicalization_has_an_exact_bit_boundary ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 12/150) openwepp-land-surface-energy closure::tests::zero_mass_parcel_cannot_carry_temperature_or_energy
+  stdout ───
+
+    running 1 test
+    test closure::tests::zero_mass_parcel_cannot_carry_temperature_or_energy ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.004s] ( 13/150) openwepp-land-surface-energy covered_liquid::tests::wet_fraction_above_one_remains_a_typed_poison
+  stdout ───
+
+    running 1 test
+    test covered_liquid::tests::wet_fraction_above_one_remains_a_typed_poison ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 14/150) openwepp-land-surface-energy covered_liquid::tests::saturated_fixture_drainage_retains_exact_capacity
+  stdout ───
+
+    running 1 test
+    test covered_liquid::tests::saturated_fixture_drainage_retains_exact_capacity ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 15/150) openwepp-land-surface-energy covered_liquid::tests::exact_first_upward_reference_neighbor_is_canonicalized
+  stdout ───
+
+    running 1 test
+    test covered_liquid::tests::exact_first_upward_reference_neighbor_is_canonicalized ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 16/150) openwepp-land-surface-energy covered_oracle_conformance_tests::v10_iteration_zero_residual_boundary_rejects_one_ulp_outside
+  stdout ───
+
+    running 1 test
+    test covered_oracle_conformance_tests::v10_iteration_zero_residual_boundary_rejects_one_ulp_outside ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 17/150) openwepp-land-surface-energy covered_output::tests::complete_covered_energy_operands_reconstruct_without_producer_residual
+  stdout ───
+
+    running 1 test
+    test covered_output::tests::complete_covered_energy_operands_reconstruct_without_producer_residual ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 18/150) openwepp-land-surface-energy covered_output::tests::covered_component_shared_air_and_radiation_poisons_fail_closed
+  stdout ───
+
+    running 1 test
+    test covered_output::tests::covered_component_shared_air_and_radiation_poisons_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.010s] ( 19/150) openwepp-land-surface-energy covered_output::tests::authorization_cannot_replace_finalized_water_in_covered_latent_join
+  stdout ───
+
+    running 1 test
+    test covered_output::tests::authorization_cannot_replace_finalized_water_in_covered_latent_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 20/150) openwepp-land-surface-energy covered_output::tests::exact_inactive_longwave_requires_zero_area_and_zero_component_flux
+  stdout ───
+
+    running 1 test
+    test covered_output::tests::exact_inactive_longwave_requires_zero_area_and_zero_component_flux ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 21/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::both_signs_and_overflow_refuse_without_clamping
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::both_signs_and_overflow_refuse_without_clamping ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 22/150) openwepp-land-surface-energy error::tests::every_error_variant_and_typed_subcategory_has_an_explicit_class
+  stdout ───
+
+    running 1 test
+    test error::tests::every_error_variant_and_typed_subcategory_has_an_explicit_class ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.012s] ( 23/150) openwepp-land-surface-energy covered_output::tests::stage3_lower_boundary_and_column_joins_reject_one_bit_poison
+  stdout ───
+
+    running 1 test
+    test covered_output::tests::stage3_lower_boundary_and_column_joins_reject_one_bit_poison ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 24/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::exact_reconstructed_enthalpy_absolute_tolerance_boundaries_are_inclusive
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::exact_reconstructed_enthalpy_absolute_tolerance_boundaries_are_inclusive ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 25/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::canonical_wat5_credit_retains_unchanged_high_and_nonzero_carry
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::canonical_wat5_credit_retains_unchanged_high_and_nonzero_carry ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 26/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::exact_reconstructed_enthalpy_comparison_joins_high_and_carry_without_mutation
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::exact_reconstructed_enthalpy_comparison_joins_high_and_carry_without_mutation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 27/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::nearest_even_halfway_and_adjacent_crossing_vectors
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::nearest_even_halfway_and_adjacent_crossing_vectors ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] ( 28/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::normal_energy_delta_requires_authoritative_temperature_change
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::normal_energy_delta_requires_authoritative_temperature_change ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.012s] ( 29/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::no_op_candidate_preserves_negative_zero_high_bits
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::no_op_candidate_preserves_negative_zero_high_bits ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 30/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::signed_cancellation_subnormal_boundary_and_order_are_exact
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::signed_cancellation_subnormal_boundary_and_order_are_exact ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.012s] ( 31/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::receipt_omission_duplication_reorder_and_identity_substitution_refuse
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::receipt_omission_duplication_reorder_and_identity_substitution_refuse ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.01s
+
+
+        PASS [   0.006s] ( 32/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::v1_bytes_are_frozen_and_migration_is_zero_carry_with_no_downgrade
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::v1_bytes_are_frozen_and_migration_is_zero_carry_with_no_downgrade ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 33/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::wire_schema_rejects_all_equivalent_noncanonical_forms
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::wire_schema_rejects_all_equivalent_noncanonical_forms ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.013s] ( 34/150) openwepp-land-surface-energy exact_dyadic_enthalpy::tests::typed_credit_binds_wat5_beginning_ending_and_exact_q
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::tests::typed_credit_binds_wat5_beginning_ending_and_exact_q ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 35/150) openwepp-land-surface-energy exact_dyadic_enthalpy::v56_tests::checked_exact_multiplication_covers_subnormal_overflow_and_resource_refusals
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::v56_tests::checked_exact_multiplication_covers_subnormal_overflow_and_resource_refusals ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 36/150) openwepp-land-surface-energy exact_dyadic_enthalpy::v56_tests::exact_product_and_difference_cover_sign_zero_and_frozen_vector
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::v56_tests::exact_product_and_difference_cover_sign_zero_and_frozen_vector ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.010s] ( 37/150) openwepp-land-surface-energy exact_dyadic_enthalpy::v56_tests::exact_multiply_rounding_cells_cover_even_odd_ties_and_carry
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::v56_tests::exact_multiply_rounding_cells_cover_even_odd_ties_and_carry ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 38/150) openwepp-land-surface-energy exact_dyadic_enthalpy::v56_tests::frozen_snow_enthalpy_frozen_vectors_retain_exact_high_and_carry
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::v56_tests::frozen_snow_enthalpy_frozen_vectors_retain_exact_high_and_carry ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.009s] ( 39/150) openwepp-land-surface-energy forcing::tests::invalid_liquid_parcel_support_rejects
+  stdout ───
+
+    running 1 test
+    test forcing::tests::invalid_liquid_parcel_support_rejects ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 40/150) openwepp-land-surface-energy exact_dyadic_enthalpy::v56_tests::frozen_snow_enthalpy_rejects_nonfinite_and_nonfrozen_domains
+  stdout ───
+
+    running 1 test
+    test exact_dyadic_enthalpy::v56_tests::frozen_snow_enthalpy_rejects_nonfinite_and_nonfrozen_domains ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 41/150) openwepp-land-surface-energy forcing::tests::non_full_liquid_parcel_support_is_admitted_exactly
+  stdout ───
+
+    running 1 test
+    test forcing::tests::non_full_liquid_parcel_support_is_admitted_exactly ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.010s] ( 42/150) openwepp-land-surface-energy identity::tests::digest_rejects_uppercase_and_wrong_length
+  stdout ───
+
+    running 1 test
+    test identity::tests::digest_rejects_uppercase_and_wrong_length ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] ( 43/150) openwepp-land-surface-energy identity::tests::cpython_exponent_portability_never_rewrites_strings
+  stdout ───
+
+    running 1 test
+    test identity::tests::cpython_exponent_portability_never_rewrites_strings ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] ( 44/150) openwepp-land-surface-energy identity::tests::identities_reject_empty_values_during_deserialization
+  stdout ───
+
+    running 1 test
+    test identity::tests::identities_reject_empty_values_during_deserialization ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.095s] ( 45/150) openwepp-land-surface-energy authority_schema_tests::protocol_identity_stage_precedes_earlier_row_domain_in_direct_and_owner_envelope_paths
+  stdout ───
+
+    running 1 test
+    test authority_schema_tests::protocol_identity_stage_precedes_earlier_row_domain_in_direct_and_owner_envelope_paths ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.09s
+
+
+        PASS [   0.099s] ( 46/150) openwepp-land-surface-energy authority_schema_tests::genuine_receipt_owner_set_failures_remain_owner_envelope_errors
+  stdout ───
+
+    running 1 test
+    test authority_schema_tests::genuine_receipt_owner_set_failures_remain_owner_envelope_errors ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.09s
+
+
+        PASS [   0.006s] ( 47/150) openwepp-land-surface-energy litter_phase::tests::condensation_and_deposition_credit_only_their_named_phases
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::condensation_and_deposition_credit_only_their_named_phases ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.009s] ( 48/150) openwepp-land-surface-energy litter_phase::tests::empty_pool_is_exact_zero_without_regularization
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::empty_pool_is_exact_zero_without_regularization ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] ( 49/150) openwepp-land-surface-energy litter_phase::tests::exact_floor_and_larger_supports_apply_one_bounded_phase_operation
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::exact_floor_and_larger_supports_apply_one_bounded_phase_operation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.010s] ( 50/150) openwepp-land-surface-energy litter_phase::tests::freezing_is_bounded_by_liquid_water_equivalent_ice_capacity
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::freezing_is_bounded_by_liquid_water_equivalent_ice_capacity ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 51/150) openwepp-land-surface-energy litter_phase::tests::litter_phase_capacity_boundary_does_not_spill
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::litter_phase_capacity_boundary_does_not_spill ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 52/150) openwepp-land-surface-energy litter_phase::tests::litter_phase_capacity_spill_rejects_transaction_support_receipt_substitution
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::litter_phase_capacity_spill_rejects_transaction_support_receipt_substitution ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 53/150) openwepp-land-surface-energy litter_phase::tests::melt_created_litter_phase_capacity_spill_preserves_mass_and_enthalpy
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::melt_created_litter_phase_capacity_spill_preserves_mass_and_enthalpy ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 54/150) openwepp-land-surface-energy litter_phase::tests::mixed_outbound_vapor_uses_separate_pools_and_ice_enthalpy
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::mixed_outbound_vapor_uses_separate_pools_and_ice_enthalpy ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 55/150) openwepp-land-surface-energy litter_phase::tests::model_definition_bytes_match_the_compiled_identity
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::model_definition_bytes_match_the_compiled_identity ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 56/150) openwepp-land-surface-energy litter_phase::tests::nonempty_exact_reference_temperature_has_zero_phase_transfer
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::nonempty_exact_reference_temperature_has_zero_phase_transfer ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] ( 57/150) openwepp-land-surface-energy litter_phase::tests::phase_closure_distinguishes_old_capacity_and_wrong_sign_mutants
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::phase_closure_distinguishes_old_capacity_and_wrong_sign_mutants ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] ( 58/150) openwepp-land-surface-energy litter_phase::tests::receipt_round_trip_is_exact_and_tampering_fails_closed
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::receipt_round_trip_is_exact_and_tampering_fails_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.010s] ( 59/150) openwepp-land-surface-energy litter_phase::tests::phase_free_energy_closure_rejects_phase_alias_vapor_only_and_producer_mutants
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::phase_free_energy_closure_rejects_phase_alias_vapor_only_and_producer_mutants ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 60/150) openwepp-land-surface-energy litter_phase::tests::total_pool_vapor_cap_and_failed_candidate_are_rejected_without_mutation
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::total_pool_vapor_cap_and_failed_candidate_are_rejected_without_mutation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] ( 61/150) openwepp-land-surface-energy litter_phase::tests::sub_floor_support_and_rho_i_capacity_fail_closed
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::sub_floor_support_and_rho_i_capacity_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 62/150) openwepp-land-surface-energy litter_phase::tests::vector_artifact_retains_independent_constants_and_mutants
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::vector_artifact_retains_independent_constants_and_mutants ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 63/150) openwepp-land-surface-energy physics::tests::open_resistances_match_frozen_four_layer_vector
+  stdout ───
+
+    running 1 test
+    test physics::tests::open_resistances_match_frozen_four_layer_vector ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 64/150) openwepp-land-surface-energy litter_phase::tests::warm_all_ice_melts_with_conservation_resolved_sign
+  stdout ───
+
+    running 1 test
+    test litter_phase::tests::warm_all_ice_melts_with_conservation_resolved_sign ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 65/150) openwepp-land-surface-energy physics::tests::reciprocal_longwave_keeps_component_temperature_identity
+  stdout ───
+
+    running 1 test
+    test physics::tests::reciprocal_longwave_keeps_component_temperature_identity ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 66/150) openwepp-land-surface-energy physics::tests::shortwave_preserves_every_band_and_direction
+  stdout ───
+
+    running 1 test
+    test physics::tests::shortwave_preserves_every_band_and_direction ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 67/150) openwepp-land-surface-energy physics::tests::signed_vapor_enthalpy_is_not_latent_only_or_unsigned
+  stdout ───
+
+    running 1 test
+    test physics::tests::signed_vapor_enthalpy_is_not_latent_only_or_unsigned ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 68/150) openwepp-land-surface-energy physics::tests::wind_floor_is_not_admitted
+  stdout ───
+
+    running 1 test
+    test physics::tests::wind_floor_is_not_admitted ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 69/150) openwepp-land-surface-energy solver::covered_finite_difference_stencil_tests::beta_zero_and_one_select_only_the_unique_inward_probe
+  stdout ───
+
+    running 1 test
+    test solver::covered_finite_difference_stencil_tests::beta_zero_and_one_select_only_the_unique_inward_probe ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.130s] ( 70/150) openwepp-land-surface-energy covered_oracle_conformance_tests::covered_failed_solution_reports_beta_component_shared_and_soil_bounds
+  stdout ───
+
+    running 1 test
+    test covered_oracle_conformance_tests::covered_failed_solution_reports_beta_component_shared_and_soil_bounds ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.13s
+
+
+        PASS [   0.005s] ( 71/150) openwepp-land-surface-energy solver::covered_finite_difference_stencil_tests::centered_and_inward_formulas_are_exact_and_missing_probes_reject
+  stdout ───
+
+    running 1 test
+    test solver::covered_finite_difference_stencil_tests::centered_and_inward_formulas_are_exact_and_missing_probes_reject ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.017s] ( 72/150) openwepp-land-surface-energy solver::component_dependency_graph::tests::compact_selectors_retain_all_lower_routes_and_exact_leaf_independence
+  stdout ───
+
+    running 1 test
+    test solver::component_dependency_graph::tests::compact_selectors_retain_all_lower_routes_and_exact_leaf_independence ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.01s
+
+
+        PASS [   0.134s] ( 73/150) openwepp-land-surface-energy covered_oracle_conformance_tests::v10_zero_par_branch_requires_positive_leaf_area
+  stdout ───
+
+    running 1 test
+    test covered_oracle_conformance_tests::v10_zero_par_branch_requires_positive_leaf_area ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.13s
+
+
+        PASS [   0.005s] ( 74/150) openwepp-land-surface-energy solver::covered_finite_difference_stencil_tests::exact_phase_minimum_uses_inward_probe_for_active_or_zero_area_coordinates
+  stdout ───
+
+    running 1 test
+    test solver::covered_finite_difference_stencil_tests::exact_phase_minimum_uses_inward_probe_for_active_or_zero_area_coordinates ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.010s] ( 75/150) openwepp-land-surface-energy solver::covered_finite_difference_stencil_tests::exact_phase_bound_outward_newton_direction_has_no_admitted_backtracking_factor
+  stdout ───
+
+    running 1 test
+    test solver::covered_finite_difference_stencil_tests::exact_phase_bound_outward_newton_direction_has_no_admitted_backtracking_factor ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.01s
+
+
+        PASS [   0.005s] ( 76/150) openwepp-land-surface-energy solver::covered_finite_difference_stencil_tests::interior_coordinate_retains_exact_centered_stencil
+  stdout ───
+
+    running 1 test
+    test solver::covered_finite_difference_stencil_tests::interior_coordinate_retains_exact_centered_stencil ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.004s] ( 77/150) openwepp-land-surface-energy solver::covered_halved_no_update_witness_tests::complete_residual_passing_full_and_later_domain_valid_poisons_refuse_the_witness
+  stdout ───
+
+    running 1 test
+    test solver::covered_halved_no_update_witness_tests::complete_residual_passing_full_and_later_domain_valid_poisons_refuse_the_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 78/150) openwepp-land-surface-energy solver::covered_finite_difference_stencil_tests::outside_current_and_two_inadmissible_probes_fail_closed
+  stdout ───
+
+    running 1 test
+    test solver::covered_finite_difference_stencil_tests::outside_current_and_two_inadmissible_probes_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.004s] ( 79/150) openwepp-land-surface-energy solver::covered_halved_no_update_witness_tests::each_full_witness_refusal_and_first_domain_valid_halving_admit_no_update
+  stdout ───
+
+    running 1 test
+    test solver::covered_halved_no_update_witness_tests::each_full_witness_refusal_and_first_domain_valid_halving_admit_no_update ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.023s] ( 80/150) openwepp-land-surface-energy solver::component_dependency_graph::tests::unknown_read_never_proves_independence
+  stdout ───
+
+    running 1 test
+    test solver::component_dependency_graph::tests::unknown_read_never_proves_independence ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.02s
+
+
+        PASS [   0.007s] ( 81/150) openwepp-land-surface-energy solver::covered_halved_no_update_witness_tests::each_governed_prospective_step_coordinate_poison_refuses_the_witness
+  stdout ───
+
+    running 1 test
+    test solver::covered_halved_no_update_witness_tests::each_governed_prospective_step_coordinate_poison_refuses_the_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.148s] ( 82/150) openwepp-land-surface-energy covered_oracle_conformance_tests::covered_natural_failures_match_frozen_diagnostics_and_publish_no_candidate
+  stdout ───
+
+    running 1 test
+    test covered_oracle_conformance_tests::covered_natural_failures_match_frozen_diagnostics_and_publish_no_candidate ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.14s
+
+
+        PASS [   0.145s] ( 83/150) openwepp-land-surface-energy covered_oracle_conformance_tests::v10_exact_zero_par_is_identity_gated_and_replaces_daytime_vulnerability_rows
+  stdout ───
+
+    running 1 test
+    test covered_oracle_conformance_tests::v10_exact_zero_par_is_identity_gated_and_replaces_daytime_vulnerability_rows ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.14s
+
+
+        PASS [   0.027s] ( 84/150) openwepp-land-surface-energy solver::component_dependency_graph::tests::golden_schema_and_topology_hashes
+  stdout ───
+
+    running 1 test
+    test solver::component_dependency_graph::tests::golden_schema_and_topology_hashes ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.02s
+
+
+        PASS [   0.004s] ( 85/150) openwepp-land-surface-energy solver::covered_halved_no_update_witness_tests::enclosing_preflight_skips_domain_invalid_trials_and_returns_first_complete_witness
+  stdout ───
+
+    running 1 test
+    test solver::covered_halved_no_update_witness_tests::enclosing_preflight_skips_domain_invalid_trials_and_returns_first_complete_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 86/150) openwepp-land-surface-energy solver::covered_halved_no_update_witness_tests::enclosing_preflight_does_not_skip_incomplete_or_failed_first_domain_valid_trial
+  stdout ───
+
+    running 1 test
+    test solver::covered_halved_no_update_witness_tests::enclosing_preflight_does_not_skip_incomplete_or_failed_first_domain_valid_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.004s] ( 87/150) openwepp-land-surface-energy solver::covered_halved_no_update_witness_tests::full_trial_threshold_excess_classification_requires_every_governed_step_finite
+  stdout ───
+
+    running 1 test
+    test solver::covered_halved_no_update_witness_tests::full_trial_threshold_excess_classification_requires_every_governed_step_finite ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 88/150) openwepp-land-surface-energy solver::inactive_component_temperature_anchor_tests::cold_canopy_zero_area_liquid_vapor_coordinates_stay_inside_phase_domain
+  stdout ───
+
+    running 1 test
+    test solver::inactive_component_temperature_anchor_tests::cold_canopy_zero_area_liquid_vapor_coordinates_stay_inside_phase_domain ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 89/150) openwepp-land-surface-energy solver::tests::alternate_warm_start_converges_to_same_accepted_state
+  stdout ───
+
+    running 1 test
+    test solver::tests::alternate_warm_start_converges_to_same_accepted_state ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 90/150) openwepp-land-surface-energy solver::tests::normalized_solver_rejects_increase_remaining_below_one
+  stdout ───
+
+    running 1 test
+    test solver::tests::normalized_solver_rejects_increase_remaining_below_one ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] ( 91/150) openwepp-land-surface-energy solver::inactive_component_temperature_anchor_tests::warm_canopy_inactive_coordinates_preserve_the_canopy_temperature
+  stdout ───
+
+    running 1 test
+    test solver::inactive_component_temperature_anchor_tests::warm_canopy_inactive_coordinates_preserve_the_canopy_temperature ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 92/150) openwepp-land-surface-energy solver::tests::normalized_solver_rejects_stagnation_below_one
+  stdout ───
+
+    running 1 test
+    test solver::tests::normalized_solver_rejects_stagnation_below_one ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 93/150) openwepp-land-surface-energy solver::tests::equality_is_cap_active
+  stdout ───
+
+    running 1 test
+    test solver::tests::equality_is_cap_active ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] ( 94/150) openwepp-land-surface-energy solver::tests::fixed_cap_rebuild_matches_independent_four_layer_vector
+  stdout ───
+
+    running 1 test
+    test solver::tests::fixed_cap_rebuild_matches_independent_four_layer_vector ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] ( 95/150) openwepp-land-surface-energy solver::inactive_hydraulic_source_tests::inactive_source_requires_exact_zero_flow_demand_and_inactive_branch
+  stdout ───
+
+    running 1 test
+    test solver::inactive_hydraulic_source_tests::inactive_source_requires_exact_zero_flow_demand_and_inactive_branch ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.165s] ( 96/150) openwepp-land-surface-energy authority_schema_tests::frozen_configuration_and_state_validate_with_exact_canonical_digests
+  stdout ───
+
+    running 1 test
+    test authority_schema_tests::frozen_configuration_and_state_validate_with_exact_canonical_digests ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.16s
+
+
+        PASS [   0.005s] ( 97/150) openwepp-land-surface-energy solver::tests::numerical_failure_debug_excludes_failed_iterate
+  stdout ───
+
+    running 1 test
+    test solver::tests::numerical_failure_debug_excludes_failed_iterate ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 98/150) openwepp-land-surface-energy solver::tests::open_failed_solution_reports_every_temperature_bound_hit
+  stdout ───
+
+    running 1 test
+    test solver::tests::open_failed_solution_reports_every_temperature_bound_hit ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] ( 99/150) openwepp-land-surface-energy solver::tests::stage3_optical_boundary_receipt_is_band_directional_and_digest_bound
+  stdout ───
+
+    running 1 test
+    test solver::tests::stage3_optical_boundary_receipt_is_band_directional_and_digest_bound ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] (100/150) openwepp-land-surface-energy solver::tests::normalized_solver_uses_inward_jacobian_probe_at_closed_lower_bound
+  stdout ───
+
+    running 1 test
+    test solver::tests::normalized_solver_uses_inward_jacobian_probe_at_closed_lower_bound ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (101/150) openwepp-land-surface-energy solver::tests::v10_and_v11_leaf_gas_match_frozen_dark_low_light_and_positive_vectors
+  stdout ───
+
+    running 1 test
+    test solver::tests::v10_and_v11_leaf_gas_match_frozen_dark_low_light_and_positive_vectors ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] (102/150) openwepp-land-surface-energy solver::tests::potential_and_final_do_not_mutate_beginning_problem
+  stdout ───
+
+    running 1 test
+    test solver::tests::potential_and_final_do_not_mutate_beginning_problem ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (103/150) openwepp-land-surface-energy solver_mechanism_audit::tests::finish_rejects_open_lifecycle
+  stdout ───
+
+    running 1 test
+    test solver_mechanism_audit::tests::finish_rejects_open_lifecycle ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (104/150) openwepp-land-surface-energy solver_mechanism_audit::tests::map_token_from_another_thread_is_not_a_local_join
+  stdout ───
+
+    running 1 test
+    test solver_mechanism_audit::tests::map_token_from_another_thread_is_not_a_local_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.004s] (105/150) openwepp-land-surface-energy solver_mechanism_audit::tests::stale_tokens_scopes_and_joins_cannot_modify_a_new_session
+  stdout ───
+
+    running 1 test
+    test solver_mechanism_audit::tests::stale_tokens_scopes_and_joins_cannot_modify_a_new_session ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (106/150) openwepp-land-surface-energy solver_mechanism_audit::tests::potential_and_final_solves_join_one_authentic_map
+  stdout ───
+
+    running 1 test
+    test solver_mechanism_audit::tests::potential_and_final_solves_join_one_authentic_map ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.009s] (107/150) openwepp-land-surface-energy solver_mechanism_audit::tests::compact_counts_and_errors_without_events
+  stdout ───
+
+    running 1 test
+    test solver_mechanism_audit::tests::compact_counts_and_errors_without_events ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] (108/150) openwepp-land-surface-energy solver_mechanism_audit::tests::detail_bound_drop_and_overflow_are_visible
+  stdout ───
+
+    running 1 test
+    test solver_mechanism_audit::tests::detail_bound_drop_and_overflow_are_visible ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] (109/150) openwepp-land-surface-energy support::tests::decimal_and_hex_domains_are_closed
+  stdout ───
+
+    running 1 test
+    test support::tests::decimal_and_hex_domains_are_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] (110/150) openwepp-land-surface-energy support::tests::frozen_authority_receipt_digest_and_forgery_are_exact
+  stdout ───
+
+    running 1 test
+    test support::tests::frozen_authority_receipt_digest_and_forgery_are_exact ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] (111/150) openwepp-land-surface-energy transaction::native_v2_finalization_tests::v1_wrapper_is_bitwise_identical_to_typed_v1_finalization
+  stdout ───
+
+    running 1 test
+    test transaction::native_v2_finalization_tests::v1_wrapper_is_bitwise_identical_to_typed_v1_finalization ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] (112/150) openwepp-land-surface-energy transaction::soil_thermal_v2_cutover_tests::composed_trial_binds_child_support_but_recomputes_from_original_beginning
+  stdout ───
+
+    running 1 test
+    test transaction::soil_thermal_v2_cutover_tests::composed_trial_binds_child_support_but_recomputes_from_original_beginning ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] (113/150) openwepp-land-surface-energy transaction::native_v2_finalization_tests::native_v2_finalization_retains_zero_and_nonzero_exact_carry_without_mutation
+  stdout ───
+
+    running 1 test
+    test transaction::native_v2_finalization_tests::native_v2_finalization_retains_zero_and_nonzero_exact_carry_without_mutation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] (114/150) openwepp-land-surface-energy transaction::native_v2_finalization_tests::native_v2_finalization_separates_outer_and_second_child_soil_transactions
+  stdout ───
+
+    running 1 test
+    test transaction::native_v2_finalization_tests::native_v2_finalization_separates_outer_and_second_child_soil_transactions ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.184s] (115/150) openwepp-land-surface-energy authority_schema_tests::unknown_fields_and_digest_mutations_fail_closed
+  stdout ───
+
+    running 1 test
+    test authority_schema_tests::unknown_fields_and_digest_mutations_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.18s
+
+
+        PASS [   0.006s] (116/150) openwepp-land-surface-energy transaction::soil_thermal_v2_cutover_tests::receipt_free_serialization_has_no_adaptive_diagnostic_metadata
+  stdout ───
+
+    running 1 test
+    test transaction::soil_thermal_v2_cutover_tests::receipt_free_serialization_has_no_adaptive_diagnostic_metadata ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.009s] (117/150) openwepp-land-surface-energy transaction::soil_thermal_v2_cutover_tests::prepared_read_trial_and_receipt_free_seals_are_native_and_fail_closed
+  stdout ───
+
+    running 1 test
+    test transaction::soil_thermal_v2_cutover_tests::prepared_read_trial_and_receipt_free_seals_are_native_and_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.007s] (118/150) openwepp-land-surface-energy transaction::soil_thermal_v2_cutover_tests::top_layer_coordinate_projection_preserves_lower_layers_bit_exact
+  stdout ───
+
+    running 1 test
+    test transaction::soil_thermal_v2_cutover_tests::top_layer_coordinate_projection_preserves_lower_layers_bit_exact ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.013s] (119/150) openwepp-land-surface-energy transaction::soil_thermal_v2_cutover_tests::numerical_coordinate_projection_is_exact_private_and_fail_closed
+  stdout ───
+
+    running 1 test
+    test transaction::soil_thermal_v2_cutover_tests::numerical_coordinate_projection_is_exact_private_and_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.018s] (120/150) openwepp-land-surface-energy transaction::native_v2_finalization_tests::native_v2_finalization_rejects_stale_reordered_duplicate_and_physical_poison
+  stdout ───
+
+    running 1 test
+    test transaction::native_v2_finalization_tests::native_v2_finalization_rejects_stale_reordered_duplicate_and_physical_poison ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.01s
+
+
+        PASS [   0.006s] (121/150) openwepp-land-surface-energy transaction::tests::condensation_receipt_binds_exact_surface_identity_temperature_and_enthalpy
+  stdout ───
+
+    running 1 test
+    test transaction::tests::condensation_receipt_binds_exact_surface_identity_temperature_and_enthalpy ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] (122/150) openwepp-land-surface-energy transaction::tests::accepted_v8_payload_validates_identity_state_carbon_and_root_daf
+  stdout ───
+
+    running 1 test
+    test transaction::tests::accepted_v8_payload_validates_identity_state_carbon_and_root_daf ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] (123/150) openwepp-land-surface-energy transaction::tests::covered_phase_lineage_rejects_resealed_batch_identity
+  stdout ───
+
+    running 1 test
+    test transaction::tests::covered_phase_lineage_rejects_resealed_batch_identity ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (124/150) openwepp-land-surface-energy transaction::tests::ending_state_digest_binds_transaction_and_every_tile
+  stdout ───
+
+    running 1 test
+    test transaction::tests::ending_state_digest_binds_transaction_and_every_tile ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.010s] (125/150) openwepp-land-surface-energy transaction::tests::numerical_failure_errors_preserve_kind_diagnostics_and_rollback_lineage
+  stdout ───
+
+    running 1 test
+    test transaction::tests::numerical_failure_errors_preserve_kind_diagnostics_and_rollback_lineage ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] (126/150) openwepp-land-surface-energy transaction::tests::rejected_covered_caps_distinguish_active_inactive_tie_and_request_order
+  stdout ───
+
+    running 1 test
+    test transaction::tests::rejected_covered_caps_distinguish_active_inactive_tie_and_request_order ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.008s] (127/150) openwepp-land-surface-energy transaction::tests::potential_request_batch_constructor_preserves_error_precedence
+  stdout ───
+
+    running 1 test
+    test transaction::tests::potential_request_batch_constructor_preserves_error_precedence ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.017s] (128/150) openwepp-land-surface-energy transaction::tests::accepted_v8_payload_rejects_pass_derived_and_identity_poisons
+  stdout ───
+
+    running 1 test
+    test transaction::tests::accepted_v8_payload_rejects_pass_derived_and_identity_poisons ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.01s
+
+
+        PASS [   0.010s] (129/150) openwepp-land-surface-energy transaction::tests::stale_potential_and_producer_residual_evasion_fail_closed
+  stdout ───
+
+    running 1 test
+    test transaction::tests::stale_potential_and_producer_residual_evasion_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.012s] (130/150) openwepp-land-surface-energy transaction::tests::post_ingress_carries_exact_enthalpy_to_surface_and_soil
+  stdout ───
+
+    running 1 test
+    test transaction::tests::post_ingress_carries_exact_enthalpy_to_surface_and_soil ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (131/150) openwepp-land-surface-energy transaction::tests::v10_finalization_rejects_wrong_sealed_gas_branch_receipt
+  stdout ───
+
+    running 1 test
+    test transaction::tests::v10_finalization_rejects_wrong_sealed_gas_branch_receipt ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (132/150) openwepp-land-surface-energy transaction_v3::covered_transaction_tests::off_grid_support_rejects_before_any_v3_solve
+  stdout ───
+
+    running 1 test
+    test transaction_v3::covered_transaction_tests::off_grid_support_rejects_before_any_v3_solve ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.006s] (133/150) openwepp-land-surface-energy transaction::tests::v10_full_supply_requires_exact_amount_reason_and_identity
+  stdout ───
+
+    running 1 test
+    test transaction::tests::v10_full_supply_requires_exact_amount_reason_and_identity ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.013s] (134/150) openwepp-land-surface-energy transaction::tests::rejected_open_cap_diagnostics_distinguish_active_inactive_and_tie
+  stdout ───
+
+    running 1 test
+    test transaction::tests::rejected_open_cap_diagnostics_distinguish_active_inactive_and_tie ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.005s] (135/150) openwepp-land-surface-energy v3_state::tests::successor_constants_are_distinct_from_v2
+  stdout ───
+
+    running 1 test
+    test v3_state::tests::successor_constants_are_distinct_from_v2 ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.200s] (136/150) openwepp-land-surface-energy covered_oracle_conformance_tests::covered_single_rank_potential_fixed_cap_and_alternate_start_match_frozen_oracle
+  stdout ───
+
+    running 1 test
+    test covered_oracle_conformance_tests::covered_single_rank_potential_fixed_cap_and_alternate_start_match_frozen_oracle ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.19s
+
+
+        PASS [   0.011s] (137/150) openwepp-land-surface-energy transaction_v3::covered_transaction_tests::aggregate_and_named_authorization_mismatch_fails_closed
+  stdout ───
+
+    running 1 test
+    test transaction_v3::covered_transaction_tests::aggregate_and_named_authorization_mismatch_fails_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.01s
+
+
+        PASS [   0.008s] (138/150) openwepp-land-surface-energy transaction_v3::covered_transaction_tests::phase_free_v3_evaluation_admits_subfreezing_litter_without_legacy_liquid_domain
+  stdout ───
+
+    running 1 test
+    test transaction_v3::covered_transaction_tests::phase_free_v3_evaluation_admits_subfreezing_litter_without_legacy_liquid_domain ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.009s] (139/150) openwepp-land-surface-energy transaction_v3::covered_transaction_tests::successor_producer_binds_only_the_v3_covered_solver
+  stdout ───
+
+    running 1 test
+    test transaction_v3::covered_transaction_tests::successor_producer_binds_only_the_v3_covered_solver ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.00s
+
+
+        PASS [   0.211s] (140/150) openwepp-land-surface-energy covered_oracle_conformance_tests::covered_natural_iteration_limit_matches_declared_rust_outcome
+  stdout ───
+
+    running 1 test
+    test covered_oracle_conformance_tests::covered_natural_iteration_limit_matches_declared_rust_outcome ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.21s
+
+
+        PASS [   0.017s] (141/150) openwepp-land-surface-energy transaction_v3::covered_transaction_tests::potential_and_fixed_final_use_v3_and_return_the_accepted_evaluation
+  stdout ───
+
+    running 1 test
+    test transaction_v3::covered_transaction_tests::potential_and_fixed_final_use_v3_and_return_the_accepted_evaluation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.01s
+
+
+        PASS [   0.230s] (142/150) openwepp-land-surface-energy authority_schema_tests::frozen_forcing_water_and_diagnostics_validate
+  stdout ───
+
+    running 1 test
+    test authority_schema_tests::frozen_forcing_water_and_diagnostics_validate ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.23s
+
+
+        PASS [   0.070s] (143/150) openwepp-land-surface-energy support::tests::exact_sixty_second_support_floor_rejects_one_tick_below_and_admits_stable_larger_support
+  stdout ───
+
+    running 1 test
+    test support::tests::exact_sixty_second_support_floor_rejects_one_tick_below_and_admits_stable_larger_support ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.07s
+
+
+        PASS [   0.234s] (144/150) openwepp-land-surface-energy covered_oracle_conformance_tests::covered_multirank_potential_fixed_cap_and_alternate_start_match_frozen_oracle
+  stdout ───
+
+    running 1 test
+    test covered_oracle_conformance_tests::covered_multirank_potential_fixed_cap_and_alternate_start_match_frozen_oracle ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.22s
+
+
+        PASS [   0.070s] (145/150) openwepp-land-surface-energy transaction::tests::open_transaction_binds_frozen_vector_and_rebuilds_from_beginning
+  stdout ───
+
+    running 1 test
+    test transaction::tests::open_transaction_binds_frozen_vector_and_rebuilds_from_beginning ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.06s
+
+
+        PASS [   0.072s] (146/150) openwepp-land-surface-energy v3_state::tests::mixed_v2_v3_identity_fails_without_mutating_source
+  stdout ───
+
+    running 1 test
+    test v3_state::tests::mixed_v2_v3_identity_fails_without_mutating_source ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.07s
+
+
+        PASS [   0.081s] (147/150) openwepp-land-surface-energy v3_state::tests::v2_to_v3_migration_preserves_scientific_values_and_rebinds_identity
+  stdout ───
+
+    running 1 test
+    test v3_state::tests::v2_to_v3_migration_preserves_scientific_values_and_rebinds_identity ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.08s
+
+
+        PASS [   1.705s] (149/150) openwepp-land-surface-energy authority_schema_tests::owner_envelope_identity_set_precedes_every_protocol_numeric_stage
+  stdout ───
+
+    running 1 test
+    test authority_schema_tests::owner_envelope_identity_set_precedes_every_protocol_numeric_stage ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 1.70s
+
+
+        PASS [   3.357s] (150/150) openwepp-land-surface-energy solver::component_dependency_graph::tests::exact_normative_direct_edges_and_every_single_edge_mutation
+  stdout ───
+
+    running 1 test
+    test solver::component_dependency_graph::tests::exact_normative_direct_edges_and_every_single_edge_mutation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 149 filtered out; finished in 3.35s
+
+
+        FAIL [   0.459s] (148/150) openwepp-land-surface-energy solver::tests::covered_v8_block_matches_frozen_joint_solution
+  stdout ───
+
+    running 1 test
+    test solver::tests::covered_v8_block_matches_frozen_joint_solution ... FAILED
+
+    failures:
+
+    failures:
+        solver::tests::covered_v8_block_matches_frozen_joint_solution
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 149 filtered out; finished in 0.45s
+
+  stderr ───
+
+    thread 'solver::tests::covered_v8_block_matches_frozen_joint_solution' (957616) panicked at crates/openwepp-land-surface-energy/src/solver_component_dependency_replay_tests.rs:578:77:
+    PC1 inputs: ComponentClosure("Stage-3 snow optical/column absorption")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

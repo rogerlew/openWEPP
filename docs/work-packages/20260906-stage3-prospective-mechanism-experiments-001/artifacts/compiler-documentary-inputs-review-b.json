@@ -1,0 +1,492 @@
+{
+  "evidence_class": "Static: literal compiler-document-input inventory, not a source freeze or build.",
+  "scope": "All literal docs/ include_str/include_bytes consumers found by source scan across Rust crates; direct LSE4, direct runner0, unconditional vegetation dependency2; remaining9 other crate tests. Not runtime filesystem dependency inventory. No R graph document include macro.",
+  "instruction_chain": [
+    "AGENTS.md",
+    "docs/work-packages/AGENTS.md"
+  ],
+  "occurrences": [
+    {
+      "consumer": "crates/openwepp-vegetation/src/occupancy_solver/constitutive.rs",
+      "line": 2000,
+      "input": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v3_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/occupancy_solver/constitutive_fixture_tests.rs",
+      "line": 17,
+      "input": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v3_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/occupancy_solver/evaluator.rs",
+      "line": 1348,
+      "input": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v3_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/occupancy_solver/v5_capped_fixture_tests.rs",
+      "line": 26,
+      "input": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/migration.rs",
+      "line": 1713,
+      "input": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_definition.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/migration.rs",
+      "line": 1710,
+      "input": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/transaction/state_canonical.rs",
+      "line": 565,
+      "input": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/transaction/state_canonical.rs",
+      "line": 582,
+      "input": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/transaction/state_canonical.rs",
+      "line": 618,
+      "input": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/migration/v5_to_v6/tests.rs",
+      "line": 20,
+      "input": "docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/occupancy_solver/v5_capped_fixture_tests.rs",
+      "line": 30,
+      "input": "docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/model.rs",
+      "line": 55,
+      "input": "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_definition.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/carbon_nitrogen.rs",
+      "line": 1118,
+      "input": "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/v8_state.rs",
+      "line": 1236,
+      "input": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_c3_woody_v8_definition.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-land-surface-energy/src/covered_oracle_conformance_tests.rs",
+      "line": 23,
+      "input": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_lse_rust_failure_diagnostics_v1.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-land-surface-energy/src/covered_oracle_conformance_tests.rs",
+      "line": 18,
+      "input": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-land-surface-energy/src/lib.rs",
+      "line": 97,
+      "input": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-land-surface-energy/src/support.rs",
+      "line": 220,
+      "input": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-land-surface-energy/src/transaction_tests.rs",
+      "line": 125,
+      "input": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-land-surface-energy/src/v3_state.rs",
+      "line": 257,
+      "input": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/v9_state.rs",
+      "line": 22,
+      "input": "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/openwepp_c3_woody_v9_vectors.json",
+      "scope": "production dependency"
+    },
+    {
+      "consumer": "crates/openwepp-vegetation/src/v9_state.rs",
+      "line": 25,
+      "input": "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/runtime_descriptor.json",
+      "scope": "production dependency"
+    },
+    {
+      "consumer": "crates/openwepp-land-surface-energy/src/solver_tests.rs",
+      "line": 55,
+      "input": "docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/nighttime-ci-vectors.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-land-surface-energy/src/support.rs",
+      "line": 242,
+      "input": "docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/lse-support-admissibility-baseline.json",
+      "scope": "test compile input"
+    },
+    {
+      "consumer": "crates/openwepp-hillslope-orchestrator/src/terminal_candidate_numerics.rs",
+      "line": 642,
+      "input": "docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/candidate-v22-hermite-gauss-matrix.json",
+      "scope": "test compile input"
+    }
+  ],
+  "arms": {
+    "A": {
+      "source_root": "/workdir/openWEPP",
+      "inputs": [
+        {
+          "path": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v3_vectors.json",
+          "bytes": 49915,
+          "sha256": "1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_vectors.json",
+          "bytes": 97724,
+          "sha256": "6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_definition.json",
+          "bytes": 4960,
+          "sha256": "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_vectors.json",
+          "bytes": 118891,
+          "sha256": "3072226f1d80359c548d87c1fa222be0c20b01627d9117e39163c39d9eb8824d",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_vectors.json",
+          "bytes": 56801,
+          "sha256": "2e7005f88d788399e914b2034c0193fc6f08d1657532a349ec797b966432356b",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_definition.json",
+          "bytes": 2349,
+          "sha256": "a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_vectors.json",
+          "bytes": 21286,
+          "sha256": "d99288741f3cac16f017ffe5cd11620bfde2055e32f18b82e538eaf6d48ef411",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_c3_woody_v8_definition.json",
+          "bytes": 1740,
+          "sha256": "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_lse_rust_failure_diagnostics_v1.json",
+          "bytes": 8942,
+          "sha256": "bdf18078cede6895d25146b6feb9fa7c90aadc436532d4485c43de7ae9b26211",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json",
+          "bytes": 1510611,
+          "sha256": "3fb57d7c637abba20659a59e6eb1487f9f4130f909e17b61c8a6f2eb70f4c711",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/openwepp_c3_woody_v9_vectors.json",
+          "bytes": 1105,
+          "sha256": "f86770cce11235ba282b47e81de2fa5dc9af19c29dc3bd91c62256957c590633",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/runtime_descriptor.json",
+          "bytes": 3759,
+          "sha256": "e0d05e49eabe43340e9fc7e251b319bcd08305d59af522298001b3c4f6bf951f",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/nighttime-ci-vectors.json",
+          "bytes": 1606,
+          "sha256": "18704e36b4c994a54ea857cb2a784e9c0a3eb28437f3e19c3083fdb6b2495f30",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/lse-support-admissibility-baseline.json",
+          "bytes": 1198,
+          "sha256": "e0d07718ab779d15130e3a908e9c38e45fc9d7ba6f5fcdc79a495648b5ef2512",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/candidate-v22-hermite-gauss-matrix.json",
+          "bytes": 64730,
+          "sha256": "b3127ff0cb5ccbde794a82c5417b5ca0fdc814a995ddd39159151f3857354681",
+          "mode": "0o664",
+          "symlink": null
+        }
+      ]
+    },
+    "F": {
+      "source_root": "/tmp/openwepp-controlled-mechanisms-Hb6uS2/F",
+      "inputs": [
+        {
+          "path": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v3_vectors.json",
+          "bytes": 49915,
+          "sha256": "1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_vectors.json",
+          "bytes": 97724,
+          "sha256": "6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_definition.json",
+          "bytes": 4960,
+          "sha256": "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_vectors.json",
+          "bytes": 118891,
+          "sha256": "3072226f1d80359c548d87c1fa222be0c20b01627d9117e39163c39d9eb8824d",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_vectors.json",
+          "bytes": 56801,
+          "sha256": "2e7005f88d788399e914b2034c0193fc6f08d1657532a349ec797b966432356b",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_definition.json",
+          "bytes": 2349,
+          "sha256": "a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_vectors.json",
+          "bytes": 21286,
+          "sha256": "d99288741f3cac16f017ffe5cd11620bfde2055e32f18b82e538eaf6d48ef411",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_c3_woody_v8_definition.json",
+          "bytes": 1740,
+          "sha256": "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_lse_rust_failure_diagnostics_v1.json",
+          "bytes": 8942,
+          "sha256": "bdf18078cede6895d25146b6feb9fa7c90aadc436532d4485c43de7ae9b26211",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json",
+          "bytes": 1510611,
+          "sha256": "3fb57d7c637abba20659a59e6eb1487f9f4130f909e17b61c8a6f2eb70f4c711",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/openwepp_c3_woody_v9_vectors.json",
+          "bytes": 1105,
+          "sha256": "f86770cce11235ba282b47e81de2fa5dc9af19c29dc3bd91c62256957c590633",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/runtime_descriptor.json",
+          "bytes": 3759,
+          "sha256": "e0d05e49eabe43340e9fc7e251b319bcd08305d59af522298001b3c4f6bf951f",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/nighttime-ci-vectors.json",
+          "bytes": 1606,
+          "sha256": "18704e36b4c994a54ea857cb2a784e9c0a3eb28437f3e19c3083fdb6b2495f30",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/lse-support-admissibility-baseline.json",
+          "bytes": 1198,
+          "sha256": "e0d07718ab779d15130e3a908e9c38e45fc9d7ba6f5fcdc79a495648b5ef2512",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/candidate-v22-hermite-gauss-matrix.json",
+          "bytes": 64730,
+          "sha256": "b3127ff0cb5ccbde794a82c5417b5ca0fdc814a995ddd39159151f3857354681",
+          "mode": "0o664",
+          "symlink": null
+        }
+      ]
+    },
+    "R": {
+      "source_root": "/tmp/openwepp-controlled-mechanisms-Hb6uS2/R",
+      "inputs": [
+        {
+          "path": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v3_vectors.json",
+          "bytes": 49915,
+          "sha256": "1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_vectors.json",
+          "bytes": 97724,
+          "sha256": "6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_definition.json",
+          "bytes": 4960,
+          "sha256": "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_vectors.json",
+          "bytes": 118891,
+          "sha256": "3072226f1d80359c548d87c1fa222be0c20b01627d9117e39163c39d9eb8824d",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_vectors.json",
+          "bytes": 56801,
+          "sha256": "2e7005f88d788399e914b2034c0193fc6f08d1657532a349ec797b966432356b",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_definition.json",
+          "bytes": 2349,
+          "sha256": "a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_vectors.json",
+          "bytes": 21286,
+          "sha256": "d99288741f3cac16f017ffe5cd11620bfde2055e32f18b82e538eaf6d48ef411",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_c3_woody_v8_definition.json",
+          "bytes": 1740,
+          "sha256": "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_lse_rust_failure_diagnostics_v1.json",
+          "bytes": 8942,
+          "sha256": "bdf18078cede6895d25146b6feb9fa7c90aadc436532d4485c43de7ae9b26211",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json",
+          "bytes": 1510611,
+          "sha256": "3fb57d7c637abba20659a59e6eb1487f9f4130f909e17b61c8a6f2eb70f4c711",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/openwepp_c3_woody_v9_vectors.json",
+          "bytes": 1105,
+          "sha256": "f86770cce11235ba282b47e81de2fa5dc9af19c29dc3bd91c62256957c590633",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/runtime_descriptor.json",
+          "bytes": 3759,
+          "sha256": "e0d05e49eabe43340e9fc7e251b319bcd08305d59af522298001b3c4f6bf951f",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/nighttime-ci-vectors.json",
+          "bytes": 1606,
+          "sha256": "18704e36b4c994a54ea857cb2a784e9c0a3eb28437f3e19c3083fdb6b2495f30",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/lse-support-admissibility-baseline.json",
+          "bytes": 1198,
+          "sha256": "e0d07718ab779d15130e3a908e9c38e45fc9d7ba6f5fcdc79a495648b5ef2512",
+          "mode": "0o664",
+          "symlink": null
+        },
+        {
+          "path": "docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/candidate-v22-hermite-gauss-matrix.json",
+          "bytes": 64730,
+          "sha256": "b3127ff0cb5ccbde794a82c5417b5ca0fdc814a995ddd39159151f3857354681",
+          "mode": "0o664",
+          "symlink": null
+        }
+      ]
+    }
+  }
+}

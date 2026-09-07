@@ -1,0 +1,870 @@
+diff --git a/crates/openwepp-land-surface-energy/src/solver.rs b/crates/openwepp-land-surface-energy/src/solver.rs
+index 27208e942..eb094a10b 100644
+--- a/crates/openwepp-land-surface-energy/src/solver.rs
++++ b/crates/openwepp-land-surface-energy/src/solver.rs
+@@ -779,9 +779,19 @@ pub fn solve_open_surface(
+ // Concrete covered-column constitutive block
+ // -------------------------------------------------------------------------
+ 
++#[path = "solver_component_dependency_graph.rs"]
++mod component_dependency_graph;
++use component_dependency_graph::CoveredComponentTemperatureDependencyGraph;
++include!("solver_component_dependency_replay.rs");
+ include!("solver_covered_evaluation.rs");
+ include!("solver_covered_solve.rs");
+ 
++#[cfg(any(test, feature = "test-support"))]
++mod component_replay_oracle {
++    use super::*;
++    include!("solver_component_dependency_replay_tests.rs");
++}
++
+ #[cfg(test)]
+ #[path = "solver_tests.rs"]
+ mod tests;
+diff --git a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
+index 6a204df33..f0b099509 100644
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
+@@ -519,22 +519,22 @@ struct LeafGasEnvironment {
+     ca_pa: f64,
+ }
+ 
+-#[cfg(test)]
++#[cfg(any(test, feature = "test-support"))]
+ std::thread_local! {
+     static COVERED_LEAF_TRIAL_AUDIT: std::cell::Cell<Option<(u32, bool)>> = const { std::cell::Cell::new(None) };
+ }
+ 
+-#[cfg(test)]
++#[cfg(any(test, feature = "test-support"))]
+ fn begin_covered_leaf_trial_audit(force_exhaustive_maximum: bool) {
+     COVERED_LEAF_TRIAL_AUDIT.with(|audit| audit.set(Some((0, force_exhaustive_maximum))));
+ }
+ 
+-#[cfg(test)]
++#[cfg(any(test, feature = "test-support"))]
+ fn take_covered_leaf_trial_audit() -> u32 {
+     COVERED_LEAF_TRIAL_AUDIT.with(|audit| audit.take().map_or(0, |(count, _)| count))
+ }
+ 
+-#[cfg(test)]
++#[cfg(any(test, feature = "test-support"))]
+ fn record_covered_leaf_trial_audit() {
+     COVERED_LEAF_TRIAL_AUDIT.with(|audit| {
+         if let Some((count, force_exhaustive)) = audit.get() {
+@@ -543,10 +543,10 @@ fn record_covered_leaf_trial_audit() {
+     });
+ }
+ 
+-#[cfg(not(test))]
++#[cfg(not(any(test, feature = "test-support")))]
+ fn record_covered_leaf_trial_audit() {}
+ 
+-#[cfg(test)]
++#[cfg(any(test, feature = "test-support"))]
+ fn force_exhaustive_covered_leaf_maximum() -> bool {
+     COVERED_LEAF_TRIAL_AUDIT.with(|audit| {
+         audit
+@@ -555,7 +555,7 @@ fn force_exhaustive_covered_leaf_maximum() -> bool {
+     })
+ }
+ 
+-#[cfg(not(test))]
++#[cfg(not(any(test, feature = "test-support")))]
+ const fn force_exhaustive_covered_leaf_maximum() -> bool {
+     false
+ }
+@@ -1256,6 +1256,16 @@ fn evaluate_covered_occupancy(
+     context: &CoveredOccupancyTrialContext<'_>,
+     occupancy: &CoveredOccupancyInputs,
+     block: &[f64],
++) -> Result<CoveredOccupancyEvaluation, LandSurfaceEnergyError> {
++    evaluate_covered_occupancy_with_nodes(context, occupancy, block, [None; 4], None)
++}
++
++fn evaluate_covered_occupancy_with_nodes(
++    context: &CoveredOccupancyTrialContext<'_>,
++    occupancy: &CoveredOccupancyInputs,
++    block: &[f64],
++    leaf_reuse: [Option<LeafTrialState>; 4],
++    capture: Option<&mut Vec<[LeafTrialState; 4]>>,
+ ) -> Result<CoveredOccupancyEvaluation, LandSurfaceEnergyError> {
+     let column = context.column;
+     let canopy_air_temperature_k = context.canopy_air_temperature_k;
+@@ -1282,54 +1292,65 @@ fn evaluate_covered_occupancy(
+         pressure_pa: column.pressure_pa,
+         ca_pa: column.ca_pa,
+     };
+-    let sun = leaf_trial_state(
+-        occupancy.sun,
+-        occupancy.biochemical,
+-        tsun,
+-        canopy_air_q,
+-        beta_sun,
+-        leaf_gas_environment,
+-        occupancy.gb_leaf_m_s,
+-        occupancy.g0_umol_m2_s,
+-        occupancy.medlyn_g1_kpa_sqrt,
+-    )?;
+-    let shade = leaf_trial_state(
+-        occupancy.shade,
+-        occupancy.biochemical,
+-        tshade,
+-        canopy_air_q,
+-        beta_shade,
+-        leaf_gas_environment,
+-        occupancy.gb_leaf_m_s,
+-        occupancy.g0_umol_m2_s,
+-        occupancy.medlyn_g1_kpa_sqrt,
+-    )?;
++    let sun = covered_leaf_node(leaf_reuse[0], || {
++        leaf_trial_state(
++            occupancy.sun,
++            occupancy.biochemical,
++            tsun,
++            canopy_air_q,
++            beta_sun,
++            leaf_gas_environment,
++            occupancy.gb_leaf_m_s,
++            occupancy.g0_umol_m2_s,
++            occupancy.medlyn_g1_kpa_sqrt,
++        )
++    })?;
++    let shade = covered_leaf_node(leaf_reuse[1], || {
++        leaf_trial_state(
++            occupancy.shade,
++            occupancy.biochemical,
++            tshade,
++            canopy_air_q,
++            beta_shade,
++            leaf_gas_environment,
++            occupancy.gb_leaf_m_s,
++            occupancy.g0_umol_m2_s,
++            occupancy.medlyn_g1_kpa_sqrt,
++        )
++    })?;
+     // V8 maximum demand is an internal beta=1 evaluation at the current
+     // leaf/canopy state. It is never a caller-configurable runtime operand.
+-    let sun_maximum = covered_maximum_leaf_trial_state(
+-        sun,
+-        beta_sun,
+-        occupancy.sun,
+-        occupancy.biochemical,
+-        tsun,
+-        canopy_air_q,
+-        leaf_gas_environment,
+-        occupancy.gb_leaf_m_s,
+-        occupancy.g0_umol_m2_s,
+-        occupancy.medlyn_g1_kpa_sqrt,
+-    )?;
+-    let shade_maximum = covered_maximum_leaf_trial_state(
+-        shade,
+-        beta_shade,
+-        occupancy.shade,
+-        occupancy.biochemical,
+-        tshade,
+-        canopy_air_q,
+-        leaf_gas_environment,
+-        occupancy.gb_leaf_m_s,
+-        occupancy.g0_umol_m2_s,
+-        occupancy.medlyn_g1_kpa_sqrt,
+-    )?;
++    let sun_maximum = covered_leaf_node(leaf_reuse[2], || {
++        covered_maximum_leaf_trial_state(
++            sun,
++            beta_sun,
++            occupancy.sun,
++            occupancy.biochemical,
++            tsun,
++            canopy_air_q,
++            leaf_gas_environment,
++            occupancy.gb_leaf_m_s,
++            occupancy.g0_umol_m2_s,
++            occupancy.medlyn_g1_kpa_sqrt,
++        )
++    })?;
++    let shade_maximum = covered_leaf_node(leaf_reuse[3], || {
++        covered_maximum_leaf_trial_state(
++            shade,
++            beta_shade,
++            occupancy.shade,
++            occupancy.biochemical,
++            tshade,
++            canopy_air_q,
++            leaf_gas_environment,
++            occupancy.gb_leaf_m_s,
++            occupancy.g0_umol_m2_s,
++            occupancy.medlyn_g1_kpa_sqrt,
++        )
++    })?;
++    if let Some(capture) = capture {
++        capture.push([sun, shade, sun_maximum, shade_maximum]);
++    }
+     let emax_sun_kg_m2_s = rho * (sun_maximum.surface_q - canopy_air_q)
+         / (1.0 / occupancy.gb_leaf_m_s + sun_maximum.rs_s_m)
+         * dry_sun;
+@@ -1846,6 +1867,7 @@ struct ValidatedCoveredEvaluationInputs<'a> {
+     column: &'a CoveredColumnInputs,
+     caps: Option<&'a CoveredWaterCaps>,
+     stage3_boundary: Option<&'a Stage3SnowCoveredLowerBoundary>,
++    component_graph: Option<CoveredComponentTemperatureDependencyGraph>,
+ }
+ 
+ impl<'a> ValidatedCoveredEvaluationInputs<'a> {
+@@ -1909,6 +1931,12 @@ impl<'a> ValidatedCoveredEvaluationInputs<'a> {
+             column,
+             caps,
+             stage3_boundary,
++            component_graph: stage3_boundary.map(|_| {
++                CoveredComponentTemperatureDependencyGraph::new(
++                    column.occupancies.len(),
++                    column.ground.soil_nodes.len(),
++                )
++            }),
+         })
+     }
+ 
+@@ -1946,11 +1974,22 @@ fn evaluate_covered_column_validated(
+     trial: &[f64],
+     frozen: Option<&CoveredFrozenBranches>,
+     v3_litter: Option<crate::V3LitterResidualContext>,
++) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
++    evaluate_covered_column_with_nodes_validated(validated, trial, frozen, v3_litter, None, None)
++}
++
++fn evaluate_covered_column_with_nodes_validated(
++    validated: &ValidatedCoveredEvaluationInputs<'_>,
++    trial: &[f64],
++    frozen: Option<&CoveredFrozenBranches>,
++    v3_litter: Option<crate::V3LitterResidualContext>,
++    capture: Option<&mut CoveredReplayCapture>,
++    replay: Option<CoveredReplayReuse<'_>>,
+ ) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
+     let observation =
+         crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Evaluation);
+     observation.finish(evaluate_covered_column_observed(
+-        validated, trial, frozen, v3_litter,
++        validated, trial, frozen, v3_litter, capture, replay,
+     ))
+ }
+ 
+@@ -1959,6 +1998,8 @@ fn evaluate_covered_column_observed(
+     trial: &[f64],
+     frozen: Option<&CoveredFrozenBranches>,
+     v3_litter: Option<crate::V3LitterResidualContext>,
++    mut capture: Option<&mut CoveredReplayCapture>,
++    replay: Option<CoveredReplayReuse<'_>>,
+ ) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
+     let column = validated.column;
+     let caps = validated.caps;
+@@ -1991,26 +2032,25 @@ fn evaluate_covered_column_observed(
+     let mut routed_liquid = Vec::with_capacity(column.occupancies.len());
+     for (index, occupancy) in column.occupancies.iter().enumerate() {
+         let block = &trial[index * 10..(index + 1) * 10];
+-        let preparation = prepare_covered_liquid(occupancy, incident_rain)?;
+-        let (wet_flux, _) = covered_wet_flux(
+-            column,
+-            occupancy,
+-            preparation,
+-            block[8],
+-            canopy_temperature,
+-            canopy_q,
+-            frozen,
+-        )?;
+-        let liquid = finalize_covered_liquid(
+-            preparation,
+-            wet_flux * column.interval_s,
+-            block[8],
+-            if caps.is_some() {
+-                CoveredLiquidPass::FixedAuthorizationFinal
+-            } else {
+-                CoveredLiquidPass::Potential
+-            },
+-        )?;
++        let (preparation, liquid) = if let Some(replay) =
++            replay.filter(|reuse| !reuse.graph.route_reachable(reuse.coordinate, index))
++        {
++            (
++                replay.capture.preparations[index],
++                replay.capture.ledgers[index],
++            )
++        } else {
++            covered_liquid_route_nodes(
++                column,
++                occupancy,
++                incident_rain,
++                block[8],
++                canopy_temperature,
++                canopy_q,
++                caps,
++                frozen,
++            )?
++        };
+         incident_rain = liquid.throughfall_kg_m2_tile
+             + liquid.initial_drainage_kg_m2_tile
+             + liquid.second_drainage_kg_m2_tile;
+@@ -2063,8 +2103,13 @@ fn evaluate_covered_column_observed(
+             frozen,
+             liquid: liquid_preparations[index],
+         };
+-        let result =
+-            evaluate_covered_occupancy(&context, occupancy, &trial[index * 10..(index + 1) * 10])?;
++        let result = evaluate_covered_occupancy_with_nodes(
++            &context,
++            occupancy,
++            &trial[index * 10..(index + 1) * 10],
++            replay.map_or([None; 4], |reuse| reuse.leaves(index)),
++            capture.as_deref_mut().map(|capture| &mut capture.leaves),
++        )?;
+         if result.liquid != routed_liquid[index] {
+             return Err(LandSurfaceEnergyError::OwnerEnvelope(
+                 "covered E04 routed/final evaluation mismatch",
+@@ -2348,6 +2393,10 @@ fn evaluate_covered_column_observed(
+     } else {
+         final_ground_vapor.max(0.0) * column.tile_fraction * column.interval_s
+     };
++    if let Some(capture) = capture {
++        capture.preparations = liquid_preparations;
++        capture.ledgers = routed_liquid;
++    }
+     Ok(CoveredColumnEvaluation {
+         raw_residuals: raw,
+         normalized_residuals,
+diff --git a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+index c0d9b6e4e..84cd7837c 100644
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+@@ -192,13 +192,13 @@ fn covered_finite_difference_value(
+     }
+ }
+ 
+-#[cfg(test)]
++#[cfg(any(test, feature = "test-support"))]
+ std::thread_local! {
+     static COVERED_JACOBIAN_FULL_PROBE_AUDIT: std::cell::Cell<Option<u32>> = const { std::cell::Cell::new(None) };
+     static FORCE_COMPLETE_COVERED_JACOBIAN_PROBES: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+ }
+ 
+-#[cfg(test)]
++#[cfg(any(test, feature = "test-support"))]
+ fn begin_covered_jacobian_full_probe_audit() {
+     FORCE_COMPLETE_COVERED_JACOBIAN_PROBES.with(|force| force.set(false));
+     COVERED_JACOBIAN_FULL_PROBE_AUDIT.with(|audit| audit.set(Some(0)));
+@@ -210,18 +210,18 @@ fn begin_forced_complete_covered_jacobian_probe_audit() {
+     COVERED_JACOBIAN_FULL_PROBE_AUDIT.with(|audit| audit.set(Some(0)));
+ }
+ 
+-#[cfg(test)]
++#[cfg(any(test, feature = "test-support"))]
+ fn take_covered_jacobian_full_probe_audit() -> u32 {
+     FORCE_COMPLETE_COVERED_JACOBIAN_PROBES.with(|force| force.set(false));
+     COVERED_JACOBIAN_FULL_PROBE_AUDIT.with(|audit| audit.take().unwrap_or_default())
+ }
+ 
+-#[cfg(test)]
++#[cfg(any(test, feature = "test-support"))]
+ fn force_complete_covered_jacobian_probes() -> bool {
+     FORCE_COMPLETE_COVERED_JACOBIAN_PROBES.with(std::cell::Cell::get)
+ }
+ 
+-#[cfg(not(test))]
++#[cfg(not(any(test, feature = "test-support")))]
+ const fn force_complete_covered_jacobian_probes() -> bool {
+     false
+ }
+@@ -229,6 +229,7 @@ const fn force_complete_covered_jacobian_probes() -> bool {
+ struct ValidatedCoveredIterationMap<'a> {
+     validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+     evaluation: CoveredColumnEvaluation,
++    capture: Option<CoveredReplayCapture>,
+ }
+ 
+ impl<'a> ValidatedCoveredIterationMap<'a> {
+@@ -236,9 +237,21 @@ impl<'a> ValidatedCoveredIterationMap<'a> {
+         validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+         trial: &[f64],
+     ) -> Result<Self, LandSurfaceEnergyError> {
++        let mut capture = validated
++            .stage3_boundary
++            .map(|_| CoveredReplayCapture::default());
++        let evaluation = evaluate_covered_column_with_nodes_validated(
++            validated,
++            trial,
++            None,
++            None,
++            capture.as_mut(),
++            None,
++        )?;
+         Ok(Self {
+             validated,
+-            evaluation: evaluate_covered_column_validated(validated, trial, None, None)?,
++            evaluation,
++            capture,
+         })
+     }
+ 
+@@ -249,18 +262,30 @@ impl<'a> ValidatedCoveredIterationMap<'a> {
+             trial: trial.to_vec(),
+             evaluation: self.evaluation,
+             frozen,
++            capture: self.capture,
++            lifecycle: crate::solver_mechanism_audit::current_context(),
+         }
+     }
+ }
+ 
+-struct ValidatedCoveredJacobianBase<'a> {
++struct ValidatedCoveredComponentReplaySweepBase<'a> {
+     validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+     trial: Vec<f64>,
+     evaluation: CoveredColumnEvaluation,
+     frozen: CoveredFrozenBranches,
++    capture: Option<CoveredReplayCapture>,
++    lifecycle: Option<crate::solver_mechanism_audit::LifecycleContext>,
+ }
+ 
+-#[cfg(test)]
++type ValidatedCoveredJacobianBase<'a> = ValidatedCoveredComponentReplaySweepBase<'a>;
++
++impl ValidatedCoveredComponentReplaySweepBase<'_> {
++    fn into_evaluation(self) -> CoveredColumnEvaluation {
++        self.evaluation
++    }
++}
++
++#[cfg(any(test, feature = "test-support"))]
+ impl<'a> ValidatedCoveredJacobianBase<'a> {
+     fn evaluate(
+         validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+@@ -270,7 +295,7 @@ impl<'a> ValidatedCoveredJacobianBase<'a> {
+     }
+ }
+ 
+-#[cfg(test)]
++#[cfg(any(test, feature = "test-support"))]
+ fn record_covered_jacobian_full_probe_audit() {
+     COVERED_JACOBIAN_FULL_PROBE_AUDIT.with(|audit| {
+         if let Some(count) = audit.get() {
+@@ -279,24 +304,56 @@ fn record_covered_jacobian_full_probe_audit() {
+     });
+ }
+ 
+-#[cfg(not(test))]
++#[cfg(not(any(test, feature = "test-support")))]
+ fn record_covered_jacobian_full_probe_audit() {}
+ 
+-/// Returns the ordered normalized residuals for one admitted Jacobian probe.
+-///
+-/// Under represented snow, ground and soil temperatures are exact identity
+-/// anchors and cannot affect any other residual.  Reuse is therefore confined
+-/// to those columns and to this validated solve; every other probe executes the
+-/// complete evaluator.
++/// Regression adapter for externally supplied probe vectors. Canonical
++/// represented-snow component probes receive constructor-owned capabilities;
++/// ground/soil anchors retain identity synthesis. Other vectors select the
++/// complete evaluator with its existing error precedence.
++#[cfg(any(test, feature = "test-support"))]
+ fn covered_jacobian_probe_residuals(
+     base: &ValidatedCoveredJacobianBase<'_>,
+     probe: &[f64],
+     column_index: usize,
+ ) -> Result<Vec<f64>, LandSurfaceEnergyError> {
++    // Untrusted regression adapter. Production constructs the pair directly,
++    // proving the sole-coordinate change at construction without this scan.
++    if column_index < probe.len()
++        && probe.len() == base.trial.len()
++        && base
++            .validated
++            .component_graph
++            .as_ref()
++            .is_some_and(|graph| graph.coordinate_eligible(column_index))
++        && probe.iter().enumerate().all(|(index, value)| {
++            index == column_index || value.to_bits() == base.trial[index].to_bits()
++        })
++    {
++        let h = f64::EPSILON.sqrt() * base.trial[column_index].abs().max(1.0);
++        let pair = CoveredCanonicalProbePair::new(base, column_index, h)?;
++        let stencil = pair.stencil;
++        let selected = if probe[column_index].to_bits() == pair.minus_value.to_bits() {
++            pair.minus
++        } else if probe[column_index].to_bits() == pair.plus_value.to_bits() {
++            pair.plus
++        } else {
++            None
++        };
++        if let Some(capability) = selected {
++            let sign = capability.sign;
++            return capability.evaluate_for(base, column_index, sign, h, stencil);
++        }
++    }
+     let mut observation =
+         crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Probe);
+-    let result =
+-        covered_jacobian_probe_residuals_observed(base, probe, column_index, &mut observation);
++    let result = covered_jacobian_probe_residuals_observed(
++        base,
++        probe,
++        column_index,
++        &mut observation,
++        false,
++    );
+     observation.finish(result)
+ }
+ 
+@@ -305,11 +362,12 @@ fn covered_jacobian_probe_residuals_observed(
+     probe: &[f64],
+     column_index: usize,
+     observation: &mut crate::solver_mechanism_audit::Scope,
++    canonical: bool,
+ ) -> Result<Vec<f64>, LandSurfaceEnergyError> {
+     let validated = base.validated;
+     let current = &base.evaluation;
+     let frozen = Some(&base.frozen);
+-    if probe.len() != base.trial.len() || column_index >= probe.len() {
++    if !canonical && (probe.len() != base.trial.len() || column_index >= probe.len()) {
+         observation.probe(
+             column_index,
+             probe.get(column_index).map(|v| v.to_bits()),
+@@ -320,9 +378,11 @@ fn covered_jacobian_probe_residuals_observed(
+             evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals,
+         );
+     }
+-    if probe.iter().enumerate().any(|(index, value)| {
+-        index != column_index && value.to_bits() != base.trial[index].to_bits()
+-    }) {
++    if !canonical
++        && probe.iter().enumerate().any(|(index, value)| {
++            index != column_index && value.to_bits() != base.trial[index].to_bits()
++        })
++    {
+         observation.probe(
+             column_index,
+             Some(probe[column_index].to_bits()),
+@@ -345,6 +405,43 @@ fn covered_jacobian_probe_residuals_observed(
+             residuals[column_index] = raw_residual / STAGE3_COVERED_IDENTITY_TOLERANCE_K;
+             return Ok(residuals);
+         }
++        if canonical {
++            if let Some(graph) = validated
++                .component_graph
++                .as_ref()
++                .filter(|graph| graph.coordinate_eligible(column_index))
++            {
++                let capture = base
++                    .capture
++                    .as_ref()
++                    .ok_or_else(component_replay_integrity)?;
++                let n = validated.column.occupancies.len();
++                if capture.preparations.len() != n
++                    || capture.ledgers.len() != n
++                    || capture.leaves.len() != n
++                {
++                    return Err(component_replay_integrity());
++                }
++                observation.probe(
++                    column_index,
++                    Some(probe[column_index].to_bits()),
++                    crate::solver_mechanism_audit::ProbeClass::ComponentReplay,
++                );
++                return Ok(evaluate_covered_column_with_nodes_validated(
++                    validated,
++                    probe,
++                    frozen,
++                    None,
++                    None,
++                    Some(CoveredReplayReuse {
++                        capture,
++                        graph,
++                        coordinate: column_index,
++                    }),
++                )?
++                .normalized_residuals);
++            }
++        }
+     }
+     observation.probe(
+         column_index,
+@@ -553,6 +650,10 @@ fn solve_covered_column_observed(
+         let iteration_map =
+             ValidatedCoveredIterationMap::evaluate(&validated_evaluation_inputs, &x)?;
+         let detail = &iteration_map.evaluation;
++        #[cfg(test)]
++        record_covered_trial_trace(iteration, &x, detail);
++        #[cfg(any(test, feature = "test-support"))]
++        component_replay_oracle::observe_runtime_base(beginning, &x, caps);
+         let norm = normalized_infinity_norm(&detail.normalized_residuals);
+         let v10_nonpositive_assimilation = beginning.authority.admits_nonpositive_assimilation()
+             && v10_nonpositive_assimilation_active(detail);
+@@ -589,6 +690,15 @@ fn solve_covered_column_observed(
+                 matrix_norm,
+             }));
+         }
++        let mut sweep_observation =
++            crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Sweep);
++        sweep_observation.sweep_base(
++            &x,
++            beginning.occupancies.len(),
++            beginning.ground.soil_nodes.len(),
++            validated_evaluation_inputs.stage3_boundary.is_some(),
++            ground_uses_liquid_vapor_phase_domain,
++        );
+         let jacobian_base = iteration_map.into_jacobian_base(&x);
+         let detail = &jacobian_base.evaluation;
+         let units: Vec<f64> = (0..beginning.occupancies.len())
+@@ -602,61 +712,52 @@ fn solve_covered_column_observed(
+             .map(|(value, unit)| f64::EPSILON.sqrt() * value.abs().max(*unit))
+             .collect();
+         let mut jacobian = vec![vec![0.0; x.len()]; x.len()];
+-        let mut sweep_observation =
+-            crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Sweep);
+-        sweep_observation.sweep_base(
+-            &x,
+-            beginning.occupancies.len(),
+-            beginning.ground.soil_nodes.len(),
+-            validated_evaluation_inputs.stage3_boundary.is_some(),
+-            ground_uses_liquid_vapor_phase_domain,
+-        );
+         for column_index in 0..x.len() {
+-            let mut minus = x.clone();
+-            let mut plus = x.clone();
+-            minus[column_index] -= perturbations[column_index];
+-            plus[column_index] += perturbations[column_index];
+-            let stencil = covered_finite_difference_stencil(
+-                &x,
+-                &minus,
+-                &plus,
+-                beginning.occupancies.len(),
+-                ground_uses_liquid_vapor_phase_domain,
++            let CoveredCanonicalProbePair {
++                minus,
++                plus,
++                minus_value,
++                plus_value,
++                stencil,
++            } = CoveredCanonicalProbePair::new(
++                &jacobian_base,
++                column_index,
++                perturbations[column_index],
+             )?;
+             if sweep_observation.detailed() {
+                 sweep_observation.stencil(
+                     column_index,
+-                    minus[column_index],
+-                    plus[column_index],
+-                    covered_trial_is_valid(
+-                        &minus,
+-                        beginning.occupancies.len(),
+-                        ground_uses_liquid_vapor_phase_domain,
+-                    ),
+-                    covered_trial_is_valid(
+-                        &plus,
+-                        beginning.occupancies.len(),
+-                        ground_uses_liquid_vapor_phase_domain,
+-                    ),
++                    minus_value,
++                    plus_value,
++                    minus.is_some(),
++                    plus.is_some(),
+                     validated_evaluation_inputs.stage3_identity_anchor_k(column_index),
+                 );
+             }
+             // Preserve the canonical minus-then-plus evaluation order while
+             // never evaluating a constitutively inadmissible boundary probe.
+-            let minus_residuals = covered_trial_is_valid(
+-                &minus,
+-                beginning.occupancies.len(),
+-                ground_uses_liquid_vapor_phase_domain,
+-            )
+-            .then(|| covered_jacobian_probe_residuals(&jacobian_base, &minus, column_index))
+-            .transpose()?;
+-            let plus_residuals = covered_trial_is_valid(
+-                &plus,
+-                beginning.occupancies.len(),
+-                ground_uses_liquid_vapor_phase_domain,
+-            )
+-            .then(|| covered_jacobian_probe_residuals(&jacobian_base, &plus, column_index))
+-            .transpose()?;
++            let minus_residuals = minus
++                .map(|probe| {
++                    probe.evaluate_for(
++                        &jacobian_base,
++                        column_index,
++                        CoveredProbeSign::Minus,
++                        perturbations[column_index],
++                        stencil,
++                    )
++                })
++                .transpose()?;
++            let plus_residuals = plus
++                .map(|probe| {
++                    probe.evaluate_for(
++                        &jacobian_base,
++                        column_index,
++                        CoveredProbeSign::Plus,
++                        perturbations[column_index],
++                        stencil,
++                    )
++                })
++                .transpose()?;
+             for row in 0..x.len() {
+                 jacobian[row][column_index] = covered_finite_difference_value(
+                     stencil,
+@@ -669,6 +770,10 @@ fn solve_covered_column_observed(
+         }
+         sweep_observation.complete();
+         drop(sweep_observation);
++        // Drop replay nodes and probe custody before LU/backtracking. Only
++        // the canonical complete evaluation remains in the Newton iteration.
++        let sweep_evaluation = jacobian_base.into_evaluation();
++        let detail = &sweep_evaluation;
+         let mut rhs: Vec<f64> = detail
+             .normalized_residuals
+             .iter()
+@@ -727,6 +832,14 @@ fn solve_covered_column_observed(
+                 }
+             }
+         }
++        #[cfg(test)]
++        record_covered_solve_trace(|| CoveredSolveTrace::Matrix {
++            jacobian: jacobian
++                .iter()
++                .map(|row| row.iter().map(|v| v.to_bits()).collect())
++                .collect(),
++            rhs: rhs.iter().map(|v| v.to_bits()).collect(),
++        });
+         let (mut delta, current_pivot, current_matrix_norm) = match solve_linear(&jacobian, &rhs) {
+             Ok(value) => value,
+             Err(evidence) => {
+@@ -747,6 +860,12 @@ fn solve_covered_column_observed(
+                 }));
+             }
+         };
++        #[cfg(test)]
++        record_covered_solve_trace(|| CoveredSolveTrace::Linear {
++            delta: delta.iter().map(|v| v.to_bits()).collect(),
++            pivot: current_pivot.to_bits(),
++            matrix_norm: current_matrix_norm.to_bits(),
++        });
+         if v10_scaled_potential {
+             for (change, unit) in delta.iter_mut().zip(&units) {
+                 *change *= unit;
+@@ -775,6 +894,8 @@ fn solve_covered_column_observed(
+                 None,
+                 None,
+             )?;
++            #[cfg(test)]
++            record_covered_trial_trace(iteration, &prospective, &prospective_detail);
+             let prospective_steps = covered_step_norms(
+                 &delta,
+                 beginning.occupancies.len(),
+@@ -785,7 +906,7 @@ fn solve_covered_column_observed(
+                 return accept_covered_candidate(
+                     beginning,
+                     x,
+-                    jacobian_base.evaluation,
++                    sweep_evaluation,
+                     iteration,
+                     backtracking_count,
+                     prospective_steps,
+@@ -821,6 +942,8 @@ fn solve_covered_column_observed(
+                 ) else {
+                     return CoveredHalvedTrialProbe::EvaluationIncomplete;
+                 };
++                #[cfg(test)]
++                record_covered_trial_trace(iteration, &trial, &trial_detail);
+                 let applied: Vec<f64> = delta.iter().map(|value| factor * value).collect();
+                 let steps = covered_step_norms(
+                     &applied,
+@@ -834,7 +957,7 @@ fn solve_covered_column_observed(
+             return accept_covered_candidate(
+                 beginning,
+                 x,
+-                jacobian_base.evaluation,
++                sweep_evaluation,
+                 iteration,
+                 backtracking_count + exponent,
+                 steps,
+@@ -861,6 +984,8 @@ fn solve_covered_column_observed(
+             else {
+                 continue;
+             };
++            #[cfg(test)]
++            record_covered_trial_trace(iteration, &trial, &trial_detail);
+             let applied: Vec<f64> = delta.iter().map(|value| factor * value).collect();
+             let steps =
+                 covered_step_norms(&applied, beginning.occupancies.len(), detail, &trial_detail);
+diff --git a/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs b/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
+index 56490d02c..8bdc00571 100644
+--- a/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
+@@ -115,6 +115,27 @@ struct State {
+     live: u64,
+ }
+ thread_local! { static ACTIVE: RefCell<Option<State>> = const { RefCell::new(None) }; }
++
++/// Observation only. Intrinsic borrowed replay custody does not depend on an
++/// audit session. Parent joins in the trace identify the enclosing map.
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub(crate) struct LifecycleContext {
++    pub generation: u64,
++    pub parent: Option<u64>,
++    pub solve: Option<u64>,
++    pub iteration: u64,
++}
++
++pub(crate) fn current_context() -> Option<LifecycleContext> {
++    ACTIVE.with(|active| {
++        active.borrow().as_ref().map(|state| LifecycleContext {
++            generation: state.generation,
++            parent: state.parent,
++            solve: state.solve,
++            iteration: state.iteration,
++        })
++    })
++}
+ #[cfg(any(test, feature = "test-support"))]
+ static GENERATION: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+ 
+diff --git a/crates/openwepp-land-surface-energy/src/solver_tests.rs b/crates/openwepp-land-surface-energy/src/solver_tests.rs
+index 4e8a8cfcc..d555966c0 100644
+--- a/crates/openwepp-land-surface-energy/src/solver_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_tests.rs
+@@ -1179,6 +1179,12 @@ fn covered_v8_block_matches_frozen_joint_solution() {
+     stage3_column.stage3_optical = Some(stage3_optical);
+     let validated_stage3 = ValidatedCoveredEvaluationInputs::try_new(&stage3_column, None)
+         .expect("validated Stage-3 anchor fixture");
++    component_replay_oracle::assert_prospective_component_replay(&stage3_column, &full_trial);
++    let mut inactive_stage3 = inactive_leaf_column.clone();
++    inactive_stage3.authority = stage3_column.authority;
++    inactive_stage3.stage3_lower_boundary = stage3_column.stage3_lower_boundary.clone();
++    inactive_stage3.stage3_optical = stage3_column.stage3_optical.clone();
++    component_replay_oracle::assert_boundary_component_replay(&inactive_stage3, &full_trial);
+     begin_covered_leaf_trial_audit(false);
+     let optimized_leaf_solve = solve_covered_column(&stage3_column, None, full_trial.clone());
+     let optimized_leaf_calls = take_covered_leaf_trial_audit();
+diff --git a/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs b/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
+index f7dd9a633..e08c81289 100644
+--- a/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
++++ b/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
+@@ -1,4 +1,20 @@
+ // Common observation-only workload for EXP-STAGE3-20260906; no treatment selector.
++#[test]
++#[ignore = "R correctness oracle only; exact same authenticated complete consumer"]
++fn stage3_controlled_mechanism_forced_complete_experiment() {
++    openwepp_land_surface_energy::with_forced_complete_covered_probes(
++        stage3_controlled_mechanism_experiment,
++    );
++}
++
++#[test]
++#[ignore = "R node oracle only; injected diagnostic calls are excluded from lifecycle/timing evidence"]
++fn stage3_controlled_mechanism_node_oracle_experiment() {
++    openwepp_land_surface_energy::with_component_replay_runtime_oracle(
++        stage3_controlled_mechanism_experiment,
++    );
++}
++
+ #[test]
+ #[ignore = "controlled release experiment; fresh process and explicit environment required"]
+ fn stage3_controlled_mechanism_experiment() {

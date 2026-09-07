@@ -1,0 +1,22 @@
+{
+  "pid": 743767,
+  "command": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "cargo",
+    "deny",
+    "check",
+    "--disable-fetch"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 1178843988,
+  "log_sha256": "5337b27655b86b745df511271ee799601aabd3baaba0ecea62d9a932321586ef",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

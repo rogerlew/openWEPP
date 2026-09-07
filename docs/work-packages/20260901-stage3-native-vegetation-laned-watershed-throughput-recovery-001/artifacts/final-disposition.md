@@ -63,3 +63,11 @@ Terminal disposition is therefore `HOLD`. It is not completion, release
 approval, exact-workspace correctness, or performance qualification. The first
 lift action is owner authority selecting the revised runtime premise or new
 architecture scope described in `artifacts/hold-legitimacy-audit.md`.
+
+## Prospective owner authorization (2026-09-06)
+
+The owner subsequently authorized `20260906-stage3-prospective-mechanism-experiments-001`
+for new independent A/F/R mechanism comparisons and an architecture handoff. This
+forward reference preserves the historical HOLD, failed engineering qualifications
+and protected science boundaries; it neither promotes a treatment nor rewrites
+the previous numerical or memory results.

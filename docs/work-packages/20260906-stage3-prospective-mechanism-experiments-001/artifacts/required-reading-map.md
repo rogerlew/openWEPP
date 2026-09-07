@@ -73,3 +73,17 @@ authority-required-reading.md; carrier-observation-required-reading.md;
 lse-observation-required-reading.md. Each records its actual ranges/bytes and
 exact paths, including any proposed extraction. Treatment paths are not blanket
 directory authority and must be declared/reviewed before behavior edits.
+
+## Common extraction guard correction (prospective)
+
+Static: reviewer B found the old four-read provenance guard reads only the
+pre-extraction qualification file. Exact additional write path in main/F/R:
+`tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs`.
+Discovery returned root AGENTS.md and tests/AGENTS.md (4,723 bytes, fully read).
+Read test lines895–1025 and actual helper/include/baseline call sites. Preserve
+the four canonical manifest reads across both real source files, reject stale
+reads in either, and bind the original baseline call and actual include. All
+WAT/WAT5 assertions remain. This is source-location reconciliation, not new
+science, test filtering or threshold reduction. Apply after active A full run
+to keep its source cut fixed; retain old kits and freeze new common test-input
+identities before measurement. Runner source and physical behavior unchanged.

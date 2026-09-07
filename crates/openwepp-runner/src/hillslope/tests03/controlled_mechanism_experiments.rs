@@ -1,6 +1,10 @@
 // Common observation-only workload for EXP-STAGE3-20260906; no treatment selector.
 #[test]
 #[ignore = "controlled release experiment; fresh process and explicit environment required"]
+#[expect(
+    clippy::assertions_on_constants,
+    reason = "ignored comparison must reject debug execution"
+)]
 fn stage3_controlled_mechanism_experiment() {
     assert!(!cfg!(debug_assertions), "release build required");
     let ofes: usize = std::env::var("OPENWEPP_EXPERIMENT_OFES")
@@ -113,6 +117,14 @@ fn controlled_mechanism_output_evidence(
     (files, manifest)
 }
 
+#[expect(
+    clippy::assertions_on_constants,
+    reason = "ignored comparison must reject debug execution"
+)]
+#[expect(
+    clippy::too_many_lines,
+    reason = "single authentic consumer scope preserves measurement clocks and owner/drop lifetimes"
+)]
 fn controlled_mechanism_run(ofe_count: usize, iteration: usize, memory: bool) -> serde_json::Value {
     assert!(
         !cfg!(debug_assertions),
@@ -263,7 +275,7 @@ fn controlled_mechanism_run(ofe_count: usize, iteration: usize, memory: bool) ->
         },
     )
     .expect("release-probe routed HBP must parse");
-    assert_eq!(usize::try_from(hbp.nofe).expect("OFE count"), ofe_count);
+    assert_eq!(usize::from(hbp.nofe), ofe_count);
     let event = latest_event.expect("release probe must publish a positive routed HBP event");
     let wat_path = run_dir.join("output/H83.wat.parquet");
     let evidence = RealLaneDPublicEvidence {

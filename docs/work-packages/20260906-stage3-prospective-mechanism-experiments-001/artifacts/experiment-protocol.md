@@ -1,6 +1,8 @@
-# EXP-STAGE3-20260906 protocol, draft 1
+# EXP-STAGE3-20260906 protocol, original draft 1 plus prospective reviewed amendments
 
-Static: prospective, not yet independently admitted. No comparative samples.
+Static: prospective protocol with independently reviewed amendments below.
+No comparative samples have run at this amendment; runtime admission remains
+separate from protocol/design review.
 
 ## Identities and isolation
 
@@ -27,9 +29,16 @@ one OFE, 100 m2, one day. Secondary 10/19 OFEs use authenticated existing scale
 fixture construction with deterministic areas, frozen identically per comparison.
 Do not change forcing, topology validators or publication semantics.
 
-Runner wall is monotonic Instant around the entire production consumer call,
-including actual publication. Process CPU uses /proc/self/stat utime+stime and
-recorded CLK_TCK at those same boundaries (tick resolution reported). Fixture
+Runner `run_wall_us` is Instant elapsed around the entire production consumer
+call, including actual publication. The final harness separately records safe
+rustix CLOCK_MONOTONIC nanoseconds immediately before Instant start and after
+elapsed capture; these share the parent's monotonic clock for active RSS sample
+joins. Process CPU reads /proc/self/stat utime+stime immediately before the
+start-clock capture and after the end-clock capture; divide tick delta by
+recorded CLK_TCK and report its resolution. Thus CPU and absolute clock scopes
+slightly enclose the runner-wall scope; they are not claimed bit-identical
+intervals. See controlled_mechanism_experiments.rs:181-195, common-review-a.md
+clock correction and collector-review-b.md active-interval validation. Fixture
 authoring, validation, detailed trace oracle, digesting and teardown are outside
 this interval. Required bounded counters remain enabled in both arms. Authentic
 counts A establishes replace no history; expected historical 48 parents, 56
@@ -119,3 +128,53 @@ Every arm receives a supported decision; unexecuted is not a negative measuremen
 Architecture handoff records actual counts, exclusive costs versus nested bounds,
 absolute savings, target feasibility gap, <=3 ranked directions, and one decisive
 prototype with measurable kill criterion. No production qualification or promotion.
+
+## Prospective F construction-work qualification
+
+Before comparative timing, independent reviews in F-implementation-review-a.md
+and F-day-frame-review-b.md approve the exact F-day-frame-attribution.md cut
+7536ede62b8b16ca7a9723a0c4deddef73a4465ac7a88595af936ee0c29cdb33.
+This qualifies only manifest leaf
+`/direct_runtime_counters/day_frame_constructions`; it is mechanism-dependent
+work telemetry, NOT volatile provenance. Raw manifests and raw D/P/N remain
+retained unchanged. Every other counter/scientific leaf keeps exact comparison.
+
+Let D be that raw counter, P completed native provider calls (equal completed
+carrier calls), and N authenticated hydrology owner lane count. The reviewed
+native physical-only carrier performs two complete-frame adapter constructions,
+each seeding N lanes. Compare the qualified leaf as
+`{qualification: F-two-full-lane-seeds, noncarrier_constructions: D-2*N*P}`.
+The collector implementation is reproduction/run_series.py frame_work_rule,
+frame_work_comparison and the single-leaf normalized_manifest dispatch.
+
+Actual primary admission operands: A D=1205/P=400/N=1; F D=805/P=200/N=1.
+The construction reduction400 equals2*N*(400-200), and both noncarrier residues
+are405. These exact primary pins remain required. P counts must be balanced
+started=completed with errors0, Provider=Carrier, no dropped records, checked
+nonnegative integer arithmetic and exact raw-leaf binding. The 405 residue is
+not accepted-day count or a guessed assignment to another physical process.
+
+For authenticated N=10/19, the same source-derived equation requires fresh
+paired admissions: D_A-D_F=2*N*(P_A-P_F) and equal noncarrier residues. Do not
+extrapolate primary P/D or impose405. Bootstrap/complete-owner/snapshot/HBP
+cardinality joins, matched native branch, independent resolved/batch/canonical
+populations, actual invocation/support/custody parity and physical/output gates
+must hold. A new branch, failed call, batch change or mismatched residue rejects
+qualification; no broader counter exception is admitted. Sampling, timing,
+memory and decision criteria above are unchanged.
+
+## Actual reconstruction and local environment clarification
+
+Source-kit correction includes15 compiler-read JSON documents; see
+authority-input-reproduction.md and its exact-base composition manifest.
+This corrects source reproducibility, not physical behavior. Reconstruct a FULL
+exact-base checkout plus the arm's runtime kit and canonical adjunct; a narrow
+source archive alone does not establish a runnable root integration workspace.
+F/R runtime patches apply to A commit2b56e6ebc, not directly to e89befa46.
+
+Actual isolated F and R `.venv` entries are explicit symlinks to
+`/workdir/openWEPP/.venv` (readlink verified). They share local Python tooling,
+not scientific state. Preserve/recreate the required Python environment when
+reproducing source-reading/schema gates; the untracked environment is not a
+committed source input or a portable dependency bundle. Nix/compiler/stack/LTO
+and measured executable identities remain separately frozen as above.

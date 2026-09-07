@@ -1,5 +1,8 @@
 //! Ordinary Rust conformance against the committed covered-column authority vectors.
 
+#[path = "covered_natural_limit_diagnostic_parity_tests.rs"]
+mod natural_limit_diagnostic_parity;
+
 use std::collections::BTreeMap;
 
 use serde_json::Value;

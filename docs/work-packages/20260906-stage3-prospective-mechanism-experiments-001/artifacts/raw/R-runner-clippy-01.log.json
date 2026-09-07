@@ -1,0 +1,29 @@
+{
+  "pid": 1204037,
+  "command": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "cargo",
+    "clippy",
+    "--offline",
+    "--no-deps",
+    "-p",
+    "openwepp-runner",
+    "--all-targets",
+    "--message-format=json",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/tmp/openwepp-controlled-mechanisms-Hb6uS2/R",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 101,
+  "duration_ns": 30427915313,
+  "log_sha256": "fdacbde42f0a32e15b46eb0c5d270017352bef97fea0876580ea58f73932d0bb",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

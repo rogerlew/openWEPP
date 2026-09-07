@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "cargo",
+    "check",
+    "--tests",
+    "-p",
+    "openwepp-land-surface-energy",
+    "--message-format=json"
+  ],
+  "cwd": "/tmp/openwepp-source-kit-verify-3vmlnyn9/source"
+}

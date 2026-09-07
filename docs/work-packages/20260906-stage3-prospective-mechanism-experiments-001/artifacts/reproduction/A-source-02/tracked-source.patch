@@ -1,0 +1,2693 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 995d40739..6ae49c86c 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1241,6 +1241,7 @@ dependencies = [
+  "openwepp-watershed-orchestrator",
+  "openwepp-watershed-output",
+  "parquet",
++ "rustix",
+  "serde",
+  "serde_json",
+  "sha2",
+diff --git a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
+index 88e8e9d34..e5246b167 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
+@@ -349,6 +349,13 @@ impl Wb11HydrologyKernel {
+                              duration_seconds,
+                              role,
+                              attempt_ordinal| {
++                                let mut mechanism_evaluator =
++                                    crate::stage3_mechanism_experiment_audit::Scope::begin(
++                                        crate::stage3_mechanism_experiment_audit::Kind::Evaluator,
++                                        || {
++                                            format!("role={role:?};attempt={attempt_ordinal};start_bits={};duration_bits={}", relative_start_seconds.to_bits(), duration_seconds.to_bits())
++                                        },
++                                    );
+                                 let surface_temperature_c =
+                                     Self::stage3_temperature_from_cold_content_values(
+                                         trial_state.ice_kg_m2 / STAGE3_RHO_WATER_KG_M3,
+@@ -632,6 +639,7 @@ impl Wb11HydrologyKernel {
+                                         require_terminal_coupling_live_convergence(
+                                             selected_live_converged,
+                                         )?;
++                                        mechanism_evaluator.complete(true, || crate::stage3_mechanism_experiment_audit::transition_fingerprint(&receipt));
+                                         return Ok((flux, Some(receipt.ending_joint)));
+                                     } else {
+                                         None
+@@ -690,6 +698,7 @@ impl Wb11HydrologyKernel {
+                                     || beginning_joint.clone(),
+                                     |value| Some(value.ending_joint),
+                                 );
++                                mechanism_evaluator.complete(true, String::new);
+                                 Ok((flux, ending_joint))
+                             },
+                             |state, joint| {
+@@ -838,6 +847,17 @@ impl Wb11HydrologyKernel {
+                     active_state.mass_swe_m,
+                     active_state.cold_content_j_m2,
+                 );
++                let mut mechanism_resolved_evaluator = terminal_trial_context.as_ref().map(|_| {
++                    crate::stage3_mechanism_experiment_audit::Scope::begin(
++                        crate::stage3_mechanism_experiment_audit::Kind::Evaluator,
++                        || {
++                            format!(
++                                "resolved;elapsed_bits={};substep={substep_index}",
++                                elapsed_seconds.to_bits()
++                            )
++                        },
++                    )
++                });
+                 let covered_substep_boundary = if let Some((
+                     lane_id,
+                     base_support,
+@@ -1178,6 +1198,9 @@ impl Wb11HydrologyKernel {
+                     .max(closure_residual_j_m2.abs());
+                 elapsed_seconds += substep_seconds;
+                 substep_index += 1;
++                if let Some(observer) = &mut mechanism_resolved_evaluator {
++                    observer.complete(true, String::new);
++                }
+             }
+             if substep_index == 0 {
+                 summary.reconciliation.hourly_status[hour_index] =
+diff --git a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
+index 4e8c94184..c2f88b5b9 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
+@@ -95,7 +95,19 @@ impl Wb11HydrologyKernel {
+                 "covered terminal batch lane topology",
+             ));
+         }
+-        let candidates = provider(request)?;
++        let mut mechanism_batch = crate::stage3_mechanism_experiment_audit::Scope::begin(
++            crate::stage3_mechanism_experiment_audit::Kind::BatchProvider,
++            || crate::stage3_mechanism_experiment_audit::fingerprint(request),
++        );
++        let candidates = provider(request);
++        mechanism_batch.complete(candidates.is_ok(), || match &candidates {
++            Ok(value) => {
++                crate::stage3_mechanism_experiment_audit::fingerprint(&value.carrier_joint)
++            }
++            Err(error) => format!("{error:?}"),
++        });
++        drop(mechanism_batch);
++        let candidates = candidates?;
+         if candidates.support != request.support
+             || candidates.beginning_joint_sha256 != request.beginning_joint.receipt_sha256()
+             || candidates.carrier_joint.authority() != request.beginning_joint.authority()
+diff --git a/crates/openwepp-hillslope-orchestrator/src/lib.rs b/crates/openwepp-hillslope-orchestrator/src/lib.rs
+index 05d0113fe..170231c65 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/lib.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/lib.rs
+@@ -11,6 +11,7 @@ pub mod snow_stage3_open_boundary;
+ pub mod snow_stage3_terminal_handoff;
+ pub mod snow_stage3_v11_attachment;
+ pub mod snow_stage3_v11_snow_enthalpy_carry;
++pub mod stage3_mechanism_experiment_audit;
+ pub mod v11_vegetation_consumer;
+ pub mod v9_real_consumer_shadow;
+ pub mod vegetation_diagnostic;
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+index 341cb41bf..264093583 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+@@ -114,7 +114,6 @@ impl CoveredTerminalProviderRetentionV1 {
+             Self::Phase(phase) => &phase.ending_candidates,
+         }
+     }
+-
+ }
+ 
+ #[cfg(test)]
+@@ -387,8 +386,8 @@ impl TerminalCandidateProfileScopeV1 {
+     fn begin(phase: &'static str) -> Self {
+         Self {
+             phase,
+-            started:
+-                crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1(),
++            started: crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1(
++            ),
+         }
+     }
+ }
+@@ -429,6 +428,12 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+     ),
+     DirectSnowStage3V11AttachmentError,
+ > {
++    let mut mechanism_outer = crate::stage3_mechanism_experiment_audit::Scope::begin(
++        crate::stage3_mechanism_experiment_audit::Kind::Outer,
++        || {
++            format!("day={day_index};interval={interval_index};child={current_child_ordinal};lane={lane_id};mode={mode:?};support={:?};upper_bits={}", prepared.support, selected_upper_bound_s.to_bits())
++        },
++    );
+     let setup_profile = TerminalCandidateProfileScopeV1::begin("terminal candidate setup");
+     let state =
+         beginning_stage3
+@@ -509,6 +514,12 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+     let mut provider_evidence = M::new_provider_state();
+     drop(setup_profile);
+     let mut provider = |request: crate::hydrology::CoveredTerminalTrialRequestV1| {
++        let mut mechanism_provider = crate::stage3_mechanism_experiment_audit::Scope::begin(
++            crate::stage3_mechanism_experiment_audit::Kind::Provider,
++            || {
++                format!("lane={};support={:?};role={:?};attempt={};coupling={};beginning={:?};request_sha256={}", request.lane_id, request.support, request.role, request.attempt_ordinal, request.coupling_iteration, request.beginning_joint.receipt_sha256(), crate::stage3_mechanism_experiment_audit::fingerprint(&request))
++            },
++        );
+         let custody_profile = TerminalCandidateProfileScopeV1::begin("terminal provider custody");
+         audit_terminal_provider_support(request.support);
+         let carrier = if let Some(exact) = candidates_by_joint
+@@ -671,9 +682,20 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+         })?;
+         drop(projection_profile);
+         let carrier_profile = TerminalCandidateProfileScopeV1::begin("terminal provider carrier");
++        let mut mechanism_carrier = crate::stage3_mechanism_experiment_audit::Scope::begin(
++            crate::stage3_mechanism_experiment_audit::Kind::Carrier,
++            || crate::stage3_mechanism_experiment_audit::fingerprint(&request),
++        );
+         let provider_result = stage3_boxed_execution_v1(|| {
+             stack.execute_covered_carrier_phase_v1(&beginning, &request, child.as_ref().clone())
+         });
++        mechanism_carrier.complete(provider_result.is_ok(), || match &provider_result {
++            Ok(value) => {
++                crate::stage3_mechanism_experiment_audit::transition_fingerprint(&value.transition)
++            }
++            Err(error) => format!("{error:?}"),
++        });
++        drop(mechanism_carrier);
+         drop(carrier_profile);
+         let retention_profile =
+             TerminalCandidateProfileScopeV1::begin("terminal provider retention");
+@@ -725,6 +747,9 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+             .borrow_mut()
+             .insert(ending_joint_sha256, result.clone());
+         drop(retention_profile);
++        mechanism_provider.complete(true, || {
++            crate::stage3_mechanism_experiment_audit::transition_fingerprint(&result.transition)
++        });
+         Ok(result.transition.clone())
+     };
+     let result =
+@@ -743,8 +768,7 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+             evidence,
+         );
+     drop(provider);
+-    let result_profile =
+-        TerminalCandidateProfileScopeV1::begin("terminal result finalization");
++    let result_profile = TerminalCandidateProfileScopeV1::begin("terminal result finalization");
+     M::merge_provider(evidence, provider_evidence);
+     let result = match result {
+         Ok(mut result) => {
+@@ -782,6 +806,7 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+         }
+     };
+     drop(result_profile);
++    mechanism_outer.complete(result.is_ok(), String::new);
+     result
+ }
+ 
+diff --git a/crates/openwepp-hillslope-orchestrator/src/stage3_mechanism_experiment_audit.rs b/crates/openwepp-hillslope-orchestrator/src/stage3_mechanism_experiment_audit.rs
+new file mode 100644
+index 000000000..f77c9ea28
+--- /dev/null
++++ b/crates/openwepp-hillslope-orchestrator/src/stage3_mechanism_experiment_audit.rs
+@@ -0,0 +1,453 @@
++//! Explicit, thread-local observation sessions for prospective mechanism experiments.
++//! No session is active in ordinary production. Compact mode never formats or hashes.
++
++use std::{cell::RefCell, marker::PhantomData, rc::Rc};
++
++use serde::Serialize;
++use sha2::{Digest, Sha256};
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub enum Mode {
++    Compact,
++    Detailed { max_records: usize },
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
++#[repr(usize)]
++pub enum Kind {
++    Outer = 0,
++    Evaluator = 1,
++    Provider = 2,
++    Carrier = 3,
++    BatchProvider = 4,
++}
++
++#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize)]
++pub struct Lifecycle {
++    pub started: u64,
++    pub completed: u64,
++    pub errors: u64,
++}
++
++#[derive(Debug, Serialize)]
++pub struct Record {
++    pub kind: Kind,
++    pub ordinal: u64,
++    pub outer_ordinal: u64,
++    pub evaluator_ordinal: u64,
++    pub provider_ordinal: u64,
++    pub input: String,
++    pub output: Option<String>,
++    pub success: bool,
++}
++
++#[derive(Debug, Default, Serialize)]
++pub struct Snapshot {
++    /// Indexed by `Kind`; completed means successful completion, errors includes unwind.
++    pub counts: [Lifecycle; 5],
++    pub records: Vec<Record>,
++    pub dropped_records: u64,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub enum AuditError {
++    AlreadyActive,
++    MissingSession,
++    OutstandingScopes,
++    CounterOverflow,
++}
++
++struct State {
++    identity: Rc<()>,
++    mode: Mode,
++    snapshot: Snapshot,
++    current: [u64; 5],
++    outstanding: u64,
++    reserved: usize,
++    overflow: bool,
++}
++
++thread_local! {
++    static STATE: RefCell<Option<State>> = const { RefCell::new(None) };
++}
++
++/// A session must be finished on its originating thread. Dropping it cancels it.
++#[must_use]
++pub struct Session {
++    active: bool,
++    same_thread: PhantomData<Rc<()>>,
++}
++
++pub fn begin(mode: Mode) -> Result<Session, AuditError> {
++    STATE.with(|cell| {
++        let mut state = cell.borrow_mut();
++        if state.is_some() {
++            return Err(AuditError::AlreadyActive);
++        }
++        *state = Some(State {
++            identity: Rc::new(()),
++            mode,
++            snapshot: Snapshot::default(),
++            current: [0; 5],
++            outstanding: 0,
++            reserved: 0,
++            overflow: false,
++        });
++        Ok(Session {
++            active: true,
++            same_thread: PhantomData,
++        })
++    })
++}
++
++impl Session {
++    pub fn finish(mut self) -> Result<Snapshot, AuditError> {
++        self.active = false;
++        STATE.with(|cell| {
++            let state = cell.borrow_mut().take().ok_or(AuditError::MissingSession)?;
++            if state.overflow {
++                return Err(AuditError::CounterOverflow);
++            }
++            if state.outstanding != 0 {
++                return Err(AuditError::OutstandingScopes);
++            }
++            Ok(state.snapshot)
++        })
++    }
++}
++
++impl Drop for Session {
++    fn drop(&mut self) {
++        if self.active {
++            STATE.with(|cell| {
++                cell.borrow_mut().take();
++            });
++        }
++    }
++}
++
++fn increment(value: &mut u64, overflow: &mut bool) {
++    if let Some(next) = value.checked_add(1) {
++        *value = next;
++    } else {
++        *overflow = true;
++    }
++}
++
++pub(crate) struct Scope {
++    identity: Option<Rc<()>>,
++    kind: Kind,
++    previous: u64,
++    active: bool,
++    success: bool,
++    record: Option<Record>,
++}
++
++impl Scope {
++    pub(crate) fn begin(kind: Kind, input: impl FnOnce() -> String) -> Self {
++        let mut scope = STATE.with(|cell| {
++            let mut state = cell.borrow_mut();
++            let mut scope = Self {
++                identity: None,
++                kind,
++                previous: 0,
++                active: false,
++                success: false,
++                record: None,
++            };
++            let Some(state) = state.as_mut() else {
++                return scope;
++            };
++            scope.active = true;
++            scope.identity = Some(state.identity.clone());
++            increment(
++                &mut state.snapshot.counts[kind as usize].started,
++                &mut state.overflow,
++            );
++            increment(&mut state.outstanding, &mut state.overflow);
++            let ordinal = state.snapshot.counts[kind as usize].started;
++            scope.previous = state.current[kind as usize];
++            state.current[kind as usize] = ordinal;
++            if let Mode::Detailed { max_records } = state.mode {
++                if state.reserved < max_records {
++                    state.reserved += 1;
++                    scope.record = Some(Record {
++                        kind,
++                        ordinal,
++                        outer_ordinal: state.current[Kind::Outer as usize],
++                        evaluator_ordinal: state.current[Kind::Evaluator as usize],
++                        provider_ordinal: state.current[Kind::Provider as usize],
++                        input: String::new(),
++                        output: None,
++                        success: false,
++                    });
++                } else {
++                    increment(&mut state.snapshot.dropped_records, &mut state.overflow);
++                }
++            }
++            scope
++        });
++        if let Some(record) = &mut scope.record {
++            record.input = input();
++        }
++        scope
++    }
++
++    pub(crate) fn complete(&mut self, success: bool, output: impl FnOnce() -> String) {
++        self.success = success;
++        if let Some(record) = &mut self.record {
++            record.success = success;
++            record.output = Some(output());
++        }
++    }
++}
++
++impl Drop for Scope {
++    fn drop(&mut self) {
++        if !self.active {
++            return;
++        }
++        STATE.with(|cell| {
++            let mut state = cell.borrow_mut();
++            let Some(state) = state.as_mut() else {
++                return;
++            };
++            if !self
++                .identity
++                .as_ref()
++                .is_some_and(|identity| Rc::ptr_eq(identity, &state.identity))
++            {
++                return;
++            }
++            let count = &mut state.snapshot.counts[self.kind as usize];
++            increment(
++                if self.success {
++                    &mut count.completed
++                } else {
++                    &mut count.errors
++                },
++                &mut state.overflow,
++            );
++            if let Some(next) = state.outstanding.checked_sub(1) {
++                state.outstanding = next;
++            } else {
++                state.overflow = true;
++            }
++            state.current[self.kind as usize] = self.previous;
++            if let Some(record) = self.record.take() {
++                state.snapshot.records.push(record);
++            }
++        });
++    }
++}
++
++/// Debug bytes are a same-source experiment fingerprint, not a public serialization contract.
++pub(crate) fn fingerprint(value: &impl std::fmt::Debug) -> String {
++    format!("{:x}", Sha256::digest(format!("{value:?}").as_bytes()))
++}
++
++/// Exact boundary operand bits and canonical custody seals for the returned transition.
++/// This attributes removed calls; full phase/output parity is a separate admission gate.
++pub(crate) fn transition_fingerprint(
++    value: &crate::hydrology::CoveredTerminalTrialTransitionV1,
++) -> String {
++    use crate::snow_stage3_terminal_handoff::Stage3BoundaryIdentity;
++    let mut hash = Sha256::new();
++    hash.update(b"stage3-mechanism-transition-v1");
++    let boundary = &value.boundary;
++    hash.update(boundary.support.start_ns().get().to_be_bytes());
++    hash.update(boundary.support.end_ns().get().to_be_bytes());
++    for operand in [
++        boundary.sensible_energy_j_m2,
++        boundary.vapor_mass_kg_m2,
++        boundary.latent_energy_j_m2,
++        boundary.shortwave_energy_j_m2,
++        boundary.net_longwave_energy_j_m2,
++        boundary.precipitation_advection_j_m2,
++        boundary.snow_soil_heat_j_m2,
++        boundary.latent_heat_j_kg,
++    ] {
++        hash.update(operand.to_bits().to_be_bytes());
++    }
++    hash.update(boundary.beginning_stage3_state_sha256.as_bytes());
++    match boundary.identity {
++        Stage3BoundaryIdentity::Provisional {
++            carrier_receipt_sha256,
++        } => {
++            hash.update([0]);
++            hash.update(carrier_receipt_sha256.as_bytes());
++        }
++        Stage3BoundaryIdentity::Final {
++            provisional_carrier_receipt_sha256,
++            optical_receipt_sha256,
++            reciprocal_longwave_receipt_sha256,
++            final_destination_receipt_sha256,
++            final_lane_receipt_sha256,
++        } => {
++            hash.update([1]);
++            for digest in [
++                provisional_carrier_receipt_sha256,
++                optical_receipt_sha256,
++                reciprocal_longwave_receipt_sha256,
++                final_destination_receipt_sha256,
++                final_lane_receipt_sha256,
++            ] {
++                hash.update(digest.as_bytes());
++            }
++        }
++    }
++    hash.update(value.beginning_joint.receipt_sha256().as_bytes());
++    hash.update(value.ending_joint.receipt_sha256().as_bytes());
++    hash.update(value.probe_child_identity.receipt_sha256.as_bytes());
++    if let Some(receipt) = &value.trial_snow_soil_receipt {
++        hash.update([1]);
++        hash.update(receipt.receipt_sha256.as_bytes());
++    } else {
++        hash.update([0]);
++    }
++    format!("{:x}", hash.finalize())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn explicit_compact_session_never_evaluates_details_and_accounts_errors() {
++        let session = begin(Mode::Compact).unwrap();
++        assert!(matches!(
++            begin(Mode::Compact),
++            Err(AuditError::AlreadyActive)
++        ));
++        {
++            let mut outer = Scope::begin(Kind::Outer, || panic!("compact input"));
++            {
++                let _error = Scope::begin(Kind::Provider, || panic!("compact error"));
++            }
++            outer.complete(true, || panic!("compact output"));
++        }
++        let result = session.finish().unwrap();
++        assert_eq!(
++            result.counts[0],
++            Lifecycle {
++                started: 1,
++                completed: 1,
++                errors: 0
++            }
++        );
++        assert_eq!(
++            result.counts[2],
++            Lifecycle {
++                started: 1,
++                completed: 0,
++                errors: 1
++            }
++        );
++        assert!(result.records.is_empty());
++    }
++
++    #[test]
++    fn equal_payloads_have_distinct_authentic_invocation_ordinals_and_bounded_records() {
++        let session = begin(Mode::Detailed { max_records: 3 }).unwrap();
++        for _ in 0..2 {
++            let mut outer = Scope::begin(Kind::Outer, || "same".into());
++            let mut evaluator = Scope::begin(Kind::Evaluator, || "same".into());
++            evaluator.complete(true, || "same-result".into());
++            outer.complete(true, || "same-result".into());
++        }
++        let result = session.finish().unwrap();
++        assert_eq!(result.records.len(), 3);
++        assert_eq!(result.dropped_records, 1);
++        let outers: Vec<_> = result
++            .records
++            .iter()
++            .filter(|r| r.kind == Kind::Outer)
++            .collect();
++        assert_eq!(outers[0].outer_ordinal, 1);
++        assert_eq!(outers[1].outer_ordinal, 2);
++        assert_eq!(outers[0].input, outers[1].input);
++    }
++
++    #[test]
++    fn successful_provider_does_not_complete_failed_evaluator_tail() {
++        fn evaluate(fail_join: bool) -> Result<(), &'static str> {
++            let mut evaluator = Scope::begin(Kind::Evaluator, String::new);
++            {
++                let mut provider = Scope::begin(Kind::Provider, String::new);
++                provider.complete(true, String::new);
++            }
++            if fail_join {
++                return Err("boundary join");
++            }
++            evaluator.complete(true, String::new);
++            Ok(())
++        }
++        let session = begin(Mode::Detailed { max_records: 4 }).unwrap();
++        assert_eq!(evaluate(true), Err("boundary join"));
++        assert_eq!(evaluate(false), Ok(()));
++        let snapshot = session.finish().unwrap();
++        assert_eq!(
++            snapshot.counts[Kind::Provider as usize],
++            Lifecycle {
++                started: 2,
++                completed: 2,
++                errors: 0,
++            }
++        );
++        assert_eq!(
++            snapshot.counts[Kind::Evaluator as usize],
++            Lifecycle {
++                started: 2,
++                completed: 1,
++                errors: 1,
++            }
++        );
++        let failed = snapshot
++            .records
++            .iter()
++            .find(|record| record.kind == Kind::Evaluator && record.ordinal == 1)
++            .unwrap();
++        assert!(!failed.success);
++
++        // Bind the failure-tail scope semantics to the real resolved evaluator seam.
++        let source = include_str!(
++            "hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs"
++        );
++        let resolved = source
++            .split("let mut mechanism_resolved_evaluator")
++            .nth(1)
++            .unwrap();
++        let completion = resolved
++            .find("observer.complete(true, String::new)")
++            .unwrap();
++        assert!(
++            resolved
++                .find("snow.resolved_terminal_trial_boundary_join")
++                .unwrap()
++                < completion
++        );
++        assert!(
++            resolved
++                .find("snow.stage3_shadow_energy_residual_j_m2")
++                .unwrap()
++                < completion
++        );
++        assert!(!resolved[..completion].contains("mechanism_evaluator.complete"));
++    }
++
++    #[test]
++    fn unfinished_scopes_and_overflow_reject_evidence() {
++        let session = begin(Mode::Compact).unwrap();
++        let scope = Scope::begin(Kind::Carrier, String::new);
++        assert!(matches!(
++            session.finish(),
++            Err(AuditError::OutstandingScopes)
++        ));
++        drop(scope);
++        let session = begin(Mode::Compact).unwrap();
++        STATE
++            .with(|cell| cell.borrow_mut().as_mut().unwrap().snapshot.counts[3].started = u64::MAX);
++        drop(Scope::begin(Kind::Carrier, String::new));
++        assert!(matches!(session.finish(), Err(AuditError::CounterOverflow)));
++    }
++}
+diff --git a/crates/openwepp-land-surface-energy/src/lib.rs b/crates/openwepp-land-surface-energy/src/lib.rs
+index a97c04646..fe76f6579 100644
+--- a/crates/openwepp-land-surface-energy/src/lib.rs
++++ b/crates/openwepp-land-surface-energy/src/lib.rs
+@@ -21,6 +21,7 @@ pub mod owner_envelope;
+ pub mod physics;
+ pub mod solver;
+ pub mod solver_litter_phase;
++pub mod solver_mechanism_audit;
+ pub mod state;
+ pub mod support;
+ pub mod transaction;
+diff --git a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
+index b982a8a46..6a204df33 100644
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
+@@ -691,6 +691,7 @@ fn leaf_trial_state(
+     medlyn_g1_kpa_sqrt: f64,
+ ) -> Result<LeafTrialState, LandSurfaceEnergyError> {
+     record_covered_leaf_trial_audit();
++    crate::solver_mechanism_audit::leaf_call();
+     let vcmax_factor = peaked(
+         temperature,
+         p.ha_vcmax_j_mol,
+@@ -1878,33 +1879,31 @@ impl<'a> ValidatedCoveredEvaluationInputs<'a> {
+         caps: Option<&'a CoveredWaterCaps>,
+     ) -> Result<Self, LandSurfaceEnergyError> {
+         validate_covered_shortwave_inputs(column)?;
+-        let stage3_boundary =
+-            if column.authority == CoveredColumnAuthority::V11SnowCovered {
+-                let boundary = column.stage3_lower_boundary.as_ref().ok_or(
+-                    LandSurfaceEnergyError::StateLineage(
+-                        "missing Stage-3 covered lower boundary",
+-                    ),
+-                )?;
+-                boundary.validate()?;
+-                let optical = column.stage3_optical.as_ref().ok_or(
+-                    LandSurfaceEnergyError::StateLineage(
++        let stage3_boundary = if column.authority == CoveredColumnAuthority::V11SnowCovered {
++            let boundary = column.stage3_lower_boundary.as_ref().ok_or(
++                LandSurfaceEnergyError::StateLineage("missing Stage-3 covered lower boundary"),
++            )?;
++            boundary.validate()?;
++            let optical =
++                column
++                    .stage3_optical
++                    .as_ref()
++                    .ok_or(LandSurfaceEnergyError::StateLineage(
+                         "missing Stage-3 snow optical boundary",
+-                    ),
+-                )?;
+-                if optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
+-                    || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
+-                    || optical.stage3_albedo_state_sha256
+-                        != boundary.stage3_albedo_state_sha256
+-                    || optical.forcing_receipt_sha256 != boundary.forcing_receipt_sha256
+-                {
+-                    return Err(LandSurfaceEnergyError::StateLineage(
+-                        "Stage-3 snow optical/lower-boundary identity",
+-                    ));
+-                }
+-                Some(boundary)
+-            } else {
+-                None
+-            };
++                    ))?;
++            if optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
++                || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
++                || optical.stage3_albedo_state_sha256 != boundary.stage3_albedo_state_sha256
++                || optical.forcing_receipt_sha256 != boundary.forcing_receipt_sha256
++            {
++                return Err(LandSurfaceEnergyError::StateLineage(
++                    "Stage-3 snow optical/lower-boundary identity",
++                ));
++            }
++            Some(boundary)
++        } else {
++            None
++        };
+         record_covered_evaluation_input_validation_audit();
+         Ok(Self {
+             column,
+@@ -1947,6 +1946,19 @@ fn evaluate_covered_column_validated(
+     trial: &[f64],
+     frozen: Option<&CoveredFrozenBranches>,
+     v3_litter: Option<crate::V3LitterResidualContext>,
++) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
++    let observation =
++        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Evaluation);
++    observation.finish(evaluate_covered_column_observed(
++        validated, trial, frozen, v3_litter,
++    ))
++}
++
++fn evaluate_covered_column_observed(
++    validated: &ValidatedCoveredEvaluationInputs<'_>,
++    trial: &[f64],
++    frozen: Option<&CoveredFrozenBranches>,
++    v3_litter: Option<crate::V3LitterResidualContext>,
+ ) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
+     let column = validated.column;
+     let caps = validated.caps;
+diff --git a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+index c7cbe0347..c0d9b6e4e 100644
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+@@ -266,8 +266,7 @@ impl<'a> ValidatedCoveredJacobianBase<'a> {
+         validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+         trial: &[f64],
+     ) -> Result<Self, LandSurfaceEnergyError> {
+-        Ok(ValidatedCoveredIterationMap::evaluate(validated, trial)?
+-            .into_jacobian_base(trial))
++        Ok(ValidatedCoveredIterationMap::evaluate(validated, trial)?.into_jacobian_base(trial))
+     }
+ }
+ 
+@@ -293,11 +292,29 @@ fn covered_jacobian_probe_residuals(
+     base: &ValidatedCoveredJacobianBase<'_>,
+     probe: &[f64],
+     column_index: usize,
++) -> Result<Vec<f64>, LandSurfaceEnergyError> {
++    let mut observation =
++        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Probe);
++    let result =
++        covered_jacobian_probe_residuals_observed(base, probe, column_index, &mut observation);
++    observation.finish(result)
++}
++
++fn covered_jacobian_probe_residuals_observed(
++    base: &ValidatedCoveredJacobianBase<'_>,
++    probe: &[f64],
++    column_index: usize,
++    observation: &mut crate::solver_mechanism_audit::Scope,
+ ) -> Result<Vec<f64>, LandSurfaceEnergyError> {
+     let validated = base.validated;
+     let current = &base.evaluation;
+     let frozen = Some(&base.frozen);
+     if probe.len() != base.trial.len() || column_index >= probe.len() {
++        observation.probe(
++            column_index,
++            probe.get(column_index).map(|v| v.to_bits()),
++            crate::solver_mechanism_audit::ProbeClass::Complete,
++        );
+         record_covered_jacobian_full_probe_audit();
+         return Ok(
+             evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals,
+@@ -306,6 +323,11 @@ fn covered_jacobian_probe_residuals(
+     if probe.iter().enumerate().any(|(index, value)| {
+         index != column_index && value.to_bits() != base.trial[index].to_bits()
+     }) {
++        observation.probe(
++            column_index,
++            Some(probe[column_index].to_bits()),
++            crate::solver_mechanism_audit::ProbeClass::Complete,
++        );
+         record_covered_jacobian_full_probe_audit();
+         return Ok(
+             evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals,
+@@ -313,12 +335,22 @@ fn covered_jacobian_probe_residuals(
+     }
+     if !force_complete_covered_jacobian_probes() {
+         if let Some(anchor_k) = validated.stage3_identity_anchor_k(column_index) {
++            observation.probe(
++                column_index,
++                Some(probe[column_index].to_bits()),
++                crate::solver_mechanism_audit::ProbeClass::IdentityAnchor,
++            );
+             let mut residuals = current.normalized_residuals.clone();
+             let raw_residual = probe[column_index] - anchor_k;
+             residuals[column_index] = raw_residual / STAGE3_COVERED_IDENTITY_TOLERANCE_K;
+             return Ok(residuals);
+         }
+     }
++    observation.probe(
++        column_index,
++        Some(probe[column_index].to_bits()),
++        crate::solver_mechanism_audit::ProbeClass::Complete,
++    );
+     record_covered_jacobian_full_probe_audit();
+     Ok(evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals)
+ }
+@@ -479,6 +511,22 @@ fn solve_covered_column_impl(
+     caps: Option<&CoveredWaterCaps>,
+     initial_trial: Vec<f64>,
+     allow_v10_initial_final_acceptance: bool,
++) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
++    let observation =
++        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Solve);
++    observation.finish(solve_covered_column_observed(
++        beginning,
++        caps,
++        initial_trial,
++        allow_v10_initial_final_acceptance,
++    ))
++}
++
++fn solve_covered_column_observed(
++    beginning: &CoveredColumnInputs,
++    caps: Option<&CoveredWaterCaps>,
++    initial_trial: Vec<f64>,
++    allow_v10_initial_final_acceptance: bool,
+ ) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
+     validate_covered_caps(beginning, caps)?;
+     let ground_uses_liquid_vapor_phase_domain =
+@@ -501,6 +549,7 @@ fn solve_covered_column_impl(
+     let mut pivot = None;
+     let mut matrix_norm = None;
+     for iteration in 0..=MAX_NEWTON_ITERATIONS {
++        crate::solver_mechanism_audit::iteration(iteration);
+         let iteration_map =
+             ValidatedCoveredIterationMap::evaluate(&validated_evaluation_inputs, &x)?;
+         let detail = &iteration_map.evaluation;
+@@ -553,6 +602,15 @@ fn solve_covered_column_impl(
+             .map(|(value, unit)| f64::EPSILON.sqrt() * value.abs().max(*unit))
+             .collect();
+         let mut jacobian = vec![vec![0.0; x.len()]; x.len()];
++        let mut sweep_observation =
++            crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Sweep);
++        sweep_observation.sweep_base(
++            &x,
++            beginning.occupancies.len(),
++            beginning.ground.soil_nodes.len(),
++            validated_evaluation_inputs.stage3_boundary.is_some(),
++            ground_uses_liquid_vapor_phase_domain,
++        );
+         for column_index in 0..x.len() {
+             let mut minus = x.clone();
+             let mut plus = x.clone();
+@@ -565,6 +623,24 @@ fn solve_covered_column_impl(
+                 beginning.occupancies.len(),
+                 ground_uses_liquid_vapor_phase_domain,
+             )?;
++            if sweep_observation.detailed() {
++                sweep_observation.stencil(
++                    column_index,
++                    minus[column_index],
++                    plus[column_index],
++                    covered_trial_is_valid(
++                        &minus,
++                        beginning.occupancies.len(),
++                        ground_uses_liquid_vapor_phase_domain,
++                    ),
++                    covered_trial_is_valid(
++                        &plus,
++                        beginning.occupancies.len(),
++                        ground_uses_liquid_vapor_phase_domain,
++                    ),
++                    validated_evaluation_inputs.stage3_identity_anchor_k(column_index),
++                );
++            }
+             // Preserve the canonical minus-then-plus evaluation order while
+             // never evaluating a constitutively inadmissible boundary probe.
+             let minus_residuals = covered_trial_is_valid(
+@@ -572,41 +648,27 @@ fn solve_covered_column_impl(
+                 beginning.occupancies.len(),
+                 ground_uses_liquid_vapor_phase_domain,
+             )
+-            .then(|| {
+-                covered_jacobian_probe_residuals(
+-                    &jacobian_base,
+-                    &minus,
+-                    column_index,
+-                )
+-            })
++            .then(|| covered_jacobian_probe_residuals(&jacobian_base, &minus, column_index))
+             .transpose()?;
+             let plus_residuals = covered_trial_is_valid(
+                 &plus,
+                 beginning.occupancies.len(),
+                 ground_uses_liquid_vapor_phase_domain,
+             )
+-            .then(|| {
+-                covered_jacobian_probe_residuals(
+-                    &jacobian_base,
+-                    &plus,
+-                    column_index,
+-                )
+-            })
++            .then(|| covered_jacobian_probe_residuals(&jacobian_base, &plus, column_index))
+             .transpose()?;
+             for row in 0..x.len() {
+                 jacobian[row][column_index] = covered_finite_difference_value(
+                     stencil,
+                     detail.normalized_residuals[row],
+-                    minus_residuals
+-                        .as_ref()
+-                        .map(|value| value[row]),
+-                    plus_residuals
+-                        .as_ref()
+-                        .map(|value| value[row]),
++                    minus_residuals.as_ref().map(|value| value[row]),
++                    plus_residuals.as_ref().map(|value| value[row]),
+                     perturbations[column_index],
+                 )?;
+             }
+         }
++        sweep_observation.complete();
++        drop(sweep_observation);
+         let mut rhs: Vec<f64> = detail
+             .normalized_residuals
+             .iter()
+@@ -668,8 +730,7 @@ fn solve_covered_column_impl(
+         let (mut delta, current_pivot, current_matrix_norm) = match solve_linear(&jacobian, &rhs) {
+             Ok(value) => value,
+             Err(evidence) => {
+-                let (occupancy_id, active_bounds) =
+-                    covered_failure_metadata(beginning, detail, &x);
++                let (occupancy_id, active_bounds) = covered_failure_metadata(beginning, detail, &x);
+                 return Ok(CoveredColumnSolveOutcome::Rejected(NumericalFailure {
+                     kind: NumericalFailureKind::SingularPivot,
+                     iterations: iteration,
+@@ -795,21 +856,14 @@ fn solve_covered_column_impl(
+             ) {
+                 continue;
+             }
+-            let Ok(trial_detail) = evaluate_covered_column_validated(
+-                &validated_evaluation_inputs,
+-                &trial,
+-                None,
+-                None,
+-            ) else {
++            let Ok(trial_detail) =
++                evaluate_covered_column_validated(&validated_evaluation_inputs, &trial, None, None)
++            else {
+                 continue;
+             };
+             let applied: Vec<f64> = delta.iter().map(|value| factor * value).collect();
+-            let steps = covered_step_norms(
+-                &applied,
+-                beginning.occupancies.len(),
+-                detail,
+-                &trial_detail,
+-            );
++            let steps =
++                covered_step_norms(&applied, beginning.occupancies.len(), detail, &trial_detail);
+             rejected_step_norms = Some(steps);
+             if is_strict_residual_decrease(norm, &trial_detail.normalized_residuals) {
+                 accepted = Some((trial, steps, exponent));
+diff --git a/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs b/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
+new file mode 100644
+index 000000000..56490d02c
+--- /dev/null
++++ b/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
+@@ -0,0 +1,689 @@
++//! Explicit, thread-local observation for prospective mechanism experiments.
++//! Counters never select physics. Detailed traces are bounded and run separately.
++#![allow(clippy::missing_errors_doc)]
++
++use serde::Serialize;
++use std::{cell::RefCell, marker::PhantomData, rc::Rc};
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum Kind {
++    Map,
++    Solve,
++    Sweep,
++    Probe,
++    Evaluation,
++}
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum ProbeClass {
++    Complete,
++    IdentityAnchor,
++    ComponentReplay,
++}
++
++#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
++pub struct Counts {
++    pub starts: u64,
++    pub completions: u64,
++    pub errors: u64,
++}
++
++#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
++pub struct MechanismAudit {
++    pub maps: Counts,
++    pub solves: Counts,
++    pub sweeps: Counts,
++    pub probes: Counts,
++    pub evaluations: Counts,
++    pub complete: Counts,
++    pub identity_anchor: Counts,
++    pub component_replay: Counts,
++    pub iterations: u64,
++    pub leaf_calls: u64,
++    pub dropped_events: u64,
++    pub overflow: bool,
++    pub events: Vec<Event>,
++}
++
++#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
++pub enum Event {
++    Start {
++        kind: Kind,
++        id: u64,
++        parent: Option<u64>,
++    },
++    End {
++        kind: Kind,
++        id: u64,
++        success: bool,
++    },
++    MapJoin {
++        map: u64,
++    },
++    Iteration {
++        id: u64,
++        solve: Option<u64>,
++        ordinal: u32,
++    },
++    SweepBase {
++        sweep: u64,
++        iteration: u64,
++        base_bits: Vec<u64>,
++        occupancies: usize,
++        soil_nodes: usize,
++        represented_snow: bool,
++        liquid_ground: bool,
++    },
++    Stencil {
++        sweep: u64,
++        coordinate: usize,
++        minus_bits: u64,
++        plus_bits: u64,
++        minus_valid: bool,
++        plus_valid: bool,
++        identity_anchor_bits: Option<u64>,
++    },
++    Probe {
++        id: u64,
++        coordinate: usize,
++        value_bits: Option<u64>,
++        class: ProbeClass,
++    },
++}
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq, thiserror::Error)]
++pub enum AuditError {
++    #[error("mechanism observation already active on this thread")]
++    AlreadyActive,
++    #[error("mechanism observation session is not active")]
++    NotActive,
++    #[error("mechanism observation has live scopes")]
++    LiveScopes,
++    #[error("mechanism observation counter or identity overflow")]
++    Overflow,
++}
++
++struct State {
++    audit: MechanismAudit,
++    detailed: bool,
++    limit: usize,
++    next: u64,
++    generation: u64,
++    parent: Option<u64>,
++    solve: Option<u64>,
++    iteration: u64,
++    live: u64,
++}
++thread_local! { static ACTIVE: RefCell<Option<State>> = const { RefCell::new(None) }; }
++#[cfg(any(test, feature = "test-support"))]
++static GENERATION: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
++
++fn increment(value: &mut u64, overflow: &mut bool) {
++    if let Some(next) = value.checked_add(1) {
++        *value = next;
++    } else {
++        *overflow = true;
++    }
++}
++impl State {
++    fn id(&mut self) -> u64 {
++        increment(&mut self.next, &mut self.audit.overflow);
++        self.next
++    }
++    fn event(&mut self, make: impl FnOnce() -> Event) {
++        if self.detailed {
++            if self.audit.events.len() < self.limit {
++                self.audit.events.push(make());
++            } else {
++                increment(&mut self.audit.dropped_events, &mut self.audit.overflow);
++            }
++        }
++    }
++    fn counts(&mut self, kind: Kind) -> &mut Counts {
++        match kind {
++            Kind::Map => &mut self.audit.maps,
++            Kind::Solve => &mut self.audit.solves,
++            Kind::Sweep => &mut self.audit.sweeps,
++            Kind::Probe => &mut self.audit.probes,
++            Kind::Evaluation => &mut self.audit.evaluations,
++        }
++    }
++    fn bump(&mut self, kind: Kind, completed: Option<bool>) {
++        let counts = self.counts(kind);
++        let value = match completed {
++            None => &mut counts.starts,
++            Some(true) => &mut counts.completions,
++            Some(false) => &mut counts.errors,
++        };
++        let mut overflow = false;
++        increment(value, &mut overflow);
++        self.audit.overflow |= overflow;
++    }
++    fn class(&mut self, class: ProbeClass, completed: Option<bool>) {
++        let counts = match class {
++            ProbeClass::Complete => &mut self.audit.complete,
++            ProbeClass::IdentityAnchor => &mut self.audit.identity_anchor,
++            ProbeClass::ComponentReplay => &mut self.audit.component_replay,
++        };
++        let value = match completed {
++            None => &mut counts.starts,
++            Some(true) => &mut counts.completions,
++            Some(false) => &mut counts.errors,
++        };
++        increment(value, &mut self.audit.overflow);
++    }
++}
++
++/// Consumed session; dropping it tears down observation even during unwinding.
++pub struct Session {
++    _thread: PhantomData<Rc<()>>,
++}
++
++#[cfg(any(test, feature = "test-support"))]
++pub fn begin_mechanism_audit(detailed: bool, max_events: usize) -> Result<Session, AuditError> {
++    ACTIVE.with(|active| {
++        let mut active = active.borrow_mut();
++        if active.is_some() {
++            return Err(AuditError::AlreadyActive);
++        }
++        let generation = GENERATION
++            .fetch_update(
++                std::sync::atomic::Ordering::Relaxed,
++                std::sync::atomic::Ordering::Relaxed,
++                |g| g.checked_add(1),
++            )
++            .map_err(|_| AuditError::Overflow)?;
++        *active = Some(State {
++            audit: MechanismAudit::default(),
++            detailed,
++            limit: max_events,
++            next: 0,
++            generation,
++            parent: None,
++            solve: None,
++            iteration: 0,
++            live: 0,
++        });
++        Ok(Session {
++            _thread: PhantomData,
++        })
++    })
++}
++impl Session {
++    pub fn finish(self) -> Result<MechanismAudit, AuditError> {
++        ACTIVE.with(|active| {
++            let state = active.borrow_mut().take().ok_or(AuditError::NotActive)?;
++            if state.live != 0 {
++                return Err(AuditError::LiveScopes);
++            }
++            if state.audit.overflow {
++                return Err(AuditError::Overflow);
++            }
++            Ok(state.audit)
++        })
++    }
++}
++impl Drop for Session {
++    fn drop(&mut self) {
++        ACTIVE.with(|a| {
++            a.borrow_mut().take();
++        });
++    }
++}
++
++pub(crate) struct Scope {
++    id: Option<u64>,
++    generation: u64,
++    detailed: bool,
++    kind: Kind,
++    parent: Option<u64>,
++    solve: Option<u64>,
++    success: bool,
++    class: Option<ProbeClass>,
++}
++impl Scope {
++    pub(crate) fn new(kind: Kind) -> Self {
++        let mut scope = Self {
++            id: None,
++            generation: 0,
++            detailed: false,
++            kind,
++            parent: None,
++            solve: None,
++            success: false,
++            class: None,
++        };
++        ACTIVE.with(|active| {
++            if let Some(s) = active.borrow_mut().as_mut() {
++                let id = s.id();
++                scope.id = Some(id);
++                scope.generation = s.generation;
++                scope.detailed = s.detailed;
++                scope.parent = s.parent;
++                scope.solve = s.solve;
++                s.bump(kind, None);
++                increment(&mut s.live, &mut s.audit.overflow);
++                let parent = s.parent;
++                s.event(|| Event::Start { kind, id, parent });
++                s.parent = Some(id);
++                if kind == Kind::Solve {
++                    s.solve = Some(id);
++                }
++            }
++        });
++        scope
++    }
++    pub(crate) fn finish<T, E>(mut self, result: Result<T, E>) -> Result<T, E> {
++        self.success = result.is_ok();
++        result
++    }
++    pub(crate) fn complete(&mut self) {
++        self.success = true;
++    }
++    pub(crate) fn detailed(&self) -> bool {
++        self.detailed
++    }
++    pub(crate) fn map_token(&self) -> MapToken {
++        MapToken {
++            id: self.id,
++            generation: self.generation,
++        }
++    }
++    pub(crate) fn probe(&mut self, coordinate: usize, value_bits: Option<u64>, class: ProbeClass) {
++        if let Some(id) = self.id {
++            ACTIVE.with(|a| {
++                if let Some(s) = a.borrow_mut().as_mut() {
++                    if s.generation != self.generation {
++                        return;
++                    }
++                    s.class(class, None);
++                    s.event(|| Event::Probe {
++                        id,
++                        coordinate,
++                        value_bits,
++                        class,
++                    });
++                }
++            });
++            self.class = Some(class);
++        }
++    }
++    pub(crate) fn sweep_base(
++        &self,
++        trial: &[f64],
++        occupancies: usize,
++        soil_nodes: usize,
++        represented_snow: bool,
++        liquid_ground: bool,
++    ) {
++        if let Some(sweep) = self.id {
++            ACTIVE.with(|a| {
++                if let Some(s) = a.borrow_mut().as_mut() {
++                    if s.generation != self.generation {
++                        return;
++                    }
++                    let iteration = s.iteration;
++                    s.event(|| Event::SweepBase {
++                        sweep,
++                        iteration,
++                        base_bits: trial.iter().map(|v| v.to_bits()).collect(),
++                        occupancies,
++                        soil_nodes,
++                        represented_snow,
++                        liquid_ground,
++                    });
++                }
++            });
++        }
++    }
++    #[allow(clippy::too_many_arguments)]
++    pub(crate) fn stencil(
++        &self,
++        coordinate: usize,
++        minus: f64,
++        plus: f64,
++        minus_valid: bool,
++        plus_valid: bool,
++        identity_anchor: Option<f64>,
++    ) {
++        if let Some(sweep) = self.id {
++            ACTIVE.with(|a| {
++                if let Some(s) = a.borrow_mut().as_mut() {
++                    if s.generation != self.generation {
++                        return;
++                    }
++                    s.event(|| Event::Stencil {
++                        sweep,
++                        coordinate,
++                        minus_bits: minus.to_bits(),
++                        plus_bits: plus.to_bits(),
++                        minus_valid,
++                        plus_valid,
++                        identity_anchor_bits: identity_anchor.map(f64::to_bits),
++                    });
++                }
++            });
++        }
++    }
++}
++impl Drop for Scope {
++    fn drop(&mut self) {
++        if let Some(id) = self.id {
++            ACTIVE.with(|a| {
++                if let Some(s) = a.borrow_mut().as_mut() {
++                    if s.generation != self.generation {
++                        return;
++                    }
++                    s.bump(self.kind, Some(self.success));
++                    if let Some(class) = self.class {
++                        s.class(class, Some(self.success));
++                    }
++                    s.event(|| Event::End {
++                        kind: self.kind,
++                        id,
++                        success: self.success,
++                    });
++                    s.parent = self.parent;
++                    s.solve = self.solve;
++                    if let Some(live) = s.live.checked_sub(1) {
++                        s.live = live;
++                    } else {
++                        s.audit.overflow = true;
++                    }
++                }
++            });
++        }
++    }
++}
++
++/// Observation metadata is deliberately excluded from physical phase equality.
++/// The private identity is used solely for same-session lifecycle joins.
++#[derive(Clone, Copy, Debug, Default)]
++pub(crate) struct MapToken {
++    id: Option<u64>,
++    generation: u64,
++}
++impl PartialEq for MapToken {
++    fn eq(&self, _other: &Self) -> bool {
++        true
++    }
++}
++
++pub(crate) struct MapJoin {
++    previous: Option<u64>,
++    generation: Option<u64>,
++}
++pub(crate) fn join_map(token: MapToken) -> MapJoin {
++    let mut join = MapJoin {
++        previous: None,
++        generation: None,
++    };
++    ACTIVE.with(|a| {
++        if let Some(s) = a.borrow_mut().as_mut() {
++            if let Some(map) = token.id.filter(|_| token.generation == s.generation) {
++                join.previous = s.parent;
++                join.generation = Some(s.generation);
++                s.parent = Some(map);
++                s.event(|| Event::MapJoin { map });
++                increment(&mut s.live, &mut s.audit.overflow);
++            }
++        }
++    });
++    join
++}
++impl Drop for MapJoin {
++    fn drop(&mut self) {
++        ACTIVE.with(|a| {
++            if let Some(s) = a.borrow_mut().as_mut() {
++                if self.generation == Some(s.generation) {
++                    s.parent = self.previous;
++                    if let Some(live) = s.live.checked_sub(1) {
++                        s.live = live;
++                    } else {
++                        s.audit.overflow = true;
++                    }
++                }
++            }
++        });
++    }
++}
++
++pub(crate) fn iteration(ordinal: u32) {
++    ACTIVE.with(|a| {
++        if let Some(s) = a.borrow_mut().as_mut() {
++            increment(&mut s.audit.iterations, &mut s.audit.overflow);
++            let id = s.id();
++            s.iteration = id;
++            let solve = s.solve;
++            s.event(|| Event::Iteration { id, solve, ordinal });
++        }
++    });
++}
++pub(crate) fn leaf_call() {
++    ACTIVE.with(|a| {
++        if let Some(s) = a.borrow_mut().as_mut() {
++            increment(&mut s.audit.leaf_calls, &mut s.audit.overflow);
++        }
++    });
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn compact_counts_and_errors_without_events() {
++        let session = begin_mechanism_audit(false, 0).unwrap();
++        assert!(matches!(
++            begin_mechanism_audit(false, 0),
++            Err(AuditError::AlreadyActive)
++        ));
++        let scope = Scope::new(Kind::Solve);
++        iteration(0);
++        leaf_call();
++        let mut probe = Scope::new(Kind::Probe);
++        probe.probe(2, Some(42), ProbeClass::IdentityAnchor);
++        assert_eq!(probe.finish(Err::<(), _>(7)), Err(7));
++        scope.finish(Ok::<_, ()>(())).unwrap();
++        let a = session.finish().unwrap();
++        assert_eq!(
++            a.solves,
++            Counts {
++                starts: 1,
++                completions: 1,
++                errors: 0
++            }
++        );
++        assert_eq!(
++            a.identity_anchor,
++            Counts {
++                starts: 1,
++                completions: 0,
++                errors: 1
++            }
++        );
++        assert_eq!((a.iterations, a.leaf_calls), (1, 1));
++        assert!(a.events.is_empty());
++    }
++    #[test]
++    fn detail_bound_drop_and_overflow_are_visible() {
++        let session = begin_mechanism_audit(true, 1).unwrap();
++        drop(Scope::new(Kind::Solve));
++        let a = session.finish().unwrap();
++        assert_eq!(a.events.len(), 1);
++        assert_eq!(a.dropped_events, 1);
++        assert_eq!(a.solves.errors, 1);
++        drop(begin_mechanism_audit(false, 0).unwrap());
++        let session = begin_mechanism_audit(false, 0).unwrap();
++        ACTIVE.with(|a| a.borrow_mut().as_mut().unwrap().audit.leaf_calls = u64::MAX);
++        leaf_call();
++        assert_eq!(session.finish().unwrap_err(), AuditError::Overflow);
++    }
++    #[test]
++    fn finish_rejects_open_lifecycle() {
++        let session = begin_mechanism_audit(false, 0).unwrap();
++        let scope = Scope::new(Kind::Solve);
++        assert_eq!(session.finish().unwrap_err(), AuditError::LiveScopes);
++        drop(scope);
++        assert!(begin_mechanism_audit(false, 0).unwrap().finish().is_ok());
++    }
++
++    #[test]
++    fn potential_and_final_solves_join_one_authentic_map() {
++        let session = begin_mechanism_audit(true, 64).unwrap();
++        let mut map = Scope::new(Kind::Map);
++        let token = map.map_token();
++        let potential = Scope::new(Kind::Solve);
++        let potential_id = potential.id.unwrap();
++        iteration(0);
++        let mut sweep = Scope::new(Kind::Sweep);
++        let sweep_id = sweep.id.unwrap();
++        sweep.sweep_base(&[273.15, 1.0], 2, 6, true, true);
++        sweep.complete();
++        drop(sweep);
++        potential.finish(Ok::<_, ()>(())).unwrap();
++        map.complete();
++        drop(map);
++        let final_join = join_map(token);
++        let final_solve = Scope::new(Kind::Solve);
++        let final_id = final_solve.id.unwrap();
++        final_solve.finish(Ok::<_, ()>(())).unwrap();
++        drop(final_join);
++        let audit = session.finish().unwrap();
++        assert_eq!(
++            audit.maps,
++            Counts {
++                starts: 1,
++                completions: 1,
++                errors: 0
++            }
++        );
++        assert_eq!(
++            audit.solves,
++            Counts {
++                starts: 2,
++                completions: 2,
++                errors: 0
++            }
++        );
++        assert_eq!(audit.dropped_events, 0);
++        let map_id = token.id.unwrap();
++        assert_ne!(map_id, potential_id);
++        assert_ne!(potential_id, final_id);
++        for solve in [potential_id, final_id] {
++            assert!(audit.events.contains(&Event::Start {
++                kind: Kind::Solve,
++                id: solve,
++                parent: Some(map_id),
++            }));
++        }
++        assert!(audit.events.contains(&Event::MapJoin { map: map_id }));
++        let iteration_id = audit
++            .events
++            .iter()
++            .find_map(|event| match event {
++                Event::Iteration {
++                    id,
++                    solve: Some(solve),
++                    ordinal: 0,
++                } if *solve == potential_id => Some(*id),
++                _ => None,
++            })
++            .unwrap();
++        assert_ne!(iteration_id, potential_id);
++        assert_ne!(iteration_id, sweep_id);
++        assert!(audit.events.contains(&Event::SweepBase {
++            sweep: sweep_id,
++            iteration: iteration_id,
++            base_bits: vec![273.15_f64.to_bits(), 1.0_f64.to_bits()],
++            occupancies: 2,
++            soil_nodes: 6,
++            represented_snow: true,
++            liquid_ground: true,
++        }));
++    }
++
++    #[test]
++    fn stale_tokens_scopes_and_joins_cannot_modify_a_new_session() {
++        let old = begin_mechanism_audit(true, 64).unwrap();
++        let old_map = Scope::new(Kind::Map);
++        let token = old_map.map_token();
++        let old_join = join_map(token);
++        let mut old_probe = Scope::new(Kind::Probe);
++        let old_sweep = Scope::new(Kind::Sweep);
++        assert_eq!(old.finish().unwrap_err(), AuditError::LiveScopes);
++
++        let current = begin_mechanism_audit(true, 64).unwrap();
++        let map = Scope::new(Kind::Map);
++        let current_token = map.map_token();
++        assert_eq!(token.id, current_token.id); // Ordinals may repeat; generations cannot.
++        assert_ne!(token.generation, current_token.generation);
++        drop(join_map(token));
++        old_probe.probe(0, Some(1), ProbeClass::ComponentReplay);
++        old_sweep.sweep_base(&[1.0], 0, 0, true, true);
++        old_sweep.stencil(0, 0.5, 1.5, true, true, None);
++        drop(old_sweep);
++        drop(old_probe);
++        drop(old_join);
++        drop(old_map);
++        let solve = Scope::new(Kind::Solve);
++        solve.finish(Ok::<_, ()>(())).unwrap();
++        map.finish(Ok::<_, ()>(())).unwrap();
++        let audit = current.finish().unwrap();
++        assert_eq!(
++            audit.maps,
++            Counts {
++                starts: 1,
++                completions: 1,
++                errors: 0
++            }
++        );
++        assert_eq!(
++            audit.solves,
++            Counts {
++                starts: 1,
++                completions: 1,
++                errors: 0
++            }
++        );
++        assert_eq!(audit.probes, Counts::default());
++        assert_eq!(audit.component_replay, Counts::default());
++        assert_eq!(audit.sweeps, Counts::default());
++        assert_eq!(audit.events.len(), 4);
++        assert!(
++            audit
++                .events
++                .iter()
++                .all(|event| !matches!(event, Event::MapJoin { .. }))
++        );
++        assert!(audit.events.contains(&Event::Start {
++            kind: Kind::Solve,
++            id: 2,
++            parent: current_token.id,
++        }));
++    }
++
++    #[test]
++    fn map_token_from_another_thread_is_not_a_local_join() {
++        let session = begin_mechanism_audit(false, 0).unwrap();
++        let map = Scope::new(Kind::Map);
++        let token = map.map_token();
++        map.finish(Ok::<_, ()>(())).unwrap();
++        let other = std::thread::spawn(move || {
++            let session = begin_mechanism_audit(true, 16).unwrap();
++            let join = join_map(token);
++            Scope::new(Kind::Solve).finish(Ok::<_, ()>(())).unwrap();
++            drop(join);
++            session.finish().unwrap()
++        })
++        .join()
++        .unwrap();
++        assert_eq!(other.maps, Counts::default());
++        assert!(other.events.contains(&Event::Start {
++            kind: Kind::Solve,
++            id: 1,
++            parent: None
++        }));
++        assert_eq!(other.events.len(), 2);
++        assert_eq!(session.finish().unwrap().maps.completions, 1);
++    }
++}
+diff --git a/crates/openwepp-land-surface-energy/src/transaction.rs b/crates/openwepp-land-surface-energy/src/transaction.rs
+index f61b6dd2a..406c02643 100644
+--- a/crates/openwepp-land-surface-energy/src/transaction.rs
++++ b/crates/openwepp-land-surface-energy/src/transaction.rs
+@@ -291,6 +291,7 @@ pub fn solve_open_potential_phase(
+ 
+ #[derive(Clone, Debug, PartialEq)]
+ pub struct CoveredPotentialPhase {
++    mechanism_map: crate::solver_mechanism_audit::MapToken,
+     identity: RuntimeTileIdentity,
+     beginning: CoveredColumnInputs,
+     accepted: Box<CoveredColumnCandidate>,
+@@ -518,6 +519,8 @@ pub fn solve_covered_potential_phase(
+     roots: Vec<RootRuntimeIdentity>,
+     initial_trial: Vec<f64>,
+ ) -> Result<CoveredPotentialPhase, LandSurfaceEnergyError> {
++    let mut mechanism_map =
++        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Map);
+     identity.validate()?;
+     if identity.tile_fraction.to_bits() != beginning.tile_fraction.to_bits()
+         || identity.interval_s.to_bits() != beginning.interval_s.to_bits()
+@@ -674,6 +677,10 @@ pub fn solve_covered_potential_phase(
+         .map(|occupancy| occupancy.gas_branches)
+         .collect();
+     Ok(CoveredPotentialPhase {
++        mechanism_map: {
++            mechanism_map.complete();
++            mechanism_map.map_token()
++        },
+         identity,
+         beginning: beginning.clone(),
+         accepted,
+@@ -2730,6 +2737,7 @@ pub fn finalize_covered_phase_with_soil_thermal_beginning(
+     final_initial_trial: Vec<f64>,
+     soil: SoilThermalFinalizationBeginning<'_>,
+ ) -> Result<FinalCoveredTileCandidate, LandSurfaceEnergyError> {
++    let _mechanism_map = crate::solver_mechanism_audit::join_map(phase.mechanism_map);
+     if expected_beginning_lse_state_sha256 != &phase.identity.beginning_lse_state_sha256 {
+         return Err(LandSurfaceEnergyError::StateLineage(
+             "stale covered potential beginning state",
+diff --git a/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs b/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs
+index 4c50a7e3b..13d3a8420 100644
+--- a/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs
++++ b/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs
+@@ -139,6 +139,7 @@ pub(crate) fn build_complete_v3_final_candidate(
+         .map(|occupancy| occupancy.gas_branches)
+         .collect();
+     let synthetic = CoveredPotentialPhase {
++        mechanism_map: crate::solver_mechanism_audit::MapToken::default(),
+         identity: phase.identity().clone(),
+         beginning: phase.beginning().clone(),
+         accepted: potential_physical,
+diff --git a/crates/openwepp-runner/Cargo.toml b/crates/openwepp-runner/Cargo.toml
+index b9fa9a68b..744095fa4 100644
+--- a/crates/openwepp-runner/Cargo.toml
++++ b/crates/openwepp-runner/Cargo.toml
+@@ -61,5 +61,7 @@ name = "openwepp-snowbench"
+ path = "src/bin/openwepp-snowbench.rs"
+ 
+ [dev-dependencies]
++rustix = { version = "=1.1.4", features = ["time"] }
++openwepp-land-surface-energy = { path = "../openwepp-land-surface-energy", version = "0.1.0", features = ["test-support"] }
+ arrow-schema = "54.3.1"
+ openwepp-persisted-restart-v1 = { path = "../openwepp-persisted-restart-v1", version = "0.1.0", features = ["fixtures"] }
+diff --git a/crates/openwepp-runner/src/hillslope/03_tests.rs b/crates/openwepp-runner/src/hillslope/03_tests.rs
+index 749146710..bef4a6c84 100644
+--- a/crates/openwepp-runner/src/hillslope/03_tests.rs
++++ b/crates/openwepp-runner/src/hillslope/03_tests.rs
+@@ -45,6 +45,7 @@ mod tests {
+     include!("tests03/eb04w2b_warm_snow.rs");
+     include!("tests03/stage3_evaluation_publication_parity.rs");
+     include!("tests03/stage3_runner_qualification.rs");
++    include!("tests03/controlled_mechanism_experiments.rs");
+     include!("tests03/stage3_long_run_output_evidence.rs");
+     include!("tests03/stage3_long_run_qualification.rs");
+     include!("tests03/wat5_output_transaction.rs");
+diff --git a/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs b/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
+new file mode 100644
+index 000000000..f7dd9a633
+--- /dev/null
++++ b/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
+@@ -0,0 +1,478 @@
++// Common observation-only workload for EXP-STAGE3-20260906; no treatment selector.
++#[test]
++#[ignore = "controlled release experiment; fresh process and explicit environment required"]
++fn stage3_controlled_mechanism_experiment() {
++    assert!(!cfg!(debug_assertions), "release build required");
++    let ofes: usize = std::env::var("OPENWEPP_EXPERIMENT_OFES")
++        .unwrap_or_else(|_| "1".to_owned())
++        .parse()
++        .expect("OFE integer");
++    assert!([1, 10, 19].contains(&ofes), "bounded workload");
++    let repeats: usize = std::env::var("OPENWEPP_EXPERIMENT_REPEATS")
++        .unwrap_or_else(|_| "1".to_owned())
++        .parse()
++        .expect("repeat integer");
++    assert!([1, 10].contains(&repeats), "bounded teardown horizon");
++    let memory = std::env::var("OPENWEPP_EXPERIMENT_MEMORY").is_ok_and(|value| value == "1");
++    assert_eq!(
++        release_scale_cpu_affinity_count(&release_scale_cpu_affinity().expect("affinity")),
++        Some(1)
++    );
++    for iteration in 0..repeats {
++        let record = controlled_mechanism_run(ofes, iteration, memory);
++        println!("STAGE3_CONTROLLED_MECHANISM {record}");
++        drop(record);
++        controlled_mechanism_phase("post_drop", iteration, memory);
++    }
++}
++
++fn controlled_mechanism_phase(phase: &str, iteration: usize, enabled: bool) {
++    if !enabled {
++        return;
++    }
++    let monotonic_ns = controlled_mechanism_monotonic_ns();
++    let status = std::fs::read_to_string("/proc/self/status").expect("memory status");
++    let mappings =
++        std::fs::read_to_string("/proc/self/smaps_rollup").expect("boundary mapping snapshot");
++    let mapping_fields = [
++        "Rss:",
++        "Anonymous:",
++        "Private_Clean:",
++        "Private_Dirty:",
++        "Pss_Anon:",
++        "Pss_File:",
++    ];
++    let mut values = std::collections::BTreeMap::new();
++    for field in mapping_fields {
++        values.insert(
++            field,
++            release_scale_status_kib(&mappings, field).expect("required mapping field"),
++        );
++    }
++    let record = serde_json::json!({
++        "phase":phase, "iteration":iteration, "pid":std::process::id(), "monotonic_ns":monotonic_ns,
++        "rss_kib":release_scale_status_kib(&status, "VmRSS:").expect("VmRSS"),
++        "hwm_kib":release_scale_status_kib(&status, "VmHWM:").expect("VmHWM"),
++        "mapping_kib":values,
++    });
++    println!("STAGE3_CONTROLLED_MEMORY {record}");
++}
++
++// Linux experiment clock shared with Python time.monotonic_ns in the parent.
++// Runtime physics never calls this observation-only helper.
++fn controlled_mechanism_monotonic_ns() -> u64 {
++    let time = rustix::time::clock_gettime(rustix::time::ClockId::Monotonic);
++    let seconds = u64::try_from(time.tv_sec).expect("nonnegative monotonic seconds");
++    let nanos = u64::try_from(time.tv_nsec).expect("nonnegative nanoseconds");
++    assert!(nanos < 1_000_000_000);
++    seconds
++        .checked_mul(1_000_000_000)
++        .and_then(|value| value.checked_add(nanos))
++        .expect("monotonic time fits u64")
++}
++
++#[test]
++fn controlled_mechanism_clock_is_monotonic() {
++    let first = controlled_mechanism_monotonic_ns();
++    let second = controlled_mechanism_monotonic_ns();
++    assert!(second >= first);
++}
++
++fn controlled_mechanism_output_evidence(
++    root: &Path,
++) -> (
++    std::collections::BTreeMap<String, String>,
++    serde_json::Value,
++) {
++    fn collect(root: &Path, dir: &Path, out: &mut std::collections::BTreeMap<String, String>) {
++        for entry in std::fs::read_dir(dir).expect("output inventory") {
++            let path = entry.expect("output entry").path();
++            if path.is_dir() {
++                collect(root, &path, out);
++            } else if path
++                .file_name()
++                .is_none_or(|name| name != "openwepp_hillslope_run_manifest.json")
++            {
++                out.insert(
++                    path.strip_prefix(root)
++                        .expect("relative output")
++                        .to_string_lossy()
++                        .into_owned(),
++                    release_scale_sha256_file(&path),
++                );
++            }
++        }
++    }
++    let mut files = std::collections::BTreeMap::new();
++    collect(root, root, &mut files);
++    let manifest = serde_json::from_slice(
++        &std::fs::read(root.join("openwepp_hillslope_run_manifest.json")).expect("manifest bytes"),
++    )
++    .expect("manifest JSON");
++    // Keep the complete unnormalized manifest. Offline comparison uses an explicit field allowlist.
++    (files, manifest)
++}
++
++fn controlled_mechanism_run(ofe_count: usize, iteration: usize, memory: bool) -> serde_json::Value {
++    assert!(
++        !cfg!(debug_assertions),
++        "this ignored comparator probe must execute under cargo test --release"
++    );
++    let _execution_guard = runner_execution_lock()
++        .lock()
++        .unwrap_or_else(std::sync::PoisonError::into_inner);
++
++    controlled_mechanism_phase("pre_fixture", iteration, memory);
++    let areas_m2 = (1..=ofe_count)
++        .map(|ofe| 100.0 * release_scale_usize_f64(ofe))
++        .collect::<Vec<_>>();
++    let fixture_started = std::time::Instant::now();
++    let run_dir = prepare_native_stage3_lane_d_scale_fixture(
++        "stage3_laned_release_one_ofe_positive_baseline",
++        &areas_m2,
++    );
++    let fixture_wall_us = release_probe_elapsed_us(fixture_started.elapsed());
++    let request = HillslopeRunRequest {
++        run_dir: run_dir.clone(),
++        run_file: PathBuf::from("case.run"),
++        output_dir: run_dir.join("output"),
++        sidecar_policy: SidecarPolicy::Compat,
++        legacy_sidecar_discovery: false,
++        manifest_path: None,
++    };
++
++    let bootstrap_started = std::time::Instant::now();
++    let seed_path = crate::hillslope::test_fixture_authority::author_stage3_v11_owner_seed_fixture(
++        &request,
++        crate::hillslope::test_fixture_authority::Stage3TestFixtureSeedProfile::CompleteOwner,
++        crate::hillslope::test_fixture_authority::Stage3TestFixtureSeedBinding::ExplicitRunfile,
++    )
++    .expect("author exact one-OFE release-probe Stage-3 owner seed");
++    assert_authored_stage3_owner_cardinality(&request, &seed_path, ofe_count);
++    let bootstrap_wall_us = release_probe_elapsed_us(bootstrap_started.elapsed());
++
++    crate::hillslope::snow_stage3_v11_qualification_audit::begin();
++    let telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_parent_telemetry_v1(
++        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::STAGE3_V11_PARENT_SUPPORT_COUNT * ofe_count,
++        std::time::Duration::from_secs(3_600),
++    )
++    .expect("enable bounded Stage-3 owner-evaluation telemetry");
++    let qualification_telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_release_qualification_telemetry_v1()
++        .expect("enable one-OFE release attribution telemetry");
++    let (input_sha256, input_files) = release_scale_tree_hashes(&run_dir);
++    let clock_hz = release_scale_clock_tick_hz().expect("Linux CLK_TCK");
++    let trace_dir = std::env::var_os("OPENWEPP_EXPERIMENT_TRACE_DIR").map(PathBuf::from);
++    let carrier_mode = if trace_dir.is_some() {
++        openwepp_hillslope_orchestrator::stage3_mechanism_experiment_audit::Mode::Detailed {
++            max_records: 100_000,
++        }
++    } else {
++        openwepp_hillslope_orchestrator::stage3_mechanism_experiment_audit::Mode::Compact
++    };
++    let carrier_session =
++        openwepp_hillslope_orchestrator::stage3_mechanism_experiment_audit::begin(carrier_mode)
++            .expect("begin carrier observation");
++    let lse_session = openwepp_land_surface_energy::solver_mechanism_audit::begin_mechanism_audit(
++        trace_dir.is_some(),
++        1_000_000,
++    )
++    .expect("begin LSE observation");
++    controlled_mechanism_phase("pre_run", iteration, memory);
++    let cpu_before = release_scale_process_cpu_ticks().expect("pre-run CPU ticks");
++    let run_start_monotonic_ns = controlled_mechanism_monotonic_ns();
++    let run_started = std::time::Instant::now();
++    let report = execute_hillslope_run_with_runtime_policy(
++        &request,
++        &["openwepp-cli-hill".to_string()],
++        HillslopeRuntimeSelectionPolicy::new(
++            HillslopeRuntimeSelection::DirectProductionExecutor,
++            HillslopeDefaultRuntimeActivation::default(),
++        ),
++    )
++    .expect("one-OFE positive Stage-3 -> Lane-D release probe");
++    let run_wall_us = release_probe_elapsed_us(run_started.elapsed());
++    let run_end_monotonic_ns = controlled_mechanism_monotonic_ns();
++    let cpu_after = release_scale_process_cpu_ticks().expect("end-run CPU ticks");
++    controlled_mechanism_phase("end_run", iteration, memory);
++    let mut carrier_audit = carrier_session
++        .finish()
++        .expect("finish carrier observation");
++    let mut lse_audit = lse_session.finish().expect("finish LSE observation");
++    assert_eq!(
++        carrier_audit.dropped_records, 0,
++        "complete carrier evidence"
++    );
++    assert_eq!(lse_audit.dropped_events, 0, "complete LSE evidence");
++    if let Some(trace_dir) = trace_dir {
++        std::fs::create_dir_all(&trace_dir).expect("create explicit trace directory");
++        std::fs::write(
++            trace_dir.join(format!("carrier-{iteration}.json")),
++            serde_json::to_vec(&carrier_audit).expect("carrier trace JSON"),
++        )
++        .expect("write carrier trace");
++        std::fs::write(
++            trace_dir.join(format!("lse-{iteration}.json")),
++            serde_json::to_vec(&lse_audit).expect("LSE trace JSON"),
++        )
++        .expect("write LSE trace");
++    }
++    carrier_audit.records.clear();
++    lse_audit.events.clear();
++    let qualification_telemetry = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_release_qualification_telemetry_v1()
++        .expect("take one-OFE release attribution telemetry");
++    drop(qualification_telemetry_guard);
++
++    let validation_started = std::time::Instant::now();
++    let stage3_audit = crate::hillslope::snow_stage3_v11_qualification_audit::take();
++    let telemetry = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_parent_telemetry_v1();
++    drop(telemetry_guard);
++    let snapshot = stage3_audit
++        .committed_snapshot
++        .as_ref()
++        .expect("release probe committed Stage-3 qualification snapshot");
++    snapshot
++        .validate()
++        .expect("release probe committed Stage-3 qualification evidence");
++    assert_eq!(snapshot.committed_day_count, 1);
++    assert_eq!(snapshot.lanes.len(), ofe_count);
++    assert_eq!(
++        stage3_audit
++            .support_chronology_by_day
++            .get(&0)
++            .expect("release probe day-zero parent supports")
++            .len(),
++        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::STAGE3_V11_PARENT_SUPPORT_COUNT
++            * ofe_count,
++    );
++
++    let manifest: serde_json::Value = serde_json::from_str(
++        &std::fs::read_to_string(&report.manifest_path)
++            .expect("read release-probe Lane-D manifest"),
++    )
++    .expect("parse release-probe Lane-D manifest");
++    let active = &manifest["execution_provenance"]["laned_active"];
++    assert_eq!(active["days_seen"].as_u64(), Some(1));
++    assert_eq!(active["days_routed"].as_u64(), Some(1));
++
++    let hbp_bytes = std::fs::read(&report.output_pass).expect("read release-probe routed HBP");
++    let (hbp, latest_event) = parse_hbp_from_bytes_with_latest_event_payload(
++        &hbp_bytes,
++        &report.output_pass,
++        HbpParseOptions {
++            expected_hillslope_id: Some(83),
++        },
++    )
++    .expect("release-probe routed HBP must parse");
++    assert_eq!(usize::try_from(hbp.nofe).expect("OFE count"), ofe_count);
++    let event = latest_event.expect("release probe must publish a positive routed HBP event");
++    let wat_path = run_dir.join("output/H83.wat.parquet");
++    let evidence = RealLaneDPublicEvidence {
++        ofe_count,
++        areas_m2: read_wat_f64_column(&wat_path, "Area"),
++        source_depths_mm: read_wat5_hourly_sources(
++            &run_dir.join("output/H83.wat-subhourly.parquet"),
++            ofe_count,
++        ),
++        pass_runvol_m3: read_wat_f64_column(&run_dir.join("output/H83.pass.parquet"), "runvol"),
++        pass_peakro_m3_s: read_wat_f64_column(&run_dir.join("output/H83.pass.parquet"), "peakro"),
++        hbp_hourly_outlet_m3: event.hourly_runoff_volume_m3,
++        hbp_peak_outlet_m3_s: event.peak_runoff_m3_s,
++        manifest_source_m3: positive_manifest_f64(active, "total_source_m3"),
++        manifest_outlet_m3: positive_manifest_f64(active, "total_routed_outlet_m3"),
++        manifest_storage_m3: nonnegative_manifest_f64(active, "total_end_window_storage_m3"),
++        manifest_clamp_m3: nonnegative_manifest_f64(active, "total_clamp_m3"),
++    };
++    assert_real_lane_d_public_closure(&evidence, &areas_m2);
++    let fixed_point_evaluation_count = telemetry
++        .iter()
++        .map(|row| row.fixed_point_evaluation_count)
++        .sum::<u64>();
++    let direct_trial_count = telemetry
++        .iter()
++        .map(|row| row.direct_trial_count)
++        .sum::<u64>();
++    let split_child_trial_count = telemetry
++        .iter()
++        .map(|row| row.split_child_trial_count)
++        .sum::<u64>();
++    let accepted_microstep_count = telemetry
++        .iter()
++        .map(|row| row.accepted_microstep_count)
++        .sum::<u64>();
++    let telemetry_elapsed_us = |project: fn(
++        &openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::AdaptiveParentTelemetryV1,
++    ) -> std::time::Duration| {
++        release_probe_elapsed_us(telemetry.iter().map(project).sum())
++    };
++    let parent_phase_wall_us = serde_json::json!({
++        "parent": telemetry_elapsed_us(|row| row.parent_elapsed),
++        "covered_direct_trial": telemetry_elapsed_us(|row| row.covered_direct_trial_phase_elapsed),
++        "covered_composed_trial": telemetry_elapsed_us(|row| row.covered_composed_trial_phase_elapsed),
++        "terminal_direct_trial": telemetry_elapsed_us(|row| row.terminal_direct_trial_phase_elapsed),
++        "terminal_composed_trial": telemetry_elapsed_us(|row| row.terminal_composed_trial_phase_elapsed),
++        "provisional_projection": telemetry_elapsed_us(|row| row.provisional_envelope_projection_elapsed),
++        "provisional_solver_ready": telemetry_elapsed_us(|row| row.provisional_envelope_solver_ready_elapsed),
++        "provisional_physical": telemetry_elapsed_us(|row| row.provisional_envelope_physical_elapsed),
++        "provisional_receipts": telemetry_elapsed_us(|row| row.provisional_envelope_receipts_elapsed),
++        "provisional_owner": telemetry_elapsed_us(|row| row.provisional_envelope_owner_elapsed),
++        "publication_append": telemetry_elapsed_us(|row| row.publication_append_elapsed),
++        "publication_full_validation": telemetry_elapsed_us(|row| row.publication_full_validation_elapsed),
++        "reuse_validation": telemetry_elapsed_us(|row| row.reuse_validation_elapsed),
++    });
++    let physical_phase_wall_us = serde_json::json!({
++        "topology": telemetry_elapsed_us(|row| row.profile_detail.physical_topology_elapsed),
++        "potential": telemetry_elapsed_us(|row| row.profile_detail.physical_potential_elapsed),
++        "request": telemetry_elapsed_us(|row| row.profile_detail.physical_request_elapsed),
++        "unified": telemetry_elapsed_us(|row| row.profile_detail.physical_unified_elapsed),
++        "final_tile": telemetry_elapsed_us(|row| row.profile_detail.physical_final_tile_elapsed),
++        "protocol": telemetry_elapsed_us(|row| row.profile_detail.physical_protocol_elapsed),
++        "ingress": telemetry_elapsed_us(|row| row.profile_detail.physical_ingress_elapsed),
++        "post": telemetry_elapsed_us(|row| row.profile_detail.physical_post_elapsed),
++    });
++    let unified_phase_wall_us = serde_json::json!({
++        "preflight": telemetry_elapsed_us(|row| row.profile_detail.unified_preflight_elapsed),
++        "authorization": telemetry_elapsed_us(|row| row.profile_detail.unified_authorization_elapsed),
++        "entry_validation": telemetry_elapsed_us(|row| row.profile_detail.unified_entry_validation_elapsed),
++        "protocol_validation": telemetry_elapsed_us(|row| row.profile_detail.unified_protocol_validation_elapsed),
++        "candidate": telemetry_elapsed_us(|row| row.profile_detail.unified_candidate_elapsed),
++        "candidate_soil": telemetry_elapsed_us(|row| row.profile_detail.candidate_soil_elapsed),
++        "candidate_surface_resource": telemetry_elapsed_us(|row| row.profile_detail.candidate_surface_resource_elapsed),
++        "candidate_surface_ingress": telemetry_elapsed_us(|row| row.profile_detail.candidate_surface_ingress_elapsed),
++        "candidate_receivers": telemetry_elapsed_us(|row| row.profile_detail.candidate_receivers_elapsed),
++        "candidate_validation": telemetry_elapsed_us(|row| row.profile_detail.candidate_validation_elapsed),
++    });
++    let finalization_phase_wall_us = serde_json::json!({
++        "candidate": telemetry_elapsed_us(|row| row.profile_detail.finalization_candidate_elapsed),
++        "sealed_source": telemetry_elapsed_us(|row| row.profile_detail.finalization_sealed_source_elapsed),
++        "install": telemetry_elapsed_us(|row| row.profile_detail.finalization_install_elapsed),
++        "identity_replay": telemetry_elapsed_us(|row| row.profile_detail.finalization_identity_replay_elapsed),
++    });
++    let imported_stack_phase_wall_us = serde_json::json!({
++        "entry_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_entry_validation_elapsed),
++        "physical_candidate": telemetry_elapsed_us(|row| row.profile_detail.imported_physical_candidate_elapsed),
++        "physical_setup": telemetry_elapsed_us(|row| row.profile_detail.imported_physical_setup_elapsed),
++        "frozen_evaluation": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_evaluation_elapsed),
++        "frozen_preparation": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_preparation_elapsed),
++        "frozen_execute_accept": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_execute_accept_elapsed),
++        "frozen_execution_setup": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_execution_setup_elapsed),
++        "frozen_runtime": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_runtime_elapsed),
++        "frozen_acceptance": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_acceptance_elapsed),
++        "envelope_construction": telemetry_elapsed_us(|row| row.profile_detail.imported_envelope_construction_elapsed),
++        "envelope_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_envelope_validation_elapsed),
++        "accepted_candidate": telemetry_elapsed_us(|row| row.profile_detail.imported_accepted_candidate_elapsed),
++        "owner_publication": telemetry_elapsed_us(|row| row.profile_detail.imported_owner_publication_elapsed),
++        "install": telemetry_elapsed_us(|row| row.profile_detail.imported_install_elapsed),
++        "reuse_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_validation_elapsed),
++        "reuse_reseal": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_reseal_elapsed),
++        "reuse_install": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_install_elapsed),
++    });
++    let terminal_candidate_phase_wall_us = serde_json::json!({
++        "setup": telemetry_elapsed_us(|row| row.profile_detail.terminal_candidate_setup_elapsed),
++        "provider_custody": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_custody_elapsed),
++        "provider_projection": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_projection_elapsed),
++        "provider_carrier": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_carrier_elapsed),
++        "provider_retention": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_retention_elapsed),
++        "result_finalization": telemetry_elapsed_us(|row| row.profile_detail.terminal_result_finalization_elapsed),
++        "carrier_physical": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_phase_elapsed),
++        "carrier_complete": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_phase_elapsed),
++        "carrier_physical_setup": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_setup_elapsed),
++        "carrier_physical_evidence": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_evidence_elapsed),
++        "carrier_physical_completion": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_completion_elapsed),
++        "carrier_complete_envelope": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_envelope_elapsed),
++        "carrier_complete_adoption": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_adoption_elapsed),
++        "carrier_complete_projection": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_projection_elapsed),
++        "carrier_complete_owner": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_owner_elapsed),
++        "carrier_owner_vegetation_validation": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_vegetation_validation_elapsed),
++        "carrier_owner_hydrology_projection": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_hydrology_projection_elapsed),
++        "carrier_owner_surface_canonical": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_surface_canonical_elapsed),
++        "carrier_owner_vegetation_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_vegetation_encoding_elapsed),
++        "carrier_owner_surface_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_surface_encoding_elapsed),
++        "carrier_owner_soil_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_soil_encoding_elapsed),
++        "carrier_owner_other_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_other_encoding_elapsed),
++        "carrier_owner_joint_map": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_joint_map_elapsed),
++        "carrier_owner_joint_seal": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_joint_seal_elapsed),
++        "carrier_owner_soil_custody": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_soil_custody_elapsed),
++        "carrier_owner_candidate_bytes": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_candidate_bytes_elapsed),
++        "carrier_owner_ephemeral_assembly": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_ephemeral_assembly_elapsed),
++    });
++    let validation_wall_us = release_probe_elapsed_us(validation_started.elapsed());
++
++    let (output_files, output_manifest) = controlled_mechanism_output_evidence(&request.output_dir);
++    let mut record = serde_json::json!({
++        "experiment": "EXP-STAGE3-20260906",
++        "carrier_counts": carrier_audit,
++        "lse_counts": lse_audit,
++        "ofe_count": ofe_count,
++        "iteration": iteration,
++        "cpu_ticks": cpu_after.checked_sub(cpu_before).expect("monotonic CPU"),
++        "clock_tick_hz": clock_hz,
++        "run_start_monotonic_ns": run_start_monotonic_ns,
++        "run_end_monotonic_ns": run_end_monotonic_ns,
++        "input_sha256": input_sha256,
++        "input_files": input_files,
++        "output_files": output_files,
++        "output_manifest": output_manifest,
++        "closure_operands": {
++            "areas_m2": evidence.areas_m2,
++            "wat5_source_depths_mm": evidence.source_depths_mm,
++            "hbp_hourly_outlet_m3": evidence.hbp_hourly_outlet_m3,
++            "pass_runvol_m3": evidence.pass_runvol_m3,
++            "pass_peakro_m3_s": evidence.pass_peakro_m3_s,
++        },
++    });
++    let original_record = serde_json::json!({
++        "record": "stage3_laned_release_one_ofe_positive_baseline_v1",
++        "fixture_wall_us": fixture_wall_us,
++        "bootstrap_wall_us": bootstrap_wall_us,
++        "run_wall_us": run_wall_us,
++        "validation_wall_us": validation_wall_us,
++        "rss_kib": release_probe_rss_kib(),
++        "committed_day_count": snapshot.committed_day_count,
++        "total_parent_support_count": snapshot.total_parent_support_count,
++        "covered_parent_support_count": snapshot.adaptive_support_receipt_count,
++        "snow_free_parent_support_count": snapshot.snow_free_parent_support_count,
++        "accepted_publication_support_count": snapshot.accepted_publication_support_count,
++        "fixed_point_evaluation_count": fixed_point_evaluation_count,
++        "direct_trial_count": direct_trial_count,
++        "split_child_trial_count": split_child_trial_count,
++        "accepted_microstep_count": accepted_microstep_count,
++        "parent_phase_wall_us": parent_phase_wall_us,
++        "physical_phase_wall_us": physical_phase_wall_us,
++        "unified_phase_wall_us": unified_phase_wall_us,
++        "finalization_phase_wall_us": finalization_phase_wall_us,
++        "imported_stack_phase_wall_us": imported_stack_phase_wall_us,
++        "terminal_candidate_phase_wall_us": terminal_candidate_phase_wall_us,
++        "native_vegetation_et_wall_us": release_probe_elapsed_us(qualification_telemetry.native_vegetation_et_elapsed),
++        "stage3_lse_soil_wall_us": release_probe_elapsed_us(qualification_telemetry.stage3_lse_soil_elapsed),
++        "lane_d_wall_us": release_probe_elapsed_us(qualification_telemetry.lane_d_elapsed),
++        "remaining_runner_wall_us": release_probe_elapsed_us(qualification_telemetry.remaining_runner_elapsed),
++        "qualification_telemetry_total_wall_us": release_probe_elapsed_us(qualification_telemetry.total_elapsed),
++        "qualification_scopes_balanced": qualification_telemetry.scopes_balanced,
++        "qualification_counters_complete": qualification_telemetry.counters_complete,
++        "laned_days_seen": active["days_seen"].as_u64().expect("Lane-D days_seen"),
++        "laned_days_routed": active["days_routed"].as_u64().expect("Lane-D days_routed"),
++        "laned_source_m3": evidence.manifest_source_m3,
++        "laned_outlet_m3": evidence.manifest_outlet_m3,
++        "laned_end_window_storage_m3": evidence.manifest_storage_m3,
++        "laned_clamp_m3": evidence.manifest_clamp_m3,
++    });
++    record
++        .as_object_mut()
++        .expect("experiment object")
++        .extend(original_record.as_object().expect("probe object").clone());
++    drop(original_record);
++    controlled_mechanism_phase("post_validation", iteration, memory);
++    // These explicit drops precede cleanup observation; unlinking files is not heap teardown.
++    drop(report);
++    drop(stage3_audit);
++    drop(telemetry);
++    drop(qualification_telemetry);
++    drop(carrier_audit);
++    drop(lse_audit);
++    drop(manifest);
++    drop(hbp_bytes);
++    drop(hbp);
++    drop(evidence);
++    std::fs::remove_dir_all(run_dir).expect("remove experiment-owned fixture after validation");
++    record
++}
+diff --git a/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs b/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs
+index a6a3daef2..4cdc65625 100644
+--- a/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs
++++ b/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs
+@@ -835,276 +835,9 @@ fn accepted_stage3_real_runner_routes_lane_d_and_publishes_summary() {
+ #[test]
+ #[ignore = "release-profile comparator probe; run explicitly with --release --ignored --exact"]
+ fn stage3_laned_release_one_ofe_positive_baseline_profile() {
+-    assert!(
+-        !cfg!(debug_assertions),
+-        "this ignored comparator probe must execute under cargo test --release"
+-    );
+-    let _execution_guard = runner_execution_lock()
+-        .lock()
+-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+-
+-    let fixture_started = std::time::Instant::now();
+-    let run_dir = prepare_native_stage3_lane_d_scale_fixture(
+-        "stage3_laned_release_one_ofe_positive_baseline",
+-        &[100.0],
+-    );
+-    let fixture_wall_us = release_probe_elapsed_us(fixture_started.elapsed());
+-    let request = HillslopeRunRequest {
+-        run_dir: run_dir.clone(),
+-        run_file: PathBuf::from("case.run"),
+-        output_dir: run_dir.join("output"),
+-        sidecar_policy: SidecarPolicy::Compat,
+-        legacy_sidecar_discovery: false,
+-        manifest_path: None,
+-    };
+-
+-    let bootstrap_started = std::time::Instant::now();
+-    let seed_path = crate::hillslope::test_fixture_authority::author_stage3_v11_owner_seed_fixture(
+-        &request,
+-        crate::hillslope::test_fixture_authority::Stage3TestFixtureSeedProfile::CompleteOwner,
+-        crate::hillslope::test_fixture_authority::Stage3TestFixtureSeedBinding::ExplicitRunfile,
+-    )
+-    .expect("author exact one-OFE release-probe Stage-3 owner seed");
+-    assert_authored_stage3_owner_cardinality(&request, &seed_path, 1);
+-    let bootstrap_wall_us = release_probe_elapsed_us(bootstrap_started.elapsed());
+-
+-    crate::hillslope::snow_stage3_v11_qualification_audit::begin();
+-    let telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_parent_telemetry_v1(
+-        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::STAGE3_V11_PARENT_SUPPORT_COUNT,
+-        std::time::Duration::from_secs(3_600),
+-    )
+-    .expect("enable bounded Stage-3 owner-evaluation telemetry");
+-    let qualification_telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_release_qualification_telemetry_v1()
+-        .expect("enable one-OFE release attribution telemetry");
+-    let run_started = std::time::Instant::now();
+-    let report = execute_hillslope_run_with_runtime_policy(
+-        &request,
+-        &["openwepp-cli-hill".to_string()],
+-        HillslopeRuntimeSelectionPolicy::new(
+-            HillslopeRuntimeSelection::DirectProductionExecutor,
+-            HillslopeDefaultRuntimeActivation::default(),
+-        ),
+-    )
+-    .expect("one-OFE positive Stage-3 -> Lane-D release probe");
+-    let run_wall_us = release_probe_elapsed_us(run_started.elapsed());
+-    let qualification_telemetry = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_release_qualification_telemetry_v1()
+-        .expect("take one-OFE release attribution telemetry");
+-    drop(qualification_telemetry_guard);
+-
+-    let validation_started = std::time::Instant::now();
+-    let stage3_audit = crate::hillslope::snow_stage3_v11_qualification_audit::take();
+-    let telemetry = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_parent_telemetry_v1();
+-    drop(telemetry_guard);
+-    let snapshot = stage3_audit
+-        .committed_snapshot
+-        .as_ref()
+-        .expect("release probe committed Stage-3 qualification snapshot");
+-    snapshot
+-        .validate()
+-        .expect("release probe committed Stage-3 qualification evidence");
+-    assert_eq!(snapshot.committed_day_count, 1);
+-    assert_eq!(snapshot.lanes.len(), 1);
+-    assert_eq!(
+-        stage3_audit
+-            .support_chronology_by_day
+-            .get(&0)
+-            .expect("release probe day-zero parent supports")
+-            .len(),
+-        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::STAGE3_V11_PARENT_SUPPORT_COUNT,
+-    );
+-
+-    let manifest: serde_json::Value = serde_json::from_str(
+-        &std::fs::read_to_string(&report.manifest_path)
+-            .expect("read release-probe Lane-D manifest"),
+-    )
+-    .expect("parse release-probe Lane-D manifest");
+-    let active = &manifest["execution_provenance"]["laned_active"];
+-    assert_eq!(active["days_seen"].as_u64(), Some(1));
+-    assert_eq!(active["days_routed"].as_u64(), Some(1));
+-
+-    let hbp_bytes = std::fs::read(&report.output_pass).expect("read release-probe routed HBP");
+-    let (hbp, latest_event) = parse_hbp_from_bytes_with_latest_event_payload(
+-        &hbp_bytes,
+-        &report.output_pass,
+-        HbpParseOptions {
+-            expected_hillslope_id: Some(83),
+-        },
+-    )
+-    .expect("release-probe routed HBP must parse");
+-    assert_eq!(hbp.nofe, 1);
+-    let event = latest_event.expect("release probe must publish a positive routed HBP event");
+-    let wat_path = run_dir.join("output/H83.wat.parquet");
+-    let evidence = RealLaneDPublicEvidence {
+-        ofe_count: 1,
+-        areas_m2: read_wat_f64_column(&wat_path, "Area"),
+-        source_depths_mm: read_wat5_hourly_sources(
+-            &run_dir.join("output/H83.wat-subhourly.parquet"),
+-            1,
+-        ),
+-        pass_runvol_m3: read_wat_f64_column(&run_dir.join("output/H83.pass.parquet"), "runvol"),
+-        pass_peakro_m3_s: read_wat_f64_column(&run_dir.join("output/H83.pass.parquet"), "peakro"),
+-        hbp_hourly_outlet_m3: event.hourly_runoff_volume_m3,
+-        hbp_peak_outlet_m3_s: event.peak_runoff_m3_s,
+-        manifest_source_m3: positive_manifest_f64(active, "total_source_m3"),
+-        manifest_outlet_m3: positive_manifest_f64(active, "total_routed_outlet_m3"),
+-        manifest_storage_m3: nonnegative_manifest_f64(active, "total_end_window_storage_m3"),
+-        manifest_clamp_m3: nonnegative_manifest_f64(active, "total_clamp_m3"),
+-    };
+-    assert_real_lane_d_public_closure(&evidence, &[100.0]);
+-    let fixed_point_evaluation_count = telemetry
+-        .iter()
+-        .map(|row| row.fixed_point_evaluation_count)
+-        .sum::<u64>();
+-    let direct_trial_count = telemetry
+-        .iter()
+-        .map(|row| row.direct_trial_count)
+-        .sum::<u64>();
+-    let split_child_trial_count = telemetry
+-        .iter()
+-        .map(|row| row.split_child_trial_count)
+-        .sum::<u64>();
+-    let accepted_microstep_count = telemetry
+-        .iter()
+-        .map(|row| row.accepted_microstep_count)
+-        .sum::<u64>();
+-    let telemetry_elapsed_us = |project: fn(
+-        &openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::AdaptiveParentTelemetryV1,
+-    ) -> std::time::Duration| {
+-        release_probe_elapsed_us(telemetry.iter().map(project).sum())
+-    };
+-    let parent_phase_wall_us = serde_json::json!({
+-        "parent": telemetry_elapsed_us(|row| row.parent_elapsed),
+-        "covered_direct_trial": telemetry_elapsed_us(|row| row.covered_direct_trial_phase_elapsed),
+-        "covered_composed_trial": telemetry_elapsed_us(|row| row.covered_composed_trial_phase_elapsed),
+-        "terminal_direct_trial": telemetry_elapsed_us(|row| row.terminal_direct_trial_phase_elapsed),
+-        "terminal_composed_trial": telemetry_elapsed_us(|row| row.terminal_composed_trial_phase_elapsed),
+-        "provisional_projection": telemetry_elapsed_us(|row| row.provisional_envelope_projection_elapsed),
+-        "provisional_solver_ready": telemetry_elapsed_us(|row| row.provisional_envelope_solver_ready_elapsed),
+-        "provisional_physical": telemetry_elapsed_us(|row| row.provisional_envelope_physical_elapsed),
+-        "provisional_receipts": telemetry_elapsed_us(|row| row.provisional_envelope_receipts_elapsed),
+-        "provisional_owner": telemetry_elapsed_us(|row| row.provisional_envelope_owner_elapsed),
+-        "publication_append": telemetry_elapsed_us(|row| row.publication_append_elapsed),
+-        "publication_full_validation": telemetry_elapsed_us(|row| row.publication_full_validation_elapsed),
+-        "reuse_validation": telemetry_elapsed_us(|row| row.reuse_validation_elapsed),
+-    });
+-    let physical_phase_wall_us = serde_json::json!({
+-        "topology": telemetry_elapsed_us(|row| row.profile_detail.physical_topology_elapsed),
+-        "potential": telemetry_elapsed_us(|row| row.profile_detail.physical_potential_elapsed),
+-        "request": telemetry_elapsed_us(|row| row.profile_detail.physical_request_elapsed),
+-        "unified": telemetry_elapsed_us(|row| row.profile_detail.physical_unified_elapsed),
+-        "final_tile": telemetry_elapsed_us(|row| row.profile_detail.physical_final_tile_elapsed),
+-        "protocol": telemetry_elapsed_us(|row| row.profile_detail.physical_protocol_elapsed),
+-        "ingress": telemetry_elapsed_us(|row| row.profile_detail.physical_ingress_elapsed),
+-        "post": telemetry_elapsed_us(|row| row.profile_detail.physical_post_elapsed),
+-    });
+-    let unified_phase_wall_us = serde_json::json!({
+-        "preflight": telemetry_elapsed_us(|row| row.profile_detail.unified_preflight_elapsed),
+-        "authorization": telemetry_elapsed_us(|row| row.profile_detail.unified_authorization_elapsed),
+-        "entry_validation": telemetry_elapsed_us(|row| row.profile_detail.unified_entry_validation_elapsed),
+-        "protocol_validation": telemetry_elapsed_us(|row| row.profile_detail.unified_protocol_validation_elapsed),
+-        "candidate": telemetry_elapsed_us(|row| row.profile_detail.unified_candidate_elapsed),
+-        "candidate_soil": telemetry_elapsed_us(|row| row.profile_detail.candidate_soil_elapsed),
+-        "candidate_surface_resource": telemetry_elapsed_us(|row| row.profile_detail.candidate_surface_resource_elapsed),
+-        "candidate_surface_ingress": telemetry_elapsed_us(|row| row.profile_detail.candidate_surface_ingress_elapsed),
+-        "candidate_receivers": telemetry_elapsed_us(|row| row.profile_detail.candidate_receivers_elapsed),
+-        "candidate_validation": telemetry_elapsed_us(|row| row.profile_detail.candidate_validation_elapsed),
+-    });
+-    let finalization_phase_wall_us = serde_json::json!({
+-        "candidate": telemetry_elapsed_us(|row| row.profile_detail.finalization_candidate_elapsed),
+-        "sealed_source": telemetry_elapsed_us(|row| row.profile_detail.finalization_sealed_source_elapsed),
+-        "install": telemetry_elapsed_us(|row| row.profile_detail.finalization_install_elapsed),
+-        "identity_replay": telemetry_elapsed_us(|row| row.profile_detail.finalization_identity_replay_elapsed),
+-    });
+-    let imported_stack_phase_wall_us = serde_json::json!({
+-        "entry_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_entry_validation_elapsed),
+-        "physical_candidate": telemetry_elapsed_us(|row| row.profile_detail.imported_physical_candidate_elapsed),
+-        "physical_setup": telemetry_elapsed_us(|row| row.profile_detail.imported_physical_setup_elapsed),
+-        "frozen_evaluation": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_evaluation_elapsed),
+-        "frozen_preparation": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_preparation_elapsed),
+-        "frozen_execute_accept": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_execute_accept_elapsed),
+-        "frozen_execution_setup": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_execution_setup_elapsed),
+-        "frozen_runtime": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_runtime_elapsed),
+-        "frozen_acceptance": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_acceptance_elapsed),
+-        "envelope_construction": telemetry_elapsed_us(|row| row.profile_detail.imported_envelope_construction_elapsed),
+-        "envelope_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_envelope_validation_elapsed),
+-        "accepted_candidate": telemetry_elapsed_us(|row| row.profile_detail.imported_accepted_candidate_elapsed),
+-        "owner_publication": telemetry_elapsed_us(|row| row.profile_detail.imported_owner_publication_elapsed),
+-        "install": telemetry_elapsed_us(|row| row.profile_detail.imported_install_elapsed),
+-        "reuse_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_validation_elapsed),
+-        "reuse_reseal": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_reseal_elapsed),
+-        "reuse_install": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_install_elapsed),
+-    });
+-    let terminal_candidate_phase_wall_us = serde_json::json!({
+-        "setup": telemetry_elapsed_us(|row| row.profile_detail.terminal_candidate_setup_elapsed),
+-        "provider_custody": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_custody_elapsed),
+-        "provider_projection": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_projection_elapsed),
+-        "provider_carrier": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_carrier_elapsed),
+-        "provider_retention": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_retention_elapsed),
+-        "result_finalization": telemetry_elapsed_us(|row| row.profile_detail.terminal_result_finalization_elapsed),
+-        "carrier_physical": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_phase_elapsed),
+-        "carrier_complete": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_phase_elapsed),
+-        "carrier_physical_setup": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_setup_elapsed),
+-        "carrier_physical_evidence": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_evidence_elapsed),
+-        "carrier_physical_completion": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_completion_elapsed),
+-        "carrier_complete_envelope": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_envelope_elapsed),
+-        "carrier_complete_adoption": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_adoption_elapsed),
+-        "carrier_complete_projection": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_projection_elapsed),
+-        "carrier_complete_owner": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_owner_elapsed),
+-        "carrier_owner_vegetation_validation": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_vegetation_validation_elapsed),
+-        "carrier_owner_hydrology_projection": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_hydrology_projection_elapsed),
+-        "carrier_owner_surface_canonical": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_surface_canonical_elapsed),
+-        "carrier_owner_vegetation_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_vegetation_encoding_elapsed),
+-        "carrier_owner_surface_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_surface_encoding_elapsed),
+-        "carrier_owner_soil_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_soil_encoding_elapsed),
+-        "carrier_owner_other_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_other_encoding_elapsed),
+-        "carrier_owner_joint_map": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_joint_map_elapsed),
+-        "carrier_owner_joint_seal": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_joint_seal_elapsed),
+-        "carrier_owner_soil_custody": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_soil_custody_elapsed),
+-        "carrier_owner_candidate_bytes": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_candidate_bytes_elapsed),
+-        "carrier_owner_ephemeral_assembly": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_ephemeral_assembly_elapsed),
+-    });
+-    let validation_wall_us = release_probe_elapsed_us(validation_started.elapsed());
+-
+-    let record = serde_json::json!({
+-        "record": "stage3_laned_release_one_ofe_positive_baseline_v1",
+-        "fixture_wall_us": fixture_wall_us,
+-        "bootstrap_wall_us": bootstrap_wall_us,
+-        "run_wall_us": run_wall_us,
+-        "validation_wall_us": validation_wall_us,
+-        "rss_kib": release_probe_rss_kib(),
+-        "committed_day_count": snapshot.committed_day_count,
+-        "total_parent_support_count": snapshot.total_parent_support_count,
+-        "covered_parent_support_count": snapshot.adaptive_support_receipt_count,
+-        "snow_free_parent_support_count": snapshot.snow_free_parent_support_count,
+-        "accepted_publication_support_count": snapshot.accepted_publication_support_count,
+-        "fixed_point_evaluation_count": fixed_point_evaluation_count,
+-        "direct_trial_count": direct_trial_count,
+-        "split_child_trial_count": split_child_trial_count,
+-        "accepted_microstep_count": accepted_microstep_count,
+-        "parent_phase_wall_us": parent_phase_wall_us,
+-        "physical_phase_wall_us": physical_phase_wall_us,
+-        "unified_phase_wall_us": unified_phase_wall_us,
+-        "finalization_phase_wall_us": finalization_phase_wall_us,
+-        "imported_stack_phase_wall_us": imported_stack_phase_wall_us,
+-        "terminal_candidate_phase_wall_us": terminal_candidate_phase_wall_us,
+-        "native_vegetation_et_wall_us": release_probe_elapsed_us(qualification_telemetry.native_vegetation_et_elapsed),
+-        "stage3_lse_soil_wall_us": release_probe_elapsed_us(qualification_telemetry.stage3_lse_soil_elapsed),
+-        "lane_d_wall_us": release_probe_elapsed_us(qualification_telemetry.lane_d_elapsed),
+-        "remaining_runner_wall_us": release_probe_elapsed_us(qualification_telemetry.remaining_runner_elapsed),
+-        "qualification_telemetry_total_wall_us": release_probe_elapsed_us(qualification_telemetry.total_elapsed),
+-        "qualification_scopes_balanced": qualification_telemetry.scopes_balanced,
+-        "qualification_counters_complete": qualification_telemetry.counters_complete,
+-        "laned_days_seen": active["days_seen"].as_u64().expect("Lane-D days_seen"),
+-        "laned_days_routed": active["days_routed"].as_u64().expect("Lane-D days_routed"),
+-        "laned_source_m3": evidence.manifest_source_m3,
+-        "laned_outlet_m3": evidence.manifest_outlet_m3,
+-        "laned_end_window_storage_m3": evidence.manifest_storage_m3,
+-        "laned_clamp_m3": evidence.manifest_clamp_m3,
+-    });
++    let record = controlled_mechanism_run(1, 0, false);
+     println!("STAGE3_LANED_RELEASE_PROBE {record}");
+-    let _ = std::fs::remove_dir_all(run_dir);
+ }
+-
+ fn release_probe_elapsed_us(elapsed: std::time::Duration) -> u64 {
+     u64::try_from(elapsed.as_micros()).unwrap_or(u64::MAX)
+ }
+diff --git a/tests/integration/land_surface_energy_balance_authority_contract.rs b/tests/integration/land_surface_energy_balance_authority_contract.rs
+index 5c5a417b1..815fd1a70 100644
+--- a/tests/integration/land_surface_energy_balance_authority_contract.rs
++++ b/tests/integration/land_surface_energy_balance_authority_contract.rs
+@@ -1,5 +1,54 @@
+ use std::fs;
+ 
++#[test]
++fn prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation() {
++    let contract = read(CONTRACT);
++    let experiment = contract
++        .split("## Prospective Stencil-Aware Dependency-Replay Experiment\n")
++        .nth(1)
++        .expect("separately identified prospective authority")
++        .split("\n## ")
++        .next()
++        .expect("experimental authority body");
++    for required in [
++        "EXP-STAGE3-20260906-R",
++        "INV-LANDSURFACEENERGY-164",
++        "OBL-LANDSURFACEENERGY-C-020",
++        "R = A + one reviewed same-sweep dependency-replay delta",
++        "R is never F + replay",
++        "Historical revision-31 rules and FAIL/HOLD results remain\nunchanged",
++        "old fully-centered existential and 64 MiB retention\ngate",
++        "For this new experiment only",
++        "no production promotion or hidden production\nselector",
++        "one shared canonical\nphysics implementation",
++        "complete direct-edge graph oracle and normative\nfallibility/crossability matrix",
++        "exact forced-complete node/residual/Jacobian/full-solve parity",
++        "post-start errors return directly without fallback",
++        "Independently enumerate expected signed probes from actual coordinate stencils",
++        "independently derived evaluator classification",
++        "two signed probes",
++        "actual one signed probe",
++        "RejectedBeforeProbe contributes no unattempted\nprobe",
++        "Do not copy producer counters or producer bucket labels into expected\nresults",
++        "ordered probe identities, starts, completions and first errors",
++        "logical = anchor + replay + complete",
++        "distinct authentic map/solve/iteration/sweep identities",
++        "missing or unexplained dropped records invalidate coverage evidence",
++        "Require nonzero completed component replay on the real primary workload",
++        "eligibility alone is insufficient",
++        "Neither an all-centered sweep nor a\nhardcoded 54/14/16/24 pattern is required",
++        "Existing lawful\ncentered/interior and boundary tests remain intact",
++        "oracle/audit work runs separately from performance and\nmemory intervals",
++        "matched optional audit posture",
++        "Textual authority tests prove no execution",
++    ] {
++        assert!(experiment.contains(required), "{CONTRACT} missing {required}");
++    }
++    let exposure = row(&contract, "EXP-STAGE3-20260906-R");
++    assert!(exposure.contains("INV-LANDSURFACEENERGY-164, OBL-LANDSURFACEENERGY-C-020"));
++    assert!(exposure.contains("| `maps-to-existing-INV` |"));
++}
++
+ const CONTRACT: &str =
+     "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md";
+ const INDEX: &str = "docs/specifications/science-contracts/index.md";
+diff --git a/tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs b/tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs
+index 38646dc04..e620b5443 100644
+--- a/tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs
++++ b/tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs
+@@ -1,5 +1,47 @@
+ use std::fs;
+ 
++#[test]
++fn prospective_20260906_feed_forward_binds_science_and_separate_qualification() {
++    let contract = read(ENERGY);
++    let experiment = contract
++        .split("## Prospective Controlled Feed-Forward Experiment\n")
++        .nth(1)
++        .expect("separately identified prospective authority")
++        .split("\n## ")
++        .next()
++        .expect("experimental authority body");
++    for required in [
++        "EXP-STAGE3-20260906-F",
++        "INV-SNOWENERGY-088",
++        "OBL-SNOWENERGY-C-056",
++        "F = A + one reviewed feed-forward carrier",
++        "Historical revision-61 rules and FAIL/HOLD results remain unchanged",
++        "64 MiB retention gate do\nnot decide this prospective comparison",
++        "no production promotion or hidden production selector",
++        "All scientific, typed ownership, guard, error-precedence, rollback, restart",
++        "redundant same-invocation\nsecond carrier execution",
++        "independently join stable invocation keys/multisets",
++        "unchanged returned physical/custody\nresult",
++        "Full/Retry/Half1/Half2/Root, discovery/exact, batch, and canonical-final",
++        "cannot express a preceding ending-snow hint or coupling-iteration ordinal",
++        "forced-two-call complete-result bitwise oracle",
++        "typed ownership/stale/foreign/reuse rejection",
++        "rollback/restart and real-consumer scientific/output parity",
++        "Reconstruct protected closure independently from produced operands",
++        "not a new solver stopping rule",
++        "explicit post-drop state",
++        "missing required scientific/typed\nproof prevents admission",
++    ] {
++        assert!(experiment.contains(required), "{ENERGY} missing {required}");
++    }
++    let exposure = contract
++        .lines()
++        .find(|line| line.starts_with("| `EXP-STAGE3-20260906-F` |"))
++        .expect("prospective binding exposure");
++    assert!(exposure.contains("INV-SNOWENERGY-088, OBL-SNOWENERGY-C-056"));
++    assert!(exposure.contains("| `maps-to-existing-INV` |"));
++}
++
+ const ENERGY: &str = "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md";
+ const FREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
+ const INDEX: &str = "docs/specifications/science-contracts/index.md";
+diff --git a/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs b/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
+index f9d2c1632..9c1fded76 100644
+--- a/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
++++ b/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
+@@ -917,11 +917,33 @@ fn exact_surface_owner_uses_authenticated_topology_rank_for_opaque_ofe_ids() {
+ #[test]
+ fn stage3_lane_d_qualification_reads_canonical_manifest_provenance() {
+     let repository = root();
+-    let qualification = fs::read_to_string(
++    let original_qualification = fs::read_to_string(
+         repository
+             .join("crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs"),
+     )
+     .expect("read Stage-3 Lane-D qualification source");
++    let controlled =
++        fs::read_to_string(repository.join(
++            "crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs",
++        ))
++        .expect("read extracted real-consumer qualification helper");
++    let test_module =
++        fs::read_to_string(repository.join("crates/openwepp-runner/src/hillslope/03_tests.rs"))
++            .expect("read runner test module");
++    assert!(
++        test_module.contains("include!(\"tests03/controlled_mechanism_experiments.rs\");"),
++        "the extracted helper must remain included in the real runner tests"
++    );
++    let original_baseline = original_qualification
++        .split("fn stage3_laned_release_one_ofe_positive_baseline_profile()")
++        .nth(1)
++        .and_then(|tail| tail.split("\n}").next())
++        .expect("locate original one-OFE qualification entry point");
++    assert!(
++        original_baseline.contains("controlled_mechanism_run(1, 0, false)"),
++        "the original qualification must invoke the same extracted consumer"
++    );
++    let qualification = format!("{original_qualification}\n{controlled}");
+     let wat_schema = fs::read_to_string(
+         repository.join("crates/openwepp-hillslope-output/src/hillslope_wat.rs"),
+     )

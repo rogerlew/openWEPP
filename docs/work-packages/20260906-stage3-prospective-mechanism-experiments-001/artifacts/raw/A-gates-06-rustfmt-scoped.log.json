@@ -1,0 +1,17 @@
+{
+  "pid": 745872,
+  "command": [
+    "bash",
+    "-lc",
+    "files=( $(git diff --name-only --diff-filter=ACMR 2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3 -- \"*.rs\") ); if [ ${#files[@]} -eq 0 ]; then echo \"No A changed .rs files\"; exit 0; fi; rustfmt --edition=2024 --check \"${files[@]}\""
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 75836880,
+  "log_sha256": "85bfb03a790d3e8e4a6d8b46b9c0f0e74969808e0b35538b289b4dafb508a38c",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

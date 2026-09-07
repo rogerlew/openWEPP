@@ -1,0 +1,19 @@
+{
+  "pid": 1211408,
+  "command": [
+    ".venv/bin/python",
+    "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/audit_natural_diagnostics.py",
+    "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/raw/A-natural-diagnostic-01.log",
+    "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/raw/F-natural-diagnostic-01.log",
+    "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/raw/R-natural-diagnostic-01.log"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 83571868,
+  "log_sha256": "a4ee4ea22e3b8d91cda5f60cd6b80ea3e9cbdca7ae5ae739d43a9521e220da3f",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

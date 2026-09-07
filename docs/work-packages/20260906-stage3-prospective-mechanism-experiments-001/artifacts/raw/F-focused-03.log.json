@@ -1,0 +1,26 @@
+{
+  "pid": 773526,
+  "command": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "cargo",
+    "nextest",
+    "run",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "-E",
+    "test(feed_forward)",
+    "--no-fail-fast"
+  ],
+  "cwd": "/tmp/openwepp-controlled-mechanisms-Hb6uS2/F",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 100,
+  "duration_ns": 69723188263,
+  "log_sha256": "8b7811d71bcb4772d7f5664dc59befcc69fb63b206921ea936993e591f496a3c",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

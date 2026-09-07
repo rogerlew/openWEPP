@@ -1,0 +1,1191 @@
+diff --git a/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs b/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs
+index c1956b804..beab75fe1 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs
+@@ -1538,16 +1538,15 @@ mod support_helpers_mod;
+ pub(crate) use support_helpers_mod::DirectSnowStage3Resolution;
+ #[cfg(test)]
+ pub(crate) use support_helpers_mod::{
+-    CaptureEvidence, CaptureState, CapturedProviderOutcome, TerminalCouplingSelectionReason,
+-    TerminalFloorDecision, TerminalPairPosition,
++    CaptureEvidence, CaptureState, CapturedProviderOutcome, CoveredTerminalTrialRequestV1,
++    TerminalCouplingSelectionReason, TerminalFloorDecision, TerminalPairPosition,
+ };
+ pub(crate) use support_helpers_mod::{
+     CoveredProbeChildIdentityV1, CoveredTerminalBatchCarrierCandidatesV2,
+     CoveredTerminalBatchTrialRequestV2, CoveredTerminalBatchTrialResultV2,
+-    CoveredTerminalExecutionMode, CoveredTerminalJointTrialStateV1,
+-    CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRoleV1,
+-    CoveredTerminalTrialTransitionV1, CoveredTerminalTrialRequestV1, JointTrialAuthorityV1,
+-    NoEvidence, ProbeChildAuthorityV1,
++    CoveredTerminalExecutionMode, CoveredTerminalFeedForwardRequestV1,
++    CoveredTerminalJointTrialStateV1, CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRoleV1,
++    CoveredTerminalTrialTransitionV1, JointTrialAuthorityV1, NoEvidence, ProbeChildAuthorityV1,
+     STAGE3_DEFAULT_SNOW_ALBEDO, STAGE3_LATENT_HEAT_FUSION_J_KG, TerminalEvidenceMode,
+     stage3_has_represented_ice, stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
+     stage3_total_represented_ice_swe_m,
+diff --git a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/mod.rs b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/mod.rs
+index 4cf056c2d..e46c4540a 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/mod.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/mod.rs
+@@ -11,16 +11,15 @@ pub use ksatadj::{
+ };
+ #[cfg(test)]
+ pub(crate) use runoff_reconciliation::{
+-    CaptureEvidence, CaptureState, CapturedProviderOutcome, TerminalCouplingSelectionReason,
+-    TerminalFloorDecision, TerminalPairPosition,
++    CaptureEvidence, CaptureState, CapturedProviderOutcome, CoveredTerminalTrialRequestV1,
++    TerminalCouplingSelectionReason, TerminalFloorDecision, TerminalPairPosition,
+ };
+ pub(crate) use runoff_reconciliation::{
+     CoveredProbeChildIdentityV1, CoveredTerminalBatchCarrierCandidatesV2,
+     CoveredTerminalBatchTrialRequestV2, CoveredTerminalBatchTrialResultV2,
+-    CoveredTerminalExecutionMode, CoveredTerminalJointTrialStateV1,
+-    CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRoleV1,
+-    CoveredTerminalTrialTransitionV1, CoveredTerminalTrialRequestV1, JointTrialAuthorityV1,
+-    NoEvidence, ProbeChildAuthorityV1,
++    CoveredTerminalExecutionMode, CoveredTerminalFeedForwardRequestV1,
++    CoveredTerminalJointTrialStateV1, CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRoleV1,
++    CoveredTerminalTrialTransitionV1, JointTrialAuthorityV1, NoEvidence, ProbeChildAuthorityV1,
+     STAGE3_DEFAULT_SNOW_ALBEDO, STAGE3_LATENT_HEAT_FUSION_J_KG, TerminalEvidenceMode,
+     stage3_has_represented_ice, stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
+     stage3_total_represented_ice_swe_m,
+diff --git a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs
+index 8b4ccaea2..d1b112b5d 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs
+@@ -21,6 +21,11 @@ use openwepp_unit_boundary::{FractionUnitInterval, LinearRateMetersPerSecond, Te
+ use std::collections::{BTreeMap, BTreeSet};
+ 
+ mod stage3_solver;
++mod terminal_carrier_provider;
++pub(crate) use terminal_carrier_provider::{
++    CoveredTerminalFeedForwardProviderV1, CoveredTerminalFeedForwardRequestV1,
++    CoveredTerminalProviderV1,
++};
+ 
+ const STAGE3_RHO_WATER_KG_M3: f64 = 1_000.0;
+ pub(crate) const STAGE3_LATENT_HEAT_FUSION_J_KG: f64 = 333_600.0;
+@@ -302,7 +307,9 @@ pub(crate) trait TerminalEvidenceMode<J>: terminal_evidence_sealed::Sealed {
+     }
+     fn pair(_: &mut Self::State, _: TerminalPairEvidenceHook) {}
+     fn admission(_: &mut Self::State, _: TerminalAdmissionEvidenceHook) {}
++    #[cfg(test)]
+     fn coupling_iteration(_: &mut Self::CouplingState, _: TerminalCouplingIterationHook) {}
++    #[cfg(test)]
+     fn coupling_selection(_: &mut Self::CouplingState, _: TerminalCouplingSelectionHook) {}
+     fn merge_coupling(_: &mut Self::State, _: Self::CouplingState) {}
+     fn selected_trial(_: &mut Self::State, _: TerminalSelectedTrialHook<'_, J>) {}
+@@ -379,6 +386,7 @@ impl<J> TerminalEvidenceMode<J> for NoEvidence {
+             provider_calls_after,
+         );
+     }
++    #[cfg(test)]
+     #[inline(always)]
+     fn coupling_iteration(_: &mut (), value: TerminalCouplingIterationHook) {
+         let TerminalCouplingIterationHook {
+@@ -389,6 +397,7 @@ impl<J> TerminalEvidenceMode<J> for NoEvidence {
+         } = value;
+         let _ = (request, outgoing, comparisons, converged);
+     }
++    #[cfg(test)]
+     #[inline(always)]
+     fn coupling_selection(_: &mut (), value: TerminalCouplingSelectionHook) {
+         let TerminalCouplingSelectionHook {
+@@ -429,6 +438,7 @@ impl<J> TerminalEvidenceMode<J> for NoEvidence {
+     }
+ }
+ 
++#[cfg(test)]
+ #[derive(Clone)]
+ pub(crate) struct TerminalCouplingIterationHook {
+     pub request: CoveredTerminalTrialRequestV1,
+@@ -437,12 +447,14 @@ pub(crate) struct TerminalCouplingIterationHook {
+     pub converged: bool,
+ }
+ 
++#[cfg(test)]
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ pub(crate) enum TerminalCouplingSelectionReason {
+     FourComponentConvergenceBreak,
+     IterationLoopExhausted,
+ }
+ 
++#[cfg(test)]
+ #[derive(Clone)]
+ pub(crate) struct TerminalCouplingSelectionHook {
+     pub request: CoveredTerminalTrialRequestV1,
+@@ -792,12 +804,7 @@ impl CaptureState {
+             }
+             let zero = iteration.hook.request.coupling_iteration == 0;
+             if zero != iteration.hook.comparisons.is_none()
+-                || zero
+-                    != iteration
+-                        .hook
+-                        .request
+-                        .ending_snow_hint
+-                        .is_none()
++                || zero != iteration.hook.request.ending_snow_hint.is_none()
+             {
+                 return Err("iteration zero optionality");
+             }
+@@ -832,9 +839,7 @@ impl CaptureState {
+         let mut group_start = 0;
+         while group_start < self.coupling_iterations.len() {
+             let first = &self.coupling_iterations[group_start].hook;
+-            if first.request.coupling_iteration != 0
+-                || first.request.ending_snow_hint.is_some()
+-            {
++            if first.request.coupling_iteration != 0 || first.request.ending_snow_hint.is_some() {
+                 return Err("coupling group start");
+             }
+             let mut group_end = group_start + 1;
+@@ -1185,6 +1190,7 @@ pub(crate) struct CoveredTerminalEndingSnowHintV1 {
+     pub surface_temperature_c: f64,
+ }
+ 
++#[cfg(test)]
+ pub(crate) fn terminal_coupling_comparisons(
+     previous: CoveredTerminalEndingSnowHintV1,
+     next: CoveredTerminalEndingSnowHintV1,
+@@ -1205,6 +1211,7 @@ pub(crate) fn terminal_coupling_comparisons(
+     ]
+ }
+ 
++#[cfg(test)]
+ pub(crate) fn terminal_coupling_four_component_converged(
+     previous: CoveredTerminalEndingSnowHintV1,
+     next: CoveredTerminalEndingSnowHintV1,
+@@ -1214,6 +1221,7 @@ pub(crate) fn terminal_coupling_four_component_converged(
+         .all(|comparison| comparison.4)
+ }
+ 
++#[cfg(test)]
+ pub(crate) fn terminal_coupling_post_loop_three_component_converged(
+     previous: CoveredTerminalEndingSnowHintV1,
+     next: CoveredTerminalEndingSnowHintV1,
+@@ -1223,6 +1231,7 @@ pub(crate) fn terminal_coupling_post_loop_three_component_converged(
+         .all(|comparison| comparison.4)
+ }
+ 
++#[cfg(test)]
+ pub(crate) fn require_terminal_coupling_live_convergence(
+     selected_live_converged: bool,
+ ) -> Result<(), DirectSnowStage3EvaluationError> {
+@@ -1627,6 +1636,7 @@ pub(crate) enum CoveredTerminalTrialRoleV1 {
+     Root = 6,
+ }
+ 
++#[cfg(test)]
+ pub(crate) type CoveredTerminalTrialProviderV1<'a> = dyn FnMut(
+         CoveredTerminalTrialRequestV1,
+     ) -> Result<CoveredTerminalTrialTransitionV1, DirectSnowStage3EvaluationError>
+diff --git a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs
+index 77aa1465a..db5b24fb3 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs
+@@ -5,7 +5,10 @@ mod evaluation;
+ mod liquid_routing;
+ mod persistent_state;
+ mod support;
++mod terminal_carrier_evaluation;
+ mod terminal_event;
++#[cfg(test)]
++mod terminal_feed_forward_tests;
+ const STAGE3_NEUTRAL_BULK_VAPOR_TRANSFER_ID: &str = "neutral_bulk_stage3_v1";
+ #[cfg(test)]
+ pub(super) use terminal_event::{
+@@ -204,7 +207,7 @@ impl Wb11HydrologyKernel {
+             TimeSupport,
+             CoveredTerminalExecutionMode,
+             CoveredTerminalJointTrialStateV1,
+-            &mut CoveredTerminalTrialProviderV1<'_>,
++            &mut CoveredTerminalProviderV1<'_, '_>,
+         )>,
+     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
+         let mut evidence = <NoEvidence as TerminalEvidenceMode<
+@@ -238,7 +241,7 @@ impl Wb11HydrologyKernel {
+             TimeSupport,
+             CoveredTerminalExecutionMode,
+             CoveredTerminalJointTrialStateV1,
+-            &mut CoveredTerminalTrialProviderV1<'_>,
++            &mut CoveredTerminalProviderV1<'_, '_>,
+         )>,
+         evidence: &mut M::State,
+     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
+@@ -2434,11 +2437,7 @@ impl Wb11HydrologyKernel {
+         cold_content_by_layer: &mut Vec<f64>,
+         active_layer_count: usize,
+     ) -> usize {
+-        Self::coalesce_stage3_thermal_fragments(
+-            layers,
+-            cold_content_by_layer,
+-            active_layer_count,
+-        )
++        Self::coalesce_stage3_thermal_fragments(layers, cold_content_by_layer, active_layer_count)
+     }
+ 
+     fn stage3_control_volume_state(
+diff --git a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
+index e5246b167..fbb918d2d 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
+@@ -153,7 +153,7 @@ impl Wb11HydrologyKernel {
+             CoveredTerminalExecutionMode,
+             CoveredTerminalJointTrialStateV1,
+             &DirectSnowStage3PersistentState,
+-            &mut CoveredTerminalTrialProviderV1<'_>,
++            &mut CoveredTerminalProviderV1<'_, '_>,
+         )>,
+     ) -> Result<Stage3ShadowSummary, DirectSnowStage3EvaluationError> {
+         let mut evidence = <NoEvidence as TerminalEvidenceMode<
+@@ -197,7 +197,7 @@ impl Wb11HydrologyKernel {
+             CoveredTerminalExecutionMode,
+             CoveredTerminalJointTrialStateV1,
+             &DirectSnowStage3PersistentState,
+-            &mut CoveredTerminalTrialProviderV1<'_>,
++            &mut CoveredTerminalProviderV1<'_, '_>,
+         )>,
+         evidence: &mut M::State,
+     ) -> Result<Stage3ShadowSummary, DirectSnowStage3EvaluationError> {
+@@ -353,7 +353,11 @@ impl Wb11HydrologyKernel {
+                                     crate::stage3_mechanism_experiment_audit::Scope::begin(
+                                         crate::stage3_mechanism_experiment_audit::Kind::Evaluator,
+                                         || {
+-                                            format!("role={role:?};attempt={attempt_ordinal};start_bits={};duration_bits={}", relative_start_seconds.to_bits(), duration_seconds.to_bits())
++                                            format!(
++                                                "role={role:?};attempt={attempt_ordinal};start_bits={};duration_bits={}",
++                                                relative_start_seconds.to_bits(),
++                                                duration_seconds.to_bits()
++                                            )
+                                         },
+                                     );
+                                 let surface_temperature_c =
+@@ -438,8 +442,6 @@ impl Wb11HydrologyKernel {
+                                                     )
+                                                 },
+                                             )?;
+-                                        let duration_seconds =
+-                                            f64::from_bits(trial_support.duration_s_bits());
+                                         let beginning_stage3_state =
+                                             Self::materialize_terminal_microstep_state(
+                                                 persistent_beginning,
+@@ -459,15 +461,12 @@ impl Wb11HydrologyKernel {
+                                                     Some(0.0),
+                                                 )
+                                             })?;
+-                                        let mut hint = None;
+-                                        let mut accepted = None;
+-                                        for coupling_iteration in 0..32_u32 {
+-                                            let request = CoveredTerminalTrialRequestV1 {
++                                        let physical_request =
++                                            CoveredTerminalFeedForwardRequestV1 {
+                                                 lane_id: *lane_id,
+                                                 support: trial_support,
+                                                 role,
+                                                 attempt_ordinal,
+-                                                coupling_iteration,
+                                                 ice_kg_m2: trial_state.ice_kg_m2,
+                                                 liquid_kg_m2: trial_state.liquid_kg_m2,
+                                                 cold_content_j_m2: trial_state.cold_content_j_m2,
+@@ -475,170 +474,22 @@ impl Wb11HydrologyKernel {
+                                                 snow_depth_m: trial_depth_m,
+                                                 snow_density_kg_m3: density_kg_m3,
+                                                 beginning_stage3_state: Box::new(
+-                                                    beginning_stage3_state.clone(),
++                                                    beginning_stage3_state,
+                                                 ),
+-                                                ending_snow_hint: hint,
+                                                 beginning_joint: beginning_joint.clone(),
+                                             };
+-                                            let evidence_request =
+-                                                M::ENABLED.then(|| request.clone());
+-                                            let receipt = (**provider)(request)?;
+-                                            if receipt.boundary.support != trial_support
+-                                                || receipt.beginning_joint != *beginning_joint
+-                                                || receipt.probe_child_identity.trial_support
+-                                                    != trial_support
+-                                                || receipt.probe_child_identity.role != role
+-                                                || receipt.probe_child_identity.attempt_ordinal
+-                                                    != attempt_ordinal
+-                                                || receipt
+-                                                    .probe_child_identity
+-                                                    .beginning_joint_sha256
+-                                                    != beginning_joint.receipt_sha256()
+-                                            {
+-                                                return Err(
+-                                                    Wb11HydrologyKernel::stage3_domain_error(
+-                                                        phase_class,
+-                                                        "snow.terminal_trial_boundary_support_join",
+-                                                        duration_seconds,
+-                                                        Some(duration_seconds),
+-                                                        Some(duration_seconds),
+-                                                    )
+-                                                    .into(),
+-                                                );
+-                                            }
+-                                            let carrier = Self::stage3_hourly_surface_energy(
++                                        let (flux, receipt) =
++                                            Self::evaluate_terminal_carrier_invocation::<M>(
+                                                 phase_class,
++                                                tag,
+                                                 inputs,
+                                                 hourly,
+-                                                Stage3SurfaceInterval {
+-                                                    surface_temperature_c,
+-                                                    snow_depth_m: trial_depth_m,
+-                                                    snow_density_kg_m3: density_kg_m3,
+-                                                    duration_seconds,
+-                                                    forcing_duration_seconds: duration_seconds,
+-                                                    boundary: Some(receipt.boundary.clone()),
+-                                                },
+-                                                Some(tag.operator),
+-                                                DirectSnowDiagnosticCapture::Verbose,
+-                                            )?;
+-                                            let surface = carrier.diagnostics.ok_or_else(|| {
+-                                            Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+-                                                phase_class,
+-                                                symbol: BoundarySymbol::from(
+-                                                    "snow.terminal_enthalpy_diagnostics",
+-                                                ),
+-                                            }
+-                                        })?;
+-                                            let flux = TerminalFluxIntegral {
+-                                                complete_energy_j_m2: surface
+-                                                    .shadow_complete_energy_j_m2,
+-                                                vapor_mass_exchange_kg_m2: surface
+-                                                    .shadow_vapor_mass_exchange_kg_m2,
+-                                                shortwave_energy_j_m2: carrier.shortwave_j_m2,
+-                                                longwave_energy_j_m2: carrier.longwave_j_m2,
+-                                                sensible_energy_j_m2: surface
+-                                                    .shadow_sensible_flux_w_m2
+-                                                    * duration_seconds,
+-                                                latent_energy_j_m2: surface.shadow_latent_flux_w_m2
+-                                                    * duration_seconds,
+-                                                advected_energy_j_m2: surface
+-                                                    .shadow_advected_flux_w_m2
+-                                                    * duration_seconds,
+-                                                snow_soil_heat_energy_j_m2: carrier
+-                                                    .reconciliation
+-                                                    .as_ref()
+-                                                    .map_or(0.0, |value| {
+-                                                        value.snow_soil_heat_flux_w_m2
+-                                                            * duration_seconds
+-                                                    }),
+-                                                external_liquid_kg_m2: hourly.rain_m
+-                                                    * STAGE3_RHO_WATER_KG_M3
+-                                                    * duration_seconds
+-                                                    / support_seconds,
+-                                            };
+-                                            let preview =
+-                                                Self::terminal_transition(trial_state, flux)?.state;
+-                                            let next_hint = CoveredTerminalEndingSnowHintV1 {
+-                                            ice_kg_m2: preview.ice_kg_m2,
+-                                            liquid_kg_m2: preview.liquid_kg_m2,
+-                                            cold_content_j_m2: preview.cold_content_j_m2,
+-                                            surface_temperature_c: Self::stage3_temperature_from_cold_content_values(
+-                                                preview.ice_kg_m2 / STAGE3_RHO_WATER_KG_M3,
+-                                                preview.cold_content_j_m2,
+-                                            ),
+-                                        };
+-                                            let converged = hint.is_some_and(|previous| {
+-                                                terminal_coupling_four_component_converged(
+-                                                    previous, next_hint,
+-                                                )
+-                                            });
+-                                            let comparisons =
+-                                                evidence_request.as_ref().and_then(|_| {
+-                                                    hint.map(|previous| {
+-                                                        terminal_coupling_comparisons(
+-                                                            previous, next_hint,
+-                                                        )
+-                                                    })
+-                                                });
+-                                            if let Some(request) = evidence_request.as_ref() {
+-                                                M::coupling_iteration(
+-                                                    &mut coupling_evidence,
+-                                                    TerminalCouplingIterationHook {
+-                                                        request: request.clone(),
+-                                                        outgoing: next_hint,
+-                                                        comparisons,
+-                                                        converged,
+-                                                    },
+-                                                );
+-                                            }
+-                                            accepted =
+-                                                Some((receipt, flux, evidence_request, converged));
+-                                            if converged {
+-                                                break;
+-                                            }
+-                                            hint = Some(next_hint);
+-                                        }
+-                                        let (
+-                                            receipt,
+-                                            flux,
+-                                            selected_request,
+-                                            selected_live_converged,
+-                                        ) = accepted.ok_or(
+-                                            DirectSnowStage3EvaluationError::TerminalCustody(
+-                                                "covered terminal coupled trial missing result",
+-                                            ),
+-                                        )?;
+-                                        let preview =
+-                                            Self::terminal_transition(trial_state, flux)?.state;
+-                                        let converged = hint.is_some_and(|previous| {
+-                                            terminal_coupling_post_loop_three_component_converged(
+-                                                previous,
+-                                                CoveredTerminalEndingSnowHintV1 {
+-                                                    ice_kg_m2: preview.ice_kg_m2,
+-                                                    liquid_kg_m2: preview.liquid_kg_m2,
+-                                                    cold_content_j_m2: preview.cold_content_j_m2,
+-                                                    surface_temperature_c: previous
+-                                                        .surface_temperature_c,
+-                                                },
+-                                            )
+-                                        });
+-                                        if let Some(selected_request) = selected_request {
+-                                            M::coupling_selection(
++                                                support_seconds,
++                                                trial_state,
++                                                physical_request,
++                                                provider,
+                                                 &mut coupling_evidence,
+-                                                TerminalCouplingSelectionHook {
+-                                                    request: selected_request,
+-                                                    reason: if selected_live_converged {
+-                                                        TerminalCouplingSelectionReason::FourComponentConvergenceBreak
+-                                                    } else {
+-                                                        TerminalCouplingSelectionReason::IterationLoopExhausted
+-                                                    },
+-                                                    post_loop_three_component_check: converged,
+-                                                },
+-                                            );
+-                                        }
+-                                        require_terminal_coupling_live_convergence(
+-                                            selected_live_converged,
+-                                        )?;
++                                            )?;
+                                         mechanism_evaluator.complete(true, || crate::stage3_mechanism_experiment_audit::transition_fingerprint(&receipt));
+                                         return Ok((flux, Some(receipt.ending_joint)));
+                                     } else {
+@@ -920,7 +771,7 @@ impl Wb11HydrologyKernel {
+                     beginning_stage3_state.fingerprint =
+                         Self::stage3_persistent_state_fingerprint(&beginning_stage3_state);
+                     Self::validate_stage3_persistent_state(&beginning_stage3_state)?;
+-                    let transition = (**provider)(CoveredTerminalTrialRequestV1 {
++                    let transition = provider.evaluate_resolved(CoveredTerminalTrialRequestV1 {
+                         lane_id: *lane_id,
+                         support: trial_support,
+                         role: CoveredTerminalTrialRoleV1::Full,
+diff --git a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
+index c2f88b5b9..3312e87d5 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
+@@ -614,6 +614,7 @@ impl Wb11HydrologyKernel {
+         )
+     }
+ 
++    #[cfg(test)]
+     #[allow(clippy::too_many_arguments)]
+     pub(crate) fn evaluate_stage3_terminal_support_with_trial_provider_and_evidence_v1<
+         M: TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>,
+@@ -628,6 +629,64 @@ impl Wb11HydrologyKernel {
+         initial_joint: CoveredTerminalJointTrialStateV1,
+         provider: &mut CoveredTerminalTrialProviderV1<'_>,
+         evidence: &mut M::State,
++    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
++        Self::evaluate_stage3_terminal_support_with_selected_provider_and_evidence_v1::<M>(
++            inputs,
++            state,
++            lane_id,
++            interval_index,
++            support_input,
++            support,
++            mode,
++            initial_joint,
++            &mut CoveredTerminalProviderV1::Feedback(provider),
++            evidence,
++        )
++    }
++
++    #[allow(clippy::too_many_arguments)]
++    pub(crate) fn evaluate_stage3_terminal_support_with_feed_forward_provider_and_evidence_v1<
++        M: TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>,
++    >(
++        inputs: &DirectActiveSnowPartitionInputs,
++        state: &DirectSnowStage3PersistentState,
++        lane_id: u32,
++        interval_index: u64,
++        support_input: DirectSnowStage3SupportInput,
++        support: TimeSupport,
++        mode: CoveredTerminalExecutionMode,
++        initial_joint: CoveredTerminalJointTrialStateV1,
++        provider: &mut CoveredTerminalFeedForwardProviderV1<'_>,
++        evidence: &mut M::State,
++    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
++        Self::evaluate_stage3_terminal_support_with_selected_provider_and_evidence_v1::<M>(
++            inputs,
++            state,
++            lane_id,
++            interval_index,
++            support_input,
++            support,
++            mode,
++            initial_joint,
++            &mut CoveredTerminalProviderV1::FeedForward(provider),
++            evidence,
++        )
++    }
++
++    #[allow(clippy::too_many_arguments)]
++    fn evaluate_stage3_terminal_support_with_selected_provider_and_evidence_v1<
++        M: TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>,
++    >(
++        inputs: &DirectActiveSnowPartitionInputs,
++        state: &DirectSnowStage3PersistentState,
++        lane_id: u32,
++        interval_index: u64,
++        support_input: DirectSnowStage3SupportInput,
++        support: TimeSupport,
++        mode: CoveredTerminalExecutionMode,
++        initial_joint: CoveredTerminalJointTrialStateV1,
++        provider: &mut CoveredTerminalProviderV1<'_, '_>,
++        evidence: &mut M::State,
+     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
+         if mode == CoveredTerminalExecutionMode::PersistentReject
+             || !support_input.duration_seconds.is_finite()
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
+index 2607703c1..9453adaff 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
+@@ -1,16 +1,71 @@
++use crate::STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+ use crate::snow_stage3_v11_attachment::{
++    AcceptedPublicationCaptureAuditV1, AcceptedPublicationCaptureRegimeV1,
++    AdaptiveControllerTestPolicyV1, Stage3AdaptiveStepDecisionV1,
+     begin_adaptive_comparison_test_audit, begin_adaptive_controller_test_audit,
+     begin_adaptive_performance_test_audit, begin_terminal_batch_production_audit,
+     take_accepted_publication_capture_audit, take_adaptive_comparison_test_audit,
+     take_adaptive_controller_test_audit, take_adaptive_performance_test_audit,
+-    take_terminal_batch_production_audit, AcceptedPublicationCaptureAuditV1,
+-    AcceptedPublicationCaptureRegimeV1, AdaptiveControllerTestPolicyV1,
+-    Stage3AdaptiveStepDecisionV1,
++    take_terminal_batch_production_audit,
+ };
+-use crate::STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+ 
+ const MINIMUM_STEP_NS: u128 = STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+ 
++#[test]
++fn feed_forward_actual_complete_carrier_matches_both_forced_reference_calls() {
++    let (outcome, records) = std::thread::Builder::new()
++        .name("feed-forward-complete-carrier-reference".to_owned())
++        .stack_size(64 * 1024 * 1024)
++        .spawn(|| {
++            use crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1 as Case;
++            CANONICAL_PARITY_CASE.with(|slot| slot.set(Some(Case::NativeMixedPhase)));
++            SHORT_SUPPORT_DURATION_NS.with(|value| value.set(1_800_000_000_000));
++            crate::snow_stage3_v11_attachment::begin_feed_forward_reference_oracle();
++            let outcome = run_complete_owner_on_large_stack(
++                0.000_6,
++                Some(60_000_000_000),
++                None,
++                true,
++                AdaptiveControllerTestPolicyV1::default(),
++                false,
++            );
++            (
++                outcome,
++                crate::snow_stage3_v11_attachment::take_feed_forward_reference_oracle(),
++            )
++        })
++        .expect("spawn complete reference fixture")
++        .join()
++        .expect("complete reference fixture");
++    outcome.0.validate().expect("real accepted support");
++    assert!(!records.is_empty(), "actual full-result oracle executed");
++    for role in [
++        crate::hydrology::CoveredTerminalTrialRoleV1::Full,
++        crate::hydrology::CoveredTerminalTrialRoleV1::Retry,
++        crate::hydrology::CoveredTerminalTrialRoleV1::Half1,
++        crate::hydrology::CoveredTerminalTrialRoleV1::Half2,
++        crate::hydrology::CoveredTerminalTrialRoleV1::Root,
++    ] {
++        let count = records.iter().filter(|record| record.1 == role).count();
++        eprintln!("F_COMPLETE_REFERENCE_ROLE role={role:?} count={count}");
++        // Root is conditional on DirectStepTrial, not an existential obligation
++        // of this authentic Discovery/Exact adaptive fixture. Its dispatch and
++        // all-five-role lower reference tests remain independently required.
++        if role != crate::hydrology::CoveredTerminalTrialRoleV1::Root {
++            assert!(count > 0, "missing authentic role {role:?}");
++        }
++    }
++    assert!(records.iter().any(|record| matches!(
++        record.0,
++        crate::hydrology::CoveredTerminalExecutionMode::DiscoveryProbe
++    )));
++    assert!(records.iter().any(|record| matches!(
++        record.0,
++        crate::hydrology::CoveredTerminalExecutionMode::ExactEndpoint { .. }
++    )));
++    eprintln!("F_COMPLETE_REFERENCE_INVOCATIONS={records:?}");
++}
++
+ #[test]
+ fn adaptive_comparison_audit_excludes_lineage_but_retains_receipt_ordering() {
+     use crate::v9_real_consumer_shadow::AdaptiveDiscreteSurfaceKindV1::{
+@@ -39,8 +94,8 @@ std::thread_local! {
+     static CANONICAL_PARITY_CASE: std::cell::Cell<Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1>> = const { std::cell::Cell::new(None) };
+ }
+ 
+-pub(super) fn canonical_parity_case_requested(
+-) -> Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1> {
++pub(super) fn canonical_parity_case_requested()
++-> Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1> {
+     CANONICAL_PARITY_CASE.with(std::cell::Cell::get)
+ }
+ 
+@@ -62,8 +117,8 @@ pub(super) fn record_final_physical_comparison(
+     FINAL_PHYSICAL_COMPARISON.with(|value| *value.borrow_mut() = Some(comparison));
+ }
+ 
+-fn take_final_physical_comparison(
+-) -> crate::v9_real_consumer_shadow::AdaptiveCompleteOwnerComparisonV1 {
++fn take_final_physical_comparison()
++-> crate::v9_real_consumer_shadow::AdaptiveCompleteOwnerComparisonV1 {
+     FINAL_PHYSICAL_COMPARISON
+         .with(|value| value.borrow_mut().take())
+         .expect("final complete-owner physical comparison")
+@@ -547,8 +602,8 @@ fn run_transient_complete_owner_for_duration_with_memo_mode(
+         .expect("join adaptive transient production coverage")
+ }
+ 
+-fn run_full_duration_complete_owner_qualification(
+-) -> crate::snow_stage3_v11_attachment::Stage3AdaptiveSupportReceiptV1 {
++fn run_full_duration_complete_owner_qualification()
++-> crate::snow_stage3_v11_attachment::Stage3AdaptiveSupportReceiptV1 {
+     std::thread::Builder::new()
+         .name("adaptive-full-parent-qualification".to_owned())
+         .stack_size(64 * 1024 * 1024)
+@@ -714,12 +769,16 @@ fn stable_minimum_production_support_accepts_one_direct_trial() {
+         comparison_audits,
+     ) = run_equilibrium_complete_owner();
+     assert!(comparison_audits.is_empty());
+-    assert!(performance_spans
+-        .iter()
+-        .any(|span| span.label == "complete_owner_direct_trial"));
+-    assert!(!performance_spans
+-        .iter()
+-        .any(|span| span.label == "complete_owner_composed_trial"));
++    assert!(
++        performance_spans
++            .iter()
++            .any(|span| span.label == "complete_owner_direct_trial")
++    );
++    assert!(
++        !performance_spans
++            .iter()
++            .any(|span| span.label == "complete_owner_composed_trial")
++    );
+     receipt
+         .validate()
+         .expect("stable adaptive receipt validates");
+@@ -1606,9 +1665,11 @@ fn native_terminal_batch_dispatch_accepts_exact_physical_marker_topology() {
+             .map(|(ofe_id, _)| ofe_id)
+             .collect::<std::collections::BTreeSet<_>>();
+         assert!(!lower_boundary_ofes.is_empty());
+-        assert!(lower_boundary_ofes
+-            .iter()
+-            .all(|ofe_id| topology.contains(ofe_id)));
++        assert!(
++            lower_boundary_ofes
++                .iter()
++                .all(|ofe_id| topology.contains(ofe_id))
++        );
+         let binding = crate::direct_runtime::stage3_covered_native_inactive_child_custody_binding(
+             &endpoint.wb14_child_replay_bytes,
+             &topology,
+@@ -1907,17 +1968,23 @@ fn cold_transient_rejects_coarse_trial_then_accepts_at_floor_on_three_quanta_par
+             .rejected_candidate_count
+             >= 1
+     );
+-    assert!(receipt.accepted_microsteps.iter().any(|accepted| accepted
+-        .context
+-        .step_support
+-        .duration_ns()
+-        == MINIMUM_STEP_NS));
+-    assert!(carrier_supports
+-        .iter()
+-        .all(|support| support.duration_ns() >= MINIMUM_STEP_NS));
+-    assert!(comparison_audits
+-        .iter()
+-        .any(|audit| audit.maximum_scaled_error > 1.0));
++    assert!(
++        receipt.accepted_microsteps.iter().any(|accepted| accepted
++            .context
++            .step_support
++            .duration_ns()
++            == MINIMUM_STEP_NS)
++    );
++    assert!(
++        carrier_supports
++            .iter()
++            .all(|support| support.duration_ns() >= MINIMUM_STEP_NS)
++    );
++    assert!(
++        comparison_audits
++            .iter()
++            .any(|audit| audit.maximum_scaled_error > 1.0)
++    );
+ }
+ 
+ #[test]
+@@ -2093,9 +2160,11 @@ fn real_two_active_lane_terminal_and_survivor_use_one_joint_batch_decision() {
+     assert!(batches.iter().any(|batch| {
+         batch.ending_terminal_lanes == vec![1] && batch.ending_surviving_lanes == vec![2]
+     }));
+-    assert!(carrier_supports
+-        .iter()
+-        .all(|support| support.duration_ns() >= MINIMUM_STEP_NS));
++    assert!(
++        carrier_supports
++            .iter()
++            .all(|support| support.duration_ns() >= MINIMUM_STEP_NS)
++    );
+ }
+ 
+ #[test]
+@@ -2103,8 +2172,8 @@ fn real_two_active_lane_terminal_and_survivor_use_one_joint_batch_decision() {
+ #[ignore = "contract-first expected red: retained 52-map terminal-parent validation audit is not implemented"]
+ fn carrier_parent_static_and_same_map_validation_once_has_authentic_1_52_52_counts() {
+     use crate::v9_real_consumer_shadow::v11_covered::{
+-        begin_carrier_parent_validation_once_audit_v1,
+-        take_carrier_parent_validation_once_audit_v1, CarrierValidationCallStageV1 as Stage,
++        CarrierValidationCallStageV1 as Stage, begin_carrier_parent_validation_once_audit_v1,
++        take_carrier_parent_validation_once_audit_v1,
+     };
+ 
+     let (outcome, audit) = std::thread::Builder::new()
+@@ -2174,9 +2243,8 @@ fn carrier_parent_static_and_same_map_validation_once_has_authentic_1_52_52_coun
+ #[ignore = "contract-first expected red: forced-full versus admitted validation oracle is not implemented"]
+ fn carrier_validation_once_is_bitwise_equal_for_every_role_path_and_regime() {
+     use crate::v9_real_consumer_shadow::v11_covered::{
+-        carrier_parent_validation_once_parity_for_test,
+         CanonicalCoveredPhysicalParityCaseV1 as Case, CarrierValidationMapPathV1 as Path,
+-        CarrierValidationRoleV1 as Role,
++        CarrierValidationRoleV1 as Role, carrier_parent_validation_once_parity_for_test,
+     };
+ 
+     for case in [
+@@ -2268,9 +2336,9 @@ fn carrier_validation_once_is_bitwise_equal_for_every_role_path_and_regime() {
+ #[ignore = "contract-first expected red: validation-once poison injection is not implemented"]
+ fn carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback() {
+     use crate::v9_real_consumer_shadow::v11_covered::{
++        CarrierParentValidationOncePoisonV1 as Poison,
+         carrier_parent_validation_once_competing_poisons_for_test,
+         carrier_parent_validation_once_poison_for_test,
+-        CarrierParentValidationOncePoisonV1 as Poison,
+     };
+ 
+     for poison in [
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+index 264093583..41a757ee0 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+@@ -119,6 +119,9 @@ impl CoveredTerminalProviderRetentionV1 {
+ #[cfg(test)]
+ include!("snow_stage3_v11_terminal_execution_test_controls.rs");
+ 
++#[cfg(test)]
++include!("snow_stage3_v11_terminal_feed_forward_tests.rs");
++
+ #[cfg(not(test))]
+ const fn terminal_provisional_publication_deferral_enabled() -> bool {
+     true
+@@ -431,7 +434,11 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+     let mut mechanism_outer = crate::stage3_mechanism_experiment_audit::Scope::begin(
+         crate::stage3_mechanism_experiment_audit::Kind::Outer,
+         || {
+-            format!("day={day_index};interval={interval_index};child={current_child_ordinal};lane={lane_id};mode={mode:?};support={:?};upper_bits={}", prepared.support, selected_upper_bound_s.to_bits())
++            format!(
++                "day={day_index};interval={interval_index};child={current_child_ordinal};lane={lane_id};mode={mode:?};support={:?};upper_bits={}",
++                prepared.support,
++                selected_upper_bound_s.to_bits()
++            )
+         },
+     );
+     let setup_profile = TerminalCandidateProfileScopeV1::begin("terminal candidate setup");
+@@ -513,11 +520,22 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+     let carrier_phases_by_joint = std::cell::RefCell::new(BTreeMap::new());
+     let mut provider_evidence = M::new_provider_state();
+     drop(setup_profile);
+-    let mut provider = |request: crate::hydrology::CoveredTerminalTrialRequestV1| {
++    let mut provider = |request: crate::hydrology::CoveredTerminalFeedForwardRequestV1| {
+         let mut mechanism_provider = crate::stage3_mechanism_experiment_audit::Scope::begin(
+             crate::stage3_mechanism_experiment_audit::Kind::Provider,
+             || {
+-                format!("lane={};support={:?};role={:?};attempt={};coupling={};beginning={:?};request_sha256={}", request.lane_id, request.support, request.role, request.attempt_ordinal, request.coupling_iteration, request.beginning_joint.receipt_sha256(), crate::stage3_mechanism_experiment_audit::fingerprint(&request))
++                format!(
++                    "lane={};support={:?};role={:?};attempt={};coupling={};beginning={:?};request_sha256={}",
++                    request.lane_id,
++                    request.support,
++                    request.role,
++                    request.attempt_ordinal,
++                    0,
++                    request.beginning_joint.receipt_sha256(),
++                    crate::stage3_mechanism_experiment_audit::fingerprint(
++                        &request.observation_request()
++                    )
++                )
+             },
+         );
+         let custody_profile = TerminalCandidateProfileScopeV1::begin("terminal provider custody");
+@@ -684,10 +702,18 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+         let carrier_profile = TerminalCandidateProfileScopeV1::begin("terminal provider carrier");
+         let mut mechanism_carrier = crate::stage3_mechanism_experiment_audit::Scope::begin(
+             crate::stage3_mechanism_experiment_audit::Kind::Carrier,
+-            || crate::stage3_mechanism_experiment_audit::fingerprint(&request),
++            || {
++                crate::stage3_mechanism_experiment_audit::fingerprint(
++                    &request.observation_request(),
++                )
++            },
+         );
+         let provider_result = stage3_boxed_execution_v1(|| {
+-            stack.execute_covered_carrier_phase_v1(&beginning, &request, child.as_ref().clone())
++            stack.execute_covered_carrier_feed_forward_phase_v1(
++                &beginning,
++                &request,
++                child.as_ref().clone(),
++            )
+         });
+         mechanism_carrier.complete(provider_result.is_ok(), || match &provider_result {
+             Ok(value) => {
+@@ -699,14 +725,16 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+         drop(carrier_profile);
+         let retention_profile =
+             TerminalCandidateProfileScopeV1::begin("terminal provider retention");
+-        match provider_result.as_ref() {
+-            Ok(value) => {
+-                let projection = M::project_provider_success(&request, value);
+-                M::provider_success(&mut provider_evidence, &request, projection);
+-            }
+-            Err(error) => {
+-                let projection = M::project_provider_failure(error);
+-                M::provider_failure(&mut provider_evidence, &request, projection);
++        if let Some(observation_request) = M::ENABLED.then(|| request.observation_request()) {
++            match provider_result.as_ref() {
++                Ok(value) => {
++                    let projection = M::project_provider_success(&observation_request, value);
++                    M::provider_success(&mut provider_evidence, &observation_request, projection);
++                }
++                Err(error) => {
++                    let projection = M::project_provider_failure(error);
++                    M::provider_failure(&mut provider_evidence, &observation_request, projection);
++                }
+             }
+         }
+         let result = provider_result.map_err(|error| {
+@@ -715,6 +743,10 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+             }
+             DirectSnowStage3EvaluationError::TerminalCustody("covered probe carrier fixed point")
+         })?;
++        #[cfg(test)]
++        check_feed_forward_actual_carrier_reference(
++            mode, &stack, &beginning, &request, &child, &result, inputs, forcing,
++        );
+         if request.support.end_ns() < beginning_clock.parent_support().end_ns() {
+             let ending_parent = result
+                 .ending_candidates
+@@ -753,7 +785,7 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+         Ok(result.transition.clone())
+     };
+     let result =
+-        Wb11HydrologyKernel::evaluate_stage3_terminal_support_with_trial_provider_and_evidence_v1::<
++        Wb11HydrologyKernel::evaluate_stage3_terminal_support_with_feed_forward_provider_and_evidence_v1::<
+             M,
+         >(
+             inputs,
+diff --git a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
+index f57339c9f..d4843cdef 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
+@@ -6,8 +6,8 @@
+ 
+ use crate::hydrology::{
+     CoveredProbeChildIdentityV1, CoveredTerminalBatchCarrierCandidatesV2,
+-    CoveredTerminalBatchTrialRequestV2, CoveredTerminalJointTrialStateV1,
+-    CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRequestV1,
++    CoveredTerminalBatchTrialRequestV2, CoveredTerminalFeedForwardRequestV1,
++    CoveredTerminalJointTrialStateV1, CoveredTerminalLaneTrialStateV2,
+     CoveredTerminalTrialTransitionV1,
+ };
+ 
+@@ -115,6 +115,67 @@ impl CoveredCarrierSoilCandidateSealV1 {
+     }
+ }
+ 
++#[cfg(test)]
++impl CoveredCarrierEphemeralCandidatesV1 {
++    pub(crate) fn assert_exact_feed_forward_reference(&self, reference: &Self) {
++        let Self {
++            joint: _,
++            shadow: _,
++            stage3_by_lane: _,
++            soil_candidate: _,
++            soil_continuation: _,
++            validated_owner_bytes: _,
++            terminal_snow_soil_trial_receipt: _,
++        } = self;
++        assert_eq!(self.joint, reference.joint);
++        assert_eq!(self.shadow, reference.shadow);
++        assert_eq!(
++            format!("{:?}", self.stage3_by_lane),
++            format!("{:?}", reference.stage3_by_lane)
++        );
++        assert_eq!(self.soil_candidate, reference.soil_candidate);
++        assert_eq!(
++            format!("{:?}", self.soil_candidate),
++            format!("{:?}", reference.soil_candidate)
++        );
++        assert_eq!(
++            format!("{:?}", self.soil_continuation),
++            format!("{:?}", reference.soil_continuation)
++        );
++        assert_eq!(self.soil_continuation, reference.soil_continuation);
++        assert_eq!(
++            self.terminal_snow_soil_trial_receipt,
++            reference.terminal_snow_soil_trial_receipt
++        );
++        assert_eq!(
++            self.validated_owner_bytes.resident,
++            reference.validated_owner_bytes.resident
++        );
++        assert_eq!(
++            self.validated_owner_bytes.candidate,
++            reference.validated_owner_bytes.candidate
++        );
++        match (
++            &self.validated_owner_bytes.soil_candidate_seal,
++            &reference.validated_owner_bytes.soil_candidate_seal,
++        ) {
++            (CoveredCarrierSoilCandidateSealV1::None, CoveredCarrierSoilCandidateSealV1::None) => {}
++            (
++                CoveredCarrierSoilCandidateSealV1::V1(actual),
++                CoveredCarrierSoilCandidateSealV1::V1(reference),
++            ) => {
++                assert_eq!(actual, reference);
++                assert_eq!(format!("{actual:?}"), format!("{reference:?}"));
++            }
++            (
++                CoveredCarrierSoilCandidateSealV1::V2(actual),
++                CoveredCarrierSoilCandidateSealV1::V2(reference),
++            ) => assert_eq!(actual, reference),
++            _ => panic!("candidate seal variant mismatch"),
++        }
++    }
++}
++
+ /// Borrowed proof that the exact immutable carrier soil candidate still
+ /// matches the seal minted after its constructor validation. The borrow keeps
+ /// that candidate immutable until its read view has been consumed by the
+@@ -1205,10 +1266,24 @@ impl Drop for CarrierProfileScopeV1 {
+ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+     /// Construct the actual V11/LSE/precipitation/snow--soil carrier for one
+     /// immutable terminal trial and stop before Stage-3 evaluation.
++    #[cfg(test)]
+     pub(crate) fn execute_covered_carrier_phase_v1(
+         &self,
+         beginning: &CoveredCarrierEphemeralCandidatesV1,
+-        request: &CoveredTerminalTrialRequestV1,
++        request: &crate::hydrology::CoveredTerminalTrialRequestV1,
++        child: CoveredProbeChildIdentityV1,
++    ) -> Result<CoveredCarrierPhaseResultV1, DirectV11RealConsumerError> {
++        self.execute_covered_carrier_feed_forward_phase_v1(
++            beginning,
++            &request.clone().into(),
++            child,
++        )
++    }
++
++    pub(crate) fn execute_covered_carrier_feed_forward_phase_v1(
++        &self,
++        beginning: &CoveredCarrierEphemeralCandidatesV1,
++        request: &CoveredTerminalFeedForwardRequestV1,
+         child: CoveredProbeChildIdentityV1,
+     ) -> Result<CoveredCarrierPhaseResultV1, DirectV11RealConsumerError> {
+         let physical_started =
+@@ -1280,12 +1355,11 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+         let beginning_stage3_state = beginning.stage3_by_lane().get(&leader_id).cloned().ok_or(
+             DirectV11RealConsumerError::Identity("covered carrier batch leader state"),
+         )?;
+-        let leader_request = CoveredTerminalTrialRequestV1 {
++        let leader_request = CoveredTerminalFeedForwardRequestV1 {
+             lane_id: leader_id,
+             support: request.support,
+             role: request.role,
+             attempt_ordinal: request.attempt_ordinal,
+-            coupling_iteration: 0,
+             ice_kg_m2: leader.ice_kg_m2,
+             liquid_kg_m2: leader.liquid_kg_m2,
+             cold_content_j_m2: leader.cold_content_j_m2,
+@@ -1293,7 +1367,6 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+             snow_depth_m: leader.snow_depth_m,
+             snow_density_kg_m3: leader.snow_density_kg_m3,
+             beginning_stage3_state: Box::new(beginning_stage3_state),
+-            ending_snow_hint: None,
+             beginning_joint: request.beginning_joint.clone(),
+         };
+         let physical = self.execute_shared_covered_carrier_physical_phase_v1(
+@@ -1349,12 +1422,11 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+         let beginning_stage3_state = beginning.stage3_by_lane().get(&leader_id).cloned().ok_or(
+             DirectV11RealConsumerError::Identity("covered physical leader state"),
+         )?;
+-        let leader_request = CoveredTerminalTrialRequestV1 {
++        let leader_request = CoveredTerminalFeedForwardRequestV1 {
+             lane_id: leader_id,
+             support: request.support,
+             role: request.role,
+             attempt_ordinal: request.attempt_ordinal,
+-            coupling_iteration: 0,
+             ice_kg_m2: leader.ice_kg_m2,
+             liquid_kg_m2: leader.liquid_kg_m2,
+             cold_content_j_m2: leader.cold_content_j_m2,
+@@ -1362,7 +1434,6 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+             snow_depth_m: leader.snow_depth_m,
+             snow_density_kg_m3: leader.snow_density_kg_m3,
+             beginning_stage3_state: Box::new(beginning_stage3_state),
+-            ending_snow_hint: None,
+             beginning_joint: request.beginning_joint.clone(),
+         };
+         self.execute_shared_covered_carrier_physical_phase_v1(
+@@ -1379,7 +1450,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+     fn execute_shared_covered_carrier_physical_phase_v1(
+         &self,
+         beginning: &CoveredCarrierEphemeralCandidatesV1,
+-        request: &CoveredTerminalTrialRequestV1,
++        request: &CoveredTerminalFeedForwardRequestV1,
+         snow_boundary_state: CoveredSnowBoundaryStateV1,
+         child: CoveredProbeChildIdentityV1,
+     ) -> Result<CoveredCarrierPhysicalPhaseResultV1, DirectV11RealConsumerError> {
+@@ -1795,12 +1866,11 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+                 .ok_or(DirectV11RealConsumerError::Identity(
+                     "covered final empty terminal batch",
+                 ))?;
+-        let leader_request = CoveredTerminalTrialRequestV1 {
++        let leader_request = CoveredTerminalFeedForwardRequestV1 {
+             lane_id: leader_id,
+             support: request.support,
+             role: request.role,
+             attempt_ordinal: request.attempt_ordinal,
+-            coupling_iteration: 0,
+             ice_kg_m2: leader.ice_kg_m2,
+             liquid_kg_m2: leader.liquid_kg_m2,
+             cold_content_j_m2: leader.cold_content_j_m2,
+@@ -1812,7 +1882,6 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+                     DirectV11RealConsumerError::Identity("covered final leader state"),
+                 )?,
+             ),
+-            ending_snow_hint: None,
+             beginning_joint: request.beginning_joint.clone(),
+         };
+         self.complete_covered_carrier_physical_result_v1(
+@@ -1826,7 +1895,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+     fn complete_covered_carrier_physical_result_v1(
+         &self,
+         beginning: &CoveredCarrierEphemeralCandidatesV1,
+-        request: &CoveredTerminalTrialRequestV1,
++        request: &CoveredTerminalFeedForwardRequestV1,
+         child: CoveredProbeChildIdentityV1,
+         physical: CoveredCarrierPhysicalPhaseResultV1,
+     ) -> Result<CoveredCarrierPhaseResultV1, DirectV11RealConsumerError> {
+@@ -1939,7 +2008,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+     fn finalize_shared_covered_carrier_engine_v1(
+         &self,
+         beginning: &CoveredCarrierEphemeralCandidatesV1,
+-        request: &CoveredTerminalTrialRequestV1,
++        request: &CoveredTerminalFeedForwardRequestV1,
+         child: CoveredProbeChildIdentityV1,
+         physical: Box<CoveredCarrierPhysicalTrialV1>,
+     ) -> Result<CoveredCarrierPhaseResultV1, DirectV11RealConsumerError> {
+@@ -2766,6 +2835,7 @@ mod covered_carrier_phase_tests {
+             .next()
+             .expect("implementation source");
+         assert!(source.contains("execute_covered_carrier_phase_v1(\n        &self,"));
++        assert!(source.contains("execute_covered_carrier_feed_forward_phase_v1(\n        &self,"));
+         assert!(source.contains("child.trial_support != request.support"));
+         assert!(
+             source.contains("child.beginning_joint_sha256 != beginning.joint.receipt_sha256()")
+diff --git a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase/snow_boundary.rs b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase/snow_boundary.rs
+index a90c7141f..f48f35a8f 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase/snow_boundary.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase/snow_boundary.rs
+@@ -22,7 +22,7 @@ pub(crate) enum CoveredSnowBoundaryStateV1 {
+ impl CoveredSnowBoundaryStateV1 {
+     fn lane_states(
+         &self,
+-        request: &CoveredTerminalTrialRequestV1,
++        request: &CoveredTerminalFeedForwardRequestV1,
+     ) -> BTreeMap<u32, CoveredTerminalLaneTrialStateV2> {
+         match self {
+             Self::TerminalTrial {
+@@ -183,7 +183,7 @@ impl CoveredSnowBoundaryStateV1 {
+ 
+     fn project_trial_stage3_states(
+         &self,
+-        request: &CoveredTerminalTrialRequestV1,
++        request: &CoveredTerminalFeedForwardRequestV1,
+         beginning: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+     ) -> Result<BTreeMap<u32, DirectSnowStage3PersistentState>, DirectV11RealConsumerError> {
+         let mut projected = beginning.clone();
+diff --git a/crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_tail_tests.rs b/crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_tail_tests.rs
+index 8aa8cd674..cd12efb79 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_tail_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_tail_tests.rs
+@@ -260,6 +260,7 @@ mod precomputed_terminal_accepted_executor_tests {
+             "evaluate_stage3_persistent_support",
+             "evaluate_stage3_terminal_support",
+             "execute_covered_carrier_phase_v1",
++            "execute_covered_carrier_feed_forward_phase_v1",
+         ] {
+             assert!(!source.contains(forbidden), "reran physics: {forbidden}");
+         }
+diff --git a/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs b/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
+index f9d2c1632..9c1fded76 100644
+--- a/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
++++ b/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
+@@ -917,11 +917,33 @@ fn exact_surface_owner_uses_authenticated_topology_rank_for_opaque_ofe_ids() {
+ #[test]
+ fn stage3_lane_d_qualification_reads_canonical_manifest_provenance() {
+     let repository = root();
+-    let qualification = fs::read_to_string(
++    let original_qualification = fs::read_to_string(
+         repository
+             .join("crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs"),
+     )
+     .expect("read Stage-3 Lane-D qualification source");
++    let controlled =
++        fs::read_to_string(repository.join(
++            "crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs",
++        ))
++        .expect("read extracted real-consumer qualification helper");
++    let test_module =
++        fs::read_to_string(repository.join("crates/openwepp-runner/src/hillslope/03_tests.rs"))
++            .expect("read runner test module");
++    assert!(
++        test_module.contains("include!(\"tests03/controlled_mechanism_experiments.rs\");"),
++        "the extracted helper must remain included in the real runner tests"
++    );
++    let original_baseline = original_qualification
++        .split("fn stage3_laned_release_one_ofe_positive_baseline_profile()")
++        .nth(1)
++        .and_then(|tail| tail.split("\n}").next())
++        .expect("locate original one-OFE qualification entry point");
++    assert!(
++        original_baseline.contains("controlled_mechanism_run(1, 0, false)"),
++        "the original qualification must invoke the same extracted consumer"
++    );
++    let qualification = format!("{original_qualification}\n{controlled}");
+     let wat_schema = fs::read_to_string(
+         repository.join("crates/openwepp-hillslope-output/src/hillslope_wat.rs"),
+     )

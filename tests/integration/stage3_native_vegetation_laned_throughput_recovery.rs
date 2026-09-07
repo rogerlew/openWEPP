@@ -917,11 +917,33 @@ fn exact_surface_owner_uses_authenticated_topology_rank_for_opaque_ofe_ids() {
 #[test]
 fn stage3_lane_d_qualification_reads_canonical_manifest_provenance() {
     let repository = root();
-    let qualification = fs::read_to_string(
+    let original_qualification = fs::read_to_string(
         repository
             .join("crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs"),
     )
     .expect("read Stage-3 Lane-D qualification source");
+    let controlled =
+        fs::read_to_string(repository.join(
+            "crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs",
+        ))
+        .expect("read extracted real-consumer qualification helper");
+    let test_module =
+        fs::read_to_string(repository.join("crates/openwepp-runner/src/hillslope/03_tests.rs"))
+            .expect("read runner test module");
+    assert!(
+        test_module.contains("include!(\"tests03/controlled_mechanism_experiments.rs\");"),
+        "the extracted helper must remain included in the real runner tests"
+    );
+    let original_baseline = original_qualification
+        .split("fn stage3_laned_release_one_ofe_positive_baseline_profile()")
+        .nth(1)
+        .and_then(|tail| tail.split("\n}").next())
+        .expect("locate original one-OFE qualification entry point");
+    assert!(
+        original_baseline.contains("controlled_mechanism_run(1, 0, false)"),
+        "the original qualification must invoke the same extracted consumer"
+    );
+    let qualification = format!("{original_qualification}\n{controlled}");
     let wat_schema = fs::read_to_string(
         repository.join("crates/openwepp-hillslope-output/src/hillslope_wat.rs"),
     )

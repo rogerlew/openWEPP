@@ -1,0 +1,67 @@
+warning: Git tree '/tmp/openwepp-controlled-mechanisms-Hb6uS2/F' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/F-af041db248b7
+  scratch: /tmp/openwepp-roger-F-af041db248b7
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-hillslope-orchestrator)
+warning: fields `coupling_iteration` and `ending_snow_hint` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1168:9
+     |
+1161 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- fields in this struct
+...
+1168 |     pub coupling_iteration: u32,
+     |         ^^^^^^^^^^^^^^^^^^
+...
+1181 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.71s
+────────────
+ Nextest run ID 1bbe031e-18c1-45f0-8423-c235736e09af with nextest profile: default
+    Starting 5 tests across 1 binary (1417 tests skipped)
+        FAIL [  39.181s] (5/5) openwepp-hillslope-orchestrator v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls
+  stdout ───
+
+    running 1 test
+    test v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls ... FAILED
+
+    failures:
+
+    failures:
+        v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1421 filtered out; finished in 39.18s
+
+  stderr ───
+
+    thread 'v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls' (775081) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:49:9:
+    missing authentic role Root
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [  39.186s] 5 tests run: 4 passed, 1 failed, 1417 skipped
+        FAIL [  39.181s] (5/5) openwepp-hillslope-orchestrator v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls
+  stdout ───
+
+    running 1 test
+    test v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls ... FAILED
+
+    failures:
+
+    failures:
+        v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1421 filtered out; finished in 39.18s
+
+  stderr ───
+
+    thread 'v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls' (775081) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:49:9:
+    missing authentic role Root
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

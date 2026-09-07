@@ -1,0 +1,12 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+warning[license-not-encountered]: license was not encountered
+   ┌─ /workdir/openWEPP/deny.toml:14:4
+   │
+14 │   "MIT-0",
+   │    ━━━━━ unmatched license allowance
+
+advisories ok, bans ok, licenses ok, sources ok

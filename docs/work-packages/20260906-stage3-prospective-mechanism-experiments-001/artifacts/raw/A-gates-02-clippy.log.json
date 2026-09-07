@@ -1,0 +1,31 @@
+{
+  "pid": 742242,
+  "command": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "cargo",
+    "clippy",
+    "--offline",
+    "-p",
+    "openwepp-land-surface-energy",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "-p",
+    "openwepp-runner",
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 101,
+  "duration_ns": 45820087486,
+  "log_sha256": "fe4a96fa81eccf4b7b89cb84b57f84bf2d6ec77f8c96c44c6dc527f0db955772",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

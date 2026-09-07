@@ -1,0 +1,39 @@
+{
+  "name": "R-final-common-validation",
+  "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "source_identity": "28c3310d916593bc941706e36bf6d4188ebd755b50d5ebb8cc356f9459e05027",
+  "identity_inputs": "path-content-manifest.json",
+  "patch_sha256": "3669ca0abcc61a41fc574d9977d30590f4415ce6b692bd0220e7f01f24006223",
+  "untracked_paths": [
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs",
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_graph.rs",
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_graph_tests.rs",
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_replay.rs",
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_replay_tests.rs"
+  ],
+  "compiler_document_inputs": [
+    "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v3_vectors.json",
+    "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_vectors.json",
+    "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_definition.json",
+    "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_vectors.json",
+    "docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_vectors.json",
+    "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_definition.json",
+    "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_vectors.json",
+    "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_c3_woody_v8_definition.json",
+    "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_lse_rust_failure_diagnostics_v1.json",
+    "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json",
+    "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/openwepp_c3_woody_v9_vectors.json",
+    "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/runtime_descriptor.json",
+    "docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/nighttime-ci-vectors.json",
+    "docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/lse-support-admissibility-baseline.json",
+    "docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/candidate-v22-hermite-gauss-matrix.json"
+  ],
+  "reproduce": [
+    "checkout exact base detached",
+    "git apply tracked-source.patch",
+    "extract new-source-files.tar.gz at root",
+    "verify every path-content row before building"
+  ],
+  "documentary_output_excluded": true
+}

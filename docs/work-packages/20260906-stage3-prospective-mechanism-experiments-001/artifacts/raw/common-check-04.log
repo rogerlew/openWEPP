@@ -1,0 +1,52 @@
+argv: nix develop --offline -c cargo check -p openwepp-runner --tests
+cwd: /workdir/openWEPP
+start_utc: 2026-09-06T20:40:14-07:00
+git_head: e89befa46
+git_diff_sha256: 9a9878ab01020550672d03128ac942963a058fece924dee37953f906f4b5ca3c
+/bin/bash: line 15: python: command not found
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+    Checking openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+    Checking openwepp-persisted-restart-v1 v0.1.0 (/workdir/openWEPP/crates/openwepp-persisted-restart-v1)
+    Checking openwepp-runner v0.1.0 (/workdir/openWEPP/crates/openwepp-runner)
+error: usage of an `unsafe extern` block
+  --> crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs:69:5
+   |
+69 | /     unsafe extern "C" {
+70 | |         fn clock_gettime(clock_id: std::ffi::c_int, time: *mut Timespec) -> std::ffi::c_int;
+71 | |     }
+   | |_____^
+   |
+note: the lint level is defined here
+  --> crates/openwepp-runner/src/lib.rs:1:11
+   |
+ 1 | #![forbid(unsafe_code)]
+   |           ^^^^^^^^^^^
+
+error: usage of an `unsafe` block
+  --> crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs:83:18
+   |
+83 |     let result = unsafe { clock_gettime(1, &raw mut time) };
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: could not compile `openwepp-runner` (lib test) due to 2 previous errors
+/bin/bash: line 22: python: command not found
+exit_code: 101
+duration_ms_monotonic: 0

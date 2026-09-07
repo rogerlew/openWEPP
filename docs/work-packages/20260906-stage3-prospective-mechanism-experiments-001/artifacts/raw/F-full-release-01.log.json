@@ -1,0 +1,27 @@
+{
+  "pid": 960164,
+  "command": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "env",
+    "CARGO_PROFILE_RELEASE_LTO=false",
+    "cargo",
+    "nextest",
+    "run",
+    "--release",
+    "--workspace",
+    "--profile",
+    "full"
+  ],
+  "cwd": "/tmp/openwepp-controlled-mechanisms-Hb6uS2/F",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 100,
+  "duration_ns": 707666715935,
+  "log_sha256": "13c1f3d6ebed0a36e38debc33cc4da2dfbb41376fcd985dc7aa7bf596bf6fb6e",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

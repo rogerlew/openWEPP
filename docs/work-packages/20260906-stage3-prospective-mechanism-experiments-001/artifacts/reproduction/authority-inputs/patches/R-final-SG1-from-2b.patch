@@ -1,0 +1,127 @@
+--- a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md
++++ b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md
+@@ -3223,3 +3223,124 @@
+ adaptive cadence, event localization, physical process, ownership, restart,
+ publication, exact-one transfer, or fail-closed guard change.
+ `CALIBRATION_NOT_APPLICABLE`: no dimensional parameter or calibration claim.
++
++### EXP-STAGE3-20260906-R-PC1: proof-closed maximum-leaf eligibility
++
++This separately identified supplement narrows only the prospective R experiment
++above, under the existing `EXP-STAGE3-20260906-R` Binding Exposure Index entry
++and `INV-LANDSURFACEENERGY-163/164`, `OBL-LANDSURFACEENERGY-C-018/020`.
++Evidence: `[INFERENCE][Static]`, exact-operand implication from the Covered Leaf
++Maximum-Demand Exact-Reuse Amendment and the shared canonical maximum helper;
++not a new physiological bound or a claim inferred from a finite search.
++Historical revision-31 scientific requirements and results are unchanged.
++
++Before minting a signed replay capability, a sun- or shade-temperature probe
++must additionally establish that the affected leaf's beta in the immutable
++successful sweep base is bit-identical to binary64 `1.0`. The canonical
++single-coordinate temperature probe leaves that beta unchanged. The affected
++current leaf still executes at the probe's temperature in the existing source
++order and may return its existing typed error. If it succeeds, the shared
++canonical maximum helper at its existing source position returns that same
++successful current state under INV-163: every maximum-call operand is identical
++to the current call. Thus no independent maximum-leaf domain crossing is
++assumed away. The unaffected leaf's current and maximum operands are unchanged;
++its successful base results may be reused only with the existing graph proof.
++
++Wet- and stem-temperature probes retain eligibility only with proof that every
++leaf-call operand, including beta, leaf temperature, canopy humidity, gas
++environment, conductances, biochemical inputs and constants, is bit-identical
++to its successful base call. This preserves their existing eligibility where
++that proof holds; it does not authorize ignoring a routed dependency or merely
++assuming a successful base implies success after a changed operand.
++
++| Trigger | Required result |
++| --- | --- |
++| Sun/shade affected beta is exact binary64 one and all existing eligibility/custody proofs hold | Replay; affected current call executes, then the unchanged canonical maximum helper uses the successful probe-current state. |
++| Affected beta differs, or any required implication is unproved | Select the unchanged complete evaluator before capability creation; no new physical-domain rejection, normalization, error retry, or alternate solver. |
++| Wet/stem leaf operands are unchanged and all existing eligibility/custody proofs hold | Existing replay selection remains available. |
++| Existing current-leaf, other reachable-node, or private-integrity error | Preserve its existing first-error/source-order and rollback requirements; never retry complete evaluation after replay starts. |
++
++The normative route/wet/longwave/hydraulic/route-match/lower-boundary implication
++proofs and authentic boundary vectors remain required, as do graph completeness,
++current-leaf crossable-error vectors, custody, every-field/residual/Jacobian/
++potential/fixed-final trajectory parity, exact output and rollback. A report
++of zero maximum-only witnesses in 198 bounded trials is diagnostic search
++evidence, not an implication proof and not grounds to waive any gate.
++
++Before this narrower selector changes behavior, R-only contract-derived runtime
++tests and dual prospective review must bind: exact one versus adjacent binary64
++beta values; affected sun/shade and occupancy positions; successful probe-current
++to maximum equality through the shared helper; unchanged wet/stem operands;
++pre-capability complete selection; and unchanged first error/no-retry/rollback.
++An independent signed-stencil oracle must derive the narrower classifications
++from actual base beta bits and the reviewed operand/graph proofs, not producer
++labels. Nonzero completed real-workload replay remains mandatory; no fixed
++component replay count replaces actual eligibility. Textual tests alone cannot
++discharge these obligations.
++
++Change log: 2026-09-06, `EXP-STAGE3-20260906-R-PC1` strengthens experimental
++reuse admission, not science validity. No new unit, parameter, tolerance,
++equation, derivative, solver, physical bound, custody, publication or restart
++surface; `CALIBRATION_NOT_APPLICABLE`. Production retention remains HOLD.
++
++### EXP-STAGE3-20260906-R-SG1: shared wet-routing guard assurance
++
++This separately identified supplement changes only the prospective EXP-R
++assurance classification for `route.prepare[o]`, `route.wet[o]`,
++`route.finalize[o]`, `occ.wet[o]`, and `occ.liquid[o]`, including affected
++instances of those five families in lower occupancies. It is subordinate to
++the existing `EXP-STAGE3-20260906-R` Binding Exposure Index entry and
++INV-164/C-020. No other node family's implication obligation is replaced.
++Historical C-020 noncrossability requirements and PC1 text are preserved;
++their general wet-routing noncrossability assertion has NOT been proved or
++passed by this experiment. This is an explicit experimental assurance-gate
++substitution, not blanket C-020 qualification or production promotion.
++
++Evidence: `[INFERENCE][Static]`, deterministic identical-call and source-order
++equivalence under the shared canonical evaluator. Successful base evaluation
++and admitted temperature bounds alone do not establish a pressure margin for
++the canonical saturation denominator `pressure - 0.378 * es(temperature)`.
++No physical pressure bound, new normalization or claim of an authentic crossing
++witness follows from this observation. The existing equations, domains and
++typed guards remain unchanged.
++
++For an instance of the five named families actually recomputed by replay,
++assurance shall prove that replay and forced complete evaluation consume
++bit-identical signed-probe operands and branches through the SAME canonical
++function body at the SAME source-order position. The canonical result, or
++first existing typed error, is propagated unchanged. Preserve top-to-bottom
++prepare -> first wet -> first finalization and the later source-distinct second
++wet/finalization calls; neither duplication nor coalescing of their roles is
++authorized. This exact result-or-error proof replaces only the unsupported
++successful-base-implies-probe-success requirement for those recomputed nodes.
++
++Every copied/skipped node still requires its actual successful base result,
++bit-identical complete-call operands and branch, and complete dependency-graph
++proof. This includes every earlier skipped fallible guard needed to preserve
++first-error precedence. A previous success without exact operand identity is
++insufficient. Unknown or unproved reuse selects unchanged complete evaluation
++before replay capability creation; an integrity or post-start error returns
++directly, with no complete retry, alternate solver or publication.
++
++PC1 maximum-leaf admission and implication, current-leaf source-real errors,
++longwave, hydraulic, route-match and lower-boundary implication proofs remain
++unchanged. All graph, custody, canonical stencils, exact node/residual/Jacobian/
++potential/fixed-final trajectory and real-consumer/output requirements remain
++binding. This substitution does not waive actual success/error/rollback gates.
++
++Before adoption and admission, R-only contract-derived tests and source-proof
++artifacts must receive independent dual review. They must bind each named
++recomputed family to its canonical call/operands and source order, distinguish
++copied from recomputed nodes, cover authentic wet/dry/zero/exact-capacity and
++upper-to-lower routing successes with exact fields, and retain the unmodified
++natural-error differential catch-all. Every naturally occurring source-real
++error requires identical first typed error, no later work or complete fallback,
++and byte-exact beginning/custody rollback. Claim crossability only with an
++authentic successful-base plus admitted canonical-probe paired witness; no
++synthetic fault seam or global parameter search substitutes for the proof.
++
++Change log: 2026-09-06, `EXP-STAGE3-20260906-R-SG1` explicitly substitutes
++shared-call result-or-error equivalence for the experimental noncrossability
++assurance of the five named recomputed wet-routing families only. No equation,
++domain, physical bound, tolerance, derivative, solver, ownership, restart or
++publication change; `CALIBRATION_NOT_APPLICABLE`. Retained production HOLD.

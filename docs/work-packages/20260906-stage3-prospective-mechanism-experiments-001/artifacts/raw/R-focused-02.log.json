@@ -1,0 +1,27 @@
+{
+  "pid": 768629,
+  "command": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "cargo",
+    "nextest",
+    "run",
+    "-p",
+    "openwepp-land-surface-energy",
+    "--lib",
+    "--no-fail-fast",
+    "--success-output",
+    "final"
+  ],
+  "cwd": "/tmp/openwepp-controlled-mechanisms-Hb6uS2/R",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 6360459079,
+  "log_sha256": "92c4d9ab40c9d6ac251e60c1d4f408ff1bd62d079a61a37093b3d65f7c9734a6",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

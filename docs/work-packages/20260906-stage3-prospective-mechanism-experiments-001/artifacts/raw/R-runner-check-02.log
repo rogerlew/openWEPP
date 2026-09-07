@@ -1,0 +1,23 @@
+warning: Git tree '/tmp/openwepp-controlled-mechanisms-Hb6uS2/R' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/R-344ae65295ff
+  scratch: /tmp/openwepp-roger-R-344ae65295ff
+  cache:   /workdir/.cache/openwepp
+    Checking openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/R/crates/openwepp-land-surface-energy)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/R/crates/openwepp-hillslope-orchestrator)
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+    Checking openwepp-persisted-restart-v1 v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/R/crates/openwepp-persisted-restart-v1)
+    Checking openwepp-runner v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/R/crates/openwepp-runner)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.12s

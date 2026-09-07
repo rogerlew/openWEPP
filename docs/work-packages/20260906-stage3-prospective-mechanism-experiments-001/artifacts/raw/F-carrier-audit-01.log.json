@@ -1,0 +1,18 @@
+{
+  "pid": 956540,
+  "command": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/audit_carrier.py",
+    "/workdir/openWEPP/docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/raw/A-trace-01/carrier-0.json",
+    "/workdir/openWEPP/docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/raw/F-trace-01/carrier-0.json"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 35807735,
+  "log_sha256": "b358a8c1c40bcb61f7104c4981f25ee748c19ce04e9303203a639fdc8b39ea21",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

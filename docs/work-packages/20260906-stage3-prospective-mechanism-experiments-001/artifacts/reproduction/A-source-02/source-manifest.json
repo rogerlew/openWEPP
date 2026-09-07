@@ -1,0 +1,16 @@
+{
+  "name": "A-common-guard-corrected",
+  "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "source_identity": "3878c7c6af58538ebc2c942354f5771cc0750df373055f572c147a7e2f42d93e",
+  "identity_inputs": "path-content-manifest.json",
+  "patch_sha256": "7521a4fa0891511f48ceceebf9ed7249b296ed854234acf9aac07868c8b098b4",
+  "untracked_paths": [],
+  "reproduce": [
+    "checkout exact base detached",
+    "git apply tracked-source.patch",
+    "extract new-source-files.tar.gz at root",
+    "verify every path-content row before building"
+  ],
+  "documentary_output_excluded": true
+}

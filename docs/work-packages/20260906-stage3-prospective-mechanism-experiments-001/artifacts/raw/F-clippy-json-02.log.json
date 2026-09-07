@@ -1,0 +1,32 @@
+{
+  "pid": 1193655,
+  "command": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "cargo",
+    "clippy",
+    "--offline",
+    "-p",
+    "openwepp-land-surface-energy",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "-p",
+    "openwepp-runner",
+    "--all-targets",
+    "--message-format=json",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/tmp/openwepp-controlled-mechanisms-Hb6uS2/F",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 101,
+  "duration_ns": 43731633284,
+  "log_sha256": "2c019b1390611a08bfed5a59765f7620e8a87a037b2442104b1d5de1e473885f",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

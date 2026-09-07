@@ -1,0 +1,27 @@
+{
+  "pid": 785444,
+  "command": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "env",
+    "CARGO_PROFILE_RELEASE_LTO=false",
+    "cargo",
+    "nextest",
+    "run",
+    "--release",
+    "--workspace",
+    "--profile",
+    "full"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 100,
+  "duration_ns": 1066303186214,
+  "log_sha256": "5f4c279602e193c305048e7613337c688728daf7dc87124abbe44083c892917e",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "pid": 1205439,
+  "command": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "env",
+    "CARGO_PROFILE_RELEASE_LTO=false",
+    "cargo",
+    "nextest",
+    "run",
+    "--release",
+    "--offline",
+    "-p",
+    "openwepp-land-surface-energy",
+    "--run-ignored",
+    "only",
+    "-E",
+    "test(natural_iteration_limit_full_diagnostic_parity)",
+    "--success-output",
+    "final"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 46798147236,
+  "log_sha256": "e369038d997f4ac1d232be449d085fb72b6b43bd0ec14375408b490712f40c02",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

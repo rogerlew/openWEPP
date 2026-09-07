@@ -1,0 +1,32 @@
+argv: nix develop --offline -c cargo nextest run --test land_surface_energy_balance_authority_contract prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation
+cwd: /workdir/openWEPP
+start_utc: 2026-09-06T20:34:55-07:00
+git_head: e89befa46
+git_diff_sha256: 95036e8b423d8cf8cf54271af91b8ead3ca1e0b7fad5468beef3b5456fded6c9
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+   Compiling openwepp v0.1.0 (/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.69s
+────────────
+ Nextest run ID 58b6cc0b-3eb7-4842-9880-fd3208070373 with nextest profile: default
+    Starting 1 test across 1 binary (25 tests skipped)
+────────────
+     Summary [   0.005s] 1 test run: 1 passed, 25 skipped
+exit_code: 0
+duration_ms: 1309811783

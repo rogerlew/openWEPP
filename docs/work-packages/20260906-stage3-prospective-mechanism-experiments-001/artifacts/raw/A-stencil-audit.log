@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "oracle": "independent coordinate-domain binary64 enumeration",
+  "replay_expected": false,
+  "maps": {
+    "starts": 400,
+    "completions": 400,
+    "errors": 0
+  },
+  "solves": {
+    "starts": 800,
+    "completions": 800,
+    "errors": 0
+  },
+  "iterations": 2400,
+  "sweeps": 2000,
+  "probe_classes": {
+    "Complete": 78800,
+    "IdentityAnchor": 28000
+  },
+  "map_final_joins": 400,
+  "histogram": {
+    "48/14/0/34": 200,
+    "54/14/0/40": 1800
+  },
+  "dropped_events": 0,
+  "limitations": "graph eligibility assumes reviewed complete descriptor for represented-snow component coordinates; direct-edge oracle is independently required"
+}

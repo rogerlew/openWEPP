@@ -1,0 +1,90 @@
+warning: Git tree '/tmp/openwepp-controlled-mechanisms-Hb6uS2/F' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/F-af041db248b7
+  scratch: /tmp/openwepp-roger-F-af041db248b7
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-hillslope-orchestrator)
+warning: fields `coupling_iteration` and `ending_snow_hint` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1161:9
+     |
+1154 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- fields in this struct
+...
+1161 |     pub coupling_iteration: u32,
+     |         ^^^^^^^^^^^^^^^^^^
+...
+1174 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: associated function `evaluate_stage3_terminal_support_with_trial_provider_and_evidence_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs:618:19
+    |
+  4 | impl Wb11HydrologyKernel {
+    | ------------------------ associated function in this implementation
+...
+618 |     pub(crate) fn evaluate_stage3_terminal_support_with_trial_provider_and_evidence_v1<
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `Feedback` is never constructed
+  --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/terminal_carrier_provider.rs:79:5
+   |
+78 | pub(crate) enum CoveredTerminalProviderV1<'a, 'b> {
+   |                 ------------------------- variant in this enum
+79 |     Feedback(&'a mut CoveredTerminalTrialProviderV1<'b>),
+   |     ^^^^^^^^
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 3 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 04s
+────────────
+ Nextest run ID 29d2c534-ccb6-4e01-9cbf-ae6ea3219980 with nextest profile: default
+    Starting 5 tests across 1 binary (1417 tests skipped)
+        FAIL [  38.272s] (5/5) openwepp-hillslope-orchestrator v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls
+  stdout ───
+
+    running 1 test
+    test v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls ... FAILED
+
+    failures:
+
+    failures:
+        v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1421 filtered out; finished in 38.27s
+
+  stderr ───
+
+    thread 'feed-forward-complete-carrier-reference' (761090) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs:2059:19:
+    synchronized covered parent cadence: AdaptiveTrial { phase: "terminal direct", start_ns: 0, end_ns: 1800000000000, duration_ns: 1800000000000, source: V11(Executor(Identity("physical outcome ledger closure"))) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+    thread 'v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls' (761089) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:36:10:
+    complete reference fixture: Any { .. }
+
+────────────
+     Summary [  38.277s] 5 tests run: 4 passed, 1 failed, 1417 skipped
+        FAIL [  38.272s] (5/5) openwepp-hillslope-orchestrator v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls
+  stdout ───
+
+    running 1 test
+    test v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls ... FAILED
+
+    failures:
+
+    failures:
+        v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1421 filtered out; finished in 38.27s
+
+  stderr ───
+
+    thread 'feed-forward-complete-carrier-reference' (761090) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs:2059:19:
+    synchronized covered parent cadence: AdaptiveTrial { phase: "terminal direct", start_ns: 0, end_ns: 1800000000000, duration_ns: 1800000000000, source: V11(Executor(Identity("physical outcome ledger closure"))) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+    thread 'v9_real_consumer_shadow::tests::adaptive_production_path_coverage::feed_forward_actual_complete_carrier_matches_both_forced_reference_calls' (761089) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:36:10:
+    complete reference fixture: Any { .. }
+
+error: test run failed

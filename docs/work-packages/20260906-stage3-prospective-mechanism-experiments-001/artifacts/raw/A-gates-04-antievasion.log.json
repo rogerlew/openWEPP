@@ -1,0 +1,16 @@
+{
+  "pid": 743917,
+  "command": [
+    "bash",
+    "tools/release/check_authority_suite_antievasion.sh"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 37973409,
+  "log_sha256": "1e057ba888f5fc5382d0858bfa25221e1c24fdf911782e1e1c24ef3bae3bc585",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

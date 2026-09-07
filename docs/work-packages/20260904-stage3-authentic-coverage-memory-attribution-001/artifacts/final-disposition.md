@@ -109,3 +109,11 @@ perturbation only, and no authenticated equivalent candidate source/binary or
 matched treatment was recovered. Fresh independent reviews and terminal
 verifications approve this evidence boundary and keep the package in terminal
 HOLD rather than GO. The predecessor package remains terminal HOLD/nonqualifying.
+
+## Prospective owner authorization (2026-09-06)
+
+The owner subsequently authorized independently frozen controlled mechanisms in
+`20260906-stage3-prospective-mechanism-experiments-001`. That package uses new A/F/R
+identities and a prospective protocol; it does not reconstruct historical custody,
+change this HOLD, or retroactively qualify the old experiments. Its required
+architecture handoff is separate from authorization to promote production code.

@@ -1,0 +1,75 @@
+{
+  "arm_mapping": {
+    "A-full-release-01": "A-full-release-01-PC1",
+    "A-initial-common": "common-2b",
+    "F-full": "common-2b",
+    "R-final": "R-final-SG1"
+  },
+  "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+  "builds_executed": false,
+  "common_commit": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "cuts": {
+    "A-full-release-01-PC1": {
+      "lse": {
+        "artifact": "snapshots/A-full-release-01-PC1/SC-LANDSURFACEENERGY-001.md",
+        "bytes": 260809,
+        "sha256": "c993020e96aec0dac934acd5ccfa3050f8173a90bcd7f860b88b8da7405418cd"
+      },
+      "patch": {
+        "artifact": "patches/A-full-release-01-PC1.patch",
+        "bytes": 18948,
+        "sha256": "6f4d27be54760e30318984dbb2205447add45e2134e148cfc597bc18ef49c299"
+      },
+      "patch_reconstruction": "PASS",
+      "provenance": "current SG1 prefix, independently matched frozen PC1 SHA-256",
+      "snow": {
+        "artifact": "snapshots/SC-SNOWENERGY-001.md",
+        "bytes": 497785,
+        "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d"
+      }
+    },
+    "R-final-SG1": {
+      "lse": {
+        "artifact": "snapshots/R-final-SG1/SC-LANDSURFACEENERGY-001.md",
+        "bytes": 264863,
+        "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d"
+      },
+      "patch": {
+        "artifact": "patches/R-final-SG1.patch",
+        "bytes": 23064,
+        "sha256": "36c64bfc065c8726eb4e558ba6135e4b5dbb3c3715310baf495e8cc79a2f5c45"
+      },
+      "patch_reconstruction": "PASS",
+      "provenance": "current canonical exact dual-reviewed SG1 SHA-256",
+      "snow": {
+        "artifact": "snapshots/SC-SNOWENERGY-001.md",
+        "bytes": 497785,
+        "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d"
+      }
+    },
+    "common-2b": {
+      "lse": {
+        "artifact": "snapshots/common-2b/SC-LANDSURFACEENERGY-001.md",
+        "bytes": 256567,
+        "sha256": "109be57ca5e5cac79262b9b22c5de18ec1d85eaac3a645ce85015bd4a2af78cf"
+      },
+      "patch": {
+        "artifact": "patches/common-2b.patch",
+        "bytes": 14646,
+        "sha256": "bb4a4c71c9cf92cf2a5b38b123685334c84985b3677d12814a78a9793452c6d0"
+      },
+      "patch_reconstruction": "PASS",
+      "provenance": "exact Git blob 2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3:docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+      "snow": {
+        "artifact": "snapshots/SC-SNOWENERGY-001.md",
+        "bytes": 497785,
+        "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d"
+      }
+    }
+  },
+  "paths": [
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+    "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"
+  ],
+  "scope": "two changed canonical adjuncts; all other authority/docs come from FULL base checkout"
+}

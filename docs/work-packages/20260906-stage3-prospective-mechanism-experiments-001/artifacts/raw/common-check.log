@@ -1,0 +1,47 @@
+argv: nix develop --offline -c cargo check -p openwepp-runner --tests
+cwd: /workdir/openWEPP
+start_utc: 2026-09-06T20:31:27-07:00
+git_head: e89befa46
+git_diff_sha256: 8aa92c07b68dfb786d80aa88ce785814e00d831657ec6b9935945b2fc8b41a24
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+    Checking openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+    Checking openwepp-persisted-restart-v1 v0.1.0 (/workdir/openWEPP/crates/openwepp-persisted-restart-v1)
+    Checking openwepp-runner v0.1.0 (/workdir/openWEPP/crates/openwepp-runner)
+error: recursion limit reached while expanding `$crate::json_internal!`
+   --> crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs:316:18
+    |
+316 |       let record = serde_json::json!({
+    |  __________________^
+317 | |         "experiment": "EXP-STAGE3-20260906",
+318 | |         "carrier_counts": carrier_audit,
+319 | |         "lse_counts": lse_audit,
+...   |
+368 | |         "laned_clamp_m3": evidence.manifest_clamp_m3,
+369 | |     });
+    | |______^
+    |
+    = help: consider increasing the recursion limit by adding a `#![recursion_limit = "256"]` attribute to your crate (`openwepp_runner`)
+    = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: could not compile `openwepp-runner` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+exit_code: 101
+duration_ms: 1609876719127073046

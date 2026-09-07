@@ -1,0 +1,18 @@
+{
+  "pid": 1038443,
+  "command": [
+    ".venv/bin/python",
+    "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/audit_stencils.py",
+    "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/raw/R-trace-01/lse-0.json",
+    "--replay"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 1517177414,
+  "log_sha256": "1077f273f42b5d732c9a4b8b99253f087a08b77be02f81593a77082216458f57",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

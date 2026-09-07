@@ -1,0 +1,21 @@
+{
+  "name": "R-PC1",
+  "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "source_identity": "d38f49c47df112928de9ed03a79a418d189a241ded3b276cb5a3579e3b2aedec",
+  "identity_inputs": "path-content-manifest.json",
+  "patch_sha256": "4b3bf426cca4f6c5b0cb804f71b2ff7986e3ff4420101c6101595ea5da9af54a",
+  "untracked_paths": [
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_graph.rs",
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_graph_tests.rs",
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_replay.rs",
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_replay_tests.rs"
+  ],
+  "reproduce": [
+    "checkout exact base detached",
+    "git apply tracked-source.patch",
+    "extract new-source-files.tar.gz at root",
+    "verify every path-content row before building"
+  ],
+  "documentary_output_excluded": true
+}

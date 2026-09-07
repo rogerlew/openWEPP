@@ -1,0 +1,95 @@
+warning: Git tree '/tmp/openwepp-controlled-mechanisms-Hb6uS2/F' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/F-af041db248b7
+  scratch: /tmp/openwepp-roger-F-af041db248b7
+  cache:   /workdir/.cache/openwepp
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.45
+   Compiling serde_core v1.0.228
+   Compiling version_check v0.9.5
+   Compiling serde v1.0.228
+   Compiling typenum v1.20.0
+   Compiling cfg-if v1.0.4
+   Compiling itoa v1.0.18
+   Compiling autocfg v1.5.1
+   Compiling cpufeatures v0.2.17
+   Compiling thiserror v2.0.20
+   Compiling zmij v1.0.21
+   Compiling openwepp-unit-boundary v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-unit-boundary)
+   Compiling serde_json v1.0.150
+   Compiling crc32fast v1.5.0
+   Compiling hashbrown v0.17.1
+   Compiling openwepp-sim-contract v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-sim-contract)
+   Compiling equivalent v1.0.2
+   Compiling simd-adler32 v0.3.9
+   Compiling unsafe-libyaml v0.2.11
+   Compiling memchr v2.8.0
+   Compiling ryu v1.0.23
+   Compiling adler2 v2.0.1
+   Compiling generic-array v0.14.7
+   Compiling miniz_oxide v0.8.9
+   Compiling libm v0.2.16
+   Compiling base64 v0.22.1
+   Compiling openwepp-plant-phenology v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-plant-phenology)
+   Compiling num-traits v0.2.19
+   Compiling indexmap v2.14.0
+   Compiling openwepp-topology v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-topology)
+   Compiling flate2 v1.1.9
+   Compiling syn v2.0.117
+   Compiling syn v3.0.3
+   Compiling num-integer v0.1.46
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling num-bigint v0.4.6
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling thiserror-impl v2.0.20
+   Compiling serde_derive v1.0.228
+   Compiling openwepp-meteorology v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-meteorology)
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling openwepp-kernel-contract v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-kernel-contract)
+   Compiling openwepp-coupled-time v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-coupled-time)
+   Compiling openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-land-surface-energy)
+   Compiling openwepp-biogeochemistry v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-biogeochemistry)
+   Compiling openwepp-management-schema v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-management-schema)
+   Compiling openwepp-vegetation v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-vegetation)
+   Compiling openwepp-input-contract v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-input-contract)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/F/crates/openwepp-hillslope-orchestrator)
+error[E0425]: cannot find type `CoveredTerminalTrialRequestV1` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase/snow_boundary.rs:186:19
+     |
+ 186 |         request: &CoveredTerminalTrialRequestV1,
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1658:1
+     |
+1658 | pub(crate) struct CoveredTerminalBatchTrialRequestV2 {
+     | ---------------------------------------------------- similarly named struct `CoveredTerminalBatchTrialRequestV2` defined here
+     |
+help: a struct with a similar name exists
+     |
+ 186 -         request: &CoveredTerminalTrialRequestV1,
+ 186 +         request: &CoveredTerminalBatchTrialRequestV2,
+     |
+help: consider importing this struct through its public re-export
+    -->  crates/openwepp-hillslope-orchestrator/src/v11_covered/receipt_sets.rs:1:1
+     |
+   1 + use crate::hydrology::CoveredTerminalTrialRequestV1;
+     |
+
+warning: unused import: `CoveredTerminalTrialRequestV1`
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:1549:5
+     |
+1549 |     CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1, CoveredTerminalTrialTransitionV1,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0425`.
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1 previous error; 1 warning emitted
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-hillslope-orchestrator` exited with code 101

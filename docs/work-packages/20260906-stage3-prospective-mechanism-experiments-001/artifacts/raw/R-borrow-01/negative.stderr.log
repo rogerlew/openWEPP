@@ -1,0 +1,2 @@
+    Checking openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-source-kit-verify-3vmlnyn9/source/crates/openwepp-land-surface-energy)
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 3 previous errors

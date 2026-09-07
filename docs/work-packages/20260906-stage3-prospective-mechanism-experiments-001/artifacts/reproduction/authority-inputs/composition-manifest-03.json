@@ -1,0 +1,74 @@
+{
+  "arm_recipe": {
+    "A-full-release-01": {
+      "authority_patch": "patches/A-full-release-01-PC1.patch",
+      "checkout": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+      "runtime_kit": "A-source-03"
+    },
+    "A-initial-common": {
+      "authority_patch": "patches/common-2b.patch",
+      "checkout": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+      "runtime_kit": "A-source-03"
+    },
+    "F-full": {
+      "action": "no-op; verify existing canonical hashes",
+      "authority_patch": "patches/F-common-from-2b.patch",
+      "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "runtime_kit": "F-source-04"
+    },
+    "R-final": {
+      "authority_patch": "patches/R-final-SG1-from-2b.patch",
+      "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "runtime_kit": "R-source-04"
+    }
+  },
+  "builds_executed": false,
+  "new_deltas": {
+    "F-common-from-2b": {
+      "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "git_apply_and_exact_byte_comparison": "PASS",
+      "identity_operation": true,
+      "patch": {
+        "artifact": "patches/F-common-from-2b.patch",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "target_cut": "common-2b"
+    },
+    "R-final-SG1-from-2b": {
+      "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "git_apply_and_exact_byte_comparison": "PASS",
+      "identity_operation": false,
+      "patch": {
+        "artifact": "patches/R-final-SG1-from-2b.patch",
+        "bytes": 8823,
+        "sha256": "38ed62a786a234da6565abebed0ed4f5b004b3b58557eaba860c2958cd6aec6e"
+      },
+      "target_cut": "R-final-SG1"
+    }
+  },
+  "previous_composition_sha256": "8940b891c15f1d8041a66166c1c709676161d2f3991d9790d4f4492fe54f7f13",
+  "prior_manifest_sha256": "63d57160e82ddec88fe307af7c7a104dc4a96ffafc7be526cdb8da3586debbd3",
+  "source_kit_bases_checked": {
+    "A-source-03": {
+      "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+      "manifest_bytes": 2508,
+      "manifest_sha256": "557ac25e139e60c06f0351615878d76b01c87f539595313b2cf5686c213f6ee5",
+      "source_identity": "0c12a724516f973eb13f9de72afc4d767922a4440f897ecea545966936493038"
+    },
+    "F-source-04": {
+      "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "manifest_bytes": 3035,
+      "manifest_sha256": "796caf3838a53f98c97d85977eb99a37e3f7c8cd06818c493b01410926a3d2a3",
+      "source_identity": "ee25bac08dfb27126379109d04d213a88fe85283bb2adc2b737a5a0b2af1b48e"
+    },
+    "R-source-04": {
+      "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "manifest_bytes": 2868,
+      "manifest_sha256": "6f707590771bef89bd85c8391e6fb6cb6f69c1516ccc9a09a51fa8c641a43be7",
+      "source_identity": "a1c128139825c70f48c1df86504f344fb9a0aff082a19645a409a5a64f3bb157"
+    }
+  },
+  "supersedes": "composition-manifest-02.json current source-kit binding only; preserve all earlier evidence",
+  "verification_scope": "current manifest/base and unchanged authority patch hash checks; inherited exact-base patch verification, no builds"
+}

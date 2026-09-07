@@ -1,0 +1,21 @@
+{
+  "name": "F-common-guard-corrected",
+  "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "source_identity": "bb63346ee33296a2dc2a294309a794f2b6f8d10eed209e5368c37df305461cc3",
+  "identity_inputs": "path-content-manifest.json",
+  "patch_sha256": "b7e58d7b2686556c3a6c12b902fd5e96bb79df3d5672ac0502bfdb2d0e6cb902",
+  "untracked_paths": [
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/terminal_carrier_evaluation.rs",
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/terminal_feed_forward_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/terminal_carrier_provider.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_feed_forward_tests.rs"
+  ],
+  "reproduce": [
+    "checkout exact base detached",
+    "git apply tracked-source.patch",
+    "extract new-source-files.tar.gz at root",
+    "verify every path-content row before building"
+  ],
+  "documentary_output_excluded": true
+}

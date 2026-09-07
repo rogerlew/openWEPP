@@ -1,0 +1,26 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "0",
+    "/tmp/openwepp-controlled-mechanisms-Hb6uS2/A-runner",
+    "hillslope::tests::stage3_controlled_mechanism_experiment",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "pid": 748580,
+  "exit_code": 0,
+  "duration_ns": 5116091027,
+  "binary_sha256": "3d0eead3f68cb22c2ea4af8bf587bf297b100c39738c215918fb3ccfa04f0bc3",
+  "binary_unchanged": true,
+  "log_sha256": "9fcf007dc167bb67cbf4627a8c4fa49a5f806e603d15e21559b1ff73d54c2c18",
+  "lifetime_peak_rss_kib": 76204,
+  "process_user_s": 5.05451,
+  "process_system_s": 0.034748,
+  "environment_sha256": "463cd045d5413611e2785f80d12f58803f36e1db5ac39533cb7af03011074a84",
+  "ofes": 1,
+  "memory": true,
+  "trace": "None"
+}

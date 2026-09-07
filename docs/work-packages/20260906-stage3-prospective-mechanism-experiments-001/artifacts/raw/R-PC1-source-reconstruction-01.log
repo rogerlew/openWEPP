@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "name": "R-PC1",
+  "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "source_identity": "d38f49c47df112928de9ed03a79a418d189a241ded3b276cb5a3579e3b2aedec",
+  "manifest_rows": 10135,
+  "present_rows": 10135,
+  "deleted_rows": 0,
+  "removed_base_paths": [],
+  "new_archive_paths": 4,
+  "scratch_source": "/tmp/openwepp-source-kit-verify-1945nxcw/source",
+  "umask": "0002",
+  "permission_restorations": [],
+  "failures": [],
+  "builds_executed": false,
+  "scope": "all declared executable-input paths; documentary outputs excluded"
+}

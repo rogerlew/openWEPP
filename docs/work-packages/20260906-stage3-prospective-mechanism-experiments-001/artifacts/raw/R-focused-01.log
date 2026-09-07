@@ -1,0 +1,38 @@
+warning: Git tree '/tmp/openwepp-controlled-mechanisms-Hb6uS2/R' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/R-344ae65295ff
+  scratch: /tmp/openwepp-roger-R-344ae65295ff
+  cache:   /workdir/.cache/openwepp
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.45
+   Compiling version_check v0.9.5
+   Compiling typenum v1.20.0
+   Compiling serde_core v1.0.228
+   Compiling zmij v1.0.21
+   Compiling serde v1.0.228
+   Compiling thiserror v2.0.20
+   Compiling serde_json v1.0.150
+   Compiling cfg-if v1.0.4
+   Compiling cpufeatures v0.2.17
+   Compiling openwepp-unit-boundary v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/R/crates/openwepp-unit-boundary)
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.0
+   Compiling openwepp-sim-contract v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/R/crates/openwepp-sim-contract)
+   Compiling generic-array v0.14.7
+   Compiling syn v2.0.117
+   Compiling syn v3.0.3
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling serde_derive v1.0.228
+   Compiling thiserror-impl v2.0.20
+   Compiling openwepp-kernel-contract v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/R/crates/openwepp-kernel-contract)
+   Compiling openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-controlled-mechanisms-Hb6uS2/R/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.54s
+────────────
+ Nextest run ID 99db30d7-e8af-457e-9e5e-0003a9413ca5 with nextest profile: default
+    Starting 150 tests across 1 binary
+────────────
+     Summary [   3.543s] 150 tests run: 150 passed, 0 skipped

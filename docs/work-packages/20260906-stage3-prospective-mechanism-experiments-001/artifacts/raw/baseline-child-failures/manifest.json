@@ -1,0 +1,93 @@
+{
+  "evidence_class": "Static: retained copies of parent-executed diagnostic child stderr; no new execution.",
+  "instruction_chain": [
+    "AGENTS.md",
+    "docs/work-packages/AGENTS.md"
+  ],
+  "rows": [
+    {
+      "source_log": "A-gates-01-workspace-full-03.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw2_relative_output_dir_1788754193530423210/relative-out/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "debug-full03-01.stderr.log",
+      "sha256": "1c56b7717a09235f0f6b6e1fcdb4f5740c778123e1526a46f0ada1496309ca1a",
+      "bytes": 337
+    },
+    {
+      "source_log": "A-gates-01-workspace-full-03.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw2_serial_supervisor_1788754194074781584/out/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "debug-full03-02.stderr.log",
+      "sha256": "1c56b7717a09235f0f6b6e1fcdb4f5740c778123e1526a46f0ada1496309ca1a",
+      "bytes": 337
+    },
+    {
+      "source_log": "A-gates-01-workspace-full-03.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw3_jobs1_identity_1788754194152309100/out/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "debug-full03-03.stderr.log",
+      "sha256": "1c56b7717a09235f0f6b6e1fcdb4f5740c778123e1526a46f0ada1496309ca1a",
+      "bytes": 337
+    },
+    {
+      "source_log": "A-gates-01-workspace-full-03.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw7_relative_run_dir_1788754195165431767/out-relative-run-dir/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "debug-full03-04.stderr.log",
+      "sha256": "1c56b7717a09235f0f6b6e1fcdb4f5740c778123e1526a46f0ada1496309ca1a",
+      "bytes": 337
+    },
+    {
+      "source_log": "A-gates-01-workspace-full-03.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw7r_p102_jobs1_1788754195658258424/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "debug-full03-05.stderr.log",
+      "sha256": "1c56b7717a09235f0f6b6e1fcdb4f5740c778123e1526a46f0ada1496309ca1a",
+      "bytes": 337
+    },
+    {
+      "source_log": "A-gates-01-workspace-full-03.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw10_absent_chaninp_default_1788754196555769388/out/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "debug-full03-06.stderr.log",
+      "sha256": "46e458f1c1f3f42739fe79a608b5883912d1261624a5c5e79b1c2d71c1246335",
+      "bytes": 240
+    },
+    {
+      "source_log": "A-full-release-01.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw2_relative_output_dir_1788757358657388224/relative-out/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "release-full01-01.stderr.log",
+      "sha256": "1c56b7717a09235f0f6b6e1fcdb4f5740c778123e1526a46f0ada1496309ca1a",
+      "bytes": 337
+    },
+    {
+      "source_log": "A-full-release-01.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw2_serial_supervisor_1788757358811844865/out/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "release-full01-02.stderr.log",
+      "sha256": "1c56b7717a09235f0f6b6e1fcdb4f5740c778123e1526a46f0ada1496309ca1a",
+      "bytes": 337
+    },
+    {
+      "source_log": "A-full-release-01.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw3_jobs1_identity_1788757358874445273/out/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "release-full01-03.stderr.log",
+      "sha256": "1c56b7717a09235f0f6b6e1fcdb4f5740c778123e1526a46f0ada1496309ca1a",
+      "bytes": 337
+    },
+    {
+      "source_log": "A-full-release-01.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw7_relative_run_dir_1788757359438086013/out-relative-run-dir/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "release-full01-04.stderr.log",
+      "sha256": "1c56b7717a09235f0f6b6e1fcdb4f5740c778123e1526a46f0ada1496309ca1a",
+      "bytes": 337
+    },
+    {
+      "source_log": "A-full-release-01.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw7r_p102_jobs1_1788757359479311022/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "release-full01-05.stderr.log",
+      "sha256": "1c56b7717a09235f0f6b6e1fcdb4f5740c778123e1526a46f0ada1496309ca1a",
+      "bytes": 337
+    },
+    {
+      "source_log": "A-full-release-01.log",
+      "source_path": "/tmp/openwepp-roger-openWEPP-295c6e060aa9/wshedw10_absent_chaninp_default_1788757359642812342/out/hillslope-jobs/H1/H1.stderr.log",
+      "retained_file": "release-full01-06.stderr.log",
+      "sha256": "46e458f1c1f3f42739fe79a608b5883912d1261624a5c5e79b1c2d71c1246335",
+      "bytes": 240
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "pid": 884414,
+  "command": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/test_collectors.py"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 410547438,
+  "log_sha256": "cddf0f91be4762455f420fff76aacc10a5b36979f97990489ad96892ef636cf3",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

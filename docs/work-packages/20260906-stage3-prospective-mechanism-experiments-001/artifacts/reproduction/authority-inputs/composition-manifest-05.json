@@ -1,0 +1,130 @@
+{
+  "arm_recipe": {
+    "A-full-release-01": {
+      "authority_patch": "patches/A-full-release-01-PC1.patch",
+      "checkout": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+      "runtime_kit": "A-source-04"
+    },
+    "A-initial-common": {
+      "authority_patch": "patches/common-2b.patch",
+      "checkout": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+      "runtime_kit": "A-source-04"
+    },
+    "F-full": {
+      "action": "no-op; verify existing canonical hashes",
+      "authority_patch": "patches/F-common-from-2b.patch",
+      "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "runtime_kit": "F-source-05"
+    },
+    "R-final": {
+      "authority_patch": "patches/R-final-SG1-from-2b.patch",
+      "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "runtime_kit": "R-source-05"
+    }
+  },
+  "builds_executed": false,
+  "current_arm_recipe": {
+    "current-A-SG1": {
+      "authority_patch": "patches/R-final-SG1.patch",
+      "authority_patch_bytes": 23064,
+      "authority_patch_sha256": "36c64bfc065c8726eb4e558ba6135e4b5dbb3c3715310baf495e8cc79a2f5c45",
+      "canonical_files": {
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": {
+          "bytes": 264863,
+          "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d"
+        },
+        "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": {
+          "bytes": 497785,
+          "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d"
+        }
+      },
+      "checkout": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+      "runtime_kit": "A-source-04",
+      "target_cut": "R-final-SG1"
+    },
+    "current-F-common": {
+      "action": "no-op; verify existing common canonical hashes",
+      "authority_patch": null,
+      "canonical_files": {
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": {
+          "bytes": 256567,
+          "sha256": "109be57ca5e5cac79262b9b22c5de18ec1d85eaac3a645ce85015bd4a2af78cf"
+        },
+        "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": {
+          "bytes": 497785,
+          "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d"
+        }
+      },
+      "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "runtime_kit": "F-source-05",
+      "target_cut": "common-2b"
+    },
+    "current-R-SG1": {
+      "authority_patch": "patches/R-final-SG1-from-2b.patch",
+      "authority_patch_bytes": 8823,
+      "authority_patch_sha256": "38ed62a786a234da6565abebed0ed4f5b004b3b58557eaba860c2958cd6aec6e",
+      "canonical_files": {
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": {
+          "bytes": 264863,
+          "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d"
+        },
+        "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": {
+          "bytes": 497785,
+          "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d"
+        }
+      },
+      "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "runtime_kit": "R-source-05",
+      "target_cut": "R-final-SG1"
+    }
+  },
+  "historical_recipe_note": "arm_recipe retains earlier authority labels only; use original run source-kit receipts/earlier compositions for exact historical reproduction; CURRENT kits use current_arm_recipe exclusively",
+  "new_deltas": {
+    "F-common-from-2b": {
+      "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "git_apply_and_exact_byte_comparison": "PASS",
+      "identity_operation": true,
+      "patch": {
+        "artifact": "patches/F-common-from-2b.patch",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "target_cut": "common-2b"
+    },
+    "R-final-SG1-from-2b": {
+      "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "git_apply_and_exact_byte_comparison": "PASS",
+      "identity_operation": false,
+      "patch": {
+        "artifact": "patches/R-final-SG1-from-2b.patch",
+        "bytes": 8823,
+        "sha256": "38ed62a786a234da6565abebed0ed4f5b004b3b58557eaba860c2958cd6aec6e"
+      },
+      "target_cut": "R-final-SG1"
+    }
+  },
+  "previous_composition_sha256": "ed78068ed45ef1e17ac6b56f017b56fc0d224caf61bcabe6001a2a240f58b497",
+  "prior_manifest_sha256": "63d57160e82ddec88fe307af7c7a104dc4a96ffafc7be526cdb8da3586debbd3",
+  "source_kit_bases_checked": {
+    "A-source-04": {
+      "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+      "manifest_bytes": 2617,
+      "manifest_sha256": "a2dc8c7748793cf6474bf664293ba3eda573e005b0f7b2c9acfce37967589c27",
+      "source_identity": "98ee7bafe471bfc73fec07909b3bb81f16cc55ab4518675fab62d621fc2ae4ae"
+    },
+    "F-source-05": {
+      "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "manifest_bytes": 3139,
+      "manifest_sha256": "e22e9b74fdcea3702c16bd1cba8d6563322167569824f541468ce841daba0346",
+      "source_identity": "7a41232f6e513fab954244151c74fac5b9426acc0d83cca372defeb19856dc0f"
+    },
+    "R-source-05": {
+      "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+      "manifest_bytes": 2967,
+      "manifest_sha256": "275da2b1184f72db1eb57deeabde6cf89e2ab1f0efb63665358fc25e9e749ecc",
+      "source_identity": "28c3310d916593bc941706e36bf6d4188ebd755b50d5ebb8cc356f9459e05027"
+    }
+  },
+  "supersedes": "composition-manifest-04.json current authority selection only; historical inputs preserved",
+  "verification_scope": "final manifest/base/source identity and unchanged authority patch checks; inherited exact-base patch verification, no builds"
+}

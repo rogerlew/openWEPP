@@ -1,6 +1,6 @@
 # Prospective Stage 3 mechanism experiments
 
-Status: ACTIVE — intake and prospective protocol.
+Status: PAUSED BY OWNER REQUEST — pre-measurement checkpoint; not complete.
 Execution mode: package-end-to-end. Owner authorization: prompts/active/kickoff.md.
 Implementation intent: controlled mechanism evaluation + minimal measurement/coverage correction + re-architecture decision support.
 
@@ -13,12 +13,13 @@ The kickoff is the full executable specification and binding sampling/decision p
 ## Progress
 
 - [x] 2026-09-06 PDT: kickoff and core guidance read; no equivalent package; checkout equals accepted checkpoint, branch main, existing untracked tmp/ preserved.
-- [ ] Resolve exact source paths and prospective authority/test amendments.
-- [ ] Dual independent protocol/authority review before behavior implementation.
-- [ ] Common harness, freeze A and source/build/input manifests.
+- [x] Resolve exact source paths and prospective authority/test amendments.
+- [x] Dual independent protocol/authority and concrete F/R test/API reviews before behavior implementation (named artifacts retain reviewed hashes).
+- [x] Common harness frozen as A commit2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3; source reconstruction10,131rows passes; release real one-OFE runs and independent trace audit execute. Full admission and exclusive measurement identity remain open below.
 - [ ] Implement/admit/measure F; independently implement/admit/measure R.
 - [ ] Full applicable correctness, parity, architecture handoff, dual reviews and terminal verifications.
 - [ ] Reconcile terminal diff, findings, catalog and disposition.
+- [x] 2026-09-06 PDT: explicit pause checkpoint recorded after A/F/R correctness/parity work and before comparative timing/memory; see `artifacts/pause-checkpoint.md`.
 
 ## Write set and sequencing
 
@@ -36,6 +37,18 @@ Subagent authorization: this package explicitly authorizes subagent spawning/del
 
 Use docs/standards/testing-and-gate-strategy.md directly. Each critical experimental runtime cut requires full correctness strength plus touched authority, guards, ownership/error/rollback/restart, LSE/orchestrator/runner, real consumer and output parity, independent closure reconstruction, formatting/scoped warnings-denied Clippy, applicable anti-evasion and line-count checks. Historical expected-red seams are recorded, never suppressed. No mandatory gate may be relabeled deferred to close the package.
 
+Prospective corrected-full configuration: `cargo nextest run --release --workspace
+--profile full`, CARGO_PROFILE_RELEASE_LTO=false, RUST_MIN_STACK=67108864, offline,
+no external wrapper timeout. Canonical full filters/groups and case inventory
+remain unchanged; retain each variant's explicit inventory. ReviewB authority
+assessment permits optimized full coverage (strategy requires strength, not
+default-debug specifically). Focused default-debug affected LSE/orchestrator/
+runner/vegetation/kernel invariant tests remain required. This does not relabel
+the interrupted initial default-debug full, claim debug-full equivalence, or
+qualify normal thin-LTO production binaries. Ignored mechanism/consumer gates
+run separately. Both independent assessments approve this variant (artifacts/
+validation-posture-review-a.md and full-validation-variant-review-b.md).
+
 Protocol freezes balanced 12 fresh-process timing pairs (two warmups per executable), six separate memory pairs, three processes of ten teardown runs per arm, and three scale pairs at 10/19 OFEs for competitive candidates. At most one timing extension to 24 total pairs and one performance refinement. Full detail, stop rules and required delivery are in kickoff. Measurement admission and protocol require two independent reviews before comparison.
 
 Use exact output/control identity except intended lower-level work counts; independent operand/source/units and closure evidence, explicit volatile field allowlist. Rust >=2000 lines requires rationale/split intent; nonexempt >=3000 requires refactor. Security: no secrets, remote actions or weakened source/authority guards. External authority binding edits trigger both anti-evasion commands.
@@ -43,4 +56,3 @@ Use exact output/control identity except intended lower-level work counts; indep
 ## Decisions, discoveries and outcome
 
 Decision 2026-09-06: new identities, no historical-custody recovery. Both mechanism source seams currently absent; accepted historical replay was nonzero. New treatment results are pending, not negative measurements. No larger architecture implementation is authorized here. Required handoff ranks at most three directions with source entry points, authority, invariants, comparator and decisive prototype/kill criterion.
-

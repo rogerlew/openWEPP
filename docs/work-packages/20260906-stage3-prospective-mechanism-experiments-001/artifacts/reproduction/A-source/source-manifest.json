@@ -1,0 +1,16 @@
+{
+  "name": "A",
+  "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "source_identity": "3ef4346e9bb84553acfad4407ea6fd616bedccc570278e8142edacbab5e2bb58",
+  "identity_inputs": "path-content-manifest.json",
+  "patch_sha256": "3618fe2893f91db03c390998e7fcfa4497203e0e1655a6f81235ebc15a9ff47e",
+  "untracked_paths": [],
+  "reproduce": [
+    "checkout exact base detached",
+    "git apply tracked-source.patch",
+    "extract new-source-files.tar.gz at root",
+    "verify every path-content row before building"
+  ],
+  "documentary_output_excluded": true
+}

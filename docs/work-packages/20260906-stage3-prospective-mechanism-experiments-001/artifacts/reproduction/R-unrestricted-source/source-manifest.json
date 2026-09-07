@@ -1,0 +1,21 @@
+{
+  "name": "R-unrestricted-pre-PC1",
+  "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "source_identity": "f532cfcaed3748acddf2e2084b706929387d7141379d1c3529224e2d964dbbe9",
+  "identity_inputs": "path-content-manifest.json",
+  "patch_sha256": "18c7bd6b4db901f3d3464656a05f206a4487a616cdd848d70228112715881c3e",
+  "untracked_paths": [
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_graph.rs",
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_graph_tests.rs",
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_replay.rs",
+    "crates/openwepp-land-surface-energy/src/solver_component_dependency_replay_tests.rs"
+  ],
+  "reproduce": [
+    "checkout exact base detached",
+    "git apply tracked-source.patch",
+    "extract new-source-files.tar.gz at root",
+    "verify every path-content row before building"
+  ],
+  "documentary_output_excluded": true
+}

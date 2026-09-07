@@ -1,0 +1,3 @@
+=== execution_begin ===
+command: nix develop --offline -c cargo nextest run --workspace --profile full
+log_path: /workdir/openWEPP/docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/raw/A-gates-01-workspace-full.log

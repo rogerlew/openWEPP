@@ -1,0 +1,17 @@
+# F contract-derived runtime tests
+
+Static: prospectively recorded before test and F behavior edits; execution NOT RUN.
+
+Owned path: isolated F `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/terminal_feed_forward_tests.rs` only. `tools/agents/find-agents --for` from F returned root AGENTS.md and crates/AGENTS.md. Parent artifact is this file. No builds are delegated to this test author.
+
+Required reading: kickoff, package.md, root/crates/work-package/science-contract guidance; ExecPlan, prompt wording, testing strategy, solver architecture and kernel preparation. These nine governance files total 126438 bytes; core governance output was partly truncated and no full-read claim is made for omitted portions. Focused authority read: SC-SNOWENERGY-001 lines 3400–3545, including INV-088, C-056 and EXP-STAGE3-20260906-F. Source read: support.rs 589–714, evaluation.rs 440–610, reconciliation request/transition definitions, persistent_tests.rs 180–340, reconciliation fixture lines 1–52. Budget is below 400000 bytes, OK; no whole predecessor evidence trees loaded.
+
+Prospective API agreed with implement_f: typed CoveredTerminalFeedForwardRequestV1 excludes hint and coupling iteration; evaluator `evaluate_stage3_terminal_support_with_feed_forward_provider_and_evidence_v1::<M>` retains old evaluator arguments. Expected red is STATIC missing typed request/evaluator/module seam, not an executed failure.
+
+Tests will exercise real persistent evaluator guards using the established reconciliation fixture: independent equal-payload invocations, provider poison with zero selected-trial output, outer support/state errors before provider error, exact/discovery independence, typed structural exhaustive field pattern. Lower helper and complete real-carrier oracle bindings are pending implementation-owner API confirmation. Synthetic provider error tests do not establish complete carrier parity, owner receipt closure, full consumer rollback or stale/foreign/reuse rejection. Those remain mandatory package admission obligations; do not promote this subset into complete coverage.
+
+Concrete prospective source now contains four tests. Lower-helper API is `evaluate_terminal_carrier_invocation::<M>` as agreed with implement_f. Valid boundary fixture comes from existing support.rs batch-prefix tests: one invocation versus the retained feedback path's two invocations for Full/Retry/Half1/Half2/Root; both feedback results compared to the forward transition, all flux and boundary floats compared by bits, terminal transition/ledger parity checked. Feedback requests must carry sequential iteration ordinals and a hint on the second call. This fixture exercises actual Stage-3 boundary/transition math but does not execute the real LSE/vegetation/soil carrier. Additional competing poisons cover support/role/attempt/beginning digest before downstream NaN and exactly one call on refusal. Complete authenticated carrier oracle requested from implement_f; external owner/publication/restart coverage remains parent admission work.
+
+Terminal preview state parity is asserted; direct ledger access is private and is not claimed by this subset. Full ledger parity remains the real-carrier/full-result obligation.
+
+Ran: attempted standalone rustfmt; ambient command unavailable (exit 127). No Rust build or test executed by this author. Parent comparator owns serial compilation/formatting execution. Test source is prospective and may need compiler reconciliation without changing obligations.

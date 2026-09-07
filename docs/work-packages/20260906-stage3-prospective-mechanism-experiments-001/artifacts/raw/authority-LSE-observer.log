@@ -1,0 +1,19 @@
+argv: nix develop --offline -c cargo nextest run -p openwepp-land-surface-energy solver_mechanism_audit
+cwd: /workdir/openWEPP
+start_utc: 2026-09-06T20:35:00-07:00
+git_head: e89befa46
+git_diff_sha256: 95036e8b423d8cf8cf54271af91b8ead3ca1e0b7fad5468beef3b5456fded6c9
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.96s
+────────────
+ Nextest run ID 6bfe756c-4765-4ffc-a244-dec1d6d12896 with nextest profile: default
+    Starting 3 tests across 1 binary (140 tests skipped)
+────────────
+     Summary [   0.005s] 3 tests run: 3 passed, 140 skipped
+exit_code: 0
+duration_ms: 6519815380

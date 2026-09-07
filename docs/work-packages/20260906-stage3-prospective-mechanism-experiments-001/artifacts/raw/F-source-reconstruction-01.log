@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "name": "F",
+  "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "source_identity": "8013488350fa713fb3730f30b3804c2990816a4fef10e7ab21716fbd1b005d2e",
+  "manifest_rows": 10135,
+  "present_rows": 10135,
+  "deleted_rows": 0,
+  "removed_base_paths": [],
+  "new_archive_paths": 4,
+  "scratch_source": "/tmp/openwepp-source-kit-verify-juxgihtu/source",
+  "umask": "0002",
+  "permission_restorations": [],
+  "failures": [],
+  "builds_executed": false,
+  "scope": "all declared executable-input paths; documentary outputs excluded"
+}

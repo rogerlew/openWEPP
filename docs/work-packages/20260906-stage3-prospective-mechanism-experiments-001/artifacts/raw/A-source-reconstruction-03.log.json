@@ -1,0 +1,21 @@
+{
+  "pid": 970490,
+  "command": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/verify_source_kit.py",
+    "--repo",
+    "/workdir/openWEPP",
+    "--kit",
+    "/workdir/openWEPP/docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/A-source-03",
+    "--restore-recorded-permissions"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 10508476613,
+  "log_sha256": "ebac7458b1a7b2931a414093abe86ece353e1542128c5617bf7c2aac4c239bdb",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

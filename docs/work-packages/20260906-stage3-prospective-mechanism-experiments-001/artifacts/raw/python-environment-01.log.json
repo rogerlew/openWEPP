@@ -1,0 +1,20 @@
+{
+  "pid": 1013424,
+  "command": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "-m",
+    "pip",
+    "--disable-pip-version-check",
+    "list",
+    "--format=json"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "checkout": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "exit_code": 0,
+  "duration_ns": 249891983,
+  "log_sha256": "ee19236b437f873a9ad38677263319ca272b126c301c994719c54aac4d1f2e18",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}
