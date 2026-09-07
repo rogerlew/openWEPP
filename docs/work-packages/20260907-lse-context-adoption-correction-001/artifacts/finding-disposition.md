@@ -64,3 +64,21 @@ edge names timing/memory oracle separation and matched posture. All original sou
 clauses survive. Current98Python/strict/unit/A0/53bridge checks PASS; Rust111/18exact
 inherited diagnostics. Fresh01/02/04 and terminal closure remain OPEN. Identity03
 reuse must prove unchanged executable-task duties despite11-byte interface qualifier.
+
+## Iteration5 final first-answer findings / correction continues
+Both independent reviews accept surface01:196206bytes with all six required external
+contracts, including retained provider; reading-iteration-05.json includes its two
+additional source searches. Identity03 remains explicit semantic reuse, not a new run.
+Solver02:211480bytes sizePASS, scienceFAIL. Preserve exact FullSupply/zero-amount
+eligibility, V10 store-cap/rate-tolerance predicate, no-update coordinate/diagnostic
+rules and V2/nonpositive/root authorization boundary; generic summaries did not
+preserve them. Comparison controls omit both timing/memory oracle exclusion and
+matched optional posture; scaling timeout was incorrectly reported1800 instead of600.
+Closure04:196206bytes sizePASS, scienceFAIL. Its answer omits complete-destination
+receipt grouping/order/OFE fold before binary64 tile conversion, explicit ice exclusion
+from liquid-onlyWB14, and mass-only ordinary joins without synthesized energy.
+All three complete first reports and their full actual ledgers remain immutable.
+Natural subsection presentation corrections are prospectively reviewed; no criterion,
+original body, protected disposition or frozen protocol is changed. Fresh02/04 and
+terminal closure remain current-scope requirements. Surface/identity reuse needs exact
+changed-cut semantic proof; no hypothetical revised byte count becomes observation.

@@ -39,8 +39,10 @@ Iteration4's complete fresh science reports remain bound to7627c01e2: surface01
 failed provider reading and size, solver02 failed explicit qualifiers despite size,
 closure04 passed bounded science but failed size. The actual failures are retained.
 Iteration5 foregrounds those existing duties and clarifies application versus audit.
-New fresh01/02/04 and final scientific sufficiency remain NOT RUN. Identity reuse
-now additionally needs semantic dependency proof for the added “executable” interface
+Iteration5 surface01 is independently sufficient at196206bytes. Solver02 and
+closure04 pass size but fail science; reading-iteration-05.json preserves those actual
+first answers. Reviewed correction and fresh02/04 remain required. Identity reuse
+has independent semantic dependency proof for the added “executable” interface
 trigger; original identity observation31428 is unchanged, not23equal final hashes.
 No model-token, runtime-context, quota or
 scientific execution result is inferred from source-byte measurements.

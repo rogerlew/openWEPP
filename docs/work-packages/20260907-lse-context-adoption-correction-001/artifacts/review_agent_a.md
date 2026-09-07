@@ -1825,3 +1825,261 @@ Parent reports98 pytest/unit/A0/53 bridge PASS and111/18 Rust with identical
 18 failures/36 panics. These remain attributed validation results, separate
 from this reviewer's independently executed checks above. No adoption or
 production PASS is granted by this preflight.
+
+
+## Independent fresh closure05 assessment at b3b7b57f4
+
+Static: complete returned scientific answer and mandatory-route scope compared with
+unchanged original task4/rubric and actual primary clauses. Ran: independent
+SHA-256, every requested line-range byte count and unique-union reconstruction
+against `git show b3b7b57f4:<path>`; no production workflow executed.
+Report: `exercise_04_retry_05.md`, SHA-256
+f8e3efa59179ecbfeda9af3160d2e0b5f5c2c65dda7b54f1491203d8e69f770f.
+
+Scientific sufficiency FAIL. Three concrete returned-answer defects remain:
+
+1. Report's phase/ingress discussion does not state the binding liquid-only WB14
+   restriction or explicitly bar litter ice from infiltration/runoff/soil. Saying
+   ice is not soil frozwt and describing liquid ingress does not establish those
+   exclusions. Original retained authority appears in `litter-phase.md:176–183`
+   and canonical INV-145 at415. This is the unchanged frozen requirement, not an
+   added demand discovered after the answer.
+2. Report101 describes the heterogeneous ordinary-row debit but does not preserve
+   its complete mass-custody-only limit. Report119 introduces “any independently
+   required ordinary resource energy operands” into the primary surface closure.
+   C-012's retained source at `litter-phase.md:366–377` forbids this join from
+   supplying a new parcel or second enthalpy/latent/fusion/exact-surface operand,
+   and retains native ice, high mirrors, exact carry/receipts, phase closure and
+   spill unchanged. A ban on duplicate native/spill parcels alone is insufficient
+   to express that operation and the report's added operand category is unsound.
+3. Report117 gives `(m_retained*h_mix)/f_t` before decode but omits the complete
+   destination-surface-key grouping, canonical receipt sorting, finite binary64
+   OFE group fold and named single OFE-to-tile conversion. The exact retained
+   receiver procedure is `surface-custody.md:66–87`, especially81–87. Its later
+   general binary64-before-dyadic statement does not establish this grouping or
+   reduction order; per-parcel conversion cannot substitute for the named group
+   operand. This is a numerical scientific qualifier, not merely a missing ID.
+
+The other frozen closure families are substantially represented: phase-free
+energy and separate liquid/ice vapor, bounded kinetic transfer/end capacity,
+phase-only U-Lf*Wi versus whole-interval balance, complete-child spill chronology,
+zero-mass zero-energy/no-temperature, current ingress versus beginning caps,
+independent surface/soil transfer cancellation, real WB14/consumer primitives,
+high/carry exact accumulation and zero/sign conventions, custody/rollback/reseal
+and pending prefixes, and absence of actual p61 starting operands. No actual run
+or executable qualification is falsely claimed. Full required adjacent physical
+contracts are read. This accepted-authoritative-parcel reconstruction scope does
+not rederive a retained provider rule, so whole SnowFreeze is not required here;
+that exclusion does not transfer to task1's provider-rule review. Applying the
+current owner/closure constraints alone does not require the unrelated actual
+provenance/gap/enforcement or executable-experiment adjudications.
+
+Independent ledger PASS: all32 full-source hashes and all158 requested ranges
+match the frozen cut and stated byte counts, including EOF clipping, searches,
+truncation recovery and repeated ranges. LSE unique196206/exposure275823;
+other unique1488684/exposure1950376; total unique1684890/exposure2226199;
+repeat exposure541309. The sole partial source is the explicitly selected testing
+strategy; all selected physical contracts/chapters are complete. Phases independently
+sum bootstrap95670, expansion1879288, recovery178924, voluntary-repeat70153,
+voluntary-search2164. Numeric LSE reduction25.9217029181% satisfies the threshold,
+but this is not a sufficient-reading PASS because the scientific answer fails.
+No source bytes are subtracted or reclassified. Preserve the first report FAIL;
+a corrected carried-context answer could not repair its fresh-attempt status.
+
+## Prospective closure subsection presentation, before implementation
+
+Static: inspected exact proposed insertion points and existing heading hierarchy.
+APPROVE only the proposed additive headings: H4 “Liquid-only WB14 availability”
+before `Only after the vapor and phase candidates pass`; H4 “Identity, restart
+and receipts” before `The immutable model tag`; H3 “Mass custody without
+additional energy” before `This is a mass-custody join, not a second LSE energy
+operation.` in litter-phase; and H3 “Accepted operand reconstruction and
+destination-group conversion” before `For each immutable candidate and each
+surface key, the receiver executes:` in surface-custody. These describe existing
+natural scientific boundaries. Preserve original parent headings/anchors, all
+original paragraphs and the complete contiguous numbered receiver procedure.
+No rule, equation, reduction order, parent extent or rubric is altered. This is
+prospective presentation approval only; wait until active readers finish, then
+check actual diff, byte forecasts and affected evidence reuse before another
+fresh affected attempt. No present failed answer is repaired by these headings.
+
+
+## Independent fresh solver05 assessment at b3b7b57f4
+
+Static: complete returned answer compared with unchanged original task2/rubric,
+selected primary nonlinear/qualification rules and frozen protocol. Ran:
+independent frozen-source hashes, all113 JSONL request ranges, per-request newly
+unique/repeated bytes and complete source-union reconstruction; no solver,
+benchmark or production workflow executed.
+Report `exercise_02_retry_05.md`, SHA-256
+c2f07b9a121875a321a5ae1c8fc383d922161b67b6a672c381bc27f7509da16f.
+
+Scientific sufficiency FAIL. Actual blockers, including qualifiers, are:
+
+- INV-139 paragraph at report60 omits the derived ci norm's diagnostic-only role
+  and the explicit requirement to add the examined exponent to the EXISTING
+  cumulative backtracking diagnostic without a separate public or persisted
+  field. “Exact diagnostic backtrack count” is not the complete retained rule.
+  Source: `nonlinear-solve.md:118–133`; frozen rubric1 explicitly includes both.
+- INV-110 paragraph at report59 preserves final reevaluation and iteration-zero
+  zero steps/backtracking/no Jacobian, but “positive and zero D/A identity” plus
+  F<=A<=D does not state that every positive A is amount-equal to D with
+  FullSupply and every canonical zero keeps exact identity AND zero amount.
+  Those are the coordinate-seed preconditions, source nonlinear172–185 and
+  solve-boundary canonical110. FullSupply amount equality is stronger than
+  final-use inequalities and cannot be inferred from them.
+- INV-113 paragraph at report58 includes both water and physical-energy checks,
+  but omits that the canopy-liquid store-cap branch must be active. It instead
+  says “nonpositive preliminary wet rate within water tolerance,” which narrows
+  the actual rate<=canonical water-residual-tolerance predicate and leaves the
+  branch selection unstated. Source nonlinear211–221 and canonical113 at246.
+- Report163 does mention generic typed unsupported partial-positive allocation
+  with vegetation; this is not a blanket missing-typed-error finding. It does
+  not concretely identify V2 nonpositive-assimilation partial positive ROOT
+  authorization as the excluded regime, source nonlinear191–194, rubric2.
+- The experiment summary omits detailed oracle/audit work being outside BOTH
+  performance and memory intervals and matched optional audit posture for A/R.
+  Independent stencil oracle, smaps outside timing, and general output parity
+  are not those controls. Source qualification114–116 and protocol60–61.
+- Report131 incorrectly gives1800s to10/19-OFE cases. The complete frozen
+  experiment protocol67–68 says600s for one/10/19 OFEs and1800s for the ten
+  teardown iterations. This is an actual contrary numerical requirement,
+  not a missing citation or unsupported runtime claim.
+
+Other core requirements are substantially covered: complete affected evaluator
+and direct-edge graph, canonical source-ordered two routing passes, exact
+stencils/LU/thresholds, unchanged-current first-valid witness chronology,
+identity-column versus same-call leaf versus component replay eligibility,
+immutable single-use capabilities, complete pre-issuance ineligibility versus
+post-start integrity/physical first errors, fallibility proofs plus authentic
+witness requirements, PC1/SG1 precise experimental scope, V30 ingress/poison
+positions, actual work accounting and independent real consumers. No actual
+execution or supplied proof operands are invented. Complete required external
+contracts and four protocol/input/kickoff/handoff documents are read; unrelated
+active-litter/exact-storage/provider-law implementation and actual model-gap/
+source/enforcement adjudication are not silently claimed. These valid exclusions
+do not excuse the missing qualifiers in the chosen nonlinear/qualification
+scope. Reading a complete chapter is not evidence that its answer is adequate.
+
+Independent ledger PASS:36 complete source hashes equal frozen b3b7b57f4; all113
+ranges, literal EOF handling, requested counts and incremental new/repeat values
+agree. Every catalog source has complete unique line coverage. LSE211480 unique,
+270691 exposure; other1551226 unique,1734567 exposure; all1762706 unique,
+2005258 exposure; repeats242552. Numeric reduction20.1549480297% and12117-byte
+entry/interface meet their limits. Keep this numeric result separately from
+scientific FAIL; the410-byte remaining budget is not permission to omit required
+scope. Earlier failures and this first returned answer remain immutable.
+
+
+## Independent fresh surface05 assessment at b3b7b57f4
+
+Static: complete returned answer independently compared with unchanged original
+task1/rubric and selected primary scope. Ran: independent complete source hashes,
+all150 content request ranges/incremental overlaps and both additional search
+ranges against frozen b3b7b57f4; no science workflow executed.
+Report `exercise_01_retry_05.md`, SHA-256
+078607c759c99c6cac207c84d27348f2ce40ffb6568e39c4d770e474fccafd83.
+
+Scientific sufficiency PASS for this bounded physical-rule task. The answer
+concretely supplies all eight frozen families: immutable V1/V2/V3 versus native
+snow regime/owner distinction; finite-capacity versus exact equilibrium-zero
+and distinct beginning CN operands; harmonic first-node transfer and ordered
+N>=1 zero-bottom soil; current component reciprocal radiation and exactly-once
+shared-air ground exchange; beginning demands, one authorization, complete
+fixed-cap reconstruction then actual use/condensation/ingress; direct OFE
+snow-bottom/first-soil CN inside the coupled fixed point with unchanged applied
+heat and distinct TOL-005 versus physical closure; actual terminal receiver,
+its default-off historical scope and current external successor mechanics,
+zero/no-physics versus exact60s pre-Newton admission; and concrete tests/inputs,
+independent real-consumer evidence and full rollback. The equilibrium warm-start
+ambiguity and retained rain provider are now explicitly resolved in the answer.
+
+Full six external science contracts, including SnowFreeze's retained-provider
+rule, are actually selected and read. Unspecified forest-litter phase expands
+to V3; its separate vapor pools, bounded kinetic phase, liquid-only WB14 and ice
+exclusions, full-child spill, mass-only ordinary-resource join, exact high/carry,
+accepted-map/parent/restart receipt duties are concretely retained. This bounded
+surface-rule selection does not claim full V10/V11–13/replay implementation or
+executable/protocol/enforcement/gap adjudication, so their conditional exclusion
+is legitimate. The answer names missing real inputs and execution evidence
+without treating absence as an authority waiver. It claims no implementation,
+production qualification or adoption PASS. Task1 remains distinct from task4's
+full independent operand-reconstruction question; its authority does not change
+the failed task4 arithmetic assessment above.
+
+Ledger PASS:32 complete source hashes equal the frozen cut; all150 content
+ranges and incremental new/repeat values independently agree. All selected
+LSE and six external science files have complete unique line coverage. The two
+partial governance sources have their selected source ranges explicitly recorded.
+Content counts: LSE196206 unique/381672 exposure; external2035441/2341522;
+governance-tool74148/95612; all2305795/2818806, repeated513011.
+Additionally Q1 and Q2 are real source search requests, not free metadata:
+Q1 adds60 unique/84 exposure and Q2 adds370 unique/553 exposure. Thus final
+content-plus-search totals are2306225 unique/2819443 exposure/repeats513218;
+final governance-tool74578 unique/96249 exposure. There are150 content requests
+PLUS2 searches. Automatic supplied root context is separately disclosed, with
+surrounding delivered-token/workflow telemetry unobserved. No internal hashing
+I/O is substituted for semantic reading.
+
+Observed LSE196206 gives25.9217029181% reduction and entry/interface12117 meet
+the hard bounds. This is a sufficient fresh task1 reading PASS at b3b7b57f4,
+not a hypothetical minimal route or a workflow/token-efficiency claim. Preserve
+all prior task1 failures. Final adoption still requires remaining fresh tasks,
+stable independent reviews, required direct gates and dual new terminal checks.
+
+
+## Prospective iteration6 solver presentation and evidence reuse
+
+Static: exact proposed wording and insertion points compared with current
+nonlinear and qualification bodies; no candidate edits performed by Reviewer A.
+APPROVE the supplied nonlinear intro replacement: “Represented-snow reuse
+review covers potential and fixed-final solves, every applicable V10/V11–13
+branch below, and complete solve-boundary error/acceptance rules, including
+initialization and diagnostics.” It retains the complete current applicability.
+
+APPROVE H3 “Witness coordinates and diagnostics” immediately before `For both
+owner-uncapped potential and fixed-authorization final solves`; H4 “Full-supply
+initialization” before `When every positive final water authorization`; H4
+“Iteration-zero acceptance” before `If that initial evaluation satisfies every
+residual tolerance`; and the H4s “Authorization exclusions”, “Derivative scope”,
+“V10 unit scaling”, “Potential wet-store eligibility”, “Identity migration”
+immediately before their specified existing original paragraphs. Preserve every
+original paragraph, equation, table, heading and anchor, and complete original
+parent extents. These make existing preconditions/acceptance/domain/diagnostic
+boundaries visible without creating an alternative solver or simplified rule.
+
+APPROVE qualification H3 “Comparison controls” before `Require nonzero
+completed component replay on the real primary workload`; retain that whole
+paragraph through textual-authority-tests/no-execution. APPROVE intro addition
+“Apply each protocol limit to its named performance, memory, scaling or teardown
+series.” and protocol/input dependency reason replacement by “per-series
+capture, timeout, validity and decision rules” with exact source composition
+and full reviewed-document extent unchanged. The complete frozen protocol and
+all its numbers remain untouched. These are discovery aids, not a new capture
+protocol or a changed acceptance gate. The closure headings above remain the
+separate already-approved presentation change.
+
+The proposed neutral procedural requirement allowing private notes and requiring
+a source check of every claimed numeric/branch/protocol condition before READY
+is legitimate for new independent readers. It must apply generally, expose no
+specific missed clauses/rubric/other answers, retain all repeat/search exposure,
+and preserve first-completed-report status. No procedural instruction or heading
+is presumed to cure the failed scientific answers; new task2/task4 fresh
+assessments must establish that from their actual outputs.
+
+Conditional bounded evidence reuse is legitimate for surface05 and identity03,
+subject to independent actual-diff and selected-requirement verification after
+implementation. Surface05 reads litter-phase/surface-custody, whose proposed
+changes are additive headings only; its task1 rules, original bodies and
+recursive extents are unchanged. Nonlinear/qualification are outside that
+answer's selected scope. Identity03 reads qualification: the new comparison
+heading and per-series reminder point to the same complete already-selected
+protocol, with exactly the same executable identity/capture requirements and
+numbers. They do not require a newly omitted source. Neither is an all-source-
+hashes-unchanged claim. Retain original observed196206 at b3b7b57f4 for surface05
+and31428 at6938ca97d for identity03, with explicit source-by-source semantic
+reuse rather than updated hypothetical counts. New task2/task4 reads bind the
+new cut. Any actual body, target, extent, scope or requirement change beyond
+this precise proposal reopens that reuse assessment. Hard byte/science gates,
+source preservation, final stable reviews and dual new terminal verification
+remain required; this grants no adoption PASS.

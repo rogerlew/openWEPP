@@ -55,3 +55,11 @@ Identity03 remains observed6938 firstPASS31428. Interface now adds “executable
 identity-capture trigger; final reuse requires independent semantic dependency proof,
 not a false assertion all23 original source hashes still match. Other selected identity
 source/protocol bytes remain unchanged; original observed counts never rewritten.
+
+Iteration5 fresh results, independently assessed A/B: surface01 scientific/reading/size
+PASS196206 (25.921703% reduction), solver02 sizePASS211480 but scientificFAIL,
+closure04 sizePASS196206 but scientificFAIL. reading-iteration-05.json binds exact
+reports and all actual source/search exposure; no token or numerical-run claim.
+Identity03 explicit semantic reuse is independently accepted at b3; its observed31428
+remains tied to6938. Execution continues with prospectively reviewed source presentation
+correction and new fresh02/04; general selective reading remains candidate-only.
