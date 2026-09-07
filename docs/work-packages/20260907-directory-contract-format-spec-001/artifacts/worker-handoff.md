@@ -4,11 +4,10 @@ Authorization: specification first, package-end-to-end.
 Base: d8249849d6e015070818be7caf6f8caa75485098.
 Contract/scope: ../package.md; executor updates this view before delegation.
 Implemented: format specification and six schema/guide/template integration surfaces.
-Next: focused independent re-review of B-01/B-02 corrections, then corrected freeze
-and dual verification.
+Next: dual independent verification of the frozen corrected cut.
 Retained: full single-file authority/reading obligations and all historical bytes.
 Rejected: premature adoption, semantic dependency engine, scientific amendments.
-Unresolved: accepted B-01/B-02 fixes await focused re-review; dual verification pending.
+Unresolved: dual independent verification pending; both accepted findings closed.
 Settled: SC-*.md entry paths remain; no branch changes or push.
 Reopen on accepted specification findings or conflicting requirements.
 Actual LSE migration/checker implementation needs separate authorization.
@@ -28,3 +27,5 @@ Focused Rust procedure-consumer check PASS, 1 test (3 filtered), exit 0.
 Initial review cut: 6419ce26b. A GO/no findings; B GO-WITH-AMENDMENTS.
 Corrections specify exact Markdown definition grammar and 32 coverage keys;
 no scientific or production bytes changed.
+Focused re-reviews at e5971d16d: both GO; B-01/B-02 closed, no new findings.
+The subsequent freeze commit changes only package assurance records.

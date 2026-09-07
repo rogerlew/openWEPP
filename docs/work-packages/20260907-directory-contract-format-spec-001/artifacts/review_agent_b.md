@@ -111,3 +111,35 @@ Runtime effort and actual reading exposure telemetry remain UNOBSERVED.
 
 Verdict: GO-WITH-AMENDMENTS for this specification-only package, conditional on
 explicit disposition of B-01/B-02 and focused review of accepted corrections.
+
+## Focused correction re-review
+
+Static: inspected actual `6419ce26b..e5971d16d` format diff and finding-disposition;
+original independent findings above remain historical first-review evidence.
+Ran: `git diff --check 6419ce26b e5971d16d` in `/workdir/openWEPP`, exit 0;
+`git diff --name-only 6419ce26b e5971d16d` confirms bounded specification/package
+corrections. Effective runtime effort remains UNOBSERVED.
+
+B-01 CLOSED: the specification now selects one table-row encoding, gives exact
+anchor syntax and whitespace, requires same-ID matching and nonempty required
+columns, excludes CommonMark fenced examples, rejects heading/standalone forms,
+and includes a valid illustrative table plus rejected forms. This resolves the
+row-versus-heading ambiguity without a checker implementation or migration.
+
+B-02 CLOSED: exactly 32 source-qualified coverage keys bind the two explicitly
+named required-section lists. Unknown and duplicate keys fail; upstream list
+changes require reconciliation. Subordinate schema duties and separate metadata
+checks remain binding, and non-kernel rows require an applicability rationale.
+This supplies a determinate structural universe without reducing semantic review
+to heading presence or introducing a new authority engine.
+
+Finding-disposition accurately describes both accepted fixes. No regression found
+in path safety, definition uniqueness, inherited schema content, selective-reading
+adoption conditions or current acceptance. The changes affect no executable or
+fixture input, so unchanged legacy test evidence is retained; it remains legacy
+evidence only. No new directory conformance execution or savings is claimed.
+Dual independent verification and terminal reconciliation remain required before
+closure; neither is waived by this focused review.
+
+Verdict: GO for corrected substantive cut `e5971d16d`, specification-only scope.
+Both B findings are closed; no new findings.

@@ -36,6 +36,12 @@ print('3 existing test functions executed; pytest runner unavailable')
 PY
 ```
 
+Correction-cut repeat at e5971d16d: ran both shell blocks in this file with
+`.venv/bin/python` reading the fenced command strings and
+`subprocess.run(['bash', '-c', command])`; exit 0. Same three Python tests pass;
+whole-cut check now covers 20 owned paths and 33 local links/anchors. Source
+correction changed only the specification and package assurance artifacts.
+
 ## Newly discovered applicable check
 Authoring procedure is read by one focused Rust governance assertion.
 Selected before execution:

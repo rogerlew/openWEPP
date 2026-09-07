@@ -87,3 +87,43 @@ substantive amendments require impact assessment and affected focused re-review.
 Verdict: GO for the specification design in the assigned scope. This is not
 package closure or authorization to adopt directory-v1; remaining package review
 and independent verification obligations must still complete.
+
+## Focused corrected-cut re-review
+
+Static: independently inspected the actual correction diff and finding
+disposition, then compared both coverage-key ranges with their primary schema
+and profile lists. This append preserves the original first review above.
+Ran: own corrected-cut identity/diff checks below.
+Reviewed identity: `e5971d16da993b8e11a7b3b53d28e8e99a415cac` against
+`6419ce26b9b97be1a8131e27623d8b66477ffd2a`.
+Role/requested effort unchanged; effective runtime settings UNOBSERVED.
+
+- B-01 correction: the single anchor-in-first-cell encoding now provides a
+  concrete Markdown-safe declaration boundary with explicit required fields,
+  nonempty cells and rejected alternatives. Examples cannot become definitions,
+  and entry compatibility aliases retain their explicit exception. This narrows
+  syntax without changing scientific statement, guard, failure or test duties.
+- B-02 correction: the 18 artifact keys and 14 profile keys match the two named
+  source lists. The text expressly retains subordinate algorithm, calibration,
+  typed-failure, compliance and metadata duties. Non-kernel applicability follows
+  the profile's existing scope; it does not authorize kernel packages to mark
+  applicable obligations absent. Upstream list changes require reconciliation,
+  preventing positional keys from silently changing meaning.
+- Invalidation/no-waiver: these are substantive specification fixes, and this
+  focused inspection supplies affected assurance rather than treating their
+  hashes as proof. Frozen package acceptance and protected source/checker/test/SC
+  paths are unchanged. The new exact syntax remains prospective under the
+  existing adoption gates; no legacy contract becomes newly nonconformant.
+  Unchanged legacy executable evidence can be retained for its bounded claim.
+
+Own commands, all from `/workdir/openWEPP`: `git rev-parse HEAD` confirmed the
+corrected identity; `git diff --check 6419ce26b e5971d16d` passed;
+`git diff --exit-code e5971d16d -- docs/specifications/science-contract-directory-format.md`
+passed; `git diff --name-only 6419ce26b e5971d16d -- crates tests tools docs/specifications/science-contracts/contracts docs/work-packages/20260907-directory-contract-format-spec-001/package.md`
+returned no paths. All exited 0. No implementation tests rerun by this reviewer;
+the correction changes only the specified future format behavior.
+
+Disposition: no new authority/correctness finding. The actual B-01/B-02 fixes
+preserve the obligations inspected by reviewer A. B's focused finding-closure
+review and subsequent dual independent verification remain separate requirements.
+Verdict: GO for the corrected specification in the assigned correctness scope.
