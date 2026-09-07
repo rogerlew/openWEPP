@@ -55,3 +55,42 @@ Source identities: artifacts/source-manifest.json; reading map records expansion
 Progress, discoveries, decisions, outcomes: artifacts/worker-handoff.md.
 Recovery: preserve/reinstate baseline canonical LSE and whole-contract routing if
 an in-envelope resolution cannot satisfy adoption; report exact unmet gates.
+
+## Frozen chapter and consumer write set (before relocation)
+Canonical chapter directory: docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/.
+Exact chapters: interface.md, surface-energy.md, soil-coupling.md, water-vapor.md,
+nonlinear-solve.md, terminal-support.md, litter-phase.md, soil-custody.md,
+surface-custody.md, map-custody.md, dependency-replay.md, qualification.md,
+binding-index.md, history.md.
+Additional exact consumer files under tests/integration/:
+land_surface_energy_balance_authority_contract.rs,
+solver_architecture_authority_contract.rs,
+surface_liquid_hydrology_custody_authority_contract.rs,
+snow_stage3_terminal_receiver_authority_contract.rs,
+snow_stage3_shared_carrier_authority_contract.rs,
+snow_stage3_terminal_chronology_v19_contract.rs,
+snow_stage3_terminal_batch_temporal_v20_contract.rs,
+snow_stage3_terminal_batch_temporal_v21_contract.rs,
+vegetation_boundary_authority_contract.rs,
+stage3_native_vegetation_laned_throughput_recovery.rs.
+Shared test-only bridge: tests/integration/support/sc_contract_text.rs.
+Package evidence additions: artifacts/build_candidate.py, clause-map.json,
+candidate-manifest.json, source-reading-ranges.json and exercise_01.md through exercise_04.md.
+Minimal adoption-status text: docs/specifications/science-contract-directory-format.md;
+registry routing: docs/specifications/science-contracts/index.md. Existing guides
+already condition selective reading on adoption and require no rule weakening.
+No neighboring contract edits planned; existing section fragments resolve by the
+reviewed bounded compatibility interpretation. Frozen JSON/model versions untouched.
+
+Boundary assignment: interface retains scope/signs/units/status and baseline
+conservation requirements; current constitutive sections divide into radiation/
+turbulence, soil transfer and humidity/thermal state, water/vapor chronology,
+and complete numerical solve. Terminal support includes represented-snow receiver
+boundary; litter phase owns spill and mixed-resource joins. Soil and surface
+exact custody retain their own arithmetic, receipts and chronology. Map custody
+owns private validation/finalization; dependency replay owns evaluator graph and
+error proof; qualification retains every historical/prospective acceptance limit.
+History contains only original Change Log; no binding rule is made historical.
+All original clause spans remain normative unless explicitly mapped to that log.
+Repeated ID rows become nondefining references; one complete marked definition per
+ID is placed in its owning chapter. Original detailed requirements remain binding.
