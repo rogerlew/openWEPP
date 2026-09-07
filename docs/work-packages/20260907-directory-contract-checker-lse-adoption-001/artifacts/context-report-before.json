@@ -1,0 +1,350 @@
+{
+  "measurement": "structural declared file/range bytes, not session telemetry",
+  "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58",
+  "roles": {
+    "exercise02": {
+      "bootstrap": {
+        "unique_bytes": 280903,
+        "exposure_bytes": 280903,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/AGENTS.md",
+            "lines": [
+              1,
+              84
+            ],
+            "bytes": 6532,
+            "exposures": 1,
+            "sha256": "bace4ab3e33119e0239f700f92c53707d884f297e92d2454a86c477758c930c7",
+            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "lines": [
+              1,
+              3346
+            ],
+            "bytes": 264863,
+            "exposures": 1,
+            "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 889687,
+        "exposure_bytes": 889687,
+        "reads": [
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+            "lines": [
+              1,
+              263
+            ],
+            "bytes": 25550,
+            "exposures": 1,
+            "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+            "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+            "lines": [
+              1,
+              59
+            ],
+            "bytes": 3718,
+            "exposures": 1,
+            "sha256": "b3ca642a6b4fd94f6e1459f07058cd9fc18fab747368421fc0dc6e591d143183",
+            "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+            "lines": [
+              1,
+              3080
+            ],
+            "bytes": 248829,
+            "exposures": 1,
+            "sha256": "3b1c8525e6d09d7afae6e27d5fa59f90347d55d8bf34bc6292d0d767d3bfc5fa",
+            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+            "lines": [
+              1,
+              3559
+            ],
+            "bytes": 497785,
+            "exposures": 1,
+            "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d",
+            "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+            "lines": [
+              1,
+              1108
+            ],
+            "bytes": 92552,
+            "exposures": 1,
+            "sha256": "1d10611b5143be201381f283ec5594d9f65c99f8252e944dfae57076a8a699f7",
+            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/standards/AGENTS.md",
+            "lines": [
+              1,
+              58
+            ],
+            "bytes": 4052,
+            "exposures": 1,
+            "sha256": "b62a33d9a70a3d3f45e7eccdcf05ca3a194486fcdbfc7bd439371cf8f0ae3015",
+            "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/standards/numerical-solver-architecture.md",
+            "lines": [
+              1,
+              152
+            ],
+            "bytes": 6742,
+            "exposures": 1,
+            "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
+            "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md",
+            "lines": [
+              1,
+              79
+            ],
+            "bytes": 3817,
+            "exposures": 1,
+            "sha256": "a597aaf802917e1ed9c21db1f4453c571dde09ad48684c0f7d0ff9062b6645e6",
+            "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+          }
+        ]
+      },
+      "combined_unique_bytes": 1170590
+    },
+    "exercise03": {
+      "bootstrap": {
+        "unique_bytes": 280903,
+        "exposure_bytes": 280903,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/AGENTS.md",
+            "lines": [
+              1,
+              84
+            ],
+            "bytes": 6532,
+            "exposures": 1,
+            "sha256": "bace4ab3e33119e0239f700f92c53707d884f297e92d2454a86c477758c930c7",
+            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "lines": [
+              1,
+              3346
+            ],
+            "bytes": 264863,
+            "exposures": 1,
+            "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 52579,
+        "exposure_bytes": 52579,
+        "reads": [
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+            "lines": [
+              1,
+              263
+            ],
+            "bytes": 25550,
+            "exposures": 1,
+            "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+            "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+            "lines": [
+              1,
+              59
+            ],
+            "bytes": 3718,
+            "exposures": 1,
+            "sha256": "b3ca642a6b4fd94f6e1459f07058cd9fc18fab747368421fc0dc6e591d143183",
+            "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md",
+            "lines": [
+              1,
+              180
+            ],
+            "bytes": 11541,
+            "exposures": 1,
+            "sha256": "40033ea2e536984ae5a7455e99509e7e760624b78cdb08ee347597fe2f5f115f",
+            "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md",
+            "lines": [
+              1,
+              84
+            ],
+            "bytes": 5128,
+            "exposures": 1,
+            "sha256": "1c813fd08e34763808d3ac8a033d18d8c5176857aff76378aa126762166c8883",
+            "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+          }
+        ]
+      },
+      "combined_unique_bytes": 333482
+    },
+    "exercise04": {
+      "bootstrap": {
+        "unique_bytes": 280903,
+        "exposure_bytes": 280903,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/AGENTS.md",
+            "lines": [
+              1,
+              84
+            ],
+            "bytes": 6532,
+            "exposures": 1,
+            "sha256": "bace4ab3e33119e0239f700f92c53707d884f297e92d2454a86c477758c930c7",
+            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "lines": [
+              1,
+              3346
+            ],
+            "bytes": 264863,
+            "exposures": 1,
+            "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 903134,
+        "exposure_bytes": 903134,
+        "reads": [
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+            "lines": [
+              1,
+              2205
+            ],
+            "bytes": 184116,
+            "exposures": 1,
+            "sha256": "fbb27d07e4459dabd37330d3292564ccb94789fdc0530fcde07262c00adfcbd4",
+            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+            "lines": [
+              1,
+              2648
+            ],
+            "bytes": 377637,
+            "exposures": 1,
+            "sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c",
+            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+            "lines": [
+              1,
+              3080
+            ],
+            "bytes": 248829,
+            "exposures": 1,
+            "sha256": "3b1c8525e6d09d7afae6e27d5fa59f90347d55d8bf34bc6292d0d767d3bfc5fa",
+            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+            "lines": [
+              1,
+              1108
+            ],
+            "bytes": 92552,
+            "exposures": 1,
+            "sha256": "1d10611b5143be201381f283ec5594d9f65c99f8252e944dfae57076a8a699f7",
+            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+          }
+        ]
+      },
+      "combined_unique_bytes": 1184037
+    }
+  },
+  "workflow_total": "UNOBSERVED",
+  "runtime_automatic_context": "UNOBSERVED beyond declared repository/role instructions"
+}

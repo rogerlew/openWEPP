@@ -1,0 +1,752 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+   Compiling openwepp v0.1.0 (/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.77s
+────────────
+ Nextest run ID ee002c71-8eb6-41ab-bf9c-cd58c9e1471e with nextest profile: default
+    Starting 129 tests across 8 binaries
+        FAIL [   0.024s] (  3/129) openwepp::land_surface_energy_balance_authority_contract revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+  stdout ───
+
+    running 1 test
+    test revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red ... FAILED
+
+    failures:
+
+    failures:
+        revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red' (1776667) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:939:5:
+    revision 31 expected-red: production dependency-replay seam is absent: ["struct CoveredComponentTemperatureDependencyGraph", "struct ValidatedCoveredComponentReplaySweepBase", "struct ValidatedCoveredComponentProbeReplay", "struct CoveredComponentDependencyReplayAudit", "fn covered_component_temperature_probe_residuals", "fn begin_covered_component_dependency_replay_audit", "fn take_covered_component_dependency_replay_audit"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.094s] ( 25/129) openwepp::snow_stage3_shared_carrier_authority_contract current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation
+  stdout ───
+
+    running 1 test
+    test current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation ... FAILED
+
+    failures:
+
+    failures:
+        current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation' (1776764) panicked at tests/integration/snow_stage3_shared_carrier_authority_contract.rs:203:9:
+    missing in-review v17 precipitation authority: contract_version: 58
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.107s] ( 33/129) openwepp::snow_stage3_terminal_receiver_authority_contract all_owner_failure_rolls_back_and_index_records_lifecycle
+  stdout ───
+
+    running 1 test
+    test all_owner_failure_rolls_back_and_index_records_lifecycle ... FAILED
+
+    failures:
+
+    failures:
+        all_owner_failure_rolls_back_and_index_records_lifecycle
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.10s
+
+  stderr ───
+
+    thread 'all_owner_failure_rolls_back_and_index_records_lifecycle' (1776777) panicked at tests/integration/snow_stage3_terminal_receiver_authority_contract.rs:155:9:
+    docs/specifications/science-contracts/index.md missing non-versioned ADR-0044 amendments bind one canonical covered solver
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] ( 38/129) openwepp::solver_architecture_authority_contract repository_authoring_instructions_bind_solver_changes_to_the_standard
+  stdout ───
+
+    running 1 test
+    test repository_authoring_instructions_bind_solver_changes_to_the_standard ... FAILED
+
+    failures:
+
+    failures:
+        repository_authoring_instructions_bind_solver_changes_to_the_standard
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'repository_authoring_instructions_bind_solver_changes_to_the_standard' (1776807) panicked at tests/integration/solver_architecture_authority_contract.rs:87:9:
+    AGENTS.md missing: Production numerical solvers must not accrete
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.014s] ( 40/129) openwepp::solver_architecture_authority_contract stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture
+  stdout ───
+
+    running 1 test
+    test stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture ... FAILED
+
+    failures:
+
+    failures:
+        stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture' (1776815) panicked at tests/integration/solver_architecture_authority_contract.rs:111:5:
+    assertion failed: roadmap.contains("0044-prohibit-accretive-production-solver-dispatch.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 44/129) openwepp::stage3_native_vegetation_laned_throughput_recovery coupled_slab_acceptance_consumes_one_private_revision_proof
+  stdout ───
+
+    running 1 test
+    test coupled_slab_acceptance_consumes_one_private_revision_proof ... FAILED
+
+    failures:
+
+    failures:
+        coupled_slab_acceptance_consumes_one_private_revision_proof
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'coupled_slab_acceptance_consumes_one_private_revision_proof' (1776826) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:192:5:
+    assertion failed: contract.contains("contract_version: 16")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.097s] ( 52/129) openwepp::stage3_native_vegetation_laned_throughput_recovery canonical_covered_pending_adjudication_is_contract_bound
+  stdout ───
+
+    running 1 test
+    test canonical_covered_pending_adjudication_is_contract_bound ... FAILED
+
+    failures:
+
+    failures:
+        canonical_covered_pending_adjudication_is_contract_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'canonical_covered_pending_adjudication_is_contract_bound' (1776820) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1383:13:
+    docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md missing contract_version: 60
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.093s] ( 69/129) openwepp::stage3_native_vegetation_laned_throughput_recovery snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable
+  stdout ───
+
+    running 1 test
+    test snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable ... FAILED
+
+    failures:
+
+    failures:
+        snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable' (1776847) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1271:9:
+    docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md missing contract_version: 16
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.159s] ( 70/129) openwepp::stage3_native_vegetation_laned_throughput_recovery native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable
+  stdout ───
+
+    running 1 test
+    test native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable ... FAILED
+
+    failures:
+
+    failures:
+        native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.15s
+
+  stderr ───
+
+    thread 'native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable' (1776837) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1314:13:
+    docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md missing contract_version: 16
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.090s] ( 74/129) openwepp::surface_liquid_hydrology_custody_authority_contract contract_binds_existing_lse_identity_and_restart_bytes
+  stdout ───
+
+    running 1 test
+    test contract_binds_existing_lse_identity_and_restart_bytes ... FAILED
+
+    failures:
+
+    failures:
+        contract_binds_existing_lse_identity_and_restart_bytes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'contract_binds_existing_lse_identity_and_restart_bytes' (1776896) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:194:9:
+    docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md missing contract_version: 25
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.085s] ( 85/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_9_binds_multi_lane_stage3_parent_release
+  stdout ───
+
+    running 1 test
+    test version_9_binds_multi_lane_stage3_parent_release ... FAILED
+
+    failures:
+
+    failures:
+        version_9_binds_multi_lane_stage3_parent_release
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.08s
+
+  stderr ───
+
+    thread 'version_9_binds_multi_lane_stage3_parent_release' (1776934) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:589:5:
+    assertion failed: registry_row.contains("v25 admits the complete all-local SurfaceLiquid routing posture")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.103s] ( 89/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_five_binds_laned_active_local_surface_routing
+  stdout ───
+
+    running 1 test
+    test version_twenty_five_binds_laned_active_local_surface_routing ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_five_binds_laned_active_local_surface_routing
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.10s
+
+  stderr ───
+
+    thread 'version_twenty_five_binds_laned_active_local_surface_routing' (1776937) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:254:5:
+    assertion failed: read("docs/specifications/science-contracts/index.md").contains("v25 admits the complete all-local SurfaceLiquid routing posture")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.095s] ( 90/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
+  stdout ───
+
+    running 1 test
+    test version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries' (1776940) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:233:5:
+    assertion failed: index.contains("v24 admits private immutable revision-bound surface-resource validation handoffs")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.606s] (113/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_16_binds_exact_surface_enthalpy_custody_before_production
+  stdout ───
+
+    running 1 test
+    test version_16_binds_exact_surface_enthalpy_custody_before_production ... FAILED
+
+    failures:
+
+    failures:
+        version_16_binds_exact_surface_enthalpy_custody_before_production
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.59s
+
+  stderr ───
+
+    thread 'version_16_binds_exact_surface_enthalpy_custody_before_production' (1776926) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:512:5:
+    assertion failed: registry.contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.064s] (114/129) openwepp::vegetation_boundary_authority_contract v9_runtime_equivalence_verifier_rejects_every_required_poison
+  stdout ───
+
+    running 1 test
+    test v9_runtime_equivalence_verifier_rejects_every_required_poison ... FAILED
+
+    failures:
+
+    failures:
+        v9_runtime_equivalence_verifier_rejects_every_required_poison
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'v9_runtime_equivalence_verifier_rejects_every_required_poison' (1777086) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2800:5:
+    V9 equivalence poisons failed: VEG-E-133: runtime mismatch is not libcrypto-only: libcrypto.so.3,libz.so.1
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.565s] (116/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_three_binds_exact_owner_order_to_surface_topology
+  stdout ───
+
+    running 1 test
+    test version_twenty_three_binds_exact_owner_order_to_surface_topology ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_three_binds_exact_owner_order_to_surface_topology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.56s
+
+  stderr ───
+
+    thread 'version_twenty_three_binds_exact_owner_order_to_surface_topology' (1776947) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:278:5:
+    assertion failed: read("docs/specifications/science-contracts/index.md").contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.685s] (118/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_15_binds_exact_soil_energy_credit_custody_before_production
+  stdout ───
+
+    running 1 test
+    test version_15_binds_exact_soil_energy_credit_custody_before_production ... FAILED
+
+    failures:
+
+    failures:
+        version_15_binds_exact_soil_energy_credit_custody_before_production
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.68s
+
+  stderr ───
+
+    thread 'version_15_binds_exact_soil_energy_credit_custody_before_production' (1776921) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:458:5:
+    assertion failed: registry.contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.195s] (122/129) openwepp::vegetation_boundary_authority_contract v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
+  stdout ───
+
+    running 1 test
+    test v9_oracle_successor_is_exactly_bound_and_v8_is_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.19s
+
+  stderr ───
+
+    thread 'v9_oracle_successor_is_exactly_bound_and_v8_is_immutable' (1777088) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2769:5:
+    V9 oracle failed: VEG-E-133: runtime mismatch is not libcrypto-only: libcrypto.so.3,libz.so.1
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.971s] (124/129) openwepp::vegetation_boundary_authority_contract adjacent_contracts_retain_current_owners_until_real_consumer_cutover
+  stdout ───
+
+    running 1 test
+    test adjacent_contracts_retain_current_owners_until_real_consumer_cutover ... FAILED
+
+    failures:
+
+    failures:
+        adjacent_contracts_retain_current_owners_until_real_consumer_cutover
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.97s
+
+  stderr ───
+
+    thread 'adjacent_contracts_retain_current_owners_until_real_consumer_cutover' (1776954) panicked at tests/integration/vegetation_boundary_authority_contract.rs:584:5:
+    assertion failed: contains_table_row(energy_invariants, "INV-LANDSURFACEENERGY-043")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [  13.341s] 129 tests run: 110 passed, 19 failed, 0 skipped
+        FAIL [   0.024s] (  3/129) openwepp::land_surface_energy_balance_authority_contract revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+  stdout ───
+
+    running 1 test
+    test revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red ... FAILED
+
+    failures:
+
+    failures:
+        revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red' (1776667) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:939:5:
+    revision 31 expected-red: production dependency-replay seam is absent: ["struct CoveredComponentTemperatureDependencyGraph", "struct ValidatedCoveredComponentReplaySweepBase", "struct ValidatedCoveredComponentProbeReplay", "struct CoveredComponentDependencyReplayAudit", "fn covered_component_temperature_probe_residuals", "fn begin_covered_component_dependency_replay_audit", "fn take_covered_component_dependency_replay_audit"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.094s] ( 25/129) openwepp::snow_stage3_shared_carrier_authority_contract current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation
+  stdout ───
+
+    running 1 test
+    test current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation ... FAILED
+
+    failures:
+
+    failures:
+        current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation' (1776764) panicked at tests/integration/snow_stage3_shared_carrier_authority_contract.rs:203:9:
+    missing in-review v17 precipitation authority: contract_version: 58
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.107s] ( 33/129) openwepp::snow_stage3_terminal_receiver_authority_contract all_owner_failure_rolls_back_and_index_records_lifecycle
+  stdout ───
+
+    running 1 test
+    test all_owner_failure_rolls_back_and_index_records_lifecycle ... FAILED
+
+    failures:
+
+    failures:
+        all_owner_failure_rolls_back_and_index_records_lifecycle
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.10s
+
+  stderr ───
+
+    thread 'all_owner_failure_rolls_back_and_index_records_lifecycle' (1776777) panicked at tests/integration/snow_stage3_terminal_receiver_authority_contract.rs:155:9:
+    docs/specifications/science-contracts/index.md missing non-versioned ADR-0044 amendments bind one canonical covered solver
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] ( 38/129) openwepp::solver_architecture_authority_contract repository_authoring_instructions_bind_solver_changes_to_the_standard
+  stdout ───
+
+    running 1 test
+    test repository_authoring_instructions_bind_solver_changes_to_the_standard ... FAILED
+
+    failures:
+
+    failures:
+        repository_authoring_instructions_bind_solver_changes_to_the_standard
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'repository_authoring_instructions_bind_solver_changes_to_the_standard' (1776807) panicked at tests/integration/solver_architecture_authority_contract.rs:87:9:
+    AGENTS.md missing: Production numerical solvers must not accrete
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.014s] ( 40/129) openwepp::solver_architecture_authority_contract stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture
+  stdout ───
+
+    running 1 test
+    test stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture ... FAILED
+
+    failures:
+
+    failures:
+        stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture' (1776815) panicked at tests/integration/solver_architecture_authority_contract.rs:111:5:
+    assertion failed: roadmap.contains("0044-prohibit-accretive-production-solver-dispatch.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 44/129) openwepp::stage3_native_vegetation_laned_throughput_recovery coupled_slab_acceptance_consumes_one_private_revision_proof
+  stdout ───
+
+    running 1 test
+    test coupled_slab_acceptance_consumes_one_private_revision_proof ... FAILED
+
+    failures:
+
+    failures:
+        coupled_slab_acceptance_consumes_one_private_revision_proof
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'coupled_slab_acceptance_consumes_one_private_revision_proof' (1776826) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:192:5:
+    assertion failed: contract.contains("contract_version: 16")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.097s] ( 52/129) openwepp::stage3_native_vegetation_laned_throughput_recovery canonical_covered_pending_adjudication_is_contract_bound
+  stdout ───
+
+    running 1 test
+    test canonical_covered_pending_adjudication_is_contract_bound ... FAILED
+
+    failures:
+
+    failures:
+        canonical_covered_pending_adjudication_is_contract_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'canonical_covered_pending_adjudication_is_contract_bound' (1776820) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1383:13:
+    docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md missing contract_version: 60
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.093s] ( 69/129) openwepp::stage3_native_vegetation_laned_throughput_recovery snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable
+  stdout ───
+
+    running 1 test
+    test snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable ... FAILED
+
+    failures:
+
+    failures:
+        snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable' (1776847) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1271:9:
+    docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md missing contract_version: 16
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.159s] ( 70/129) openwepp::stage3_native_vegetation_laned_throughput_recovery native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable
+  stdout ───
+
+    running 1 test
+    test native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable ... FAILED
+
+    failures:
+
+    failures:
+        native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.15s
+
+  stderr ───
+
+    thread 'native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable' (1776837) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1314:13:
+    docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md missing contract_version: 16
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.090s] ( 74/129) openwepp::surface_liquid_hydrology_custody_authority_contract contract_binds_existing_lse_identity_and_restart_bytes
+  stdout ───
+
+    running 1 test
+    test contract_binds_existing_lse_identity_and_restart_bytes ... FAILED
+
+    failures:
+
+    failures:
+        contract_binds_existing_lse_identity_and_restart_bytes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'contract_binds_existing_lse_identity_and_restart_bytes' (1776896) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:194:9:
+    docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md missing contract_version: 25
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.085s] ( 85/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_9_binds_multi_lane_stage3_parent_release
+  stdout ───
+
+    running 1 test
+    test version_9_binds_multi_lane_stage3_parent_release ... FAILED
+
+    failures:
+
+    failures:
+        version_9_binds_multi_lane_stage3_parent_release
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.08s
+
+  stderr ───
+
+    thread 'version_9_binds_multi_lane_stage3_parent_release' (1776934) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:589:5:
+    assertion failed: registry_row.contains("v25 admits the complete all-local SurfaceLiquid routing posture")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.103s] ( 89/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_five_binds_laned_active_local_surface_routing
+  stdout ───
+
+    running 1 test
+    test version_twenty_five_binds_laned_active_local_surface_routing ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_five_binds_laned_active_local_surface_routing
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.10s
+
+  stderr ───
+
+    thread 'version_twenty_five_binds_laned_active_local_surface_routing' (1776937) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:254:5:
+    assertion failed: read("docs/specifications/science-contracts/index.md").contains("v25 admits the complete all-local SurfaceLiquid routing posture")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.095s] ( 90/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
+  stdout ───
+
+    running 1 test
+    test version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries' (1776940) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:233:5:
+    assertion failed: index.contains("v24 admits private immutable revision-bound surface-resource validation handoffs")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.606s] (113/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_16_binds_exact_surface_enthalpy_custody_before_production
+  stdout ───
+
+    running 1 test
+    test version_16_binds_exact_surface_enthalpy_custody_before_production ... FAILED
+
+    failures:
+
+    failures:
+        version_16_binds_exact_surface_enthalpy_custody_before_production
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.59s
+
+  stderr ───
+
+    thread 'version_16_binds_exact_surface_enthalpy_custody_before_production' (1776926) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:512:5:
+    assertion failed: registry.contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.064s] (114/129) openwepp::vegetation_boundary_authority_contract v9_runtime_equivalence_verifier_rejects_every_required_poison
+  stdout ───
+
+    running 1 test
+    test v9_runtime_equivalence_verifier_rejects_every_required_poison ... FAILED
+
+    failures:
+
+    failures:
+        v9_runtime_equivalence_verifier_rejects_every_required_poison
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'v9_runtime_equivalence_verifier_rejects_every_required_poison' (1777086) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2800:5:
+    V9 equivalence poisons failed: VEG-E-133: runtime mismatch is not libcrypto-only: libcrypto.so.3,libz.so.1
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.565s] (116/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_three_binds_exact_owner_order_to_surface_topology
+  stdout ───
+
+    running 1 test
+    test version_twenty_three_binds_exact_owner_order_to_surface_topology ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_three_binds_exact_owner_order_to_surface_topology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.56s
+
+  stderr ───
+
+    thread 'version_twenty_three_binds_exact_owner_order_to_surface_topology' (1776947) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:278:5:
+    assertion failed: read("docs/specifications/science-contracts/index.md").contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.685s] (118/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_15_binds_exact_soil_energy_credit_custody_before_production
+  stdout ───
+
+    running 1 test
+    test version_15_binds_exact_soil_energy_credit_custody_before_production ... FAILED
+
+    failures:
+
+    failures:
+        version_15_binds_exact_soil_energy_credit_custody_before_production
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.68s
+
+  stderr ───
+
+    thread 'version_15_binds_exact_soil_energy_credit_custody_before_production' (1776921) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:458:5:
+    assertion failed: registry.contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.195s] (122/129) openwepp::vegetation_boundary_authority_contract v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
+  stdout ───
+
+    running 1 test
+    test v9_oracle_successor_is_exactly_bound_and_v8_is_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.19s
+
+  stderr ───
+
+    thread 'v9_oracle_successor_is_exactly_bound_and_v8_is_immutable' (1777088) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2769:5:
+    V9 oracle failed: VEG-E-133: runtime mismatch is not libcrypto-only: libcrypto.so.3,libz.so.1
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.971s] (124/129) openwepp::vegetation_boundary_authority_contract adjacent_contracts_retain_current_owners_until_real_consumer_cutover
+  stdout ───
+
+    running 1 test
+    test adjacent_contracts_retain_current_owners_until_real_consumer_cutover ... FAILED
+
+    failures:
+
+    failures:
+        adjacent_contracts_retain_current_owners_until_real_consumer_cutover
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.97s
+
+  stderr ───
+
+    thread 'adjacent_contracts_retain_current_owners_until_real_consumer_cutover' (1776954) panicked at tests/integration/vegetation_boundary_authority_contract.rs:584:5:
+    assertion failed: contains_table_row(energy_invariants, "INV-LANDSURFACEENERGY-043")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

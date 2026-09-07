@@ -5,3 +5,18 @@ Conditional (triggered): science-contract instructions, full directory specifica
 Complete starting LSE is mandatory for author and preservation reviewers; source manifest binds baseline bytes.
 Consumers expand on actual dataflow discovery. Cross-contract source boundaries expand only as implicated.
 Workflow-total and effective runtime context: UNOBSERVED. Full-file/range task measurements are pending and cannot certify savings.
+
+## Completed expansion and evidence
+Author inspected complete original LSE3346lines (source-manifest exact bytes), including
+all amendments/BEI, not only ID regex. Full format specification, parent schema,
+provenance/authoring/profile/unit requirements, applicable tests/root/package/role/
+validation guidance read. Actual unit,A0 and seven Rust filesystem dataflows inspected;
+three pinned historical Rust readers left unchanged after Git-show dataflow discovery.
+Relevant external scope/owner dependencies explicitly routed to Vegetation V8/V10,
+SnowEnergy carrier/terminal/native map, SurfaceLiquid exact soil/surface/litter/spill/
+join/parent topology, WATBAL WB14 and CoupledTime algorithm. Their unchanged source
+identities and frozen EXP-R execution protocol/handoff bound in candidate-manifest.
+Frozen experiment requirements remain execution authority, not replacement science.
+Fresh exercise ledgers independently record exact necessary full single-file expansion;
+these do not retroactively become author baseline read telemetry. Generic context
+report uses explicit selections/finite unions; no semantic dependency classifier.

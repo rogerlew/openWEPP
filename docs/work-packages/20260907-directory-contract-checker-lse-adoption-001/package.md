@@ -94,3 +94,41 @@ History contains only original Change Log; no binding rule is made historical.
 All original clause spans remain normative unless explicitly mapped to that log.
 Repeated ID rows become nondefining references; one complete marked definition per
 ID is placed in its owning chapter. Original detailed requirements remain binding.
+
+## Prospective HOLD recovery write set
+Both independent reviewers confirmed inherited required Rust FAIL cannot be
+reclassified as a passing adoption gate. No forbidden production seam, historical
+oracle/runtime predicate, or unrelated authority will be modified to green it.
+After fresh exercises, preserve exact candidate under artifacts/candidate-tree/
+with repository-relative paths for the 15 contract-set files and seven Rust
+consumer files plus shared bridge. Add artifacts/candidate-recovery.json and
+artifacts/restore_candidate.py: bounded isolated-tree reconstruction only, explicit
+output argument, no edits to canonical checkout. Retain exact external dependency
+identities in candidate-manifest.json; reconstruction uses original Git baseline
+plus owned checker/consumer overlay. Original canonical LSE v31 and affected Rust
+consumers will be restored from baseline using only owned changes. Checker and
+unit consumer support remain. No selective route activation or spec status claim.
+This is the kickoff-authorized fallback, not deferred/complete adoption. Final
+assurance still required on corrected checker, retained candidate and recovery.
+
+## Newly discovered A0 reader (before edit)
+Exact additional write: tools/release/check_science_contract_admission.sh.
+Actual candidate invocation rejects binding-index.md as independently unapproved
+contract because changed-file logic uses every nested filename stem. Reconcile
+chapter paths to validated parent inventory/version via existing shared loader;
+retain parent approved/active gate and include chapter bytes in authority digest.
+No changes to frozen impact-map/gate definitions or validation policy. Add focused
+CLI regression in existing test_sc_contract_directory.py. Retain initial FAIL log.
+
+## Recovery evidence exact additions
+Archive checker cut alongside candidate: candidate-tree/tools/{check_sc_binding_exposure.py,
+sc_contract_directory.py}, candidate-tree/tools/release/{check_sc_unit_compliance.py,
+check_science_contract_admission.sh}, candidate-tree/tests/python/{test_check_sc_binding_exposure.py,
+test_sc_contract_directory.py}. These are immutable evidence snapshots, not maintained
+parallel authority; canonical implementations remain tools/. Recovery reconstructs an
+isolated structural/unit fixture from exact archive and Git-bound external dependencies,
+not a full Cargo workspace or claimed executable reproduction. Full Rust reconstruction
+requires full baseline checkout plus archived owned overlay; actual original/candidate
+Rust runs and helper corruption evidence remain preserved.
+Additional package-only machine evidence: artifacts/context-selection.json,
+context-report-before.json, context-report-after.json and logs/rust-failure-set-comparison.json.

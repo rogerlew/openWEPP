@@ -1,0 +1,303 @@
+{
+  "baseline_revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58",
+  "measurement_scope": "Original full LSE mandatory baseline versus final selected source inventory, same task and selected external/instruction union; not baseline agent telemetry",
+  "before": {
+    "readings": {
+      "AGENTS.md": {
+        "path": "AGENTS.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/AGENTS.md": {
+        "path": "docs/specifications/science-contracts/AGENTS.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+        "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+        "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/standards/AGENTS.md": {
+        "path": "docs/standards/AGENTS.md",
+        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/standards/numerical-solver-architecture.md": {
+        "path": "docs/standards/numerical-solver-architecture.md",
+        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/work-packages/AGENTS.md": {
+        "path": "docs/work-packages/AGENTS.md",
+        "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md": {
+        "path": "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md",
+        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md",
+        "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md",
+        "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      }
+    },
+    "roles": {
+      "exercise02": {
+        "bootstrap": [
+          "AGENTS.md",
+          "docs/specifications/science-contracts/AGENTS.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+        ],
+        "expansion": [
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+          "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+          "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+          "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+          "docs/standards/AGENTS.md",
+          "docs/standards/numerical-solver-architecture.md",
+          "docs/work-packages/AGENTS.md",
+          "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md"
+        ]
+      },
+      "exercise03": {
+        "bootstrap": [
+          "AGENTS.md",
+          "docs/specifications/science-contracts/AGENTS.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+        ],
+        "expansion": [
+          "docs/work-packages/AGENTS.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md"
+        ]
+      },
+      "exercise04": {
+        "bootstrap": [
+          "AGENTS.md",
+          "docs/specifications/science-contracts/AGENTS.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+        ],
+        "expansion": [
+          "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+          "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+          "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+          "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md"
+        ]
+      }
+    }
+  },
+  "after": {
+    "readings": {
+      "AGENTS.md": {
+        "path": "AGENTS.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/AGENTS.md": {
+        "path": "docs/specifications/science-contracts/AGENTS.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+        "reason": "exercise02 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+        "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+        "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/standards/AGENTS.md": {
+        "path": "docs/standards/AGENTS.md",
+        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/standards/numerical-solver-architecture.md": {
+        "path": "docs/standards/numerical-solver-architecture.md",
+        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/work-packages/AGENTS.md": {
+        "path": "docs/work-packages/AGENTS.md",
+        "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md": {
+        "path": "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md",
+        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md",
+        "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md",
+        "reason": "exercise03 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      },
+      "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+      }
+    },
+    "roles": {
+      "exercise02": {
+        "bootstrap": [
+          "AGENTS.md",
+          "docs/specifications/science-contracts/AGENTS.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md"
+        ],
+        "expansion": [
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+          "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+          "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+          "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+          "docs/standards/AGENTS.md",
+          "docs/standards/numerical-solver-architecture.md",
+          "docs/work-packages/AGENTS.md",
+          "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md"
+        ]
+      },
+      "exercise03": {
+        "bootstrap": [
+          "AGENTS.md",
+          "docs/specifications/science-contracts/AGENTS.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md"
+        ],
+        "expansion": [
+          "docs/work-packages/AGENTS.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md",
+          "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md"
+        ]
+      },
+      "exercise04": {
+        "bootstrap": [
+          "AGENTS.md",
+          "docs/specifications/science-contracts/AGENTS.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md"
+        ],
+        "expansion": [
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+          "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+          "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+          "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+          "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md"
+        ]
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 # Source-bound clause inventory (pre-migration)
-Status: source inventory frozen; destination map pending before relocation.
+Status: source inventory frozen before relocation; final bidirectional destinations in clause-map.json, independently reviewed.
 Source: b932db101cce07d0860b45b5ecaa8ddb7f455b58:docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md; version 31.
 Every nonempty paragraph/table/fenced block is covered, including unindexed binding clauses. Source spans below partition the entire document; exact source is available at the pinned Git object. No span is adjudicated historical by age.
 | Span | Original lines | Concern | SHA-256 |
@@ -54,3 +54,26 @@ Every nonempty paragraph/table/fenced block is covered, including unindexed bind
 
 Review must separately reconcile each paragraph, equation block, table row, qualifier and source/test anchor when spans split; no ID-only coverage claim. Bidirectional final destinations are required before adoption.
 Proposed boundaries: shared scope/units/owners; surface radiation/turbulence and soil coupling; water/vapor chronology; numerical solve and V10 specialization; terminal support and represented-snow coupling; litter phase; exact soil custody; exact surface custody; private map/validation custody; component probe replay; experimental qualification; binding index; retained change history.
+
+## Final preservation evidence
+`clause-map.json` is the single machine-readable bidirectional mapping. Original
+1–25 metadata coherently becomes candidate v32 entry; original26–3346 spans each
+occur once without holes/overlap, except explicitly classified formatting-only blank
+lines. Only1894–1918 original Change Log becomes historical. 100 original logical
+IDs each have exactly one actual canonical definition, not registry/BEI mentions.
+36 complete fenced equation/code bodies remain byte-identical;474 scientific table
+rows retain cells (literal code pipes encode as &#124;),275 narrative paragraphs
+reconciled;100 canonical Statements equal source after permitted whitespace/pipe
+encoding. 74 invariant Evidence fields explicitly classify existing static evidence.
+No new science, constant, tolerance, guard, qualification or activation admitted.
+Initial16 BEI rows preserve status/classification/bindings; Source cells become
+pinned exact original-row URLs. One history source row added, no scientific binding
+addition or demotion. Compatibility aliases remain nondefining. Source links pin
+b932db101; full clause contexts remain normative. The semantic counterexample removes
+a qualifier while structural lint passes: scientific review must still reject it.
+
+Reviewer A read full original, audited bodies and new metadata, closed RA-F01–04,
+and froze candidate set99ca67fb97351a7eaf495e89fc54720c314795acfbe7bcdc9c3ccab47a8596a8.
+See review_agent_a.md for exact hash method and all hashes. candidate-tree retains
+that set as evidence only after canonical restoration; relative map targets refer
+to its SC-LANDSURFACEENERGY-001 chapter directory. No historical package rewritten.

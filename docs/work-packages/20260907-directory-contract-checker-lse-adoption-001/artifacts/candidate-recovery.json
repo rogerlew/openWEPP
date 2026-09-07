@@ -1,0 +1,219 @@
+{
+  "status": "NOT ADOPTED; isolated structural/unit fixture only, not full Cargo workspace",
+  "baseline": "b932db101cce07d0860b45b5ecaa8ddb7f455b58",
+  "overlay": [
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+      "bytes": 33598,
+      "sha256": "7660946ea994082dc60b1dca8722e062b908e2748b3d546feaa9df2871aa08e9"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+      "bytes": 34247,
+      "sha256": "84ec3ee981218e535fa37cd0e883e3c6b8f094627b6e639713fe86a671164a6f"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+      "bytes": 28666,
+      "sha256": "8eb123e056f1698a0b8ea39530ebcb1782aa619bd6d7f4baa3a516194de911c9"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md",
+      "bytes": 7184,
+      "sha256": "b367f5299f4e8eb199e894385aa2b7451672ac3a7ce7d7921dc12ff2d8d0178e"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+      "bytes": 47478,
+      "sha256": "568b505669cee5fe1ce8fcbe2eb612f312f737959a1b078cdf7bb7cefb5dcd53"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+      "bytes": 35950,
+      "sha256": "b3da428d546339b577bc9a486d69a0fc0ccb712b9b8ef8f4788d19da366e0ee6"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+      "bytes": 41482,
+      "sha256": "62df075bada5ab1a40b70a8e3d17debffcc22576559a46008234ed031cea5da1"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+      "bytes": 42920,
+      "sha256": "844a1a4abab9c12394d479189f336b9d018112f3225d85477d576be0fb0212f3"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
+      "bytes": 18905,
+      "sha256": "847c892d4f57d565483a860bdef617b9224feb0e7d0b6eecba61bd5e0287d5e8"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+      "bytes": 17308,
+      "sha256": "5016e10077745fc6698f828f1a87e4d45e7bd9666e11282f2a0e4492d6e0dff5"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+      "bytes": 17427,
+      "sha256": "c36cee5ad980e204a265565f415bc9f8f2eaf894d258a573af7559043763d42b"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+      "bytes": 23987,
+      "sha256": "10cd16a6a118375fcc73605b5411afaa6c6709a5c8066e96cf8a635ee9b28ff6"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+      "bytes": 11841,
+      "sha256": "c03d78309d5669170a12c489a941124f5ffc146163f7ab3c646bfd717b217280"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+      "bytes": 26276,
+      "sha256": "20cd98c07c65421f5fd0a3830c44f28d5a1a90841f9bf8ae254b8111e9acb39f"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+      "bytes": 22752,
+      "sha256": "d00d2d46d9c86d9b44fb95c964355470097033b67f8a00c0606a0c7786bcea08"
+    },
+    {
+      "path": "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "bytes": 73788,
+      "sha256": "ae9cd357adf690a58db43f5f05a877f174dc5ea568e0bcb3000558ac088e12e4"
+    },
+    {
+      "path": "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "bytes": 28733,
+      "sha256": "38406f5ab4f7f06c769696f90194d95994bfe0db5c06d217cc1af9dcfc62ed22"
+    },
+    {
+      "path": "tests/integration/snow_stage3_terminal_receiver_authority_contract.rs",
+      "bytes": 11136,
+      "sha256": "3967cbd329e5c10df4507a4ab44eb12e5ec761ebbe89bffbd1ea18b5f0853aa3"
+    },
+    {
+      "path": "tests/integration/solver_architecture_authority_contract.rs",
+      "bytes": 5824,
+      "sha256": "b910be59cdc45c4cec9eb8cc7875a0c58b28b48d117af34728f1576f7bc98878"
+    },
+    {
+      "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+      "bytes": 64033,
+      "sha256": "001703ec24d193a4e612aaa05a93430b03f7ed0e291d9ad69215c89ed4f77492"
+    },
+    {
+      "path": "tests/integration/support/sc_contract_text.rs",
+      "bytes": 1067,
+      "sha256": "c2b03e16eeba168e0d3fbaf4e2ade4aaf5c68df5b0fba5be8e6c3fe09874b65b"
+    },
+    {
+      "path": "tests/integration/surface_liquid_hydrology_custody_authority_contract.rs",
+      "bytes": 36096,
+      "sha256": "9df27ed8c346133a5f80b5df9670a3323320e177260b13a64099e4a618848ddd"
+    },
+    {
+      "path": "tests/integration/vegetation_boundary_authority_contract.rs",
+      "bytes": 105225,
+      "sha256": "5ff969756b5e0ddf8500961db525ecddaed6be3a52116fbf75e85419a3792710"
+    },
+    {
+      "path": "tests/python/test_check_sc_binding_exposure.py",
+      "bytes": 1668,
+      "sha256": "d0bc5442087bb822cb5cd29a00493f61f653b8fe266057f1452d1ded2c2840ed"
+    },
+    {
+      "path": "tests/python/test_sc_contract_directory.py",
+      "bytes": 21459,
+      "sha256": "19c4bafd3ed5743a420c4459495fd4ef29ebd6de6304669ff1cf5f6be0c07974"
+    },
+    {
+      "path": "tools/check_sc_binding_exposure.py",
+      "bytes": 5024,
+      "sha256": "df3bc341901ef34d90a1110b75507432e1fae98e82a4eeabe9f6b225cf7b89f3"
+    },
+    {
+      "path": "tools/release/check_sc_unit_compliance.py",
+      "bytes": 22320,
+      "sha256": "2999db488e3723f6aa8c4dfe31469bcf9692f46e1b8127eaa980435e69f42fbe"
+    },
+    {
+      "path": "tools/release/check_science_contract_admission.sh",
+      "bytes": 15177,
+      "sha256": "5a44470d75042a04912f7a52b05a72767a49d1c3c67494891e5a530b15ab327d"
+    },
+    {
+      "path": "tools/sc_contract_directory.py",
+      "bytes": 29228,
+      "sha256": "758ae0fffdee4146d12d36fc91f6970e5d1fae867b78beb1ee02345153760d6b"
+    }
+  ],
+  "baseline_dependencies": [
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "bytes": 248829,
+      "sha256": "3b1c8525e6d09d7afae6e27d5fa59f90347d55d8bf34bc6292d0d767d3bfc5fa",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+      "bytes": 497785,
+      "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+      "bytes": 184116,
+      "sha256": "fbb27d07e4459dabd37330d3292564ccb94789fdc0530fcde07262c00adfcbd4",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+      "bytes": 377637,
+      "sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+      "bytes": 92552,
+      "sha256": "1d10611b5143be201381f283ec5594d9f65c99f8252e944dfae57076a8a699f7",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+      "bytes": 634522,
+      "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+      "bytes": 25550,
+      "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+      "bytes": 3718,
+      "sha256": "b3ca642a6b4fd94f6e1459f07058cd9fc18fab747368421fc0dc6e591d143183",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md",
+      "bytes": 11541,
+      "sha256": "40033ea2e536984ae5a7455e99509e7e760624b78cdb08ee347597fe2f5f115f",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md",
+      "bytes": 5128,
+      "sha256": "1c813fd08e34763808d3ac8a033d18d8c5176857aff76378aa126762166c8883",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "crates/openwepp-sim-contract/src/units_mod/boundary_catalog.rs",
+      "bytes": 53653,
+      "sha256": "60ed036dfa9aeb894d31b167b243f5a049af3df5fb0ce77ed0f597723fa9cf9c",
+      "revision": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    }
+  ]
+}

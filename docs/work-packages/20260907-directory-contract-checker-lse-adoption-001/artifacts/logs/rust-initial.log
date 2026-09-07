@@ -1,0 +1,175 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+   Compiling openwepp v0.1.0 (/workdir/openWEPP)
+warning: unreachable `pub` item
+ --> tests/integration/support/sc_contract_text.rs:5:1
+  |
+5 | pub fn read(path: impl AsRef<Path>) -> std::io::Result<String> {
+  | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | |
+  | help: consider restricting its visibility: `pub(crate)`
+  |
+  = help: or consider exporting it for use by other crates
+  = note: requested on the command line with `-W unreachable-pub`
+
+warning: unnecessary parentheses around closure body
+   --> tests/integration/land_surface_energy_balance_authority_contract.rs:752:28
+    |
+752 | ...e| (line.starts_with("| `INV-LANDSURFACEENERGY-164` |") || line.starts_with("| <a id=\"INV-LANDSURFACEENERGY-164\"></a> `INV-LANDSURFACEENERGY-164` |")))
+    |       ^                                                                                                                                                   ^
+    |
+    = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+    |
+752 -             .filter(|line| (line.starts_with("| `INV-LANDSURFACEENERGY-164` |") || line.starts_with("| <a id=\"INV-LANDSURFACEENERGY-164\"></a> `INV-LANDSURFACEENERGY-164` |")))
+752 +             .filter(|line| line.starts_with("| `INV-LANDSURFACEENERGY-164` |") || line.starts_with("| <a id=\"INV-LANDSURFACEENERGY-164\"></a> `INV-LANDSURFACEENERGY-164` |"))
+    |
+
+warning: `openwepp` (test "snow_stage3_terminal_receiver_authority_contract") generated 1 warning (1 duplicate)
+warning: `openwepp` (test "solver_architecture_authority_contract") generated 1 warning (run `cargo fix --test "solver_architecture_authority_contract" -p openwepp` to apply 1 suggestion)
+warning: `openwepp` (test "stage3_native_vegetation_laned_throughput_recovery") generated 1 warning (1 duplicate)
+warning: `openwepp` (test "land_surface_energy_balance_authority_contract") generated 2 warnings (1 duplicate) (run `cargo fix --test "land_surface_energy_balance_authority_contract" -p openwepp` to apply 1 suggestion)
+warning: `openwepp` (test "vegetation_boundary_authority_contract") generated 1 warning (1 duplicate)
+warning: `openwepp` (test "snow_stage3_shared_carrier_authority_contract") generated 1 warning (1 duplicate)
+warning: `openwepp` (test "surface_liquid_hydrology_custody_authority_contract") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.84s
+────────────
+ Nextest run ID e9053b23-5a87-41e8-82e2-d9e24a952d6f with nextest profile: default
+    Starting 129 tests across 8 binaries
+        FAIL [   0.023s] (  3/129) openwepp::land_surface_energy_balance_authority_contract revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+  stdout ───
+
+    running 1 test
+    test revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red ... FAILED
+
+    failures:
+
+    failures:
+        revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red' (1751946) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:895:5:
+    revision 31 expected-red: production dependency-replay seam is absent: ["struct CoveredComponentTemperatureDependencyGraph", "struct ValidatedCoveredComponentReplaySweepBase", "struct ValidatedCoveredComponentProbeReplay", "struct CoveredComponentDependencyReplayAudit", "fn covered_component_temperature_probe_residuals", "fn begin_covered_component_dependency_replay_audit", "fn take_covered_component_dependency_replay_audit"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 15 tests still running
+        FAIL [   0.173s] ( 15/129) openwepp::land_surface_energy_balance_authority_contract schema_sections_test_vectors_and_registry_are_bound
+  stdout ───
+
+    running 1 test
+    test schema_sections_test_vectors_and_registry_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        schema_sections_test_vectors_and_registry_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.17s
+
+  stderr ───
+
+    thread 'schema_sections_test_vectors_and_registry_are_bound' (1751967) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1794:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Change Log
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.197s] ( 16/129) openwepp::land_surface_energy_balance_authority_contract contract_binds_control_volume_closure_and_exact_one_custody
+  stdout ───
+
+    running 1 test
+    test contract_binds_control_volume_closure_and_exact_one_custody ... FAILED
+
+    failures:
+
+    failures:
+        contract_binds_control_volume_closure_and_exact_one_custody
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.19s
+
+  stderr ───
+
+    thread 'contract_binds_control_volume_closure_and_exact_one_custody' (1751952) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:577:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing validate before mutation and commit energy and
+      water state atomically
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.205s] 18/129 tests run: 15 passed, 3 failed, 0 skipped
+        FAIL [   0.023s] (  3/129) openwepp::land_surface_energy_balance_authority_contract revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+  stdout ───
+
+    running 1 test
+    test revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red ... FAILED
+
+    failures:
+
+    failures:
+        revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red' (1751946) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:895:5:
+    revision 31 expected-red: production dependency-replay seam is absent: ["struct CoveredComponentTemperatureDependencyGraph", "struct ValidatedCoveredComponentReplaySweepBase", "struct ValidatedCoveredComponentProbeReplay", "struct CoveredComponentDependencyReplayAudit", "fn covered_component_temperature_probe_residuals", "fn begin_covered_component_dependency_replay_audit", "fn take_covered_component_dependency_replay_audit"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.173s] ( 15/129) openwepp::land_surface_energy_balance_authority_contract schema_sections_test_vectors_and_registry_are_bound
+  stdout ───
+
+    running 1 test
+    test schema_sections_test_vectors_and_registry_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        schema_sections_test_vectors_and_registry_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.17s
+
+  stderr ───
+
+    thread 'schema_sections_test_vectors_and_registry_are_bound' (1751967) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1794:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Change Log
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.197s] ( 16/129) openwepp::land_surface_energy_balance_authority_contract contract_binds_control_volume_closure_and_exact_one_custody
+  stdout ───
+
+    running 1 test
+    test contract_binds_control_volume_closure_and_exact_one_custody ... FAILED
+
+    failures:
+
+    failures:
+        contract_binds_control_volume_closure_and_exact_one_custody
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.19s
+
+  stderr ───
+
+    thread 'contract_binds_control_volume_closure_and_exact_one_custody' (1751952) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:577:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing validate before mutation and commit energy and
+      water state atomically
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+warning: 111/129 tests were not run due to test failure (run with --no-fail-fast to run all tests, or run with --max-fail)
+error: test run failed
