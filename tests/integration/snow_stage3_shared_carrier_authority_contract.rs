@@ -1,3 +1,6 @@
+#[path = "support/sc_contract_text.rs"]
+mod sc_contract_text;
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::PathBuf;
@@ -11,7 +14,7 @@ fn root() -> PathBuf {
 }
 
 fn read(relative: &str) -> String {
-    fs::read_to_string(root().join(relative)).expect("authority file must exist")
+    sc_contract_text::read(root().join(relative)).expect("authority file must exist")
 }
 
 fn approx(actual: &Value, expected: &Value, label: &str) {
@@ -229,7 +232,7 @@ fn current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation() {
     let lse_contract =
         read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
     for required in [
-        "contract_version: 31",
+        "contract_version: 32",
         "INV-LANDSURFACEENERGY-124",
         "INV-LANDSURFACEENERGY-125",
         "INV-LANDSURFACEENERGY-126",

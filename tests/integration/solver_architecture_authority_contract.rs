@@ -1,4 +1,6 @@
-use std::fs;
+#[path = "support/sc_contract_text.rs"]
+mod sc_contract_text;
+
 use std::path::PathBuf;
 
 const RECOVERY_PACKAGE: &str =
@@ -9,7 +11,7 @@ fn root() -> PathBuf {
 }
 
 fn text(path: &str) -> String {
-    fs::read_to_string(root().join(path))
+    sc_contract_text::read(root().join(path))
         .unwrap_or_else(|error| panic!("expected readable {path}: {error}"))
 }
 

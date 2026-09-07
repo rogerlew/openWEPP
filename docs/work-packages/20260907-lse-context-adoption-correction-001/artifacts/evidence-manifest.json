@@ -1,0 +1,24 @@
+{
+  "source_manifest_sha256": "4981574cc68094e1e90a23ea5faa863c30741e1107bb42e985137f26c53709bc",
+  "unchanged_inputs_sha256": "63a1d661eede727f3e3dde846b9999b21435bffda9b20253c0506a6882cb2cf5",
+  "logs": {
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/admission.log": "218b7e39eabb528d3a862f021f572db658998c202d7558ee1949aa553421f5f9",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/bridge-clippy.log": "43fd0499f49ef6564189b8636fc38973e8f4ee3b489831c01084b89be01f50f7",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/bridge-results.json": "c970e2f32a2df88ff60ef63c1b612db6760105c41497823bd623bfcd1f546d19",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/bridge-summary.log": "2068c8cca26b1565da79d9d5a3a0d7139ee1ddfe744e4762ce271d21c4eab281",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-baseline-command.json": "e6504b06bece3fbf1b7565713d8c50520cef29c813b745e6f507970c6870e538",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-baseline-root.log": "b1e27892a022adcffbb799effb6f97bdac8514ae5c6b9049f30cc38b8f96f5af",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-comparison.json": "7ebaab88b54911b7db17284914a3cf2d2ed9349d5590b4d0a255f98ac053fb81",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-root-final.log": "b1637179dcae67017adae4c4973fbf0aec2d52f08aeac3e648b77fa041650b80",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-root.log": "64027e31973469165cff023091059cde21b193173b3541e815c8c25a4d2eb6cc",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/pytest-final.log": "1103dc6e7a08cba1d8861866c02b5c76b7b6a23b760a7ccecafe8d880c948a93",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/rust-candidate.log": "ff5d255fc642a4bc7a5605230481e83caa08e63545a2b011bc27b727816f8669",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/rust-comparison.json": "d93b783156960b8cf03e38d7f9abd847ea23c61bff56d5dab78d069f010ffda2",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/rust-final.log": "dfd4aa62c42ac9402097c7974471cf909fb7e83148aef6b3f0e4c1653e7f2cb9",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/rustfmt.log": "43fd0499f49ef6564189b8636fc38973e8f4ee3b489831c01084b89be01f50f7",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/strict-final.log": "1de9ba212befc4625ee01ffaaf5735fb60626e245d8379096e90a00121bb5820",
+    "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/unit.log": "8b7cb5e42506defea3f986af17b397222e6a6c4f7cf9a7957e4f04d7a6770273"
+  },
+  "bridge_binary_sha256": "1a28114fcbcf0df9e6987c168143cec175bd5ce148b1c5bbc9b5fdc23c71837b",
+  "excludes": "detached manifests, handoff, review/disposition reports; no future commit prediction"
+}

@@ -1,0 +1,178 @@
+{
+  "baseline_diagnostics": [
+    [
+      "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "rust_item_cfg_attributes",
+      "this `let...else` may be rewritten with the `?` operator"
+    ],
+    [
+      "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "rust_item_is_top_level",
+      "it is more concise to loop over references to containers instead of using explicit iteration methods"
+    ],
+    [
+      "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "rust_structural_item_parser_masks_char_literals_and_rejects_nested_required_decoys",
+      "unnecessary hashes around raw string literal"
+    ],
+    [
+      "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "rust_structural_item_parser_rejects_cfg_disabled_and_test_only_decoys",
+      "unnecessary hashes around raw string literal"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "carrier_support_receipts_match",
+      "usage of `FromIterator::from_iter`"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation",
+      "this function has too many lines (existing >100)"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "independent_reference_model_reconstructs_carrier_boundary_and_ledgers",
+      "this function has too many lines (existing >100)"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "receipt_schemas_and_fixtures_close_wire_and_custody_shape",
+      "length comparison to zero"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "receipt_schemas_and_fixtures_close_wire_and_custody_shape",
+      "this function has too many lines (existing >100)"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "support_receipts_match",
+      "usage of `FromIterator::from_iter`"
+    ],
+    [
+      "tests/integration/snow_stage3_terminal_receiver_authority_contract.rs",
+      "precedence_rank",
+      "casting `usize` to `u8` may truncate the value"
+    ],
+    [
+      "tests/integration/snow_stage3_terminal_receiver_authority_contract.rs",
+      "valid_restart_transition",
+      "unnested or-patterns"
+    ],
+    [
+      "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+      "canonical_covered_pending_adjudication_is_contract_bound",
+      "this function has too many lines (existing >100)"
+    ],
+    [
+      "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+      "stage3_lane_d_hbp_reads_authenticated_public_hourly_surfaces",
+      "this function has too many lines (existing >100)"
+    ],
+    [
+      "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+      "stage3_lane_d_qualification_reads_canonical_manifest_provenance",
+      "binding's name is too similar to existing binding"
+    ],
+    [
+      "tests/integration/surface_liquid_hydrology_custody_authority_contract.rs",
+      "version_twenty_one_binds_phase_spill_to_one_generated_wb14_parcel",
+      "long literal lacking separators"
+    ],
+    [
+      "tests/integration/vegetation_boundary_authority_contract.rs",
+      "assurance_receipts_form_the_recorded_generation_chain",
+      "this function has too many lines (existing >100)"
+    ]
+  ],
+  "candidate_diagnostics": [
+    [
+      "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "rust_item_cfg_attributes",
+      "this `let...else` may be rewritten with the `?` operator"
+    ],
+    [
+      "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "rust_item_is_top_level",
+      "it is more concise to loop over references to containers instead of using explicit iteration methods"
+    ],
+    [
+      "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "rust_structural_item_parser_masks_char_literals_and_rejects_nested_required_decoys",
+      "unnecessary hashes around raw string literal"
+    ],
+    [
+      "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "rust_structural_item_parser_rejects_cfg_disabled_and_test_only_decoys",
+      "unnecessary hashes around raw string literal"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "carrier_support_receipts_match",
+      "usage of `FromIterator::from_iter`"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation",
+      "this function has too many lines (existing >100)"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "independent_reference_model_reconstructs_carrier_boundary_and_ledgers",
+      "this function has too many lines (existing >100)"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "receipt_schemas_and_fixtures_close_wire_and_custody_shape",
+      "length comparison to zero"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "receipt_schemas_and_fixtures_close_wire_and_custody_shape",
+      "this function has too many lines (existing >100)"
+    ],
+    [
+      "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "support_receipts_match",
+      "usage of `FromIterator::from_iter`"
+    ],
+    [
+      "tests/integration/snow_stage3_terminal_receiver_authority_contract.rs",
+      "precedence_rank",
+      "casting `usize` to `u8` may truncate the value"
+    ],
+    [
+      "tests/integration/snow_stage3_terminal_receiver_authority_contract.rs",
+      "valid_restart_transition",
+      "unnested or-patterns"
+    ],
+    [
+      "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+      "canonical_covered_pending_adjudication_is_contract_bound",
+      "this function has too many lines (existing >100)"
+    ],
+    [
+      "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+      "stage3_lane_d_hbp_reads_authenticated_public_hourly_surfaces",
+      "this function has too many lines (existing >100)"
+    ],
+    [
+      "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+      "stage3_lane_d_qualification_reads_canonical_manifest_provenance",
+      "binding's name is too similar to existing binding"
+    ],
+    [
+      "tests/integration/surface_liquid_hydrology_custody_authority_contract.rs",
+      "version_twenty_one_binds_phase_spill_to_one_generated_wb14_parcel",
+      "long literal lacking separators"
+    ],
+    [
+      "tests/integration/vegetation_boundary_authority_contract.rs",
+      "assurance_receipts_form_the_recorded_generation_chain",
+      "this function has too many lines (existing >100)"
+    ]
+  ],
+  "same_file_function_and_diagnostic_kind": true,
+  "note": "Both original baseline and current root sources actually linted. Existing >100 line-count values differ with formatting; same functions/lints/severity, no suppression. Changed helper independently lint-clean."
+}

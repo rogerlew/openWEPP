@@ -1,3 +1,6 @@
+#[path = "support/sc_contract_text.rs"]
+mod sc_contract_text;
+
 use std::fs;
 use std::io::Write;
 use std::process::Command;
@@ -61,7 +64,7 @@ impl Drop for OracleTempRoot {
 }
 
 fn read(path: &str) -> String {
-    fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
+    sc_contract_text::read(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
 }
 
 fn section<'a>(text: &'a str, start: &str, end: &str) -> &'a str {
@@ -75,7 +78,9 @@ fn section<'a>(text: &'a str, start: &str, end: &str) -> &'a str {
 
 fn contains_table_row(table: &str, id: &str) -> bool {
     table.lines().any(|line| {
-        line.starts_with(&format!("| {id} |")) || line.starts_with(&format!("| `{id}` |"))
+        line.starts_with(&format!("| {id} |"))
+            || line.starts_with(&format!("| `{id}` |"))
+            || line.starts_with(&format!("| <a id=\"{id}\"></a> `{id}` |"))
     })
 }
 
@@ -540,7 +545,15 @@ fn adjacent_contracts_retain_current_owners_until_real_consumer_cutover() {
         ),
     ] {
         let adjacent = read(path);
-        let invariant_table = section(&adjacent, invariant_start, invariant_end);
+        let invariant_table = if adjacent.contains("contract_format: directory-v1") {
+            section(
+                &adjacent,
+                "## Canonical invariants",
+                "## Canonical obligations",
+            )
+        } else {
+            section(&adjacent, invariant_start, invariant_end)
+        };
         let guard_table = section(&adjacent, guard_start, guard_end);
         assert!(
             contains_table_row(invariant_table, invariant),
@@ -558,11 +571,19 @@ fn adjacent_contracts_retain_current_owners_until_real_consumer_cutover() {
 
     let energy =
         read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
-    let energy_invariants = section(
-        &energy,
-        "## Invariants and Invariant Guard Map",
-        "### Invariant Guard Map",
-    );
+    let energy_invariants = if energy.contains("contract_format: directory-v1") {
+        section(
+            &energy,
+            "## Canonical invariants",
+            "## Canonical obligations",
+        )
+    } else {
+        section(
+            &energy,
+            "## Invariants and Invariant Guard Map",
+            "### Invariant Guard Map",
+        )
+    };
     let energy_guards = section(
         &energy,
         "### Invariant Guard Map",

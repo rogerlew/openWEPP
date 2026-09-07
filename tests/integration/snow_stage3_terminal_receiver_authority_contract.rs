@@ -1,4 +1,5 @@
-use std::fs;
+#[path = "support/sc_contract_text.rs"]
+mod sc_contract_text;
 
 const ENERGY: &str = "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md";
 const FREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
@@ -8,7 +9,7 @@ const TXN: &str = "docs/specifications/science-contracts/contracts/SC-VEGETATION
 const INDEX: &str = "docs/specifications/science-contracts/index.md";
 
 fn read(path: &str) -> String {
-    fs::read_to_string(path)
+    sc_contract_text::read(path)
         .unwrap_or_else(|error| panic!("read {path}: {error}"))
         .split_whitespace()
         .collect::<Vec<_>>()
@@ -235,7 +236,7 @@ fn restart_state_machine_and_canonical_tables_are_enforced() {
         ),
         (TXN, &["INV-VEGTRANSACTION-008"][..]),
     ] {
-        let raw = fs::read_to_string(path).unwrap();
+        let raw = sc_contract_text::read(path).unwrap();
         for invariant in invariants {
             assert!(
                 table_has_row(&raw, invariant),

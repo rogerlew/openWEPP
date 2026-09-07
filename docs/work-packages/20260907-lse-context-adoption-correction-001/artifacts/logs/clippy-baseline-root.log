@@ -1,0 +1,272 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+    Checking openwepp-kernel-contract v0.1.0 (/workdir/openWEPP/crates/openwepp-kernel-contract)
+    Checking openwepp-management-schema v0.1.0 (/workdir/openWEPP/crates/openwepp-management-schema)
+    Checking openwepp-coupled-time v0.1.0 (/workdir/openWEPP/crates/openwepp-coupled-time)
+    Checking openwepp-meteorology v0.1.0 (/workdir/openWEPP/crates/openwepp-meteorology)
+    Checking openwepp-comparator-metadata v0.1.0 (/workdir/openWEPP/crates/openwepp-comparator-metadata)
+    Checking openwepp-hillslope-output v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-output)
+    Checking openwepp-legacy-bridge v0.1.0 (/workdir/openWEPP/crates/openwepp-legacy-bridge)
+    Checking openwepp-assurance v0.1.0 (/workdir/openWEPP/crates/openwepp-assurance)
+    Checking openwepp-summary-accumulator v0.1.0 (/workdir/openWEPP/crates/openwepp-summary-accumulator)
+    Checking openwepp-biogeochemistry v0.1.0 (/workdir/openWEPP/crates/openwepp-biogeochemistry)
+    Checking openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+    Checking openwepp-vegetation v0.1.0 (/workdir/openWEPP/crates/openwepp-vegetation)
+    Checking openwepp-input-contract v0.1.0 (/workdir/openWEPP/crates/openwepp-input-contract)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-landuse-migrate v0.1.0 (/workdir/openWEPP/crates/openwepp-landuse-migrate)
+    Checking openwepp-watershed-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+    Checking openwepp-watershed-output v0.1.0 (/workdir/openWEPP/crates/openwepp-watershed-output)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+warning: field `ending_snow_hint` is never read
+    --> /workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+    Checking openwepp-persisted-restart-v1 v0.1.0 (/workdir/openWEPP/crates/openwepp-persisted-restart-v1)
+    Checking openwepp-runner v0.1.0 (/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/tmp/lse-baseline-clippy-07a428fr)
+error: unnested or-patterns
+  --> tests/integration/snow_stage3_terminal_receiver_authority_contract.rs:50:9
+   |
+50 | /         ("pre_trial", "one_full_done")
+51 | |             | ("one_full_done", "first_half_done")
+52 | |             | ("first_half_done", "two_half_done")
+53 | |             | ("two_half_done", "pre_trial")
+...  |
+59 | |             | ("localized", "receiver_running")
+60 | |             | ("receiver_running", "complete")
+   | |______________________________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnested_or_patterns
+   = note: `-D clippy::unnested-or-patterns` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::unnested_or_patterns)]`
+help: nest the patterns
+   |
+50 ~         ("pre_trial", "one_full_done") | ("one_full_done", "first_half_done") |
+51 + ("first_half_done", "two_half_done") |
+52 + ("two_half_done", "pre_trial" | "bracketed") |
+53 + ("bracketed" | "bisect_mid_done", "bisect_left_done") |
+54 + ("bisect_left_done", "bisect_mid_done") | ("bisect_mid_done", "localized") |
+55 + ("localized", "receiver_running") | ("receiver_running", "complete")
+   |
+
+error: binding's name is too similar to existing binding
+   --> tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:951:9
+    |
+951 |     let wat5_schema = fs::read_to_string(
+    |         ^^^^^^^^^^^
+    |
+note: existing binding defined here
+   --> tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:947:9
+    |
+947 |     let wat_schema = fs::read_to_string(
+    |         ^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#similar_names
+    = note: `-D clippy::similar-names` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::similar_names)]`
+
+error: long literal lacking separators
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:309:37
+    |
+309 |     assert_eq!(spill_ofe.to_bits(), 0.078125_f64.to_bits());
+    |                                     ^^^^^^^^^^^^ help: consider: `0.078_125_f64`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+    = note: `-D clippy::unreadable-literal` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unreadable_literal)]`
+
+error: unnecessary hashes around raw string literal
+   --> tests/integration/land_surface_energy_balance_authority_contract.rs:390:19
+    |
+390 |       let fixture = r#####"
+    |  ___________________^
+391 | |         // struct CommentDecoy { marker: bool }
+392 | |         const STRING_DECOY: &str = "fn StringDecoy() {}";
+393 | |         const RAW_STRING_DECOY: &str = r#"embedded "quote" before
+...   |
+424 | |     "#####;
+    | |__________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_raw_string_hashes
+    = note: `-D clippy::needless-raw-string-hashes` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_raw_string_hashes)]`
+help: remove one hash from both sides of the string literal
+    |
+390 ~     let fixture = r####"
+391 |         // struct CommentDecoy { marker: bool }
+...
+423 |         }
+424 ~     "####;
+    |
+
+error: unnecessary hashes around raw string literal
+   --> tests/integration/land_surface_energy_balance_authority_contract.rs:448:19
+    |
+448 |       let fixture = r#####"
+    |  ___________________^
+449 | |         fn lifetime_control<'a>(value: &'a str, other: &'static str) -> &'a str {
+450 | |             let _placeholder: &'_ str = other;
+451 | |             value
+...   |
+492 | |     "#####;
+    | |__________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_raw_string_hashes
+help: remove 4 hashes from both sides of the string literal
+    |
+448 ~     let fixture = r#"
+449 |         fn lifetime_control<'a>(value: &'a str, other: &'static str) -> &'a str {
+...
+491 |         }
+492 ~     "#;
+    |
+
+error: casting `usize` to `u8` may truncate the value
+  --> tests/integration/snow_stage3_terminal_receiver_authority_contract.rs:44:18
+   |
+44 |     .map(|index| index as u8 + 1)
+   |                  ^^^^^^^^^^^
+   |
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_possible_truncation
+   = note: `-D clippy::cast-possible-truncation` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::cast_possible_truncation)]`
+help: ... or use `try_from` and handle the error accordingly
+   |
+44 -     .map(|index| index as u8 + 1)
+44 +     .map(|index| u8::try_from(index) + 1)
+   |
+
+error: could not compile `openwepp` (test "snow_stage3_terminal_receiver_authority_contract") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: usage of `FromIterator::from_iter`
+  --> tests/integration/snow_stage3_shared_carrier_authority_contract.rs:66:40
+   |
+66 |         || actual_receipt_ids.len() != BTreeSet::from_iter(actual_receipt_ids.iter()).len()
+   |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `.collect()` instead of `::from_iter()`: `actual_receipt_ids.iter().collect::<BTreeSet<_>>()`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#from_iter_instead_of_collect
+   = note: `-D clippy::from-iter-instead-of-collect` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::from_iter_instead_of_collect)]`
+
+error: usage of `FromIterator::from_iter`
+  --> tests/integration/snow_stage3_shared_carrier_authority_contract.rs:98:33
+   |
+98 |         && receipt_ids.len() == BTreeSet::from_iter(receipt_ids.iter()).len()
+   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `.collect()` instead of `::from_iter()`: `receipt_ids.iter().collect::<BTreeSet<_>>()`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#from_iter_instead_of_collect
+
+error: this function has too many lines (123/100)
+   --> tests/integration/snow_stage3_shared_carrier_authority_contract.rs:154:1
+    |
+154 | fn current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: this function has too many lines (143/100)
+   --> tests/integration/snow_stage3_shared_carrier_authority_contract.rs:285:1
+    |
+285 | fn independent_reference_model_reconstructs_carrier_boundary_and_ledgers() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: this function has too many lines (134/100)
+   --> tests/integration/snow_stage3_shared_carrier_authority_contract.rs:434:1
+    |
+434 | fn receipt_schemas_and_fixtures_close_wire_and_custody_shape() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: length comparison to zero
+   --> tests/integration/snow_stage3_shared_carrier_authority_contract.rs:520:9
+    |
+520 | /         fixtures["valid_carrier"]["exposure_receipt"]["provider_digest"]
+521 | |             .as_str()
+522 | |             .unwrap()
+523 | |             .len()
+524 | |             > 0
+    | |_______________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#len_zero
+    = note: `-D clippy::len-zero` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::len_zero)]`
+help: using `!is_empty` is clearer and more explicit
+    |
+520 ~         !fixtures["valid_carrier"]["exposure_receipt"]["provider_digest"]
+521 +             .as_str()
+522 +             .unwrap().is_empty()
+    |
+
+error: could not compile `openwepp` (test "snow_stage3_shared_carrier_authority_contract") due to 6 previous errors
+error: this function has too many lines (105/100)
+    --> tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1004:1
+     |
+1004 | fn stage3_lane_d_hbp_reads_authenticated_public_hourly_surfaces() {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+     = note: `-D clippy::too-many-lines` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: this function has too many lines (167/100)
+    --> tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1339:1
+     |
+1339 | fn canonical_covered_pending_adjudication_is_contract_bound() {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: could not compile `openwepp` (test "stage3_native_vegetation_laned_throughput_recovery") due to 3 previous errors
+error: could not compile `openwepp` (test "surface_liquid_hydrology_custody_authority_contract") due to 1 previous error
+error: this `let...else` may be rewritten with the `?` operator
+   --> tests/integration/land_surface_energy_balance_authority_contract.rs:344:9
+    |
+344 | /         let Some(open) = open else {
+345 | |             return None;
+346 | |         };
+    | |__________^ help: replace it with: `let open = open?;`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#question_mark
+    = note: `-D clippy::question-mark` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::question_mark)]`
+
+error: it is more concise to loop over references to containers instead of using explicit iteration methods
+   --> tests/integration/land_surface_energy_balance_authority_contract.rs:372:17
+    |
+372 |     for byte in masked.as_bytes()[..start].iter() {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: to write this more concisely, try: `&masked.as_bytes()[..start]`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#explicit_iter_loop
+    = note: `-D clippy::explicit-iter-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::explicit_iter_loop)]`
+
+error: this function has too many lines (136/100)
+   --> tests/integration/vegetation_boundary_authority_contract.rs:582:1
+    |
+582 | fn assurance_receipts_form_the_recorded_generation_chain() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: could not compile `openwepp` (test "land_surface_energy_balance_authority_contract") due to 4 previous errors
+error: could not compile `openwepp` (test "vegetation_boundary_authority_contract") due to 1 previous error

@@ -1,3 +1,6 @@
+#[path = "support/sc_contract_text.rs"]
+mod sc_contract_text;
+
 use std::fs;
 use std::path::Path;
 
@@ -15,7 +18,7 @@ const PACKAGE: &str =
     "docs/work-packages/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001";
 
 fn read(path: &str) -> String {
-    fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
+    sc_contract_text::read(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
 }
 
 fn read_rust_tree(path: &Path) -> String {

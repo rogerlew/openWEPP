@@ -1,0 +1,99 @@
+{
+  "baseline_log": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/logs/rust-baseline-comparison.log",
+  "baseline_log_sha256": "41e99dd3eeb935fe405284504559cbaf1d174b1a4f797f020115a686be351bd5",
+  "candidate_log_sha256": "dfd4aa62c42ac9402097c7974471cf909fb7e83148aef6b3f0e4c1653e7f2cb9",
+  "same_failure_identities_and_normalized_panics": true,
+  "failures": [
+    [
+      "openwepp::land_surface_energy_balance_authority_contract",
+      "revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red"
+    ],
+    [
+      "openwepp::snow_stage3_shared_carrier_authority_contract",
+      "current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation"
+    ],
+    [
+      "openwepp::snow_stage3_terminal_receiver_authority_contract",
+      "all_owner_failure_rolls_back_and_index_records_lifecycle"
+    ],
+    [
+      "openwepp::solver_architecture_authority_contract",
+      "repository_authoring_instructions_bind_solver_changes_to_the_standard"
+    ],
+    [
+      "openwepp::solver_architecture_authority_contract",
+      "stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture"
+    ],
+    [
+      "openwepp::stage3_native_vegetation_laned_throughput_recovery",
+      "canonical_covered_pending_adjudication_is_contract_bound"
+    ],
+    [
+      "openwepp::stage3_native_vegetation_laned_throughput_recovery",
+      "coupled_slab_acceptance_consumes_one_private_revision_proof"
+    ],
+    [
+      "openwepp::stage3_native_vegetation_laned_throughput_recovery",
+      "native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable"
+    ],
+    [
+      "openwepp::stage3_native_vegetation_laned_throughput_recovery",
+      "snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable"
+    ],
+    [
+      "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "contract_binds_existing_lse_identity_and_restart_bytes"
+    ],
+    [
+      "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "version_15_binds_exact_soil_energy_credit_custody_before_production"
+    ],
+    [
+      "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "version_16_binds_exact_surface_enthalpy_custody_before_production"
+    ],
+    [
+      "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "version_9_binds_multi_lane_stage3_parent_release"
+    ],
+    [
+      "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "version_twenty_five_binds_laned_active_local_surface_routing"
+    ],
+    [
+      "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries"
+    ],
+    [
+      "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "version_twenty_three_binds_exact_owner_order_to_surface_topology"
+    ],
+    [
+      "openwepp::vegetation_boundary_authority_contract",
+      "v9_oracle_successor_is_exactly_bound_and_v8_is_immutable"
+    ],
+    [
+      "openwepp::vegetation_boundary_authority_contract",
+      "v9_runtime_equivalence_verifier_rejects_every_required_poison"
+    ]
+  ],
+  "panic_payloads": {
+    "revision 31 expected-red: production dependency-replay seam is absent: [\"struct CoveredComponentTemperatureDependencyGraph\", \"struct ValidatedCoveredComponentReplaySweepBase\", \"struct ValidatedCoveredComponentProbeReplay\", \"struct CoveredComponentDependencyReplayAudit\", \"fn covered_component_temperature_probe_residuals\", \"fn begin_covered_component_dependency_replay_audit\", \"fn take_covered_component_dependency_replay_audit\"]": 2,
+    "missing in-review v17 precipitation authority: contract_version: 58": 2,
+    "docs/specifications/science-contracts/index.md missing non-versioned ADR-0044 amendments bind one canonical covered solver": 2,
+    "AGENTS.md missing: Production numerical solvers must not accrete": 2,
+    "assertion failed: contract.contains(\"contract_version: 16\")": 2,
+    "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md missing contract_version: 60": 2,
+    "assertion failed: roadmap.contains(\"0044-prohibit-accretive-production-solver-dispatch.md\")": 2,
+    "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md missing contract_version: 16": 4,
+    "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md missing contract_version: 25": 2,
+    "assertion failed: registry.contains(\"v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank\")": 4,
+    "assertion failed: index.contains(\"v24 admits private immutable revision-bound surface-resource validation handoffs\")": 2,
+    "assertion failed: read(\"docs/specifications/science-contracts/index.md\").contains(\"v25 admits the complete all-local SurfaceLiquid routing posture\")": 2,
+    "assertion failed: registry_row.contains(\"v25 admits the complete all-local SurfaceLiquid routing posture\")": 2,
+    "assertion failed: read(\"docs/specifications/science-contracts/index.md\").contains(\"v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank\")": 2,
+    "V9 equivalence poisons failed: VEG-E-133: runtime mismatch is not libcrypto-only: libcrypto.so.3,libz.so.1": 2,
+    "V9 oracle failed: VEG-E-133: runtime mismatch is not libcrypto-only: libcrypto.so.3,libz.so.1": 2
+  },
+  "claim": "diagnostic equivalence only; masked obligations independently passing in focused tests"
+}

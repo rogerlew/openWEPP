@@ -1,0 +1,1098 @@
+{
+  "baseline": "fb32d27f258ce05c36d66a299c2d09d42fbb030c",
+  "scope": "literal input paths of all seven original consumer targets plus all legacy SC entries and compiler/tool/instruction inputs; production/tools/config tree diff is empty",
+  "inputs": [
+    {
+      "path": "AGENTS.md",
+      "baseline_sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+      "current_sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "Cargo.lock",
+      "baseline_sha256": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c",
+      "current_sha256": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "Cargo.toml",
+      "baseline_sha256": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+      "current_sha256": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "clippy.toml",
+      "baseline_sha256": "6bcaaf24bd65b7ead78a207a92d05ce1c1516ae69bdb1c240689a34b3bc6cd81",
+      "current_sha256": "6bcaaf24bd65b7ead78a207a92d05ce1c1516ae69bdb1c240689a34b3bc6cd81",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/AGENTS.md",
+      "baseline_sha256": "c09b4fbfb7a49aab4029312987155adb93835399c22d42e5ed9293e161a02334",
+      "current_sha256": "c09b4fbfb7a49aab4029312987155adb93835399c22d42e5ed9293e161a02334",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-coupled-time/src/transaction.rs",
+      "baseline_sha256": "56d095e6f91996120baae2dc661bcc7fb6b82611bc4f5d979b911ca093db652e",
+      "current_sha256": "56d095e6f91996120baae2dc661bcc7fb6b82611bc4f5d979b911ca093db652e",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs",
+      "baseline_sha256": "a006362e61e20483420882ff2250dbfa7186b5675cbceb75eb3d2e6f49251a99",
+      "current_sha256": "a006362e61e20483420882ff2250dbfa7186b5675cbceb75eb3d2e6f49251a99",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs",
+      "baseline_sha256": "883e450fff067a198c181ae85f739d4fb41cfba6dc62456e2510a1989cf0e0a9",
+      "current_sha256": "883e450fff067a198c181ae85f739d4fb41cfba6dc62456e2510a1989cf0e0a9",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor_tests.rs",
+      "baseline_sha256": "0b64393a0c4c2b86341c1900339f72fe698f916c4646a2b37b914988ee9a3df9",
+      "current_sha256": "0b64393a0c4c2b86341c1900339f72fe698f916c4646a2b37b914988ee9a3df9",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
+      "baseline_sha256": "d089925a6b89f18abea883f49552a26d884b3feb4646299e095e270d0eba8c19",
+      "current_sha256": "d089925a6b89f18abea883f49552a26d884b3feb4646299e095e270d0eba8c19",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests_tail.rs",
+      "baseline_sha256": "2cce7fb12d3a7aed3d1d78669fceafefeceb1a9a2e3ec9165db98cd6d219c832",
+      "current_sha256": "2cce7fb12d3a7aed3d1d78669fceafefeceb1a9a2e3ec9165db98cd6d219c832",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_wat5.rs",
+      "baseline_sha256": "5211a424c41ff2005da19e08151191eb4cc0163bb8a1bdf732beb30cf3d57389",
+      "current_sha256": "5211a424c41ff2005da19e08151191eb4cc0163bb8a1bdf732beb30cf3d57389",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/subhourly_generation.rs",
+      "baseline_sha256": "6d97e7b1258a29093f8896ffa81099cf6038f62328fa0f9bb668cce606f8815f",
+      "current_sha256": "6d97e7b1258a29093f8896ffa81099cf6038f62328fa0f9bb668cce606f8815f",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs",
+      "baseline_sha256": "8148fb4930701e57c05a31dfff2941ef1eaa83129922a2a5bb3e1ab4a608a260",
+      "current_sha256": "8148fb4930701e57c05a31dfff2941ef1eaa83129922a2a5bb3e1ab4a608a260",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_tests.rs",
+      "baseline_sha256": "146e6e95cc4853719acae379d715242b8761d2629310657334a20d169f24cd1d",
+      "current_sha256": "146e6e95cc4853719acae379d715242b8761d2629310657334a20d169f24cd1d",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs",
+      "baseline_sha256": "60245f2938f2473fd6cd4ffc44865f601a692265b678f3ca9d05dfc0b4f68508",
+      "current_sha256": "60245f2938f2473fd6cd4ffc44865f601a692265b678f3ca9d05dfc0b4f68508",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/identity_validation.rs",
+      "baseline_sha256": "e19dd3a4b694ea37de36880b45e9f721e59c88431bf1909754328bd9b3d22b51",
+      "current_sha256": "e19dd3a4b694ea37de36880b45e9f721e59c88431bf1909754328bd9b3d22b51",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2_ingress_adapter.rs",
+      "baseline_sha256": "2231c74cf9dd5e21b7614dee4de74f55ccc7fe6245ce5be4f914bd1fb9417426",
+      "current_sha256": "2231c74cf9dd5e21b7614dee4de74f55ccc7fe6245ce5be4f914bd1fb9417426",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2_ingress_tests.rs",
+      "baseline_sha256": "7837b5708a8c325108fcada2a7fe53cdade4584f29e7fd25b26178da2249060d",
+      "current_sha256": "7837b5708a8c325108fcada2a7fe53cdade4584f29e7fd25b26178da2249060d",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v3_exact_enthalpy.rs",
+      "baseline_sha256": "a8e41c25e74ead06f8bc92ef847f8e5a06acec52c3c328c3c5e86abb57dc9ed2",
+      "current_sha256": "a8e41c25e74ead06f8bc92ef847f8e5a06acec52c3c328c3c5e86abb57dc9ed2",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v3_projection.rs",
+      "baseline_sha256": "6b136014939c69aa40dc23a74e7896dc2491dbd32d1f8744746eaced6ce14ae4",
+      "current_sha256": "6b136014939c69aa40dc23a74e7896dc2491dbd32d1f8744746eaced6ce14ae4",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v4_projection.rs",
+      "baseline_sha256": "21bc70815672635ecbc1198d39eb487ded9ddbf8fd55209293e9c905e7a2cb55",
+      "current_sha256": "21bc70815672635ecbc1198d39eb487ded9ddbf8fd55209293e9c905e7a2cb55",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs",
+      "baseline_sha256": "dfef7863a6ec427ec7f2c2a461def09be1e60c0b4ad592fd71942df4291c32c7",
+      "current_sha256": "dfef7863a6ec427ec7f2c2a461def09be1e60c0b4ad592fd71942df4291c32c7",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_v8_owner.rs",
+      "baseline_sha256": "941cd35325b337916866990d269de1d48f096b84d6875f667983cef07df8d18b",
+      "current_sha256": "941cd35325b337916866990d269de1d48f096b84d6875f667983cef07df8d18b",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs",
+      "baseline_sha256": "bbd3e5be82d72c1d5b37fbb2e354a0536a0b840cf4398e0b07437e7557e8b5d9",
+      "current_sha256": "bbd3e5be82d72c1d5b37fbb2e354a0536a0b840cf4398e0b07437e7557e8b5d9",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs",
+      "baseline_sha256": "9534694f30227a53cf85549e574a685de6b218ca80f18ef95b9e8033876e5dee",
+      "current_sha256": "9534694f30227a53cf85549e574a685de6b218ca80f18ef95b9e8033876e5dee",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs",
+      "baseline_sha256": "84a21a88fbfe9e315095bb22f1f6436b438bee71193932205ab4e68ee9db77a0",
+      "current_sha256": "84a21a88fbfe9e315095bb22f1f6436b438bee71193932205ab4e68ee9db77a0",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_input_projection.rs",
+      "baseline_sha256": "de3043e79d493f8563e3a888383df663012f3a09fcfbb16a5e267809152a5f58",
+      "current_sha256": "de3043e79d493f8563e3a888383df663012f3a09fcfbb16a5e267809152a5f58",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+      "baseline_sha256": "2b5ac06b8ff67f0c5d7f087cc007134860d6c1f92557eb1843253f02ba39fd45",
+      "current_sha256": "2b5ac06b8ff67f0c5d7f087cc007134860d6c1f92557eb1843253f02ba39fd45",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_tests.rs",
+      "baseline_sha256": "af52e2ca19029819259a6bda5fdd24109a2eb73f6d38ce656c89fcd11ae31d45",
+      "current_sha256": "af52e2ca19029819259a6bda5fdd24109a2eb73f6d38ce656c89fcd11ae31d45",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+      "baseline_sha256": "6a17e546274a8d3dacbe9e73b1fb50e0f936bc4ab8d5eb5e8c8032457e392261",
+      "current_sha256": "6a17e546274a8d3dacbe9e73b1fb50e0f936bc4ab8d5eb5e8c8032457e392261",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs",
+      "baseline_sha256": "9723f0f4681bdf295083914e6d7cdee8f5a4a09063ed2434297bed1df89fd51d",
+      "current_sha256": "9723f0f4681bdf295083914e6d7cdee8f5a4a09063ed2434297bed1df89fd51d",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs",
+      "baseline_sha256": "76cf8b211cbbb46bf748a6374da857006f181ebdf8ac93d0ab43f47518a3e20a",
+      "current_sha256": "76cf8b211cbbb46bf748a6374da857006f181ebdf8ac93d0ab43f47518a3e20a",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "baseline_sha256": "d9231c16f4a3c7bd3e863cf06964ed752a41e882ff0ab0385d754ad826c3b36b",
+      "current_sha256": "d9231c16f4a3c7bd3e863cf06964ed752a41e882ff0ab0385d754ad826c3b36b",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_parent_chronology_tests.rs",
+      "baseline_sha256": "4514e2300a57e375dc6391a8b799950d0e0a27c6a878fcd4a91575eb613d24f3",
+      "current_sha256": "4514e2300a57e375dc6391a8b799950d0e0a27c6a878fcd4a91575eb613d24f3",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_precipitation.rs",
+      "baseline_sha256": "ad3a34f7bcdaa6454e1074bf692d4d8524935f7b73191fd04b254d149bbc6eed",
+      "current_sha256": "ad3a34f7bcdaa6454e1074bf692d4d8524935f7b73191fd04b254d149bbc6eed",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs",
+      "baseline_sha256": "c839b30a22733c9ae220577a4eba7366b96c8815d1ea7e2fe38320541da56710",
+      "current_sha256": "c839b30a22733c9ae220577a4eba7366b96c8815d1ea7e2fe38320541da56710",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_snow_soil_heat.rs",
+      "baseline_sha256": "2085f4253f5cd676768cebf3d1236e9105e67f2542f75fdcb2156139a4ef2160",
+      "current_sha256": "2085f4253f5cd676768cebf3d1236e9105e67f2542f75fdcb2156139a4ef2160",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs",
+      "baseline_sha256": "fc540651075fa8425b66bc1705e3b68233dbb1981de2f55f4210b7438d240402",
+      "current_sha256": "fc540651075fa8425b66bc1705e3b68233dbb1981de2f55f4210b7438d240402",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs",
+      "baseline_sha256": "1b009574ad56fe8246616ec4d4c54e0687413ab347af550200681d54a979e1a9",
+      "current_sha256": "1b009574ad56fe8246616ec4d4c54e0687413ab347af550200681d54a979e1a9",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs",
+      "baseline_sha256": "f76877c53c848faa65d2fc231e6332fa9753ae57e32a63a25104293c1e630b37",
+      "current_sha256": "f76877c53c848faa65d2fc231e6332fa9753ae57e32a63a25104293c1e630b37",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs",
+      "baseline_sha256": "31850f373247284b6ce928baf291cd27415f8a0aea88d0185f39206dedef34f7",
+      "current_sha256": "31850f373247284b6ce928baf291cd27415f8a0aea88d0185f39206dedef34f7",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/fixed_point.rs",
+      "baseline_sha256": "a9400b656991d7fa314a985528329bd8c832635985be24bb93cc19dcedaed911",
+      "current_sha256": "a9400b656991d7fa314a985528329bd8c832635985be24bb93cc19dcedaed911",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs",
+      "baseline_sha256": "e4672403c0f8fff5e3252d0f776f5603bc2d1612e8ad67161f1f2fa923b7856e",
+      "current_sha256": "e4672403c0f8fff5e3252d0f776f5603bc2d1612e8ad67161f1f2fa923b7856e",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs",
+      "baseline_sha256": "646a6646814dea9f728c2c9996d290b2271c9b55f921f882fb5d7ab33f81d83b",
+      "current_sha256": "646a6646814dea9f728c2c9996d290b2271c9b55f921f882fb5d7ab33f81d83b",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization_v50_transition.rs",
+      "baseline_sha256": "a12ced8a4dbfee3c6c82d2f949e4bc775e33fad3f19a426e0bf43d148a594ed0",
+      "current_sha256": "a12ced8a4dbfee3c6c82d2f949e4bc775e33fad3f19a426e0bf43d148a594ed0",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+      "baseline_sha256": "477fe93f3c87eca1a7b66203977377636c61fb669724921358fc563d9c06d79f",
+      "current_sha256": "477fe93f3c87eca1a7b66203977377636c61fb669724921358fc563d9c06d79f",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_adoption.rs",
+      "baseline_sha256": "6c1c1f5acf36ea9b146f9916fa10417fba5cabfdc0dfd3abc5095d45826e83fb",
+      "current_sha256": "6c1c1f5acf36ea9b146f9916fa10417fba5cabfdc0dfd3abc5095d45826e83fb",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+      "baseline_sha256": "6ec915b969def38718f243027e95c20dc7336f928f3f2b9ea8d12d18e8f1acda",
+      "current_sha256": "6ec915b969def38718f243027e95c20dc7336f928f3f2b9ea8d12d18e8f1acda",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs",
+      "baseline_sha256": "a24a76320972e93d967ffcfd74eef0d8b055e5fda04e523a91825e8a58a584fb",
+      "current_sha256": "a24a76320972e93d967ffcfd74eef0d8b055e5fda04e523a91825e8a58a584fb",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_unpublished_continuation.rs",
+      "baseline_sha256": "a2a9b8fe893c3e53cb268824bd628d02c80444537b45ad5a3535cdc8edce02b4",
+      "current_sha256": "a2a9b8fe893c3e53cb268824bd628d02c80444537b45ad5a3535cdc8edce02b4",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_v49_tests.rs",
+      "baseline_sha256": "11a912c5629b151f69b9eb5647a2d1c430510f755ba5c0b908712e3407f880a9",
+      "current_sha256": "11a912c5629b151f69b9eb5647a2d1c430510f755ba5c0b908712e3407f880a9",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+      "baseline_sha256": "ba3d1ceda7a7d19012815b8343a800dfb4282fda2e69d59cd57d252d44c08d51",
+      "current_sha256": "ba3d1ceda7a7d19012815b8343a800dfb4282fda2e69d59cd57d252d44c08d51",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-output/src/hillslope_wat.rs",
+      "baseline_sha256": "c9e72a08014385dc2ded2e2ee61e3368112979ad9e99afa4bc3d62c5d7582fee",
+      "current_sha256": "c9e72a08014385dc2ded2e2ee61e3368112979ad9e99afa4bc3d62c5d7582fee",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-hillslope-output/src/hillslope_wat_subhourly.rs",
+      "baseline_sha256": "09447460dffd703127ed9a09592fff31a634da391a85df0380389ed411ec07ef",
+      "current_sha256": "09447460dffd703127ed9a09592fff31a634da391a85df0380389ed411ec07ef",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/exact_dyadic_enthalpy.rs",
+      "baseline_sha256": "4ee8a66aecffcb2f8db56234f7d127b55a0bf722b36bd4535402b42009279165",
+      "current_sha256": "4ee8a66aecffcb2f8db56234f7d127b55a0bf722b36bd4535402b42009279165",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+      "baseline_sha256": "91d83b22a17b197a12fdf4204cbe12541c98aa119691a4406c64aa56b3577924",
+      "current_sha256": "91d83b22a17b197a12fdf4204cbe12541c98aa119691a4406c64aa56b3577924",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/litter_phase.rs",
+      "baseline_sha256": "a3aabedf1598e7573a506122142e112079c5550f846372f58d0785e9dbf7ef75",
+      "current_sha256": "a3aabedf1598e7573a506122142e112079c5550f846372f58d0785e9dbf7ef75",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/litter_phase_closure.rs",
+      "baseline_sha256": "a5987cdf7d5b4893597d04d6f33314e0887527a06685e33242fc5a0311ca21ad",
+      "current_sha256": "a5987cdf7d5b4893597d04d6f33314e0887527a06685e33242fc5a0311ca21ad",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/litter_phase_output.rs",
+      "baseline_sha256": "20c5c8487f07fd4e1f14b7ffbb0390f7c2fd62024b5a372503ea72a7fbf5769a",
+      "current_sha256": "20c5c8487f07fd4e1f14b7ffbb0390f7c2fd62024b5a372503ea72a7fbf5769a",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/litter_phase_tests.rs",
+      "baseline_sha256": "d1ecae5cdfec71d7337cf18555a68ad78f83dede0f3011dc5b57f69a31644ddb",
+      "current_sha256": "d1ecae5cdfec71d7337cf18555a68ad78f83dede0f3011dc5b57f69a31644ddb",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/owner_envelope.rs",
+      "baseline_sha256": "e2a6b95c2a04000830bd0f2a371796a3cedda8ae53f93c08ceae7c89b9ee7e2b",
+      "current_sha256": "e2a6b95c2a04000830bd0f2a371796a3cedda8ae53f93c08ceae7c89b9ee7e2b",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+      "baseline_sha256": "f3b2db2402a665b8758d7933336836eac6b6bd02bf3bbd5d3cf732357f3f1366",
+      "current_sha256": "f3b2db2402a665b8758d7933336836eac6b6bd02bf3bbd5d3cf732357f3f1366",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs",
+      "baseline_sha256": "bf13c0fee7fc2183d7c55a1f9619bd800551beaebbbe7730abc9097f6931eb7c",
+      "current_sha256": "bf13c0fee7fc2183d7c55a1f9619bd800551beaebbbe7730abc9097f6931eb7c",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_litter_phase.rs",
+      "baseline_sha256": "5679b5c30ed11344639f097583637a7c6d7a857850ddf9a8d57bb1799d2da836",
+      "current_sha256": "5679b5c30ed11344639f097583637a7c6d7a857850ddf9a8d57bb1799d2da836",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transaction.rs",
+      "baseline_sha256": "6a4a8687c4536f263101290eb57c1dd624ed8caf2ca0ac973760028e3b92cf41",
+      "current_sha256": "6a4a8687c4536f263101290eb57c1dd624ed8caf2ca0ac973760028e3b92cf41",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transaction_v3.rs",
+      "baseline_sha256": "8b781c05bce72d7a2537e8004a5ede492b62a9bfb186155f4308f67d398fe73c",
+      "current_sha256": "8b781c05bce72d7a2537e8004a5ede492b62a9bfb186155f4308f67d398fe73c",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+      "baseline_sha256": "d6842a728672e2c97045d3205fe6da2377deb9053f42b5a4160d129725ee076a",
+      "current_sha256": "d6842a728672e2c97045d3205fe6da2377deb9053f42b5a4160d129725ee076a",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/v3_state.rs",
+      "baseline_sha256": "a86a0d6a06191ddb381c8ed9ff10615ab96c9dbf9d30baac2df3db3d17233730",
+      "current_sha256": "a86a0d6a06191ddb381c8ed9ff10615ab96c9dbf9d30baac2df3db3d17233730",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/water.rs",
+      "baseline_sha256": "01dd1dabb42ec6b9454a281790aae0757fc3a80acf56d334c5b7d9acfd307515",
+      "current_sha256": "01dd1dabb42ec6b9454a281790aae0757fc3a80acf56d334c5b7d9acfd307515",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/lib.rs",
+      "baseline_sha256": "6b4ec9480c945c95b180a569ce2571c071e6f7cb1e3d46d035bc78bb168acc2d",
+      "current_sha256": "6b4ec9480c945c95b180a569ce2571c071e6f7cb1e3d46d035bc78bb168acc2d",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/03_tests.rs",
+      "baseline_sha256": "9fe774795e8dee6aa92e58aa22d154f879a990af0fd53d828da83d0a3fda080d",
+      "current_sha256": "9fe774795e8dee6aa92e58aa22d154f879a990af0fd53d828da83d0a3fda080d",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/04_direct_publication.rs",
+      "baseline_sha256": "fd343040fc1d7d80272c76a58303b3f6ac75dca7f7b0f658b3d90b1533e24278",
+      "current_sha256": "fd343040fc1d7d80272c76a58303b3f6ac75dca7f7b0f658b3d90b1533e24278",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs",
+      "baseline_sha256": "4e95e0bb80c94599196ff4731578b4ac3e3389059936f20d3fbe09a9b5b6ddbe",
+      "current_sha256": "4e95e0bb80c94599196ff4731578b4ac3e3389059936f20d3fbe09a9b5b6ddbe",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/snow_stage3_v11_production_seed.rs",
+      "baseline_sha256": "ee47c53f35ce9d1f49703b0bd5d47c01fab4cefa1693976f5f2ce673ebbad4e3",
+      "current_sha256": "ee47c53f35ce9d1f49703b0bd5d47c01fab4cefa1693976f5f2ce673ebbad4e3",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs",
+      "baseline_sha256": "d37a7f681223117eaa3fb34f6b2a66ce80448cb2f5b021c01a64cca86d397aeb",
+      "current_sha256": "d37a7f681223117eaa3fb34f6b2a66ce80448cb2f5b021c01a64cca86d397aeb",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_long_run_qualification.rs",
+      "baseline_sha256": "1ff05c78c3b8bacf43b8a8334f62e39aa9eab8be99006cf9e1a830790378ce6f",
+      "current_sha256": "1ff05c78c3b8bacf43b8a8334f62e39aa9eab8be99006cf9e1a830790378ce6f",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+      "baseline_sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+      "current_sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/tests03/wat5_output_transaction.rs",
+      "baseline_sha256": "7adde207582a161bd8c2d7be8a8075282ff0db46ebfa834d34cf1a36858fbc7e",
+      "current_sha256": "7adde207582a161bd8c2d7be8a8075282ff0db46ebfa834d34cf1a36858fbc7e",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "crates/openwepp-vegetation/src/v11.rs",
+      "baseline_sha256": "93bb948f7c57114a96a2ab6373ea0ca108c2d74cb5559c2ef17e58851ca818ff",
+      "current_sha256": "93bb948f7c57114a96a2ab6373ea0ca108c2d74cb5559c2ef17e58851ca818ff",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "baseline_sha256": "ba370ddb875a8bc3734a0bccb85f226cefe4591a5b13486fc3a241ba047acccb",
+      "current_sha256": "ba370ddb875a8bc3734a0bccb85f226cefe4591a5b13486fc3a241ba047acccb",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md",
+      "baseline_sha256": "a597aaf802917e1ed9c21db1f4453c571dde09ad48684c0f7d0ff9062b6645e6",
+      "current_sha256": "a597aaf802917e1ed9c21db1f4453c571dde09ad48684c0f7d0ff9062b6645e6",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/decisions/README.md",
+      "baseline_sha256": "b3a832e3c84cebf9cff42164cdf02a2e3399e5f1aac8e2839b03d243f0e8d53e",
+      "current_sha256": "b3a832e3c84cebf9cff42164cdf02a2e3399e5f1aac8e2839b03d243f0e8d53e",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/AGENTS.md",
+      "baseline_sha256": "bace4ab3e33119e0239f700f92c53707d884f297e92d2454a86c477758c930c7",
+      "current_sha256": "bace4ab3e33119e0239f700f92c53707d884f297e92d2454a86c477758c930c7",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md",
+      "baseline_sha256": "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4",
+      "current_sha256": "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md",
+      "baseline_sha256": "9ab58b4c5da79aa3e4e8855a57d76d2b1c94d3b22002342bc8a8689a560b35ff",
+      "current_sha256": "9ab58b4c5da79aa3e4e8855a57d76d2b1c94d3b22002342bc8a8689a560b35ff",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+      "baseline_sha256": "1d10611b5143be201381f283ec5594d9f65c99f8252e944dfae57076a8a699f7",
+      "current_sha256": "1d10611b5143be201381f283ec5594d9f65c99f8252e944dfae57076a8a699f7",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-EVAP-001.md",
+      "baseline_sha256": "b9edfef1d644b48f487fe95138761765ca24ffa58b323120e9585a22004a45be",
+      "current_sha256": "b9edfef1d644b48f487fe95138761765ca24ffa58b323120e9585a22004a45be",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
+      "baseline_sha256": "97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60",
+      "current_sha256": "97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md",
+      "baseline_sha256": "1b5d02f6f7115c1a04f56e3ea933773876fc2ccc874e862e17e683fdc960bb93",
+      "current_sha256": "1b5d02f6f7115c1a04f56e3ea933773876fc2ccc874e862e17e683fdc960bb93",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-IMPOUND-001.md",
+      "baseline_sha256": "ebad8c01395e85b638124b296923f85bbc8bcdbd6d898fe081b9ed8dd53a2e76",
+      "current_sha256": "ebad8c01395e85b638124b296923f85bbc8bcdbd6d898fe081b9ed8dd53a2e76",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-CHANINP-001.md",
+      "baseline_sha256": "da94093ff009be0e8ee618783c799d1ed70c0377b398e546fecd7e5c6c605be6",
+      "current_sha256": "da94093ff009be0e8ee618783c799d1ed70c0377b398e546fecd7e5c6c605be6",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-CLIMATE-001.md",
+      "baseline_sha256": "dafd32adf1975202525eba3985aa5b0c4bad00201859bc80c92ee31964c68264",
+      "current_sha256": "dafd32adf1975202525eba3985aa5b0c4bad00201859bc80c92ee31964c68264",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-FROST-001.md",
+      "baseline_sha256": "da9a81713b6f10e401604fe36e44d782534fcbb487c21b18cb83356ea39237fa",
+      "current_sha256": "da9a81713b6f10e401604fe36e44d782534fcbb487c21b18cb83356ea39237fa",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-GWCOEFF-001.md",
+      "baseline_sha256": "af29486e9e90c30906ae9a103b14ce1ba48edb64bc623a03f5e2df705f79ed51",
+      "current_sha256": "af29486e9e90c30906ae9a103b14ce1ba48edb64bc623a03f5e2df705f79ed51",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-HBP-001.md",
+      "baseline_sha256": "ead119f5280cab6bec23f1ffa39e71a2bc83cb17f6943184423b803d0cbe5d18",
+      "current_sha256": "ead119f5280cab6bec23f1ffa39e71a2bc83cb17f6943184423b803d0cbe5d18",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-DEPLETION-001.md",
+      "baseline_sha256": "f9127c610bdd9e72cf9a4487d4717a40860fe7bab5f929d7644dc17627a76b92",
+      "current_sha256": "f9127c610bdd9e72cf9a4487d4717a40860fe7bab5f929d7644dc17627a76b92",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-FIXEDDATE-001.md",
+      "baseline_sha256": "8ab23208b0e7c9c6c7ef221c1f4f7a4698c1d235c7ce386acec54b920523df64",
+      "current_sha256": "8ab23208b0e7c9c6c7ef221c1f4f7a4698c1d235c7ce386acec54b920523df64",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-LCWB-001.md",
+      "baseline_sha256": "f9db7b19ab3d5a87e7911724e32d65cf761fb764e84133402913a30e36b1615a",
+      "current_sha256": "f9db7b19ab3d5a87e7911724e32d65cf761fb764e84133402913a30e36b1615a",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md",
+      "baseline_sha256": "e2e4f70c91ea874bb37f60a7b516232d5e44b53ba4066e560a0565d972f2dca7",
+      "current_sha256": "e2e4f70c91ea874bb37f60a7b516232d5e44b53ba4066e560a0565d972f2dca7",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md",
+      "baseline_sha256": "752c834592654cf0b7017a46dc82b5b6483e0c3a5b3279dffe77a5e71e5b027d",
+      "current_sha256": "752c834592654cf0b7017a46dc82b5b6483e0c3a5b3279dffe77a5e71e5b027d",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-PHOSPHORUS-001.md",
+      "baseline_sha256": "13c5d5179a08d9c7b56733e574b7f394685b4b35c6ce5cf5e41aa6cc71eb0ba8",
+      "current_sha256": "13c5d5179a08d9c7b56733e574b7f394685b4b35c6ce5cf5e41aa6cc71eb0ba8",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-PMETPARA-001.md",
+      "baseline_sha256": "86997e0979b7c682a360ecced231c2eef661d3195f2f4c454230934b9010a54c",
+      "current_sha256": "86997e0979b7c682a360ecced231c2eef661d3195f2f4c454230934b9010a54c",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-SLOPE-001.md",
+      "baseline_sha256": "0944911bf268f4655f26694eb41882e5cba20abeffa431aa203eecf709196b5f",
+      "current_sha256": "0944911bf268f4655f26694eb41882e5cba20abeffa431aa203eecf709196b5f",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-SNOW-001.md",
+      "baseline_sha256": "bcfe7c665a73bc45d89816de84179350ce11cfb78e4b6472e60b28c0c9e7003b",
+      "current_sha256": "bcfe7c665a73bc45d89816de84179350ce11cfb78e4b6472e60b28c0c9e7003b",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md",
+      "baseline_sha256": "122de662fd9414c44edbc5284db08e348e0138aeba728ec6603141b65c37e9f1",
+      "current_sha256": "122de662fd9414c44edbc5284db08e348e0138aeba728ec6603141b65c37e9f1",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-TC-001.md",
+      "baseline_sha256": "6e01d483be28290e39b441a1eebcd923d2f8fc38b5c632f0b4efc3b1c51074cd",
+      "current_sha256": "6e01d483be28290e39b441a1eebcd923d2f8fc38b5c632f0b4efc3b1c51074cd",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-TCR-001.md",
+      "baseline_sha256": "b7efb516ba3d2cf6fe4e53f3e2fb21ac723a561009ff81adcad162878cafa639",
+      "current_sha256": "b7efb516ba3d2cf6fe4e53f3e2fb21ac723a561009ff81adcad162878cafa639",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-CHANNEL-001.md",
+      "baseline_sha256": "835facb44b2065f5c4505228d83d52200e8472e9826e54db75efe553850cdb0c",
+      "current_sha256": "835facb44b2065f5c4505228d83d52200e8472e9826e54db75efe553850cdb0c",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-IMPOUNDMENT-001.md",
+      "baseline_sha256": "e8655b9284f700de90273197c178343fd9d8a7ec77ce7f8fe5072a9a8d2696bf",
+      "current_sha256": "e8655b9284f700de90273197c178343fd9d8a7ec77ce7f8fe5072a9a8d2696bf",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-STRUCTURE-001.md",
+      "baseline_sha256": "2019152be93ef5cb5281950cd2efc0e21ba91cd141ad71545126c0acdd6b80f3",
+      "current_sha256": "2019152be93ef5cb5281950cd2efc0e21ba91cd141ad71545126c0acdd6b80f3",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md",
+      "baseline_sha256": "f4dfb7758ea7e9c819a4db404137288fd8dbe9e852fec28b4b09f7c35fea0779",
+      "current_sha256": "f4dfb7758ea7e9c819a4db404137288fd8dbe9e852fec28b4b09f7c35fea0779",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-IRRIG-001.md",
+      "baseline_sha256": "d8a257c5f1880947fb5b78083681e17fe445dc104eef1ada42f494070403d6ab",
+      "current_sha256": "d8a257c5f1880947fb5b78083681e17fe445dc104eef1ada42f494070403d6ab",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+      "baseline_sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+      "current_sha256": "c94f30d0e4462284769d498ca31fe80e7a5b0d5026c233c85c1ddd310d2b6058",
+      "unchanged": false,
+      "disposition": "migration authority/date"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md",
+      "baseline_sha256": "1a78c926c65d869a4f738c073ba841861a24602989521f33cc90f28e615b1f82",
+      "current_sha256": "1a78c926c65d869a4f738c073ba841861a24602989521f33cc90f28e615b1f82",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md",
+      "baseline_sha256": "cf336d5425644aceb83b877e0075ffd6da8dd9fe3b76af4c3f35a5bc2075f1c8",
+      "current_sha256": "cf336d5425644aceb83b877e0075ffd6da8dd9fe3b76af4c3f35a5bc2075f1c8",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-PERC-001.md",
+      "baseline_sha256": "74cf1282d9dcfe6cf84767f1e3c6ec4d4b20a1cb8b2852bbc40ad7495e0b09af",
+      "current_sha256": "74cf1282d9dcfe6cf84767f1e3c6ec4d4b20a1cb8b2852bbc40ad7495e0b09af",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-PLANT-001.md",
+      "baseline_sha256": "76c876d91ec95dfb18b436ebd1ff232f31d412bf42bc82cdd272d158a7ee459c",
+      "current_sha256": "76c876d91ec95dfb18b436ebd1ff232f31d412bf42bc82cdd272d158a7ee459c",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md",
+      "baseline_sha256": "c3cc6da20f39ead5b465db66be5bd5b60b99d1326c219955444075fdff05c991",
+      "current_sha256": "c3cc6da20f39ead5b465db66be5bd5b60b99d1326c219955444075fdff05c991",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-ROOTZONEHYDRAULICS-001.md",
+      "baseline_sha256": "428fe3c3956c792a4768e11360373709f84d8936834dc310ec7e998d831c475d",
+      "current_sha256": "428fe3c3956c792a4768e11360373709f84d8936834dc310ec7e998d831c475d",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-ROUTE-001.md",
+      "baseline_sha256": "e6aa282c81f10f25341875b7d5f793b77e4b355a8ae6ee970bcc3d357780a11c",
+      "current_sha256": "e6aa282c81f10f25341875b7d5f793b77e4b355a8ae6ee970bcc3d357780a11c",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+      "baseline_sha256": "2861a7ba877468e9aa9893266b8c46a09b2ca8181b4b211db756108cb703defa",
+      "current_sha256": "2861a7ba877468e9aa9893266b8c46a09b2ca8181b4b211db756108cb703defa",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SED-001.md",
+      "baseline_sha256": "5586a8eec6f790014172acffc8701ff514fac944639e4f7991f9357460a3a353",
+      "current_sha256": "5586a8eec6f790014172acffc8701ff514fac944639e4f7991f9357460a3a353",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+      "baseline_sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d",
+      "current_sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEFORCING-001.md",
+      "baseline_sha256": "1dc78f05bf6841254da2016f7eeec69d4a84963af763603d53a5ae5e6dc0e638",
+      "current_sha256": "1dc78f05bf6841254da2016f7eeec69d4a84963af763603d53a5ae5e6dc0e638",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+      "baseline_sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+      "current_sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SOIL-001.md",
+      "baseline_sha256": "f81809c50944d186fcfdf42bf66d2db821595b7bbce54083e71a8b0d58694afd",
+      "current_sha256": "f81809c50944d186fcfdf42bf66d2db821595b7bbce54083e71a8b0d58694afd",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md",
+      "baseline_sha256": "fb9360da5eb303b2fa61e8da1daccfed62f4d944ee76f3c367474b679ac3fbcb",
+      "current_sha256": "fb9360da5eb303b2fa61e8da1daccfed62f4d944ee76f3c367474b679ac3fbcb",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+      "baseline_sha256": "fbb27d07e4459dabd37330d3292564ccb94789fdc0530fcde07262c00adfcbd4",
+      "current_sha256": "fbb27d07e4459dabd37330d3292564ccb94789fdc0530fcde07262c00adfcbd4",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md",
+      "baseline_sha256": "9d5dde7b02fdfa594b8b5572dbfd628b7c03ab77bdb073eeb4bbb13198632b45",
+      "current_sha256": "9d5dde7b02fdfa594b8b5572dbfd628b7c03ab77bdb073eeb4bbb13198632b45",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "baseline_sha256": "3b1c8525e6d09d7afae6e27d5fa59f90347d55d8bf34bc6292d0d767d3bfc5fa",
+      "current_sha256": "3b1c8525e6d09d7afae6e27d5fa59f90347d55d8bf34bc6292d0d767d3bfc5fa",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",
+      "baseline_sha256": "39e48280cae983b47dc20fd2b9d9472a9d7e205299aade165b03938f56268ac4",
+      "current_sha256": "39e48280cae983b47dc20fd2b9d9472a9d7e205299aade165b03938f56268ac4",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+      "baseline_sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c",
+      "current_sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/specifications/science-contracts/index.md",
+      "baseline_sha256": "9a08cf0707c1261d6ea79679679b0110724464b571bec40bfa1ca9c1d86152c4",
+      "current_sha256": "50e20891b603c0b4cbce575128555118c9245d272a59c3c3c3c23ca43d94ccd3",
+      "unchanged": false,
+      "disposition": "migration authority/date"
+    },
+    {
+      "path": "docs/standards/numerical-solver-architecture.md",
+      "baseline_sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
+      "current_sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/authority-decision.md",
+      "baseline_sha256": "9fa6af0a988b55798426093d120f5d37cdb7a7d59adbd09c2fd8cba91f2f7374",
+      "current_sha256": "9fa6af0a988b55798426093d120f5d37cdb7a7d59adbd09c2fd8cba91f2f7374",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts/carrier-boundary-vectors.json",
+      "baseline_sha256": "68f6daab7d72eb8ba26b11f93358840fe32f500ef7ce1b9d64ffa6eb665af0a2",
+      "current_sha256": "68f6daab7d72eb8ba26b11f93358840fe32f500ef7ce1b9d64ffa6eb665af0a2",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts/carrier-receipt-schema.json",
+      "baseline_sha256": "5bf61b6e13cbb32067b922ddf3aae5722c49a94622ade8bd01b27dd701443e93",
+      "current_sha256": "5bf61b6e13cbb32067b922ddf3aae5722c49a94622ade8bd01b27dd701443e93",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts/event-boundary-receipt-schema.json",
+      "baseline_sha256": "ff5e712c7b84574a41f2b52e460262ecab3e6dfd4c50ae59cf5bdf8fb250eb74",
+      "current_sha256": "ff5e712c7b84574a41f2b52e460262ecab3e6dfd4c50ae59cf5bdf8fb250eb74",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts/receipt-schema-fixtures.json",
+      "baseline_sha256": "bc4c6d32d17982f4e81d56ef0756de137d81c9d5c61c43d4388914cd9068acac",
+      "current_sha256": "bc4c6d32d17982f4e81d56ef0756de137d81c9d5c61c43d4388914cd9068acac",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts/restart-rollback-vectors.json",
+      "baseline_sha256": "3e3d3f9c4fc2a52f5a108b8bf80232c69579dc7787c9498a693ca6908f188271",
+      "current_sha256": "3e3d3f9c4fc2a52f5a108b8bf80232c69579dc7787c9498a693ca6908f188271",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/package.md",
+      "baseline_sha256": "99af825f00d386dab93c3dbfd36908be1b0e97d517c63f41a71f6bfb3fbe3171",
+      "current_sha256": "99af825f00d386dab93c3dbfd36908be1b0e97d517c63f41a71f6bfb3fbe3171",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/work-packages/20260826-vegetation-v9-libcrypto-runtime-equivalence-defect-closure-001/artifacts/verify_v9_runtime_equivalence.py",
+      "baseline_sha256": "71ccef3c97cf23a5e28e1b74f2a0d8a94751cdf4af7e8bdcd56079c925d6148d",
+      "current_sha256": "71ccef3c97cf23a5e28e1b74f2a0d8a94751cdf4af7e8bdcd56079c925d6148d",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/representative-10ofe-100year-workload.json",
+      "baseline_sha256": "f47d249abdc61b9fdce3b581996d8be7461c02412990af34327498270330e633",
+      "current_sha256": "f47d249abdc61b9fdce3b581996d8be7461c02412990af34327498270330e633",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "docs/work-packages/AGENTS.md",
+      "baseline_sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+      "current_sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "flake.lock",
+      "baseline_sha256": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+      "current_sha256": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "flake.nix",
+      "baseline_sha256": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+      "current_sha256": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "tests/AGENTS.md",
+      "baseline_sha256": "a611de77a1e0f892a7f10736aff40e9d8fa408d4caf8b360907166d4eabc6fe4",
+      "current_sha256": "a611de77a1e0f892a7f10736aff40e9d8fa408d4caf8b360907166d4eabc6fe4",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "tests/integration/dff_ws1_native_forest_cli.rs",
+      "baseline_sha256": "fd5552ec4436a684050ea16e614290d85795e3a2e9e2f5546f14b27ea482cca3",
+      "current_sha256": "fd5552ec4436a684050ea16e614290d85795e3a2e9e2f5546f14b27ea482cca3",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "tests/integration/erosion_single_ofe_p61_sediment.rs",
+      "baseline_sha256": "7722709013c995e1b094bb02e19e8a3555525bb48cbc6f725d5364c3918d8768",
+      "current_sha256": "7722709013c995e1b094bb02e19e8a3555525bb48cbc6f725d5364c3918d8768",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "tests/integration/subhourly_generation_properties.rs",
+      "baseline_sha256": "7c0cf7bd6a7247543f08a9112f8755018ef8f9a8a2d5b60bf20e9595f2fbe595",
+      "current_sha256": "7c0cf7bd6a7247543f08a9112f8755018ef8f9a8a2d5b60bf20e9595f2fbe595",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "tests/integration/subhourly_water_output_roundtrip.rs",
+      "baseline_sha256": "c5c5d140b1dd4ae2eebe149bc5a07b511c241f6c9e6be3492ddc7294c55f9b24",
+      "current_sha256": "c5c5d140b1dd4ae2eebe149bc5a07b511c241f6c9e6be3492ddc7294c55f9b24",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "tools/check_sc_binding_exposure.py",
+      "baseline_sha256": "df3bc341901ef34d90a1110b75507432e1fae98e82a4eeabe9f6b225cf7b89f3",
+      "current_sha256": "df3bc341901ef34d90a1110b75507432e1fae98e82a4eeabe9f6b225cf7b89f3",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "tools/release/check_sc_unit_compliance.py",
+      "baseline_sha256": "2999db488e3723f6aa8c4dfe31469bcf9692f46e1b8127eaa980435e69f42fbe",
+      "current_sha256": "2999db488e3723f6aa8c4dfe31469bcf9692f46e1b8127eaa980435e69f42fbe",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "tools/release/check_science_contract_admission.sh",
+      "baseline_sha256": "5a44470d75042a04912f7a52b05a72767a49d1c3c67494891e5a530b15ab327d",
+      "current_sha256": "5a44470d75042a04912f7a52b05a72767a49d1c3c67494891e5a530b15ab327d",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    },
+    {
+      "path": "tools/sc_contract_directory.py",
+      "baseline_sha256": "758ae0fffdee4146d12d36fc91f6970e5d1fae867b78beb1ee02345153760d6b",
+      "current_sha256": "758ae0fffdee4146d12d36fc91f6970e5d1fae867b78beb1ee02345153760d6b",
+      "unchanged": true,
+      "disposition": "unchanged input"
+    }
+  ]
+}

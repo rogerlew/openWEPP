@@ -1,0 +1,146 @@
+{
+  "baseline": "fb32d27f2",
+  "fixture": "/tmp/lse-baseline-clippy-07a428fr",
+  "command": [
+    "nix",
+    "develop",
+    "-c",
+    "cargo",
+    "clippy",
+    "--manifest-path",
+    "/tmp/lse-baseline-clippy-07a428fr/Cargo.toml",
+    "-p",
+    "openwepp",
+    "--no-deps",
+    "--test",
+    "land_surface_energy_balance_authority_contract",
+    "--test",
+    "snow_stage3_shared_carrier_authority_contract",
+    "--test",
+    "snow_stage3_terminal_receiver_authority_contract",
+    "--test",
+    "solver_architecture_authority_contract",
+    "--test",
+    "stage3_native_vegetation_laned_throughput_recovery",
+    "--test",
+    "surface_liquid_hydrology_custody_authority_contract",
+    "--test",
+    "vegetation_boundary_authority_contract",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "exit": 101,
+  "source_files": [
+    "tests/integration/land_surface_energy_balance_authority_contract.rs",
+    "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+    "tests/integration/snow_stage3_terminal_receiver_authority_contract.rs",
+    "tests/integration/solver_architecture_authority_contract.rs",
+    "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+    "tests/integration/surface_liquid_hydrology_custody_authority_contract.rs",
+    "tests/integration/vegetation_boundary_authority_contract.rs"
+  ],
+  "scope": "original test source and lint settings; unchanged current production dependencies; isolated manifest target enumeration",
+  "actual_fixture_manifest_sha256": "1ac1d8a47ff6dc0150d20c9cea771607176028df544d51bbfe74d86ec9291833",
+  "actual_fixture_lock_sha256": "d50fb437c79c1095f0bd0252647ca36cc5987c488d02ee2d4f72dd608bcace48",
+  "original_lock_sha256": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c",
+  "lock_disposition": {
+    "removed_unused_packages": [
+      [
+        "approx",
+        "0.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "errno",
+        "0.3.14",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "fastrand",
+        "2.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "fnv",
+        "1.0.7",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "linux-raw-sys",
+        "0.12.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "ppv-lite86",
+        "0.2.21",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "proptest",
+        "1.11.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "quick-error",
+        "1.2.3",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "rand",
+        "0.9.5",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "rand_chacha",
+        "0.9.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "rand_core",
+        "0.9.5",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "rand_xorshift",
+        "0.4.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "rustix",
+        "1.1.4",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "rusty-fork",
+        "0.3.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "tempfile",
+        "3.27.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "unarray",
+        "0.1.4",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "wait-timeout",
+        "0.2.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "windows-sys",
+        "0.61.2",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ]
+    ],
+    "added_packages": [],
+    "common_version_source_checksum_identity": true,
+    "dependency_lists": "Cargo pruned dev/workspace-only dependencies in isolated target graph; lock bytes are NOT identical",
+    "claim": "bounded root-source lint comparison only, not workspace/runtime equivalence"
+  }
+}
