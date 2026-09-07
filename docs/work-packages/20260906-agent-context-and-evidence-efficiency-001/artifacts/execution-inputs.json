@@ -1,0 +1,48 @@
+{
+  "scope": "administrative input binding; observed during verification preparation, not retroactive execution telemetry",
+  "python": {
+    "version": "3.12.14 (main, Aug 12 2026, 13:57:54) [GCC 15.2.0]",
+    "executable": "/workdir/openWEPP/.venv/bin/python",
+    "sha256": "59234be299f9d095852500c6a82abb68a718a65768e9a5b109e996c3fc2878ce"
+  },
+  "platform": "Linux-7.0.0-29-generic-x86_64-with-glibc2.42",
+  "allowlisted_environment": {
+    "LANG": "en_US.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "RUSTFLAGS": null,
+    "RUST_MIN_STACK": null,
+    "CARGO_PROFILE_RELEASE_LTO": null
+  },
+  "commands": [
+    [
+      ".venv/bin/python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tools/agents",
+      "-p",
+      "test_*.py"
+    ],
+    [
+      "nix",
+      "develop",
+      "--offline",
+      "--command",
+      "cargo",
+      "nextest",
+      "run",
+      "--offline",
+      "--test",
+      "adr0017_comparator_distrust_ratification_contract",
+      "--test",
+      "advisory_linter_authority_contract"
+    ]
+  ],
+  "limitations": [
+    "File identities are necessary input bindings, not complete Rust binary/build custody or proof of test reuse",
+    "Nix flake/lock and Cargo/toolchain/config identities bind declared build dependencies; prior executable bytes are not inferred",
+    "Frozen Git context reads bind exact revisions and per-file hashes in context-before/after reports",
+    "Accountable dependency and impact review remains required"
+  ]
+}

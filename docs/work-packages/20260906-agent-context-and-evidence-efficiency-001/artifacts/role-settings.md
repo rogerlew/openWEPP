@@ -1,5 +1,10 @@
 # Role settings
 
+Additional local check: codex app-server --strict-config generate-json-schema
+--out /tmp/openwepp-context-local-schema-check exited 1: strict-config unsupported
+for that subcommand too. Log: /tmp/openwepp-context-local-schema-check.log.
+No schema/runtime validation is claimed from either rejected CLI command.
+
 Static: repository configuration; Ran: local TOML parse and bundled model catalog query.
 
 | Role | Before configured | After configured/requested | Effective session |

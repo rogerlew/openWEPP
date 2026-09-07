@@ -47,6 +47,8 @@ Use artifacts/worker-handoff.md as the sole continuation view. Package executor 
 Registered reviews request xhigh and grant configuration edits. Historical catalog is nearly 6,000 lines; kernel bootstrap currently requires it in full. Current Stage-3 successor already exists, with queued handoff/disposition.
 
 ## Decision Log
+2026-09-07: add docs/ROADMAP.md for current-work locator and paused successor
+routing only; preserve historical HOLD source links and all science boundaries.
 2026-09-07: before Rust test edits, add only
 tests/integration/advisory_linter_authority_contract.rs for narrow administrative
 impact-map document-structure reconciliation. Preserve all assertions and atomic

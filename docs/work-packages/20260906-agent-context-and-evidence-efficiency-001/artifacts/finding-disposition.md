@@ -9,6 +9,7 @@ Static: findings from independent cut 6ab4e5fb6; Ran: corrected tests below.
 | B2 noncanonical destination overlap | accepted, fixed; focused re-review pending | Reject .. in destination before overlap checks/writes; regression proves checkout bundle never created. |
 | B3 missing mandatory protocol context | accepted, fixed; focused re-review pending | Both reports now count frozen Stage-3 kickoff, seven explicit historical prerequisites and governance Core recursively, plus conditional LSE authority/instructions and parity expansion. Same before/after convention. |
 | B nonblocking multi-revision accounting | accepted, fixed | Unique coverage now keys path plus content digest; distinct-revision test prevents conflating different bytes. |
+| A-02 incomplete administrative input membership | accepted, fixed; focused re-review pending | All live context selections, direct test documents/schema, build configuration and command/environment/Python binding included. Frozen reads bind revision plus content hash. No complete Rust executable custody or automatic reuse claim. |
 
 No findings rejected/deferred or waived. Failed attempts remain in review/gate
 records. Runtime settings and workflow-total remain UNOBSERVED, not findings

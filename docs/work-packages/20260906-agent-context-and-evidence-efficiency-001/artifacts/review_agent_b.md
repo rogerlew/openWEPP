@@ -112,3 +112,61 @@ Independent verification and accepted-fix re-reviews are also pending.
 Verdict: FAIL for the reviewed stable cut. B1/B2 violate recovery safety and B3
 leaves required measurement incomplete. No QA pass or closure approval yet.
 Assigned write artifact only: this file.
+
+## Focused corrected-cut re-review
+
+Static: exact substantive diff 6ab4e5fb6 ->
+a5bfbcd6ebcecc4c153d542102d21ca898a9d783, corrected primary utility/tests,
+context graph/reports, protocol Core/conditional clauses, README, package
+amendment, Rust assertion and recorded final gate log. Initial findings and
+FAIL above remain the historical assessment of the initial cut.
+Ran: own commands below from /workdir/openWEPP. Same independent QA session;
+requested medium, effective runtime UNOBSERVED. No new blocking findings.
+
+- B1 resolved: parent-traversing symlink targets are rejected by the shared
+  validator used for working bytes, staged bytes and bundle verification.
+  Independently reran the original alias/escape exploit and a distinct staged
+  version with a safe replacement in the worktree: both raised
+  `parent-traversing symlink`, and neither created a bundle. README documents
+  this conservative restriction. The new tests cover both source states;
+  existing safe-link and original-source-deletion restoration tests still pass.
+- B2 resolved: destinations with a `..` component fail before overlap checks
+  or writes. Independently reran the original sibling/../original/bundle probe:
+  `noncanonical destination path`, with no bundle created in the checkout.
+- B3 resolved for the declared representative scope: inspected the frozen
+  kickoff's explicit Core and seven historical prerequisites against both
+  selection graphs. science_state now recursively requires science_protocol,
+  which requires those inputs. Applicable LSE authority, source/test guidance
+  and parity expansion are counted under the same before/after convention.
+  Historical protocol files were not rewritten to manufacture savings.
+
+Ran `.venv/bin/python -m unittest discover -s tools/agents -p 'test_*.py'`:
+23 tests PASS, exit 0. Ran independent context_report.report regeneration for
+both phases using their declared revision rules: exact equality with both
+committed reports. Corrected science QA bootstrap unique bytes are 1,631,150
+before and 1,191,994 after; expansion remains 170,737 in both. Science runner
+bootstrap is 229,695 before and 189,497 after. These larger counts correctly
+expose historical mandatory cost; the documented overrun is not an omission
+or a new threshold. Administrative QA remains 501,405 -> 52,078 bytes.
+
+The multi-revision follow-up is also resolved: coverage keys now include the
+content digest as well as path, and the new test distinguishes old/new bytes
+at the same path. Non-blocking maintenance note: link_safe retains a now-dead
+`component == '..'` loop branch after rejecting such components; removing that
+redundancy is optional cleanup owned by the administrative-tool maintainer.
+
+Independently compared impact-map entries to the original package base: all
+entries identical; exactly 27 WAT5-only rows. The Rust correction increases
+the stale inventory assertion to that existing count and retains shared-path
+binding assertions. The other Rust change is formatter-equivalent layout;
+the file has 357 lines, below both governance thresholds. Inspected the actual
+final Nextest log: run dff2a2ab-3bfb-48cc-8706-02c0227782c8 reports 11 passed,
+0 skipped. This is inspected executor execution evidence, not an independently
+rerun Rust suite. Initial failures remain visible; the correction resolves
+the selected failure rather than waiving acceptance. Ran corrected-cut
+`git diff --check`: exit 0.
+
+Verdict: QA PASS for this corrected substantive cut and assigned scope. B1,
+B2 and B3 are independently rechecked/resolved. No frozen acceptance was
+waived. Dual independent terminal verification and final exact-diff/package
+closure remain separate pending obligations; this is not package completion.

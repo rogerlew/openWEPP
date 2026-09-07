@@ -1,5 +1,13 @@
 # Reading and measurement scope
 
+Administrative identity scope: identity-membership.json includes live reading
+inputs, direct test documentation/schema inputs and execution-inputs.json.
+Immutable context reads bind explicit Git revisions and report content hashes.
+This file identity is necessary input evidence, not full Rust executable/build
+custody and never sufficient by itself for reuse. Section 10 requires accountable
+dependency/impact review. Measured toy custody is independently verified through
+the capture bundle, not inferred from these administrative file hashes.
+
 Corrected after B3: the science task's frozen executable kickoff and all seven
 explicit historical prerequisites plus required governance Core are counted
 recursively in both phases. Conditional LSE authority, source/test instructions

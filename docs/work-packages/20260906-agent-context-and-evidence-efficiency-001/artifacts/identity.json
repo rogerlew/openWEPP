@@ -1,6 +1,6 @@
 {
   "experiment": {
-    "sha256": "ea018f0c2549ba1665eb6b164cfc4b01ab1f0c98c764fc21ae5db3c035097dc5",
+    "sha256": "404321eb5f02fbabb28a40e7c05cf59fe9b019839dc41fa776145ed8d0c10a3d",
     "members": [
       {
         "path": ".codex/agents/comparator_suite_runner.toml",
@@ -38,6 +38,643 @@
         "size": 840
       },
       {
+        "path": ".config/nextest.toml",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d793e296952c607ec2136a41dc05ecd780437b2a6fcd8cc669386c5c5b4984cb",
+        "size": 13805
+      },
+      {
+        "path": "AGENTS.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+        "size": 9508
+      },
+      {
+        "path": "CLAUDE.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "89dc6dbe59038858a28a53abf1f1ab5ce733e6b2f38fa75fd922678c56664820",
+        "size": 11309
+      },
+      {
+        "path": "Cargo.lock",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c",
+        "size": 57343
+      },
+      {
+        "path": "Cargo.toml",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+        "size": 31622
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1ab5fa82391f617e1c8713e4b3fcd5894b2b6fb34da054c297da03eb8ccc427b",
+        "size": 126239
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "883e450fff067a198c181ae85f739d4fb41cfba6dc62456e2510a1989cf0e0a9",
+        "size": 105010
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/03_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9fe774795e8dee6aa92e58aa22d154f879a990af0fd53d828da83d0a3fda080d",
+        "size": 117612
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4e95e0bb80c94599196ff4731578b4ac3e3389059936f20d3fbe09a9b5b6ddbe",
+        "size": 94673
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+        "size": 106779
+      },
+      {
+        "path": "docs/agent-guidance-map.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a28605deb4d824b1647fc1ea21d94cd9b02b025c5605a01032830adc58fd6b9a",
+        "size": 2762
+      },
+      {
+        "path": "docs/backlog/TRACKER.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "112e21f97519875425e5305bd5e7d37dc391089533564c201207e1f813a2b3c5",
+        "size": 8379
+      },
+      {
+        "path": "docs/codex_exec_plans.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "51ae49b7b8345c9735411c694cc60443e35c536dcf44c8854292098efd920aeb",
+        "size": 2473
+      },
+      {
+        "path": "docs/decisions/0011-architecture-first-top-down-science-contracts.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3c38c4007bf20d8f88459a81030617094fad5741c55f3859cb6700208c139030",
+        "size": 2473
+      },
+      {
+        "path": "docs/decisions/0016-promote-260430-baseline-as-canonical-comparator-and-abandon-kernel-rewrite.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "73c1ba1879d9faf2fea89a3049b8fc93639eeae285efbb266ba8d97b285cb8de",
+        "size": 15259
+      },
+      {
+        "path": "docs/decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "215c7b1c41e388c8b67df24545d967fa0acabf8aa6881d8dbffaef1758348d13",
+        "size": 8943
+      },
+      {
+        "path": "docs/decisions/0018-defect-closure-execplans-conversion-rule.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e3112c147f2841b90266ed8110fb54b243f1cfecc1decb39e047ebc41e8ff49d",
+        "size": 8193
+      },
+      {
+        "path": "docs/decisions/0038-manuscript-first-scientific-assurance-publication.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a1c536da51f0e54b41b3e90b9b5315c037ab0ecacb2368e2855fc46f013b3d58",
+        "size": 4607
+      },
+      {
+        "path": "docs/decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7ae48a36e02be654e776f7d0b0fc4d5bfc6c825d3dd6b116b183ff3673dd5e0a",
+        "size": 11376
+      },
+      {
+        "path": "docs/decisions/0040-accelerated-testgate-cutover-on-trusted-self-hosted-runner.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "028be4f4db3ed5c316558968af4dea8c75a07c211cfd5d123e2bba2471b7bc02",
+        "size": 7861
+      },
+      {
+        "path": "docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ae0bb041dd18e4c75b497a76efd421cef0a7de51c326c2dbffd30231dfd08ca7",
+        "size": 7222
+      },
+      {
+        "path": "docs/decisions/README.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b3a832e3c84cebf9cff42164cdf02a2e3399e5f1aac8e2839b03d243f0e8d53e",
+        "size": 14291
+      },
+      {
+        "path": "docs/defect_closure_execplans.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3110d7ede03c991b5464557080cc433011a2fc667b1d395236e4b5340b3c266a",
+        "size": 24803
+      },
+      {
+        "path": "docs/governance/openwepp-verification-validation-strategy.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "debfe4e2fa224248bc0307874572ca376af73f4ee172176cbed9ae336148df49",
+        "size": 13128
+      },
+      {
+        "path": "docs/governance/scientific-assurance-dossier-lifecycle.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e26131ccb049d1f66ab5bd49471c296be091f5f7f30b9eb8ebcacc4ae7800615",
+        "size": 14332
+      },
+      {
+        "path": "docs/governance/scientific-assurance-v2-architecture.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "42f3c8609951a40208424b1875d57299649120b308bc0ca298d0d7788fc7b736",
+        "size": 9994
+      },
+      {
+        "path": "docs/governance/scientific-assurance-v2-source-build-contract.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8d63756e5509dc9d9034e756d084076dafc4617ff099362757bd382dbc1ecbca",
+        "size": 14566
+      },
+      {
+        "path": "docs/planning/canopy-phenology-assurance-roadmap.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1db5b1186ed15d56a6e283606a8f75313f4ee642652fc82d13c0fed069b9d406",
+        "size": 52708
+      },
+      {
+        "path": "docs/planning/scientific-assurance-v2-implementation-roadmap.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a4f42dd6e13a2d8a5e4cf70fda4a14666100005d0463918c4e3affca51b8a9e7",
+        "size": 11656
+      },
+      {
+        "path": "docs/planning/scientific-assurance-v2-migration-plan.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "87e0377a6aa3dffb326c3a21498f8eaadd34108790b246662cbdb700454ac899",
+        "size": 11950
+      },
+      {
+        "path": "docs/prompt_templates/assurance-findings-template.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "95373d3c7df1f0a7e3ad7640fa22c0e137095e6cf5c4d92e3803846eb3f6ee83",
+        "size": 736
+      },
+      {
+        "path": "docs/prompt_templates/mechanical-refactor-kickoff-template.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e3b1752867352744ad1c14a77d2222b6ace1e7e049bff611a17848e78145b29e",
+        "size": 8148
+      },
+      {
+        "path": "docs/prompt_templates/owcmp-comparator-runner-guidance.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "cdf505f7d25b586160fe4f8f2df7878cf032b050a116e894db4661c02574c653",
+        "size": 1160
+      },
+      {
+        "path": "docs/prompt_templates/required-reading-map-template.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ce2b78993adbe83f1c6422a16acadb303e784cd97b10a4a8d811e6e382ec6dce",
+        "size": 4004
+      },
+      {
+        "path": "docs/specifications/correctness-authority-model.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "64275bad708f353c2c3b66f5b1475c070254591e26278d0a4ec442cad6e6eb0f",
+        "size": 11159
+      },
+      {
+        "path": "docs/specifications/science-contract-authoring-procedure.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b3b11281f0706133b3c32885a465f482de911eda47397caa28a1f3ca857b0d17",
+        "size": 13715
+      },
+      {
+        "path": "docs/specifications/science-contract-spec.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+        "size": 13749
+      },
+      {
+        "path": "docs/specifications/science-contracts/AGENTS.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4fdd6c45348538a76fc1b80cce4577116e983f452e63ba789b8014a7345a11b9",
+        "size": 5942
+      },
+      {
+        "path": "docs/specifications/science-contracts/README.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "dba15a4fd612a450b584bdf1349c9d37543ee7c1c42ff71273335c8818063231",
+        "size": 1571
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+        "size": 634522
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c",
+        "size": 377637
+      },
+      {
+        "path": "docs/specifications/science-contracts/index.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9a08cf0707c1261d6ea79679679b0110724464b571bec40bfa1ca9c1d86152c4",
+        "size": 14926
+      },
+      {
+        "path": "docs/specifications/science-contracts/kernel-process-contract-profile.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "0303aac4bb9c5597a730137990b77991e70f98b6d496ce179173f23238bad9d5",
+        "size": 5792
+      },
+      {
+        "path": "docs/specifications/unit-governance.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ef1f976cdd2bf50f7579ace7ef45bece18360bf434df20566980776f3da4374d",
+        "size": 12896
+      },
+      {
+        "path": "docs/standards/AGENTS.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b62a33d9a70a3d3f45e7eccdcf05ca3a194486fcdbfc7bd439371cf8f0ae3015",
+        "size": 4052
+      },
+      {
+        "path": "docs/standards/kernel-work-package-preparation.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "57ccb4016419e1cbb20643119a20399cbcd9b29d9952d992f108600ec95bd20b",
+        "size": 15233
+      },
+      {
+        "path": "docs/standards/local-ci-gate-selection.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9b2cd01f06d433f99b9dc9ae3d596c4a348c23b9260ef4ecbe197efa84f60e8e",
+        "size": 6874
+      },
+      {
+        "path": "docs/standards/numerical-solver-architecture.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
+        "size": 6742
+      },
+      {
+        "path": "docs/standards/prompt-wording-guidance.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "294385612b565fe8be3e9e530caa0792c901406ecf53abc9402649e5568ffe3f",
+        "size": 12057
+      },
+      {
+        "path": "docs/standards/scientific-model-evaluation-report.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "308dc6d5a7a13c3fb407765fa950450a874fd2d6ba5433251ce94ffe4311c222",
+        "size": 13067
+      },
+      {
+        "path": "docs/standards/testing-and-gate-strategy.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+        "size": 25142
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/contract-implementation-evidence.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "bf0f5360978c33c33e6e3a3360e2251f8dac7b86022f77f58a5011d70787ce44",
+        "size": 1799
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/contract-test-implementation-evidence.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f138b11471c2e8da7642bf156071d9c3a191554cb5f64471097d96daa7a1d14d",
+        "size": 1220
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/disposition.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a57ecbb8da91553e4c880abf340915fdf5ece3e33e78cbd27a95f02a1528b8dd",
+        "size": 1693
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/gate-results.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f64c8b8e335aa1c4497d3ab7f2b60bbf6e48da2eb376b4ca93f1d77a86a2eb1c",
+        "size": 819
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/implementation-test-evidence.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "616ac35db75a55c002df31b8121c30ae010a83645520b9580345c9e1621237c9",
+        "size": 789
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/kernel-profile-compliance-checklist.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e8b9a14d2d58a4d9bca8254bc218833ee177fe2c0aa787cae1e0a09ae7d94ba5",
+        "size": 1010
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/owned-file-manifest.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "fb0d332ec6926364d772047dfe3b2b9f306ab4c6692333b3c6abb99af8795707",
+        "size": 1177
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/pre-implementation-contract-gate.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a556ef4d75e91062c36d39e7ae99148123150c09988ddd57e0e759dd4c132095",
+        "size": 688
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/review-disposition.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "093e0d5102d45abfefc594ef929d5b7b64361061e2d4918251b0e744fb66694e",
+        "size": 2145
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/review_agent_a.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7dcde807a00d2613b3cb2379796243fbfed29af82e7ab99c958411d68dee885e",
+        "size": 880
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/review_agent_b.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "cf639be5f1588d7cfa46a34d096b17c8f12936d8824323f5c12581b5d7bbd88a",
+        "size": 925
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/verification_agent_a.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "fe823a8d7180b56d903434c00cc7831976e7c09ecd891f1922d74372390d2ea8",
+        "size": 899
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/verification_agent_b.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ee9b6107501677fdb4564b6e0621b4ce01680298ccc9798aba8f72e56b0062f4",
+        "size": 999
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/artifacts/worker-handoff.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d4da14f5f66d8fad6db6c4cedaeda2c610b2401c9900328f990f9f4711426535",
+        "size": 853
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5ffd0b5a8f1170d579c6ec7024d75cfa75ee881b3be620dbd84ecdeaa1baebb6",
+        "size": 8895
+      },
+      {
+        "path": "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001/prompts/active/20260605-adr0017-comparator-distrust-ratification-001_kickoff_agent_prompt.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6610053c80436b2af101b845c67b3f385188603abd3e413780e7428837208bef",
+        "size": 4774
+      },
+      {
+        "path": "docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/wepppy-handoff.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "0586f5e1fd50c968e98f4bf9756828086068d4bcf5e24c74ceee4ec83091a9e5",
+        "size": 5961
+      },
+      {
+        "path": "docs/work-packages/20260717-test-gate-authority-001/artifacts/implementation-handoff.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ed0101e25f4f360d43154e03aa4520f8dd4d312d3b70b759cdd3c2b5c3cccb18",
+        "size": 14159
+      },
+      {
+        "path": "docs/work-packages/20260727-gate-planner-auth11-fixed-inventory-test-provider-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "37af766ff41000e12ded87fe87514268d983b49a42194df45938e8da4f2381dd",
+        "size": 6667
+      },
+      {
+        "path": "docs/work-packages/20260727-gate-planner-auth11-terminal-node-selection-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "bfd37d6a79f6a9a7f7e01a03d7c54322dc9a53da22755507e90f70c0ba5418bf",
+        "size": 7982
+      },
+      {
+        "path": "docs/work-packages/20260727-gate-planner-external-dag-closeout-correction-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "57cbe69dd64ce7f912389ac3782db72416e5ab4e58ebf21b4499726e1d0e1b8e",
+        "size": 10528
+      },
+      {
+        "path": "docs/work-packages/20260727-gate-planner-external-dag-transaction-adapter-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "aa2bab78a9be6aad6fd7027f49599bc283c29bedb9290dfec0ef5fbec5e7b5fb",
+        "size": 17345
+      },
+      {
+        "path": "docs/work-packages/20260727-testgate-first-attempt-ledger-bootstrap-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a68e8fc87b92dcd148adeae42e28662fca863d0896b35d39b3e6d6c272d8e49d",
+        "size": 10002
+      },
+      {
+        "path": "docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b127be11be9d1e85a1c4a025b341bc1b7ff34db80c089fd90d96d6c15b3b2cba",
+        "size": 17998
+      },
+      {
+        "path": "docs/work-packages/20260805-assurance-single-approver-draft-return-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "595dcaed86e4b05f2bb076d494779f7f9d9e370e2ba6fe58e05e886360b6445a",
+        "size": 7037
+      },
+      {
+        "path": "docs/work-packages/20260805-assure06-snow-frost-flagship-refresh-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d090d47054c1e673ed48bfff7ad0669349ac6acc89e6d3abfa0f57710f99582d",
+        "size": 15707
+      },
+      {
+        "path": "docs/work-packages/20260805-jennings-dryad-hourly-archive-lfs-vendoring-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8690052ac3efe678aab13f4c1067ed55b849d10512c48b34ef9d24873a580814",
+        "size": 8969
+      },
+      {
+        "path": "docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3cea42ab3fe8362339ef730a18e2140d6deafc5f9b80d1f7d3f0e8581e896622",
+        "size": 9659
+      },
+      {
+        "path": "docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "92046ac28ee286f76c9ef59cf1e307c07386d353e4b523e2361eb20c6d1af326",
+        "size": 20785
+      },
+      {
+        "path": "docs/work-packages/20260811-soil-biogeochemistry-transformations-implementation-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "81a386b44b5d020295c93e4b788adba3b6a1fe585378e87369525951a8fe6d88",
+        "size": 1869
+      },
+      {
+        "path": "docs/work-packages/20260814-nix-agent-devbox-feasibility-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "395ceef02527d424a4d5594ce48b16c70251a2088a47d9ce884cd80065fe4455",
+        "size": 11205
+      },
+      {
+        "path": "docs/work-packages/20260819-snow-stage3-production-cutover-campaign-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "74b5ba3499eeebb52ef899c76932c7b7c8057d0cad9392a90725a2c440199490",
+        "size": 11579
+      },
+      {
+        "path": "docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "020fc83f297384a54f4cbbdafa699c15a28e734358ac9415a25bad52740176b9",
+        "size": 50998
+      },
+      {
+        "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/final-disposition.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6267f1f2dcf6b6cf6c165ae0e268e6005d8bd20f656a9d0a1a9e440c90b5ea21",
+        "size": 4352
+      },
+      {
+        "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2980d3f1c604d5a524d894520cb0af1d082a7578209e3186442f911b3676ba07",
+        "size": 87053
+      },
+      {
+        "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/final-disposition.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "543e3b675e1a24ddc30c077aebd3e97c01b826519a5ce695afc2493f7507d13d",
+        "size": 7579
+      },
+      {
+        "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8a08cab731bfdc5a2dcb16ac19d8324ad7d64e5d514aadb3dcfb9606c7ce29c6",
+        "size": 13488
+      },
+      {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/change-map.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "014ab080b90efe9a994b355c8a828d46b04cd89e7b5f2d6166aa533ffa891328",
+        "size": 2348
+      },
+      {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/context-after.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b246f9fd1b880a2056db14791e87ecba53acd61947bb673faa931f196b2ee7d4",
+        "size": 108914
+      },
+      {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/context-before.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8102a29f419c4d8063c7921b921f1c4b4a72754bf7a5cee88f6bdb0e5732271f",
+        "size": 105594
+      },
+      {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/context-inputs.json",
         "kind": "file",
         "mode": 436,
@@ -45,11 +682,200 @@
         "size": 30608
       },
       {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/execution-inputs.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "cb444bae22afc56fde4a0028bb2e4681ef30dcc3bac472e8dbedf8faf5b2d271",
+        "size": 1481
+      },
+      {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/gate-results.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "78f5fa753def9be4d8c2462f2343fe704a282a3d2d252a8ad08d6b7b3630b30f",
+        "size": 3469
+      },
+      {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/identity-membership.json",
         "kind": "file",
         "mode": 436,
-        "sha256": "41f2d147d17a6e0065caa00d2267c94e57942b782de125a20d4e2b4212f555c7",
-        "size": 3551
+        "sha256": "2bdb601912bb6aeb26c84e296476ab2e31bb4cc60380681a4c53cb8d864b7edc",
+        "size": 12944
+      },
+      {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/owned-files.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c98a3224bcbe1686bc5fe86fca7ca2edd38cfaf0c542cf2f2d72dda5e882b2e0",
+        "size": 1862
+      },
+      {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/required-reading-map.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "865980e836a029e2feffbd19301e880d829c0073b9f58937cd385be3de102277",
+        "size": 3932
+      },
+      {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/role-settings.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f3d23aebd3bff8eb31421569dc65e72fac4daf40d5e8a45998a30a033b20aed9",
+        "size": 1983
+      },
+      {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "135755cdb2d0e883b71232f567965453f6d16bba3d96211b3660ff2fe9db1e6f",
+        "size": 1966
+      },
+      {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5da3e0b046ae9882cad9e5016a5686a99b22c264c323dc1c2d59c8c0240ec6ad",
+        "size": 8301
+      },
+      {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b3ca642a6b4fd94f6e1459f07058cd9fc18fab747368421fc0dc6e591d143183",
+        "size": 3718
+      },
+      {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
+        "size": 6653
+      },
+      {
+        "path": "docs/work-packages/AGENTS.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+        "size": 6642
+      },
+      {
+        "path": "docs/work-packages/README.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "95ce0aeb08875aaab96893389a6579bca38003f04f6d3c36d431544b596c1603",
+        "size": 410707
+      },
+      {
+        "path": "docs/work-packages/active.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "62e52e7ed09ae285d27b09d5b1236e4eca04445d9bf23191a213c889ae370413",
+        "size": 1350
+      },
+      {
+        "path": "docs/work-packages/cqr-nightly-burndown-execplan.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "efda2bf02d02d62a98fc9276b4ee93541afce6d3f50a2cd49a7ac75553468ac2",
+        "size": 17353
+      },
+      {
+        "path": "docs/work-packages/role-authoring.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "78077ed464ae31296abb902f92467d65b93719a1658e0dab0d28ab6fb057a830",
+        "size": 2393
+      },
+      {
+        "path": "docs/work-packages/role-implementation.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "0074b9d95851bdf270136d5204794d84ef241572f4a015e13f0d037d30da6d9e",
+        "size": 2727
+      },
+      {
+        "path": "docs/work-packages/role-review.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2193e9538ad22dad5678fc5bb59080f686a543f697fec4983208214a73cc5eb1",
+        "size": 1400
+      },
+      {
+        "path": "docs/work-packages/role-runner.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7c8365c8756fbd0c4fa64f49915a09c81f9031d17fa3d59a023764eee4c1ee9b",
+        "size": 907
+      },
+      {
+        "path": "docs/work-packages/role-verification.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "908109839e19467dc45918b88653db205305e0d0616a74d7c6d54846456002c8",
+        "size": 945
+      },
+      {
+        "path": "docs/work-packages/science-obligations.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1a0377a3362a6c34d783796b6756854f8630e1f05e994dc3d963eaafd16c542e",
+        "size": 6149
+      },
+      {
+        "path": "docs/work-packages/specialized-workflows.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "698051c3b38f04777a1d520a6c43daee1c2180d2c931665b2f40cd757b3bc819",
+        "size": 8126
+      },
+      {
+        "path": "docs/work-packages/templates/cqr-nightly-kickoff-prompt.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3e11162d1040bf8fd5531b4080fcb14169167ad68ad202ffff3d70edc0af581b",
+        "size": 6501
+      },
+      {
+        "path": "docs/work-packages/templates/cqr-nightly-package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8417ea40b166ab94cd3de6f8caa3ad78f089cac995752ad5e8d22b7a0152dd66",
+        "size": 12550
+      },
+      {
+        "path": "docs/work-packages/testgate-quality-observatory-roadmap.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ac397bf522d4cfad0477f6aaf34611d25dda10281c7ef2b3af07a014624a7702",
+        "size": 9693
+      },
+      {
+        "path": "flake.lock",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+        "size": 564
+      },
+      {
+        "path": "flake.nix",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+        "size": 2041
+      },
+      {
+        "path": "gate-policy/history/adr0039-generation17.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "df0c9387d6904ee97fb361f0b42b206d687cba470fc8b5469985ce50c32e0d79",
+        "size": 518
+      },
+      {
+        "path": "rust-toolchain.toml",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3e18e70208ee460635e239a91c142cf67371feafb718b05617ff06f388bf96df",
+        "size": 86
       },
       {
         "path": "tests/integration/advisory_linter_authority_contract.rs",
@@ -57,6 +883,13 @@
         "mode": 436,
         "sha256": "7aa12640b987c354c8678a3f8e5826a8483abca3325bafb97daadab583b2ae5e",
         "size": 13314
+      },
+      {
+        "path": "tools/agents/README.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "06ba642d32bbdf2645ba79a9f9e55b5e45798dd6c3bb728ec2b50e5e0d1cbb62",
+        "size": 4994
       },
       {
         "path": "tools/agents/context_report.py",
@@ -73,16 +906,65 @@
         "size": 13737
       },
       {
+        "path": "tools/agents/find-agents",
+        "kind": "file",
+        "mode": 509,
+        "sha256": "a81ca556f560999ff4bb44f233ae1c0d281a9b7248b17735cfb18f815277dd89",
+        "size": 5183
+      },
+      {
         "path": "tools/agents/test_agent_tools.py",
         "kind": "file",
         "mode": 436,
         "sha256": "ca179163e660654626f82ea0cc0412d02cb121a329444a92d47ee7c2bce97e52",
         "size": 15513
+      },
+      {
+        "path": "tools/release/authority-policy/README.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2f6bba758ebd2a080d6e585119c769e286bacbbeb509a681c75fc1010458490c",
+        "size": 1217
+      },
+      {
+        "path": "tools/release/authority-policy/gate-definitions.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8756b364329a7a9c6df5d64fbb673d0405ec416ba396aa45bc525f04b1a5cc9b",
+        "size": 3286
+      },
+      {
+        "path": "tools/release/authority-policy/gate-definitions.schema.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "58edb5cd5898e4f5f1fa0ecc47dd3756dfe67e4e3800e44446e3a132091246da",
+        "size": 1553
+      },
+      {
+        "path": "tools/release/authority-policy/impact-map.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3725b11a9eee0939eeaf823303b4c0484a8cf9adcc093de975ceabb08a8d836d",
+        "size": 137326
+      },
+      {
+        "path": "tools/release/authority-policy/impact-map.schema.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "20c06b0acbdf97f81261c001c4c0075b2a537e3429e2c01e9a3627541430deef",
+        "size": 3289
+      },
+      {
+        "path": "usersum/snow-frost-modeling-and-validation.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6c861e573d0b087c1b49cea90a2ce2b62511d4bbfdbae000a38e30763f2588fe",
+        "size": 22688
       }
     ]
   },
   "evidence_claim": {
-    "sha256": "06733a2452d4151202c1cfa50fd034c161b3c25d09db3fb0ba3942beb3ec702a",
+    "sha256": "53968f891c351ee52eca257cbb6ab7d44a23e743256debb8d1bd3c0c3bfdcacc",
     "members": [
       {
         "path": "AGENTS.md",
@@ -200,29 +1082,29 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/owned-files.json",
         "kind": "file",
         "mode": 436,
-        "sha256": "072ab59a04fdb7efb6dac70ddec27db8c0d029e95780f08a329a64513a359937",
-        "size": 1839
+        "sha256": "c98a3224bcbe1686bc5fe86fca7ca2edd38cfaf0c542cf2f2d72dda5e882b2e0",
+        "size": 1862
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/required-reading-map.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "4effcf40700a0fdeed7f9fff85a9240610cef734d589f4fa5d8467a8aa9c976b",
-        "size": 3385
+        "sha256": "865980e836a029e2feffbd19301e880d829c0073b9f58937cd385be3de102277",
+        "size": 3932
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/role-settings.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "174408cadefedafdb92e7b7afa14e8e74375b41aaff5451c76844dcdc3662609",
-        "size": 1671
+        "sha256": "f3d23aebd3bff8eb31421569dc65e72fac4daf40d5e8a45998a30a033b20aed9",
+        "size": 1983
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "4d644cf98ac4d2681cd1c043f4649f2b159c7ae5ede6ea08ed20d61fc44ea8a2",
-        "size": 8143
+        "sha256": "5da3e0b046ae9882cad9e5016a5686a99b22c264c323dc1c2d59c8c0240ec6ad",
+        "size": 8301
       },
       {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
@@ -332,7 +1214,7 @@
     ]
   },
   "publication": {
-    "sha256": "321bfb36acef62647fca5325557a38d9a4e52859d9ff998001a9e3b7a1267745",
+    "sha256": "cbf49801be31f779716ee09a188bf0df892673b129d4f174155d5510a90dec57",
     "members": [
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/final-disposition.md",
@@ -345,22 +1227,22 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/finding-disposition.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "4033d226d7939f7aa4af6f4c17d418edef5559d39267868364022ea6810d5a61",
-        "size": 1601
+        "sha256": "e893ffab396395c14b2c036ff0d6485386bae1e16fa7c6ee7e86c5d9c5f1c750",
+        "size": 1936
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/review_agent_a.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "8291ab5f0aea4926cd8cb7983fcd0c1a2d9f436aeab8b4ec23d8c70962f0e8a3",
-        "size": 5968
+        "sha256": "6909da1cfc0b934f9256894aa804edde7bbec94250aee461afd9e222b90436e2",
+        "size": 9478
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/review_agent_b.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "b9993cb635f8760a1aa66146424688a1c705d2ba866600549a8535adf0f6a775",
-        "size": 6931
+        "sha256": "b35b97323d6bf63c03d7813b71cf1cb63132603c2681b1f054efa3d8f116c8e9",
+        "size": 10670
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/verification_agent_a.md",

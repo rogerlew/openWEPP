@@ -90,3 +90,59 @@ Verdict: **FAIL for closure at the reviewed cut**, due to A-01. No additional
 authority/correctness blocker found in the assigned guidance and identity
 policy. Re-review the accepted fix and freeze the corrected cut before the
 required two independent verifications.
+
+## Focused re-review at a5bfbcd6e
+
+Static: exact `6ab4e5fb6..a5bfbcd6ebcecc4c153d542102d21ca898a9d783`
+correction diff, scope amendment, context bindings and newly added identity
+membership. Ran: complete focused Rust command and three identity/context tests.
+Same independent session; requested high, effective UNOBSERVED.
+
+**A-02 MEDIUM — new experiment membership omits actual execution inputs.**
+Location: this package's `artifacts/identity-membership.json:2-14`, compared with
+`tools/agents/context_report.py:11-17` and
+`tools/agents/test_agent_tools.py:248-278`. The new experiment list omits 27
+unpinned after-phase context selections, including `AGENTS.md`, current
+`SC-SNOWFREEZE-001.md`, the science registry and the source expansion file.
+The reporter reads their current worktree bytes; these are actual inputs to
+the measured administrative execution. Some are listed only as evidence/claim
+inputs and others are absent from all three membership sets. The Rust and
+Python governance checks similarly consume documentation/map/schema inputs.
+An unchanged experiment digest therefore cannot prove unchanged experiment
+inputs. Section 10 explicitly permits overlapping membership and defines
+experiment membership by actual execution dependencies, not file extension.
+**Disposition:** correction requested. Include live execution dependencies
+(and named command/environment/build bindings as applicable), or explicitly
+bound an appropriately narrower claim with dependency proof. Hash comparison
+must not support reuse beyond the declared complete dependency boundary.
+
+**A-01 resolved and independently verified.** The committed scope amendment
+names exactly the administrative test before its correction, preserves frozen
+acceptance, and invokes the owner's administrative-test exception. Independent
+Git comparisons confirm the Rust diff is only `22` to `27` plus whitespace;
+the impact map is identical between review cuts and still has 27 WAT5 rows.
+The four shared-path checks remain intact. The file has 357 lines; no
+line-count threshold or duplicated Rust implementation is introduced.
+
+Ran from `/workdir/openWEPP`, exit 0:
+`nix develop --offline --command cargo nextest run --offline --test
+adr0017_comparator_distrust_ratification_contract --test
+advisory_linter_authority_contract`: **11 passed, 0 skipped**, run ID
+`1a88979f-e0b0-4e31-a544-2658739ba247`. This independently executes the
+assertions after the previously failing count. The existing unused-field
+warning remains unrelated to the structural correction; this is not a Clippy
+claim. The parent's retained 11/11 log was also inspected.
+
+Ran the same focused Python IdentityTests command as the first review:
+**3 passed**, exit 0, including the new distinct-revision accounting test.
+The reporter now keys unique coverage by path and content digest, so different
+revision bytes cannot silently alias. Static comparison with the frozen
+Stage-3 kickoff confirms added historical prerequisites and Core edges in
+both before/after selections. The authority/impact matrix and common routing
+rules did not change, so prior semantic review remains applicable. Full
+measurement/security assurance remains B's assigned scope.
+
+Corrected-cut verdict: **A-01 PASS; overall bounded approval pending A-02**.
+The initial FAIL remains historical. No scientific failure is waived, and no
+science experiment or heavy execution was performed. Require a focused
+manifest correction check and the still-mandatory dual independent verification.

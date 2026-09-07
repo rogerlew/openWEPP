@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-09-01
+Last updated: 2026-09-07
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -28,6 +28,15 @@ state was reached. Execution history lives in the
    an ADR, backlog note, or agent memory alone does not reorder execution.
 
 ## Current Priority
+
+Current owner-directed package entrypoints are in the
+[active-work locator](work-packages/active.md). The prospective Stage-3
+successor has newer authorization than the historical rows below and is
+[paused by its owner](work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md).
+Historical v31/v61 FAIL/HOLD and attribution limits remain evidence; they do
+not bar unrelated authorized optimization/re-architecture work. The current
+administrative context-efficiency package grants no experiment resumption or
+production promotion. Its outcome belongs in the catalog, not a new science gate.
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
