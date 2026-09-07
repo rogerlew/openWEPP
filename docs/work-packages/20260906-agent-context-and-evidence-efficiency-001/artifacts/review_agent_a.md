@@ -146,3 +146,51 @@ Corrected-cut verdict: **A-01 PASS; overall bounded approval pending A-02**.
 The initial FAIL remains historical. No scientific failure is waived, and no
 science experiment or heavy execution was performed. Require a focused
 manifest correction check and the still-mandatory dual independent verification.
+
+## Final focused re-review at 772eade86
+
+Static: `a5bfbcd6e..a97ccc207` administrative-input/roadmap corrections and
+`a97ccc207..772eade8632b0dcec17278733b4a7200a7cb66db` final membership repair.
+Ran: independent committed membership/hash comparisons and two focused
+governance tests. Same session; requested high, effective UNOBSERVED.
+
+**A-02 resolved and independently verified.** All 27 previously omitted live
+context selections now appear in experiment membership. Direct test
+documentation/schema inputs and an explicit command/environment/Python binding
+were added. Frozen context selections retain named Git revisions and report
+content hashes. The new execution record truthfully labels its observation
+time rather than manufacturing historical telemetry, and its Python binary
+digest matches the currently observed executable.
+
+At a97ccc207 I found one newly introduced omission: `docs/ROADMAP.md` was
+selected by the owned-Markdown check but absent from identity membership.
+The executor accepted that bounded follow-up; 772eade86 adds it to both
+experiment and evidence/claim membership and regenerates identity.json.
+Independent committed-byte checks now find zero missing owned Markdown inputs
+and zero member-hash mismatches across all three identities.
+
+The explicit administrative-input claim is appropriately bounded:
+required-reading-map.md and execution-inputs.json state these file bindings
+are not complete Rust executable/build custody and never independently prove
+reuse. Accountable dependency/impact review remains mandatory. This resolves
+the finding without requiring or claiming a new science experiment or full
+Rust build-custody capture.
+
+Roadmap changes are limited to date/current-entrypoint routing and the paused
+successor. They preserve historical FAIL/HOLD links, acknowledge later existing
+authorization, and expressly grant neither experiment resumption nor production
+promotion. The scope amendment is explicit; frozen acceptance is unchanged.
+
+Ran from `/workdir/openWEPP`, exit 0:
+`PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s tools/agents
+-p 'test_agent_tools.py' -k GovernanceTests -v`: **2 passed**. No Rust source,
+tool implementation or test implementation changed since a5bfbcd6e, so the
+independent 11/11 A-01 Rust result above is retained; no redundant Rust rerun
+or new science execution is claimed.
+
+Verdict: **PASS for Reviewer A's assigned scope at 772eade86**. A-01 and A-02
+are fixed and independently rechecked; no remaining authority/correctness
+blocker found. Initial FAIL records remain historical. Package completion
+still requires B's disposition, dual independent verification, and final
+publication/terminal-diff reconciliation. Updated review/publication bytes
+must be rebound without presenting this signoff as their prior digest.

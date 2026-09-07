@@ -1,6 +1,6 @@
 {
   "experiment": {
-    "sha256": "b6dfd668a9eda4515d26a6b87f252c284f444413ed1ecd766d838dd961125ff2",
+    "sha256": "f5e2e94113a65a14cb47c2aaaad64a15d3c31a3fee53f701d25d2b76c9e0f8a8",
     "members": [
       {
         "path": ".codex/agents/comparator_suite_runner.toml",
@@ -734,15 +734,15 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "135755cdb2d0e883b71232f567965453f6d16bba3d96211b3660ff2fe9db1e6f",
-        "size": 1966
+        "sha256": "991b751490ca8f2dced2c536a4661dd3660d4648845d367762791fc5e66b24a5",
+        "size": 3577
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "5da3e0b046ae9882cad9e5016a5686a99b22c264c323dc1c2d59c8c0240ec6ad",
-        "size": 8301
+        "sha256": "5556f17110a2740294353e6401d9c401c6d6354f204bb378f091db96067a0b62",
+        "size": 8649
       },
       {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
@@ -971,7 +971,7 @@
     ]
   },
   "evidence_claim": {
-    "sha256": "2abdb82ad13f42265235e47f5c6ff3e3c25f462a82710a2f97289b39ccd1f227",
+    "sha256": "5ed4ded1da207ee0f904df9ddd123d7c3e21535facb15850d47c51d01c60776f",
     "members": [
       {
         "path": "AGENTS.md",
@@ -1117,8 +1117,8 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "5da3e0b046ae9882cad9e5016a5686a99b22c264c323dc1c2d59c8c0240ec6ad",
-        "size": 8301
+        "sha256": "5556f17110a2740294353e6401d9c401c6d6354f204bb378f091db96067a0b62",
+        "size": 8649
       },
       {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
@@ -1228,35 +1228,35 @@
     ]
   },
   "publication": {
-    "sha256": "cbf49801be31f779716ee09a188bf0df892673b129d4f174155d5510a90dec57",
+    "sha256": "f57e15369ca39688fdbe21b259a9dcb4345a174fc170c8bf8fccdb606b4526cd",
     "members": [
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/final-disposition.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "a4b13183a44b3c6a7ce6d3de1e6df0c7ca1d80119053c18fa5436e240826ad54",
-        "size": 38
+        "sha256": "f1a0a8880dae778f51bc778df1e8d0023df5c127018ebeebda244ef66d6f0797",
+        "size": 4556
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/finding-disposition.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "e893ffab396395c14b2c036ff0d6485386bae1e16fa7c6ee7e86c5d9c5f1c750",
-        "size": 1936
+        "sha256": "c2b550e3ce70323b12479cf9acb4f137ac3dfaf9d884dbfe6711a73ab967c9a6",
+        "size": 2120
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/review_agent_a.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "6909da1cfc0b934f9256894aa804edde7bbec94250aee461afd9e222b90436e2",
-        "size": 9478
+        "sha256": "3a77bda8c12414080f98c11436602dedbf72f5ee1af7b06cc78500d40ee51524",
+        "size": 12299
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/review_agent_b.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "b35b97323d6bf63c03d7813b71cf1cb63132603c2681b1f054efa3d8f116c8e9",
-        "size": 10670
+        "sha256": "e3956f167faa1c5eb120245c70579f396c5c845fda756e782cbaaf58a9d4891b",
+        "size": 13045
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/verification_agent_a.md",
@@ -1276,8 +1276,8 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "135755cdb2d0e883b71232f567965453f6d16bba3d96211b3660ff2fe9db1e6f",
-        "size": 1966
+        "sha256": "991b751490ca8f2dced2c536a4661dd3660d4648845d367762791fc5e66b24a5",
+        "size": 3577
       }
     ]
   }

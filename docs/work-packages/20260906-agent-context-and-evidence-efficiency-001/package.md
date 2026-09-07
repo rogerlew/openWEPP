@@ -12,7 +12,7 @@ Implement all six deliverables in the owner's 2026-09-06 execution request: role
 No production Rust or canonical SC edits, equations, constants, tolerances, solver/physics, ownership, restart, serialization, publication, guards, or fail-closed changes. Preserve contract-first, applicable A0/A1/A3, consumer proof, independent conservation reconstruction, anti-evasion, exact provenance, dual independent reviews and verifications. No network, deployment, push, branch switch, real Stage-3 experiment, planner, or general orchestration engine. Preserve unrelated untracked `$pkg/` and `tmp/`; index initially empty.
 
 ## Intended write set
-Exact non-package paths are in artifacts/owned-files.json. This package owns package.md, prompts/{README.md,active/README.md,active/kickoff.md,archived/README.md}, and artifacts/{README.md,owned-files.json,required-reading-map.md,change-map.md,gate-results.md,line-count-governance.md,review_agent_a.md,review_agent_b.md,finding-disposition.md,verification_agent_a.md,verification_agent_b.md,final-disposition.md,worker-handoff.md,context-before.json,context-after.json,context-inputs.json,identity.json,role-settings.md}. Bounded test logs and compact JSON results belong under artifacts/. No other package history may be edited. No Rust tests are presently selected for editing; prospective amendment is required if needed.
+Exact non-package paths are in artifacts/owned-files.json. This package owns package.md, prompts/{README.md,active/README.md,active/kickoff.md,archived/README.md}, and artifacts/{README.md,owned-files.json,required-reading-map.md,change-map.md,gate-results.md,line-count-governance.md,review_agent_a.md,review_agent_b.md,finding-disposition.md,verification_agent_a.md,verification_agent_b.md,final-disposition.md,worker-handoff.md,context-before.json,context-after.json,context-inputs.json,identity.json,identity-membership.json,execution-inputs.json,role-settings.md}. Bounded test logs and compact JSON results belong under artifacts/. No other package history may be edited. At intake no Rust test edits were selected; the prospectively recorded administrative-test exception below now applies.
 
 ## Dependencies
 Initial binding revision is base above for AGENTS.md, docs/work-packages/AGENTS.md, docs/standards/AGENTS.md, docs/codex_exec_plans.md, docs/standards/testing-and-gate-strategy.md (sections 6,8-10,17-18), docs/standards/kernel-work-package-preparation.md (reading and preserved scientific obligations), docs/standards/prompt-wording-guidance.md, and active templates in the write set. The owner's request authorizes replacing these prospective instructions; acceptance below remains frozen. Record content identities for the stable review cut, and inspect changed bindings rather than silently accepting drift.
@@ -41,7 +41,9 @@ Use artifacts/worker-handoff.md as the sole continuation view. Package executor 
 
 ## Progress
 - [x] Intake: actual HEAD/index/dirty state and applicable guidance inspected.
-- [ ] Six deliverables, validation, review, verification and local delivery.
+- [x] Six deliverables implemented; deterministic checks and independent review
+  findings corrected, including prospectively scoped administrative test repair.
+- [ ] Dual independent terminal verification and final local delivery.
 
 ## Surprises & Discoveries
 Registered reviews request xhigh and grant configuration edits. Historical catalog is nearly 6,000 lines; kernel bootstrap currently requires it in full. Current Stage-3 successor already exists, with queued handoff/disposition.
@@ -63,4 +65,5 @@ routing so its duplicated onboarding cannot override current package guidance.
 2026-09-06: preserve all acceptance from the owner; use existing administrative tooling directory and handoff, no ADR required for this owner-authorized workflow change.
 
 ## Outcomes & Retrospective
-Pending execution; no completion claim.
+Implemented; final independent verification and publication reconciliation pending.
+See artifacts/worker-handoff.md for current evidence and exact continuation.

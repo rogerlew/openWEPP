@@ -1,2 +1,3 @@
-Status: queued
-Evidence mode: not-run
+# Archived prompts
+
+No superseded kickoff prompts were created by this package.

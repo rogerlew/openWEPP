@@ -170,3 +170,42 @@ Verdict: QA PASS for this corrected substantive cut and assigned scope. B1,
 B2 and B3 are independently rechecked/resolved. No frozen acceptance was
 waived. Dual independent terminal verification and final exact-diff/package
 closure remain separate pending obligations; this is not package completion.
+
+## Bounded identity/roadmap addition review
+
+Static: additions a5bfbcd6e -> a97ccc207b79dfc9ec747544e2d5bb20d0583c0d;
+identity membership/output, execution-input metadata, scope limitations,
+roadmap pointers and prospective write-set amendment. Same independent QA
+session; requested medium, effective UNOBSERVED.
+Ran: regenerated administrative identity exactly matches committed identity;
+23 administrative tests PASS, exit 0; addition diff check exit 0.
+
+B4 — MEDIUM — artifacts/identity-membership.json: docs/ROADMAP.md is absent
+from all three identity classes. It was added to owned-files.json, making it a
+direct input to GovernanceTests.test_changed_markdown_links_and_anchors_resolve,
+and its new text makes reviewed authorization/scope claims. Thus the current
+claim of including direct documentation inputs still omits this new input.
+Add it to experiment and evidence_claim, regenerate the identity and check the
+bounded correction. Disposition: submitted to executor; pending correction.
+
+The other inspected additions are acceptable: execution-inputs.json labels its
+observations as verification-preparation metadata, not retroactive telemetry;
+limitations explicitly deny full Rust binary custody and automatic evidence
+reuse. Live context inputs and direct documentation/schema/build inputs now
+have explicit membership. The roadmap locates existing newer authorization
+and the owner pause, preserves historic FAIL/HOLD, and grants no experiment
+resumption. No source/tool/test change was introduced in this addition.
+
+Verdict for this addition: BLOCKED on B4 only. Prior B1-B3 resolutions remain
+valid; no requirement is waived by the narrower identity limitations.
+
+Focused B4 correction: inspected a97ccc207 -> 772eade86. The two-file diff
+adds docs/ROADMAP.md to experiment and evidence_claim and regenerates identity.
+Ran identity regeneration: both substantive identity classes match exactly;
+only this in-progress review differs in publication, to be bound during final
+collection. Diff check passes. B4 is resolved without changing tools, tests or
+the roadmap text already exercised by the preceding 23-test PASS.
+
+Final bounded verdict: QA PASS at 772eade86 for the additions and all prior
+resolved findings. No blocker to proceeding with dual independent verification.
+Final publication binding and package closure remain separate obligations.

@@ -1,29 +1,57 @@
 # Current continuation
 
-Status: IN-PROGRESS; six deliverables implemented, independent closure pending.
-Objective/authorization/acceptance: package.md (owner's six-deliverable request).
-Protected: no production Rust, SC authority, equations/guards/publication or real
-Stage-3 experiments; no network/push/branch changes. Unrelated $pkg/ and tmp/ retained.
+Status: READY FOR INDEPENDENT VERIFICATION; not yet complete.
+Objective: all six agent-context/evidence-efficiency deliverables in package.md.
+Authorization: owner's local administrative package-end-to-end request.
+Protected: no production Rust/SC equations, solver/guards/publication, real
+Stage-3 experiments, network, push or named branch changes.
+Unrelated untracked $pkg/ and tmp/ retained; index delivery is package-scoped.
 
-Current implementation: role profiles/routes, compact ExecPlan, separate reading
-metrics, active index and Stage-3 paused handoff, three identity classes/impact
-matrix, explicit recoverable capture/verify/restore and deterministic tests.
-Main files: artifacts/owned-files.json; tools/agents/{context_report,evidence_bundle,test_agent_tools}.py.
-Source identity: current package substantive diff from base 033dfe3; review cut
-will be frozen in a local commit before dispatch. No self-hash required.
-Evidence: context-before.json/context-after.json, gate-results.md, role-settings.md.
+## Implemented and retained
+Role configurations and five role procedures; root/common routing; preserved
+science-obligations and specialized workflows; compact versioned ExecPlans.
+Context reporter with separate bootstrap/expansion, unique/repeated bytes and
+explicit recursive references. Actual workflow-total remains UNOBSERVED.
+Current active index and roadmap route to existing paused Stage-3 handoff.
+Three identity classes/impact matrix and findings-oriented assurance template.
+Capture/verify/restore retains declared source, distinct index blobs, modes,
+symlinks, executable and fixture/protocol/results outside the checkout.
+No implicit semantic-invalidation engine or orchestration service.
 
-Retained history: both old Stage-3 HOLDs and current owner pause remain unchanged.
-No new experiment/architecture implementation is authorized by this package.
-Settled: no planner/service, no semantic hash classifier, no telemetry/quota claim.
-Necessary context overruns retain full relevant science authority.
+## Frozen source/evidence
+Corrected substantive cut: 772eade86 (base 033dfe30073bc22aaa30aed877cc301b6745a086).
+Current publication artifacts may follow; compare named members in
+identity-membership.json and identity.json before reuse. Neither includes its
+own result hash. execution-inputs.json bounds observed dependency metadata.
+Primary evidence: gate-results.md, paired context JSON, role-settings.md,
+review_agent_a.md, review_agent_b.md and finding-disposition.md.
+No source change may be hidden as publication formatting.
 
-Open: independent A/B review, finding resolution/re-review, corrected-cut freeze,
-independent A/B verification, final exact-diff reconciliation and local commit.
-A mixed existing governance test remains FAIL at inherited WAT5 count 27 vs 22;
-base comparison proves unchanged entries. No test/science bindings waived.
-Next: independently review this stable substantive cut and decide applicability
-of inherited failure; fix all accepted in-scope findings, then verify.
-Executor updates handoff after changes; frozen cut and named evidence bindings
-control freshness. Any changed acceptance or substantive claim reopens assurance.
-External bundles retained by owner through disposition plus explicit audit release.
+## Settled decisions and reopen triggers
+All selected checks must pass; inherited test failure was repaired, not waived.
+Science obligations remain mandatory despite bootstrap target overruns.
+Hashes detect bytes; accountable impact judgment controls reuse.
+Accepted security findings now reject chained parent traversal and .. destinations.
+Historical Stage-3 HOLDs and owner pause remain; this package grants no resumption.
+Broader optimization/re-architecture work can proceed under its own authorization.
+Reopen only for new relevant findings, changed source/authority/acceptance or
+failed identity bindings; never relabel historical failed predicates.
+
+## Current checks and obligations
+23 administrative tests and all 11 selected Rust governance tests pass.
+Scoped rustfmt, Python AST, TOML, Markdown links/anchors, routing and identity
+checks pass. Root/common shared bytes: 16150. Figures in final-disposition.md.
+Only Rust edit: administrative map-inventory count 22->27 and formatter layout;
+357 lines, no line-count exception or production impact.
+Review findings and focused re-review retained; terminal dual verification pending.
+Next executable action: Verifier A checks rules/metrics/claims; Verifier B independently
+restores captured miniature bytes, runs safe negatives and checks exact diff.
+Then reconcile final publication claims and commit completion locally, no push.
+
+## Freshness and retention
+Executor updates this single view after source/evidence/authorization changes,
+before delegation and at disposition. package.md owns acceptance, not status history.
+A mismatch with the frozen cut/member identities requires targeted reconciliation.
+The handoff never hashes itself or predicts a final future commit.
+Owner retains external bundles through disposition plus explicit audit release.
+After completion, no further implementation is authorized by this package.
