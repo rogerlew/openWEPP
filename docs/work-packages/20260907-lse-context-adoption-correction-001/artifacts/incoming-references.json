@@ -1,0 +1,596 @@
+[
+  {
+    "path": "docs/work-packages/20260808-land-surface-energy-balance-authority-001/artifacts/calibration-readiness-matrix.md",
+    "line": 17,
+    "text": "| typed/enumerable parameter surface | PASS | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#constants-and-parameters-with-provenance-anchors` | no empirical parameter admitted |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260808-land-surface-energy-balance-authority-001/artifacts/calibration-readiness-matrix.md",
+    "line": 18,
+    "text": "| observation operator with units and scale | NOT_APPLICABLE | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#calibration-and-identifiability` | no calibration authorized |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260808-land-surface-energy-balance-authority-001/artifacts/calibration-readiness-matrix.md",
+    "line": 19,
+    "text": "| deterministic candidate execution | NOT_APPLICABLE | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#calibration-and-identifiability` | no candidate estimation |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260808-land-surface-energy-balance-authority-001/artifacts/calibration-readiness-matrix.md",
+    "line": 20,
+    "text": "| objective reconstruction | NOT_APPLICABLE | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#calibration-and-identifiability` | no objective |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260808-land-surface-energy-balance-authority-001/artifacts/calibration-readiness-matrix.md",
+    "line": 21,
+    "text": "| sensitivity analysis | NOT_APPLICABLE | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#calibration-and-identifiability` | no calibratable surface |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260808-land-surface-energy-balance-authority-001/artifacts/calibration-readiness-matrix.md",
+    "line": 22,
+    "text": "| identifiability/confounding analysis | NOT_APPLICABLE | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#calibration-and-identifiability` | no empirical parameter |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260808-land-surface-energy-balance-authority-001/artifacts/calibration-readiness-matrix.md",
+    "line": 23,
+    "text": "| boundary, saturation, and failure reporting | PASS | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#branch-and-guard-table` | guards and gaps are explicit |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260808-land-surface-energy-balance-authority-001/artifacts/calibration-readiness-matrix.md",
+    "line": 24,
+    "text": "| equifinality/uncertainty retention | NOT_APPLICABLE | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#calibration-and-identifiability` | no fitted ensemble |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260808-land-surface-energy-balance-authority-001/artifacts/calibration-readiness-matrix.md",
+    "line": 25,
+    "text": "| synthetic recovery | NOT_APPLICABLE | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#calibration-and-identifiability` | no calibration algorithm |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260808-land-surface-energy-balance-authority-001/artifacts/calibration-readiness-matrix.md",
+    "line": 26,
+    "text": "| additional-data inventory | PASS | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#gap-register-and-promotability-labels` | required authority evidence is named; no data fit |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260808-vegetation-source-provenance-and-boundary-authority-001/artifacts/review-disposition.md",
+    "line": 36,
+    "text": "| `A-002` | `agent_a` | HIGH | `accepted` | Added all five adjacent invariant and guard-map bindings; removed redundant unindexed addenda. | `SC-PLANT-001.md#invariants`; `SC-EVAP-001.md#invariants`; `SC-RESIDUE-001.md#invariants`; `SC-WATBAL-001.md#invariant-table`; `SC-LANDSURFACEENERGY-001.md#invariants-and-invariant-guard-map` | Binding authority must live in each owner's machine-checkable schema. |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001/artifacts/review_agent_b.md",
+    "line": 29,
+    "text": "([SC-LANDSURFACEENERGY-001.md:218](../../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L218)); it has no occupancy/tile area identity or local-to-stand reconstruction rule.",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/carrier-parent-static-validation-once/disposition.md",
+    "line": 16,
+    "text": "| `CPSVO-A-001` | `agent_a` | `critical` | `accepted` | Distinguished structural V8 objects from resident V3/V2 objects; retained forcing-before-V8 and ingress-before-native order; sourced the borrowed native map proof from the exact resident validated revision. | `SC-LANDSURFACEENERGY-001.md#carrier-parent-static-and-same-map-validation-once-amendment`; `contract_ref.md#source-real-authority` | V8 cannot attest to resident objects it does not receive; existing validated-revision custody is the ",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/carrier-parent-static-validation-once/disposition.md",
+    "line": 18,
+    "text": "| `CPSVO-A-003` | `agent_a` | `high` | `accepted` | Bound each regime to its explicit applicable role/path set and added adjacent competing poisons through carrier, forcing, V8, ingress, resident, proof, vegetation, surface, soil/hydrology, solver/residual, and output boundaries. | `SC-LANDSURFACEENERGY-001.md#carrier-parent-static-and-same-map-validation-once-amendment`; `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback` | A",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/carrier-parent-static-validation-once/disposition.md",
+    "line": 22,
+    "text": "| `B-01` | `agent_b` | `high` | `accepted` | Applied the A-001 object-lineage correction and added distinct structural/native configuration, state, and surface poisons. | `SC-LANDSURFACEENERGY-001.md#carrier-parent-static-and-same-map-validation-once-amendment`; `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback` | Native omission needs authority over the exact resident references, not structural V8 references. |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/carrier-parent-static-validation-once/disposition.md",
+    "line": 23,
+    "text": "| `B-02` | `agent_b` | `high` | `accepted` | Required lazy plan joins at the exact replaced checks after all earlier guards and added stale-plan/configuration competing-poison cases. | `SC-LANDSURFACEENERGY-001.md#carrier-parent-static-and-same-map-validation-once-amendment`; `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback` | Hoisting a plan join would change observable first-error precedence. |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/carrier-parent-static-validation-once/disposition.md",
+    "line": 24,
+    "text": "| `B-03` | `agent_b` | `medium` | `accepted` | Added distinct surface configuration/owner and structural/native state cases, revision/reuse/transfer/restart cases, later dynamic/solver/output poisons, authentic seam requirements, zero fallback/publication, and rollback assertions. | `SC-LANDSURFACEENERGY-001.md#obl-landsurfaceenergy-c-019`; `snow_stage3_v11_adaptive_production_tests.rs::carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback` | Every named custody boundary requ",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/component-temperature-dependency-replay/disposition.md",
+    "line": 19,
+    "text": "| `CTDR-A-001` | agent_a | high | accepted | closed | Added normative stable node IDs, source-aligned node taxonomy, complete direct-edge generator, schema version/hash, inclusive closure, conservative unknown-edge handling, duplicated wet regions, longwave, routing, leaf/CI/hydraulic/shared/residual/output descendants and exact order. | `SC-LANDSURFACEENERGY-001.md#component-temperature-jacobian-dependency-replay-amendment` | Graph construction and replay reachability are independently reproduc",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 15,
+    "text": "| `LSE-CHILD2C-SUCCESSOR` | [Original LSE-CHILD2C-SUCCESSOR](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L569-L569) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-121, INV-LANDSURFACEENERGY-122, INV-LANDSURFACEENERGY-123` | `flagged-binding-addition` | Accepted event receipt, post-event-only operands, and pre-Newton covered-forest support admission; no storage arithmet",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 16,
+    "text": "| `LSE-V15-SOIL-THERMAL-EXACT-CARRY` | [Original LSE-V15-SOIL-THERMAL-EXACT-CARRY](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L570-L570) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-150` | `flagged-binding-addition` | Exact receiver representation and custody only; no process-physics, tolerance, chronology, or temporal-floor change. |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 17,
+    "text": "| `LSE-V16-SURFACE-ENTHALPY-EXACT-CARRY` | [Original LSE-V16-SURFACE-ENTHALPY-EXACT-CARRY](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L571-L571) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-151` | `flagged-binding-addition` | Exact per-tile LSE representation/custody with frozen V2/V3 high mirrors; no process-physics, phase, tolerance, chronology, or temporal-floor ",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 18,
+    "text": "| `LSE-STAGE3-NATIVE-CROSS-REGIME` | [Original LSE-STAGE3-NATIVE-CROSS-REGIME](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L572-L572) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-154, OBL-LANDSURFACEENERGY-C-009` | `flagged-binding-addition` | One standard Stage-3 covered-column map under native identities; litter V3/V4 remains inactive and byte-retained until the ex",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 19,
+    "text": "| `LSE-V2-UNPUBLISHED-CANDIDATE-BEGINNING` | [Original LSE-V2-UNPUBLISHED-CANDIDATE-BEGINNING](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L573-L573) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-155, OBL-LANDSURFACEENERGY-C-010` | `flagged-binding-addition` | Admits only a typed read-only unpublished soil beginning during candidate evaluation; publishable owner/resta",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 20,
+    "text": "| `LSE-V3-LITTER-PHASE-CAPACITY-SPILL` | [Original LSE-V3-LITTER-PHASE-CAPACITY-SPILL](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L574-L574) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-156, OBL-LANDSURFACEENERGY-C-011` | `flagged-binding-addition` | Binds one conservative post-phase liquid/enthalpy spill to current ingress and exact-surface custody; capacity normal",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 21,
+    "text": "| `LSE-V3-HETEROGENEOUS-SURFACE-RESOURCE-JOIN` | [Original LSE-V3-HETEROGENEOUS-SURFACE-RESOURCE-JOIN](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L575-L575) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-157, OBL-LANDSURFACEENERGY-C-012` | `flagged-binding-addition` | Applies only unmatched ordinary finalized uses to the accepted phase-adjusted V2 owner; native phase/",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 22,
+    "text": "| `LSE-V16-TOPOLOGY-RANKED-EXACT-OWNER` | [Original LSE-V16-TOPOLOGY-RANKED-EXACT-OWNER](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L576-L576) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-158, OBL-LANDSURFACEENERGY-C-013` | `flagged-binding-addition` | Exact owner and receipt order follows authenticated configuration topology, not lexical or parsed-numeric OFE IDs. ",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 23,
+    "text": "| `LSE-V24-VALIDATED-IN-MEMORY-HANDOFF` | [Original LSE-V24-VALIDATED-IN-MEMORY-HANDOFF](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L577-L577) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-159, OBL-LANDSURFACEENERGY-C-014` | `flagged-binding-addition` | Private immutable revision-bound typestate may eliminate redundant trusted in-process serialization/validation; all",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 24,
+    "text": "| `LSE-V25-SNOW-FREE-PHYSICAL-REUSE` | [Original LSE-V25-SNOW-FREE-PHYSICAL-REUSE](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L578-L578) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-160, OBL-LANDSURFACEENERGY-C-015` | `flagged-binding-addition` | One private single-use provisional physical ending may reseal final slab identities without rerunning LSE or adjacent own",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 25,
+    "text": "| `LSE-V27-PENDING-ADJUDICATION` | [Original LSE-V27-PENDING-ADJUDICATION](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L579-L579) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-161, OBL-LANDSURFACEENERGY-C-016` | `flagged-binding-addition` | Initial and history maps remain physical-only; the converged pending map continues from its own LSE/hydrology/soil prefix into V8",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 26,
+    "text": "| `LSE-V28-STAGE3-ANCHOR-JACOBIAN` | [Original LSE-V28-STAGE3-ANCHOR-JACOBIAN](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L580-L580) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-162, OBL-LANDSURFACEENERGY-C-017` | `flagged-binding-addition` | Exact represented-snow ground/soil identity-anchor probe residuals may reuse the current complete residual vector; all probe ",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 27,
+    "text": "| `LSE-V29-LEAF-MAXIMUM-EXACT-REUSE` | [Original LSE-V29-LEAF-MAXIMUM-EXACT-REUSE](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L581-L581) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-163, OBL-LANDSURFACEENERGY-C-018` | `flagged-binding-addition` | A successful private current leaf state may satisfy the immediately adjacent beta-one maximum call only for bit-identical",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 28,
+    "text": "| `LSE-V30-CARRIER-PARENT-STATIC-VALIDATION-ONCE` | [Original LSE-V30-CARRIER-PARENT-STATIC-VALIDATION-ONCE](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L582-L582) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-159, OBL-LANDSURFACEENERGY-C-019` | `flagged-binding-addition` | One generation-bound parent plan retains only validated immutable structure; the existing first",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 29,
+    "text": "| `LSE-V31-COMPONENT-TEMPERATURE-DEPENDENCY-REPLAY` | [Original LSE-V31-COMPONENT-TEMPERATURE-DEPENDENCY-REPLAY](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L583-L583) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-164, OBL-LANDSURFACEENERGY-C-020` | `flagged-binding-addition` | Revision 31 introduces new IDs `INV-164/C-020`; private same-iteration evidence may replay ",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 30,
+    "text": "| `EXP-STAGE3-20260906-R` | [Original EXP-STAGE3-20260906-R](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L584-L584) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-164, OBL-LANDSURFACEENERGY-C-020` | `flagged-binding-addition` | Separately identified stencil-aware experimental qualification; preserves graph/custody/forced-complete scientific obligations and historical r",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "line": 158,
+    "text": "| artifact.section.18 | [original schema surface](../SC-LANDSURFACEENERGY-001.md#change-log) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+    "line": 292,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-020\"></a> `OBL-LANDSURFACEENERGY-C-020` | requires an exact forced-complete differential oracle for every admitted component-temperature probe. It compares all replayed and retained node values, raw/tolerance/normalized residual vectors, dense Jacobian bits, branch identities, first errors, full potential/final solves, diagnostics, accepted output and rollback. The matrix covers centered and inward bounds, all wet/gas/zero-area branches, the normative fallibility",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md",
+    "line": 10,
+    "text": "- provenance_anchors: https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1894-L1918",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+    "line": 459,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-004\"></a> `OBL-LANDSURFACEENERGY-C-004` | a real scheduler consumer must prove that the new state and ledger affect the intended direct path before runtime closure. | All scheduler/direct-path consumers claiming runtime closure; retain the Statement and linked source model/regime, failure and qualification limits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/S",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 409,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-140\"></a> `INV-LANDSURFACEENERGY-140` | V3 is an immutable V2 successor; V1/V2 scientific and serialized bytes remain unchanged and mixed identities reject. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1638-L1638) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 410,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-141\"></a> `INV-LANDSURFACEENERGY-141` | The nonlinear solve is phase-free and publishes separate signed liquid and ice vapor under liquid-water saturation with phase-specific sensible-plus-latent enthalpy. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1639-L1639) | [INFERENCE][Static]; [original rule/context](https://github.com/ro",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 411,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-142\"></a> `INV-LANDSURFACEENERGY-142` | Finalized vapor uses immutable beginning phase availability, installs each mass/energy component exactly once, and cannot consume current ingress. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1640-L1640) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blo",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 412,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-143\"></a> `INV-LANDSURFACEENERGY-143` | The `3300 s` kinetic operator is bounded by named liquid, ice, and liquid-water-equivalent ice-capacity operands and uses `freeze-melt`. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1641-L1641) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db10",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 413,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-144\"></a> `INV-LANDSURFACEENERGY-144` | Equal liquid/ice transfer and `L_f*m_phase` conserve `U-L_f*W_i`; ending temperature uses ending dry/liquid/ice heat capacity. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1642-L1642) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d086",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 414,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-145\"></a> `INV-LANDSURFACEENERGY-145` | Phase precedes current liquid ingress and liquid-only WB14; litter ice never enters soil, runoff, infiltration, or `frozwt`. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1643-L1643) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 415,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-146\"></a> `INV-LANDSURFACEENERGY-146` | Phase is post-solve and cannot trigger a same-support re-solve; exact 60-second fallback and larger-support obligation remain unchanged. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1644-L1644) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db10",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 416,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-147\"></a> `INV-LANDSURFACEENERGY-147` | Successor restart and phase receipts bind every primitive operand and all owner identities; any later failure rolls back the full envelope byte-exactly. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1645-L1645) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWE",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 417,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-148\"></a> `INV-LANDSURFACEENERGY-148` | SC-EVAP daily WB17 does not duplicate V3's subdaily pre-WB14 surface vapor debit or credit. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1646-L1646) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifi",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 418,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-149\"></a> `INV-LANDSURFACEENERGY-149` | Canonical `p61` and native-forest consumers must install and persist V3 phase state with independent mass/energy closure; producer-only or synthetic evidence cannot close runtime adoption. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1647-L1647) | [INFERENCE][Static]; [original rule/context",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 424,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-011\"></a> `OBL-LANDSURFACEENERGY-C-011` | prove the post-phase raw litter liquid and sensible enthalpy split into one within-capacity retained state and one typed spill, with exact phase-receipt/transaction/support/key custody, one negative exact-surface operand, one current-ingress/WB14 handoff, independent tile/OFE mass and enthalpy reconstruction, no re-solve, and complete rollback. | V3 litter post-phase capacity-spill consumers; retain the Statement and link",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "line": 425,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-012\"></a> `OBL-LANDSURFACEENERGY-C-012` | prove a heterogeneous V3 batch classifies and consumes every finalized surface row exactly once: accepted native litter vapor rows only through their phase receipts and all remaining authenticated ordinary rows through one canonical debit of the phase-adjusted V2 owner before one ingress. Prove no phase/spill/ice/enthalpy replacement or energy replay, exact transaction/support/key/cardinality joins, and full rollback. | H",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+    "line": 340,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-152\"></a> `INV-LANDSURFACEENERGY-152` | When the canonical Stage-3 covered solver calls LSE as an authentic physical map, LSE retains its own `INV-138/139` covered column algorithm and `TOL-LSE-001/002` closure. The outer Stage-3 admission compares continuous LSE boundary payload under `TOL-SNOWENERGY-007`; it does not replace, relax, or select the LSE solver. The accepted payload is sealed once. Owner/receipt envelope, exact high-plus-carry representation, exact s",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+    "line": 346,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-014\"></a> `OBL-LANDSURFACEENERGY-C-014` | prove a private immutable validated handoff moves an unchanged frozen-litter resident and surface-resource candidate without serialize/parse roundtrip or duplicate owner validation; binds the exact configuration, revision, transaction, predecessor, support, and publication-history prefix; validates only an authenticated appended tail; invalidates on mutation; and retains fresh full validation for restart, external/durable",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+    "line": 347,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-015\"></a> `OBL-LANDSURFACEENERGY-C-015` | prove snow-free provisional/final execution evaluates every LSE, litter-phase, surface-ingress/WB14, and soil physical operator exactly once; the final accepted-slab path reseals identities only, yields byte-identical final owners and one publication, rejects every changed non-slab operand and any reused or post-restart proof, and rolls back exactly. | Snow-free final receipt reseal consumers; retain the Statement and lin",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+    "line": 348,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-019\"></a> `OBL-LANDSURFACEENERGY-C-019` | on the authentic 52-map terminal-parent workload, prove exactly one parent-static configuration/topology/index validation, exactly 52 exact normalized-forcing validations, and exactly 52 fresh dynamic-map validations. Prove full-versus-admitted bitwise physical and final-owner parity for every applicable Initial/history/final and direct/Half1/Half2 role/path in ordinary, native, and multilane regimes; ordinary maps must m",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+    "line": 349,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-016\"></a> `OBL-LANDSURFACEENERGY-C-016` | requires ordinary/native physical-prefix equality against a test-only forced-complete reference, zero nonfinal and one final V8/transaction/owner construction, exact provider counts, role/ordinal/ identity/regime/topology/one-ULP poisons, unpublishability, and complete rollback without fallback. | Covered nonfinal physical-map companion consumers; retain the Statement and linked source model/regime, failure and qualificat",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+    "line": 350,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-007\"></a> `OBL-LANDSURFACEENERGY-C-007` | The real covered consumer must reject a tolerance-equivalent payload with a changed branch/topology/owner envelope, reject any unequal or duplicated snow--soil transfer, and prove continuous boundary sensitivity through the actual Stage-3 admission seam without a second LSE algorithm or uncharged physical evaluation. | Canonical Stage-3 accepted-map consumers; retain the Statement and linked source model/regime, failure a",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+    "line": 435,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-108\"></a> `INV-LANDSURFACEENERGY-108` | Ordered unknowns, residuals, branches, finite differences, pivots, backtracking, tolerances, and error precedence are deterministic. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1097-L1097) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+    "line": 436,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-131\"></a> `INV-LANDSURFACEENERGY-131` | Only a numerically inactive sun-leaf, shade-leaf, or wet-surface temperature coordinate uses `max(T_canopy, 273.15 K)` as its representational anchor; zero physical area and the existing inactive-wet residual predicate guarantee no physical operand or ledger interference. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+    "line": 437,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-109\"></a> `INV-LANDSURFACEENERGY-109` | LSE-V2 imports exact LSE-V1 physics and accepts only the V10 vegetation owner at the coupled boundary. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L2070-L2070) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/d",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+    "line": 438,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-110\"></a> `INV-LANDSURFACEENERGY-110` | Exact FullSupply finalization seeds only coordinates, then reevaluates the complete fixed-final system from immutable beginning owners; a passing initial evaluation accepts at iteration zero without a Jacobian. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L2071-L2071) | [INFERENCE][Static]; ",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+    "line": 439,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-111\"></a> `INV-LANDSURFACEENERGY-111` | V1-to-V2 migration copies every LSE scientific value bit-identically and derives only V2 identity receipts; partial nonpositive-assimilation root supply is unsupported. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L2072-L2072) | [INFERENCE][Static]; [original rule/context](https://github.com",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+    "line": 440,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-112\"></a> `INV-LANDSURFACEENERGY-112` | Only the uncapped active V10 nonpositive-assimilation potential solve uses the declared diagonal coordinate scaling for Jacobian pivot classification and dimensionless Newton solution; physical residuals and steps are unchanged. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L2073-L2073) | [IN",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+    "line": 441,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-113\"></a> `INV-LANDSURFACEENERGY-113` | A store-cap-active V10 nonpositive-assimilation wet coordinate below the canonical water-rate tolerance uses the domain-valid inactive anchor defined by `INV-LANDSURFACEENERGY-131` only when its physical energy residual already passes, without changing liquid or energy ledgers. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contra",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+    "line": 447,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-017\"></a> `OBL-LANDSURFACEENERGY-C-017` | requires every represented-snow ground/soil anchor probe residual vector and dense Jacobian column to equal the complete covered evaluator bit-for-bit for centered and admitted inward stencils. It must prove unchanged minus-then-plus trial construction and domain admission, zero complete constitutive reevaluations for those anchor probes, complete reevaluation for every other coordinate and regime, dependency-invalidating",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+    "line": 448,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-018\"></a> `OBL-LANDSURFACEENERGY-C-018` | requires every field of the reused private leaf state, the complete covered evaluation, normalized residuals, frozen branches, and full solve outcome to equal an exhaustive beta-one-call oracle bit-for-bit. It must cover exact beta one, exact-zero-PAR, inactive, positive-PAR beta one ULP below one, centered and inward beta probes, call elimination only for the admitted cases, unchanged call order and typed-error precedenc",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+    "line": 196,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-100\"></a> `INV-LANDSURFACEENERGY-100` | Hydrology owns every water mass; LSE owns one surface thermal node per tile; soil thermal owns all `N` soil temperatures and enthalpies. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1089-L1089) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db10",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+    "line": 197,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-103\"></a> `INV-LANDSURFACEENERGY-103` | Surface enthalpy is `(C_dry+W*C_w)*(T_s-T_ref)` using hydrology's exact mass, while every soil enthalpy remains independently owned. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1092-L1092) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+    "line": 198,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-106\"></a> `INV-LANDSURFACEENERGY-106` | Surface `-G_s1` and soil `+G_s1`, infiltration energy, and routed runoff enthalpy join once by exact OFE/tile/interval identity. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1095-L1095) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+    "line": 199,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-124\"></a> `INV-LANDSURFACEENERGY-124` | The persistent snow boundary joins the bottom Stage 3 volume to first ordered OFE soil node only; no tile selection, aggregation, weighting, or duplication is allowed. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1257-L1257) | [INFERENCE][Static]; [original rule/context](https://github.com/",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+    "line": 200,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-125\"></a> `INV-LANDSURFACEENERGY-125` | Half-snow plus half-soil series resistance and beginning/ending Crank--Nicolson evaluation produce one positive-downward `bar(G_ss)` inside the covered fixed point. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1258-L1258) | [INFERENCE][Static]; [original rule/context](https://github.com/rog",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+    "line": 201,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-126\"></a> `INV-LANDSURFACEENERGY-126` | Exact `-bar(G_ss)` snow custody and `+bar(G_ss)` first-soil-node custody share one reconstructable receipt and commit or roll back together. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1259-L1259) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+    "line": 207,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-003\"></a> `OBL-LANDSURFACEENERGY-C-003` | soil/frost consumes exactly `-G` once and is sole subsurface conduction/phase-state mutator. | Soil/frost consumers of the surface ground-heat transfer; retain the Statement and linked source model/regime, failure and qualification limits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L330-L3",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+    "line": 193,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-P-005\"></a> `OBL-LANDSURFACEENERGY-P-005` | expose every accepted soil-internal, top-boundary, and infiltration energy operand with exact layer/support/source identity; never supply a rounded aggregate, residual, or carry. | Producers delivering accepted soil thermal credits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L319-L321) | E",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+    "line": 194,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-005\"></a> `OBL-LANDSURFACEENERGY-C-005` | soil thermal V2 alone owns the exact high/carry representation, credit receipt, restart/checkpoint state, and atomic commit. | Consumers of exact soil thermal enthalpy credits; retain the Statement and linked source model/regime, failure and qualification limits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURF",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+    "line": 195,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-010\"></a> `OBL-LANDSURFACEENERGY-C-010` | prove an unpublished V2 continuation enters LSE/V3 only as its typed authenticated physical read, emits no owner/restart bytes and performs no intermediate install, rejects support/predecessor/ receipt substitution, and accepts only through one complete original-owner replay and one atomic V2 owner/receipt/restart seal with full rollback. | Candidate-only exact-soil non-owner beginning consumers; retain the Statement and ",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+    "line": 239,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-P-006\"></a> `OBL-LANDSURFACEENERGY-P-006` | expose every accepted per-tile phase-free, fusion, and retained-ingress energy amount with exact kind, ordinal, support, transaction, surface key, source receipt, unit, and tile-ground basis; never supply a producer residual, carry, or untyped aggregate. | Producers delivering accepted surface enthalpy operands | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/spec",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+    "line": 240,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-006\"></a> `OBL-LANDSURFACEENERGY-C-006` | the LSE exact-surface owner alone owns authoritative `U=exact(U_hi)+R_U`; frozen LSE V3 and surface-owner V2 fields are high mirrors only when joined through the V16 successor projection. | Consumers of exact LSE surface enthalpy operands; retain the Statement and linked source model/regime, failure and qualification limits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+    "line": 241,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-013\"></a> `OBL-LANDSURFACEENERGY-C-013` | prove V16 exact-owner records and operand groups follow authenticated configuration-topology rank for opaque OFE IDs, including `ofe-9 -> ofe-10`, and reject lexical/numeric-derived order, duplicate, omission, substitution, within-OFE/operand reorder, stale configuration/digest, and cross-owner topology mismatch with full rollback. | Topology-ranked exact-surface owner consumers; retain the Statement and linked source mod",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+    "line": 242,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-008\"></a> `OBL-LANDSURFACEENERGY-C-008` | Prove first and middle partial children retain the predecessor while exact carry/state/receipt chain advance; the final child stamps the transaction once; mid-parent restart reproduces the same canonical bytes; wrong posture/bounds, mixed markers, early physical advance, final predecessor retention, and injected failure all reject with full rollback. | Exact-surface parent-local chronology consumers; retain the Statement ",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+    "line": 199,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-101\"></a> `INV-LANDSURFACEENERGY-101` | Component longwave uses current component temperature and `tau=exp[-0.8*Omega*(LAI+SAI)]`; no bulk-canopy or stale-ground operand is accepted. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1090-L1090) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b9",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+    "line": 200,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-102\"></a> `INV-LANDSURFACEENERGY-102` | Neutral open and covered turbulent paths use only the exact equations/constants/domains above; no wind floor or stability substitute exists. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1091-L1091) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+    "line": 229,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-121\"></a> `INV-LANDSURFACEENERGY-121` | A positive snow-free successor consumes the accepted event receipt and a covered-forest support-admission receipt. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L519-L519) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+    "line": 230,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-122\"></a> `INV-LANDSURFACEENERGY-122` | The successor uses only post-event snow-free operands and its exact accepted support. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L520-L520) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+    "line": 231,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-123\"></a> `INV-LANDSURFACEENERGY-123` | Below-domain positive support rejects before Newton with exact owner rollback; zero support performs no physical solve. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L521-L521) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5eca",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+    "line": 232,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-116\"></a> `INV-LANDSURFACEENERGY-116` | Coupled-time nanosecond identity is independent of the LSE physical support domain. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L2017-L2017) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+    "line": 233,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-117\"></a> `INV-LANDSURFACEENERGY-117` | Every physical solve carries one sealed support-admission receipt with exact identity and policy joins. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L2018-L2018) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+    "line": 234,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-118\"></a> `INV-LANDSURFACEENERGY-118` | Below-minimum support rejects before Newton and leaves all staged/committed owners unchanged. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L2019-L2019) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/speci",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+    "line": 235,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-119\"></a> `INV-LANDSURFACEENERGY-119` | Support exactly at the declared minimum uses the unchanged constitutive equations and existing tolerances. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L2020-L2020) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+    "line": 236,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-120\"></a> `INV-LANDSURFACEENERGY-120` | No hidden floor, longer-step scaling, tolerance relaxation, frozen state, or V10 mutation is admitted. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L2021-L2021) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/d",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+    "line": 242,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-009\"></a> `OBL-LANDSURFACEENERGY-C-009` | prove represented-snow classification invokes one standard Stage-3 covered-column map under native identities, retains its exact optical/lower-boundary receipts, invokes no frozen-litter V3/V4 phase, storage, ingress, or WB14 work, constructs no second inner envelope, retains V3/V4 owner bytes, transitions to snow-free V3/V4 only after the exact terminal split, and rolls back every owner on failure. | Represented-snow con",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "line": 210,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-104\"></a> `INV-LANDSURFACEENERGY-104` | Signed vapor mass and `v*[h_l+L_v]` energy preserve sign; condensation has one explicit hydrology credit. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1093-L1093) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b5",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "line": 211,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-105\"></a> `INV-LANDSURFACEENERGY-105` | Root and ground requests share beginning stores before ingress; accepted current ingress is partitioned exactly once after the capped solve. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1094-L1094) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "line": 212,
+    "text": "| <a id=\"INV-LANDSURFACEENERGY-107\"></a> `INV-LANDSURFACEENERGY-107` | Local tile closure precedes one `f_t` weighting to OFE ground; no cross-OFE aggregate is called stand ground. | [Original authority](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L1096-L1096) | [INFERENCE][Static]; [original rule/context](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f4",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "line": 218,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-P-001\"></a> `OBL-LANDSURFACEENERGY-P-001` | produce immutable, source-identified records for all water and energy operands and a sealed start-to-end ledger. | All LSE producer paths; retain named model/regime and reviewed terminal-cutover limits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L311-L312) | Existing local mechanism guards",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "line": 219,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-P-002\"></a> `OBL-LANDSURFACEENERGY-P-002` | validate before mutation and commit energy and water state atomically. | All LSE producer paths; retain named model/regime and reviewed terminal-cutover limits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L313-L314) | Existing local mechanism guards and [coupled error map](water-vapor.md#in",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "line": 220,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-P-003\"></a> `OBL-LANDSURFACEENERGY-P-003` | expose branch, interval, tolerances, residuals, and exact component lineage without silent defaults or clamps. | All LSE producer paths; retain named model/regime and reviewed terminal-cutover limits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L315-L316) | Existing local mechanism guards a",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "line": 221,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-P-004\"></a> `OBL-LANDSURFACEENERGY-P-004` | reject all schema-v8 terminal payloads until a reviewed atomic cutover revises both snow and receiving-surface authority. | All LSE producer paths; retain named model/regime and reviewed terminal-cutover limits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L317-L318) | Existing local mechani",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "line": 222,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-001\"></a> `OBL-LANDSURFACEENERGY-C-001` | ET supplies one actual evaporation debit and consumes no second latent debit. | ET consumers of actual evaporation and latent energy; retain the Statement and linked source model/regime, failure and qualification limits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L326-L327) | Existing loca",
+    "historical": true
+  },
+  {
+    "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "line": 223,
+    "text": "| <a id=\"OBL-LANDSURFACEENERGY-C-002\"></a> `OBL-LANDSURFACEENERGY-C-002` | infiltration/runoff consumes one water offer, returns sealed partition terms, and remains sole water-partition owner. | Infiltration/runoff consumers of the LSE water offer; retain the Statement and linked source model/regime, failure and qualification limits | [Original clause](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACE",
+    "historical": true
+  }
+]

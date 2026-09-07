@@ -1,6 +1,7 @@
 # LSE context adoption correction
 
-Status: intake; implementation acceptance pending independent review.
+Status: executing; prospective acceptance/design frozen in artifacts/intake.md
+and approved independently in intake-review-a.md and intake-review-b.md.
 Authorization: user requested scaffolding and execution of the two corrections on
 2026-09-07. Local scaffold and closure commits authorized; no push.
 Baseline: fb32d27f2. Predecessor: ../20260907-directory-contract-checker-lse-adoption-001/.
@@ -42,7 +43,7 @@ Two independent intake reviewers must approve legitimacy and exact boundaries.
 3. Strict checker, unit/A0 and focused migration checks pass; no new affected Rust
    failures or altered protected expectations. Identical failure sets alone never
    prove preservation. Any remaining masking gap blocks adoption.
-4. Always-read LSE entry and shared interface together target <=12 KiB. Each of the
+4. Always-required LSE union <=12,288 bytes, as frozen in intake.md. Each of the
    three scientific exercises must reduce sufficient LSE source reading at least
    20% versus 264863 bytes; identity must also remain smaller. Review may tighten
    these proposed thresholds before implementation, never loosen after a miss.
