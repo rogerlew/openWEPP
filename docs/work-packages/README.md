@@ -4,6 +4,11 @@ Current-work locator: [active index](active.md). Start there and at the named
 package handoff; this catalog preserves historical evidence. Prospective rules
 in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
+## 20260907-lse-context-adoption-correction-001
+
+Authorized corrective execution: migration-specific acceptance and smaller sufficient
+LSE scientific reading. See [package](20260907-lse-context-adoption-correction-001/package.md).
+
 ## 20260907-directory-contract-format-spec-001
 
 COMPLETE: directory-based canonical contract format specification and prospective
