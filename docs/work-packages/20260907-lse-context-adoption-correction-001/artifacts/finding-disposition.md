@@ -85,3 +85,15 @@ changed-cut semantic proof; no hypothetical revised byte count becomes observati
 
 A/B exact iteration6 preflight and01/03 semantic reuse PASS; original observations
 remain immutable. New02/04 first-answer sufficiency is the current unresolved gate.
+
+## Iteration6 first answers — scientific progress, current failures retained
+Solver02: all33sourcehashes/94requests exact;211770LSE sizePASS, scientificFAIL solely
+because no new persisted field does not forbid a public nonpersisted exponent field.
+All prior other solver/protocol findings resolved semantically. Closure04: all32hashes/
+113requests exact; scientificPASS, sizeFAIL235130. Its additional38737bytes are actual
+nonlinear19291 and qualification19446 reads for eligibility and p61capture scope.
+No actual bytes are removed. Collision disclosures are metadata/CLI audit limitations,
+not demonstrated foreign scientific-answer exposure. Reading-iteration-06.json binds
+immutable first reports. Approved diagnostic-title clarification and prospective
+physical/experiment navigation clarification retain current gates and require new
+fresh02/04. Surface01/identity03 remain explicitly reused with observed old cuts/counts.

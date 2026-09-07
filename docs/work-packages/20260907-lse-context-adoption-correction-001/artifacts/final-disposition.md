@@ -1,60 +1,61 @@
 # Adoption disposition — executing
-Static: this is the current disposition draft, not closure or adoption approval.
-Canonical v32 remains a candidate. Fresh scientific sufficiency and independent
-terminal verification remain current-scope requirements; execution continues.
+Static: current disposition draft, not closure or adoption approval. Candidate source
+cut29b3e702253bf3846afb28a8ac2eeda1d481e0e5 is frozen during fresh02/04. General
+selective reading remains restricted to the package's bounded exercises.
 
 ## Exact diff reconciliation
-Baseline fb32d27f2 to current candidate-manifest.json (iteration6):
-- Canonical LSE entry and17chapters: presentation/routes, original scientific cells,
-  source identities, effective obligations and exact fenced bodies preserved.
+Baseline fb32d27f2 to candidate-manifest.json:
+- Canonical LSE entry and17chapters: presentation/routes; original scientific cells,
+  effective obligations and exact fenced bodies preserved with616mapped spans.
 - Science lifecycle index: only LSE review date09-04→09-07.
-- Seven Rust authority-test consumers plus one shared test helper: shared canonical
-  directory loader, equivalent row lookup/formatting and current revision32 join.
-  All protected frozen identity, expected-red and scientific predicates retained.
-- One focused Python migration test:15 direct cases cover masked obligations,
-  original cells/fences, source poison detection and unchanged legacy behavior.
-- This work package and work-packages README/active locators: authorized evidence.
-No production Rust, tools/parser, Cargo/flake/config, global guides, external science
-contracts or predecessor-package bytes changed. Paths initially allowed for possible
-infrastructure repair but not needed are excluded from the final implementation.
-No runtime branch, physical algorithm, serializer, publication surface, external
-suite/cohort or required-case binding is changed. This is the prospectively reviewed
-migration boundary, not deferred production implementation or campaign qualification.
+- Seven Rust authority-test consumers plus one shared test helper: canonical directory
+  loading and equivalent row/revision32 joins; all protected predicates retained.
+- One focused Python migration test:15 direct cases for masked obligations, original
+  cells/fences, science poisons, metadata boundaries and unchanged legacy behavior.
+- This package and work-packages README/active locators: authorized evidence.
+No production Rust, tools/parser, Cargo/flake/config, global guide, external science
+body or predecessor-package bytes change. No runtime branch, physical algorithm,
+serializer, publication surface, external suite/cohort or required-case binding changes.
+Unused initially permitted infrastructure repair paths are excluded from final scope.
 
-## Acceptance and retained diagnostic results
-Direct original-science, loader/reference, binding, units/admission, masked-obligation
-and migration-negative checks pass; gate-results.md binds commands/results. Eight
-Rust targets have111PASS18inheritedFAIL with no added/removed failure and the same36
-emitted normalized panic payloads. Matching failures alone are not preservation
-proof: M1–M9 direct passing checks address the individually classified masking risks.
-Seventeen original root-test Clippy diagnostics remain FAIL; changed helper lint
-passes. No scientific expectation or frozen failure was weakened to admit migration.
+## Evidence and retained diagnostic failures
+Gate-results.md and bound manifests retain actual commands.98Python checks, strict
+17BEI/100definitions, unit/A0 and53actual bridge cases PASS. Eight Rust targets run129:
+111PASS18inheritedFAIL, same18names/36normalized emitted panics. M1–M9 separately
+passing migration checks address individually classified masking risks; identical
+failures alone are not preservation proof. Seventeen inherited root-test Clippy
+failures remain diagnostic FAIL; changed helper lint PASS. No protected assertion,
+scientific expectation or historical HOLD is weakened.
 
-Current always-read LSE entry/interface is12117bytes. Projections are not measured
-sufficiency. reading-iteration-01/02/03.json preserves every failed/invalid attempt.
-Identity03 is a fresh first-attempt PASS at6938ca97d; both reviewers verified all23
-selected source identities and required dependencies unchanged at7627c01e2. This is
-explicit reuse, not a claimed new reader or four same-cut fresh successes.
-Iteration4's complete fresh science reports remain bound to7627c01e2: surface01
-failed provider reading and size, solver02 failed explicit qualifiers despite size,
-closure04 passed bounded science but failed size. The actual failures are retained.
-Iteration5 foregrounds those existing duties and clarifies application versus audit.
-Iteration5 surface01 is independently sufficient at196206bytes. Solver02 and
-closure04 pass size but fail science; reading-iteration-05.json preserves those actual
-first answers. Reviewed correction and fresh02/04 remain required. Identity reuse
-has independent semantic dependency proof for the added “executable” interface
-trigger; original identity observation31428 is unchanged, not23equal final hashes.
-No model-token, runtime-context, quota or
-scientific execution result is inferred from source-byte measurements.
+## Reading acceptance and remaining work
+Always-read entry/interface12117bytes satisfies12288. Full directory349435bytes is
+still larger than the original264863; no on-disk or model-token reduction is claimed.
+Surface01 first adequate fresh result atb3b7b57f4:196206LSE bytes,25.921703% smaller.
+Identity03 first adequate fresh result at6938ca97d:31428LSE bytes. A/B explicitly
+prove semantic reuse at29b3: surface's two selected chapters only gain natural
+subheadings; identity's interface/qualification clarifiers preserve the same exact
+executable task and full protocol duties. Original observations remain tied to their
+source cuts; no new reader, revised observed count or all-hashes-equal claim.
 
-## Remaining current-scope work
-Complete fresh scientific evidence and independent assessment; resolve any failure
-in scope and rerun fresh affected exercises. Then obtain stable-cut dual review and
-dual independent terminal verification before enabling general selective reading.
-Final adoption metadata, truthful completed handoff/prompt/catalog disposition and
-bounded final diff verification follow those gates. Commit locally; no push authorized.
+Solver02 and closure04 failed scientific completeness atb3 despite sizePASS. Their
+immutable reports and all prior failures are retained in reading-iteration-01..05.json.
+Reviewed iteration6 subsections foreground existing solver/owner/comparison rules;
+original bodies, numbered procedure, anchors and complete extents remain intact.
+Solver06 at29b3 passes reading/size211770 but fails the explicit public nonpersisted
+exponent-field exclusion. Closure06 still runs on29b3. A reviewed minimal diagnostic
+heading clarification and genuinely fresh solver retry remain required; no failed
+first answer is repaired or waived.
+Actual source exposure/repeats/external/governance requests remain separately recorded;
+delivered tokens, runtime context and full workflow costs are UNOBSERVED.
 
-Iteration6 approved presentation correction is applied; only four canonical chapters
-change from b3. Original equations, predicates, protocols and full parent reading
-extents remain intact. Fresh02/04 and final-cut01/03 reuse proof are pending; no
-adoption activation or completed scientific sufficiency is claimed.
+Complete fresh02/04 and independent assessments; correct any failure in scope. Then
+obtain stable dual review and two NEW terminal verifications before live adoption.
+After those gates, remove only the159-byte candidate restriction through the reviewed
+generator mode, finalize status/handoff/prompt/catalog, rerun affected checks and
+obtain bounded final-diff verification. Commit locally; no push authorized. No
+production correctness, scientific execution or experiment resumption follows.
+
+Both iteration6 first reports are complete and bound in reading-iteration-06.json:
+solver scientificFAIL/sizePASS; closure scientificPASS/sizeFAIL. No current acceptance
+waived. Correction and new fresh02/04 remain in scope; canonical29b3 is unchanged
+pending exact prospective navigation review.

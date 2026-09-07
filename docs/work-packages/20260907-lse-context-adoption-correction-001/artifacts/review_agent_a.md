@@ -2161,3 +2161,247 @@ source-selfcheck procedure. Preserve all earlier failed first reports. Surface05
 and identity03 remain explicitly reused from their original cuts, with this
 bounded proof. No adoption/production PASS follows; stable final A/B review,
 required direct gates and dual new terminal verification remain outstanding.
+
+
+## Independent fresh solver06 assessment at 29b3e7022
+
+Static: complete first returned answer compared with the unchanged original
+task2/rubric and actual selected mechanisms/protocol scopes. Ran: all33 source
+SHA-256 checks against frozen29b3e702253bf3846afb28a8ac2eeda1d481e0e5,
+every94 requested/effective line/byte span and endpoint mapping, complete byte
+unions and overlaps. No scientific execution or implementation audit performed.
+Report `exercise_02_retry_06.md`,67230bytes, SHA-256
+f8c4aa1cb8844a3bb50d1573ff770d697518307d4b9cb8cb532e97f443420936.
+
+Scientific sufficiency FAIL on one remaining explicit frozen qualifier. The
+INV-139 paragraph at report42 correctly places the exact examined exponent in
+cumulative backtracking and states “no new persisted field.” It never excludes
+a separate PUBLIC nonpersisted exponent field. Those are distinct restrictions:
+an additional in-memory/public diagnostic API field need not be persisted.
+The frozen task2 rubric1 explicitly requires never adding a public exponent
+field; `solve-boundary.md:64–66` and the original nonlinear witness paragraph
+bar a separate persisted OR public field. Whole-answer search confirms no other
+statement supplies that public-field exclusion. General exact-output/diagnostic
+parity is not a substitute for this concrete API restriction, just as general
+preservation claims did not repair earlier omitted branch preconditions. This
+finding does not claim that the reader proposes such a field or that existing
+code violates it; the first answer incompletely states the required boundary.
+
+The previously identified other numerical/protocol omissions are now resolved:
+exact FullSupply positive identity/amount and canonical zero, complete final
+rebuild and zero iteration diagnostics, active-store-cap AND rate<=tolerance AND
+physical-energy gate, explicitly typed nonpositive-assimilation partial positive
+root exclusion, diagnostic ci with no new threshold, current/b0/first-valid
+witness chronology, exact600s one/10/19 versus1800s ten-iteration teardown.
+Report125 unqualifiedly excludes detailed traces/oracles from “measured
+intervals” and matches compact counters/audit posture in both arms. Its named
+separate timing and memory series are both measured intervals; this is a
+sufficient semantic all-interval exclusion, without demanding the identical
+source wording. The source-specific forcing/V8/ingress/native-validation order,
+C017/018/020 distinct eligibility/lifetimes, full direct graph and both routing
+passes, canonical call order, authentic proof/error/rollback duties, PC1/SG1
+limits and real completed-work accounting are concretely retained.
+
+Required-reading scope is sufficient for the bounded question. All selected
+LSE files and three complete external contracts (Vegetation, SnowEnergy,
+CoupledTime), plus four complete experiment documents, have complete finite
+coverage. This answer states accepted parcel and inactive represented-snow
+custody requirements; it does not derive an ingress partition, implement an
+active WB14/litter path, reconstruct exact carry, or establish actual public
+output closure. Its named independent real-consumer comparisons are future
+requirements with missing actual inputs, not an assertion of performing that
+owner reconstruction. Hence whole WATBAL/SurfaceLiquid/SnowFreeze and the
+separate exact/litter/audit mechanisms are not automatically triggered merely
+because their broader parent chapters were displayed. This is claim-based
+scope adjudication, not a three-versus-five external-file quota or a waiver.
+Actual owner/partition/provider/reconstruction claims would expand them.
+
+Independent numeric ledger PASS: all33 full-source hashes, all94 literal and
+effective ranges (including within-line byte endpoints and EOF), complete
+source coverage, counts and overlaps agree. LSE211770 unique/322456 requested
+exposure; other985421/1081760; all1197191/1404216, repeated207025. No source
+coverage gaps remain. Entry/interface12117; LSE reduction20.0454574629% meets
+the source threshold by120bytes. This remains separate from scientific FAIL.
+Automatically supplied root9508 is separately disclosed; delivered bytes in
+clipped responses, wrappers and total workflow/token costs remain unobserved.
+The repeat/recovery ledger preserves requested bytes rather than inventing
+exact original clipping boundaries.
+
+Freshness/tooling limitation: the report discloses two missing-interpreter
+failures, two collided-reader CLI-signature failures, an unused copied foreign
+metadata snapshot, and first-nine own bootstrap records reconstructed from its
+retained transcript before private-directory measurement. It expressly states
+that no foreign scientific answer/notes/ledger was inspected or displayed and
+that the copied ledger was not used. The exact failed argv and traceback-source
+byte quantities are not reconstructable from that compacted transcript. This
+limits independent failed-command telemetry; it does not establish exposure to
+another answer or the hidden rubric. Therefore no automatic freshness
+invalidation is warranted on the available evidence. Likewise, reproducible
+source hashes/byte unions do not independently prove the historical delivery
+of every command: actual-request provenance is the reader's disclosed record,
+with that explicit bootstrap-recovery limitation. Do not erase the collision
+or claim zero incidental tool-code exposure; no scientific contamination is
+asserted without evidence. The scientific failure above stands independently.
+
+Preserve this immutable first report and all prior failures. A later correction
+from the same reader would not repair fresh-attempt status. No canonical edits
+or feedback to any fresh reader were made during this assessment.
+
+
+## Prospective diagnostic subsection clarification after solver06
+
+Static: reviewed the exact proposed rename of the iteration6-added H3 from
+“Witness coordinates and diagnostics” to “Witness coordinates and
+public/persisted diagnostics”. APPROVE this bounded presentation correction
+only after the remaining active reader finishes. Both output surfaces are
+already expressly governed by the unchanged adjacent original paragraph; the
+heading accurately exposes that paragraph's scope. It introduces no new
+scientific/API rule, does not rewrite an old heading/anchor, and retains the
+entire V13 parent and its original diagnostic/first-valid-witness requirements.
+Its motivation is the observed discoverability failure, but its wording is
+ordinary canonical scope labeling rather than a rubric answer in a fresh
+reader's prompt. No rule or pass criterion changes and no current answer is
+repaired retrospectively. A new fresh solver assessment remains necessary;
+the change itself is not a presumed cure.
+
+Surface05 and identity03 do not select nonlinear-solve; their earlier explicit
+semantic reuse proofs can remain subject to exact applied-diff/source-input
+checks. Closure06 is still active and its actual scope/output has not yet been
+reviewed, so no unaffected-result reuse is predeclared for it. Recompute actual
+source forecasts and verify source preservation/manifest before fresh launch;
+the existing120-byte solver margin cannot restrict an actual reader's scope.
+
+
+## Independent fresh closure06 assessment at 29b3e7022
+
+Static: complete first answer reviewed against unchanged original task4/rubric,
+selected physical/receipt scope and actual expansion reasons. Ran: independently
+verified all32 full-source hashes, all113 successful inclusive-line/byte requests,
+complete finite unions and overlaps against29b3e702253bf3846afb28a8ac2eeda1d481e0e5.
+No production or numerical closure execution performed.
+Report `exercise_04_retry_06.md`,62259bytes, SHA-256
+47a5c5571825a5333cfa1698bd08a40fe244a20c83798c669c6634c2bcab8815.
+
+Scientific reconstruction sufficiency PASS for the unchanged task4. The three
+previous defects are now explicitly resolved: liquid-only WB14 with litter ice
+barred from infiltration/drain/runoff/soil/frozwt; exhaustive native-versus-
+ordinary finalized-use partition, phase-adjusted owner debit and no additional
+parcel/energy/second ingress with native phase/spill/high/carry retained; and
+retained-ingress grouping by COMPLETE destination key, canonical ordering,
+existing binary64 OFE group arithmetic and named OFE-to-tile conversion before
+dyadic decode. No per-parcel conversion or new ordinary energy family replaces
+those operations.
+
+All nine frozen families are concretely represented: independent actual signed
+primitive/state/unit/area/support/owner lineage; sensible-plus-latent signed
+vapor and actual parcel temperature, zero-mass zero-energy/no-temperature;
+separate V3 phase pools with liquid saturation, bounded kinetic constants and
+ending capacity, phase-only U-Lf*Wi distinguished from whole-interval changes;
+checked second-subtraction spill with negative exact operand, mass-then-energy
+area conversion and full-child once-only ingress; exact high/carry beginning and
+ending reconstruction by arbitrary-precision sum/one nearest-even rounding;
+physical conversion before exact accumulation and no carry feedback/high-zero
+normalization; topology/partial-final markers, unpublished non-owner/final replay,
+receipt origin/reseal and rollback; discriminating primitive/numeric/real-consumer
+vectors with actual p61 starting operands explicitly absent; and separation of
+representation/physical closure/solver/adaptive/event/identity tests. Claimed
+numerical outcome and execution remain NOT EVALUATED, not fabricated PASS.
+
+The five physical external contracts are complete. The accepted authoritative
+parcel scope does not rederive rain-provider law, so SnowFreeze exclusion remains
+legitimate. Actual native receipt-origin checks remain in map-custody/complete
+INV159 and SnowEnergy/CoupledTime; no complete replay algorithm/error-order audit
+is claimed. Qualification was voluntarily displayed to resolve scope but the
+answer correctly makes no EXP-R executable/capture or experimental claim, hence
+its four frozen experiment documents are not required merely by displaying the
+chapter. No actual provenance/gap/enforcement adjudication is asserted. These
+scope determinations preserve the original rubric rather than automatically
+importing the entire task2 solver/API or task3 executable verification exercise.
+
+Independent ledger arithmetic/provenance PASS:32 hashes and113 exact requests
+match frozen sources; every selected file has complete finite coverage. LSE
+235130 unique/457833 requested exposure; external1400919/1430919; governance
+90267/91667; tool3544/3544; all1729860/1983963, repeated254103. No extra source
+searches are claimed. The reported truncated litter request and zero-visible
+snow interval have complete bounded recovery; original unknown delivered bytes
+remain unknown and requested exposure is not called delivered-token exposure.
+
+Reading-size gate FAIL:235130 is only11.2258035286% below264863, exceeding the
+211890 limit by23240bytes. Bootstrap remains12117, but that does not rescue the
+complete LSE reading. The actual additional38737 above the196393 physical forecast
+is exactly nonlinear-solve19291 plus qualification19446. Report section9 says
+nonlinear was added to resolve concrete FullSupply/V10/inactive-coordinate
+eligibility; qualification was added to decide whether physical p61 capture
+language imported EXP-R protocol. This is neither whole audit-details nor a
+protocol execution request. Even though the latter is ultimately excluded and
+some solver detail is broader than accepted-primitive reconstruction requires,
+both actual complete reads remain charged. Do not subtract them retrospectively,
+replace the ledger with a hypothetical section route or reuse this as a passing
+size benchmark. A future presentation/route correction requires prospective
+review and genuinely fresh affected evidence.
+
+Freshness limitation: unlike solver06's unused copy, this report acknowledges
+nine foreign metadata rows actually displayed after scratch collision. They
+contain file paths, missing-schema start/end lookups, byte count and phase,
+including a dependency-replay path/count. They contain no foreign scientific
+source, notes, hashes or answer according to the explicit disclosure; further
+foreign data was not inspected. Those metadata rows are incidental tool context,
+not successful reads of the referenced source contents, and therefore correctly
+do not add22545 fictitious dependency-replay bytes to the LSE source union.
+Their actual serialized exposure is unmeasured, not zero; a perfectly isolated
+or wholly blind-tools claim would be false. Available evidence does not show
+rubric/answer contamination or justify automatic scientific freshness
+invalidation. Preserve the disclosure and absence of hidden telemetry claims.
+The independent size FAIL stands regardless of this metadata incident.
+
+Overall fresh closure06 FAIL on observed source size, with scientific sufficiency
+and ledger arithmetic separately PASS. Preserve all previous immutable attempts.
+No reader feedback, source change or report editing was performed by Reviewer A.
+
+
+## Prospective closure07 navigation correction: required wording adjustments
+
+Static: compared the exact proposed litter introduction and qualification title/
+entry-purpose change with current29b3e7022. The mechanism distinction is useful,
+but the supplied exact wording needs two adjustments before implementation.
+
+First, accepted primitive reconstruction still applies admitted-solve checks,
+including INV108–110, support, immutable final evaluation and owner identities.
+A statement that it “does not itself review ... numerical-branch eligibility”
+can obscure those concrete obligations. APPROVE the following positive scope
+wording instead, preserving all existing bodies/dependencies:
+
+“Accepted-primitive balance reconstruction applies the physical rules,
+accepted-solve admission checks and receipts below. An independent solver-algorithm
+or numerical-branch eligibility review additionally requires the full
+nonlinear-solve chapter. Physical primitive capture follows this mechanism’s
+operand and real-consumer evidence requirements; replay-experiment qualification
+is separate.”
+
+This separates independent algorithm auditing from using complete accepted-
+receipt admission requirements. It does not allow an unknown or inconsistent
+receipt/branch to pass closure, remove any marked definition, or forbid a
+reader from expanding when its actual question or uncertainty requires it.
+It also labels actual p61 physical-operand capture at the starting mechanism,
+without implying a binary/capture protocol or substituting an invented input.
+
+Second, the proposed title “Replay experiment qualification” and inventory
+purpose “replay experiments” are too narrow for the actual complete chapter:
+qualification17 expressly begins PRODUCTION retention, with original C020
+criteria/results, before the separate prospective EXP-R/PC1/SG1 amendments.
+APPROVE “# Replay retention and experiments” and inventory purpose “replay
+retention and experiments” instead. Preserve explicit #qualification anchor,
+path, normative kind, selected status, original production-retention body and
+all experimental protocol/identity/claim triggers. This describes the actual
+mechanism and both temporal scopes without demoting historical production
+retention into an experiment.
+
+The separately approved public/persisted witness H3 rename remains valid.
+Together these are bounded prospective navigation corrections, not scientific
+or rubric amendments. New solver07 and closure07 first attempts remain required;
+no subtraction of closure06's38737 actual extra bytes or reuse of its failed
+size result. Source forecasts must include the complete applied title/entry
+bytes; solver's narrow headroom cannot limit authority selection. Surface05 and
+identity03 reuse remains subject to exact applied changes and semantic source/
+requirement verification, since their selected litter/entry/qualification text
+will change. No all-hashes-unchanged or new-observed-reading claim is justified.
