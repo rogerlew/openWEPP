@@ -115,7 +115,7 @@ otherwise valid full trial can exceed one unchanged governed step threshold.
 In either case a deterministic halving can produce a domain-valid governed
 step too small to produce an observable strict residual decrease in binary64.
 
-### Witness coordinates and diagnostics
+### Witness coordinates and public/persisted diagnostics
 
 For both owner-uncapped potential and fixed-authorization final solves, first
 retain the existing no-update witness on a domain-valid full `b=0` Newton

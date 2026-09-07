@@ -73,3 +73,10 @@ Both iteration6 first reports are complete and bound in reading-iteration-06.jso
 solver scientificFAIL/sizePASS; closure scientificPASS/sizeFAIL. No current acceptance
 waived. Correction and new fresh02/04 remain in scope; canonical29b3 is unchanged
 pending exact prospective navigation review.
+
+Current iteration7 applied preflight and01/03 semantic reuse independently PASS A/B.
+Manifest f2ddbc2f71531fc00ec4d4fcc3be9b67e6aad0c2dd70bef9272af1cac19c425a binds the
+actual current sources. Bootstrap12136,fullset349888; predictions196810/211825/31601/
+196810 are not observations. Surface29/32selected hashes equal, identity20/23; explicit
+unchanged-task dependency proof preserves observed196206atb3 and31428at6938. New
+fresh02/04 remain required, with unique assigned scratch directories. No adoptionPASS.

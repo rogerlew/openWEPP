@@ -11,7 +11,7 @@
 | ../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md#stage-3-current-continuation | EXP-R execution authorization/status | owner pause and frozen execution posture | whole external contract; frozen protocol scope |
 
 <a id="qualification"></a>
-# Qualification
+# Replay retention and experiments
 Binding qualification and capture requirements, not evidence of successful adoption or current execution authorization. Historical revision-31 thresholds/results remain unchanged. EXP-R changes only its stated gates; PC1 and SG1 retain their exact experimental scope. The frozen prospective kickoff remains binding and owner-paused; format migration does not resume it. Apply each protocol limit to its named performance, memory, scaling or teardown series.
 
 Production retention uses this exact command for baseline and candidate:

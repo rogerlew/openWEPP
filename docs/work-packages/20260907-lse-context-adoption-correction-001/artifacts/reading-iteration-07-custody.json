@@ -1,0 +1,10 @@
+{
+  "bundle": "/tmp/lse-correction-iteration07-bundle",
+  "manifest_sha256": "c7e359129e60931c23b787e31b65807e45eefebb8bbc676db66aee07071c259e",
+  "capture_exit": 0,
+  "verify_exit": 0,
+  "verify_log": "/tmp/lse-iteration07-bundle-verify.log",
+  "scope": "explicit source/input inventory and generator; unchanged neutral protocols; prior actual iteration6 results; loader source executable group; immutable source map fixture",
+  "status": "fresh iteration7 NOT RUN; custody is not adoption or offline rebuildability",
+  "retention": "openWEPP maintainers through disposition plus explicit audit release"
+}

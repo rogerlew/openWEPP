@@ -195,7 +195,7 @@ texts['nonlinear-solve']=texts['nonlinear-solve'].replace('Nonpositive-assimilat
 # natural algorithm/owner subdivisions. These titles add no scientific rule.
 subsections = {
     'nonlinear-solve': [
-        ('For both owner-uncapped potential and fixed-authorization final solves', '### Witness coordinates and diagnostics'),
+        ('For both owner-uncapped potential and fixed-authorization final solves', '### Witness coordinates and public/persisted diagnostics'),
         ('When every positive final water authorization', '#### Full-supply initialization'),
         ('If that initial evaluation satisfies every residual tolerance', '#### Iteration-zero acceptance'),
         ('Nonpositive-assimilation partial positive root authorization', '#### Authorization exclusions'),
@@ -223,6 +223,10 @@ for name, additions in subsections.items():
 qualification_intro = 'format migration does not resume it.'
 assert texts['qualification'].count(qualification_intro) == 1
 texts['qualification'] = texts['qualification'].replace(qualification_intro, qualification_intro + ' Apply each protocol limit to its named performance, memory, scaling or teardown series.', 1)
+assert texts['qualification'].count('# Qualification\n') == 1
+texts['qualification'] = texts['qualification'].replace('# Qualification\n', '# Replay retention and experiments\n', 1)
+assert texts['litter-phase'].count('# Litter Phase\n') == 1
+texts['litter-phase'] = texts['litter-phase'].replace('# Litter Phase\n', '# Litter Phase\n\nAccepted-primitive balance reconstruction applies the physical rules, accepted-solve admission checks and receipts below. An independent solver-algorithm or numerical-branch eligibility review additionally requires the full nonlinear-solve chapter. Physical primitive capture follows this mechanism’s operand and real-consumer evidence requirements; replay-experiment qualification is separate.\n', 1)
 # Each edge is an authority boundary, not an automatic whole-file dependency.
 D={n:[] for n in NAMES}
 def dep(owner,target,when,why,extent='section'):
@@ -377,7 +381,7 @@ for file in DEST.glob('*.md'):
 old=(OLD/'candidate-tree'/REL).read_text()
 front=old[:old.index('---',4)+3]
 prefix='SC-LANDSURFACEENERGY-001/'
-rows=[[prefix+n+'.md','historical' if n=='history' else 'normative',n.replace('-',' '),'audit' if n in ['history','binding-index'] else 'selected'] for n in NAMES]
+rows=[[prefix+n+'.md','historical' if n=='history' else 'normative','replay retention and experiments' if n=='qualification' else n.replace('-',' '),'audit' if n in ['history','binding-index'] else 'selected'] for n in NAMES]
 routes=[
 ['Surface/soil rules','science review','[surface](%ssurface-energy.md#surface-energy), [soil](%ssoil-coupling.md#soil-coupling), [water](%swater-vapor.md#water-vapor)'%(prefix,prefix,prefix),'Follow physical shared set and applicable mechanism dependencies.'],
 ['Snow replay','correctness review','[solver](%snonlinear-solve.md#nonlinear-solve), [replay](%sdependency-replay.md#dependency-replay), [qualification](%squalification.md#qualification)'%(prefix,prefix,prefix),'All affected physics, errors/custody, support and frozen protocol.'],

@@ -13,6 +13,8 @@
 
 <a id="litter-phase"></a>
 # Litter Phase
+
+Accepted-primitive balance reconstruction applies the physical rules, accepted-solve admission checks and receipts below. An independent solver-algorithm or numerical-branch eligibility review additionally requires the full nonlinear-solve chapter. Physical primitive capture follows this mechanism’s operand and real-consumer evidence requirements; replay-experiment qualification is separate.
 Current V3 litter specialization, including conservative post-phase capacity spill and heterogeneous resource joins. The later spill rule extends the initial exact-surface operand enumeration with one named negative spill operand. It does not replace phase, vapor, retained-ingress or WB14 custody.
 
 <a id="version-14-snow-free-frozen-forest-litter-successor-amendment"></a>

@@ -1,11 +1,11 @@
 {
   "kind": "prospective explicit source selection; sufficiency not yet qualified; not observed tokens",
   "baseline_lse_bytes": 264863,
-  "always_read_bytes": 12117,
+  "always_read_bytes": 12136,
   "tasks": {
     "exercise01": {
-      "lse_bytes": 196393,
-      "reduction_percent": 25.851100380196556,
+      "lse_bytes": 196810,
+      "reduction_percent": 25.693660496181046,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -15,7 +15,7 @@
               65
             ]
           ],
-          "bytes": 4130
+          "bytes": 4149
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
@@ -72,10 +72,10 @@
           "ranges": [
             [
               1,
-              432
+              434
             ]
           ],
-          "bytes": 30440
+          "bytes": 30838
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
@@ -130,8 +130,8 @@
       ]
     },
     "exercise02": {
-      "lse_bytes": 211770,
-      "reduction_percent": 20.045457462914797,
+      "lse_bytes": 211825,
+      "reduction_percent": 20.02469201058661,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -141,7 +141,7 @@
               65
             ]
           ],
-          "bytes": 4130
+          "bytes": 4149
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
@@ -171,7 +171,7 @@
               267
             ]
           ],
-          "bytes": 19291
+          "bytes": 19308
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
@@ -201,7 +201,7 @@
               248
             ]
           ],
-          "bytes": 19446
+          "bytes": 19465
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
@@ -256,8 +256,8 @@
       ]
     },
     "exercise03": {
-      "lse_bytes": 31563,
-      "reduction_percent": 88.0832732393728,
+      "lse_bytes": 31601,
+      "reduction_percent": 88.06892619958242,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -267,7 +267,7 @@
               65
             ]
           ],
-          "bytes": 4130
+          "bytes": 4149
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
@@ -287,13 +287,13 @@
               248
             ]
           ],
-          "bytes": 19446
+          "bytes": 19465
         }
       ]
     },
     "exercise04": {
-      "lse_bytes": 196393,
-      "reduction_percent": 25.851100380196556,
+      "lse_bytes": 196810,
+      "reduction_percent": 25.693660496181046,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -303,7 +303,7 @@
               65
             ]
           ],
-          "bytes": 4130
+          "bytes": 4149
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
@@ -360,10 +360,10 @@
           "ranges": [
             [
               1,
-              432
+              434
             ]
           ],
-          "bytes": 30440
+          "bytes": 30838
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",

@@ -299,3 +299,18 @@ identity03 reuse require exact selected-duty semantic proof, retaining observed 
 and counts. General procedural source-checking may use private notes and requires
 checking every claimed numeric/branch/protocol condition before READY, recording all
 repeat reading; no missed-atom hints, prior answers or rubric are supplied.
+
+## Iteration7 prospectively approved navigation correction
+After complete iteration6 first answers and independent A/B assessments, approve
+only the public/persisted diagnostic H3, positive litter-phase introduction explicitly
+retaining physical/accepted-solve admission/receipt duties and additionally expanding
+independent numerical review, and qualification title/inventory purpose naming both
+replay retention and experiments. Exact harmonized wording is approved in both review
+artifacts before canonical edits. Original bodies, anchors, complete extents, scientific
+predicates, historical production-retention rules and frozen protocols remain intact.
+No voluntary or uncertainty-driven reading is prohibited or retrospectively discounted.
+Fresh02/04 remain required after actual diff/preservation/count/dualpreflight;01/03
+reuse needs selected-source and unchanged-task semantic proof. Previous observations
+remain at their original cuts. Unique scratch directories are required for new readers;
+no old collided ledger or scientific answer is supplied. Same generic source-selfcheck,
+actual request/recovery accounting and complete reading procedure applies.

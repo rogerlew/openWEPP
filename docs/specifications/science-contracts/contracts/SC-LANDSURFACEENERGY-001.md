@@ -46,7 +46,7 @@ chapter's Dependencies and introduction. Uncertainty expands reading.
 | SC-LANDSURFACEENERGY-001/surface-custody.md | normative | surface custody | selected |
 | SC-LANDSURFACEENERGY-001/map-custody.md | normative | map custody | selected |
 | SC-LANDSURFACEENERGY-001/dependency-replay.md | normative | dependency replay | selected |
-| SC-LANDSURFACEENERGY-001/qualification.md | normative | qualification | selected |
+| SC-LANDSURFACEENERGY-001/qualification.md | normative | replay retention and experiments | selected |
 | SC-LANDSURFACEENERGY-001/binding-index.md | normative | binding index | audit |
 | SC-LANDSURFACEENERGY-001/history.md | historical | history | audit |
 

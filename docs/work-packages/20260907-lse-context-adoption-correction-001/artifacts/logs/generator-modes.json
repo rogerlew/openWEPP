@@ -1,6 +1,6 @@
 {
-  "generator_sha256": "cc574e1ae674cd4a8cf6f4602420e6053d71edfe2183854dfc67f8bdfe1961cf",
-  "source_manifest_sha256": "e1328f03b2d3eb76fef9d06a0f68b9ee1039287d655061ff40228b8bfe92044b",
+  "generator_sha256": "8d1a6cdbeab7eff04de96758015a405c7ef55432f3df9e3989c430dc01174b8c",
+  "source_manifest_sha256": "f2ddbc2f71531fc00ec4d4fcc3be9b67e6aad0c2dd70bef9272af1cac19c425a",
   "runs": [
     {
       "mode": "candidate",
@@ -8,12 +8,12 @@
         "/workdir/openWEPP/.venv/bin/python",
         "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/build_candidate.py",
         "--output-root",
-        "/tmp/lse6-generator-candidate-7f8i0k5w"
+        "/tmp/lse7-generator-candidate-cwj3ylsu"
       ],
       "cwd": "/workdir/openWEPP",
       "exit": 0,
-      "seconds": 0.04488663002848625,
-      "stdout": "entry 4130 interface 7987 total 349435\n",
+      "seconds": 0.05375494388863444,
+      "stdout": "entry 4149 interface 7987 total 349888\n",
       "stderr": ""
     },
     {
@@ -22,13 +22,13 @@
         "/workdir/openWEPP/.venv/bin/python",
         "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/build_candidate.py",
         "--output-root",
-        "/tmp/lse6-generator-adopted-jnbvfv8q",
+        "/tmp/lse7-generator-adopted-iteogyqb",
         "--adopted"
       ],
       "cwd": "/workdir/openWEPP",
       "exit": 0,
-      "seconds": 0.04794675298035145,
-      "stdout": "entry 3971 interface 7987 total 349276\n",
+      "seconds": 0.04551835497841239,
+      "stdout": "entry 3990 interface 7987 total 349729\n",
       "stderr": ""
     }
   ],

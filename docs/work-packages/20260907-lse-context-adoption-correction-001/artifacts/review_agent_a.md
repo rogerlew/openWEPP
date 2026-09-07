@@ -2405,3 +2405,89 @@ bytes; solver's narrow headroom cannot limit authority selection. Surface05 and
 identity03 reuse remains subject to exact applied changes and semantic source/
 requirement verification, since their selected litter/entry/qualification text
 will change. No all-hashes-unchanged or new-observed-reading claim is justified.
+
+
+## Applied iteration7 preflight and renewed semantic reuse
+
+Static: complete actual canonical diff against29b3e702253bf3846afb28a8ac2eeda1d481e0e5
+matches the approved harmonized proposal. Ran: original scientific statements/
+lines/fences preservation, strict17/100 checker,28 manifest hash checks, full
+selected-source comparisons for reused surface05/identity03, exact forecast
+range reconstruction, and both isolated generator modes. No independent Rust
+or production workflow rerun; parent broader gate results remain attributed.
+
+Only four canonical files differ from29b3: entry qualification-purpose wording,
+litter's positive accepted-primitive introduction, the public/persisted witness
+H3 in nonlinear, and qualification's descriptive title. Entry retains identical
+path, normative kind, selected status and route. The title explicitly includes
+replay RETENTION and experiments; original production-retention criteria and
+all prospective EXP-R/PC1/SG1 limits remain normative and unchanged. The explicit
+#qualification anchor and all complete parent extents survive. Litter now
+positively retains physical rules, accepted-solve admission checks and receipts,
+then distinguishes an independent solver-algorithm/eligibility review requiring
+full nonlinear authority. It keeps actual primitive and real-consumer evidence
+duties; it does not waive unknown admission, physical identity, support, phase,
+closure, owner or test obligations. Entry's uncertainty-expands-reading rule is
+unchanged. All original scientific bodies, cells, equations and required guards
+remain intact. No fixed source budget is made a rule for selecting authority.
+
+Independent preservation and strict structural checks PASS. All28 manifest
+members match; manifest SHA-256:
+f2ddbc2f71531fc00ec4d4fcc3be9b67e6aad0c2dd70bef9272af1cac19c425a.
+18-primary compact sorted-path/hash digest:
+da1d17284253bcf98a191c93db3f34acb225a218f346510dc8f32af51906ac5f.
+Verified bootstrap12136; exact current forecasts01/02/03/04:
+196810 /211825 /31601 /196810. These are not measured fresh reading PASS.
+Solver65-byte headroom is explicit and cannot constrain the required or actual
+reading union. If a fresh reader expands, retain its full observed cost.
+
+Surface05 semantic reuse APPROVED after actual source comparison:29 of32 original
+complete-source hashes remain equal. Changed selected sources:
+- entry4149bytes, SHA-256
+  f0cacbe45c85b62fc1b78992a9048eadd8fc5857ee5913089c7225ca6873e388;
+- litter-phase30838bytes, SHA-256
+  7328dac401340c283934e8e42b5eb0b376c7ed6d9a5723e9202bcd862dc2132b;
+- surface-custody25644bytes, SHA-256
+  b0b5e1c60cc9ed7f316a6a3008f2ee7ea2f337805d2e0e06e82c4453d8a5216e.
+Relative to the actual b3 surface reading, these are the already-reviewed
+117/70 subsection-heading bytes, the new398-byte positive litter intro and
+19-byte inventory-purpose change. Complete task1 physical admission, phase,
+provider/receiver/soil/owner/custody duties and all mandatory six external
+contracts remain identical. The answer already expressly limits independent
+solver/replay/experiment auditing while applying accepted-solve rules. The new
+clarity neither adds an unaddressed condition nor removes a formerly required
+source. Retain actual196206 at b3b7b57f4 and its150content+2search ledger;
+196810 is a current source forecast, not a new or recalculated observation.
+
+Identity03 semantic reuse APPROVED:20 of23 original complete-source hashes equal.
+Changed selected sources are entry above, interface7987bytes SHA-256
+a827f4099976f9592863b71a12c9059dadd36f8b8037dba4e0ebf8482449c0a0,
+and qualification19465bytes SHA-256
+48f4e12ab3361b324df21596a1652617004ec7fe8e1d72dcbd96c746ae5f6b24.
+The prior11-byte executable qualifier and124-byte series/control presentation
+were already independently proved unaffected; the added19-byte descriptive
+title and19-byte entry-purpose label now describe the same complete historical
+retention plus experimental chapter. The exact executable question still
+selects unchanged full qualification science/protocol, frozen reproduction,
+kickoff/handoff and source-kit identities; its already-sufficient answer
+concretely preserves those distinct series and source-composition duties.
+No numerical limit, source identity requirement, reading extent or experiment
+scope changed. Retain actual31428 at6938ca97d with explicit bounded semantic
+reuse;31601 is not observed and no all23-hashes-equal claim is made.
+
+Independent generator verification: repo-local Python, absolute generator path,
+`--output-root` under a cleaned TemporaryDirectory prefix review-a-iteration7-,
+once default and once additionally `--adopted`; both exit0 and18files. Default
+349888bytes matches every live primary byte; adopted349729 differs solely by
+159 entry candidate-notice bytes. All28 live hashes remained unchanged through
+both runs. Parent reports98pytest/53bridge/unit/A0 PASS and111PASS/18 inherited
+Rust failures with36 matching panics; that remains attributed evidence, not a
+new claim of full Rust green from this review.
+
+APPROVE new isolated fresh solver07 and closure07 on the reviewed frozen cut,
+with original questions/rubrics and the already-approved generic note/source-
+selfcheck procedure. Preserve prior failed first reports, including solver06's
+public-field omission and closure06's actual235130-byte reading. This preflight
+and semantic reuse do not grant adoption; remaining fresh science/size results,
+stable independent final reviews, required direct gates and dual new terminal
+verification remain outstanding.
