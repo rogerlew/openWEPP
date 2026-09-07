@@ -1,0 +1,45 @@
+{
+  "commit": "b932db101cce07d0860b45b5ecaa8ddb7f455b58",
+  "files": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": {
+      "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+      "bytes": 264863
+    },
+    "docs/specifications/science-contract-directory-format.md": {
+      "sha256": "fe777afaec80c1e382c2da036e346697e4ecae93a211def25e609ec16c9004a5",
+      "bytes": 21092
+    },
+    "docs/specifications/science-contract-spec.md": {
+      "sha256": "c2f5dfeb372a02d0e533f7ea6ef0eb8fb397af2163e1b21d00460495b9c934ed",
+      "bytes": 14827
+    },
+    "docs/specifications/science-contract-provenance-spec.md": {
+      "sha256": "ac94dde49680b9b54da2edf27de0e2627c21fa5e7bea37d1157e056107ddd08d",
+      "bytes": 4846
+    },
+    "docs/specifications/science-contract-authoring-procedure.md": {
+      "sha256": "bbb13f974b948bb91ff30c5629cc3e28bc4332d31ae3b27e48b95805feb564ef",
+      "bytes": 14946
+    },
+    "docs/specifications/science-contracts/kernel-process-contract-profile.md": {
+      "sha256": "ec281661c6d8bc2c5b966882e28374e4a53c6a118f9b2d28743e28c00fa6c3da",
+      "bytes": 6346
+    },
+    "docs/specifications/unit-governance.md": {
+      "sha256": "ef1f976cdd2bf50f7579ace7ef45bece18360bf434df20566980776f3da4374d",
+      "bytes": 12896
+    },
+    "docs/standards/testing-and-gate-strategy.md": {
+      "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+      "bytes": 25142
+    },
+    "tools/check_sc_binding_exposure.py": {
+      "sha256": "5b80833fc308937406bc41ffb19701a10e8b2bc73316dd0470a997935e95c75d",
+      "bytes": 4489
+    },
+    "tests/python/test_check_sc_binding_exposure.py": {
+      "sha256": "d0bc5442087bb822cb5cd29a00493f61f653b8fe266057f1452d1ded2c2840ed",
+      "bytes": 1668
+    }
+  }
+}

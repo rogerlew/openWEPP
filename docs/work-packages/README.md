@@ -5995,3 +5995,5 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - `20260712-dc-cqr-preint-ha-08-trace-validation-001/` — terminal PASS; active
   trace publication now rejects malformed numeric state and nonclosing routed
   weights before file creation while preserving signed delta-storage.
+
+- [20260907 directory checker and LSE adoption](20260907-directory-contract-checker-lse-adoption-001/package.md): authorized implementation/pilot; [current handoff](20260907-directory-contract-checker-lse-adoption-001/artifacts/worker-handoff.md).
