@@ -37,3 +37,17 @@ mandatory handoff are disclosed by fresh readers; no rubric/answers were provide
   rather than representing counterfactual reading arithmetic as observed.
 - EOF whitespace: corrected; git diff --check now PASS.
 No threshold, scientific predicate, old result or reviewer rubric was relaxed.
+
+## Iteration3 retained findings / iteration4 current actions
+See reading-iteration-03.json and independent A/B records for immutable measured
+failures. Surface01 omitted boundary requirements despite complete terminal text;
+positive canonical scope and full external triggers clarified. Solver02 retained
+FullSupply/iteration0, INV113 exact eligibility, no public exponent and V30 competing
+error-order omissions plus229664-byteFAIL; no failed answer repaired or rubric changed.
+Precise audit routes separate experimental history from model gap/enforcement claims.
+Closure04 stopped from anticipated context pressure with no actual blocker: FAIL.
+Identity03 independently PASS; unchanged-source reuse still requires focused proof.
+Neutral first-report completeness/reading persistence applies to new01/02/04.
+All scientific cells remain exact; audit short aliases and shorter generated section
+extent labels retain the entry's same complete-section rule. Current direct checks
+pass; final fresh sufficiency and terminal dual verification remain OPEN.

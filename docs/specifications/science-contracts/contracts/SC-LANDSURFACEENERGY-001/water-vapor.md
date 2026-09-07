@@ -4,10 +4,11 @@
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
 | interface.md#interface | always | shared authority | whole chapter |
-| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section (entry extent) |
+| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section |
 | soil-coupling.md#soil-coupling | ground transfer or energy closure | opposite ground transfer and state | whole chapter |
 | surface-energy.md#surface-energy | physical evaluator or energy closure | radiative/turbulent operands | whole chapter |
 | litter-phase.md#litter-phase | active frozen-litter vapor/phase or closure | signed phase-specific vapor and spill | whole chapter |
+| ../SC-SNOWFREEZE-001.md#invariants | rain-temperature provider selection or provider-derived ingress-enthalpy requirements/closure | INV-SNOWFREEZE-075 provider; accepted authoritative parcel reconstruction alone does not rederive it | whole external contract |
 | ../SC-WATBAL-001.md#wb14-infiltration-and-hyetograph-coupling-addendum | ingress partition or closure | sole WB14 owner | whole external contract; frozen protocol scope |
 | ../SC-WATBAL-001.md#purpose | cross-contract water scope | water scope | whole external contract; frozen protocol scope |
 | ../SC-SURFACELIQUID-001.md#algorithm-specification | surface-water custody or closure | accepted water protocol | whole external contract; frozen protocol scope |

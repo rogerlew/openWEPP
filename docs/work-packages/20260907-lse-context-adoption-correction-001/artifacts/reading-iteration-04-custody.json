@@ -1,0 +1,11 @@
+{
+  "bundle": "/tmp/lse-correction-iteration04-bundle",
+  "manifest_sha256": "cb2d4e9b21f10f8b0be120ca21f9b56c51a8781ae4d5c0369dddc9adcc7bf890",
+  "capture_exit": 0,
+  "verify_log": "/tmp/lse-iteration04-bundle-verify.log",
+  "scope": "explicit reviewed source/input inventory and current protocols; loader source is executable group, immutable clause map fixture; no scientific executable measured",
+  "status": "fresh iteration4 NOT RUN; custody does not establish reading or adoption",
+  "retention": "openWEPP maintainers through disposition plus explicit audit release",
+  "friction": "Utility requires nonempty five groups/metadata; empty static-only groups rejected before capture. Complete stdout includes large Git index metadata; verification redirected. No tooling changes.",
+  "verify_exit": 0
+}

@@ -4,12 +4,15 @@
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
 | interface.md#interface | always | shared authority | whole chapter |
-| audit-details.md#audit-details | source provenance, enforcement-path or historical applicability/promotability adjudication | original scope, authority, guard map and unresolved gap record | whole chapter |
+| audit-details.md#sources | source provenance adjudication | complete source anchors and pinned-source paragraph | section |
+| audit-details.md#enforcement | enforcement mapping or promotion-path evidence | complete guard map and parent mapping duty | section |
+| [purpose](audit-details.md#purpose), [scope](audit-details.md#scope), [gaps](audit-details.md#gaps) | retained model scope, authority gaps, their supersession or promotability | complete scope and gaps, including successor GAP007/008 | section |
+| qualification.md#qualification | historical/current experiment retention, identity or capture limits | complete experiment requirements | whole chapter |
 
 <a id="common-details"></a>
 # Common physical rules
 
-Read this complete chapter for physical rules, solver correctness and accepted-primitive reconstruction. Interface and the selected physical mechanism retain current regime/owner exclusions and effective supersession. Missing coefficients, constitutive authority or run operands remain missing evidence; no default, numerical closure or production qualification follows from this directory. Underlying source, enforcement and historical applicability claims require the corresponding normative audit sections.
+Read this complete chapter for physical rules, solver correctness and accepted-primitive reconstruction. Interface and the selected physical mechanism retain current regime/owner exclusions and effective supersession. Missing coefficients, constitutive authority or run operands remain missing evidence; no default, numerical closure or production qualification follows from this directory. Underlying source, enforcement and historical applicability claims require the corresponding normative audit sections. Experiment retention and capture limits, including historical predicates and existing HOLD, are governed by qualification; applying those limits alone does not adjudicate model gaps or enforcement evidence. Actual provenance, gap or enforcement claims expand the audit sections.
 
 
 <a id="variables"></a>

@@ -5,9 +5,9 @@
 |---|---|---|---|
 | interface.md#interface | always | shared authority | whole chapter |
 | [nonlinear-solve](nonlinear-solve.md#nonlinear-solve), [surface-energy](surface-energy.md#surface-energy), [qualification](qualification.md#qualification) | component-temperature replay correctness | canonical stencils, leaf reuse and errors; radiation/turbulent dependencies; historical versus experimental limits | whole chapter |
-| [validated-in-memory-lse-custody-handoff-amendment](map-custody.md#handoff), [covered-nonfinal-physical-only-map-amendment](map-custody.md#pending) | replay custody/error-order review | original validation positions and pending-map identity | section (entry extent) |
-| [profile-v28](binding-index.md#profile-v28), [profile-v29](binding-index.md#profile-v29), [profile-v30](binding-index.md#profile-v30) | V28–30 profile conformance or enforcement-classification audit | original normative profile records | section (entry extent) |
-| [vapor](water-vapor.md#vapor), [water](water-vapor.md#water), [errors](water-vapor.md#errors), [invariants](water-vapor.md#canonical-invariants), [obligations](water-vapor.md#canonical-obligations) | represented-snow evaluator/error-order requirements review | signed enthalpy, immutable water/ingress and canonical errors; complete water definitions, including all universal P001–004 | section (entry extent) |
+| [validated-in-memory-lse-custody-handoff-amendment](map-custody.md#handoff), [covered-nonfinal-physical-only-map-amendment](map-custody.md#pending) | replay custody/error-order review | original validation positions and pending-map identity | section |
+| [profile-v28](binding-index.md#profile-v28), [profile-v29](binding-index.md#profile-v29), [profile-v30](binding-index.md#profile-v30) | V28–30 profile conformance or enforcement-classification audit | original normative profile records | section |
+| [vapor](water-vapor.md#vapor), [water](water-vapor.md#water), [errors](water-vapor.md#errors), [invariants](water-vapor.md#canonical-invariants), [obligations](water-vapor.md#canonical-obligations) | represented-snow evaluator/error-order requirements review | signed enthalpy, immutable water/ingress and canonical errors; complete water definitions, including all universal P001–004 | section |
 | water-vapor.md#water-vapor | active water/ingress implementation or full water-owner audit | complete owner duties | whole chapter |
 
 <a id="dependency-replay"></a>

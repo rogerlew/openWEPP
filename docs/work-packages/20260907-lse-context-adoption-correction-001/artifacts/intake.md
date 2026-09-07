@@ -183,3 +183,43 @@ V10/V11–13 branch below, together with complete solve-boundary error and accep
 rules.” This restates required scope, not every branch being active in every regime.
 Original rules and failed returned conclusions remain unchanged; count all added
 bytes and require genuinely fresh adequate answers.
+
+### Prospective iteration4 audit-route correction, approved A/B before writes
+The iteration3 solver actually read229664 LSE bytes: FAIL, never replaced by a
+smaller predicted selection. Its whole audit expansion conflated experiment
+retention history with retained-model scope/gap adjudication. Replace the broad
+common→wholeaudit edge with complete section routes: source provenance adjudication
+→Authority Anchors including pinned-source paragraph; enforcement mapping or
+promotion-path evidence→Invariants and Invariant Guard Map including parent mapping
+duty; retained model scope, authority gaps, their supersession or promotability
+→Purpose+Scientific Scope+Gap Register (including V15/V16 GAP007/008). Each selection
+retains audit introduction/dependencies and all cross-triggered sections. Historical/
+current experiment retention, identity or capture limits→complete qualification.
+Append common introduction: “Experiment retention and capture limits, including
+historical predicates and existing HOLD, are governed by qualification; applying
+those limits alone does not adjudicate model gaps or enforcement evidence. Actual
+provenance, gap or enforcement claims expand the audit sections.” No science text,
+source/guard obligations, rubric or threshold changes. Charge all added bytes and
+require fresh affected attempts. No new chapters or optionalized symbol/unit duties.
+Iteration3 closure terminated solely from anticipated resource pressure, with no
+actual blocker; retain its explicit incomplete FAIL. New readers must finish all
+mandatory reading using bounded chunks and compaction; context pressure is no waiver.
+
+### Prospective iteration4 boundary/completeness correction, approved A/B
+Surface03 reads194934 LSE bytes but omits required represented-snow/receiver boundary
+requirements and external authority: scientific FAIL. Add canonical surface intro:
+“Surface/soil regime-rule selection includes the represented-snow soil boundary and
+post-event receiver conditions that delimit the snow-free rules, together with their
+external authority; selecting a snow-free target does not defer that boundary review.”
+Terminal→whole SnowEnergy trigger becomes surface/soil regime-rule selection,
+represented-snow boundary, or terminal transition/receiver. Add water→whole SnowFreeze
+invariants (INV075) for rain-temperature provider selection or provider-derived
+ingress-enthalpy requirements/closure. Accepted authoritative parcel reconstruction
+alone does not imply rederiving that provider. Original scientific bodies stay exact.
+New isolated01/02/04 prompts retain original questions/rubric and add only neutral
+procedural completeness/persistence: check answer against applicable selected rules,
+preconditions/exclusions/chronology/evidence, complete reading/recover truncations,
+continue through compaction. No scientific answers, missing-atom or threshold hints.
+Identity03 fresh PASS may be reused only after independent exact selected-source,
+required dependency and criteria identity check; remains observed at6938ca97d, never
+relabeled a new run. Any relevant route/source/requirement change invalidates reuse.

@@ -186,7 +186,7 @@ SUPPORT='version-9-positive-support-admission-owner-amendment'
 ORDER='ordered-numerical-algorithm-active-branches-and-error-precedence'
 # Each edge is an authority boundary, not an automatic whole-file dependency.
 D={n:[] for n in NAMES}
-def dep(owner,target,when,why,extent='section (entry extent)'):
+def dep(owner,target,when,why,extent='section'):
     D[owner].append([target,when,why,extent])
 def whole(owner,target,when,why):dep(owner,f'{target}.md#{target}',when,why,'whole mechanism chapter')
 for n in NAMES:
@@ -196,7 +196,12 @@ dep('interface','common-details.md#common-details','physical rules, solver corre
 dep('interface','qualification.md#qualification','identity capture, experiment or qualification claims','frozen protocols and separate scientific/production limits','whole qualification chapter')
 # Common detailed schema is not required for identity-only tasks.
 texts['common-details']=texts['common-details'].replace('# Common physical rules\n','# Common physical rules\n\nRead this complete chapter for physical rules, solver correctness and accepted-primitive reconstruction. Interface and the selected physical mechanism retain current regime/owner exclusions and effective supersession. Missing coefficients, constitutive authority or run operands remain missing evidence; no default, numerical closure or production qualification follows from this directory. Underlying source, enforcement and historical applicability claims require the corresponding normative audit sections.\n\n',1)
-whole('common-details','audit-details','source provenance, enforcement-path or historical applicability/promotability adjudication','original scope, authority, guard map and unresolved gap record')
+dep('common-details','audit-details.md#authority-anchors-with-top-down-citations','source provenance adjudication','complete source anchors and pinned-source paragraph')
+dep('common-details','audit-details.md#invariants-and-invariant-guard-map','enforcement mapping or promotion-path evidence','complete guard map and parent mapping duty')
+for anchor in ['purpose','scientific-scope-and-explicit-out-of-scope-boundaries','gap-register-and-promotability-labels']:
+    dep('common-details','audit-details.md#'+anchor,'retained model scope, authority gaps, their supersession or promotability','complete scope and gaps, including successor GAP007/008')
+whole('common-details','qualification','historical/current experiment retention, identity or capture limits','complete experiment requirements')
+texts['common-details']=texts['common-details'].replace('Underlying source, enforcement and historical applicability claims require the corresponding normative audit sections.', 'Underlying source, enforcement and historical applicability claims require the corresponding normative audit sections. Experiment retention and capture limits, including historical predicates and existing HOLD, are governed by qualification; applying those limits alone does not adjudicate model gaps or enforcement evidence. Actual provenance, gap or enforcement claims expand the audit sections.')
 for n in ['surface-energy','soil-coupling','water-vapor','nonlinear-solve','litter-phase','soil-custody','surface-custody']:
     dep(n,'terminal-support.md#'+SUPPORT,'physical solve or receipt interval admission, including snow-free work','physical support, zero support and pre-Newton floor')
 whole('nonlinear-solve','solve-boundary','solver correctness or implementation','complete ordered physical algorithm and acceptance')
@@ -251,6 +256,8 @@ for anchor in ['signed-vapor-and-liquid-enthalpy','immutable-beginning-water-tra
 whole('surface-energy','water-vapor','snow-free physical rules, active water/ingress, energy closure or water-owner audit','complete accepted enthalpy and immutable-water duties')
 for anchor in ['canonical-invariants','canonical-obligations']:
     dep('surface-energy','water-vapor.md#'+anchor,'represented-snow evaluator/error-order requirements review','complete water definitions, including all universal P001–004')
+texts['surface-energy']=texts['surface-energy'].replace('# Surface Energy\n', '# Surface Energy\nSurface/soil regime-rule selection includes the represented-snow soil boundary and post-event receiver conditions that delimit the snow-free rules, together with their external authority; selecting a snow-free target does not defer that boundary review.\n',1)
+dep('water-vapor','../SC-SNOWFREEZE-001.md#invariants','rain-temperature provider selection or provider-derived ingress-enthalpy requirements/closure','INV-SNOWFREEZE-075 provider; accepted authoritative parcel reconstruction alone does not rederive it','whole external contract')
 # Preserve exact existing external dependencies and their single-file/frozen-protocol extent.
 for name in NAMES:
     if name in ['history','common-details','audit-details','solve-boundary','interface']:continue
@@ -259,6 +266,10 @@ for name in NAMES:
         if l.startswith('| ../'):
             cells=[c.strip() for c in l.strip('|').split('|')]
             if len(cells)==4:D[name].append(cells)
+
+for row in D['terminal-support']:
+    if row[0].startswith('../SC-SNOWENERGY-001.md#'):
+        row[1]='surface/soil regime-rule selection, represented-snow boundary, or terminal transition/receiver'
 
 for name,rows in D.items():
     for row in rows:
@@ -272,7 +283,7 @@ for name,rows in D.items():
         group=grouped.setdefault(key,([],[]))
         group[0].append(target)
         if why not in group[1]:group[1].append(why)
-    labels={'signed-vapor-and-liquid-enthalpy':'vapor','immutable-beginning-water-transaction-and-current-ingress':'water','independent-closure-and-errors':'errors','canonical-invariants':'invariants','canonical-obligations':'obligations','experiment-protocol':'protocol','authority-input-reproduction':'inputs'}
+    labels={'scientific-scope-and-explicit-out-of-scope-boundaries':'scope','gap-register-and-promotability-labels':'gaps','signed-vapor-and-liquid-enthalpy':'vapor','immutable-beginning-water-transaction-and-current-ingress':'water','independent-closure-and-errors':'errors','canonical-invariants':'invariants','canonical-obligations':'obligations','experiment-protocol':'protocol','authority-input-reproduction':'inputs'}
     labels.update({'exp-stage3-20260906-protocol-original-draft-1-plus-prospective-reviewed-amendments':'protocol','canonical-adjunct-reproduction-evidence':'inputs'})
     D[name]=[]
     for (when,extent),(refs,reasons) in grouped.items():
@@ -298,6 +309,7 @@ short_sections={
     'litter-phase': {'exact-v3-litter-phase-capacity-spill-amendment':'spill','exact-heterogeneous-v3-surface-resource-join-amendment':'resource-join'},
     'dependency-replay': {'component-temperature-jacobian-dependency-replay-amendment':'replay','stage-3-identity-anchor-jacobian-amendment':'identity-anchor','covered-leaf-maximum-demand-exact-reuse-amendment':'leaf-reuse','carrier-parent-static-and-same-map-validation-once-amendment':'validation'},
     'water-vapor': {'independent-closure-and-errors':'errors','signed-vapor-and-liquid-enthalpy':'vapor','immutable-beginning-water-transaction-and-current-ingress':'water'},
+    'audit-details': {'scientific-scope-and-explicit-out-of-scope-boundaries':'scope','authority-anchors-with-top-down-citations':'sources','invariants-and-invariant-guard-map':'enforcement','gap-register-and-promotability-labels':'gaps'},
     'common-details': dict(zip(COMMON,['variables','state','algorithm','guards','aliases','constants','units','tolerances','calibration','tests'])),
     'terminal-support': {SUPPORT:'support'},
     'map-custody': {'validated-in-memory-lse-custody-handoff-amendment':'handoff','covered-nonfinal-physical-only-map-amendment':'pending','canonical-stage-3-accepted-map-boundary-amendment':'accepted-map'},

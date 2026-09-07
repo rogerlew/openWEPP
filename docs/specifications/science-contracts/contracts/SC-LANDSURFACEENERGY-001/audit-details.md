@@ -27,6 +27,7 @@ prospectively supersedes that statement for `OPENWEPP_SNOW_FREE_LSE_V1` only.
 All exact-one conservation, failure, adjacent-owner and no-real-consumer rules
 not expressly superseded remain binding.
 
+<a id="scope"></a>
 <a id="scientific-scope-and-explicit-out-of-scope-boundaries"></a>
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -47,6 +48,7 @@ Out of scope in version 1:
   wepppy-owned climate/GIS/run-state concern; and
 - provisional, surrogate, heuristic, or comparator-targeted physics.
 
+<a id="sources"></a>
 <a id="authority-anchors-with-top-down-citations"></a>
 ## Authority Anchors with Top-Down Citations
 
@@ -69,6 +71,7 @@ All pinned citations mean `git show
 dac3c950d8b16cc73774bf5ce2e7e11f80baac70:<path>`; the mutable checkout
 HEAD is not normative.
 
+<a id="enforcement"></a>
 <a id="invariants-and-invariant-guard-map"></a>
 ## Invariants and Invariant Guard Map
 
@@ -126,6 +129,7 @@ evidence artifact before promotion.
 ## Producer Obligations and Consumer Obligations
 
 
+<a id="gaps"></a>
 <a id="gap-register-and-promotability-labels"></a>
 ## Gap Register and Promotability Labels
 

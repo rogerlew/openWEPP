@@ -1070,3 +1070,313 @@ Parent separately reports98 pytest/53bridge/unit/A0 passes and111pass/18inherite
 Rust failures; this focused science review does not independently rerun that
 full validation set. Final scientific adequacy, observed reading gates and dual
 terminal verification/adoption remain pending.
+
+
+## Iteration3 identity: independent first-attempt assessment
+
+Static: reviewed the complete exercise_03_retry_03.md answer and request ledger
+against the unchanged original identity rubric and frozen canonical cut
+6938ca97dedb76c00ead9c2022b7d09adc7c1899. Report26674 bytes SHA-256
+6b334dad06a38e4bd59eac206c0eb6e75a11d3e12e9c6b019394ce4c90884e88.
+Ran independently: source identity/range arithmetic verification against the
+frozen commit (23 source identities,59 range exposures; no discrepancies), and
+comparison of the cited actual composition/source manifests. No executable,
+source kit application, benchmark, or scientific workflow was run in this review.
+
+PASS scientific/identity requirement selection and PASS observed LSE reduction.
+The reader distinguishes A-source-04 base e89befa4678eadec039b3e7f7fe0a176af8e9dc5
+from checkout metadata, R-source-05 base2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3
+and its reviewed delta, and F-source-05 without authority patch. It retains the
+complete base/kit/adjunct/compiler identity, path/hash/mode/symlink/deletion/extra
+checks, immutable outside-Nix offline build and Cargo-JSON executable discovery,
+and separate before/after binary, environment, cwd, argv, fixture and PID capture.
+A and R are reconstructed as their exact reviewed authority/source compositions;
+R is not inferred from F. Frozen source identities remain distinct from current
+canonical directory bytes and from an actually verified candidate binary.
+
+Complete reviewed experiment-protocol and authority-input-reproduction reading
+now appears, together with full kickoff/handoff, source-kit README, composition
+manifest, A/R source manifests and verifier source. The answer includes two
+warmups, twelve ordered AB pairs with at most one extension to24, timeout and
+retention rules, CPU <=2%, frozen bootstrap seed20260906, matching timer scope,
+six paired memory runs, lifetime/end-point/active-period distinctions, teardown
+3x10-day probes,10/19 scale protocols, and separate paired optional audit rules.
+Historical three-run medians are not substituted for the reviewed EXP-R protocol.
+Detailed audit remains outside both performance and memory series; PC1/SG1
+variant/protocol qualifications and paused status remain intact.
+
+No actual candidate executable/capture bundle was supplied. The report correctly
+states NOT VERIFIED/NOT RUN for actual identity and execution, without treating
+source metadata as proof or changing FAIL/HOLD/owner pause. Physical mechanisms
+excluded by this identity-only question are not hidden required dependencies.
+
+Verified unique source categories: governance35673, task state6890, LSE31428,
+external protocol45937, external metadata26033, tools3544; total149505. Requested
+exposure149667 includes162 repeated governance bytes. Bootstrap65997; expansion
+83508 unique/83670 exposure. LSE saving233435 bytes (88.13%) meets the unchanged
+identity reduction criterion. Separately disclosed9508 automatic root-source
+equivalent bytes do not constitute observed runtime serialization or token
+telemetry. Neither this PASS nor the reader's complete requirements answer proves
+production/scientific execution or overall package adoption.
+
+## Iteration3 closure: incomplete first attempt remains FAIL
+
+Static: inspected exercise_04_retry_03.md scientific reconstruction, explicit
+reading disposition, measurement limits and mandatory external inventory.
+Report69038 bytes SHA-256
+45e841e134987e2e2db6be2b9216900c4f606dbf6e1dd67197da8026168234b4; source cut
+6938ca97dedb76c00ead9c2022b7d09adc7c1899. Ran: report identity/size check only
+for this assessment; no physical reconstruction or complete source-ledger audit.
+
+FAIL first-attempt sufficiency: the report expressly leaves mandatory full
+WATBAL, vegetation and coupled-time authority incomplete (partial WATBAL,
+vegetation heading discovery, coupled-time size metadata). SurfaceLiquid is
+reported fully read. The three incomplete external contracts total719018 source
+bytes; these duties were never made conditional on receiving a numeric fixture
+or actually running a process. Recursive governance completeness is also expressly
+unclaimed. Anticipated context pressure is not an authority exception or an actual
+external blocker. Strong LSE reconstruction and candid missing-input statements
+do not cure incomplete owner-boundary reading. This is a conclusive sufficiency
+failure; no weakened rubric or partial scientific PASS is substituted.
+
+The report labels LSE197353 unique requested bytes/235977 exposure as partial
+exercise cost, not sufficient-reading reduction. Reported external244381 unique/
+326979 exposure and governance/tools67129 unique/67449 exposure give508863 unique
+and630405 requested exposure. Truncation recoveries are explicitly included;
+delivered offsets/tokens/workflow totals remain unobserved. These are report
+measurements, not independently certified complete-reading evidence. The LSE
+numeric threshold cannot receive a sufficient-reading PASS from this attempt.
+Preserve this immutable FAIL. A new isolated fresh attempt must complete the
+unchanged obligations; do not repair freshness through feedback to this reader.
+
+
+## Prospective precise audit routing after iteration3
+
+Static: inspected common-details dependencies/introduction, complete audit-details
+155 lines, qualification's historical/current scope, and solver retry03 reading
+rationale (not yet its final ledger). APPROVE the parent's exact four-route
+correction prospectively, without deleting or demoting scientific text:
+
+- Source provenance adjudication requires complete Authority Anchors, including
+  the pinned full-SHA interpretation paragraph.
+- Enforcement mapping or promotion-path evidence requires complete Invariants
+  and Invariant Guard Map, including the parent paragraph requiring typed paths
+  and evidence before promotion and the complete nested map.
+- Retained model scope, authority gaps or their supersession requires complete
+  Purpose, Scientific Scope and Gap Register. This includes successor GAP007/008
+  and real-consumer/implementation closure, not merely V1/v2 historical gaps.
+- Historical/current experiment retention, identity or capture limits requires
+  whole qualification and its applicable complete external protocols.
+
+Each audit selection includes audit introduction/dependencies. Approved common
+intro wording: “Experiment retention and capture limits, including historical
+predicates and existing HOLD, are governed by qualification; applying those
+limits alone does not adjudicate model gaps or enforcement evidence. Actual
+provenance, gap or enforcement claims expand the audit sections.”
+
+This resolves a real ambiguous dependency: common currently demands whole audit
+for any historical applicability/promotability claim, although audit explicitly
+says relevant complete sections. Qualification already contains the full distinct
+v31/EXP-R/PC1/SG1 histories, criteria and pause. Applying those requirements is
+not by itself a claim to have resolved the model gap register, verified legacy
+provenance or proven typed implementation enforcement. Conversely, real claims
+about those records cannot be omitted for a byte target. Stating the literal
+current authority/pause does not establish gap closure or promotion-path proof.
+
+Solver retry03 explicitly read audit to resolve historical applicability/
+promotability, while excluding V28–30 profile/enforcement classification and
+independent historical source audit. The prospective correction addresses that
+ambiguity but does not retrospectively erase its19753 actual read bytes or prove
+that a future sufficient answer will avoid every audit section. Keep all old
+FAILs; new observed fresh evidence is required.
+
+No new chapter or reference-table relocation is needed for this correction.
+Common alias/unit tables are not established wholly redundant: named boundary
+conversions, no-runtime-alias status, no floating residual exception, and machine
+registry/unit-guard-before-dimensional-runtime obligations require explicit
+retained coverage before optionalization. Whole-map movement also cannot avoid
+replay's actual pending-prefix requirement. No such unproved move is approved.
+
+## Iteration3 surface/soil: unchanged boundary requirement still fails
+
+Static: inspected the entire scientific answer and declared expansion in
+exercise_01_retry_03.md against the unchanged task1 rubric. Report40091 bytes,
+SHA-256 e283a0612c2b1bc29c7964eb68a49f8eed7d498e0b66fc779d7bcb6a845e93aa.
+Ran independently: all27 source identities and90 request ranges checked against
+6938ca97dedb76c00ead9c2022b7d09adc7c1899; hashes, range/exposure/repeat arithmetic
+match without discrepancy. No scientific workflow executed.
+
+FAIL scientific first-attempt sufficiency. The answer correctly covers owner
+separation, explicit model/phase choice, finite-capacity versus algebraic-zero
+CN endpoints, harmonic conductance/N=1/zero lower boundary, covered turbulent/
+radiative routing, original-store fixed-final water, signed vapor/ingress heat,
+phase/capacity spill, exact carry,60-second pre-Newton floor/zero support and
+rollback. The four listed external contracts are fully represented in its ledger.
+
+However, the unchanged question also requires the represented-snow/terminal
+boundary that changes rule selection. Answer item4 recognizes the distinct OFE
+interface but does not establish its shared CN heat inside the fixed point,
+exact opposite-sign common receipt, or TOL005 endpoint reseal thresholds versus
+physical closure. It omits actual post-event receiver reconstruction over only
+[wall_t*,wall_end), and its final expansion paragraph expressly defers native
+snow/transition authority. Whole terminal chapter reading does not substitute
+for required conclusions or full SnowEnergy authority. The retained rain-provider
+claim in item8 additionally lacks full SnowFreeze075 owner expansion. No numeric
+fixture or process execution is needed to make those rule-selection duties apply.
+The report's narrower “snow-free rules and boundary exclusion” scope cannot
+replace the frozen rubric. Missing science/read requirements remain FAIL.
+
+Verified source costs: LSE194934 unique/276041 requested exposure; external903134
+unique/1232891 exposure; governance73718 unique/81836 exposure. Total1171786
+unique/1590768 exposure,418982 repeats. LSE arithmetic reduction26.401951% meets
+the numeric limit but cannot receive a sufficient-reading PASS while required
+conclusions/owner authority are absent. No token/workflow claim follows.
+
+Prospective presentation correction recommended: surface intro should explicitly
+include represented-snow soil and post-event receiver conditions in surface/soil
+regime-rule selection, even when the target is snow-free; terminal's whole
+SnowEnergy dependency should name that boundary-rule selection trigger. A direct
+whole SnowFreeze075 dependency should cover rain-temperature provider selection
+and provider-derived ingress-enthalpy requirements/closure. Merely consuming
+already accepted authoritative parcels does not itself claim to rederive their
+provider. Retain original scientific bodies and qualifiers, unchanged exercise
+question/rubric, and all prior immutable FAILs. This is routing scope, not new
+physics or exercise-prompt answer hints.
+
+
+## Iteration3 solver/replay: improved answer, retained first-attempt FAIL
+
+Static: complete scientific answer and ledger in exercise_02_retry_03.md against
+the unchanged original task2 rubric, with focused primary nonlinear/replay
+clauses reread. Report45708 bytes SHA-256
+8d956d9240110b5c4e74cc314791df0657a5da7d90facde150765a47d16ac1c1.
+Ran independently: all34 source identities and167 requested ranges verified at
+6938ca97dedb76c00ead9c2022b7d09adc7c1899; no hash/range/exposure discrepancy.
+No implementation oracle, numerical workflow or experiment was run.
+
+FAIL scientific requirement completeness, independently of the size FAIL. The
+answer now correctly covers ordered coordinates/finite differences/LU/bounds/
+thresholds, conditional scaling, ground/soil identity anchors, full INV163
+eligibility, graph/capability/error semantics, all affected evaluator families,
+fallibility/PC1/SG1, P001–004, general first-error hierarchy and complete reviewed
+protocol/source-reproduction requirements. It distinguishes requirements from
+execution and preserves historical/prospective identities and HOLD.
+
+Remaining concrete deficiencies against the frozen rubric:
+
+- V2 full-supply initialization omits the all-positive request identity/amount
+  equality and preservation of canonical zero-request identity/zero amount; its
+  iteration-zero statement does not specify exact-zero step norms and zero
+  backtracking/no Jacobian. These are explicit nonlinear-solve lines170–181,
+  not optional implementation trivia hidden by the V2 heading.
+- INV139's answer says the recorded exponent includes examined work but does not
+  retain the explicit existing cumulative diagnostic versus forbidden separate
+  public/persisted field boundary (nonlinear-solve lines127–134). Its unchanged-
+  current witness correctly implies no installed update; that correct part is
+  not failed merely for omitting a synonymous phrase.
+- “uncapped/tiny-store-water predicate” does not specify store-cap-active AND
+  preliminary rate <= canonical water residual tolerance. Physical wet-energy
+  tolerance is stated, but the exact two-part water eligibility and exclusion
+  of condensation/constitutive-law wet flux remain missing (lines207–218).
+- V30's general promise of original positions omits the concrete V8 projection
+  then fallible ingress scheduling then native proof order and corresponding
+  competing ingress/native poison first-error result (dependency-replay
+  lines426–443,458–463). These were explicit frozen required conclusions, not
+  supplied by the generic complete error hierarchy.
+- The required-evidence paragraph misattributes anchor/stencil/dependency oracles
+  to C019. Identity-anchor is C017, leaf maximum C018, and validation-once C019;
+  exact owning test obligations must not be interchanged.
+
+The original numerical/proof clauses are present in the full chapters this
+reader selected. This is an answer completeness failure; no scientific source
+change or rubric weakening follows. A generic first-report completeness check
+against every applicable selected rule/definition is legitimate prospective
+procedure for NEW readers, with no missing-atom hints or correction of prior
+freshness. Required reading/recovery must finish; anticipated context pressure
+cannot waive it.
+
+Verified costs: LSE229664 unique/291576 requested exposure; external contracts
+839166/1304136; frozen external evidence45937/45937; governance/task81693/91495;
+measurement tooling3544/3544. Total1200004 unique/1736688 exposure. LSE13.29%
+reduction FAILS >=20%. Whole audit-details19753 is observed cost and cannot be
+removed retrospectively. Precise prospective audit routing may avoid irrelevant
+qualification-history expansion, but no forecast substitutes for a fresh
+scientifically sufficient observed answer. Preserve this immutable first FAIL.
+
+## Prospective identity evidence reuse boundary
+
+APPROVE retaining identity retry03's independently assessed fresh PASS after a
+final exact selected-input and requirement-identity verification, if the only
+new changes are common/surface/terminal/water routing scope discussed above.
+Its entry/interface/qualification, required protocol/source identity documents
+and all actual applicable recursive requirements must remain unchanged. Record
+original exercise source6938ca97d and final reuse check separately; do not claim
+a new first attempt on the final cut or four same-cut exercises. Any relevant
+route, requirement or selected input change requires a new identity reader.
+New isolated surface/solver/closure attempts remain necessary.
+
+
+## Iteration4 focused preflight: approve fresh01/02/04 and bound identity reuse
+
+Static: inspected the complete canonical diff against6938ca97d, recovering the
+initial truncated diff with focused changed-file reads and a whole-primary-file
+comparison. After the exact approved short audit-anchor/extent substitutions,
+only common-details, surface-energy, terminal-support and water-vapor have
+non-presentation changes; each matches the prospectively approved scope text.
+Ran independently: original source scientific lines/Statements and fenced-body
+preservation PASS; strict directory check PASS17 binding exposures/100 actual
+definitions; all28 candidate-manifest member hashes PASS; all prospective source
+selection arithmetic PASS; all23 identity retry03 selected full-source hashes
+still match the immutable report. No physical workflow or new exercise run here.
+
+Manifest4259 bytes SHA-256:
+88c1f06036d25494aaee54d44afaa920f354329899bfd6bd38a31b074e2709e4.
+All18 primary files are inventoried. Primary-only compact sorted-path/hash JSON
+digest: e2f9aa80774782fb048c9bc4511b2f6a3432ea16aef12c3013d2582f518da2b9.
+Prediction SHA-256:
+c175883ed37d2c1c7e49b8050553d9b9d8fc36770a51a5a19f0baee27ecabb43.
+Handoff unchanged SHA-256:
+00f80e082f41b65a25b6864340cd89b6daffbf0d16ba54d6df5612e31d25d6fc.
+
+Audit routes now separately require complete source anchors/pinned paragraph,
+complete parent enforcement-map section/mapping duty, and Purpose/Scope/Gap
+sections including successor007/008; qualification owns experiment retention/
+identity/capture limits. The clarification exempts no actual provenance, gap or
+enforcement adjudication. New short audit anchors resolve to the same complete
+original heading extents; old anchors remain. Removing “(entry extent)” changes
+no extent: the unchanged entry still requires nested subsections, applicable
+marked definitions and guard/test links, plus every selected chapter's intro
+and dependencies. Binding-index changes only corresponding locator fragments.
+
+Surface intro positively includes represented-snow soil and post-event receiver
+boundary-rule selection even for a snow-free target. Terminal's full SnowEnergy
+edge now explicitly covers that question. Water adds full SnowFreeze authority
+for rain-provider selection/provider-derived ingress requirements, retaining
+INV075 and the exact original provider body. Accepted authoritative parcel
+reconstruction alone does not rederive that provider. No original scientific
+equation/cell/qualifier or historical posture changed. Full external duties
+remain actual reading requirements; these additions may increase external cost.
+
+APPROVE new isolated fresh01/02/04 with the unchanged original tasks/rubrics and
+prospectively approved generic procedural completeness instruction. No answer
+hints or prior findings may be supplied. Verified predictions are bootstrap
+12106, physical01/04=196030, solver02=211052, identity03=31428. These remain
+forecasts only. Solver's838 bytes of headroom cannot cap applicable expansion
+or justify omitted audit/owner requirements; observed sufficient first attempts
+and independent assessments remain mandatory. Preserve every prior FAIL.
+
+APPROVE reuse of identity retry03's original fresh PASS: every one of its23
+selected full-source identities remains unchanged, including entry/interface/
+qualification, all required protocols/reproduction/source metadata, governance
+and handoff. Its report remains
+6b334dad06a38e4bd59eac206c0eb6e75a11d3e12e9c6b019394ce4c90884e88 and original
+exercise source remains6938ca97d. Identity-only requirements are unaffected by
+these conditional physical/audit routes. Record this final input-equivalence
+check separately from the old observed exercise; do not invent a new run or
+four same-cut attempts. Any later relevant input/requirement change reopens reuse.
+
+Parent reports98 pytest, unit/A0,53 bridge PASS and111/18 Rust with identical18
+failures/36 panics; this focused review independently ran only the named
+preservation/strict checks, not that whole validation set. Stable-cut dual
+terminal verification, all scientific fresh sufficiency and adoption remain
+pending. No current FAIL is waived by preflight approval.

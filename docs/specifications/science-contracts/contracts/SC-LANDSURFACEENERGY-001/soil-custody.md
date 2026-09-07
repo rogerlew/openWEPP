@@ -4,12 +4,12 @@
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
 | interface.md#interface | always | shared authority | whole chapter |
-| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section (entry extent) |
+| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section |
 | soil-coupling.md#soil-coupling | physical operand or closure reconstruction | accepted conduction | whole chapter |
 | water-vapor.md#water-vapor | infiltration credit reconstruction | accepted parcel enthalpy | whole chapter |
-| map-custody.md#handoff | accepted native-map identity or physical receipt origin | same-map custody and original owner/receipt boundary | section (entry extent) |
-| surface-custody.md#reseal | snow-free final identity/receipt reseal | same-map custody and original owner/receipt boundary | section (entry extent) |
-| map-custody.md#pending | converged pending physical-map origin | same-map custody and original owner/receipt boundary | section (entry extent) |
+| map-custody.md#handoff | accepted native-map identity or physical receipt origin | same-map custody and original owner/receipt boundary | section |
+| surface-custody.md#reseal | snow-free final identity/receipt reseal | same-map custody and original owner/receipt boundary | section |
+| map-custody.md#pending | converged pending physical-map origin | same-map custody and original owner/receipt boundary | section |
 | ../SC-SURFACELIQUID-001.md#version-15-exact-soil-thermal-enthalpy-carry-amendment | accepted soil credit or closure | receiver/producer exact credit join | whole external contract; frozen protocol scope |
 | ../SC-SURFACELIQUID-001.md#purpose-and-scientific-scope | cross-contract surface scope | surface scope | whole external contract; frozen protocol scope |
 

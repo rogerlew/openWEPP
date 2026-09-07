@@ -4,12 +4,12 @@
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
 | interface.md#interface | always | shared authority | whole chapter |
-| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section (entry extent) |
+| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section |
 | soil-custody.md#soil-custody | exact dyadic representation | canonical arithmetic/wire definition | whole chapter |
 | litter-phase.md#litter-phase | active phase/fusion/spill or closure | accepted operands and spill | whole chapter |
 | water-vapor.md#water-vapor | retained ingress or closure | physical basis and parcel receipts | whole chapter |
-| map-custody.md#handoff | accepted native-map identity or physical receipt origin | same-map custody and original owner/receipt boundary | section (entry extent) |
-| map-custody.md#pending | converged pending physical-map origin | same-map custody and original owner/receipt boundary | section (entry extent) |
+| map-custody.md#handoff | accepted native-map identity or physical receipt origin | same-map custody and original owner/receipt boundary | section |
+| map-custody.md#pending | converged pending physical-map origin | same-map custody and original owner/receipt boundary | section |
 | ../SC-SURFACELIQUID-001.md#version-16-exact-lse-surface-enthalpy-carry-amendment | exact surface owner or closure | frozen mirror and operand custody | whole external contract; frozen protocol scope |
 | ../SC-SURFACELIQUID-001.md#exact-surface-parent-local-chronology-amendment | parent-local receipts/restart | partial/final owner chronology | whole external contract; frozen protocol scope |
 | ../SC-SURFACELIQUID-001.md#topology-ranked-exact-surface-owner-amendment | topology/receipt reconstruction | opaque topology ordering | whole external contract; frozen protocol scope |

@@ -4,19 +4,20 @@
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
 | interface.md#interface | always | shared authority | whole chapter |
-| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section (entry extent) |
+| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section |
 | soil-coupling.md#soil-coupling | surface temperature/humidity or ground transfer | thermal state and CN lower boundary | whole chapter |
 | terminal-support.md#terminal-support | surface/soil regime-rule selection | complete support, represented-snow and post-event receiver boundary; requirements precede execution | whole chapter |
 | litter-phase.md#litter-phase | snow-free forest-litter phase is active or unspecified | complete admitted phase, capacity and ingress rules | whole chapter |
 | solve-boundary.md#solve-boundary | physical rule selection or accepted-primitive closure | ordered solve and error precedence; INV108-110 | whole chapter |
 | nonlinear-solve.md#nonlinear-solve | solver implementation or full evaluator correctness | all active numerical branches | whole chapter |
-| [vapor](water-vapor.md#vapor), [water](water-vapor.md#water), [errors](water-vapor.md#errors), [invariants](water-vapor.md#canonical-invariants), [obligations](water-vapor.md#canonical-obligations) | represented-snow evaluator/error-order requirements review | signed enthalpy, immutable water/ingress and canonical errors; complete water definitions, including all universal P001–004 | section (entry extent) |
+| [vapor](water-vapor.md#vapor), [water](water-vapor.md#water), [errors](water-vapor.md#errors), [invariants](water-vapor.md#canonical-invariants), [obligations](water-vapor.md#canonical-obligations) | represented-snow evaluator/error-order requirements review | signed enthalpy, immutable water/ingress and canonical errors; complete water definitions, including all universal P001–004 | section |
 | water-vapor.md#water-vapor | snow-free physical rules, active water/ingress, energy closure or water-owner audit | complete accepted enthalpy and immutable-water duties | whole chapter |
 | ../SC-VEGETATION-001.md#openwepp_c3_woody_v8-coupled-ground-energy-amendment | covered-canopy physics or closure | V8 canopy owner | whole external contract; frozen protocol scope |
 | ../SC-VEGETATION-001.md#purpose | cross-contract scope | vegetation entry/scope constraints | whole external contract; frozen protocol scope |
 
 <a id="surface-energy"></a>
 # Surface Energy
+Surface/soil regime-rule selection includes the represented-snow soil boundary and post-event receiver conditions that delimit the snow-free rules, together with their external authority; selecting a snow-free target does not defer that boundary review.
 Current V1 snow-free radiation and neutral turbulent physics. V2 imports this physics; V3 imports it for its admitted litter successor. The represented-snow lower boundary has its separate terminal/soil interface authority. No current-temperature, recipient or domain qualifier below is optional.
 
 <a id="openwepp_snow_free_lse_v1-constitutive-authority"></a>

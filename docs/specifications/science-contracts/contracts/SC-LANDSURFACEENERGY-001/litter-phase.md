@@ -4,7 +4,7 @@
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
 | interface.md#interface | always | shared authority | whole chapter |
-| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section (entry extent) |
+| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section |
 | [water-vapor](water-vapor.md#water-vapor), [soil-coupling](soil-coupling.md#soil-coupling), [surface-custody](surface-custody.md#surface-custody) | active litter phase, ingress or closure | physical and exact operand custody | whole chapter |
 | ../SC-SURFACELIQUID-001.md#frozen-forest-litter-surface-owner-v2-amendment | litter state or closure | exclusive liquid/ice owner | whole external contract; frozen protocol scope |
 | ../SC-SURFACELIQUID-001.md#exact-v3-litter-phase-capacity-spill-custody-amendment | phase spill custody or closure | once-only spill | whole external contract; frozen protocol scope |

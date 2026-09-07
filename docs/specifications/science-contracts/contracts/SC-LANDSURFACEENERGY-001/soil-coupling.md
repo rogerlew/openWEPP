@@ -4,7 +4,7 @@
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
 | interface.md#interface | always | shared authority | whole chapter |
-| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section (entry extent) |
+| terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section |
 | water-vapor.md#water-vapor | liquid/energy closure or infiltration | accepted ingress enthalpy | whole chapter |
 | soil-custody.md#soil-custody | exact soil energy storage or reconstruction | receiver-owned high/carry | whole chapter |
 | surface-custody.md#surface-custody | exact surface storage or reconstruction | surface high/carry owner | whole chapter |

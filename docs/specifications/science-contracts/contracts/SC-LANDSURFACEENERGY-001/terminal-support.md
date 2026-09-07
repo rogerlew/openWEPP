@@ -5,10 +5,10 @@
 |---|---|---|---|
 | interface.md#interface | always | shared authority | whole chapter |
 | soil-coupling.md#soil-coupling | snow-soil receipt or closure | OFE/lane heat interface | whole chapter |
-| map-custody.md#handoff | accepted native-map identity or physical receipt origin | same-map custody and original owner/receipt boundary | section (entry extent) |
-| surface-custody.md#reseal | snow-free final identity/receipt reseal | same-map custody and original owner/receipt boundary | section (entry extent) |
-| map-custody.md#pending | converged pending physical-map origin | same-map custody and original owner/receipt boundary | section (entry extent) |
-| ../SC-SNOWENERGY-001.md#default-off-terminal-receiver-transaction-amendment | terminal transition/receiver | snow event and terminal parcel | whole external contract; frozen protocol scope |
+| map-custody.md#handoff | accepted native-map identity or physical receipt origin | same-map custody and original owner/receipt boundary | section |
+| surface-custody.md#reseal | snow-free final identity/receipt reseal | same-map custody and original owner/receipt boundary | section |
+| map-custody.md#pending | converged pending physical-map origin | same-map custody and original owner/receipt boundary | section |
+| ../SC-SNOWENERGY-001.md#default-off-terminal-receiver-transaction-amendment | surface/soil regime-rule selection, represented-snow boundary, or terminal transition/receiver | snow event and terminal parcel | whole external contract; frozen protocol scope |
 | ../SC-COUPLEDTIME-001.md#algorithm-specification | support/event chronology | time admission and transaction owner | whole external contract; frozen protocol scope |
 | ../SC-COUPLEDTIME-001.md#purpose-and-scientific-scope | cross-contract chronology scope | time scope | whole external contract; frozen protocol scope |
 
