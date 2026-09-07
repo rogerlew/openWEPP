@@ -1,5 +1,5 @@
 # Directory-based science contract format specification
-Status: executing
+Status: complete (specification only)
 Execution mode: package-end-to-end
 Implementation intent: prospective format specification and bounded guidance integration.
 Base: d8249849d6e015070818be7caf6f8caa75485098 on main.

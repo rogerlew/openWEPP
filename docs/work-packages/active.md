@@ -6,7 +6,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
-| Directory contract format specification | [handoff](20260907-directory-contract-format-spec-001/artifacts/worker-handoff.md) | Specification only; no contract migration, checker implementation or science activation. |
+| Directory contract format specification (complete) | [handoff](20260907-directory-contract-format-spec-001/artifacts/worker-handoff.md) | Specification delivered; checker/LSE migration requires separate authorization. |
 | Agent context/evidence efficiency (complete) | [handoff](20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md) | Administrative tools available; no further implementation authorization. |
 | Prospective Stage-3 mechanisms | [handoff](20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md) | PAUSED BY OWNER; no comparative measurements under the administrative request. |
 

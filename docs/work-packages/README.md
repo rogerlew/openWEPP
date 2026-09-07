@@ -6,7 +6,7 @@ in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
 ## 20260907-directory-contract-format-spec-001
 
-EXECUTING: directory-based canonical contract format specification and prospective
+COMPLETE: directory-based canonical contract format specification and prospective
 guidance integration; no LSE migration or scientific amendment.
 See [package](20260907-directory-contract-format-spec-001/package.md) and
 [handoff](20260907-directory-contract-format-spec-001/artifacts/worker-handoff.md).

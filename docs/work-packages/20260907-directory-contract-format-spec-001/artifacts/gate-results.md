@@ -55,6 +55,8 @@ No full workspace or scientific measurements selected.
 Directory-format conformance cases are specified future implementation tests,
 not executed behavior. No context reduction numbers claimed.
 Independent review and verification remain current-scope requirements.
+Satisfied at closure: both reviews GO after fixes and both independent
+verifiers PASS at f68411f8f. See the four assigned independent artifacts.
 
 ## Whole-cut documentation and scope check
 Ran after substantive commit 6419ce26b: exit 0, 18 owned paths,
@@ -90,3 +92,26 @@ print('PASS:',len(paths),'owned paths;',count,'local Markdown links/anchors')
 PY
 git diff d8249849d HEAD --check
 ```
+
+## Terminal publication reconciliation
+Ran: same local-path/anchor/write-set logic above against current working bytes,
+with both new verification artifacts explicitly included: 22 owned files,
+33 local links/anchors, exit 0. Exact additional identity checks were:
+
+```python
+original = subprocess.check_output(
+    ['git', 'show', '216fb0614:' + str(pkg / 'package.md')], text=True)
+assert original.replace('Status: executing',
+    'Status: complete (specification only)') == contract
+subprocess.run(['git', 'diff', '--exit-code', 'f68411f8f', '--',
+    'docs/specifications', 'docs/prompt_templates'], check=True)
+```
+
+Ran: `git diff --check`, exit 0. Static: parent inspected final publication diff:
+only status/catalog/handoff/evidence updates and independent verification records.
+Specification/guidance source remains the independently verified corrected cut;
+frozen acceptance changes only its completion status. No new substantive source
+or criteria change requiring assurance invalidation. The final Git commit binds
+the publication without a self-referential hash. All 22 paths are prospectively
+owned; production/tests/tools/SC contracts and old package artifacts remain untouched.
+The original unrelated untracked $pkg/ and tmp/ remain unmodified and unstaged.
