@@ -2083,3 +2083,81 @@ new cut. Any actual body, target, extent, scope or requirement change beyond
 this precise proposal reopens that reuse assessment. Hard byte/science gates,
 source preservation, final stable reviews and dual new terminal verification
 remain required; this grants no adoption PASS.
+
+
+## Applied iteration6 preflight and bounded reuse disposition
+
+Static: independently inspected complete actual canonical diff against b3b7b57f4.
+Ran: original scientific statements/lines and fenced-body preservation checks;
+strict directory checker; all28 manifest hashes; complete selected-source hashes
+for surface05 and identity03; predicted-range byte reconstruction; isolated
+candidate/adopted generator runs. No production workflow independently rerun.
+
+Applied canonical diff is exactly the four approved files. Litter-phase adds
+its two H4 availability/identity headings and H3 mass-custody heading; surface-
+custody adds the H3 before the complete retained operand receiver procedure.
+Nonlinear replaces only the approved applicability intro and adds the eight
+specified diagnostic/initialization/acceptance/domain subsection headings.
+Qualification changes only the approved per-series dependency reason, adds the
+per-series intro reminder and the comparison-controls H3. All original bodies,
+equations, rows, headings and anchors remain intact. Added lower-level headings
+do not truncate their original parent selections, and whole chapter routes
+remain whole. Protocol/input targets, complete-document extents and scientific
+preconditions/numbers/error/ownership order are unchanged. No new authority or
+empirical assertion is introduced.
+
+Independent checks PASS: scientific statement/line/fence preservation and strict
+17 binding exposures/100 actual definitions. Manifest28/28 verified, SHA-256
+e1328f03b2d3eb76fef9d06a0f68b9ee1039287d655061ff40228b8bfe92044b.
+18-primary compact sorted-path/hash digest:
+b83e1cf0f56bfcecbdd6c2f488432bd330343fe6352a04ff990d9ef3efef81cc.
+Independently reconstructed source forecasts01/02/03/04:
+196393 /211770 /31563 /196393; bootstrap12117. Solver120-byte headroom is
+only a forecast margin, never permission to avoid any actual required/voluntary
+read. These are not fresh observations or a scientific adequacy PASS.
+
+Surface05 bounded semantic reuse APPROVED. Of its32 selected complete-source
+identities,30 remain byte-identical to the actual report inventory. Only:
+- litter-phase:30440bytes, new SHA-256
+  6722424c8ecdc9e6c32160dd2e2a07b00cdfc1fa06a371b48185359c6f3f460b;
+- surface-custody:25644bytes, new SHA-256
+  b0b5e1c60cc9ed7f316a6a3008f2ee7ea2f337805d2e0e06e82c4453d8a5216e.
+These differ solely by the approved117/70 heading bytes. The task1 answer
+already establishes the relevant existing mass-only resource and phase/owner
+restrictions; no new scientific precondition or dependency is added. Its full
+original selected bodies and extents are unchanged, including the entire
+numbered receiver procedure. Current196393 is a source forecast; retain the
+actual fresh PASS and observed196206 at b3b7b57f4 with the verified additional
+search accounting. Do not relabel this as a new fresh reading on iteration6.
+
+Identity03 bounded semantic reuse APPROVED. Of its23 original selected source
+identities,21 remain byte-identical. Interface differs from6938ca97d only by
+previously reviewed11-byte “executable ” qualifier, SHA-256
+a827f4099976f9592863b71a12c9059dadd36f8b8037dba4e0ebf8482449c0a0.
+Qualification is now19446bytes, SHA-256
+f2129490c0e4c944e5ab2b545c60c41317fdde98927a8dcd4ccd211863cf05bc;
+its124 added/net presentation bytes name existing series and comparison
+controls. The exact identity question still selects the same complete original
+qualification body, protocol, reproduction, kickoff/handoff and source-kit
+metadata. All21 other sources, including those external duties, are unchanged.
+The earlier identity answer already concretely preserves the distinct600s/1800s
+series scopes and both timing/memory oracle separation plus matched audit.
+No requirement now exceeds its previously sufficient scope. Retain observed
+31428 at6938ca97d;31563 is not observed exposure. This is explicit semantic
+reuse under the bounded change procedure, not an all23-hashes-equal claim.
+
+Independent generator runs used repo-local Python and absolute build_candidate.py
+with `--output-root` under a TemporaryDirectory named review-a-iteration6-*,
+once default candidate and once additionally `--adopted`; both exit0. Each
+produced18 canonical files. Default349435bytes equals all current live primary
+bytes; adopted349276 differs only in entry by159 candidate-notice bytes. All28
+live hashes remained unchanged through both runs; temporary outputs cleaned up.
+Parent's broader98pytest/53bridge/unit/A0 and111PASS/18 inherited Rust failures
+with36 same panics remain separately attributed execution evidence.
+
+APPROVE new genuinely fresh task2/task4 attempts on the now frozen reviewed cut,
+with the unchanged original questions/rubrics and reviewed generic private-note/
+source-selfcheck procedure. Preserve all earlier failed first reports. Surface05
+and identity03 remain explicitly reused from their original cuts, with this
+bounded proof. No adoption/production PASS follows; stable final A/B review,
+required direct gates and dual new terminal verification remain outstanding.

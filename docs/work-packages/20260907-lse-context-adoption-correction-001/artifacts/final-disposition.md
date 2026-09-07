@@ -4,7 +4,7 @@ Canonical v32 remains a candidate. Fresh scientific sufficiency and independent
 terminal verification remain current-scope requirements; execution continues.
 
 ## Exact diff reconciliation
-Baseline fb32d27f2 to current candidate-manifest.json (iteration5):
+Baseline fb32d27f2 to current candidate-manifest.json (iteration6):
 - Canonical LSE entry and17chapters: presentation/routes, original scientific cells,
   source identities, effective obligations and exact fenced bodies preserved.
 - Science lifecycle index: only LSE review date09-04→09-07.
@@ -53,3 +53,8 @@ in scope and rerun fresh affected exercises. Then obtain stable-cut dual review 
 dual independent terminal verification before enabling general selective reading.
 Final adoption metadata, truthful completed handoff/prompt/catalog disposition and
 bounded final diff verification follow those gates. Commit locally; no push authorized.
+
+Iteration6 approved presentation correction is applied; only four canonical chapters
+change from b3. Original equations, predicates, protocols and full parent reading
+extents remain intact. Fresh02/04 and final-cut01/03 reuse proof are pending; no
+adoption activation or completed scientific sufficiency is claimed.

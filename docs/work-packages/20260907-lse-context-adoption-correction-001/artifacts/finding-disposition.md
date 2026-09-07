@@ -82,3 +82,6 @@ Natural subsection presentation corrections are prospectively reviewed; no crite
 original body, protected disposition or frozen protocol is changed. Fresh02/04 and
 terminal closure remain current-scope requirements. Surface/identity reuse needs exact
 changed-cut semantic proof; no hypothetical revised byte count becomes observation.
+
+A/B exact iteration6 preflight and01/03 semantic reuse PASS; original observations
+remain immutable. New02/04 first-answer sufficiency is the current unresolved gate.

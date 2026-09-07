@@ -6,13 +6,13 @@
 | interface.md#interface | always | shared authority | whole chapter |
 | dependency-replay.md#dependency-replay | scientific replay/coverage/result claims | graph, custody, errors and forced-complete proof | whole chapter |
 | nonlinear-solve.md#nonlinear-solve | solver scientific result claims | complete ordered solver | whole chapter |
-| [protocol](../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md#exp-stage3-20260906-protocol-original-draft-1-plus-prospective-reviewed-amendments), [inputs](../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md#canonical-adjunct-reproduction-evidence) | EXP-R identity/capture or experimental requirements | reviewed capture, validity and decision rules; exact source composition and executable-input reconstruction | whole document, including later reviewed amendments |
+| [protocol](../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md#exp-stage3-20260906-protocol-original-draft-1-plus-prospective-reviewed-amendments), [inputs](../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md#canonical-adjunct-reproduction-evidence) | EXP-R identity/capture or experimental requirements | per-series capture, timeout, validity and decision rules; exact source composition and executable-input reconstruction | whole document, including later reviewed amendments |
 | ../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md#4-experimental-design-one-baseline-two-independent-treatments | EXP-R executable identity/capture checks | frozen execution requirements; not scientific authority | whole external contract; frozen protocol scope |
 | ../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md#stage-3-current-continuation | EXP-R execution authorization/status | owner pause and frozen execution posture | whole external contract; frozen protocol scope |
 
 <a id="qualification"></a>
 # Qualification
-Binding qualification and capture requirements, not evidence of successful adoption or current execution authorization. Historical revision-31 thresholds/results remain unchanged. EXP-R changes only its stated gates; PC1 and SG1 retain their exact experimental scope. The frozen prospective kickoff remains binding and owner-paused; format migration does not resume it.
+Binding qualification and capture requirements, not evidence of successful adoption or current execution authorization. Historical revision-31 thresholds/results remain unchanged. EXP-R changes only its stated gates; PC1 and SG1 retain their exact experimental scope. The frozen prospective kickoff remains binding and owner-paused; format migration does not resume it. Apply each protocol limit to its named performance, memory, scaling or teardown series.
 
 Production retention uses this exact command for baseline and candidate:
 
@@ -104,6 +104,8 @@ starts, while completion/error reconciliation independently proves what ended.
 Preserve distinct authentic map/solve/iteration/sweep identities and actual
 reachable lifecycle cardinality. Reconcile every started sweep and dropped
 record; missing or unexplained dropped records invalidate coverage evidence.
+
+### Comparison controls
 
 Require nonzero completed component replay on the real primary workload;
 eligibility alone is insufficient. Neither an all-centered sweep nor a

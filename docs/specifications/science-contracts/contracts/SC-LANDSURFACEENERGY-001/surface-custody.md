@@ -63,6 +63,8 @@ enthalpy from temperature and changes no mass, phase, receipt, or high-term
 bits. A mixed key set, signed-zero mismatch, stale parent, or partial adoption
 rejects before candidate work.
 
+### Accepted operand reconstruction and destination-group conversion
+
 For each immutable candidate and each surface key, the receiver executes:
 
 1. Validate the exact beginning total, complete key order, both frozen high

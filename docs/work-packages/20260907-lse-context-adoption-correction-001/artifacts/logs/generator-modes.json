@@ -1,6 +1,6 @@
 {
-  "generator_sha256": "da39f6addf7eafbda4df0946cc3a69f66e9d3aefbd67b99e3a5af368dfc0315f",
-  "source_manifest_sha256": "cbd9d6fefb793a9c78d494af8d61bc7b8c39aabdddee82b108f02a784d6226e9",
+  "generator_sha256": "cc574e1ae674cd4a8cf6f4602420e6053d71edfe2183854dfc67f8bdfe1961cf",
+  "source_manifest_sha256": "e1328f03b2d3eb76fef9d06a0f68b9ee1039287d655061ff40228b8bfe92044b",
   "runs": [
     {
       "mode": "candidate",
@@ -8,12 +8,12 @@
         "/workdir/openWEPP/.venv/bin/python",
         "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/build_candidate.py",
         "--output-root",
-        "/tmp/lse5-generator-candidate-t0tlenlo"
+        "/tmp/lse6-generator-candidate-7f8i0k5w"
       ],
       "cwd": "/workdir/openWEPP",
       "exit": 0,
-      "seconds": 0.04844383499585092,
-      "stdout": "entry 4130 interface 7987 total 348958\n",
+      "seconds": 0.04488663002848625,
+      "stdout": "entry 4130 interface 7987 total 349435\n",
       "stderr": ""
     },
     {
@@ -22,13 +22,13 @@
         "/workdir/openWEPP/.venv/bin/python",
         "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/build_candidate.py",
         "--output-root",
-        "/tmp/lse5-generator-adopted-2xbadolp",
+        "/tmp/lse6-generator-adopted-jnbvfv8q",
         "--adopted"
       ],
       "cwd": "/workdir/openWEPP",
       "exit": 0,
-      "seconds": 0.04412480094470084,
-      "stdout": "entry 3971 interface 7987 total 348799\n",
+      "seconds": 0.04794675298035145,
+      "stdout": "entry 3971 interface 7987 total 349276\n",
       "stderr": ""
     }
   ],
@@ -39,5 +39,5 @@
   ],
   "removed_bytes": 159,
   "live_sources_unchanged": true,
-  "claim": "isolated reproduction proof only; live adoption NOT enabled"
+  "claim": "isolated reproduction proof only; live adoption NOT enabled; disposable output roots cleaned after comparison"
 }

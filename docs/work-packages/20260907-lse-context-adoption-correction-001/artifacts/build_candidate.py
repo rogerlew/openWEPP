@@ -186,11 +186,43 @@ for version,block in zip([28,29,30],profiles):
     texts['binding-index']+=f'\n<a id="profile-v{version}"></a>\n## V{version} normative profile classification\n\n'+block
 texts['dependency-replay']=texts['dependency-replay'].replace('# Dependency Replay\n','# Dependency Replay\n\nV28, V29 and V30 each retain dual independent review and verification. Their original profile classification records remain normative in binding-index; all scientific mechanism and test obligations below remain required.\n',1)
 texts['binding-index']=texts['binding-index'].replace('# Binding Index\n','# Binding Index\n\nThe V28–30 profile classification records below are normative authority. Their relocated algorithm/guard/test duties remain in the complete scientific bodies; profile conformance requires both.\n',1)
-texts['nonlinear-solve']=texts['nonlinear-solve'].replace('# Nonlinear Solve\n','# Nonlinear Solve\n\nA represented-snow reuse correctness review includes both potential and fixed-final solves and the applicability of each V10/V11–13 branch below, together with complete solve-boundary error and acceptance rules. Solve equivalence includes initialization and diagnostic accounting below.\n\n',1)
+texts['nonlinear-solve']=texts['nonlinear-solve'].replace('# Nonlinear Solve\n','# Nonlinear Solve\n\nRepresented-snow reuse review covers potential and fixed-final solves, every applicable V10/V11–13 branch below, and complete solve-boundary error/acceptance rules, including initialization and diagnostics.\n\n',1)
 SUPPORT='version-9-positive-support-admission-owner-amendment'
 ORDER='ordered-numerical-algorithm-active-branches-and-error-precedence'
 texts['nonlinear-solve']=texts['nonlinear-solve'].replace('When every positive final water authorization', '### Final-solve initialization and diagnostic accounting\n\nWhen every positive final water authorization',1)
 texts['nonlinear-solve']=texts['nonlinear-solve'].replace('Nonpositive-assimilation partial positive root authorization is typed unsupported in V2.', '### V10 domain and numerical restrictions\n\nNonpositive-assimilation partial positive root authorization is typed unsupported in V2.',1)
+# Original paragraphs and complete parent extents remain intact beneath these
+# natural algorithm/owner subdivisions. These titles add no scientific rule.
+subsections = {
+    'nonlinear-solve': [
+        ('For both owner-uncapped potential and fixed-authorization final solves', '### Witness coordinates and diagnostics'),
+        ('When every positive final water authorization', '#### Full-supply initialization'),
+        ('If that initial evaluation satisfies every residual tolerance', '#### Iteration-zero acceptance'),
+        ('Nonpositive-assimilation partial positive root authorization', '#### Authorization exclusions'),
+        ('Every covered potential and final solve uses', '#### Derivative scope'),
+        ('For that same uncapped active V10', '#### V10 unit scaling'),
+        ('When the uncapped V10 nonpositive-assimilation potential evaluation', '#### Potential wet-store eligibility'),
+        ('V1-to-V2 migration validates', '#### Identity migration'),
+    ],
+    'litter-phase': [
+        ('Only after the vapor and phase candidates pass', '#### Liquid-only WB14 availability'),
+        ('The immutable model tag is `OPENWEPP_SNOW_FREE_LSE_V3`', '#### Identity, restart and receipts'),
+        ('This is a mass-custody join, not a second LSE energy operation.', '### Mass custody without additional energy'),
+    ],
+    'surface-custody': [
+        ('For each immutable candidate and each surface key, the receiver executes:', '### Accepted operand reconstruction and destination-group conversion'),
+    ],
+    'qualification': [
+        ('Require nonzero completed component replay on the real primary workload', '### Comparison controls'),
+    ],
+}
+for name, additions in subsections.items():
+    for start, heading in additions:
+        assert texts[name].count(start) == 1, (name, start)
+        texts[name] = texts[name].replace(start, heading + '\n\n' + start, 1)
+qualification_intro = 'format migration does not resume it.'
+assert texts['qualification'].count(qualification_intro) == 1
+texts['qualification'] = texts['qualification'].replace(qualification_intro, qualification_intro + ' Apply each protocol limit to its named performance, memory, scaling or teardown series.', 1)
 # Each edge is an authority boundary, not an automatic whole-file dependency.
 D={n:[] for n in NAMES}
 def dep(owner,target,when,why,extent='section'):
@@ -248,7 +280,7 @@ whole('qualification','nonlinear-solve','solver scientific result claims','compl
 for version in [28,29,30]:
     dep('dependency-replay',f'binding-index.md#profile-v{version}','V28–30 profile conformance or enforcement-classification audit','original normative profile records')
 whole('binding-index','dependency-replay','V28–30 scientific profile conformance or enforcement mapping','complete mechanism and test obligations')
-for file,anchor,why in [('experiment-protocol','exp-stage3-20260906-protocol-original-draft-1-plus-prospective-reviewed-amendments','reviewed capture, validity and decision rules'),('authority-input-reproduction','canonical-adjunct-reproduction-evidence','exact source composition and executable-input reconstruction')]:
+for file,anchor,why in [('experiment-protocol','exp-stage3-20260906-protocol-original-draft-1-plus-prospective-reviewed-amendments','per-series capture, timeout, validity and decision rules'),('authority-input-reproduction','canonical-adjunct-reproduction-evidence','exact source composition and executable-input reconstruction')]:
     dep('qualification','../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/'+file+'.md#'+anchor,'EXP-R identity/capture or experimental requirements',why,'whole document, including later reviewed amendments')
 for n in ['nonlinear-solve','dependency-replay']:
     D[n]=[row for row in D[n] if row[0]!='water-vapor.md#water-vapor']

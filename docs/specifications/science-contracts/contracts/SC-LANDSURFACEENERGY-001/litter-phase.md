@@ -173,6 +173,8 @@ Newton re-solve; it is the ending thermal state and next-support warm start.
 <a id="ingress-wb14-identity-restart-receipts-and-failure-posture"></a>
 ### Ingress, WB14, identity, restart, receipts, and failure posture
 
+#### Liquid-only WB14 availability
+
 Only after the vapor and phase candidates pass may current precipitation,
 runon, throughfall, canopy drainage, stemflow, and litter overflow enter the
 existing hydrology chronology. Every admitted current parcel is liquid and
@@ -181,6 +183,8 @@ candidate then executes the existing WB14 partition with liquid-only
 availability. `W_i,phase` cannot infiltrate, run off, drain, satisfy WB14,
 enter soil `frozwt`, or mutate soil. Ingress cannot retroactively donate to
 the already accepted vapor or phase operation.
+
+#### Identity, restart and receipts
 
 The immutable model tag is `OPENWEPP_SNOW_FREE_LSE_V3`; the phase receipt tag
 is `OPENWEPP_FOREST_LITTER_PHASE_RECEIPT_V1`. The V3 definition binds its V2
@@ -362,6 +366,8 @@ phase-adjusted V2 liquid owner. The join is typed
 not from an independently reconstructed legacy beginning, and produces the
 one resource candidate consumed by the existing one current-ingress call.
 Zero ordinary rows are the identity join.
+
+### Mass custody without additional energy
 
 This is a mass-custody join, not a second LSE energy operation. The accepted
 LSE tile ending and native phase/exact-surface receipts already own vapor,

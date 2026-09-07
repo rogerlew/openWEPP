@@ -18,7 +18,7 @@
 <a id="nonlinear-solve"></a>
 # Nonlinear Solve
 
-A represented-snow reuse correctness review includes both potential and fixed-final solves and the applicability of each V10/V11–13 branch below, together with complete solve-boundary error and acceptance rules. Solve equivalence includes initialization and diagnostic accounting below.
+Represented-snow reuse review covers potential and fixed-final solves, every applicable V10/V11–13 branch below, and complete solve-boundary error/acceptance rules, including initialization and diagnostics.
 
 Current complete ordered covered solver and V10-specific specialization. INV-138 retains the exact admitted closed-bound qualifier; valid-current/one-inadmissible-probe summaries do not broaden that scope. INV-139 accepts only the unchanged current iterate. V10 diagonal scaling remains potential/nonpositive-assimilation-only. Identity-anchor and leaf reuse are distinct limited optimizations; component replay additionally requires dependency-replay and its applicable qualification.
 
@@ -115,6 +115,8 @@ otherwise valid full trial can exceed one unchanged governed step threshold.
 In either case a deterministic halving can produce a domain-valid governed
 step too small to produce an observable strict residual decrease in binary64.
 
+### Witness coordinates and diagnostics
+
 For both owner-uncapped potential and fixed-authorization final solves, first
 retain the existing no-update witness on a domain-valid full `b=0` Newton
 trial. If and only if the current complete residual vector passes and that
@@ -169,6 +171,8 @@ branches. It does not recompute, clamp, or relabel V10 gas states.
 
 ### Final-solve initialization and diagnostic accounting
 
+#### Full-supply initialization
+
 When every positive final water authorization is identity- and amount-equal to
 its potential request with `FullSupply`, and every canonical zero request
 retains its exact identity and zero amount, V2 uses the accepted potential
@@ -176,6 +180,8 @@ coordinates as the deterministic fixed-final initial iterate. It rebuilds the
 complete fixed-final evaluation from immutable beginning owners and exact
 per-resource caps. No potential flux, candidate state, branch, receipt, or
 diagnostic is copied.
+
+#### Iteration-zero acceptance
 
 If that initial evaluation satisfies every residual tolerance, active-branch
 inequality, domain and bound, `F<=A<=D`, identity, and owner check, V2 accepts
@@ -187,14 +193,20 @@ identity, owner, or amount mismatch cannot use this acceptance path.
 
 ### V10 domain and numerical restrictions
 
+#### Authorization exclusions
+
 Nonpositive-assimilation partial positive root authorization is typed unsupported in V2.
 
 It does not invoke hydraulic attenuation, conductance or vulnerability floors,
 plant capacitance, or authorization donation.
 
+#### Derivative scope
+
 Every covered potential and final solve uses the exact closed-bound derivative
 rule in `INV-LANDSURFACEENERGY-138`. This general numerical-domain rule does
 not broaden the V10-only coordinate-scaling authority below.
+
+#### V10 unit scaling
 
 For that same uncapped active V10 nonpositive-assimilation potential solve only, the
 Newton linear system is expressed in the declared coordinate units. With
@@ -208,6 +220,8 @@ and fixed-final solves. Reducing the pivot multiplier, accepting a rejected
 pivot, regularization, larger iteration/trust bounds, or physiological floors
 is not an equivalent implementation.
 
+#### Potential wet-store eligibility
+
 When the uncapped V10 nonpositive-assimilation potential evaluation selects the
 canopy-liquid store-cap branch and the preliminary store rate is no larger
 than the canonical water residual tolerance, the wet-surface temperature is a
@@ -219,6 +233,8 @@ ledger remain evaluated normally; no liquid amount is clamped or discarded.
 The predicate additionally requires the unanchored physical wet-energy
 residual already satisfy its canonical energy tolerance. It is unavailable to
 V1, positive-assimilation V10, condensation, or a constitutive-law wet flux.
+
+#### Identity migration
 
 V1-to-V2 migration validates complete V1 and V10 owner identities, copies all
 LSE scientific values bit-identically, and changes only the LSE identity and

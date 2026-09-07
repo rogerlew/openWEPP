@@ -63,3 +63,21 @@ reports and all actual source/search exposure; no token or numerical-run claim.
 Identity03 explicit semantic reuse is independently accepted at b3; its observed31428
 remains tied to6938. Execution continues with prospectively reviewed source presentation
 correction and new fresh02/04; general selective reading remains candidate-only.
+
+Iteration6 applied preflight: only nonlinear-solve, qualification, litter-phase and
+surface-custody change, by prospectively approved headings/introductions/route reason.
+All original scientific clauses/cells/fences preserved (616mapped spans). Actual98pytest
+PASS4.85s, strict17/100,unit/A0PASS,53bridgePASS,111/18Rust with same18names/36panics.
+Rust/helper/compiler/lint inputs unchanged; prior bound lint/rustfmt evidence reused.
+Bootstrap12117; projections196393/211770/31563/196393 are NOT new observations.
+Full set349435bytes/18files. Isolated candidate equals live; adopted differs only159
+entry-notice bytes, with no live mutation. Custody capture/verifyPASS in iteration06
+record. Fresh02/04 and final-cut01/03 reuse proof remain pending independent preflight.
+
+A/B iteration6 applied preflight PASS and fresh02/04 launch approved. Surface05
+semantic reuse:30/32fullhashes identical; only117litter+70surface subsection bytes
+added, same complete scientific bodies/dependencies and adequate task1answer.
+Identity03 semantic reuse:21/23fullhashes identical; interface11-byte qualifier and
+qualification124-byte presentation delta preserve the exact executable task's whole
+qualification/four-protocol duties. Observed196206atb3 and31428at6938 stay unchanged.
+No all-hashes-equal claim, new reader, updated actual count or general adoption PASS.

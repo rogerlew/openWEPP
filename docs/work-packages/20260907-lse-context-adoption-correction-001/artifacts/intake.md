@@ -285,3 +285,17 @@ for its unchanged executable task and full qualification/protocol duties. Preser
 original6938 observed31428, never relabel it a new run or claim23equal final hashes.
 All current readers completed before these source edits. A/B verified every ledger;
 B's preliminary surface/solver scientificPASS corrections remain transparent.
+
+## Iteration6 prospective presentation correction
+Before canonical edits, A/B independently approved the exact four closure and nine
+solver/qualification subsection headings, shorter equivalent nonlinear introduction,
+and per-series protocol introduction/dependency clarification recorded in their
+review artifacts. Original paragraphs, numbered procedure, headings, anchors and
+complete parent/whole-document extents remain intact; no external frozen protocol or
+numeric limit changes. The approved generator implements those exact insertions.
+All iteration5 reports are immutable in b5cb1be2c and reading-iteration-05.json.
+Fresh02/04 are mandatory after actual diff/preservation/count/review. Surface05 and
+identity03 reuse require exact selected-duty semantic proof, retaining observed cuts
+and counts. General procedural source-checking may use private notes and requires
+checking every claimed numeric/branch/protocol condition before READY, recording all
+repeat reading; no missed-atom hints, prior answers or rubric are supplied.
