@@ -5,8 +5,7 @@ Baseline: b932db101cce07d0860b45b5ecaa8ddb7f455b58; main.
 Original LSE: version 31; source-manifest.json binds exact bytes.
 Canonical posture: unchanged legacy whole-contract authority.
 Unrelated untracked $pkg/ and tmp/ retained.
-Next: finish full source reading, freeze clause inventory/rubric/chapter boundaries,
-then implement checker conformance before moving authority.
+Next: independent focused parser fix review, exact chapter/consumer write set and clause destinations, then candidate migration. Complete source read and original task rubric frozen at 8ccac0117. Initial checker conformance 71 pytest cases PASS; no live migration yet.
 ## Progress
 Instruction discovery and schema reading executed. No substantive edits yet.
 ## Surprises & Discoveries

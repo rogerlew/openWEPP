@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
+from sc_contract_directory import ContractSet, ContractError
 
 VALID_STATUS = {"active", "superseded", "historical"}
 VALID_CLASS = {"maps-to-existing-INV", "unpromoted-binding", "historical-or-superseded", "undecidable"}
@@ -40,7 +41,17 @@ def main(argv: list[str]) -> int:
         print("usage: check_sc_binding_exposure.py [--strict] <SC-contract.md>", file=sys.stderr)
         return 2
     path = Path(args[0])
-    text = path.read_text(errors="replace")
+    try:
+        contract = ContractSet(path)
+    except ContractError as error:
+        print(f"FAIL {error}")
+        return 1
+    if contract.directory:
+        verdict = "PASS-DEFERRED" if contract.deferred else "PASS"
+        print(f"{verdict} {path}: directory-v1, {contract.row_count} binding exposure row(s), "
+              f"{len(contract.definitions)} actual definition(s); structural evidence only")
+        return int(strict and bool(contract.deferred))
+    text = contract.documents[contract.entry].text
     if "## Binding Exposure Index" not in text:
         print(f"FAIL {path}: missing Binding Exposure Index")
         return 1
