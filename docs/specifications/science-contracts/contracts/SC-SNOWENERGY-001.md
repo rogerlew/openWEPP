@@ -2091,6 +2091,7 @@ The package rows below map active package-local binding residue through version
 | `SNOWENERGY-ADR0044-NONFINAL-PHYSICAL-ONLY` | `docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-086, OBL-SNOWENERGY-C-054` | `flagged-binding-addition` | Initial and history maps remain physical-only; the converged pending adjudication map is consumed once into complete-owner custody without another physical charge. |
 | `SNOWENERGY-ADR0044-NATIVE-INACTIVE-PREFIX-TRANSITION` | `docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-087, OBL-SNOWENERGY-C-055` | `flagged-binding-addition` | The exact first snow-free child consumes the accepted represented-snow prefix as chronology proof without adding under-snow WB14 physics, receipts, solver work, or publication. |
 | `SNOWENERGY-V61-FEED-FORWARD-TERMINAL-CARRIER` | `docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-088, OBL-SNOWENERGY-C-056` | `flagged-binding-addition` | One structurally feed-forward real carrier call replaces the generic two-call replay within each logical terminal group while all distinct adaptive/event/exact/final evaluations remain. |
+| `EXP-STAGE3-20260906-F` | Prospective Controlled Feed-Forward Experiment below | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-088, OBL-SNOWENERGY-C-056` | `flagged-binding-addition` | Separately identified experimental qualification against a newly frozen baseline; preserves all scientific/typed obligations and historical retention results; no production promotion. |
 | `SNOWENERGY-CHILD2C-CARRIER` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-036, INV-SNOWENERGY-037, INV-SNOWENERGY-038, INV-SNOWENERGY-039, INV-SNOWENERGY-040, OBL-SNOWENERGY-P-010, OBL-SNOWENERGY-C-017` | `flagged-binding-addition` | Shared carrier topology, sealed exposure, weighted component longwave, typed flux lineage, and wrong-regime/scope rejection. |
 | `SNOWENERGY-V15-OFE-GROUND-LANE` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-042, OBL-SNOWENERGY-C-018` | `flagged-binding-addition` | Direct user selection of one-column-per-lane OFE-ground storage under `TOL-SNOWENERGY-002`, complete typed tile-surface flux aggregation without covered-subset renormalization, common lane snow state, terminal identity, and topology-bound restart posture; dual review and verification required. |
 | `SNOWENERGY-V16-COVERED-CONVERGENCE-RESTART` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-043, INV-SNOWENERGY-044, OBL-SNOWENERGY-C-019, OBL-SNOWENERGY-C-020` | `flagged-binding-addition` | Separates covered fixed-point comparisons under `TOL-SNOWENERGY-003`, reconstructs candidate fingerprints, and holds additive restart until a normative lane-receipt V2 wire and complete topology/owner replay join are admitted. |
@@ -3504,3 +3505,55 @@ alter any process-physics tolerance.
 | test-vector map | `OBL-SNOWENERGY-C-056`: pre-change 400-call evidence, post-change exact 200-call multiset, every role/path, forced-two-call bitwise oracle, zero deltas, binding/negative-capability/cross-invocation poisons, exact/final independence, closure, publication, rollback, and numeric keep/revert gate. |
 | binding exposure | `SNOWENERGY-V61-FEED-FORWARD-TERMINAL-CARRIER`, active, `new-INV`, IDs `088/C-056`, dual review/verification. |
 | change log | 2026-09-04, contract revision 61: replace structurally dead two-call terminal-carrier coupling replay with one typed feed-forward call per logical group; no process-solver V61, physics, tolerance, adaptive, event, map-budget, wire, receipt, or owner change. |
+
+## Prospective Controlled Feed-Forward Experiment
+
+`EXP-STAGE3-20260906-F` is a non-versioned experimental qualification binding
+under `INV-SNOWENERGY-088` and `OBL-SNOWENERGY-C-056`. Authority: explicit owner
+direction dated 2026-09-06, retained in
+`docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md`.
+Evidence: `[DIRECT][Static]` authorization, not experimental outcome evidence.
+
+For this new experiment only, freeze coherent current source/input/toolchain/
+binary identities for baseline A and F = A + one reviewed feed-forward carrier
+delta. Historical source/index/binary identity is not admission authority.
+Historical revision-61 rules and FAIL/HOLD results remain unchanged. The old
+400-to-200 observations, fixed timing ceilings, and 64 MiB retention gate do
+not decide this prospective comparison. Record existing engineering-budget
+comparisons separately, including baseline failures. Retained production remains
+HOLD; no production promotion or hidden production selector is authorized.
+
+All scientific, typed ownership, guard, error-precedence, rollback, restart,
+exact-one transfer, and publication obligations of INV-088/C-056 remain binding.
+The only permitted physical-work removal is the redundant same-invocation
+second carrier execution. Measure A's actual provider-invocation and carrier-
+execution multiplicity, independently join stable invocation keys/multisets,
+and map each removed execution to the unchanged returned physical/custody
+result. Equal outer payloads never authorize cross-invocation reuse. Every
+Full/Retry/Half1/Half2/Root, discovery/exact, batch, and canonical-final
+evaluation remains independent at its unchanged cadence. The typed request
+cannot express a preceding ending-snow hint or coupling-iteration ordinal.
+The existing source-real guard table and typed failures above apply unchanged.
+
+Before timing require the forced-two-call complete-result bitwise oracle,
+typed ownership/stale/foreign/reuse rejection, competing-error precedence,
+rollback/restart and real-consumer scientific/output parity. Compare the real
+runner's actual baseline control counts exactly, except intended lower-level
+evaluation counts; document later-source differences from historical counts.
+Reconstruct protected closure independently from produced operands. Exact
+cross-arm parity is an experiment assertion, not a new solver stopping rule.
+
+Use the separately reviewed prospective paired timing and memory protocol in
+the owning package. Report complete-run wall/process CPU, uncertainty, endpoint
+VmRSS, lifetime peak, selected phase boundaries and explicit post-drop state;
+never identify these distinct memory metrics as live requested heap bytes.
+Document values moved or retained across the handoff. Correctness failure
+rejects candidate admission; uncertainty or performance rejection cannot be
+reported as production qualification. A missing required scientific/typed
+proof prevents admission even if timing or relative memory improves.
+
+Change log: 2026-09-06, non-versioned EXP-STAGE3-20260906-F qualification binding;
+no equation, domain, tolerance, stopping criterion, Jacobian arithmetic,
+adaptive cadence, event localization, physical process, ownership, restart,
+publication, exact-one transfer, or fail-closed guard change.
+`CALIBRATION_NOT_APPLICABLE`: no dimensional parameter or calibration claim.

@@ -95,7 +95,19 @@ impl Wb11HydrologyKernel {
                 "covered terminal batch lane topology",
             ));
         }
-        let candidates = provider(request)?;
+        let mut mechanism_batch = crate::stage3_mechanism_experiment_audit::Scope::begin(
+            crate::stage3_mechanism_experiment_audit::Kind::BatchProvider,
+            || crate::stage3_mechanism_experiment_audit::fingerprint(request),
+        );
+        let candidates = provider(request);
+        mechanism_batch.complete(candidates.is_ok(), || match &candidates {
+            Ok(value) => {
+                crate::stage3_mechanism_experiment_audit::fingerprint(&value.carrier_joint)
+            }
+            Err(error) => format!("{error:?}"),
+        });
+        drop(mechanism_batch);
+        let candidates = candidates?;
         if candidates.support != request.support
             || candidates.beginning_joint_sha256 != request.beginning_joint.receipt_sha256()
             || candidates.carrier_joint.authority() != request.beginning_joint.authority()

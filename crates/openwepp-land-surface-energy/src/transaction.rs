@@ -291,6 +291,7 @@ pub fn solve_open_potential_phase(
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct CoveredPotentialPhase {
+    mechanism_map: crate::solver_mechanism_audit::MapToken,
     identity: RuntimeTileIdentity,
     beginning: CoveredColumnInputs,
     accepted: Box<CoveredColumnCandidate>,
@@ -518,6 +519,8 @@ pub fn solve_covered_potential_phase(
     roots: Vec<RootRuntimeIdentity>,
     initial_trial: Vec<f64>,
 ) -> Result<CoveredPotentialPhase, LandSurfaceEnergyError> {
+    let mut mechanism_map =
+        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Map);
     identity.validate()?;
     if identity.tile_fraction.to_bits() != beginning.tile_fraction.to_bits()
         || identity.interval_s.to_bits() != beginning.interval_s.to_bits()
@@ -674,6 +677,10 @@ pub fn solve_covered_potential_phase(
         .map(|occupancy| occupancy.gas_branches)
         .collect();
     Ok(CoveredPotentialPhase {
+        mechanism_map: {
+            mechanism_map.complete();
+            mechanism_map.map_token()
+        },
         identity,
         beginning: beginning.clone(),
         accepted,
@@ -2730,6 +2737,7 @@ pub fn finalize_covered_phase_with_soil_thermal_beginning(
     final_initial_trial: Vec<f64>,
     soil: SoilThermalFinalizationBeginning<'_>,
 ) -> Result<FinalCoveredTileCandidate, LandSurfaceEnergyError> {
+    let _mechanism_map = crate::solver_mechanism_audit::join_map(phase.mechanism_map);
     if expected_beginning_lse_state_sha256 != &phase.identity.beginning_lse_state_sha256 {
         return Err(LandSurfaceEnergyError::StateLineage(
             "stale covered potential beginning state",

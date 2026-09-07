@@ -4,6 +4,12 @@ Status: **active scientific campaign roadmap** (2026-08-04).
 
 Campaign ID: `SNOW-SURFACE-EB`.
 
+2026-09-06 engineering work: [prospective mechanism experiments](../work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md)
+independently evaluate feed-forward and stencil-aware dependency replay from
+one newly frozen baseline, then hand off the coupled evaluation architecture.
+This new owner authorization preserves previous FAIL/HOLD evidence and does
+not promote production or qualify watershed throughput.
+
 ## 1. Outcome
 
 Determine whether explicit sub-canopy longwave exchange and physically coupled

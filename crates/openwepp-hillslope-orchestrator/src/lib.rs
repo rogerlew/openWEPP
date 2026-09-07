@@ -11,6 +11,7 @@ pub mod snow_stage3_open_boundary;
 pub mod snow_stage3_terminal_handoff;
 pub mod snow_stage3_v11_attachment;
 pub mod snow_stage3_v11_snow_enthalpy_carry;
+pub mod stage3_mechanism_experiment_audit;
 pub mod v11_vegetation_consumer;
 pub mod v9_real_consumer_shadow;
 pub mod vegetation_diagnostic;

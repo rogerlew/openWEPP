@@ -349,6 +349,13 @@ impl Wb11HydrologyKernel {
                              duration_seconds,
                              role,
                              attempt_ordinal| {
+                                let mut mechanism_evaluator =
+                                    crate::stage3_mechanism_experiment_audit::Scope::begin(
+                                        crate::stage3_mechanism_experiment_audit::Kind::Evaluator,
+                                        || {
+                                            format!("role={role:?};attempt={attempt_ordinal};start_bits={};duration_bits={}", relative_start_seconds.to_bits(), duration_seconds.to_bits())
+                                        },
+                                    );
                                 let surface_temperature_c =
                                     Self::stage3_temperature_from_cold_content_values(
                                         trial_state.ice_kg_m2 / STAGE3_RHO_WATER_KG_M3,
@@ -632,6 +639,7 @@ impl Wb11HydrologyKernel {
                                         require_terminal_coupling_live_convergence(
                                             selected_live_converged,
                                         )?;
+                                        mechanism_evaluator.complete(true, || crate::stage3_mechanism_experiment_audit::transition_fingerprint(&receipt));
                                         return Ok((flux, Some(receipt.ending_joint)));
                                     } else {
                                         None
@@ -690,6 +698,7 @@ impl Wb11HydrologyKernel {
                                     || beginning_joint.clone(),
                                     |value| Some(value.ending_joint),
                                 );
+                                mechanism_evaluator.complete(true, String::new);
                                 Ok((flux, ending_joint))
                             },
                             |state, joint| {
@@ -838,6 +847,17 @@ impl Wb11HydrologyKernel {
                     active_state.mass_swe_m,
                     active_state.cold_content_j_m2,
                 );
+                let mut mechanism_resolved_evaluator = terminal_trial_context.as_ref().map(|_| {
+                    crate::stage3_mechanism_experiment_audit::Scope::begin(
+                        crate::stage3_mechanism_experiment_audit::Kind::Evaluator,
+                        || {
+                            format!(
+                                "resolved;elapsed_bits={};substep={substep_index}",
+                                elapsed_seconds.to_bits()
+                            )
+                        },
+                    )
+                });
                 let covered_substep_boundary = if let Some((
                     lane_id,
                     base_support,
@@ -1178,6 +1198,9 @@ impl Wb11HydrologyKernel {
                     .max(closure_residual_j_m2.abs());
                 elapsed_seconds += substep_seconds;
                 substep_index += 1;
+                if let Some(observer) = &mut mechanism_resolved_evaluator {
+                    observer.complete(true, String::new);
+                }
             }
             if substep_index == 0 {
                 summary.reconciliation.hourly_status[hour_index] =

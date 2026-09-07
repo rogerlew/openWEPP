@@ -1,5 +1,12 @@
 # Work Packages
 
+## 20260906-stage3-prospective-mechanism-experiments-001
+
+ACTIVE: newly authorized controlled A/F and A/R experiments, lifecycle memory,
+stencil-aware replay coverage, and an actionable architecture handoff.
+See [package](20260906-stage3-prospective-mechanism-experiments-001/package.md).
+Earlier FAIL/HOLD dispositions below remain historical; production remains HOLD.
+
 ## 20260904-stage3-authentic-coverage-memory-attribution-001
 
 Diagnostic successor to the terminal-HOLD throughput-recovery package. It

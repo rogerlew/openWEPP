@@ -45,6 +45,7 @@ mod tests {
     include!("tests03/eb04w2b_warm_snow.rs");
     include!("tests03/stage3_evaluation_publication_parity.rs");
     include!("tests03/stage3_runner_qualification.rs");
+    include!("tests03/controlled_mechanism_experiments.rs");
     include!("tests03/stage3_long_run_output_evidence.rs");
     include!("tests03/stage3_long_run_qualification.rs");
     include!("tests03/wat5_output_transaction.rs");

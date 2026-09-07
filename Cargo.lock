@@ -1241,6 +1241,7 @@ dependencies = [
  "openwepp-watershed-orchestrator",
  "openwepp-watershed-output",
  "parquet",
+ "rustix",
  "serde",
  "serde_json",
  "sha2",

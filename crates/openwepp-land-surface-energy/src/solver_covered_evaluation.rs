@@ -691,6 +691,7 @@ fn leaf_trial_state(
     medlyn_g1_kpa_sqrt: f64,
 ) -> Result<LeafTrialState, LandSurfaceEnergyError> {
     record_covered_leaf_trial_audit();
+    crate::solver_mechanism_audit::leaf_call();
     let vcmax_factor = peaked(
         temperature,
         p.ha_vcmax_j_mol,
@@ -1878,33 +1879,31 @@ impl<'a> ValidatedCoveredEvaluationInputs<'a> {
         caps: Option<&'a CoveredWaterCaps>,
     ) -> Result<Self, LandSurfaceEnergyError> {
         validate_covered_shortwave_inputs(column)?;
-        let stage3_boundary =
-            if column.authority == CoveredColumnAuthority::V11SnowCovered {
-                let boundary = column.stage3_lower_boundary.as_ref().ok_or(
-                    LandSurfaceEnergyError::StateLineage(
-                        "missing Stage-3 covered lower boundary",
-                    ),
-                )?;
-                boundary.validate()?;
-                let optical = column.stage3_optical.as_ref().ok_or(
-                    LandSurfaceEnergyError::StateLineage(
+        let stage3_boundary = if column.authority == CoveredColumnAuthority::V11SnowCovered {
+            let boundary = column.stage3_lower_boundary.as_ref().ok_or(
+                LandSurfaceEnergyError::StateLineage("missing Stage-3 covered lower boundary"),
+            )?;
+            boundary.validate()?;
+            let optical =
+                column
+                    .stage3_optical
+                    .as_ref()
+                    .ok_or(LandSurfaceEnergyError::StateLineage(
                         "missing Stage-3 snow optical boundary",
-                    ),
-                )?;
-                if optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
-                    || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
-                    || optical.stage3_albedo_state_sha256
-                        != boundary.stage3_albedo_state_sha256
-                    || optical.forcing_receipt_sha256 != boundary.forcing_receipt_sha256
-                {
-                    return Err(LandSurfaceEnergyError::StateLineage(
-                        "Stage-3 snow optical/lower-boundary identity",
-                    ));
-                }
-                Some(boundary)
-            } else {
-                None
-            };
+                    ))?;
+            if optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
+                || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
+                || optical.stage3_albedo_state_sha256 != boundary.stage3_albedo_state_sha256
+                || optical.forcing_receipt_sha256 != boundary.forcing_receipt_sha256
+            {
+                return Err(LandSurfaceEnergyError::StateLineage(
+                    "Stage-3 snow optical/lower-boundary identity",
+                ));
+            }
+            Some(boundary)
+        } else {
+            None
+        };
         record_covered_evaluation_input_validation_audit();
         Ok(Self {
             column,
@@ -1943,6 +1942,19 @@ fn evaluate_covered_column_with_v3_litter(
 }
 
 fn evaluate_covered_column_validated(
+    validated: &ValidatedCoveredEvaluationInputs<'_>,
+    trial: &[f64],
+    frozen: Option<&CoveredFrozenBranches>,
+    v3_litter: Option<crate::V3LitterResidualContext>,
+) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
+    let observation =
+        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Evaluation);
+    observation.finish(evaluate_covered_column_observed(
+        validated, trial, frozen, v3_litter,
+    ))
+}
+
+fn evaluate_covered_column_observed(
     validated: &ValidatedCoveredEvaluationInputs<'_>,
     trial: &[f64],
     frozen: Option<&CoveredFrozenBranches>,

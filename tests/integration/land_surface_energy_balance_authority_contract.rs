@@ -1,5 +1,54 @@
 use std::fs;
 
+#[test]
+fn prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation() {
+    let contract = read(CONTRACT);
+    let experiment = contract
+        .split("## Prospective Stencil-Aware Dependency-Replay Experiment\n")
+        .nth(1)
+        .expect("separately identified prospective authority")
+        .split("\n## ")
+        .next()
+        .expect("experimental authority body");
+    for required in [
+        "EXP-STAGE3-20260906-R",
+        "INV-LANDSURFACEENERGY-164",
+        "OBL-LANDSURFACEENERGY-C-020",
+        "R = A + one reviewed same-sweep dependency-replay delta",
+        "R is never F + replay",
+        "Historical revision-31 rules and FAIL/HOLD results remain\nunchanged",
+        "old fully-centered existential and 64 MiB retention\ngate",
+        "For this new experiment only",
+        "no production promotion or hidden production\nselector",
+        "one shared canonical\nphysics implementation",
+        "complete direct-edge graph oracle and normative\nfallibility/crossability matrix",
+        "exact forced-complete node/residual/Jacobian/full-solve parity",
+        "post-start errors return directly without fallback",
+        "Independently enumerate expected signed probes from actual coordinate stencils",
+        "independently derived evaluator classification",
+        "two signed probes",
+        "actual one signed probe",
+        "RejectedBeforeProbe contributes no unattempted\nprobe",
+        "Do not copy producer counters or producer bucket labels into expected\nresults",
+        "ordered probe identities, starts, completions and first errors",
+        "logical = anchor + replay + complete",
+        "distinct authentic map/solve/iteration/sweep identities",
+        "missing or unexplained dropped records invalidate coverage evidence",
+        "Require nonzero completed component replay on the real primary workload",
+        "eligibility alone is insufficient",
+        "Neither an all-centered sweep nor a\nhardcoded 54/14/16/24 pattern is required",
+        "Existing lawful\ncentered/interior and boundary tests remain intact",
+        "oracle/audit work runs separately from performance and\nmemory intervals",
+        "matched optional audit posture",
+        "Textual authority tests prove no execution",
+    ] {
+        assert!(experiment.contains(required), "{CONTRACT} missing {required}");
+    }
+    let exposure = row(&contract, "EXP-STAGE3-20260906-R");
+    assert!(exposure.contains("INV-LANDSURFACEENERGY-164, OBL-LANDSURFACEENERGY-C-020"));
+    assert!(exposure.contains("| `maps-to-existing-INV` |"));
+}
+
 const CONTRACT: &str =
     "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md";
 const INDEX: &str = "docs/specifications/science-contracts/index.md";

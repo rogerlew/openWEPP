@@ -1,5 +1,47 @@
 use std::fs;
 
+#[test]
+fn prospective_20260906_feed_forward_binds_science_and_separate_qualification() {
+    let contract = read(ENERGY);
+    let experiment = contract
+        .split("## Prospective Controlled Feed-Forward Experiment\n")
+        .nth(1)
+        .expect("separately identified prospective authority")
+        .split("\n## ")
+        .next()
+        .expect("experimental authority body");
+    for required in [
+        "EXP-STAGE3-20260906-F",
+        "INV-SNOWENERGY-088",
+        "OBL-SNOWENERGY-C-056",
+        "F = A + one reviewed feed-forward carrier",
+        "Historical revision-61 rules and FAIL/HOLD results remain unchanged",
+        "64 MiB retention gate do\nnot decide this prospective comparison",
+        "no production promotion or hidden production selector",
+        "All scientific, typed ownership, guard, error-precedence, rollback, restart",
+        "redundant same-invocation\nsecond carrier execution",
+        "independently join stable invocation keys/multisets",
+        "unchanged returned physical/custody\nresult",
+        "Full/Retry/Half1/Half2/Root, discovery/exact, batch, and canonical-final",
+        "cannot express a preceding ending-snow hint or coupling-iteration ordinal",
+        "forced-two-call complete-result bitwise oracle",
+        "typed ownership/stale/foreign/reuse rejection",
+        "rollback/restart and real-consumer scientific/output parity",
+        "Reconstruct protected closure independently from produced operands",
+        "not a new solver stopping rule",
+        "explicit post-drop state",
+        "missing required scientific/typed\nproof prevents admission",
+    ] {
+        assert!(experiment.contains(required), "{ENERGY} missing {required}");
+    }
+    let exposure = contract
+        .lines()
+        .find(|line| line.starts_with("| `EXP-STAGE3-20260906-F` |"))
+        .expect("prospective binding exposure");
+    assert!(exposure.contains("INV-SNOWENERGY-088, OBL-SNOWENERGY-C-056"));
+    assert!(exposure.contains("| `maps-to-existing-INV` |"));
+}
+
 const ENERGY: &str = "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md";
 const FREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const INDEX: &str = "docs/specifications/science-contracts/index.md";

@@ -114,7 +114,6 @@ impl CoveredTerminalProviderRetentionV1 {
             Self::Phase(phase) => &phase.ending_candidates,
         }
     }
-
 }
 
 #[cfg(test)]
@@ -387,8 +386,8 @@ impl TerminalCandidateProfileScopeV1 {
     fn begin(phase: &'static str) -> Self {
         Self {
             phase,
-            started:
-                crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1(),
+            started: crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1(
+            ),
         }
     }
 }
@@ -429,6 +428,12 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
     ),
     DirectSnowStage3V11AttachmentError,
 > {
+    let mut mechanism_outer = crate::stage3_mechanism_experiment_audit::Scope::begin(
+        crate::stage3_mechanism_experiment_audit::Kind::Outer,
+        || {
+            format!("day={day_index};interval={interval_index};child={current_child_ordinal};lane={lane_id};mode={mode:?};support={:?};upper_bits={}", prepared.support, selected_upper_bound_s.to_bits())
+        },
+    );
     let setup_profile = TerminalCandidateProfileScopeV1::begin("terminal candidate setup");
     let state =
         beginning_stage3
@@ -509,6 +514,12 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
     let mut provider_evidence = M::new_provider_state();
     drop(setup_profile);
     let mut provider = |request: crate::hydrology::CoveredTerminalTrialRequestV1| {
+        let mut mechanism_provider = crate::stage3_mechanism_experiment_audit::Scope::begin(
+            crate::stage3_mechanism_experiment_audit::Kind::Provider,
+            || {
+                format!("lane={};support={:?};role={:?};attempt={};coupling={};beginning={:?};request_sha256={}", request.lane_id, request.support, request.role, request.attempt_ordinal, request.coupling_iteration, request.beginning_joint.receipt_sha256(), crate::stage3_mechanism_experiment_audit::fingerprint(&request))
+            },
+        );
         let custody_profile = TerminalCandidateProfileScopeV1::begin("terminal provider custody");
         audit_terminal_provider_support(request.support);
         let carrier = if let Some(exact) = candidates_by_joint
@@ -671,9 +682,20 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
         })?;
         drop(projection_profile);
         let carrier_profile = TerminalCandidateProfileScopeV1::begin("terminal provider carrier");
+        let mut mechanism_carrier = crate::stage3_mechanism_experiment_audit::Scope::begin(
+            crate::stage3_mechanism_experiment_audit::Kind::Carrier,
+            || crate::stage3_mechanism_experiment_audit::fingerprint(&request),
+        );
         let provider_result = stage3_boxed_execution_v1(|| {
             stack.execute_covered_carrier_phase_v1(&beginning, &request, child.as_ref().clone())
         });
+        mechanism_carrier.complete(provider_result.is_ok(), || match &provider_result {
+            Ok(value) => {
+                crate::stage3_mechanism_experiment_audit::transition_fingerprint(&value.transition)
+            }
+            Err(error) => format!("{error:?}"),
+        });
+        drop(mechanism_carrier);
         drop(carrier_profile);
         let retention_profile =
             TerminalCandidateProfileScopeV1::begin("terminal provider retention");
@@ -725,6 +747,9 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
             .borrow_mut()
             .insert(ending_joint_sha256, result.clone());
         drop(retention_profile);
+        mechanism_provider.complete(true, || {
+            crate::stage3_mechanism_experiment_audit::transition_fingerprint(&result.transition)
+        });
         Ok(result.transition.clone())
     };
     let result =
@@ -743,8 +768,7 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
             evidence,
         );
     drop(provider);
-    let result_profile =
-        TerminalCandidateProfileScopeV1::begin("terminal result finalization");
+    let result_profile = TerminalCandidateProfileScopeV1::begin("terminal result finalization");
     M::merge_provider(evidence, provider_evidence);
     let result = match result {
         Ok(mut result) => {
@@ -782,6 +806,7 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
         }
     };
     drop(result_profile);
+    mechanism_outer.complete(result.is_ok(), String::new);
     result
 }
 

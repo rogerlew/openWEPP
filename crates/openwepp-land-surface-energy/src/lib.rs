@@ -21,6 +21,7 @@ pub mod owner_envelope;
 pub mod physics;
 pub mod solver;
 pub mod solver_litter_phase;
+pub mod solver_mechanism_audit;
 pub mod state;
 pub mod support;
 pub mod transaction;

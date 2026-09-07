@@ -581,6 +581,7 @@ two shared-canopy-air columns retain complete evaluation.
 | `LSE-V29-LEAF-MAXIMUM-EXACT-REUSE` | Covered Leaf Maximum-Demand Exact-Reuse Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-163, OBL-LANDSURFACEENERGY-C-018` | `flagged-binding-addition` | A successful private current leaf state may satisfy the immediately adjacent beta-one maximum call only for bit-identical operands or a proven beta-independent branch; all other calls and all observable results remain unchanged. |
 | `LSE-V30-CARRIER-PARENT-STATIC-VALIDATION-ONCE` | Carrier Parent-Static and Same-Map Validation-Once Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-159, OBL-LANDSURFACEENERGY-C-019` | `flagged-binding-addition` | One generation-bound parent plan retains only validated immutable structure; the existing first forcing validation can authorize its later pointer-identical V8 use; and the resident's validated revision can authorize omission of only the repeated native V3/V2 validation. |
 | `LSE-V31-COMPONENT-TEMPERATURE-DEPENDENCY-REPLAY` | Component-Temperature Jacobian Dependency-Replay Amendment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-164, OBL-LANDSURFACEENERGY-C-020` | `flagged-binding-addition` | Revision 31 introduces new IDs `INV-164/C-020`; private same-iteration evidence may replay only the transitive dependents of component-temperature probes, while all other probes and every solver operation remain complete and bit-identical. |
+| `EXP-STAGE3-20260906-R` | Prospective Stencil-Aware Dependency-Replay Experiment below | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-164, OBL-LANDSURFACEENERGY-C-020` | `flagged-binding-addition` | Separately identified stencil-aware experimental qualification; preserves graph/custody/forced-complete scientific obligations and historical results; no production promotion. |
 
 ## Gap Register and Promotability Labels
 
@@ -3163,3 +3164,62 @@ Calibration and identifiability remain `CALIBRATION_NOT_APPLICABLE`.
 | test vector | `OBL-LANDSURFACEENERGY-C-020`: exact forced-complete node/residual/Jacobian/full-solve parity; complete direct-edge oracle; source-real crossable first-error/rollback vectors; noncrossable implication and authentic boundary-success vectors; infallible exact-field parity; lifetime/integrity/custody; real two-occupancy/six-soil reciprocal-longwave, duplicated wet-routing and terminal-descendant fixture; truthful scoped/aggregate counters; exact release gate. |
 | binding exposure | `LSE-V31-COMPONENT-TEMPERATURE-DEPENDENCY-REPLAY`, active, `maps-to-existing-INV`; revision 31 introduced new IDs `164/C-020`; dual review/verification required. |
 | change log | 2026-09-04, contract 31: corrected contract-first feasibility after full production revert; exact same-sweep component-temperature dependency replay only, one shared canonical evaluator implementation, source-real error/rollback obligations, unchanged dense solver, trajectory and outputs. |
+
+## Prospective Stencil-Aware Dependency-Replay Experiment
+
+`EXP-STAGE3-20260906-R` is a non-versioned experimental qualification binding
+under `INV-LANDSURFACEENERGY-164` and `OBL-LANDSURFACEENERGY-C-020`. Authority:
+explicit owner direction dated 2026-09-06, retained in
+`docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md`.
+Evidence: `[DIRECT][Static]` authorization, not experimental outcome evidence.
+
+Freeze baseline A and R = A + one reviewed same-sweep dependency-replay delta;
+R is never F + replay. Historical source/index/binary identity is not an
+admission requirement. Historical revision-31 rules and FAIL/HOLD results remain
+unchanged, including the old fully-centered existential and 64 MiB retention
+gate. For this new experiment only, those two gates and old fixed timing
+ceilings are replaced by the following stencil-aware qualification and the
+package's separately reviewed relative timing/memory protocol. Report existing
+engineering-budget comparisons separately, including baseline failures.
+Retained production remains HOLD; no production promotion or hidden production
+selector is authorized.
+
+INV-164/C-020 scientific obligations remain binding: one shared canonical
+physics implementation, the complete direct-edge graph oracle and normative
+fallibility/crossability matrix, immutable same-sweep base and fresh single-use
+probe custody, exact forced-complete node/residual/Jacobian/full-solve parity,
+source-real first typed error and rollback, and unchanged real-consumer outputs.
+Unknown dependencies select complete evaluation before replay; integrity or
+post-start errors return directly without fallback. No cross-sweep/iteration/
+map/retry result cache, derivative redesign or duplicated physics is permitted.
+
+Independently enumerate expected signed probes from actual coordinate stencils
+and independently derived evaluator classification, using canonical coordinate
+order, authenticated topology, bounds and graph eligibility. A centered
+coordinate contributes its two signed probes; an inward coordinate contributes
+its actual one signed probe; RejectedBeforeProbe contributes no unattempted
+probe. Do not copy producer counters or producer bucket labels into expected
+results. Match ordered probe identities, starts, completions and first errors
+to those expectations. Count identity anchors, component replay and complete
+evaluation disjointly; logical = anchor + replay + complete applies to actual
+starts, while completion/error reconciliation independently proves what ended.
+Preserve distinct authentic map/solve/iteration/sweep identities and actual
+reachable lifecycle cardinality. Reconcile every started sweep and dropped
+record; missing or unexplained dropped records invalidate coverage evidence.
+
+Require nonzero completed component replay on the real primary workload;
+eligibility alone is insufficient. Neither an all-centered sweep nor a
+hardcoded 54/14/16/24 pattern is required by this protocol. Existing lawful
+centered/interior and boundary tests remain intact; do not manipulate physical
+state, perturbations or bounds to manufacture coverage. Before timing require
+forced-complete residual/Jacobian/full-solve, boundary/error/rollback and real
+output parity. Detailed oracle/audit work runs separately from performance and
+memory intervals; A and R have matched optional audit posture and bounded
+compact timing counters. New named tests bind these prospective claims without
+weakening historical assertions. Textual authority tests prove no execution.
+
+Change log: 2026-09-06, non-versioned EXP-STAGE3-20260906-R qualification binding;
+no equation, domain, tolerance, stopping criterion, Jacobian arithmetic,
+adaptive cadence, event localization, physical process, ownership, restart,
+publication, exact-one transfer, or fail-closed guard change.
+`CALIBRATION_NOT_APPLICABLE`: no dimensional parameter or calibration claim.

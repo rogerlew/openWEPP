@@ -139,6 +139,7 @@ pub(crate) fn build_complete_v3_final_candidate(
         .map(|occupancy| occupancy.gas_branches)
         .collect();
     let synthetic = CoveredPotentialPhase {
+        mechanism_map: crate::solver_mechanism_audit::MapToken::default(),
         identity: phase.identity().clone(),
         beginning: phase.beginning().clone(),
         accepted: potential_physical,
