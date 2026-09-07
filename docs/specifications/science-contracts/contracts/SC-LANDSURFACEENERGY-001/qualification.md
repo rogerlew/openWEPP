@@ -3,11 +3,11 @@
 ## Dependencies
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
-| interface.md#interface | every task | universal scope, owners, failure and qualification | whole mechanism chapter |
-| dependency-replay.md#dependency-replay | scientific replay/coverage/result claims | graph, custody, errors and forced-complete proof | whole mechanism chapter |
-| nonlinear-solve.md#nonlinear-solve | solver scientific result claims | complete ordered solver | whole mechanism chapter |
-| ../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md#4-experimental-design-one-baseline-two-independent-treatments | EXP-R executable identity/capture checks | frozen execution requirements; not scientific authority | named section plus destination scope; retain applicable single-file whole-contract/frozen-kickoff requirements |
-| ../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md#stage-3-current-continuation | EXP-R execution authorization/status | owner pause and frozen execution posture | named section plus destination scope; retain applicable single-file whole-contract/frozen-kickoff requirements |
+| interface.md#interface | always | shared authority | whole chapter |
+| dependency-replay.md#dependency-replay | scientific replay/coverage/result claims | graph, custody, errors and forced-complete proof | whole chapter |
+| nonlinear-solve.md#nonlinear-solve | solver scientific result claims | complete ordered solver | whole chapter |
+| ../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md#4-experimental-design-one-baseline-two-independent-treatments | EXP-R executable identity/capture checks | frozen execution requirements; not scientific authority | whole external contract; frozen protocol scope |
+| ../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md#stage-3-current-continuation | EXP-R execution authorization/status | owner pause and frozen execution posture | whole external contract; frozen protocol scope |
 
 <a id="qualification"></a>
 # Qualification

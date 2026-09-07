@@ -3,15 +3,15 @@
 ## Dependencies
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
-| interface.md#interface | every task | universal scope, owners, failure and qualification | whole mechanism chapter |
+| interface.md#interface | always | shared authority | whole chapter |
 | terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section (entry extent) |
-| soil-coupling.md#soil-coupling | physical operand or closure reconstruction | accepted conduction | whole mechanism chapter |
-| water-vapor.md#water-vapor | infiltration credit reconstruction | accepted parcel enthalpy | whole mechanism chapter |
+| soil-coupling.md#soil-coupling | physical operand or closure reconstruction | accepted conduction | whole chapter |
+| water-vapor.md#water-vapor | infiltration credit reconstruction | accepted parcel enthalpy | whole chapter |
 | map-custody.md#handoff | accepted native-map identity or physical receipt origin | same-map custody and original owner/receipt boundary | section (entry extent) |
-| map-custody.md#reseal | snow-free final identity/receipt reseal | same-map custody and original owner/receipt boundary | section (entry extent) |
+| surface-custody.md#reseal | snow-free final identity/receipt reseal | same-map custody and original owner/receipt boundary | section (entry extent) |
 | map-custody.md#pending | converged pending physical-map origin | same-map custody and original owner/receipt boundary | section (entry extent) |
-| ../SC-SURFACELIQUID-001.md#version-15-exact-soil-thermal-enthalpy-carry-amendment | accepted soil credit or closure | receiver/producer exact credit join | named section plus destination scope; retain applicable single-file whole-contract/frozen-kickoff requirements |
-| ../SC-SURFACELIQUID-001.md#purpose-and-scientific-scope | cross-contract surface scope | surface scope | named section plus destination scope; retain applicable single-file whole-contract/frozen-kickoff requirements |
+| ../SC-SURFACELIQUID-001.md#version-15-exact-soil-thermal-enthalpy-carry-amendment | accepted soil credit or closure | receiver/producer exact credit join | whole external contract; frozen protocol scope |
+| ../SC-SURFACELIQUID-001.md#purpose-and-scientific-scope | cross-contract surface scope | surface scope | whole external contract; frozen protocol scope |
 
 <a id="soil-custody"></a>
 # Soil Custody
@@ -196,6 +196,6 @@ of rebinding/substitution/dual acceptance, and byte-exact rollback.
 ## Canonical obligations
 | Obligation ID | Statement | Applicability | Authority | Enforcement/failure | Test bindings |
 |---|---|---|---|---|---|
-| <a id="OBL-LANDSURFACEENERGY-P-005"></a> `OBL-LANDSURFACEENERGY-P-005` | expose every accepted soil-internal, top-boundary, and infiltration energy operand with exact layer/support/source identity; never supply a rounded aggregate, residual, or carry. | Producers delivering accepted soil thermal credits | v31:L319-L321 | Local guards; [errors](water-vapor.md#errors) | [Shared tests](common-details.md#tests) and [Mechanism tests](soil-custody.md#exact-soil); named fixtures/tests and real consumers |
-| <a id="OBL-LANDSURFACEENERGY-C-005"></a> `OBL-LANDSURFACEENERGY-C-005` | soil thermal V2 alone owns the exact high/carry representation, credit receipt, restart/checkpoint state, and atomic commit. | Consumers of exact soil thermal enthalpy credits | v31:L334-L335 | Local guards; [errors](water-vapor.md#errors) | [Shared tests](common-details.md#tests) and [Mechanism tests](soil-custody.md#exact-soil); named fixtures/tests and real consumers |
-| <a id="OBL-LANDSURFACEENERGY-C-010"></a> `OBL-LANDSURFACEENERGY-C-010` | prove an unpublished V2 continuation enters LSE/V3 only as its typed authenticated physical read, emits no owner/restart bytes and performs no intermediate install, rejects support/predecessor/ receipt substitution, and accepts only through one complete original-owner replay and one atomic V2 owner/receipt/restart seal with full rollback. | Candidate-only exact-soil non-owner beginning consumers | v31:L345-L349 | Local guards; [errors](water-vapor.md#errors) | [Shared tests](common-details.md#tests) and [Mechanism tests](soil-custody.md#soil-beginning); named fixtures/tests and real consumers |
+| <a id="OBL-LANDSURFACEENERGY-P-005"></a> `OBL-LANDSURFACEENERGY-P-005` | expose every accepted soil-internal, top-boundary, and infiltration energy operand with exact layer/support/source identity; never supply a rounded aggregate, residual, or carry. | Producers delivering accepted soil thermal credits | v31:L319-L321 | [Local guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#exact-soil); named fixtures/tests and real consumers |
+| <a id="OBL-LANDSURFACEENERGY-C-005"></a> `OBL-LANDSURFACEENERGY-C-005` | soil thermal V2 alone owns the exact high/carry representation, credit receipt, restart/checkpoint state, and atomic commit. | Consumers of exact soil thermal enthalpy credits | v31:L334-L335 | [Local guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#exact-soil); named fixtures/tests and real consumers |
+| <a id="OBL-LANDSURFACEENERGY-C-010"></a> `OBL-LANDSURFACEENERGY-C-010` | prove an unpublished V2 continuation enters LSE/V3 only as its typed authenticated physical read, emits no owner/restart bytes and performs no intermediate install, rejects support/predecessor/ receipt substitution, and accepts only through one complete original-owner replay and one atomic V2 owner/receipt/restart seal with full rollback. | Candidate-only exact-soil non-owner beginning consumers | v31:L345-L349 | [Local guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#soil-beginning); named fixtures/tests and real consumers |

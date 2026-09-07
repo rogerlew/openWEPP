@@ -3,15 +3,13 @@
 ## Dependencies
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
-| interface.md#interface | every task | universal scope, owners, failure and qualification | whole mechanism chapter |
+| interface.md#interface | always | shared authority | whole chapter |
 | terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section (entry extent) |
-| water-vapor.md#water-vapor | active litter phase, ingress or closure | physical and exact operand custody | whole mechanism chapter |
-| soil-coupling.md#soil-coupling | active litter phase, ingress or closure | physical and exact operand custody | whole mechanism chapter |
-| surface-custody.md#surface-custody | active litter phase, ingress or closure | physical and exact operand custody | whole mechanism chapter |
-| ../SC-SURFACELIQUID-001.md#frozen-forest-litter-surface-owner-v2-amendment | litter state or closure | exclusive liquid/ice owner | named section plus destination scope; retain applicable single-file whole-contract/frozen-kickoff requirements |
-| ../SC-SURFACELIQUID-001.md#exact-v3-litter-phase-capacity-spill-custody-amendment | phase spill custody or closure | once-only spill | named section plus destination scope; retain applicable single-file whole-contract/frozen-kickoff requirements |
-| ../SC-SURFACELIQUID-001.md#exact-heterogeneous-v3-finalized-use-join-amendment | heterogeneous finalized resources | exact native/ordinary join | named section plus destination scope; retain applicable single-file whole-contract/frozen-kickoff requirements |
-| ../SC-SURFACELIQUID-001.md#purpose-and-scientific-scope | cross-contract surface scope | surface scope | named section plus destination scope; retain applicable single-file whole-contract/frozen-kickoff requirements |
+| [water-vapor](water-vapor.md#water-vapor), [soil-coupling](soil-coupling.md#soil-coupling), [surface-custody](surface-custody.md#surface-custody) | active litter phase, ingress or closure | physical and exact operand custody | whole chapter |
+| ../SC-SURFACELIQUID-001.md#frozen-forest-litter-surface-owner-v2-amendment | litter state or closure | exclusive liquid/ice owner | whole external contract; frozen protocol scope |
+| ../SC-SURFACELIQUID-001.md#exact-v3-litter-phase-capacity-spill-custody-amendment | phase spill custody or closure | once-only spill | whole external contract; frozen protocol scope |
+| ../SC-SURFACELIQUID-001.md#exact-heterogeneous-v3-finalized-use-join-amendment | heterogeneous finalized resources | exact native/ordinary join | whole external contract; frozen protocol scope |
+| ../SC-SURFACELIQUID-001.md#purpose-and-scientific-scope | cross-contract surface scope | surface scope | whole external contract; frozen protocol scope |
 
 <a id="litter-phase"></a>
 # Litter Phase
@@ -424,5 +422,5 @@ complete rollback.
 ## Canonical obligations
 | Obligation ID | Statement | Applicability | Authority | Enforcement/failure | Test bindings |
 |---|---|---|---|---|---|
-| <a id="OBL-LANDSURFACEENERGY-C-011"></a> `OBL-LANDSURFACEENERGY-C-011` | prove the post-phase raw litter liquid and sensible enthalpy split into one within-capacity retained state and one typed spill, with exact phase-receipt/transaction/support/key custody, one negative exact-surface operand, one current-ingress/WB14 handoff, independent tile/OFE mass and enthalpy reconstruction, no re-solve, and complete rollback. | V3 litter post-phase capacity-spill consumers | v31:L350-L354 | Local guards; [errors](water-vapor.md#errors) | [Shared tests](common-details.md#tests) and [Mechanism tests](litter-phase.md#spill); named fixtures/tests and real consumers |
-| <a id="OBL-LANDSURFACEENERGY-C-012"></a> `OBL-LANDSURFACEENERGY-C-012` | prove a heterogeneous V3 batch classifies and consumes every finalized surface row exactly once: accepted native litter vapor rows only through their phase receipts and all remaining authenticated ordinary rows through one canonical debit of the phase-adjusted V2 owner before one ingress. Prove no phase/spill/ice/enthalpy replacement or energy replay, exact transaction/support/key/cardinality joins, and full rollback. | Heterogeneous finalized native/ordinary resource join consumers | v31:L355-L360 | Local guards; [errors](water-vapor.md#errors) | [Shared tests](common-details.md#tests) and [Mechanism tests](litter-phase.md#resource-join); named fixtures/tests and real consumers |
+| <a id="OBL-LANDSURFACEENERGY-C-011"></a> `OBL-LANDSURFACEENERGY-C-011` | prove the post-phase raw litter liquid and sensible enthalpy split into one within-capacity retained state and one typed spill, with exact phase-receipt/transaction/support/key custody, one negative exact-surface operand, one current-ingress/WB14 handoff, independent tile/OFE mass and enthalpy reconstruction, no re-solve, and complete rollback. | V3 litter post-phase capacity-spill consumers | v31:L350-L354 | [Local guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#spill); named fixtures/tests and real consumers |
+| <a id="OBL-LANDSURFACEENERGY-C-012"></a> `OBL-LANDSURFACEENERGY-C-012` | prove a heterogeneous V3 batch classifies and consumes every finalized surface row exactly once: accepted native litter vapor rows only through their phase receipts and all remaining authenticated ordinary rows through one canonical debit of the phase-adjusted V2 owner before one ingress. Prove no phase/spill/ice/enthalpy replacement or energy replay, exact transaction/support/key/cardinality joins, and full rollback. | Heterogeneous finalized native/ordinary resource join consumers | v31:L355-L360 | [Local guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#resource-join); named fixtures/tests and real consumers |

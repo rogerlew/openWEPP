@@ -59,3 +59,47 @@ Static/Ran: independently read exercise_03.md against unchanged frozen context-u
 All17 source-request entries independently match current inclusive-range UTF8 byte counts and SHA256 values. Total unique source130774bytes =bootstrap61143+expansion69631; LSE entry3958+interface8110+qualification18915=30983bytes, below264863 by233880 (88.302254% reduction). No repeat content requests reported; external/governance/search/automatic exposure distinguished. The report discloses incidental predicted sizes in its allowed handoff read. This is not answer/rubric contamination on the stated evidence: it did not receive another answer or frozen rubric; sufficiency assessed from actual required content, not predicted sizes. Actual delivered-token/runtime/quota totals remain UNOBSERVED.
 
 First04 other-answer exposure is correctly retained INVALID; a fresh replacement, not repaired carried context, remains needed. Fresh01/02/04 and final dual verification/disposition remain pending. This subsection does not supply terminal adoption approval.
+
+## Iteration2 prospective amendment — APPROVED before implementation
+
+Static: independently read appended intake amendment at SHA25638d7af8ded1ecbc2285daf88d7475ce47c9ec812dc10989d7b0d67b318ac38d3 and sent immediate approval before canonical edits. Exact audit-details addition, complete identity-anchor/leaf-reuse/V30 block relocations with their specified definitions/obligations, retained composite INV159/map core and universal interface, and generated-presentation shortening are legitimate bounded implementation changes. All original cells/fences, unique binding ownership and affected links/guards/BEI must remain independently validated. Full water definitions including P001–004 remain required. Qualification and PC1/SG1 unchanged absent a separate prospective approval.
+
+**APPROVE implementation scope, not resulting sufficiency/adoption.** Moving Purpose/Scope/guards into audit-details cannot make an otherwise applicable owner/regime/qualification restriction optional by filename. Universal effective scope stays visible and semantic reviewer A must verify every applicable edge. Necessary expansions remain charged; hard12288/211890 gates, original task/rubric and inheritedFAIL classification unchanged. First science reports retain actual FAIL. Whole-core projections must precede new fresh science retries; a smaller theoretical subset of a completed report does not repair its first attempt.
+
+## Independent actual first-iteration reading audit
+
+Ran: parsed each completed report ledger and recomputed inclusive EOF-clipped UTF8 source-line unions from frozen Git d40d9fa1f, not subsequently edited working-tree chapters.
+
+| Task | Actual unique LSE bytes | Reduction from264863 | Size gate |
+|---|---:|---:|---|
+|01|250005|5.609693%|FAIL|
+|02|216016 including recorded search-source lines|18.442365%|FAIL|
+|04|258764|2.302700%|FAIL|
+
+01's26LSE content requests select324010bytes with74005repeated source bytes. 04's26select271762 with12998repeated. All04LSE request-range hashes match. For01,14ranged entries use the full-source SHA rather than selected-range SHA; each resolves correctly to the frozen source, and every request byte count matches. These hashes bind source+explicit ranges, not claims of per-range SHA. No unbound LSE source found.
+
+02 text-only unique union is213444bytes, already above211890. Its text requests select242349bytes (28905repeat). Recorded heading/search selections expose19651source bytes and add2572unique bytes, producing216016. Those search source lines are not exact decorated tool-output bytes. Twelve ranged02entries bind full-source hashes, all matching. Metadata-only zero-byte lookup adds no source exposure. Parent notified to preserve this distinction rather than call all216016 full-content reading. Neither consistent text-only nor inclusive-source metric can pass.
+
+03 previously independently passed at30983LSEbytes. First04 contamination remains INVALID and replacement04 is the separate retained report ea1e1b5fb19eed7a95de49cd1484f7ab79ec7ddcb3ab6eac5d7cdc0d382b2a07. Replacement specifies real primitive/endpoint requirements and honestly records no numerical execution; full physical semantic adequacy remains separately adjudicated by A. No size or combined-adoption pass inferred. Solver02 additionally retains A's adequacyFAIL; this QA arithmetic audit does not override it.
+
+## Isolated Clippy custody caveat closed
+
+Ran: retained clippy-baseline-command.json now binds actual post-Cargo fixture manifest1ac1d8a47ff6dc0150d20c9cea771607176028df544d51bbfe74d86ec9291833 and lockd50fb437c79c1095f0bd0252647ca36cc5987c488d02ee2d4f72dd608bcace48; independently confirmed both actual hashes. It explicitly records18unused packages removed, none added, unchanged common version/source/checksum and dev/workspace dependency-list pruning. This closes the packaging caveat. It remains a bounded root-source lint comparison with17inherited diagnostics, not identical-lock/workspace/runtime equivalence or green rootClippy.
+
+## Prospective iteration2 extension — bounded approval
+
+Static: parent reports implemented first iteration2 projection12039bootstrap,214450whole physical core and218916whole solver core. These are projections, both scientific totals still above211890 and cannot qualify fresh usability. No fresh retry has run on that cut.
+
+**APPROVE the following exact extension for implementation after its envelope is recorded in intake, before canonical writes:** add solve-boundary.md holding the complete ordered numerical algorithm and canonical INV108; nonlinear-solve retains V10/V11–13 and remaining definitions; full solver review requires both. Physical acceptance/primitive routes still require applicable INV109/110 and associated obligations wherever they reside; moving only INV108 cannot orphan these existing mandatory restrictions. Move the entire snow-free final receipt reseal block plus INV160/C015 from map-custody to existing surface-custody, preserving verbatim science and repairing every canonical locator, dependency, guard/test, BEI and affected consumer reference. Other shortening is generated presentation/local links only.
+
+Qualification/PC1/SG1, all original scientific cells/fences and invariant/obligation meanings remain unchanged. Full solver and cross-owner semantics are determined by applicable authority, not the new chapter title. Original first-attempt failures, exact numeric gates and requirement for reviewed routes plus genuinely fresh retries remain intact. This is prospective scope approval only; resulting scientific sufficiency and byte reductions are not yet demonstrated. Parent received these conditions before edits.
+
+## Iteration2 candidate QA before fresh retries
+
+Ran:15 migration pytestPASS and canonical ContractSetPASS100definitions/18documents. Actual owners:INV108/109/110 solve-boundary;INV159 map-custody;INV160/C015 surface-custody;INV162/163 and C017/018 dependency-replay, with V30/C019 there. M3 retains its same replay-fallback predicate at the relocated surface owner. Independent original scientific cells/fenced-body comparisons pass. Candidate entrySHA930c682e5c923083683e8a030457c9e5e90e6ca9cd2f70a425ee0aa79c326c72; testSHA8dc40da983c91d05c304b7bfbde57aff149c523c2a9ed51b66e5ff44695b9281.
+
+Static: generated dependency grouping uses identical required-when+extent keys, retains every grouped target as an explicit link and all distinct reasons joined by semicolons. It does not convert conditional extents to optional suggestions. Same-chapter links removed from dependency tables refer to content already covered by the prescribed whole owning chapter; future section-only routes must independently retain any implicated local section rather than inherit this assumption. Canonical parser validates grouped targets and relocated definitions. Original scoped qualifiers remain in original cells. Short external wording still requires whole external contract/frozen protocol scope. No new QA blocker to genuinely fresh retries once A approves semantic routes and source identity is frozen.
+
+Ran: independent projected-range UTF8 arithmetic agrees with predicted-reading.json SHA4e5d61ec59db3134357108e7dc8ab83f0c132e3d8da596031f6c4666f4d1fdf9. Bootstrap12106 (182below12288). Physical01/04 whole prescribed core194583 (26.534473%smaller;17307below211890). Solver02 whole prescribed core plus five exact water sections209537 (20.888535%;2353below211890). Identity30825 (88.361908%smaller). Five water sections include complete canonical invariants/obligations and all P001–004; full-water expansion213035 would fail. This makes correct explicit extent routing material; omitted applicable water owner/evaluator claims must still expand and count. These remain predictions, not fresh first-attempt PASS or delivered-token totals.
+
+Current source-map/manifests and final validation/evidence reconciliation must bind this new18document cut. First-iteration reports/FAIL metrics remain immutable. Full fresh science answers are mandatory, with no prior answers/rubric/target sizes supplied to guide completion. No adoption signoff supplied at this pre-retry boundary.

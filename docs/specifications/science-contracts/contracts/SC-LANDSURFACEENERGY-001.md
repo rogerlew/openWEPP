@@ -34,9 +34,11 @@ chapter's Dependencies and introduction. Uncertainty expands reading.
 |---|---|---|---|
 | SC-LANDSURFACEENERGY-001/interface.md | normative | interface | selected |
 | SC-LANDSURFACEENERGY-001/common-details.md | normative | common details | selected |
+| SC-LANDSURFACEENERGY-001/audit-details.md | normative | audit details | selected |
 | SC-LANDSURFACEENERGY-001/surface-energy.md | normative | surface energy | selected |
 | SC-LANDSURFACEENERGY-001/soil-coupling.md | normative | soil coupling | selected |
 | SC-LANDSURFACEENERGY-001/water-vapor.md | normative | water vapor | selected |
+| SC-LANDSURFACEENERGY-001/solve-boundary.md | normative | solve boundary | selected |
 | SC-LANDSURFACEENERGY-001/nonlinear-solve.md | normative | nonlinear solve | selected |
 | SC-LANDSURFACEENERGY-001/terminal-support.md | normative | terminal support | selected |
 | SC-LANDSURFACEENERGY-001/litter-phase.md | normative | litter phase | selected |

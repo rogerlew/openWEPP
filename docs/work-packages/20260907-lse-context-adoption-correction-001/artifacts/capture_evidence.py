@@ -11,6 +11,8 @@ BASE=subprocess.check_output(['git','rev-parse','fb32d27f2'],cwd=ROOT,text=True)
 def sha(raw):return hashlib.sha256(raw).hexdigest()
 def original(path):return subprocess.check_output(['git','show',BASE+':'+str(path)],cwd=ROOT)
 manifest=json.loads((HERE/'candidate-manifest.json').read_text())
+for file in (ROOT/'docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001').glob('*.md'):
+    manifest[str(file.relative_to(ROOT))]=''
 manifest['docs/specifications/science-contracts/index.md']=''
 (HERE/'candidate-manifest.json').write_text(json.dumps({p:sha((ROOT/p).read_bytes()) for p in sorted(manifest)},indent=2)+'\n')
 inputs={'Cargo.toml','Cargo.lock','flake.nix','flake.lock','clippy.toml','AGENTS.md','tests/AGENTS.md','docs/work-packages/AGENTS.md','docs/specifications/science-contracts/AGENTS.md','tools/sc_contract_directory.py','tools/check_sc_binding_exposure.py','tools/release/check_sc_unit_compliance.py','tools/release/check_science_contract_admission.sh'}

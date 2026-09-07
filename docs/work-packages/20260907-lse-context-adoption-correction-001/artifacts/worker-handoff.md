@@ -1,61 +1,22 @@
-# Current handoff
-Ran: strict directory PASS17BEI/100definitions, unit/A0 PASS, Python98PASS
-(80directory/A0 +3legacybinding +15directmigration). Current candidate is NOT adopted.
-Authorization/frozen acceptance: package.md and intake.md; independent intake A/B PASS.
-Parent executes full correction; no production edits/push. Untracked `$pkg/` and tmp/
-remain unrelated and preserved. Source/evidence identities: candidate-manifest.json,
-evidence-manifest.json and unchanged-inputs.json (156inputs; production/tools/config
-tracked-tree diff empty against fb32d27f2).
+# Current reading handoff
+Static: candidate v32, adoption pending. User authorized this correction package and
+bounded independent reading exercises. Canonical source: current
+`docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md` and its
+inventoried chapters. The entry governs task routing and recursive reading scope.
+All scientific authority, production status and frozen protocols remain binding.
 
-## Implemented and verified boundaries
-Canonical entry plus15chapters retain100logical definitions and original scientific
-statements, all original canonical cells/qualifiers, exact fenced bodies and source
-citations. Common details stay normative; no scientific historical demotion beyond
-original change log. Source-map.json provides567bidirectional relocation spans.
-Generated provenance repetition and long internal link fragments are compacted;
-short anchors retain original anchors and identical section extents.
-Entry/interface expose current owner/regime/failure/qualification constraints.
-IndexLSElast_reviewed09-07 and live lifecycle predicate reconciled; all other rows
-and globally searched inherited index predicates preserved byte/value-wise.
-Seven Rust consumers use actual canonical parser bridge; masked currentLSE31->32
-fixed. No protected frozen identities, production expectations or scientific gates changed.
+Fresh readers may inspect applicable instructions, package.md, this handoff and
+canonical routed source, including required external authority and frozen protocols.
+Do not read intake, predictions, review/rubric artifacts, earlier exercise reports,
+original monolith/Git history, archived candidates, parent validation output or other
+agent answers. Do not call agent-listing or agent-wait tools; communicate only with
+the parent through send_message. Write only the assigned exercise report; temporary
+local measurement files are allowed. No implementation or production execution.
 
-Python direct tests independently exercise masked LSE suffixes, exact-custody rules,
-all original scientific cells and equation/failure-posture poisons. Intact-ID on-disk
-poisons pass structure but fail scientific preservation. Actual compiled Rust bridge
-passes53cases including48byte-identicallegacycontracts and malformed/definition negatives.
-Actual helper Clippy PASS at equivalent workspace lints; edition2024 Rustfmt PASS.
-Vegetation test2843lines WARN with split intent; no nonexempt3000file.
-
-Rust129run111PASS18inheritedFAIL; exact identities and36normalized emitted panic
-payloads match originalbaseline. Direct passing migration tests address masking;
-this is not same-failure-set-only acceptance. Root-only Clippy reaches all7targets;
-17diagnostics match originalfile/function/kind, no new helper warning after correction.
-Original7sources actually linted in isolated external fixture. Cargo pruned18unused
-lockpackages;227commonpackageversion/source/checksums match, no addedversions. Actual
-fixture manifest/lock identities and limitation retained; no identical-lock claim.
-Comparator runner actual prior quota failure retained in predecessor logs; parent
-Nix fallback used, no repeated unavailable-runner attempts or global planner.
-
-## Independent findings and fresh exercises
-A closed RCA01-04: revision3/modelV3 distinction, authorized normalization, accurate
-represented-snow water section edges, all universal producer and accepted-map test
-reading. B closed scientific-cell validation gap with independent poison rejection.
-Primary preservation/route review PASS; predictions meet frozen limits but are not
-fresh usability evidence. Fresh readers must not consult prediction/rubric reports.
-Exercise03 first-attempt requirements selection independently PASS A/B; no binary
-execution/scientific certification. Fresh01/02/04replacement completing required
-whole external authority reads and reporting actual unique/repeated source exposure.
-First04attempt INVALID after forbidden other-answer exposure via collaboration list;
-retained exercise_04_invalid_01.md, never counted as adequacy. Replacement forked none.
-Incidental predicted counts in earlier permitted handoff disclosed; no answer/rubric
-hints used. Canonical entry/chapters remain stable during fresh exercises.
-
-## Next action and reopening triggers
-Finish and independently assess fresh reports against unchanged rubric/byte gates;
-correct any in-scope issue without weakening acceptance. Produce reconciled actual
-source inventories with full external/governance cost and repeated/truncated reads.
-Then corrected stable-cut dual review, findings closure, freeze coherent adoption
-metadata, dual independent terminal verification, local closure commit. No push.
-Science uncertainty, failed required first-attempt adequacy/size, masking gap or
-unvalidated changed code prevents adoption. Continue safe authorized correction.
+Complete the assigned question on its first attempt. Record every source request:
+path, inclusive ranges, exact source identity, requested bytes, phase, repeats and
+truncation recovery. Separate finite unique source union from requested exposure,
+external/governance material and unobserved delivered-token/workflow telemetry.
+Read all mandatory sources completely within their governed extent. Missing actual
+run inputs must remain missing; never manufacture evidence. The parent will assess
+the completed answer independently. Canonical sources stay fixed during exercises.

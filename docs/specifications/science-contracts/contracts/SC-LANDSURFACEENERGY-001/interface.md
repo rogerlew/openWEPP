@@ -3,7 +3,7 @@
 ## Dependencies
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
-| common-details.md#common-details | physical rules, solver correctness or accepted-primitive closure | shared physical symbols, state, algorithm, guards, aliases, units, tolerances and tests | common physical set listed in common-details introduction; source/guard-map/gap sections additionally for those claims |
+| common-details.md#common-details | physical rules, solver correctness or accepted-primitive closure | shared physical symbols, state, algorithm, guards, units, tolerances and tests | whole chapter |
 | qualification.md#qualification | identity capture, experiment or qualification claims | frozen protocols and separate scientific/production limits | whole qualification chapter |
 
 <a id="interface"></a>
@@ -63,4 +63,4 @@ Citations remain binding; logical IDs resolve via binding-index.
 ## Canonical obligations
 | Obligation ID | Statement | Applicability | Authority | Enforcement/failure | Test bindings |
 |---|---|---|---|---|---|
-| <a id="OBL-LANDSURFACEENERGY-C-004"></a> `OBL-LANDSURFACEENERGY-C-004` | a real scheduler consumer must prove that the new state and ledger affect the intended direct path before runtime closure. | All scheduler/direct-path consumers claiming runtime closure | v31:L332-L333 | Local guards; [errors](water-vapor.md#errors) | [Shared tests](common-details.md#tests) and [Mechanism tests](common-details.md#tests); named fixtures/tests and real consumers |
+| <a id="OBL-LANDSURFACEENERGY-C-004"></a> `OBL-LANDSURFACEENERGY-C-004` | a real scheduler consumer must prove that the new state and ledger affect the intended direct path before runtime closure. | All scheduler/direct-path consumers claiming runtime closure | v31:L332-L333 | [Local guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests and real consumers |

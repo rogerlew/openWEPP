@@ -49,23 +49,12 @@ class Selection:
 out={}
 for task in range(1,5):
     s=Selection();s.add('entry');s.add('interface')
-    if task!=3:
-        for a in COMMON:s.add('common-details',a)
+    if task!=3:s.add('common-details')
     if task in [1,4]:
-        for n in ['surface-energy','soil-coupling','water-vapor','litter-phase','soil-custody','surface-custody']:s.add(n)
-        s.add('nonlinear-solve',ORDER);s.inv('nonlinear-solve',[108,109,110])
-        s.add('terminal-support','version-9-positive-support-admission-owner-amendment');s.inv('terminal-support',[114,115,116,117,118,119,120,121,122,123,154])
-        for a in MAP:s.add('map-custody',a)
-        s.inv('map-custody',[159,160,161]);s.obl('map-custody',[14,15,16])
-        if task==1:s.add('terminal-support')
+        for n in ['surface-energy','soil-coupling','water-vapor','litter-phase','soil-custody','surface-custody','solve-boundary','terminal-support','map-custody']:s.add(n)
     elif task==2:
-        for n in ['nonlinear-solve','dependency-replay','qualification','surface-energy','soil-coupling','terminal-support']:s.add(n)
-        for a in ['signed-vapor-and-liquid-enthalpy','immutable-beginning-water-transaction-and-current-ingress','independent-closure-and-errors']:s.add('water-vapor',a)
-        s.inv('water-vapor',[104,105,107,130]);s.obl('water-vapor',[1,2])
-        for n in range(1,5):s.add('water-vapor',f'OBL-LANDSURFACEENERGY-P-{n:03}')
-        s.add('map-custody','canonical-stage-3-accepted-map-boundary-amendment')
-        for a in [MAP[0],MAP[2],'carrier-parent-static-and-same-map-validation-once-amendment']:s.add('map-custody',a)
-        s.inv('map-custody',[152,159,161]);s.obl('map-custody',[7,14,16,19])
+        for n in ['nonlinear-solve','solve-boundary','dependency-replay','qualification','surface-energy','soil-coupling','terminal-support','map-custody']:s.add(n)
+        for a in ['signed-vapor-and-liquid-enthalpy','immutable-beginning-water-transaction-and-current-ingress','independent-closure-and-errors','canonical-invariants','canonical-obligations']:s.add('water-vapor',a)
     else:s.add('qualification')
     out[f'exercise{task:02}']=s.result()
 result={'kind':'prospective explicit source selection; sufficiency not yet qualified; not observed tokens','baseline_lse_bytes':BASE,'always_read_bytes':P.with_suffix('.md').stat().st_size+(P/'interface.md').stat().st_size,'tasks':out}

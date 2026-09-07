@@ -30,7 +30,10 @@ for item in source['clauses']:
         if name=='binding-index.md' and text.startswith('| `'):
             key=text.split('|')[1].strip()
             locations=[(name,i+1) for i,l in enumerate(docs[name]) if l.startswith('| '+key+' |')]
-        else:locations=[(name,i+1) for i,l in enumerate(docs[name]) if normal(l)==normal(expected)]
+        else:
+            # Original scientific sections may move between normative concerns.
+            eligible=['history.md'] if item['kind']=='historical' else [n for n in docs if n!='history.md']
+            locations=[(n,i+1) for n in eligible for i,l in enumerate(docs[n]) if normal(l)==normal(expected)]
     assert locations,(a,b,text)
     name,line=locations[0]
     row=[a,b,name,line,line,item['kind']]

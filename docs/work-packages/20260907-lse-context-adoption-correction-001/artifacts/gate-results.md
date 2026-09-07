@@ -5,13 +5,13 @@ predictions are not model-token or complete-workflow measurements.
 | Current migration criterion | Result | Evidence |
 | --- | --- | --- |
 | Prospective acceptance legitimacy | PASS Static | Intake A/B before da1d503c2 implementation start; all18failures individually classified, M1-M9 direct obligations frozen. |
-| Original scientific text/cells/blocks | PASS | test_lse_directory_migration.py independently reads pinned original; every mapped source clause, all original canonical scientific cells, exact fenced bodies; on-disk equation/failure poisons structurally pass then preservation rejects. source-map.json567spans. |
+| Original scientific text/cells/blocks | PASS | test_lse_directory_migration.py independently reads pinned original; every mapped source clause, all original canonical scientific cells, exact fenced bodies; on-disk equation/failure poisons structurally pass then preservation rejects. source-map.json616spans. |
 | Parser/checker/unit/A0 conformance | PASS | logs/pytest-final.log98PASS:80directory/A0,3legacychecker,15directmigration including exact fenced bodies. Strict17BEI/100definitions; unit/admission logs PASS. |
 | Actual Rust consumer bridge | PASS | Actual helper compiled/Clippy-linted; check_bridge.py53cases: currentcandidate,48byte-identicallegacy,positivefixture,definition/unknown/malformed negatives. logs/bridge-results.json. |
 | Eight Rust targets | Diagnostic FAIL; migration regression PASS | logs/rust-candidate.log and rust-final.log;129run111PASS18inheritedFAIL. Final exact failure names/36normalized emitted payloads baseline-equal (logs/rust-comparison.json); no suffix inference: direct masked predicates separately PASS. |
 | Changed code lint | PASS helper; inherited root diagnostics FAIL | --no-deps reaches seven root test targets. Initial helper case-sensitive extension warning corrected without widening dispatch; actual helper isolated Clippy PASS. Original baseline root-test source independently linted in external fixture;17matching file/diagnostic categories, logs/clippy-comparison.json. No suppression or production repair. Current root17diagnostics match baseline file/function/kind; actual fixturelock pruning and hashes recorded. |
 | Rust format / line count | PASS / PASS WARN | Edition2024 formatting applied within8ownedRustfiles; vegetation2843lines WARN, all other files<2000, no nonexempt3000file. |
-| Compact primary routes | PASS Static | Review A RCA01-04closed at preserved16filecut; core12068, predicted scientific196660/210669/187596 andidentity30983. No predicted-only usability PASS. |
+| Revised primary routes | PASS Static, actual retries pending | Iteration2 + prospectively reviewed solve-boundary extension; 18canonical files,100definitions, bootstrap12106. Whole physical core01/04=194583; full represented solver set plus explicit five water sections=209537; identity30825. A/B reviewed actual source and RCA05/06closed. These are predictions, not usability acceptance. |
 | First candidate fresh tasks | FAIL science size; 02 also scientific adequacy FAIL | Actual LSE unions01=250005,02=216016,04=258764; all exceed211890. Identity03=30983 and independently adequate. reading-iteration-01.json binds immutable first reports to d40d9fa1f; initial04 exposure remains INVALID. New reviewed layout and genuinely fresh retries required. |
 | Stable-cut dual review / terminal verification | NOT RUN to completion | Current required closure boundary remains pending. |
 
@@ -32,3 +32,12 @@ unit policy or global validation tooling changed. Thus no new constitutive campa
 or source anti-evasion gate is triggered solely by this presentation/test-consumer
 migration. No test expectation is removed, suppressed or rewritten to erase a frozen
 scientific FAIL. Old package HOLD and all18failure/17root-lint diagnostics stay truthful.
+
+Iteration2 validation was rerun against the corrected primary cut:98PythonPASS,
+strict17/100, unit/A0, actual bridge53PASS; Rust111PASS18same inheritedFAIL and36
+same normalized emitted panic payloads. Rust source and lint/compiler inputs have
+not changed since d40d9fa1f, so original root/helper lint and Rust-format evidence
+is reused with unchanged candidate source hashes. Python M3 retains the identical
+replay-fallback assertion at the relocated surface-custody owner. One trailing
+blank line in common-details is a known diff-check cleanup deferred until the
+frozen fresh exercises complete; no adoption or diff-check PASS yet.

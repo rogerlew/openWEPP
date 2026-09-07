@@ -1,21 +1,21 @@
 {
   "kind": "prospective explicit source selection; sufficiency not yet qualified; not observed tokens",
   "baseline_lse_bytes": 264863,
-  "always_read_bytes": 12068,
+  "always_read_bytes": 12106,
   "tasks": {
     "exercise01": {
-      "lse_bytes": 196660,
-      "reduction_percent": 25.75029354798518,
+      "lse_bytes": 194583,
+      "reduction_percent": 26.53447253863318,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
           "ranges": [
             [
               1,
-              63
+              65
             ]
           ],
-          "bytes": 3958
+          "bytes": 4130
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
@@ -25,35 +25,27 @@
               66
             ]
           ],
-          "bytes": 8110
+          "bytes": 7976
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
           "ranges": [
             [
               1,
-              12
-            ],
-            [
-              73,
-              219
-            ],
-            [
-              278,
-              417
+              303
             ]
           ],
-          "bytes": 22422
+          "bytes": 22406
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
           "ranges": [
             [
               1,
-              205
+              203
             ]
           ],
-          "bytes": 11388
+          "bytes": 11069
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
@@ -63,7 +55,7 @@
               208
             ]
           ],
-          "bytes": 13488
+          "bytes": 13249
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
@@ -73,17 +65,17 @@
               227
             ]
           ],
-          "bytes": 16549
+          "bytes": 15924
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
           "ranges": [
             [
               1,
-              428
+              426
             ]
           ],
-          "bytes": 30887
+          "bytes": 30338
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
@@ -93,43 +85,27 @@
               201
             ]
           ],
-          "bytes": 15781
+          "bytes": 15484
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
           "ranges": [
             [
               1,
-              249
+              290
             ]
           ],
-          "bytes": 21567
+          "bytes": 25619
         },
         {
-          "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+          "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
           "ranges": [
             [
               1,
-              22
-            ],
-            [
-              24,
-              109
-            ],
-            [
-              436,
-              437
-            ],
-            [
-              442,
-              442
-            ],
-            [
-              444,
-              445
+              113
             ]
           ],
-          "bytes": 9813
+          "bytes": 8225
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
@@ -139,49 +115,33 @@
               245
             ]
           ],
-          "bytes": 21230
+          "bytes": 20940
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
           "ranges": [
             [
               1,
-              16
-            ],
-            [
-              36,
-              195
-            ],
-            [
-              340,
-              344
-            ],
-            [
-              349,
-              352
-            ],
-            [
-              354,
-              354
+              171
             ]
           ],
-          "bytes": 21467
+          "bytes": 19223
         }
       ]
     },
     "exercise02": {
-      "lse_bytes": 210669,
-      "reduction_percent": 20.461144063157178,
+      "lse_bytes": 209537,
+      "reduction_percent": 20.888534827439088,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
           "ranges": [
             [
               1,
-              63
+              65
             ]
           ],
-          "bytes": 3958
+          "bytes": 4130
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
@@ -191,45 +151,47 @@
               66
             ]
           ],
-          "bytes": 8110
+          "bytes": 7976
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
           "ranges": [
             [
               1,
-              12
-            ],
-            [
-              73,
-              219
-            ],
-            [
-              278,
-              417
+              303
             ]
           ],
-          "bytes": 22422
+          "bytes": 22406
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
           "ranges": [
             [
               1,
-              455
+              244
             ]
           ],
-          "bytes": 37448
+          "bytes": 18763
+        },
+        {
+          "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+          "ranges": [
+            [
+              1,
+              113
+            ]
+          ],
+          "bytes": 8225
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
           "ranges": [
             [
               1,
-              299
+              558
             ]
           ],
-          "bytes": 28905
+          "bytes": 52411
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
@@ -239,17 +201,17 @@
               245
             ]
           ],
-          "bytes": 18915
+          "bytes": 18719
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
           "ranges": [
             [
               1,
-              205
+              203
             ]
           ],
-          "bytes": 11388
+          "bytes": 11069
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
@@ -259,7 +221,7 @@
               208
             ]
           ],
-          "bytes": 13488
+          "bytes": 13249
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
@@ -269,7 +231,17 @@
               245
             ]
           ],
-          "bytes": 21230
+          "bytes": 20940
+        },
+        {
+          "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+          "ranges": [
+            [
+              1,
+              171
+            ]
+          ],
+          "bytes": 19223
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
@@ -283,65 +255,27 @@
               145
             ],
             [
-              211,
-              216
-            ],
-            [
-              220,
+              209,
               227
             ]
           ],
-          "bytes": 12932
-        },
-        {
-          "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
-          "ranges": [
-            [
-              1,
-              16
-            ],
-            [
-              18,
-              87
-            ],
-            [
-              127,
-              337
-            ],
-            [
-              340,
-              342
-            ],
-            [
-              344,
-              345
-            ],
-            [
-              349,
-              351
-            ],
-            [
-              353,
-              355
-            ]
-          ],
-          "bytes": 31873
+          "bytes": 12426
         }
       ]
     },
     "exercise03": {
-      "lse_bytes": 30983,
-      "reduction_percent": 88.30225437301549,
+      "lse_bytes": 30825,
+      "reduction_percent": 88.36190785424918,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
           "ranges": [
             [
               1,
-              63
+              65
             ]
           ],
-          "bytes": 3958
+          "bytes": 4130
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
@@ -351,7 +285,7 @@
               66
             ]
           ],
-          "bytes": 8110
+          "bytes": 7976
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
@@ -361,23 +295,23 @@
               245
             ]
           ],
-          "bytes": 18915
+          "bytes": 18719
         }
       ]
     },
     "exercise04": {
-      "lse_bytes": 187596,
-      "reduction_percent": 29.172440091670037,
+      "lse_bytes": 194583,
+      "reduction_percent": 26.53447253863318,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
           "ranges": [
             [
               1,
-              63
+              65
             ]
           ],
-          "bytes": 3958
+          "bytes": 4130
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
@@ -387,35 +321,27 @@
               66
             ]
           ],
-          "bytes": 8110
+          "bytes": 7976
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
           "ranges": [
             [
               1,
-              12
-            ],
-            [
-              73,
-              219
-            ],
-            [
-              278,
-              417
+              303
             ]
           ],
-          "bytes": 22422
+          "bytes": 22406
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
           "ranges": [
             [
               1,
-              205
+              203
             ]
           ],
-          "bytes": 11388
+          "bytes": 11069
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
@@ -425,7 +351,7 @@
               208
             ]
           ],
-          "bytes": 13488
+          "bytes": 13249
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
@@ -435,17 +361,17 @@
               227
             ]
           ],
-          "bytes": 16549
+          "bytes": 15924
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
           "ranges": [
             [
               1,
-              428
+              426
             ]
           ],
-          "bytes": 30887
+          "bytes": 30338
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
@@ -455,87 +381,47 @@
               201
             ]
           ],
-          "bytes": 15781
+          "bytes": 15484
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
           "ranges": [
             [
               1,
-              249
+              290
             ]
           ],
-          "bytes": 21567
+          "bytes": 25619
         },
         {
-          "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+          "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
           "ranges": [
             [
               1,
-              22
-            ],
-            [
-              24,
-              109
-            ],
-            [
-              436,
-              437
-            ],
-            [
-              442,
-              442
-            ],
-            [
-              444,
-              445
+              113
             ]
           ],
-          "bytes": 9813
+          "bytes": 8225
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
           "ranges": [
             [
               1,
-              18
-            ],
-            [
-              91,
-              175
-            ],
-            [
-              227,
-              239
+              245
             ]
           ],
-          "bytes": 12166
+          "bytes": 20940
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
           "ranges": [
             [
               1,
-              16
-            ],
-            [
-              36,
-              195
-            ],
-            [
-              340,
-              344
-            ],
-            [
-              349,
-              352
-            ],
-            [
-              354,
-              354
+              171
             ]
           ],
-          "bytes": 21467
+          "bytes": 19223
         }
       ]
     }

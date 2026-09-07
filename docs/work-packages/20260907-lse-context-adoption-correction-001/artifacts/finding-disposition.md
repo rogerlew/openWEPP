@@ -15,6 +15,11 @@ Static/Ran: independent artifacts retain full evidence and focused re-review.
 | Fresh science01/02/04 size | OPEN, correction required | Actual250005/216016/258764 exceed211890; initial predictions were insufficient. Preserve first reports and redesign concern boundaries. |
 | Fresh solver02 adequacy | OPEN, correction required | Independent A found omitted universal producer rows and solver eligibility/failure/qualification requirements; first answer remains FAIL, not repaired into freshPASS. |
 
+| Fresh closure04 adequacy | OPEN, fresh retry required | First completed answer omitted explicit liquid-only WB14/ice ineligibility. A credited its separate canonical-zero/high-signed-zero treatment; no zero-semantics defect retained. |
+| RCA05 physical boundary definition extent | accepted/closed A | Surface route reads complete solve-boundary including108–110; already charged in projection. |
+| RCA06 complete candidate manifest | accepted/closed A | All28 source entries match; all18 canonical files included. |
+| Candidate EOF whitespace | OPEN, final cleanup | One trailing blank in common-details deferred during frozen readings; final diff check required. |
+
 No current acceptance waived. Fresh adequacy, final code/evidence identities and
 terminal closure remain pending. Incidental numeric predictions in explicitly allowed
 mandatory handoff are disclosed by fresh readers; no rubric/answers were provided.

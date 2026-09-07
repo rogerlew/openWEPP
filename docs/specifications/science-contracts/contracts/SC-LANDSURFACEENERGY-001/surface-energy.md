@@ -3,17 +3,15 @@
 ## Dependencies
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
-| interface.md#interface | every task | universal scope, owners, failure and qualification | whole mechanism chapter |
+| interface.md#interface | always | shared authority | whole chapter |
 | terminal-support.md#support | physical solve or receipt interval admission, including snow-free work | physical support, zero support and pre-Newton floor | section (entry extent) |
-| soil-coupling.md#soil-coupling | surface temperature/humidity or ground transfer | thermal state and CN lower boundary | whole mechanism chapter |
-| nonlinear-solve.md#solve | physical rule selection or accepted-primitive closure | ordered solve and error precedence; INV108-110 | section (entry extent) |
-| nonlinear-solve.md#nonlinear-solve | solver implementation or full evaluator correctness | all active numerical branches | whole mechanism chapter |
-| water-vapor.md#vapor | represented-snow evaluator/error-order requirements review | signed enthalpy, immutable water/ingress and canonical errors | section (entry extent) |
-| water-vapor.md#water | represented-snow evaluator/error-order requirements review | signed enthalpy, immutable water/ingress and canonical errors | section (entry extent) |
-| water-vapor.md#errors | represented-snow evaluator/error-order requirements review | signed enthalpy, immutable water/ingress and canonical errors | section (entry extent) |
-| water-vapor.md#water-vapor | snow-free physical rules, active water/ingress, energy closure or water-owner audit | complete accepted enthalpy and immutable-water duties | whole mechanism chapter |
-| ../SC-VEGETATION-001.md#openwepp_c3_woody_v8-coupled-ground-energy-amendment | covered-canopy physics or closure | V8 canopy owner | named section plus destination scope; retain applicable single-file whole-contract/frozen-kickoff requirements |
-| ../SC-VEGETATION-001.md#purpose | cross-contract scope | vegetation entry/scope constraints | named section plus destination scope; retain applicable single-file whole-contract/frozen-kickoff requirements |
+| soil-coupling.md#soil-coupling | surface temperature/humidity or ground transfer | thermal state and CN lower boundary | whole chapter |
+| solve-boundary.md#solve-boundary | physical rule selection or accepted-primitive closure | ordered solve and error precedence; INV108-110 | whole chapter |
+| nonlinear-solve.md#nonlinear-solve | solver implementation or full evaluator correctness | all active numerical branches | whole chapter |
+| [vapor](water-vapor.md#vapor), [water](water-vapor.md#water), [errors](water-vapor.md#errors), [invariants](water-vapor.md#canonical-invariants), [obligations](water-vapor.md#canonical-obligations) | represented-snow evaluator/error-order requirements review | signed enthalpy, immutable water/ingress and canonical errors; complete water definitions, including all universal P001–004 | section (entry extent) |
+| water-vapor.md#water-vapor | snow-free physical rules, active water/ingress, energy closure or water-owner audit | complete accepted enthalpy and immutable-water duties | whole chapter |
+| ../SC-VEGETATION-001.md#openwepp_c3_woody_v8-coupled-ground-energy-amendment | covered-canopy physics or closure | V8 canopy owner | whole external contract; frozen protocol scope |
+| ../SC-VEGETATION-001.md#purpose | cross-contract scope | vegetation entry/scope constraints | whole external contract; frozen protocol scope |
 
 <a id="surface-energy"></a>
 # Surface Energy
@@ -201,5 +199,5 @@ cutover.
 ## Canonical invariants
 | Invariant ID | Statement | Authority | Evidence | Guard | Failure posture |
 |---|---|---|---|---|---|
-| <a id="INV-LANDSURFACEENERGY-101"></a> `INV-LANDSURFACEENERGY-101` | Component longwave uses current component temperature and `tau=exp[-0.8*Omega*(LAI+SAI)]`; no bulk-canopy or stale-ground operand is accepted. | v31:L1090-L1090 | [INFERENCE][Static] | [Ordered domain/closure guards](nonlinear-solve.md#solve) and [typed errors](water-vapor.md#errors) | Typed domain/convergence/closure: [errors](water-vapor.md#errors); no partial state or promotion |
-| <a id="INV-LANDSURFACEENERGY-102"></a> `INV-LANDSURFACEENERGY-102` | Neutral open and covered turbulent paths use only the exact equations/constants/domains above; no wind floor or stability substitute exists. | v31:L1091-L1091 | [INFERENCE][Static] | [Ordered domain/closure guards](nonlinear-solve.md#solve) and [typed errors](water-vapor.md#errors) | Typed domain/convergence/closure: [errors](water-vapor.md#errors); no partial state or promotion |
+| <a id="INV-LANDSURFACEENERGY-101"></a> `INV-LANDSURFACEENERGY-101` | Component longwave uses current component temperature and `tau=exp[-0.8*Omega*(LAI+SAI)]`; no bulk-canopy or stale-ground operand is accepted. | v31:L1090-L1090 | [INFERENCE][Static] | [Ordered domain/closure guards](solve-boundary.md#solve) and [typed errors](water-vapor.md#errors) | Typed domain/convergence/closure: [errors](water-vapor.md#errors); no partial state or promotion |
+| <a id="INV-LANDSURFACEENERGY-102"></a> `INV-LANDSURFACEENERGY-102` | Neutral open and covered turbulent paths use only the exact equations/constants/domains above; no wind floor or stability substitute exists. | v31:L1091-L1091 | [INFERENCE][Static] | [Ordered domain/closure guards](solve-boundary.md#solve) and [typed errors](water-vapor.md#errors) | Typed domain/convergence/closure: [errors](water-vapor.md#errors); no partial state or promotion |

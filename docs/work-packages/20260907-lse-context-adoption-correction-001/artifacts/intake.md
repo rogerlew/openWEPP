@@ -83,3 +83,50 @@ all source/runtime exclusions with bound unchanged-input evidence. No failed bas
 predicate is renamed PASS. Incoming99 physical references all belong to immutable
 predecessor evidence/reproduction or its archived candidate, not live consumers;
 logical IDs retain unique binding resolution. Reviewer A adjudicates route sufficiency.
+
+## Iteration 2 design amendment (prospectively approved A/B before implementation)
+The first candidate at d40d9fa1f fails actual science reading gates (01=250005,
+02=216016,04=258764 bytes). Reports remain immutable. No acceptance threshold,
+source-preservation rule, frozen task/rubric or inherited-failure disposition changes.
+
+Add exactly `audit-details.md` to the chapter envelope. Move all original shared
+sections outside the ten named common physical sections there, including Purpose,
+Scope, Authority Anchors, Invariant Guard Map, Producer/Consumer heading and Gap
+Register. They remain normative, required for their source/enforcement/historical
+applicability claims; complete physical common-details remains routinely required.
+Keep universal canonical definitions in interface. Preserve all original clauses.
+
+Move complete Stage-3 Identity-Anchor Jacobian and Covered Leaf Maximum-Demand
+Exact-Reuse blocks, INV162/163 and C017/018 from nonlinear-solve to dependency-replay.
+Move complete Carrier Parent-Static and Same-Map Validation-Once block and C019
+from map-custody to dependency-replay. Keep the complete composite INV159 in map
+custody, together with original base accepted-map/handoff/reseal/pending content.
+Dependencies for optimization/evaluator implementation include the relocated blocks;
+physical receipt reconstruction alone does not become an optimization audit.
+All original anchors relocate intact; rewrite every affected local link, canonical
+locator, guard/test link and BEI field. Unique binding ownership is unchanged logically.
+Water section selection must explicitly include complete canonical definitions,
+including universal P001–004. Any measured expansion remains chargeable.
+
+Only generated presentation may be shortened: concise link labels, dependency
+column labels/whole-chapter extents, and external extent wording preserving complete
+single-file authority and frozen-protocol scope. Original scientific cells/fences
+remain protected by direct passing tests. Qualification retains all current text and
+scope unless a separate precise design amendment is approved before implementation.
+Run whole-core byte projections before fresh retries. New actual fresh science
+answers, not smaller theoretical subsets of old reports, must satisfy unchanged gates.
+
+### Reviewed physical-boundary extension, before implementation
+Both independent reviewers approve adding exactly `solve-boundary.md` (17 chapters
+plus entry in total). It owns the complete original ordered numerical algorithm/error
+section and canonical INV108/109/110. Physical accepted-primitive routes retain these
+complete definitions. Full solver/evaluator review reads it plus nonlinear-solve,
+whose V10/V11–13 details and remaining definitions stay normative. Reviewing V10
+eligibility/partial-root/scaling/wet branches expands that detailed authority even
+on snow-free work; accepted-primitive scope is not a blanket exclusion.
+Move the complete snow-free final-reseal section, INV160 and C015 into existing
+surface-custody. Redirect every original anchor, definition, BEI, guard and test link.
+Generated canonical guard/test labels and same-file link spelling may be shortened
+without removing their requirements. Original scientific fields/fences remain exact.
+Initial17file whole-core projections214450/218916 were insufficient; the extension
+must provide measured margin before fresh retries. Hard gates and rubric unchanged.

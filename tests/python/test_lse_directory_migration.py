@@ -104,7 +104,7 @@ def test_m3_masked_final_reseal_tuple(contract):
     assert contract.meta['contract_version']=='32'
     assert 'reseal' in invariant(contract,160).lower()
     assert 'physical' in definition(contract,'OBL-LANDSURFACEENERGY-C-015').lower()
-    assert 'replay fallback' in owner(contract,'map-custody').lower()
+    assert 'replay fallback' in owner(contract,'surface-custody').lower()
 
 
 def test_m4_masked_hydrology_ownership(contract):
