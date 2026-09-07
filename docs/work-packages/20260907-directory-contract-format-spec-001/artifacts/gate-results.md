@@ -49,3 +49,38 @@ No full workspace or scientific measurements selected.
 Directory-format conformance cases are specified future implementation tests,
 not executed behavior. No context reduction numbers claimed.
 Independent review and verification remain current-scope requirements.
+
+## Whole-cut documentation and scope check
+Ran after substantive commit 6419ce26b: exit 0, 18 owned paths,
+31 local links/anchors. Command below; rerun against the corrected cut at closure.
+This is a bounded check of this diff's Markdown subset, not a universal renderer.
+
+```sh
+.venv/bin/python - <<'PY'
+import re, subprocess
+from pathlib import Path
+base='d8249849d6e015070818be7caf6f8caa75485098'
+pkg=Path('docs/work-packages/20260907-directory-contract-format-spec-001')
+contract=(pkg/'package.md').read_text()
+paths=subprocess.check_output(['git','diff','--name-only',base,'HEAD'],text=True).splitlines()
+count=0
+for name in paths:
+    path=Path(name)
+    relative=str(path.relative_to(pkg)) if path.is_relative_to(pkg) else name
+    assert '- '+relative+'\n' in contract, ('outside write set',name)
+    assert not name.startswith(('crates/','tests/','tools/','docs/specifications/science-contracts/contracts/')), name
+    for target in re.findall(r'\]\(([^\s)]+)\)',path.read_text()):
+        if '://' in target: continue
+        dest,_,anchor=target.partition('#')
+        resolved=path.parent/dest if dest else path
+        assert resolved.is_file(),(name,target)
+        if anchor:
+            text=resolved.read_text()
+            headings={re.sub(r'[^\w\- ]','',line.lstrip('#').strip().lower()).replace(' ','-') for line in text.splitlines() if line.startswith('#')}
+            explicit=set(re.findall(r'<a\s+id="([^"]+)"',text))
+            assert anchor in headings|explicit,(name,target)
+        count+=1
+print('PASS:',len(paths),'owned paths;',count,'local Markdown links/anchors')
+PY
+git diff d8249849d HEAD --check
+```

@@ -153,9 +153,28 @@ replaced through their authorized acceptance-change process, never by this route
 The parent schema and kernel profile's logical content requirements all remain.
 For directory-v1, physical section order is replaced by a `## Schema coverage`
 table in the binding-index chapter: Requirement, Canonical target(s), Applicability.
-Cover each numbered parent-schema and kernel-profile requirement; a distributed
-requirement lists every owning section. Not-applicable needs the original
-schema's allowed rationale, not a layout exemption. Mechanism chapters retain
+Use exactly the 32 coverage keys below, each once; unknown or duplicate keys fail.
+A distributed requirement lists every owning section in its one row.
+
+| Key range | Source list, in listed order |
+| --- | --- |
+| `artifact.section.01` through `artifact.section.18` | [Artifact Required Section Order](science-contract-spec.md#required-section-order), items 1-18. |
+| `kernel.section.01` through `kernel.section.14` | [Profile Required Section Schema](science-contracts/kernel-process-contract-profile.md#required-section-schema-normative), items 1-14. |
+
+For example, `artifact.section.08` maps invariants/guard maps;
+`kernel.section.07` maps the profile's corresponding requirement. These are
+coverage keys, not new scientific obligation IDs. Their meanings bind this
+format revision and the listed schema/profile lists; an upstream list change
+requires explicit format/checker reconciliation, not silent renumbering.
+All subordinate requirements remain binding through their containing section:
+draft readiness, metadata, table fields, algorithm detail, calibration/readiness,
+typed failures, enforcement and compliance duties are not reduced to headings.
+Metadata is checked separately; other rule lists are not independent coverage
+key namespaces. Review must verify this subordinate content, not just 32 rows.
+For non-kernel contracts retain kernel rows with explicit profile-inapplicability
+rationale; otherwise all applicable rows resolve to normative section targets.
+Not-applicable needs the original schema's allowed rationale, not a layout
+exemption. Mechanism chapters retain
 complete algorithm pre/postconditions, guards, aliases, units, calibration posture
 and test-vector duties. The coverage table is a locator, not copied authority.
 
@@ -163,10 +182,32 @@ The binding-index chapter contains one `## Binding definitions` table with
 columns ID and Definition (chapter-relative path plus explicit anchor).
 Every current `INV-*` / `OBL-*` definition occurs exactly once in normative material.
 Retain existing IDs, including producer/consumer-qualified OBL IDs. Definitions
-are marked by an explicit HTML anchor whose id exactly equals the binding ID,
-immediately followed by the invariant/obligation row or heading and its substantive
-definition. Invariant rows retain all parent-schema fields; obligations retain
-statement, applicability, authority, enforcement/failure and test bindings.
+use one encoding: a Markdown table row with the first cell exactly an HTML anchor
+followed by one space and the same backtick-delimited ID. Leading/trailing cell
+whitespace is ignored; anchor syntax is exactly `<a id="ID"></a>` with double
+quotes and no extra attributes. The anchor id equals that row's binding ID.
+The table header is `Invariant ID` or `Obligation ID`; invariant tables retain
+all parent-schema columns, and obligation tables require `Statement`,
+`Applicability`, `Authority`, `Enforcement/failure`, and `Test bindings` columns.
+Required cells are nonempty. Normative semantic adequacy remains a review duty.
+Heading-only and standalone-anchor declarations are not supported by directory-v1.
+Fenced code blocks are examples, never definitions; the scanner must exclude
+CommonMark backtick and tilde fences (including longer fences and info strings).
+Literal unescaped table pipes inside a cell are unsupported; use `&#124;`.
+
+Illustrative accepted row form (artificial ID; this fenced example is not authority):
+
+```md
+| Invariant ID | Statement | Authority | Evidence | Guard | Failure posture |
+| --- | --- | --- | --- | --- | --- |
+| <a id="INV-EXAMPLE-001"></a> `INV-EXAMPLE-001` | Example requirement. | Example source. | [DIRECT][Static] | Example guard. | Typed failure. |
+```
+
+Rejected declaration forms: a first cell containing only `INV-EXAMPLE-001`;
+an anchor before/outside the row; a heading containing the ID; an anchor whose
+ID differs from the cell ID. Mentions in prose and other reference tables are
+permitted but cannot satisfy a binding registry target. Any definition-shaped
+anchor outside this grammar is an error, except explicitly declared entry aliases.
 The table locates actual definitions; mere ID mentions, aliases, registry rows,
 BEI rows or copied lists are not definitions and cannot satisfy existence.
 
