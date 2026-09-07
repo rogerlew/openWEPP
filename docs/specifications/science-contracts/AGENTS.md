@@ -22,6 +22,11 @@
 
 ## Standard Workflow
 1. Read root `AGENTS.md`, this file, and the target `SC-*` contract before edits.
+   Existing single-file contracts still require the full contract. Only after
+   [directory-format adoption](../science-contract-directory-format.md#adoption-gates),
+   read its entry, applicable task/role modules and recursive section dependencies.
+   The entire set remains binding; uncertainty expands reading, never authority exemptions.
+   Format-only specification work reads the schema/profile, not unrelated SC corpora.
 2. For kernel-affecting packages, read the package-local `package.md` and `docs/work-packages/AGENTS.md`.
 3. Amend canonical `SC-*` authority before contract-derived tests and production code.
 4. Preserve variable naming continuity with legacy WEPP symbols; when runtime names differ, add explicit alias mappings.
@@ -69,6 +74,8 @@ For code-authoring work where contract authority applies:
 - Do not treat comparator agreement as a target; `docs/decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md` makes it a flag requiring independent correctness authority before `OPENWEPP-DEFECTIVE` labels.
 - Do not classify residuals without like-for-like unit and lineage-stage proof.
 - Do not move active binding material into sidecars without a Binding Exposure Index and review gate.
+- Adopted directory-format normative chapters are canonical contract authority,
+  not sidecars. Preserve unique binding definitions and the entry's declared set.
 - Do not let package-local addenda become canonical authority without contract integration.
 
 ## References

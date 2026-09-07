@@ -4,6 +4,13 @@ Current-work locator: [active index](active.md). Start there and at the named
 package handoff; this catalog preserves historical evidence. Prospective rules
 in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
+## 20260907-directory-contract-format-spec-001
+
+EXECUTING: directory-based canonical contract format specification and prospective
+guidance integration; no LSE migration or scientific amendment.
+See [package](20260907-directory-contract-format-spec-001/package.md) and
+[handoff](20260907-directory-contract-format-spec-001/artifacts/worker-handoff.md).
+
 ## 20260906-agent-context-and-evidence-efficiency-001
 
 COMPLETE: role/context simplification, current-state routing, evidence

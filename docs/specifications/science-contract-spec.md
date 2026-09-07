@@ -1,7 +1,7 @@
 # Science Contract Artifact Specification
 
 Status: Active
-Last updated: 2026-07-27
+Last updated: 2026-09-07
 Scope: canonical artifact schema for openWEPP science contracts (`SC-*`)
 
 ## Purpose
@@ -17,6 +17,15 @@ per-package narrative sidecars are defined in
 Canonical contract files must live at:
 
 - `docs/specifications/science-contracts/contracts/SC-<DOMAIN>-<NNN>.md`
+
+This remains the entry path. The prospective
+[directory-based format](science-contract-directory-format.md) defines a canonical
+entry plus explicitly listed normative chapters under a same-named directory.
+Its adoption gates must pass before any contract uses selective module reading;
+existing single-file contracts and checker behavior remain unchanged meanwhile.
+For an adopted `directory-v1` contract, "core contract" in this schema means
+that coherent normative document set, not only the entry file. Historical sidecars
+remain non-authoritative; normative mechanism chapters are not sidecars.
 
 The canonical lifecycle registry must live at:
 
@@ -51,6 +60,10 @@ Existing contracts remain conformant when they satisfy the legacy lifecycle meta
 Field requirement vocabulary: `yes` means required for all contracts; `target` means required for new contracts and contracts migrated under this schema, with legacy backfill tracked as follow-on migration work.
 
 ## Required Section Order
+
+For an adopted directory-v1 set, these remain logical content requirements;
+the directory format's Schema coverage table replaces physical single-file order.
+No required content is removed. Legacy single files retain the ordering below.
 
 Each new contract and each existing contract materially amended after
 ADR-0042 must contain, in order, these logical sections. Exact heading wording
@@ -237,6 +250,9 @@ mechanism that proves consolidation preserves all binding obligations.
    them to canonical binding IDs.
 4. `undecidable` entries block consolidation and require science-review follow-on.
 5. The index must reference only binding IDs that exist in the core contract.
+   For directory-v1, the binding-definitions registry resolves unique actual
+   definitions in declared normative chapters or entry, not ID mentions in the
+   entry. See the directory format's checker extension contract and adoption gates.
 
 ## Binding Exposure Lint Contract
 

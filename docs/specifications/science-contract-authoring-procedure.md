@@ -1,7 +1,7 @@
 # Science Contract Authoring Procedure
 
 Status: Active
-Last updated: 2026-07-27
+Last updated: 2026-09-07
 Scope: openWEPP process-based science contracts (`SC-<DOMAIN>-<NNN>`)
 
 ## Purpose
@@ -71,6 +71,13 @@ This procedure is normative for contract promotion readiness and complements:
 
 ## Canonical Locations
 
+The [directory-based format](science-contract-directory-format.md) specifies a
+prospective entry-plus-normative-chapters representation. Its adoption gates
+require separately authorized migration, module-aware checks and independent
+preservation/usability verification. Until then, existing single-file rules apply.
+After adoption, references here to core authority include the explicitly declared
+normative set; sidecar lifecycle rules do not demote normative chapters.
+
 Canonical `SC-*` authority files must live in:
 
 - `docs/specifications/science-contracts/contracts/SC-<DOMAIN>-<NNN>.md`
@@ -120,6 +127,12 @@ and commit SHA under review.
    current-scope `BLOCKED` row prevents completion.
 
 ## Binding Exposure Workflow
+
+Directory-v1 migrations additionally follow the directory format's adoption gates:
+clause-level preservation, effective-rule consolidation, unique definition locations,
+and explicit task/role dependencies. Keep unresolved binding residue authoritative;
+no selective-reading exemption or completed consolidation is inferred from a legacy
+checker PASS. No scientific amendment or production activation follows from layout.
 
 Contracts with historical or package-local addenda must expose binding residue in
 the core contract before narrative can be moved to a provenance sidecar.
@@ -272,6 +285,11 @@ If any condition fails, disposition is `HOLD`.
 ## Minimal Prompt Templates
 
 Reviewer prompt:
+
+For directory-v1, supply the exact entry/set revision, selected modules/dependencies
+and preservation map; inspect routing against the actual diff and expand when needed.
+Apply the same requirement to the verifier prompt; do not automatically load history
+or omit applicable physical/operand authority merely because of the role label.
 
 `Review SC-... for scientific authority alignment, invariant soundness, evidence-label correctness, Binding Exposure Index conservation, and promotion readiness. Return severity-ranked findings with file/line references and final recommendation: GO / GO-WITH-AMENDMENTS / HOLD.`
 

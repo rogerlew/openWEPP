@@ -26,6 +26,15 @@ necessary-overrun treatment: docs/standards/prompt-wording-guidance.md#context-m
 
 ## Map
 
+For a contract that has passed directory-v1 adoption gates, record its entry,
+exact contract revision/source identity, selected normative module sections,
+applicable direct/recursive dependencies, task and role, and expansion triggers.
+Use [the directory format](../specifications/science-contract-directory-format.md#mechanism-chapters-and-dependencies).
+Before adoption retain existing whole-contract and frozen kickoff requirements.
+The whole contract remains binding; review the selected set against the actual
+diff and expand on missing authority. Role alone never exempts closure operands
+or other relevant scientific requirements. Count all mandatory linked material.
+
 | Path | Tier | Why required | Trigger / applicability | Read timing | Owner / maintainer | Last verified UTC | Notes |
 |------|------|--------------|-------------------------|-------------|--------------------|-------------------|-------|
 | /workdir/openWEPP/AGENTS.md | Core | Root governance for all package work | Always | Pre-edit | Agent | <timestamp> | |

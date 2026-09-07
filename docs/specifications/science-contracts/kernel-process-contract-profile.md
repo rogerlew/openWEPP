@@ -1,7 +1,7 @@
 # Kernel Process Contract Profile
 
 Status: Active
-Last updated: 2026-07-27
+Last updated: 2026-09-07
 Scope: openWEPP kernel-authority contracts and kernel-adjacent runtime projection
 contracts (`SC-*` files that define executable process behavior)
 
@@ -31,6 +31,11 @@ Examples include PL/WB queue packages such as `PL11+` and `WB10+`.
 
 ## Canonical Authority Location (Normative)
 
+The prospective [directory format](../science-contract-directory-format.md)
+retains that entry path and defines explicitly declared normative chapters.
+Only after its adoption gates pass does "contract" here mean that coherent set.
+Single-file contracts remain unchanged; format approval does not activate science.
+
 Kernel process authority must live in canonical science-contract files:
 
 - `docs/specifications/science-contracts/contracts/SC-<DOMAIN>-<NNN>.md`
@@ -58,6 +63,10 @@ Minimum alignment obligations:
    - `docs/specifications/external-authority/suite-schema.md`
 
 ## Required Section Schema (Normative)
+
+For adopted directory-v1 contracts, all content below remains mandatory, mapped
+through the format's Schema coverage table rather than physical file order.
+Mechanism chapters keep their complete equations, units, guards and test duties.
 
 Applicable `SC-*` files must include all sections below in this order (exact
 titles may vary slightly, but content obligations are mandatory):
