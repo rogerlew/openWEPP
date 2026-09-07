@@ -1,6 +1,6 @@
 {
   "baseline_revision": "3c6813d39",
-  "convention": "structural representative assignments using old template universal Core and prospective role routes; whole-file conservative authority convention; identical frozen task-state files; not actual session usage",
+  "convention": "structural representative assignments using old template universal Core and prospective role routes; whole-file conservative authority convention; identical frozen task-state files; not actual session usage; frozen Stage-3 executable kickoff and all its unconditional reading edges counted recursively; required history is not eliminated by new guidance",
   "before": {
     "readings": {
       "root": {
@@ -24,7 +24,10 @@
       "science_state": {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
         "reason": "assigned role/task applicable authority or current state",
-        "revision": "3c6813d39"
+        "revision": "3c6813d39",
+        "requires": [
+          "science_protocol"
+        ]
       },
       "science_handoff": {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
@@ -149,6 +152,80 @@
       "role_runner": {
         "path": "docs/work-packages/role-runner.md",
         "reason": "assigned role/task applicable authority or current state"
+      },
+      "science_protocol": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection",
+        "requires": [
+          "root",
+          "common",
+          "plans",
+          "prompt",
+          "strategy",
+          "history_disposition",
+          "history_coverage",
+          "history_memory",
+          "history_summary",
+          "history_budget",
+          "history_tolerance",
+          "history_contract"
+        ]
+      },
+      "history_disposition": {
+        "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/final-disposition.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_coverage": {
+        "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/coverage-findings.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_memory": {
+        "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/memory-attribution.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_summary": {
+        "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/historical_v31_gdb_take_return_summary.txt",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_budget": {
+        "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_tolerance": {
+        "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/tolerance-authority.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_contract": {
+        "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/component-temperature-dependency-replay/contract_ref.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "lse": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+        "revision": "3c6813d39",
+        "reason": "frozen kickoff conditional LSE replay authority; conservative full-file selection rather than hiding applicable obligations"
+      },
+      "crates_guide": {
+        "path": "crates/AGENTS.md",
+        "revision": "3c6813d39",
+        "reason": "science implementer applicable source-path instructions; conservative shared science-role assignment"
+      },
+      "tests_guide": {
+        "path": "tests/AGENTS.md",
+        "revision": "3c6813d39",
+        "reason": "science contract-test path instructions"
+      },
+      "parity": {
+        "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+        "revision": "3c6813d39",
+        "reason": "frozen kickoff conditional existing parity tests; mechanism expansion before edits"
       }
     },
     "roles": {
@@ -256,10 +333,14 @@
           "units",
           "correctness",
           "solver",
-          "kernel"
+          "kernel",
+          "lse",
+          "crates_guide",
+          "tests_guide"
         ],
         "expansion": [
-          "source"
+          "source",
+          "parity"
         ]
       },
       "science_sensitive.implementer": {
@@ -279,10 +360,14 @@
           "schema",
           "units",
           "correctness",
-          "solver"
+          "solver",
+          "lse",
+          "crates_guide",
+          "tests_guide"
         ],
         "expansion": [
-          "source"
+          "source",
+          "parity"
         ]
       },
       "science_sensitive.correctness_reviewer": {
@@ -303,10 +388,14 @@
           "schema",
           "units",
           "correctness",
-          "solver"
+          "solver",
+          "lse",
+          "crates_guide",
+          "tests_guide"
         ],
         "expansion": [
-          "source"
+          "source",
+          "parity"
         ]
       },
       "science_sensitive.qa_reviewer": {
@@ -327,10 +416,14 @@
           "schema",
           "units",
           "correctness",
-          "solver"
+          "solver",
+          "lse",
+          "crates_guide",
+          "tests_guide"
         ],
         "expansion": [
-          "source"
+          "source",
+          "parity"
         ]
       },
       "science_sensitive.verifier": {
@@ -350,10 +443,14 @@
           "schema",
           "units",
           "correctness",
-          "solver"
+          "solver",
+          "lse",
+          "crates_guide",
+          "tests_guide"
         ],
         "expansion": [
-          "source"
+          "source",
+          "parity"
         ]
       },
       "science_sensitive.runner": {
@@ -391,7 +488,10 @@
       "science_state": {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
         "reason": "assigned role/task applicable authority or current state",
-        "revision": "3c6813d39"
+        "revision": "3c6813d39",
+        "requires": [
+          "science_protocol"
+        ]
       },
       "science_handoff": {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
@@ -516,6 +616,80 @@
       "role_runner": {
         "path": "docs/work-packages/role-runner.md",
         "reason": "assigned role/task applicable authority or current state"
+      },
+      "science_protocol": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection",
+        "requires": [
+          "root",
+          "common",
+          "plans",
+          "prompt",
+          "strategy",
+          "history_disposition",
+          "history_coverage",
+          "history_memory",
+          "history_summary",
+          "history_budget",
+          "history_tolerance",
+          "history_contract"
+        ]
+      },
+      "history_disposition": {
+        "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/final-disposition.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_coverage": {
+        "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/coverage-findings.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_memory": {
+        "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/memory-attribution.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_summary": {
+        "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/historical_v31_gdb_take_return_summary.txt",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_budget": {
+        "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_tolerance": {
+        "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/tolerance-authority.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "history_contract": {
+        "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/component-temperature-dependency-replay/contract_ref.md",
+        "revision": "3c6813d39",
+        "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+      },
+      "lse": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+        "revision": "3c6813d39",
+        "reason": "frozen kickoff conditional LSE replay authority; conservative full-file selection rather than hiding applicable obligations"
+      },
+      "crates_guide": {
+        "path": "crates/AGENTS.md",
+        "revision": "3c6813d39",
+        "reason": "science implementer applicable source-path instructions; conservative shared science-role assignment"
+      },
+      "tests_guide": {
+        "path": "tests/AGENTS.md",
+        "revision": "3c6813d39",
+        "reason": "science contract-test path instructions"
+      },
+      "parity": {
+        "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+        "revision": "3c6813d39",
+        "reason": "frozen kickoff conditional existing parity tests; mechanism expansion before edits"
       }
     },
     "roles": {
@@ -627,10 +801,14 @@
           "correctness",
           "solver",
           "obligations",
-          "kernel"
+          "kernel",
+          "lse",
+          "crates_guide",
+          "tests_guide"
         ],
         "expansion": [
-          "source"
+          "source",
+          "parity"
         ]
       },
       "science_sensitive.implementer": {
@@ -650,10 +828,14 @@
           "units",
           "correctness",
           "solver",
-          "obligations"
+          "obligations",
+          "lse",
+          "crates_guide",
+          "tests_guide"
         ],
         "expansion": [
-          "source"
+          "source",
+          "parity"
         ]
       },
       "science_sensitive.correctness_reviewer": {
@@ -675,10 +857,14 @@
           "units",
           "correctness",
           "solver",
-          "obligations"
+          "obligations",
+          "lse",
+          "crates_guide",
+          "tests_guide"
         ],
         "expansion": [
-          "source"
+          "source",
+          "parity"
         ]
       },
       "science_sensitive.qa_reviewer": {
@@ -700,10 +886,14 @@
           "units",
           "correctness",
           "solver",
-          "obligations"
+          "obligations",
+          "lse",
+          "crates_guide",
+          "tests_guide"
         ],
         "expansion": [
-          "source"
+          "source",
+          "parity"
         ]
       },
       "science_sensitive.verifier": {
@@ -725,10 +915,14 @@
           "units",
           "correctness",
           "solver",
-          "obligations"
+          "obligations",
+          "lse",
+          "crates_guide",
+          "tests_guide"
         ],
         "expansion": [
-          "source"
+          "source",
+          "parity"
         ]
       },
       "science_sensitive.runner": {

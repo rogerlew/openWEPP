@@ -87,6 +87,26 @@ class CaptureTests(unittest.TestCase):
         with self.assertRaises(ValueError): self.capture()
         with self.assertRaises(ValueError): eb.capture(self.repo,self.spec,self.repo/'bundle')
 
+    def test_dotdot_destination_overlap(self):
+        (self.base/'other').mkdir()
+        with self.assertRaises(ValueError):
+            eb.capture(self.repo,self.spec,self.base/'other/../original/bundle')
+        self.assertFalse((self.repo/'bundle').exists())
+
+    def test_chained_symlink_escape(self):
+        (self.repo/'alias').symlink_to('.')
+        (self.repo/'escape').symlink_to('alias/../fixture/fixture')
+        self.spec['files']['source'] += ['alias','escape']
+        with self.assertRaises(ValueError): self.capture()
+        self.assertFalse(self.bundle.exists())
+
+    def test_staged_chained_symlink_escape(self):
+        link=self.repo/'safe-link'
+        link.unlink(); link.symlink_to('alias/../fixture/fixture')
+        eb.git(self.repo,'add','--','safe-link')
+        link.unlink(); link.symlink_to('main')
+        with self.assertRaises(ValueError): self.capture()
+
     def test_corruption_and_truncation(self):
         m=self.capture(); p=self.bundle/'blobs'/m['entries'][0]['sha256']
         p.write_bytes(b'corrupt')
@@ -175,6 +195,16 @@ class CaptureTests(unittest.TestCase):
 
 
 class IdentityTests(unittest.TestCase):
+    def test_different_revision_bytes_are_not_deduplicated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); (root/'a').write_bytes(b'new\n')
+            spec={'readings':{'old':dict(path='a',reason='old',revision='old'),
+                              'new':dict(path='a',reason='new')},
+                  'roles':{'review':{'bootstrap':['old','new'],'expansion':[]}}}
+            with mock.patch.object(context.subprocess,'check_output',return_value=b'old\n'):
+                result=context.report(root,spec)['roles']['review']
+            self.assertEqual(result['bootstrap']['unique_bytes'],8)
+
     def test_mutation_memberships_do_not_classify_semantics(self):
         with tempfile.TemporaryDirectory(prefix='openwepp-identity-') as directory:
             root=Path(directory)

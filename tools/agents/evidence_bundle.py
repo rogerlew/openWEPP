@@ -45,6 +45,8 @@ def no_symlink_parents(path):
 
 
 def destination(path, excluded):
+    if '..' in path.parts:
+        raise ValueError('noncanonical destination path')
     path = path.absolute()
     no_symlink_parents(path)
     if path.exists() or not path.parent.is_dir():
@@ -64,6 +66,9 @@ def link_safe(path, data):
     target = data.decode('utf-8')
     if not target or target.startswith('/') or '\\' in target or '\x00' in target:
         raise ValueError('unsafe symlink')
+    # Lexical confinement fails if an earlier link redirects parent traversal.
+    if '..' in target.split('/'):
+        raise ValueError('parent-traversing symlink')
     parts = list(PurePosixPath(path).parent.parts)
     for component in target.split('/'):
         if component == '..':

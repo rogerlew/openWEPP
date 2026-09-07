@@ -1,5 +1,20 @@
 # Reading and measurement scope
 
+Corrected after B3: the science task's frozen executable kickoff and all seven
+explicit historical prerequisites plus required governance Core are counted
+recursively in both phases. Conditional LSE authority, source/test instructions
+and parity expansion are also included. The historical kickoff is not rewritten
+to manufacture savings. Full-file conservative selection overstates some
+role-specific section needs but retains mandatory dependencies. The paired
+comparison keeps that convention identical; no exhaustive later investigation
+or measured session-total claim is made.
+
+Necessary author overrun: administrative author reads the full reusable prompt
+and testing standards to revise governance (71,218 bytes). Science tasks retain
+large canonical snow/LSE authority and the frozen existing protocol's historical
+reading; even the runner consumes that frozen contract in this conservative
+comparison. These overruns are explicit costs, not a normalized new threshold.
+
 Static: explicit representative assignments in context-inputs.json; Ran: context_report.py byte/range counting at scaffold baseline and current tree. context-before.json and context-after.json retain full path/range/hash/repetition records.
 
 Initial parent read root, package/standards guides, ExecPlan, testing strategy, relevant kernel/prompt procedures, guidance map, registered configs, active templates, current catalog entries/process sections and Stage-3 final dispositions/checkpoint. Initial combined output truncation was followed by smaller selected reads; no session-total count is inferred. Skill used: OpenAI Docs, local support checks only under owner no-network constraint. System/user/skill/tool-message automatic exposure and repeated parent reads are UNOBSERVED as a complete byte total.

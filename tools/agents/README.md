@@ -51,7 +51,8 @@ the detached manifest digest covers manifest bytes; per-file hashes cover blobs.
 Hashes detect corruption, not malicious replacement or semantic equivalence.
 Keep a trusted compact manifest digest separately in the package.
 Symlinks are captured as link bytes, never followed; only relative targets
-contained within their restored group are allowed. Unsupported hardlinks,
+contained within their restored group are allowed; parent-traversing (`..`)
+targets are rejected even when they appear lexically contained. Unsupported hardlinks,
 special files/modes, index conflicts, missing inputs, changed inputs/index,
 corruption and existing/unsafe destinations fail. Use a quiescent source tree;
 two reads plus metadata checks detect observed mutation, not adversarial atomic

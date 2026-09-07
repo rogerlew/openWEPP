@@ -632,8 +632,8 @@
     },
     "science_sensitive.author": {
       "bootstrap": {
-        "unique_bytes": 1251528,
-        "exposure_bytes": 1265277,
+        "unique_bytes": 1649564,
+        "exposure_bytes": 1756322,
         "reads": [
           {
             "path": "AGENTS.md",
@@ -667,6 +667,149 @@
             "exposures": 1,
             "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
             "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+            "lines": [
+              1,
+              263
+            ],
+            "bytes": 25550,
+            "exposures": 1,
+            "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              160
+            ],
+            "bytes": 12599,
+            "exposures": 1,
+            "sha256": "9fe3e939eddfae0e0a70e4140718a1e9bf6b3706eddac6394877d6a82672bef9",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              388
+            ],
+            "bytes": 26781,
+            "exposures": 1,
+            "sha256": "3518743c0782653a6cc8a180f775c7a4d0c3fd1bdffa601022f3ee9920df1b4f",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/codex_exec_plans.md",
+            "lines": [
+              1,
+              244
+            ],
+            "bytes": 20921,
+            "exposures": 1,
+            "sha256": "8015d797ab338a262eb13a7f1867d6654e9474c7ff7b1f3cb4e8709ddc9ab5c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/prompt-wording-guidance.md",
+            "lines": [
+              1,
+              180
+            ],
+            "bytes": 10508,
+            "exposures": 1,
+            "sha256": "9f242e32c07f3f5e5a46df3ecf45b5cffce7e22f3e83d8014560fda6480f31f0",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              459
+            ],
+            "bytes": 22200,
+            "exposures": 1,
+            "sha256": "7a95025d00a8dd655f1a858c6990573c85ca202a11228520ed2370ba2d09cea3",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/final-disposition.md",
+            "lines": [
+              1,
+              119
+            ],
+            "bytes": 7579,
+            "exposures": 1,
+            "sha256": "543e3b675e1a24ddc30c077aebd3e97c01b826519a5ce695afc2493f7507d13d",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/coverage-findings.md",
+            "lines": [
+              1,
+              115
+            ],
+            "bytes": 7906,
+            "exposures": 1,
+            "sha256": "93c129e61cdc9d283229c07df816fa14c01e3c979736810bf524d576b6371e82",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/memory-attribution.md",
+            "lines": [
+              1,
+              89
+            ],
+            "bytes": 5325,
+            "exposures": 1,
+            "sha256": "575b761dc754623998363c099b354aa4c50c4e5f7a35e767d09a7373ebefbf67",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/historical_v31_gdb_take_return_summary.txt",
+            "lines": [
+              1,
+              40
+            ],
+            "bytes": 2500,
+            "exposures": 1,
+            "sha256": "73c0d88bfa476592ed53826a6a133f5961eb28508eecb7144edb5557a95cf366",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md",
+            "lines": [
+              1,
+              808
+            ],
+            "bytes": 48583,
+            "exposures": 1,
+            "sha256": "7881a4be782fdc1bb1139755675128e7419ff48d958e6afa1f9b2d8f4350d1c2",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/tolerance-authority.md",
+            "lines": [
+              1,
+              197
+            ],
+            "bytes": 11902,
+            "exposures": 1,
+            "sha256": "4a4e7953b400dd91708a4bb33e47bb8f09734c4f077d1ff1a21803cbad3c4232",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/component-temperature-dependency-replay/contract_ref.md",
+            "lines": [
+              1,
+              245
+            ],
+            "bytes": 13669,
+            "exposures": 1,
+            "sha256": "990e9d67888e3664b63106e5fdbcb0d090f719191138dd4a7bac3687bbb0d3c6",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
           },
           {
             "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
@@ -854,12 +997,45 @@
             "exposures": 1,
             "sha256": "61a4f641c31959322e26a0ed19389d9d2eeef73b4b415d5a360641c710df2702",
             "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "lines": [
+              1,
+              3346
+            ],
+            "bytes": 264863,
+            "exposures": 1,
+            "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+            "reason": "frozen kickoff conditional LSE replay authority; conservative full-file selection rather than hiding applicable obligations"
+          },
+          {
+            "path": "crates/AGENTS.md",
+            "lines": [
+              1,
+              75
+            ],
+            "bytes": 5436,
+            "exposures": 1,
+            "sha256": "c09b4fbfb7a49aab4029312987155adb93835399c22d42e5ed9293e161a02334",
+            "reason": "science implementer applicable source-path instructions; conservative shared science-role assignment"
+          },
+          {
+            "path": "tests/AGENTS.md",
+            "lines": [
+              1,
+              63
+            ],
+            "bytes": 4723,
+            "exposures": 1,
+            "sha256": "a611de77a1e0f892a7f10736aff40e9d8fa408d4caf8b360907166d4eabc6fe4",
+            "reason": "science contract-test path instructions"
           }
         ]
       },
       "expansion": {
-        "unique_bytes": 106779,
-        "exposure_bytes": 106779,
+        "unique_bytes": 170737,
+        "exposure_bytes": 170737,
         "reads": [
           {
             "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
@@ -871,15 +1047,26 @@
             "exposures": 1,
             "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
             "reason": "mechanism-specific source expansion"
+          },
+          {
+            "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+            "lines": [
+              1,
+              1512
+            ],
+            "bytes": 63958,
+            "exposures": 1,
+            "sha256": "0891e5139d06c0aaed3bc8c77a01f27e9e7a271d523ad514526f71c59b2c1bc8",
+            "reason": "frozen kickoff conditional existing parity tests; mechanism expansion before edits"
           }
         ]
       },
-      "combined_unique_bytes": 1358307
+      "combined_unique_bytes": 1820301
     },
     "science_sensitive.implementer": {
       "bootstrap": {
-        "unique_bytes": 1221659,
-        "exposure_bytes": 1235408,
+        "unique_bytes": 1630203,
+        "exposure_bytes": 1726453,
         "reads": [
           {
             "path": "AGENTS.md",
@@ -913,6 +1100,149 @@
             "exposures": 1,
             "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
             "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+            "lines": [
+              1,
+              263
+            ],
+            "bytes": 25550,
+            "exposures": 1,
+            "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              160
+            ],
+            "bytes": 12599,
+            "exposures": 1,
+            "sha256": "9fe3e939eddfae0e0a70e4140718a1e9bf6b3706eddac6394877d6a82672bef9",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              388
+            ],
+            "bytes": 26781,
+            "exposures": 1,
+            "sha256": "3518743c0782653a6cc8a180f775c7a4d0c3fd1bdffa601022f3ee9920df1b4f",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/codex_exec_plans.md",
+            "lines": [
+              1,
+              244
+            ],
+            "bytes": 20921,
+            "exposures": 1,
+            "sha256": "8015d797ab338a262eb13a7f1867d6654e9474c7ff7b1f3cb4e8709ddc9ab5c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/prompt-wording-guidance.md",
+            "lines": [
+              1,
+              180
+            ],
+            "bytes": 10508,
+            "exposures": 1,
+            "sha256": "9f242e32c07f3f5e5a46df3ecf45b5cffce7e22f3e83d8014560fda6480f31f0",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              459
+            ],
+            "bytes": 22200,
+            "exposures": 1,
+            "sha256": "7a95025d00a8dd655f1a858c6990573c85ca202a11228520ed2370ba2d09cea3",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/final-disposition.md",
+            "lines": [
+              1,
+              119
+            ],
+            "bytes": 7579,
+            "exposures": 1,
+            "sha256": "543e3b675e1a24ddc30c077aebd3e97c01b826519a5ce695afc2493f7507d13d",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/coverage-findings.md",
+            "lines": [
+              1,
+              115
+            ],
+            "bytes": 7906,
+            "exposures": 1,
+            "sha256": "93c129e61cdc9d283229c07df816fa14c01e3c979736810bf524d576b6371e82",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/memory-attribution.md",
+            "lines": [
+              1,
+              89
+            ],
+            "bytes": 5325,
+            "exposures": 1,
+            "sha256": "575b761dc754623998363c099b354aa4c50c4e5f7a35e767d09a7373ebefbf67",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/historical_v31_gdb_take_return_summary.txt",
+            "lines": [
+              1,
+              40
+            ],
+            "bytes": 2500,
+            "exposures": 1,
+            "sha256": "73c0d88bfa476592ed53826a6a133f5961eb28508eecb7144edb5557a95cf366",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md",
+            "lines": [
+              1,
+              808
+            ],
+            "bytes": 48583,
+            "exposures": 1,
+            "sha256": "7881a4be782fdc1bb1139755675128e7419ff48d958e6afa1f9b2d8f4350d1c2",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/tolerance-authority.md",
+            "lines": [
+              1,
+              197
+            ],
+            "bytes": 11902,
+            "exposures": 1,
+            "sha256": "4a4e7953b400dd91708a4bb33e47bb8f09734c4f077d1ff1a21803cbad3c4232",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/component-temperature-dependency-replay/contract_ref.md",
+            "lines": [
+              1,
+              245
+            ],
+            "bytes": 13669,
+            "exposures": 1,
+            "sha256": "990e9d67888e3664b63106e5fdbcb0d090f719191138dd4a7bac3687bbb0d3c6",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
           },
           {
             "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
@@ -1067,12 +1397,45 @@
             "exposures": 1,
             "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
             "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "lines": [
+              1,
+              3346
+            ],
+            "bytes": 264863,
+            "exposures": 1,
+            "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+            "reason": "frozen kickoff conditional LSE replay authority; conservative full-file selection rather than hiding applicable obligations"
+          },
+          {
+            "path": "crates/AGENTS.md",
+            "lines": [
+              1,
+              75
+            ],
+            "bytes": 5436,
+            "exposures": 1,
+            "sha256": "c09b4fbfb7a49aab4029312987155adb93835399c22d42e5ed9293e161a02334",
+            "reason": "science implementer applicable source-path instructions; conservative shared science-role assignment"
+          },
+          {
+            "path": "tests/AGENTS.md",
+            "lines": [
+              1,
+              63
+            ],
+            "bytes": 4723,
+            "exposures": 1,
+            "sha256": "a611de77a1e0f892a7f10736aff40e9d8fa408d4caf8b360907166d4eabc6fe4",
+            "reason": "science contract-test path instructions"
           }
         ]
       },
       "expansion": {
-        "unique_bytes": 106779,
-        "exposure_bytes": 106779,
+        "unique_bytes": 170737,
+        "exposure_bytes": 170737,
         "reads": [
           {
             "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
@@ -1084,15 +1447,26 @@
             "exposures": 1,
             "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
             "reason": "mechanism-specific source expansion"
+          },
+          {
+            "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+            "lines": [
+              1,
+              1512
+            ],
+            "bytes": 63958,
+            "exposures": 1,
+            "sha256": "0891e5139d06c0aaed3bc8c77a01f27e9e7a271d523ad514526f71c59b2c1bc8",
+            "reason": "frozen kickoff conditional existing parity tests; mechanism expansion before edits"
           }
         ]
       },
-      "combined_unique_bytes": 1328438
+      "combined_unique_bytes": 1800940
     },
     "science_sensitive.correctness_reviewer": {
       "bootstrap": {
-        "unique_bytes": 1223017,
-        "exposure_bytes": 1236766,
+        "unique_bytes": 1631561,
+        "exposure_bytes": 1727811,
         "reads": [
           {
             "path": "AGENTS.md",
@@ -1126,6 +1500,149 @@
             "exposures": 1,
             "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
             "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+            "lines": [
+              1,
+              263
+            ],
+            "bytes": 25550,
+            "exposures": 1,
+            "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              160
+            ],
+            "bytes": 12599,
+            "exposures": 1,
+            "sha256": "9fe3e939eddfae0e0a70e4140718a1e9bf6b3706eddac6394877d6a82672bef9",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              388
+            ],
+            "bytes": 26781,
+            "exposures": 1,
+            "sha256": "3518743c0782653a6cc8a180f775c7a4d0c3fd1bdffa601022f3ee9920df1b4f",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/codex_exec_plans.md",
+            "lines": [
+              1,
+              244
+            ],
+            "bytes": 20921,
+            "exposures": 1,
+            "sha256": "8015d797ab338a262eb13a7f1867d6654e9474c7ff7b1f3cb4e8709ddc9ab5c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/prompt-wording-guidance.md",
+            "lines": [
+              1,
+              180
+            ],
+            "bytes": 10508,
+            "exposures": 1,
+            "sha256": "9f242e32c07f3f5e5a46df3ecf45b5cffce7e22f3e83d8014560fda6480f31f0",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              459
+            ],
+            "bytes": 22200,
+            "exposures": 1,
+            "sha256": "7a95025d00a8dd655f1a858c6990573c85ca202a11228520ed2370ba2d09cea3",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/final-disposition.md",
+            "lines": [
+              1,
+              119
+            ],
+            "bytes": 7579,
+            "exposures": 1,
+            "sha256": "543e3b675e1a24ddc30c077aebd3e97c01b826519a5ce695afc2493f7507d13d",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/coverage-findings.md",
+            "lines": [
+              1,
+              115
+            ],
+            "bytes": 7906,
+            "exposures": 1,
+            "sha256": "93c129e61cdc9d283229c07df816fa14c01e3c979736810bf524d576b6371e82",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/memory-attribution.md",
+            "lines": [
+              1,
+              89
+            ],
+            "bytes": 5325,
+            "exposures": 1,
+            "sha256": "575b761dc754623998363c099b354aa4c50c4e5f7a35e767d09a7373ebefbf67",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/historical_v31_gdb_take_return_summary.txt",
+            "lines": [
+              1,
+              40
+            ],
+            "bytes": 2500,
+            "exposures": 1,
+            "sha256": "73c0d88bfa476592ed53826a6a133f5961eb28508eecb7144edb5557a95cf366",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md",
+            "lines": [
+              1,
+              808
+            ],
+            "bytes": 48583,
+            "exposures": 1,
+            "sha256": "7881a4be782fdc1bb1139755675128e7419ff48d958e6afa1f9b2d8f4350d1c2",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/tolerance-authority.md",
+            "lines": [
+              1,
+              197
+            ],
+            "bytes": 11902,
+            "exposures": 1,
+            "sha256": "4a4e7953b400dd91708a4bb33e47bb8f09734c4f077d1ff1a21803cbad3c4232",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/component-temperature-dependency-replay/contract_ref.md",
+            "lines": [
+              1,
+              245
+            ],
+            "bytes": 13669,
+            "exposures": 1,
+            "sha256": "990e9d67888e3664b63106e5fdbcb0d090f719191138dd4a7bac3687bbb0d3c6",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
           },
           {
             "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
@@ -1291,12 +1808,45 @@
             "exposures": 1,
             "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
             "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "lines": [
+              1,
+              3346
+            ],
+            "bytes": 264863,
+            "exposures": 1,
+            "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+            "reason": "frozen kickoff conditional LSE replay authority; conservative full-file selection rather than hiding applicable obligations"
+          },
+          {
+            "path": "crates/AGENTS.md",
+            "lines": [
+              1,
+              75
+            ],
+            "bytes": 5436,
+            "exposures": 1,
+            "sha256": "c09b4fbfb7a49aab4029312987155adb93835399c22d42e5ed9293e161a02334",
+            "reason": "science implementer applicable source-path instructions; conservative shared science-role assignment"
+          },
+          {
+            "path": "tests/AGENTS.md",
+            "lines": [
+              1,
+              63
+            ],
+            "bytes": 4723,
+            "exposures": 1,
+            "sha256": "a611de77a1e0f892a7f10736aff40e9d8fa408d4caf8b360907166d4eabc6fe4",
+            "reason": "science contract-test path instructions"
           }
         ]
       },
       "expansion": {
-        "unique_bytes": 106779,
-        "exposure_bytes": 106779,
+        "unique_bytes": 170737,
+        "exposure_bytes": 170737,
         "reads": [
           {
             "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
@@ -1308,15 +1858,26 @@
             "exposures": 1,
             "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
             "reason": "mechanism-specific source expansion"
+          },
+          {
+            "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+            "lines": [
+              1,
+              1512
+            ],
+            "bytes": 63958,
+            "exposures": 1,
+            "sha256": "0891e5139d06c0aaed3bc8c77a01f27e9e7a271d523ad514526f71c59b2c1bc8",
+            "reason": "frozen kickoff conditional existing parity tests; mechanism expansion before edits"
           }
         ]
       },
-      "combined_unique_bytes": 1329796
+      "combined_unique_bytes": 1802298
     },
     "science_sensitive.qa_reviewer": {
       "bootstrap": {
-        "unique_bytes": 1222606,
-        "exposure_bytes": 1236355,
+        "unique_bytes": 1631150,
+        "exposure_bytes": 1727400,
         "reads": [
           {
             "path": "AGENTS.md",
@@ -1350,6 +1911,149 @@
             "exposures": 1,
             "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
             "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+            "lines": [
+              1,
+              263
+            ],
+            "bytes": 25550,
+            "exposures": 1,
+            "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              160
+            ],
+            "bytes": 12599,
+            "exposures": 1,
+            "sha256": "9fe3e939eddfae0e0a70e4140718a1e9bf6b3706eddac6394877d6a82672bef9",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              388
+            ],
+            "bytes": 26781,
+            "exposures": 1,
+            "sha256": "3518743c0782653a6cc8a180f775c7a4d0c3fd1bdffa601022f3ee9920df1b4f",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/codex_exec_plans.md",
+            "lines": [
+              1,
+              244
+            ],
+            "bytes": 20921,
+            "exposures": 1,
+            "sha256": "8015d797ab338a262eb13a7f1867d6654e9474c7ff7b1f3cb4e8709ddc9ab5c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/prompt-wording-guidance.md",
+            "lines": [
+              1,
+              180
+            ],
+            "bytes": 10508,
+            "exposures": 1,
+            "sha256": "9f242e32c07f3f5e5a46df3ecf45b5cffce7e22f3e83d8014560fda6480f31f0",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              459
+            ],
+            "bytes": 22200,
+            "exposures": 1,
+            "sha256": "7a95025d00a8dd655f1a858c6990573c85ca202a11228520ed2370ba2d09cea3",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/final-disposition.md",
+            "lines": [
+              1,
+              119
+            ],
+            "bytes": 7579,
+            "exposures": 1,
+            "sha256": "543e3b675e1a24ddc30c077aebd3e97c01b826519a5ce695afc2493f7507d13d",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/coverage-findings.md",
+            "lines": [
+              1,
+              115
+            ],
+            "bytes": 7906,
+            "exposures": 1,
+            "sha256": "93c129e61cdc9d283229c07df816fa14c01e3c979736810bf524d576b6371e82",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/memory-attribution.md",
+            "lines": [
+              1,
+              89
+            ],
+            "bytes": 5325,
+            "exposures": 1,
+            "sha256": "575b761dc754623998363c099b354aa4c50c4e5f7a35e767d09a7373ebefbf67",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/historical_v31_gdb_take_return_summary.txt",
+            "lines": [
+              1,
+              40
+            ],
+            "bytes": 2500,
+            "exposures": 1,
+            "sha256": "73c0d88bfa476592ed53826a6a133f5961eb28508eecb7144edb5557a95cf366",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md",
+            "lines": [
+              1,
+              808
+            ],
+            "bytes": 48583,
+            "exposures": 1,
+            "sha256": "7881a4be782fdc1bb1139755675128e7419ff48d958e6afa1f9b2d8f4350d1c2",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/tolerance-authority.md",
+            "lines": [
+              1,
+              197
+            ],
+            "bytes": 11902,
+            "exposures": 1,
+            "sha256": "4a4e7953b400dd91708a4bb33e47bb8f09734c4f077d1ff1a21803cbad3c4232",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/component-temperature-dependency-replay/contract_ref.md",
+            "lines": [
+              1,
+              245
+            ],
+            "bytes": 13669,
+            "exposures": 1,
+            "sha256": "990e9d67888e3664b63106e5fdbcb0d090f719191138dd4a7bac3687bbb0d3c6",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
           },
           {
             "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
@@ -1515,12 +2219,45 @@
             "exposures": 1,
             "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
             "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "lines": [
+              1,
+              3346
+            ],
+            "bytes": 264863,
+            "exposures": 1,
+            "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+            "reason": "frozen kickoff conditional LSE replay authority; conservative full-file selection rather than hiding applicable obligations"
+          },
+          {
+            "path": "crates/AGENTS.md",
+            "lines": [
+              1,
+              75
+            ],
+            "bytes": 5436,
+            "exposures": 1,
+            "sha256": "c09b4fbfb7a49aab4029312987155adb93835399c22d42e5ed9293e161a02334",
+            "reason": "science implementer applicable source-path instructions; conservative shared science-role assignment"
+          },
+          {
+            "path": "tests/AGENTS.md",
+            "lines": [
+              1,
+              63
+            ],
+            "bytes": 4723,
+            "exposures": 1,
+            "sha256": "a611de77a1e0f892a7f10736aff40e9d8fa408d4caf8b360907166d4eabc6fe4",
+            "reason": "science contract-test path instructions"
           }
         ]
       },
       "expansion": {
-        "unique_bytes": 106779,
-        "exposure_bytes": 106779,
+        "unique_bytes": 170737,
+        "exposure_bytes": 170737,
         "reads": [
           {
             "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
@@ -1532,15 +2269,26 @@
             "exposures": 1,
             "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
             "reason": "mechanism-specific source expansion"
+          },
+          {
+            "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+            "lines": [
+              1,
+              1512
+            ],
+            "bytes": 63958,
+            "exposures": 1,
+            "sha256": "0891e5139d06c0aaed3bc8c77a01f27e9e7a271d523ad514526f71c59b2c1bc8",
+            "reason": "frozen kickoff conditional existing parity tests; mechanism expansion before edits"
           }
         ]
       },
-      "combined_unique_bytes": 1329385
+      "combined_unique_bytes": 1801887
     },
     "science_sensitive.verifier": {
       "bootstrap": {
-        "unique_bytes": 1221659,
-        "exposure_bytes": 1235408,
+        "unique_bytes": 1630203,
+        "exposure_bytes": 1726453,
         "reads": [
           {
             "path": "AGENTS.md",
@@ -1574,6 +2322,149 @@
             "exposures": 1,
             "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
             "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+            "lines": [
+              1,
+              263
+            ],
+            "bytes": 25550,
+            "exposures": 1,
+            "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              160
+            ],
+            "bytes": 12599,
+            "exposures": 1,
+            "sha256": "9fe3e939eddfae0e0a70e4140718a1e9bf6b3706eddac6394877d6a82672bef9",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              388
+            ],
+            "bytes": 26781,
+            "exposures": 1,
+            "sha256": "3518743c0782653a6cc8a180f775c7a4d0c3fd1bdffa601022f3ee9920df1b4f",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/codex_exec_plans.md",
+            "lines": [
+              1,
+              244
+            ],
+            "bytes": 20921,
+            "exposures": 1,
+            "sha256": "8015d797ab338a262eb13a7f1867d6654e9474c7ff7b1f3cb4e8709ddc9ab5c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/prompt-wording-guidance.md",
+            "lines": [
+              1,
+              180
+            ],
+            "bytes": 10508,
+            "exposures": 1,
+            "sha256": "9f242e32c07f3f5e5a46df3ecf45b5cffce7e22f3e83d8014560fda6480f31f0",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              459
+            ],
+            "bytes": 22200,
+            "exposures": 1,
+            "sha256": "7a95025d00a8dd655f1a858c6990573c85ca202a11228520ed2370ba2d09cea3",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/final-disposition.md",
+            "lines": [
+              1,
+              119
+            ],
+            "bytes": 7579,
+            "exposures": 1,
+            "sha256": "543e3b675e1a24ddc30c077aebd3e97c01b826519a5ce695afc2493f7507d13d",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/coverage-findings.md",
+            "lines": [
+              1,
+              115
+            ],
+            "bytes": 7906,
+            "exposures": 1,
+            "sha256": "93c129e61cdc9d283229c07df816fa14c01e3c979736810bf524d576b6371e82",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/memory-attribution.md",
+            "lines": [
+              1,
+              89
+            ],
+            "bytes": 5325,
+            "exposures": 1,
+            "sha256": "575b761dc754623998363c099b354aa4c50c4e5f7a35e767d09a7373ebefbf67",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/historical_v31_gdb_take_return_summary.txt",
+            "lines": [
+              1,
+              40
+            ],
+            "bytes": 2500,
+            "exposures": 1,
+            "sha256": "73c0d88bfa476592ed53826a6a133f5961eb28508eecb7144edb5557a95cf366",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md",
+            "lines": [
+              1,
+              808
+            ],
+            "bytes": 48583,
+            "exposures": 1,
+            "sha256": "7881a4be782fdc1bb1139755675128e7419ff48d958e6afa1f9b2d8f4350d1c2",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/tolerance-authority.md",
+            "lines": [
+              1,
+              197
+            ],
+            "bytes": 11902,
+            "exposures": 1,
+            "sha256": "4a4e7953b400dd91708a4bb33e47bb8f09734c4f077d1ff1a21803cbad3c4232",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/component-temperature-dependency-replay/contract_ref.md",
+            "lines": [
+              1,
+              245
+            ],
+            "bytes": 13669,
+            "exposures": 1,
+            "sha256": "990e9d67888e3664b63106e5fdbcb0d090f719191138dd4a7bac3687bbb0d3c6",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
           },
           {
             "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
@@ -1728,12 +2619,45 @@
             "exposures": 1,
             "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
             "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "lines": [
+              1,
+              3346
+            ],
+            "bytes": 264863,
+            "exposures": 1,
+            "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+            "reason": "frozen kickoff conditional LSE replay authority; conservative full-file selection rather than hiding applicable obligations"
+          },
+          {
+            "path": "crates/AGENTS.md",
+            "lines": [
+              1,
+              75
+            ],
+            "bytes": 5436,
+            "exposures": 1,
+            "sha256": "c09b4fbfb7a49aab4029312987155adb93835399c22d42e5ed9293e161a02334",
+            "reason": "science implementer applicable source-path instructions; conservative shared science-role assignment"
+          },
+          {
+            "path": "tests/AGENTS.md",
+            "lines": [
+              1,
+              63
+            ],
+            "bytes": 4723,
+            "exposures": 1,
+            "sha256": "a611de77a1e0f892a7f10736aff40e9d8fa408d4caf8b360907166d4eabc6fe4",
+            "reason": "science contract-test path instructions"
           }
         ]
       },
       "expansion": {
-        "unique_bytes": 106779,
-        "exposure_bytes": 106779,
+        "unique_bytes": 170737,
+        "exposure_bytes": 170737,
         "reads": [
           {
             "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
@@ -1745,15 +2669,26 @@
             "exposures": 1,
             "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
             "reason": "mechanism-specific source expansion"
+          },
+          {
+            "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+            "lines": [
+              1,
+              1512
+            ],
+            "bytes": 63958,
+            "exposures": 1,
+            "sha256": "0891e5139d06c0aaed3bc8c77a01f27e9e7a271d523ad514526f71c59b2c1bc8",
+            "reason": "frozen kickoff conditional existing parity tests; mechanism expansion before edits"
           }
         ]
       },
-      "combined_unique_bytes": 1328438
+      "combined_unique_bytes": 1800940
     },
     "science_sensitive.runner": {
       "bootstrap": {
-        "unique_bytes": 53052,
-        "exposure_bytes": 53052,
+        "unique_bytes": 229695,
+        "exposure_bytes": 269075,
         "reads": [
           {
             "path": "AGENTS.md",
@@ -1789,6 +2724,149 @@
             "reason": "assigned role/task applicable authority or current state"
           },
           {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+            "lines": [
+              1,
+              263
+            ],
+            "bytes": 25550,
+            "exposures": 1,
+            "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              160
+            ],
+            "bytes": 12599,
+            "exposures": 1,
+            "sha256": "9fe3e939eddfae0e0a70e4140718a1e9bf6b3706eddac6394877d6a82672bef9",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              388
+            ],
+            "bytes": 26781,
+            "exposures": 1,
+            "sha256": "3518743c0782653a6cc8a180f775c7a4d0c3fd1bdffa601022f3ee9920df1b4f",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/codex_exec_plans.md",
+            "lines": [
+              1,
+              244
+            ],
+            "bytes": 20921,
+            "exposures": 1,
+            "sha256": "8015d797ab338a262eb13a7f1867d6654e9474c7ff7b1f3cb4e8709ddc9ab5c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/prompt-wording-guidance.md",
+            "lines": [
+              1,
+              180
+            ],
+            "bytes": 10508,
+            "exposures": 1,
+            "sha256": "9f242e32c07f3f5e5a46df3ecf45b5cffce7e22f3e83d8014560fda6480f31f0",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              459
+            ],
+            "bytes": 22200,
+            "exposures": 1,
+            "sha256": "7a95025d00a8dd655f1a858c6990573c85ca202a11228520ed2370ba2d09cea3",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/final-disposition.md",
+            "lines": [
+              1,
+              119
+            ],
+            "bytes": 7579,
+            "exposures": 1,
+            "sha256": "543e3b675e1a24ddc30c077aebd3e97c01b826519a5ce695afc2493f7507d13d",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/coverage-findings.md",
+            "lines": [
+              1,
+              115
+            ],
+            "bytes": 7906,
+            "exposures": 1,
+            "sha256": "93c129e61cdc9d283229c07df816fa14c01e3c979736810bf524d576b6371e82",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/memory-attribution.md",
+            "lines": [
+              1,
+              89
+            ],
+            "bytes": 5325,
+            "exposures": 1,
+            "sha256": "575b761dc754623998363c099b354aa4c50c4e5f7a35e767d09a7373ebefbf67",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/historical_v31_gdb_take_return_summary.txt",
+            "lines": [
+              1,
+              40
+            ],
+            "bytes": 2500,
+            "exposures": 1,
+            "sha256": "73c0d88bfa476592ed53826a6a133f5961eb28508eecb7144edb5557a95cf366",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md",
+            "lines": [
+              1,
+              808
+            ],
+            "bytes": 48583,
+            "exposures": 1,
+            "sha256": "7881a4be782fdc1bb1139755675128e7419ff48d958e6afa1f9b2d8f4350d1c2",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/tolerance-authority.md",
+            "lines": [
+              1,
+              197
+            ],
+            "bytes": 11902,
+            "exposures": 1,
+            "sha256": "4a4e7953b400dd91708a4bb33e47bb8f09734c4f077d1ff1a21803cbad3c4232",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
+            "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/science-contracts/component-temperature-dependency-replay/contract_ref.md",
+            "lines": [
+              1,
+              245
+            ],
+            "bytes": 13669,
+            "exposures": 1,
+            "sha256": "990e9d67888e3664b63106e5fdbcb0d090f719191138dd4a7bac3687bbb0d3c6",
+            "reason": "explicit frozen Stage-3 kickoff required reading; full-file conservative selection"
+          },
+          {
             "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
             "lines": [
               1,
@@ -1817,7 +2895,7 @@
         "exposure_bytes": 0,
         "reads": []
       },
-      "combined_unique_bytes": 53052
+      "combined_unique_bytes": 229695
     }
   },
   "workflow_total": "UNOBSERVED",

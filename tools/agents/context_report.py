@@ -43,10 +43,12 @@ def report(root, spec, revision=None):
                     raise ValueError('invalid exposure count')
                 exposure += (end-start)*count
                 positions = set(range(start, end))
-                stage_seen.setdefault(path, set()).update(positions)
-                seen.setdefault(path, set()).update(positions)
+                content_hash = hashlib.sha256(data).hexdigest()
+                identity = (path, content_hash)
+                stage_seen.setdefault(identity, set()).update(positions)
+                seen.setdefault(identity, set()).update(positions)
                 rows.append(dict(path=path, lines=[first,last], bytes=end-start,
-                                 exposures=count, sha256=hashlib.sha256(data).hexdigest(),
+                                 exposures=count, sha256=content_hash,
                                  reason=item['reason']))
                 for child in item.get('requires', []):
                     visit(child, (*stack,key))

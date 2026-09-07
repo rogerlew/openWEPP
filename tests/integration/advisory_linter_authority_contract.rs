@@ -187,7 +187,7 @@ fn live_impact_map_has_no_planner_admission_rows() {
             .iter()
             .filter(|entry| entry["contracts"] == serde_json::json!(["SC-OUTPUT-WAT5-001"]))
             .count(),
-        22,
+        27,
         "every changed WAT5 science-crate path requires an atomic contract binding"
     );
     for shared_path in [
@@ -351,9 +351,7 @@ fn frozen_planner_packages_cannot_resume_from_local_status() {
         .expect("completed catalog entry body");
     assert!(completed_entry.contains("COMPLETE / HISTORICAL UNDER ADR-0043"));
 
-    assert!(
-        !root()
-            .join("tests/integration/testgate_ci_executor_contract.rs")
-            .exists()
-    );
+    assert!(!root()
+        .join("tests/integration/testgate_ci_executor_contract.rs")
+        .exists());
 }

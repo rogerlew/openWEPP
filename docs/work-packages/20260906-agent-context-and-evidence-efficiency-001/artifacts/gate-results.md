@@ -10,6 +10,25 @@ Ran: parent checks below; independent checks pending. Base 033dfe30073bc22aaa30a
 - nix develop --offline --command cargo nextest run --offline --test adr0017_comparator_distrust_ratification_contract --test advisory_linter_authority_contract: 10/11 pass, exit 100; /tmp/openwepp-context-governance-nix.log. Live standard hash mismatch fixed prospectively in impact-map.json.
 - Same focused command after hash fix: 10/11 pass, exit 100; /tmp/openwepp-context-governance-nix-corrected.log. Remaining failure: inherited WAT5 row-count assertion expects 22, base and current map contain 27. Static exact base comparison confirms entries identical. Changed live hash assertion passes before that inherited assertion. No science binding or Rust test changed to hide it.
 
-The inherited mixed test failure remains FAIL, not a full PASS claim. Independent reviewers must adjudicate its relevance to administrative closure; current modified-binding behavior is exercised, scientific row-count correction is outside protected scope. Full Rust workspace, science experiments, anti-evasion suites not selected: no production, external-authority cohort/case/binding semantics changed. Updating a schema-only nonblocking live documentation hash does not change those semantics. No heavyweight execution/comparator requirement selected; no runner fallback claimed.
+The inherited attempts remain FAIL. Review rejected closing with that selected
+failure. The owner's administrative-test exception was used prospectively:
+tests/integration/advisory_linter_authority_contract.rs changes only its stale
+inventory expectation 22 to existing 27. Base/cut map entries are identical;
+all shared-path bindings remain asserted. The complete same Nextest command now
+passes 11/11, exit 0, run ID dff2a2ab-3bfb-48cc-8706-02c0227782c8;
+/tmp/openwepp-context-governance-final.log. No test deleted, filtered or weakened;
+no production, external-authority cohort/case/atomic-binding semantics changed.
+Full workspace/science experiments remain inapplicable. No heavy runner fallback.
+
+Corrected security/context suite: .venv/bin/python -m unittest discover -s
+tools/agents -p 'test_*.py': 23 PASS, exit 0;
+/tmp/openwepp-context-admin-corrected-tests.log. Includes working/staged chained
+symlinks, noncanonical destinations and distinct-revision context accounting.
+Python AST parse: three files PASS. nix develop --offline --command rustfmt
+--check tests/integration/advisory_linter_authority_contract.rs initially found
+inherited formatting in the final assertion (/tmp/openwepp-context-rustfmt.log).
+Applied only that formatter-equivalent layout correction; rerun exit 0,
+/tmp/openwepp-context-rustfmt-corrected.log. Explicit historical revision-61 search still
+resolves original disposition; no historical evidence rewritten.
 
 Context report commands: .venv/bin/python tools/agents/context_report.py <package>/artifacts/context-inputs.json --phase before|after (exact repository package path in adjacent inputs). Results are structural byte measurements, not observed total usage.

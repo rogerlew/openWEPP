@@ -47,6 +47,12 @@ Use artifacts/worker-handoff.md as the sole continuation view. Package executor 
 Registered reviews request xhigh and grant configuration edits. Historical catalog is nearly 6,000 lines; kernel bootstrap currently requires it in full. Current Stage-3 successor already exists, with queued handoff/disposition.
 
 ## Decision Log
+2026-09-07: before Rust test edits, add only
+tests/integration/advisory_linter_authority_contract.rs for narrow administrative
+impact-map document-structure reconciliation. Preserve all assertions and atomic
+bindings; increase stale expected WAT5 count 22 to existing 27, with independent
+review. No production Rust or canonical science change. This uses the owner's
+explicit administrative-test exception; selected checks must all pass.
 2026-09-07: add tools/release/authority-policy/impact-map.json prospectively,
 only its live policy_sha256 binding. Focused governance test exposed stale hash
 after authorized standard change; preserve test and all historical identities.

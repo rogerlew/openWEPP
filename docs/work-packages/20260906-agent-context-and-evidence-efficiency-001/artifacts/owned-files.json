@@ -2,6 +2,7 @@
   "base": "033dfe30073bc22aaa30aed877cc301b6745a086",
   "paths": [
     "AGENTS.md",
+    "tests/integration/advisory_linter_authority_contract.rs",
     "tools/release/authority-policy/impact-map.json",
     "CLAUDE.md",
     ".codex/config.toml",
