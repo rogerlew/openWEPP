@@ -119,3 +119,34 @@ UNOBSERVED. Current hashes do not grant semantic evidence reuse.
 Verdict: PASS for verifier B's assigned executable, recovery, safety and exact
 diff scope through the bounded VA-01 correction. Final publication-diff
 confirmation remains available; this record alone is not package closure.
+
+## Final publication confirmation
+
+Static: independently inspected exact publication delta
+`4ea8a5518..56b315f23c5b96fc56a6b40481181c0870599f57`: 15 paths, all declared,
+comprising assurance/disposition records, identities, context numbers and the
+catalog/current locator. Full base-to-publication diff remains 60 paths,
+35 non-package, zero outside the authorized set. Tools, tests, crates and
+agent configuration are unchanged from the approved corrected cut.
+Requested medium; effective runtime remains UNOBSERVED.
+
+Ran: own committed-byte hash audit and current identity regeneration, exit 0:
+all three identity classes match before appending this confirmation (138
+experiment, 36 evidence_claim, 7 publication members). Regenerated `--phase
+after` context report piped to `diff - artifacts/context-after.json`: exit 0.
+The locator change contributes exactly 14 bytes to both author scenarios;
+updated final figures agree. Base-to-publication `git diff --check`: exit 0.
+
+Reverified retained independent bundle and results, exit 0: the published
+manifest digest/path, 19 rejected CLI cases, removed original checkout and
+exact restored output agree with my own retained records. The stated 23 Python
+and 11 Rust results match my own runs. Both focused reviewer approvals and A's
+VA-01 PASS are present; original FAIL/BLOCKED history remains intact. No further
+full test run was needed for these inspected publication changes.
+
+Verdict: PASS for bounded final publication confirmation at 56b315f23.
+No new finding, semantic source change, acceptance waiver or undocumented
+deferral found. Completion statements are supported within the recorded scope
+and limitations. Rebinding the final publication identity for this appended
+confirmation and the other final assurance records is an administrative
+collection step; this does not authorize subsequent substantive changes.

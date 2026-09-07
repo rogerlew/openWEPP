@@ -106,3 +106,35 @@ Verdict: PASS for A's assigned terminal scope at corrected cut `4ea8a5518`.
 No unresolved A finding. Package closure separately requires focused review
 confirmation, B's independent verification and final publication collection/
 bounded diff reconciliation; this artifact does not preapprove future changes.
+
+## Final bounded publication confirmation
+
+Static: exact `4ea8a5518..56b315f23` publication diff, both primary focused
+review records, B's independent verification record and final completion claims.
+Ran: independent inline Python report/identity regeneration and committed-member
+hash checks; `git diff 4ea8a5518..56b315f23 --check`; all exit 0 from repository
+root. Same session, requested medium, effective runtime UNOBSERVED.
+
+The 15 changed paths are package evidence/status plus catalog/active locator.
+No tool, test, configuration, template or scientific implementation changed.
+Both reviewers independently approved VA-01. The final reports correctly retain
+the resolved findings, historical failures, paused Stage-3 boundary and limits
+on custody, runtime telemetry and scientific claims. B's recovery summary agrees
+with its primary independent record; an independent read of the retained bundle
+manifest reproduces the published SHA-256. A does not claim B's fixture execution
+as its own run. Invocation facts agree with the assigned role records; effective
+runtime remains explicitly UNOBSERVED.
+
+Both paired context reports regenerate exactly. Active locator wording adds
+14 bytes only to author bootstrap: admin after 71232, science after 1211851,
+science exposure 1281422. Other reported counts, frozen selections, mandatory
+dependencies and expansion figures are unchanged. Experiment and evidence_claim
+identities regenerate exactly; all three committed identity aggregates and
+their 138/36/7 member content hashes/sizes match candidate bytes. This checks
+declared membership, not complete Rust build custody or automatic semantic reuse.
+
+Verdict: PASS for the final bounded publication at `56b315f23`; no new finding
+or unresolved A obligation. Completion claims are supported by the independent
+corrected-cut records. Parent may collect these final confirmations, rebind only
+their publication identity and commit that collection without recursive signoff;
+any further substantive claim/source change reopens its affected assurance.

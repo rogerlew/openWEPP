@@ -1228,7 +1228,7 @@
     ]
   },
   "publication": {
-    "sha256": "061d8107f010eba498ac5e06e12ba5a957aa12997473db13c8b0b0d2f9c4006c",
+    "sha256": "eb9f04adb2d7bddf9af3d636a58490e465a965f932fb7b795b8903a88316b087",
     "members": [
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/final-disposition.md",
@@ -1262,15 +1262,15 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/verification_agent_a.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "a5cf39111e70d39a3d5b276946b6acf505df80ebc8c1508058d79e776690e515",
-        "size": 6758
+        "sha256": "04953b51ea781eb2d51ba7047631cf7332e3da8e7d1f81f665617d4d0fdf60df",
+        "size": 8811
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/verification_agent_b.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "6e4fe25cdda3f1853874bedd5053710788ba20478dc057aabdb908d96ea0b85d",
-        "size": 7470
+        "sha256": "9d116f97cf55151d88f0f92e1b64f005377eb8eed8707f7e2c8e0d84bd53815a",
+        "size": 9346
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
