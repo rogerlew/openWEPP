@@ -3,7 +3,8 @@
 VA-01 MEDIUM (independent terminal verification): accepted. CQR package
 template's intended write set omitted README.md despite required catalog update.
 Fixed by retaining both active.md and README.md; no obligation removed.
-23-test suite passes after correction; focused review/verification pending.
+23-test suite passes; both reviewers and Verifier A independently approve
+the correction at 4ea8a5518. Verifier B reconciled the same terminal diff.
 
 Static: findings from independent cut 6ab4e5fb6; Ran: corrected tests below.
 
@@ -18,5 +19,5 @@ Static: findings from independent cut 6ab4e5fb6; Ran: corrected tests below.
 
 No findings rejected/deferred or waived. Failed attempts remain in review/gate
 records. Runtime settings and workflow-total remain UNOBSERVED, not findings
-manufactured into PASS. All selected checks must pass and dual verification remains pending. Both independent reviews approve corrected cut
-772eade86; initial FAILs and focused fix evidence remain in their own artifacts.
+manufactured into PASS. All selected checks must pass and dual verification PASS at 4ea8a5518. Both independent reviews approve corrected cut
+772eade86 and template fix 4ea8a5518; initial FAILs and focused fix evidence remain in their own artifacts.

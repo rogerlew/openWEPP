@@ -6,7 +6,7 @@ in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
 ## 20260906-agent-context-and-evidence-efficiency-001
 
-IN-PROGRESS: role/context simplification, current-state routing, evidence
+COMPLETE: role/context simplification, current-state routing, evidence
 identity and recoverable capture. See
 [package](20260906-agent-context-and-evidence-efficiency-001/package.md) and
 [handoff](20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md).

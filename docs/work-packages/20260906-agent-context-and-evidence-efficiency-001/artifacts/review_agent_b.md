@@ -209,3 +209,18 @@ the roadmap text already exercised by the preceding 23-test PASS.
 Final bounded verdict: QA PASS at 772eade86 for the additions and all prior
 resolved findings. No blocker to proceeding with dual independent verification.
 Final publication binding and package closure remain separate obligations.
+
+## Focused VA-01 template correction review
+
+Static: 4ea8a5518179f7d56aacdf4f990145f16d8a0046 template diff and
+docs/work-packages/role-authoring.md catalog requirement. Same independent
+Reviewer B; requested medium, effective UNOBSERVED.
+Ran: `.venv/bin/python -m unittest discover -s tools/agents -p 'test_*.py'`:
+23 PASS; `git diff --check 4ea8a5518^ 4ea8a5518`: exit 0.
+
+The sole template change adds docs/work-packages/README.md to the exact write
+set alongside active.md. This restores permission for required catalog work
+and aligns with the template's retained catalog-closeout instructions without
+granting source or historical-evidence changes. VA-01 is resolved for QA;
+no new findings. Focused QA PASS at 4ea8a5518. Terminal independent verification
+and final publication binding remain required before package completion.

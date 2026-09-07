@@ -18,7 +18,7 @@ comparison keeps that convention identical; no exhaustive later investigation
 or measured session-total claim is made.
 
 Necessary author overrun: administrative author reads the full reusable prompt
-and testing standards to revise governance (71,218 bytes). Science tasks retain
+and testing standards to revise governance (71,232 bytes). Science tasks retain
 large canonical snow/LSE authority and the frozen existing protocol's historical
 reading; even the runner consumes that frozen contract in this conservative
 comparison. These overruns are explicit costs, not a normalized new threshold.

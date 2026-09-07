@@ -1,5 +1,19 @@
 # Validation evidence
 
+Terminal independent verification: A PASS (rules/metrics, exact paired reports,
+recursive protocol/authority routing, five TOML parses and focused tests), B PASS
+(23 administrative tests, complete 11-test Rust run ID
+173a94ae-ecc3-4216-9e0b-8a3ce0fb9d9b, standalone CLI recovery and 19 negative
+exit-2 probes). Exact commands/paths are in verification_agent_a/b.md. B's
+retained independent bundle is /tmp/openwepp-verifier-b-9fWKjk/bundle, manifest
+SHA-256 1c19d79daf224167902a623403d8b9c36baac9090753398f2d5742059a116687.
+VA-01 CQR catalog write-set correction received both focused reviews and A's
+independent verification. No unresolved accepted findings remain.
+Terminal diff reconciliation: 60 paths, 35 non-package, all within declared
+scope; no production Rust/canonical SC edits, only named administrative test.
+Final index/status wording adds 14 bytes to the measured author locator read;
+context-after.json regenerated and final figures updated. No quota inference.
+
 Ran: parent checks below; independent checks pending. Base 033dfe30073bc22aaa30aed877cc301b6745a086; administrative intent, no production Rust/SC changes.
 
 - .venv/bin/python -m unittest discover -s tools/agents -p 'test_*.py': 19 passed, exit 0; /tmp/openwepp-context-admin-tests.log. Includes source/index custody, removal of original fixture, execution, corruption/missing/path/destination/symlink/environment/race tests, identity mutations, role routing, Markdown links/anchors and TOML.

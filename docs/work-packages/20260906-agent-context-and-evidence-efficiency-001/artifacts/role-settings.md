@@ -1,5 +1,11 @@
 # Role settings
 
+Actual package invocations: /root/review_a (registered correctness, high),
+/root/review_b (registered QA, medium), /root/verify_a and /root/verify_b
+(bounded generic profiles, explicitly requested medium). All were spawned with
+fork_turns=none; no parent transcript fork claimed. Their own artifacts report
+effective runtime settings UNOBSERVED. Runner not invoked: no heavy run selected.
+
 Additional local check: codex app-server --strict-config generate-json-schema
 --out /tmp/openwepp-context-local-schema-check exited 1: strict-config unsupported
 for that subcommand too. Log: /tmp/openwepp-context-local-schema-check.log.

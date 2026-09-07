@@ -4,8 +4,8 @@
   "roles": {
     "administrative.author": {
       "bootstrap": {
-        "unique_bytes": 71218,
-        "exposure_bytes": 71218,
+        "unique_bytes": 71232,
+        "exposure_bytes": 71232,
         "reads": [
           {
             "path": "AGENTS.md",
@@ -112,9 +112,9 @@
               1,
               17
             ],
-            "bytes": 1350,
+            "bytes": 1364,
             "exposures": 1,
-            "sha256": "62e52e7ed09ae285d27b09d5b1236e4eca04445d9bf23191a213c889ae370413",
+            "sha256": "834eaf309bcc1662e528c0167e777b975d18d5e53d8fe5982b7accf094f2b569",
             "reason": "assigned role/task applicable authority or current state"
           }
         ]
@@ -136,7 +136,7 @@
           }
         ]
       },
-      "combined_unique_bytes": 76401
+      "combined_unique_bytes": 76415
     },
     "administrative.implementer": {
       "bootstrap": {
@@ -654,8 +654,8 @@
     },
     "science_sensitive.author": {
       "bootstrap": {
-        "unique_bytes": 1211837,
-        "exposure_bytes": 1281408,
+        "unique_bytes": 1211851,
+        "exposure_bytes": 1281422,
         "reads": [
           {
             "path": "AGENTS.md",
@@ -905,9 +905,9 @@
               1,
               17
             ],
-            "bytes": 1350,
+            "bytes": 1364,
             "exposures": 1,
-            "sha256": "62e52e7ed09ae285d27b09d5b1236e4eca04445d9bf23191a213c889ae370413",
+            "sha256": "834eaf309bcc1662e528c0167e777b975d18d5e53d8fe5982b7accf094f2b569",
             "reason": "assigned role/task applicable authority or current state"
           },
           {
@@ -1105,7 +1105,7 @@
           }
         ]
       },
-      "combined_unique_bytes": 1382574
+      "combined_unique_bytes": 1382588
     },
     "science_sensitive.implementer": {
       "bootstrap": {

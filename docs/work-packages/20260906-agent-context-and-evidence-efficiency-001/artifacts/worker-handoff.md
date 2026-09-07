@@ -1,6 +1,6 @@
 # Current continuation
 
-Status: READY FOR INDEPENDENT VERIFICATION; not yet complete.
+Status: COMPLETE; no further implementation authorized by this package.
 Objective: all six agent-context/evidence-efficiency deliverables in package.md.
 Authorization: owner's local administrative package-end-to-end request.
 Protected: no production Rust/SC equations, solver/guards/publication, real
@@ -19,7 +19,7 @@ symlinks, executable and fixture/protocol/results outside the checkout.
 No implicit semantic-invalidation engine or orchestration service.
 
 ## Frozen source/evidence
-Corrected substantive cut: 772eade86 (base 033dfe30073bc22aaa30aed877cc301b6745a086).
+Corrected substantive cut: 4ea8a5518 (base 033dfe30073bc22aaa30aed877cc301b6745a086).
 Current publication artifacts may follow; compare named members in
 identity-membership.json and identity.json before reuse. Neither includes its
 own result hash. execution-inputs.json bounds observed dependency metadata.
@@ -43,10 +43,12 @@ Scoped rustfmt, Python AST, TOML, Markdown links/anchors, routing and identity
 checks pass. Root/common shared bytes: 16150. Figures in final-disposition.md.
 Only Rust edit: administrative map-inventory count 22->27 and formatter layout;
 357 lines, no line-count exception or production impact.
-Review findings and focused re-review retained; terminal dual verification pending.
-Next executable action: Verifier A checks rules/metrics/claims; Verifier B independently
-restores captured miniature bytes, runs safe negatives and checks exact diff.
-Then reconcile final publication claims and commit completion locally, no push.
+All accepted review/verification findings fixed and independently rechecked.
+Both terminal verifiers PASS; prior FAIL/BLOCKED records retained.
+Independent B restored and executed its own fixture after original-source deletion;
+19 invalid CLI cases rejected. Bundle /tmp/openwepp-verifier-b-9fWKjk/bundle.
+Next action: use tools/agents/README.md for authorized future work; this package
+requires no further implementation. Final bounded publication checks only; no push.
 
 ## Freshness and retention
 Executor updates this single view after source/evidence/authorization changes,

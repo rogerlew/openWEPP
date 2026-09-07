@@ -194,3 +194,22 @@ blocker found. Initial FAIL records remain historical. Package completion
 still requires B's disposition, dual independent verification, and final
 publication/terminal-diff reconciliation. Updated review/publication bytes
 must be rebound without presenting this signoff as their prior digest.
+
+## Focused VA-01 review at 4ea8a5518
+
+Static: independently inspected `74e291193..4ea8a5518179f7d56aacdf4f990145f16d8a0046`
+and the owning authoring/template rules. Ran: Git diff/path inspection only;
+no executable tests rerun for this one-line write-set correction. Requested
+high; effective UNOBSERVED.
+
+**VA-01 correction approved.** The CQR package template now includes both
+`docs/work-packages/active.md` and `docs/work-packages/README.md` in its intended
+write set. This supplies the catalog permission already required by
+role-authoring.md and contemplated by the template's existing conditional
+catalog-update guard. The edit neither removes the active locator nor relaxes
+acceptance, scientific authority, write-set enforcement or independent closure.
+No Rust or administrative tool/test implementation changed in this delta.
+
+Verdict: **PASS for the focused correction**, no new finding. Prior review
+conclusions remain applicable; final verification and truthful package
+disposition are still required.

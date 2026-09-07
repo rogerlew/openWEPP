@@ -1,6 +1,6 @@
 {
   "experiment": {
-    "sha256": "228198a2391f930476bb1e09b10a6946b9bd978cc3b4f1508682c699d64236a9",
+    "sha256": "dfa3d709edf3df54407a5f7cd2f42578def5a9d0564b460dafecae3a92f9880f",
     "members": [
       {
         "path": ".codex/agents/comparator_suite_runner.toml",
@@ -671,7 +671,7 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/context-after.json",
         "kind": "file",
         "mode": 436,
-        "sha256": "b246f9fd1b880a2056db14791e87ecba53acd61947bb673faa931f196b2ee7d4",
+        "sha256": "d23b918d5160966b262f22bb33c115d612e22abb92fcb15497be22a8d8a188ad",
         "size": 108914
       },
       {
@@ -699,8 +699,8 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/gate-results.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "78f5fa753def9be4d8c2462f2343fe704a282a3d2d252a8ad08d6b7b3630b30f",
-        "size": 3469
+        "sha256": "042cc09ca154d349b78369e9792ad8bb50681e37d62040470457cec70a112ac1",
+        "size": 4447
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/identity-membership.json",
@@ -720,29 +720,29 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/required-reading-map.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "865980e836a029e2feffbd19301e880d829c0073b9f58937cd385be3de102277",
+        "sha256": "f6fd55e7a9c1b1394c6626e3223d9e40a1bd985807f21b3062b72b2f1774e35e",
         "size": 3932
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/role-settings.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "f3d23aebd3bff8eb31421569dc65e72fac4daf40d5e8a45998a30a033b20aed9",
-        "size": 1983
+        "sha256": "b5ff1bb71774b839f8cc3179f33542006f67245ff32d4393354b5a4cd890caa6",
+        "size": 2373
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "991b751490ca8f2dced2c536a4661dd3660d4648845d367762791fc5e66b24a5",
-        "size": 3577
+        "sha256": "7d8ce737c08ef6da5c40cbdea6cbeaa2d210563543a814cd2e0f7768218ca28b",
+        "size": 3727
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "5556f17110a2740294353e6401d9c401c6d6354f204bb378f091db96067a0b62",
-        "size": 8649
+        "sha256": "0a30ac5e1fc252d501372fd06c393cd95b8f80cd8900ca075724baa70d4ea853",
+        "size": 8810
       },
       {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
@@ -769,15 +769,15 @@
         "path": "docs/work-packages/README.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "95ce0aeb08875aaab96893389a6579bca38003f04f6d3c36d431544b596c1603",
-        "size": 410707
+        "sha256": "b952fbdd0aab49a0e805e12df4be605e9f0b1c1bf7bc8d63f72d06e631ca7a42",
+        "size": 410704
       },
       {
         "path": "docs/work-packages/active.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "62e52e7ed09ae285d27b09d5b1236e4eca04445d9bf23191a213c889ae370413",
-        "size": 1350
+        "sha256": "834eaf309bcc1662e528c0167e777b975d18d5e53d8fe5982b7accf094f2b569",
+        "size": 1364
       },
       {
         "path": "docs/work-packages/cqr-nightly-burndown-execplan.md",
@@ -971,7 +971,7 @@
     ]
   },
   "evidence_claim": {
-    "sha256": "acc16d9893d3182812be14666fda14e510d798bc3a9b544601a5420003069202",
+    "sha256": "4bb808731001e043a5fc75fdd4d01277b48f542a0de2ecc0ee8646b2028eb716",
     "members": [
       {
         "path": "AGENTS.md",
@@ -1075,7 +1075,7 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/context-after.json",
         "kind": "file",
         "mode": 436,
-        "sha256": "b246f9fd1b880a2056db14791e87ecba53acd61947bb673faa931f196b2ee7d4",
+        "sha256": "d23b918d5160966b262f22bb33c115d612e22abb92fcb15497be22a8d8a188ad",
         "size": 108914
       },
       {
@@ -1089,8 +1089,8 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/gate-results.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "78f5fa753def9be4d8c2462f2343fe704a282a3d2d252a8ad08d6b7b3630b30f",
-        "size": 3469
+        "sha256": "042cc09ca154d349b78369e9792ad8bb50681e37d62040470457cec70a112ac1",
+        "size": 4447
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/owned-files.json",
@@ -1103,22 +1103,22 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/required-reading-map.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "865980e836a029e2feffbd19301e880d829c0073b9f58937cd385be3de102277",
+        "sha256": "f6fd55e7a9c1b1394c6626e3223d9e40a1bd985807f21b3062b72b2f1774e35e",
         "size": 3932
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/role-settings.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "f3d23aebd3bff8eb31421569dc65e72fac4daf40d5e8a45998a30a033b20aed9",
-        "size": 1983
+        "sha256": "b5ff1bb71774b839f8cc3179f33542006f67245ff32d4393354b5a4cd890caa6",
+        "size": 2373
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "5556f17110a2740294353e6401d9c401c6d6354f204bb378f091db96067a0b62",
-        "size": 8649
+        "sha256": "0a30ac5e1fc252d501372fd06c393cd95b8f80cd8900ca075724baa70d4ea853",
+        "size": 8810
       },
       {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
@@ -1138,15 +1138,15 @@
         "path": "docs/work-packages/README.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "95ce0aeb08875aaab96893389a6579bca38003f04f6d3c36d431544b596c1603",
-        "size": 410707
+        "sha256": "b952fbdd0aab49a0e805e12df4be605e9f0b1c1bf7bc8d63f72d06e631ca7a42",
+        "size": 410704
       },
       {
         "path": "docs/work-packages/active.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "62e52e7ed09ae285d27b09d5b1236e4eca04445d9bf23191a213c889ae370413",
-        "size": 1350
+        "sha256": "834eaf309bcc1662e528c0167e777b975d18d5e53d8fe5982b7accf094f2b569",
+        "size": 1364
       },
       {
         "path": "docs/work-packages/role-authoring.md",
@@ -1228,56 +1228,56 @@
     ]
   },
   "publication": {
-    "sha256": "0b747f3c0e3a34606224637dbe85c7e7bc3ca303f1e952618455e585cad37fef",
+    "sha256": "061d8107f010eba498ac5e06e12ba5a957aa12997473db13c8b0b0d2f9c4006c",
     "members": [
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/final-disposition.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "f1a0a8880dae778f51bc778df1e8d0023df5c127018ebeebda244ef66d6f0797",
-        "size": 4556
+        "sha256": "47a4b57c97a07e57ff4b0544db6262ceef2fc3e909e1de57355b23f6b65d9b23",
+        "size": 5003
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/finding-disposition.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "495973c54de857d5d26cfb4ad5a2ff344e9258361fa53de9f3bd3825d1a12d1d",
-        "size": 2422
+        "sha256": "645dfcef9549dff9973572e488e0aef66ef8e1cbd35b8dae90dda1621e86a666",
+        "size": 2524
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/review_agent_a.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "3a77bda8c12414080f98c11436602dedbf72f5ee1af7b06cc78500d40ee51524",
-        "size": 12299
+        "sha256": "fc8480a2658dc988aac60e2688abc2841c01de5e051c244dc74af40e05c1ff8c",
+        "size": 13315
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/review_agent_b.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "e3956f167faa1c5eb120245c70579f396c5c845fda756e782cbaaf58a9d4891b",
-        "size": 13045
+        "sha256": "7316725bded025a1a72071ca4b00992d42e7d0c79c1a8d734b939bf413523342",
+        "size": 13881
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/verification_agent_a.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "a4b13183a44b3c6a7ce6d3de1e6df0c7ca1d80119053c18fa5436e240826ad54",
-        "size": 38
+        "sha256": "a5cf39111e70d39a3d5b276946b6acf505df80ebc8c1508058d79e776690e515",
+        "size": 6758
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/verification_agent_b.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "a4b13183a44b3c6a7ce6d3de1e6df0c7ca1d80119053c18fa5436e240826ad54",
-        "size": 38
+        "sha256": "6e4fe25cdda3f1853874bedd5053710788ba20478dc057aabdb908d96ea0b85d",
+        "size": 7470
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "991b751490ca8f2dced2c536a4661dd3660d4648845d367762791fc5e66b24a5",
-        "size": 3577
+        "sha256": "7d8ce737c08ef6da5c40cbdea6cbeaa2d210563543a814cd2e0f7768218ca28b",
+        "size": 3727
       }
     ]
   }
