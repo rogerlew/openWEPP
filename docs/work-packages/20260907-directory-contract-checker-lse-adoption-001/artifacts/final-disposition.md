@@ -1,41 +1,63 @@
 # Executed HOLD — original LSE retained
-Static/Ran: checker/candidate/exercises executed; ALL adoption gates did not pass.
-No selective-reading activation or canonical v32 publication. Original canonical v31
-264863bytes restored exactly, hash in logs/canonical-restoration.json. Candidate v32
-entry+14chapters retained only immutable package evidence (410021bytes;100actualIDs).
+Static/Ran: implementation, candidate qualification, reading exercises and review
+were executed. Adoption is not complete. Both independent terminal verifiers accept truthful HOLD delivery;
+required Rust and Clippy failures remain unchanged.
 
-## Exact unmet gates and in-envelope limit
-Required affected Rust/governance gate FAIL:129run111pass18fail,exit100,identical
-baseline names AND normalized panic reasons. Missing v31 production seam is expressly
-expected-red and cannot be implemented under no-production authorization; frozen
-V9 executable-library identity mismatch and unrelated old authority-reference failures
-remain. Applicable Clippy fails unchanged production dependency lint (1136errors).
-No authorized document/loader correction can supply forbidden production implementation
-or rewrite frozen runtime identity. Both reviewers reject retrospective no-regression
-substitution for PASS. These current-scope requirements are NOT deferred or complete.
-Canonical rollback is the explicit kickoff fallback, not permission to lift scientific
-HOLD or block unrelated authorized architecture. Owner-paused experiments stay paused.
+## Canonical posture and unmet gates
+Canonical LSE remains version 31, restored byte-for-byte to the original 264863 bytes:
+`7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d`.
+Whole-contract reading remains mandatory. Candidate version 32 and its 14 chapters
+are immutable package evidence, not current authority or an enabled selective route.
+All seven original Rust consumers were restored; no production or contract physics
+changed. The format specification received only an accurate implementation/HOLD
+status update, independently reviewed and verified.
 
-## Delivered, not adopted
-One bounded directory-v1 parser and CLI with83actual pytest passes; legacy behavior
-preserved. Unit/A0 consumers use shared authoritative membership, not entry mentions;
-corruption tests retain ID mentions and reject absent definitions/unit aliases.
-Strict candidate PASS17BEI/100definitions,unit/A0 PASS; legacy restored strictPASS16,
-unit/A0 PASS. All production/science/historical bytes unchanged terminally.
-Independent A preservation PASS:36fencedbodies/100exactcanonicalStatements/74Evidence,
-474scientifictablerows/275paragraphs/fullsource26–3346map;old qualifiers/FAIL/HOLD
-retained. Both reviews close all corrections, accept corrected bounded reading answers.
-Freshness is4initial nonforked readonly sessions; corrections carriedcontext,initial
-FAILs retained. Only identity subset reducesLSE62.25%;01/02/04 grow21.20/11.23/12.68%.
-No runtime-total/token/quota reduction. Terminal verification still pending at this
-substantive freeze; required artifacts will record actual independent results.
+The required Rust/governance run remains FAIL: 129 tests, 111 passed and 18 failed,
+exit 100. Baseline, corrected candidate and restored-final runs have the same failure
+identities and normalized panic reasons. That comparison is preservation evidence,
+not a passing adoption gate. The failures include the expressly expected-red v31
+production seam, frozen V9 runtime-library identity mismatch and unrelated stale
+authority references. Applicable Clippy also fails in unchanged production dependencies
+with 1136 reported errors. This request prohibits implementing that production seam,
+rewriting frozen identity predicates or weakening scientific expectations. No permitted
+reference/loader correction can make all required gates pass. Both reviewers reject
+retrospective substitution of failure-set equality for PASS. These requirements remain
+current and unmet, not deferred or completed.
 
-## Evidence and continuation
-Source baseline b932db101cce07d0860b45b5ecaa8ddb7f455b58. Candidate checkpoint5f76475dd;
-source-manifest/candidate-manifest/candidate-recovery and review hashes bind evidence.
-restore_candidate.py verifies40inputs and creates NEW external minimal structural/unit
-fixture,notfullCargo. Full Rust repro needs fullbaseline+archivedoverlay. Do not run
-one-time build_candidate.py in canonical checkout to reactivate. Start worker-handoff.
-Local commits only,no push. Preserve unrelated $pkg/ and tmp/ plus custody bundle.
-Adoption can resume only after required blocked authority/runtime work is resolved
-under appropriate authorization and all frozen current gates rerun; no waiver implied.
+## Delivered evidence
+The bounded shared directory parser, binding CLI, unit/A0 consumers and focused tests
+are implemented. Actual pytest: 83 passed. Candidate strict checking: 17 BEI rows and
+100 actual definitions, PASS; unit and corrected A0: PASS. Restored legacy strict:
+16 BEI rows, PASS; unit and A0: PASS. Formatting passed. Structural checking does not
+certify science, dependency completeness or arbitrary unregistered alias semantics.
+
+Independent preservation review and verifier A checked the complete source map,
+100 original canonical statements, 74 evidence classifications and 36 fenced bodies.
+Verifier B independently checked mapped source lines, all 36 fenced bodies and
+selected authority clauses; it does not claim a second full scientific audit.
+Review A additionally reconciled 474 scientific table rows and 275 paragraphs.
+Original equations, qualifiers, ownership and FAIL/HOLD limits remain preserved.
+All review findings are closed on the corrected cut.
+
+Four initially fresh, nonforked, read-only exercises produced corrected bounded
+requirements selections accepted by both reviewers. Initial failed/incomplete answers
+and carried-context corrections are retained. Identity selection uses 99981 LSE bytes,
+62.25% below the original. Surface/soil, solver and closure selections instead grow
+21.20%, 11.23% and 12.68%. No blanket, total-runtime, token or quota saving is claimed.
+These answers identify requirements; they do not execute physical closure or establish
+actual executable custody. Terminal verification records preserve those limits.
+
+## Identity and continuation
+Baseline: `b932db101cce07d0860b45b5ecaa8ddb7f455b58`.
+Candidate checkpoint: `5f76475dd`; restored substantive HOLD cut: `3ec624453`.
+The manifests, review artifacts and final verification artifacts bind evidence without
+self-hashing this report. Recovery verifies 40 inputs into a new external structural/
+unit fixture; it is not a full Cargo workspace. Full Rust reproduction needs the full
+named baseline plus the archived overlay. See worker-handoff.md for exact commands.
+Local commits only; no push. Unrelated `$pkg/` and `tmp/` remain untouched.
+
+Adoption requires resolution of the blocked production/runtime/authority work under
+appropriate authorization, then all frozen adoption gates. This package grants no
+resumption of owner-paused experiments and does not block unrelated authorized
+architecture work. The explicit kickoff fallback has been used; original authority
+and a reproducible candidate are retained.

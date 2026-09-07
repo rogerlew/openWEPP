@@ -1,63 +1,68 @@
 # Current continuation — executed HOLD
-Status authority: final-disposition.md; adoption NOT complete. Terminal assurance pending.
-Authorization: retained prompts/active/execute.md; local commits only,NO PUSH.
-Baseline b932db101cce07d0860b45b5ecaa8ddb7f455b58 on main. Original canonical LSEv31
-RESTORED byte-for-byte264863bytes SHA2567a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d.
-Legacy whole-contract reading remains mandatory. No current candidate chapters at
-canonical path. Seven original Rust consumers restored; no production/science edits.
+Status authority: final-disposition.md. Adoption is not complete.
+Authorization: prompts/active/execute.md; local commits only, no push.
+Both independent terminal verifiers completed and accept truthful HOLD delivery.
 
-## Delivered checker and retained candidate
-Canonical tools/sc_contract_directory.py shared by binding,unit,A0. Actual-definition,
-32-key,confined membership/path/anchor/provenance/alias/deferred checks; no semantic
-engine. Candidate v32 entry+14chapters and7Rustconsumers+bridge+checker snapshot under
-artifacts/candidate-tree,immutable evidence only. Candidate source checkpoint5f76475dd;
-reviewed set99ca67fb97351a7eaf495e89fc54720c314795acfbe7bcdc9c3ccab47a8596a8.
-source-manifest.json,candidate-manifest.json,candidate-recovery.json bind all files.
-Original source and frozen historical/experiment identities unchanged. Any mismatch
-requires targeted reconciliation; no cached/aggregate hash implies physical authority.
+## Canonical state
+Original LSE version 31 is restored at its retained canonical path, 264863 bytes:
+`7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d`.
+Legacy whole-contract reading remains required. All seven original Rust consumers
+are restored, with no production or contract-science changes. No candidate chapter
+directory remains at the canonical path. A minimal format-status correction records
+implemented structural support and pilot HOLD; it changes no grammar or adoption gate.
+Unrelated `$pkg/` and `tmp/` remain untouched.
 
-## Canonical invocation and bounded reconstruction
+## Checker and retained candidate
+Canonical tools/sc_contract_directory.py is shared by the binding, unit and A0
+consumers. It validates actual definitions, 32 coverage keys, declared membership,
+confined paths, anchors, provenance, aliases and deferred status. It is not a semantic
+engine. Candidate v32, its 14 chapters, seven reconciled Rust consumers, test bridge
+and checker snapshot remain under artifacts/candidate-tree as immutable evidence.
+Baseline: b932db101cce07d0860b45b5ecaa8ddb7f455b58. Candidate commit: 5f76475dd.
+Restored substantive HOLD cut: 3ec624453. Reviewed candidate set hash:
+`99ca67fb97351a7eaf495e89fc54720c314795acfbe7bcdc9c3ccab47a8596a8`.
+source-manifest.json, candidate-manifest.json and candidate-recovery.json bind exact
+inputs. Compare them with actual state before reuse; mismatch requires reconciliation.
+
+## Exact invocations
 From /workdir/openWEPP:
-`.venv/bin/python tools/check_sc_binding_exposure.py --strict docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md`
-This now checks restored LEGACY and passes16BEI; not directory adoption.
-To reproduce candidate structural/unit checks:
-`.venv/bin/python docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/restore_candidate.py /tmp/NEW-UNUSED-DIRECTORY`
-Then use repository .venv Python on restored tools/check_sc_binding_exposure.py --strict
-and its reconstructed absolute LSEentry; unit checker --path sameentry. Recovery
-verifies40files before NEW external tree,never canonical repo/existingoutput. Minimal
-fixture is NOT fullCargo/executable reconstruction. For Rust use fullnamedbaseline
-checkout+archivedoverlay; .venv and supported nix environment remain required.
-Do not run one-time build_candidate.py in canonical checkout to reactivate.
+```sh
+.venv/bin/python tools/check_sc_binding_exposure.py --strict docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md
+```
+This checks restored LEGACY authority: PASS with 16 BEI rows is not directory adoption.
+To reconstruct the candidate in a new external location:
+```sh
+.venv/bin/python docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/restore_candidate.py /tmp/NEW-UNUSED-DIRECTORY
+```
+Use the repository .venv Python on that tree's tools/check_sc_binding_exposure.py
+with --strict and the reconstructed absolute entry path; run its unit checker with
+--path pointing to the same entry. Recovery verifies 40 files before creating a new
+external fixture and rejects existing/repository outputs. This is not a full Cargo
+workspace or executable reconstruction. Full Rust reproduction needs the complete
+named baseline plus the archived overlay, local .venv and supported Nix environment.
+Do not run the one-time build_candidate.py in the canonical checkout to reactivate it.
 
 ## Evidence and blockers
-Pytest83PASS;candidate strict17BEI/100defs,unit,A0PASS;restoredlegacy strict/unit/A0PASS.
-Candidate selected8targetnextest129run111PASS18FAIL exit100; samebaseline names AND
-normalized reasons,reviewB independently compared. No-new-failure is not PASS gate.
-Final restoration rerun log rust-restored-final.log. Rust formattingPASS;Clippy
--DwarningsFAIL1136unchangedproductiondependencyerrors; no blanket suppression.
-Required heavy runner actual modelquota unavailable,logs/runner-unavailable.md;
-parent supported nix fallback disclosed. No physicscampaign merelyforMarkdown.
-Required FAIL cannot be fixed by permitted reference/loader changes: absent v31
-production seam, frozen V9 external runtimeidentity, unrelated staleauthority issues.
-No permission to implementproduction or rewrite frozen predicates/identity. Both
-reviewers reject retrospective acceptance relaxation. All current gates remain current;
-HOLD is not deferred/completed. Paused EXP-R stays paused; unrelated authorized
-architecture not blocked by this pilot.
+Pytest: 83 PASS. Candidate strict: 17 BEI/100 definitions, PASS; unit/A0 PASS.
+Restored legacy strict/unit/A0 PASS. Selected Rust: 129 run, 111 PASS, 18 FAIL, exit100;
+baseline/corrected candidate/restored final have identical names and panic reasons.
+No-new-failure evidence is not a passing gate. Formatting PASS; Clippy -D warnings
+FAIL with 1136 errors in unchanged production dependencies. Actual heavy-runner quota
+unavailability is recorded; supported parent Nix execution was used openly.
+No physics campaign was selected merely for Markdown relocation.
 
-## Preservation and usable-reading evidence
-Independent fullsource review PASS36fences/100exactStatements/74Evidence/474tablerows/
-275paragraphs;RA-F01–04 and B findingsclosed. Actual qualifier counterexample remains
-structuralPASS but scienceFAIL. Four initially fresh nonforked readonly exercises;
-initialfailed/incompleteanswers preserved; carriedcontext focusedcorrections now
-independentlyPASS requirements selection. Only03identityreducesLSE62.25%;01/02/04
-increase21.20/11.23/12.68%. No overallruntime/token/quota claim. Detailed paths/ranges/
-repeats/drift in exercise01–04 and context reports; frozenrubric unchanged.
+The expected-red v31 production seam and frozen external runtime identity cannot be
+resolved by permitted loader/reference changes. This request authorizes neither
+production implementation nor weakened predicates. Required gates remain unmet.
+Both reviewers accept scientific preservation and corrected bounded reading answers;
+initial failures remain recorded. Identity alone reduces selected LSE bytes by 62.25%;
+other tasks grow. Context reports measure source inventories/ranges, not runtime
+context, tokens or quota. They bind archived candidate bytes from before restoration.
 
-## Next authorized action and reopening boundary
-Two NEW independent terminal verifiers now verify restoredcorrected cut,negative
-cases/corruptunit,archive/source identities,initialFAILs/claims and gatelegitimacy.
-Then finalize reports/localdisposition commit,NO PUSH. Adoption remains HOLD unless
-blockers are resolved under appropriate authorization and ALL frozen gates pass.
-Preserve unrelated $pkg/ and tmp/. Retain verified custody bundle
-/tmp/openwepp-lse-candidate-before-baseline-20260907 until explicitowner/auditrelease.
-No broad reset/clean/stash/branchswitch or authority weakening.
+## Remaining action and reopening boundary
+All safe work for this delivery is finished; the required adoption gates remain unmet.
+Do not push. Adoption requires appropriately authorized blocker resolution and all
+frozen gates passing; owner-paused EXP-R remains paused. Unrelated
+authorized architecture is not blocked by this pilot. Retain the earlier verified
+custody bundle /tmp/openwepp-lse-candidate-before-baseline-20260907 until explicit
+owner/audit release; its manifest is separately identified in gate-results.md.

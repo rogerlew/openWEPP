@@ -17,8 +17,11 @@ This specification defines a prospective format, not scientific amendments or
 permission to migrate an existing contract. Until a separately authorized
 migration meets [Adoption gates](#adoption-gates), existing single-file schema,
 whole-contract reading, checker behavior and frozen package bindings continue.
-The existing checker does not implement this format. A legacy lint PASS cannot
-qualify a directory contract. Small contracts may remain single files indefinitely.
+The separately authorized [checker implementation and LSE pilot](../work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/worker-handoff.md)
+implements structural checker support. The pilot remains on HOLD; canonical LSE
+retains its original single-file authority and whole-contract reading requirement.
+A legacy lint PASS cannot qualify a directory contract. Small contracts may remain
+single files indefinitely.
 
 No equation, constant, tolerance, selector, failure precedence, guard, state
 ownership, restart, serialization, scientific claim or activation status changes

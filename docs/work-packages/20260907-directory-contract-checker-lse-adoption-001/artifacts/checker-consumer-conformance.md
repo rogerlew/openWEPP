@@ -1,5 +1,5 @@
 # Checker and consumer conformance
-Ran: .venv/bin/python -m pytest -q tests/python/test_check_sc_binding_exposure.py tests/python/test_sc_contract_directory.py, cwd /workdir/openWEPP, exit 0: 71 passed. Log: logs/checker-conformance-initial.log. This is initial checker evidence; live migration and consumers remain pending.
+Ran: .venv/bin/python -m pytest -q tests/python/test_check_sc_binding_exposure.py tests/python/test_sc_contract_directory.py, cwd /workdir/openWEPP, exit 0: 71 passed. Log: logs/checker-conformance-initial.log. This is historical initial checker evidence; the corrected candidate and consumer results appear below.
 Original legacy LSE strict PASS and unit PASS; original three pytest tests PASS (logs/baseline-*). Pytest 9.1.1 installed in repository .venv after actual missing-module failure; no global environment/dependency changes.
 
 ## Bounded implementation interpretations (prospective)

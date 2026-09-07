@@ -905,3 +905,27 @@ corrected exercise verdict authorizes canonical adoption or changes historical
 production/qualification FAIL. Archiving the candidate and restoring original v31
 is consistent with that HOLD disposition. Independent final-cut verifiers must
 inspect the actual retained/archive/restored identities after that operation.
+
+
+## Narrow final live-status wording review
+
+Static: the sole current diff to `docs/specifications/science-contract-directory-format.md`
+replaces the obsolete checker-unimplemented sentence at lines 20–21 with linked
+structural-checker implementation status, explicit LSE pilot HOLD and canonical
+single-file/whole-contract-reading retention. Read the linked `worker-handoff.md`
+and package status. Ran: read-only SHA-256 of this format document and canonical LSE;
+no checker/test/scientific rerun for this status-only wording change.
+
+PASS for this narrow wording correction. It accurately separates implemented
+structural support from failed adoption gates, preserves the warning that a legacy
+lint PASS cannot qualify a directory contract, and changes no format grammar,
+scientific rule, acceptance requirement or activation status. The package's recorded
+checker results support the implementation wording; the linked handoff explicitly
+retains required Rust FAIL and executed HOLD. Independent read-only hashing confirms
+canonical LSE is the original 264,863-byte v31 file with SHA-256
+`7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d`.
+
+Reviewed format-document SHA-256:
+`4b7aa41200faaac647c8d8624597779a13c50bee444c0ca738ff7fd29653df1c`
+(21,366 bytes). This is a status-diff review only, not a broad final-cut re-audit;
+terminal verifiers own their separate final restored/archive identity and gate checks.

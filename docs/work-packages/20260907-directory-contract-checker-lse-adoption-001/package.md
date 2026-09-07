@@ -1,5 +1,5 @@
 # Directory-contract checker and LSE adoption
-Status: executed-hold pending terminal assurance; original legacy LSE restored canonical.
+Status: executed-hold; independently verified delivery, original legacy LSE restored canonical.
 Execution mode: package-end-to-end.
 Implementation intent: directory-v1 checker implementation + meaning-preserving LSE contract migration + validated selective reading.
 Baseline: b932db101cce07d0860b45b5ecaa8ddb7f455b58 on main.

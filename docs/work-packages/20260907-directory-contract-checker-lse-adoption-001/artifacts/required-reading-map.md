@@ -4,7 +4,7 @@ Core: root/package instructions, role-authoring and role-implementation, codex_e
 Conditional (triggered): science-contract instructions, full directory specification, parent schema/provenance/authoring/profile/unit governance, tests instructions.
 Complete starting LSE is mandatory for author and preservation reviewers; source manifest binds baseline bytes.
 Consumers expand on actual dataflow discovery. Cross-contract source boundaries expand only as implicated.
-Workflow-total and effective runtime context: UNOBSERVED. Full-file/range task measurements are pending and cannot certify savings.
+Workflow-total and effective runtime context: UNOBSERVED. Completed file/range measurements are recorded in context-usability.md and the paired context reports; they do not measure total runtime context.
 
 ## Completed expansion and evidence
 Author inspected complete original LSE3346lines (source-manifest exact bytes), including

@@ -11,13 +11,13 @@ PASS is structural, not scientific/activation approval. Required gate failures r
 | Schema/profile/provenance/reference structure | PASS bounded | Shared full32-key/required metadata/marked definitions/dependency/provenance grammar; semantic coverage independently reviewed A |
 | A0 admission | PASS after consumer correction | PATH="$PWD/.venv/bin:$PATH" bash tools/release/check_science_contract_admission.sh --base-ref b932db101cce07d0860b45b5ecaa8ddb7f455b58 --worktree; logs/schema-admission-corrected.log; initial FAIL retained |
 | Selected Rust/governance | FAIL exit100 | logs/rust-candidate-reviewed.log129run111pass18fail; baseline same18 reasons; no gate waiver |
-| Rust formatting | PASS exit0 | nix develop -c rustfmt --check --edition2021 over8 owned candidate Rust files; logs/rustfmt-candidate.log |
+| Rust formatting | PASS exit0 | nix develop -c rustfmt --check --edition 2021 over8 owned candidate Rust files; logs/rustfmt-candidate.log |
 | Python syntax | PASS exit0 | .venv/bin/python -m py_compile tools/sc_contract_directory.py tools/check_sc_binding_exposure.py tools/release/check_sc_unit_compliance.py tests/python/test_sc_contract_directory.py |
 | Applicable Clippy | FAIL exit101 | nix develop -c cargo clippy same8 targets -- -D warnings; logs/clippy-candidate.log; unchanged production dependencies1136 errors |
 | Science preservation | PASS Static/Ran | Review A complete source audit100IDs/36fences/474table rows/275paragraphs/qualifiers; strict checker separate |
 | Fresh selective exercises | PASS corrected requirements; reduction only03 | exercise01–04 and context-usability.md;03 sufficient/reduced independently PASS, no runtime total |
-| Exact restoration/archive | PASS parent; independent terminal checks pending | candidate-recovery.json,restore_candidate.py; parent isolated strict/unit PASS |
-| Independent terminal assurance | NOT RUN yet | two new verifiers after corrected substantive freeze |
+| Exact restoration/archive | PASS parent and both independent verifiers | candidate-recovery.json,restore_candidate.py; parent isolated strict/unit PASS |
+| Independent terminal assurance | PASS for truthful HOLD delivery only | verification_agent_a.md and verification_agent_b.md; required adoption failures retained |
 
 ## Rust command and interpretation
 `nix develop -c cargo nextest run --no-fail-fast --test land_surface_energy_balance_authority_contract --test solver_architecture_authority_contract --test surface_liquid_hydrology_custody_authority_contract --test snow_stage3_terminal_receiver_authority_contract --test snow_stage3_shared_carrier_authority_contract --test vegetation_boundary_authority_contract --test stage3_native_vegetation_laned_throughput_recovery --test hphys0279_sc_unit_compliance_lint_contract`
@@ -43,6 +43,28 @@ Restored strict legacy PASS16,unit PASS,A0 PASS49/0; logs/*restored*. Original l
 PASS is explicitly not directory adoption. Candidate structural+unit reconstruction
 PASS via restore_candidate.py (new external40file fixture). Reviews accept corrected
 bounded reading answers; no physical-task reduction, initial failed attempts retained.
-No live Rust/source/science/instructions/historical package difference from baseline.
+No live Rust, production source, contract authority, instruction or historical-package difference from baseline. A separately reviewed format-status sentence now truthfully reports implemented structural support and pilot HOLD.
 Live changes only bounded checker/shared parser/unit+A0 consumers/Python tests and
 new package/catalog evidence. No review/test predicates removed or physics changed.
+
+Custody bundle (earlier baseline-comparison cut, not final candidate):
+/tmp/openwepp-lse-candidate-before-baseline-20260907/manifest.json,
+manifest SHA2564ebc1be192c9cb8631424bf7d340fe5c304f089f5f08323c22209f69d0a26b1c.
+Final candidate identities are separately bound by candidate-recovery.json and
+candidate-manifest.json; do not substitute the earlier bundle for corrected bytes.
+
+## Terminal independent assurance and packaging
+Two NEW independent package verifiers inspected corrected cut3ec624453, archived
+candidate identities and the narrow format-status/reporting deltas. Both independently
+ran83pytest/selected real corruption and recovery checks; both accept truthful HOLD
+only. Their own artifacts retain exact commands, failures and limits. Both verified
+original v31/seven Rust restorations,36fences,source-map coverage,corrected reading
+selections and comparable source inventories. Verifier A additionally rechecked all
+100 Statements and74 Evidence classifications; B bounds its science check to mapped
+lines and primary samples rather than claiming another full equivalence audit. B also compiled the
+actual archived Rust bridge and proved original/missing-definition/malformed-dispatch/
+restored outcomes. Neither parent self-review nor one verifier substitutes for the other.
+Final edits only reconcile already executed status/results, improve report wording
+and record verifier artifacts. Canonical checker/test and candidate bytes are unchanged
+from the verified substantive cut; no test rerun or science re-review inferred solely
+from report packaging. Final git diff --check passes; exact owned scope reconciled.

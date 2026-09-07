@@ -30,7 +30,7 @@ instruction dependencies. These are declared inventory measurements, not observe
 baseline agent/run telemetry. Initial168622 changed22 bytes before final link fix.
 
 Exercise02 solver: initial A FAIL omitted concrete V10/INV163 gates, B accepted
-bounded route. Required gate stays FAIL pending affected-agent completeness rerun.
+bounded route. At that cut the required gate remained FAIL pending the affected-agent completeness rerun recorded below.
 Selected291226 LSE bytes (+26363/+9.9534%); unique task1196953 versus equivalent
 baseline1170590. No saving. Exercise04 closure: initial A FAIL omitted zero/boundary/
 timing/exact-wire qualifiers; B accepted bounded route but challenged repeat metric.
