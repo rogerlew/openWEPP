@@ -4,8 +4,8 @@
   "always_read_bytes": 12106,
   "tasks": {
     "exercise01": {
-      "lse_bytes": 194583,
-      "reduction_percent": 26.53447253863318,
+      "lse_bytes": 194934,
+      "reduction_percent": 26.40195119741149,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -32,20 +32,20 @@
           "ranges": [
             [
               1,
-              303
+              298
             ]
           ],
-          "bytes": 22406
+          "bytes": 22401
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
           "ranges": [
             [
               1,
-              203
+              205
             ]
           ],
-          "bytes": 11069
+          "bytes": 11425
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
@@ -130,8 +130,8 @@
       ]
     },
     "exercise02": {
-      "lse_bytes": 209537,
-      "reduction_percent": 20.888534827439088,
+      "lse_bytes": 209911,
+      "reduction_percent": 20.747329751607435,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -158,20 +158,20 @@
           "ranges": [
             [
               1,
-              303
+              298
             ]
           ],
-          "bytes": 22406
+          "bytes": 22401
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
           "ranges": [
             [
               1,
-              244
+              247
             ]
           ],
-          "bytes": 18763
+          "bytes": 18979
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
@@ -188,30 +188,30 @@
           "ranges": [
             [
               1,
-              558
+              534
             ]
           ],
-          "bytes": 52411
+          "bytes": 48117
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
           "ranges": [
             [
               1,
-              245
+              246
             ]
           ],
-          "bytes": 18719
+          "bytes": 19322
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
           "ranges": [
             [
               1,
-              203
+              205
             ]
           ],
-          "bytes": 11069
+          "bytes": 11425
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
@@ -248,24 +248,16 @@
           "ranges": [
             [
               1,
-              19
-            ],
-            [
-              21,
-              145
-            ],
-            [
-              209,
               227
             ]
           ],
-          "bytes": 12426
+          "bytes": 15924
         }
       ]
     },
     "exercise03": {
-      "lse_bytes": 30825,
-      "reduction_percent": 88.36190785424918,
+      "lse_bytes": 31428,
+      "reduction_percent": 88.13424298599654,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -292,16 +284,16 @@
           "ranges": [
             [
               1,
-              245
+              246
             ]
           ],
-          "bytes": 18719
+          "bytes": 19322
         }
       ]
     },
     "exercise04": {
-      "lse_bytes": 194583,
-      "reduction_percent": 26.53447253863318,
+      "lse_bytes": 194934,
+      "reduction_percent": 26.40195119741149,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -328,20 +320,20 @@
           "ranges": [
             [
               1,
-              303
+              298
             ]
           ],
-          "bytes": 22406
+          "bytes": 22401
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
           "ranges": [
             [
               1,
-              203
+              205
             ]
           ],
-          "bytes": 11069
+          "bytes": 11425
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",

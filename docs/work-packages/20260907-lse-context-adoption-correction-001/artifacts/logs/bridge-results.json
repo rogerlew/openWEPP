@@ -245,22 +245,22 @@
     "expected_success": true
   },
   {
-    "case": "/tmp/lse-bridge-9cw2b6lt/SC-X-001.md",
+    "case": "/tmp/lse-bridge-iac_1ux2/SC-X-001.md",
     "exit": 0,
     "expected_success": true
   },
   {
-    "case": "/tmp/lse-bridge-ctjdrmck/SC-X-001.md",
+    "case": "/tmp/lse-bridge-li_9ksyv/SC-X-001.md",
     "exit": 1,
     "expected_success": false
   },
   {
-    "case": "/tmp/lse-bridge-b9m0p3s6/SC-X-001.md",
+    "case": "/tmp/lse-bridge-m77d1phd/SC-X-001.md",
     "exit": 1,
     "expected_success": false
   },
   {
-    "case": "/tmp/lse-bridge-qfcbozg4/SC-X-001.md",
+    "case": "/tmp/lse-bridge-vt9x1wyu/SC-X-001.md",
     "exit": 1,
     "expected_success": false
   }

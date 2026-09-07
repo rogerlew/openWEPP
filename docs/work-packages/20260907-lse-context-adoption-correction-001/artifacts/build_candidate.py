@@ -171,6 +171,17 @@ for name,destination,ids in [
 for name,s in list(texts.items()):
     for (old,anchor),new in relocations.items():s=s.replace(f'{old}.md#{anchor}',f'{new}.md#{anchor}')
     texts[name]=s
+# Independently reviewed 21-row coverage: scientific requirements remain in the
+# complete mechanism bodies and marked definitions; exact profile records stay normative.
+profile_pattern=r'(?m)^\| Profile surface \| Binding \|\n(?:\|[^\n]*\n)+'
+profiles=re.findall(profile_pattern,texts['dependency-replay'])
+assert len(profiles)==3
+for version,block in zip([28,29,30],profiles):
+    texts['dependency-replay']=texts['dependency-replay'].replace(block,'',1)
+    texts['binding-index']+=f'\n<a id="profile-v{version}"></a>\n## V{version} normative profile classification\n\n'+block
+texts['dependency-replay']=texts['dependency-replay'].replace('# Dependency Replay\n','# Dependency Replay\n\nV28, V29 and V30 each retain dual independent review and verification. Their original profile classification records remain normative in binding-index; all scientific mechanism and test obligations below remain required.\n',1)
+texts['binding-index']=texts['binding-index'].replace('# Binding Index\n','# Binding Index\n\nThe V28–30 profile classification records below are normative authority. Their relocated algorithm/guard/test duties remain in the complete scientific bodies; profile conformance requires both.\n',1)
+texts['nonlinear-solve']=texts['nonlinear-solve'].replace('# Nonlinear Solve\n','# Nonlinear Solve\n\nA represented-snow reuse correctness review includes both potential and fixed-final solves and the applicability of each V10/V11–13 branch below, together with complete solve-boundary error and acceptance rules.\n\n',1)
 SUPPORT='version-9-positive-support-admission-owner-amendment'
 ORDER='ordered-numerical-algorithm-active-branches-and-error-precedence'
 # Each edge is an authority boundary, not an automatic whole-file dependency.
@@ -192,6 +203,8 @@ whole('nonlinear-solve','solve-boundary','solver correctness or implementation',
 whole('solve-boundary','nonlinear-solve','solver implementation or V10/V11–13 branch/algorithm review','complete eligibility, scaling, exact stencils and termination')
 whole('solve-boundary','dependency-replay','evaluator/reuse equivalence or optimization review','exact reuse predicates, custody, first errors and qualification')
 whole('surface-energy','soil-coupling','surface temperature/humidity or ground transfer','thermal state and CN lower boundary')
+whole('surface-energy','terminal-support','surface/soil regime-rule selection','complete support, represented-snow and post-event receiver boundary; requirements precede execution')
+whole('surface-energy','litter-phase','snow-free forest-litter phase is active or unspecified','complete admitted phase, capacity and ingress rules')
 whole('surface-energy','water-vapor','signed vapor, water transaction or energy closure','accepted enthalpy and immutable water')
 whole('surface-energy','solve-boundary','physical rule selection or accepted-primitive closure','ordered solve and error precedence; INV108-110')
 whole('surface-energy','nonlinear-solve','solver implementation or full evaluator correctness','all active numerical branches')
@@ -220,6 +233,11 @@ for target,why in [('nonlinear-solve','canonical stencils, leaf reuse and errors
 for a in ['validated-in-memory-lse-custody-handoff-amendment','covered-nonfinal-physical-only-map-amendment','carrier-parent-static-and-same-map-validation-once-amendment']:dep('dependency-replay','map-custody.md#'+a,'replay custody/error-order review','original validation positions and pending-map identity')
 whole('qualification','dependency-replay','scientific replay/coverage/result claims','graph, custody, errors and forced-complete proof')
 whole('qualification','nonlinear-solve','solver scientific result claims','complete ordered solver')
+for version in [28,29,30]:
+    dep('dependency-replay',f'binding-index.md#profile-v{version}','V28–30 profile conformance or enforcement-classification audit','original normative profile records')
+whole('binding-index','dependency-replay','V28–30 scientific profile conformance or enforcement mapping','complete mechanism and test obligations')
+for file,anchor,why in [('experiment-protocol','exp-stage3-20260906-protocol-original-draft-1-plus-prospective-reviewed-amendments','reviewed capture, validity and decision rules'),('authority-input-reproduction','canonical-adjunct-reproduction-evidence','exact source composition and executable-input reconstruction')]:
+    dep('qualification','../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/'+file+'.md#'+anchor,'EXP-R identity/capture or experimental requirements',why,'whole document, including later reviewed amendments')
 for n in ['nonlinear-solve','dependency-replay']:
     D[n]=[row for row in D[n] if row[0]!='water-vapor.md#water-vapor']
     for anchor in ['signed-vapor-and-liquid-enthalpy','immutable-beginning-water-transaction-and-current-ingress','independent-closure-and-errors']:
@@ -254,10 +272,14 @@ for name,rows in D.items():
         group=grouped.setdefault(key,([],[]))
         group[0].append(target)
         if why not in group[1]:group[1].append(why)
-    labels={'signed-vapor-and-liquid-enthalpy':'vapor','immutable-beginning-water-transaction-and-current-ingress':'water','independent-closure-and-errors':'errors','canonical-invariants':'invariants','canonical-obligations':'obligations'}
+    labels={'signed-vapor-and-liquid-enthalpy':'vapor','immutable-beginning-water-transaction-and-current-ingress':'water','independent-closure-and-errors':'errors','canonical-invariants':'invariants','canonical-obligations':'obligations','experiment-protocol':'protocol','authority-input-reproduction':'inputs'}
+    labels.update({'exp-stage3-20260906-protocol-original-draft-1-plus-prospective-reviewed-amendments':'protocol','canonical-adjunct-reproduction-evidence':'inputs'})
     D[name]=[]
     for (when,extent),(refs,reasons) in grouped.items():
-        target=refs[0] if len(refs)==1 else ', '.join(f'[{labels.get(r.split("#")[-1],r.split("#")[-1])}]({r})' for r in refs)
+        def label(ref):
+            key=ref.split('#')[-1] if '#' in ref else Path(ref).stem
+            return labels.get(key,key)
+        target=refs[0] if len(refs)==1 else ', '.join(f'[{label(r)}]({r})' for r in refs)
         D[name].append([target,when,'; '.join(reasons),extent])
 
 DEST.mkdir(exist_ok=True)
@@ -297,7 +319,9 @@ for file in DEST.glob('*.md'):
             line=line.replace('[Shared tests]', '[Tests]').replace(' and [Mechanism tests]', '; [Detail]')
             line=line.replace(f']({file.name}#','](#')
         result.append(line)
-    file.write_text(''.join(result))
+    rendered=''.join(result)
+    if file.stem=='common-details':rendered=rendered.rstrip('\n')+'\n'
+    file.write_text(rendered)
 # Compact entry retains metadata and scientific status; unused aliases are removed.
 old=(OLD/'candidate-tree'/REL).read_text()
 front=old[:old.index('---',4)+3]

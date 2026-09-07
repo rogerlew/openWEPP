@@ -581,3 +581,492 @@ stated static boundaries; actual fresh adequacy, actual reading thresholds and
 terminal adoption remain PENDING. Parent separately reports98 pytest passes,
 strict17/100 and the unchanged18 inherited Rust failures; this focused closure
 does not independently rerun or relabel that broader evidence.
+
+
+## Fresh identity retry02 — independent frozen-rubric disposition
+
+Static: complete exercise_03_retry_02.md, unchanged frozen identity rubric, current
+qualification route, complete bound Stage-3 handoff, kickoff protocol requirements
+and the existing reviewed experiment-protocol.md including reconstruction amendments.
+Ran: independent verification of all53 requested range byte lengths and full-source
+hashes, finite source unions and exposure arithmetic. No builds, captures, scientific
+results or measurements were executed. No feedback or rubric answers were sent to
+the fresh reader. Parent records a genuinely new isolated nonforked first attempt
+on the frozen cut115582cd2; the fresh handoff carries no earlier findings/predictions.
+
+Report23465 bytes, SHA-256
+a5d521a98a4644fdb56a743823bf81e9d6bd213761993ac26522d11f185e17a1.
+All recorded source hashes and range lengths match actual source. Unique/exposure
+LSE30825/30825, external29268/29268, governance48929/49122; combined109022/109215.
+Bootstrap61342 and expansion47873 match; repeats193 bytes. The observed LSE source
+reduction is234038 bytes (88.3619%), so the identity size criterion passes.
+Delivered-token/automatic-context/workflow exposure remains UNOBSERVED. This
+source arithmetic does not prove the source selection is sufficient.
+
+First-attempt requirements adequacy: FAIL. Frozen rubric items3/5 require the
+bound reviewed EXP-R protocol. The reader consumes only the full kickoff25550
+bytes and handoff3718 bytes as external protocol/status source. It never reads
+the existing independently reviewed artifacts/experiment-protocol.md. Kickoff
+section5 explicitly distinguishes its defaults from the separately reviewed
+protocol required before comparative measurements. The report then places reading
+the frozen protocol among future owner-resumption steps. Deferring execution is
+correct; deferring the protocol that defines executable/capture requirements is
+not sufficient for this requirements-reading task.
+
+The omitted11541-byte protocol SHA-256 is
+40033ea2e536984ae5a7455e99509e7e760624b78cdb08ee347597fe2f5f115f. It contains
+concrete capture identity/environment, CPU/clock scope, timeout, sample validity,
+paired decision and memory rules beyond kickoff defaults. Its final reconstruction
+amendment also binds the full exact-base checkout, runtime kit and canonical
+adjunct,15 compiler-read JSON documents, actual A patch base, and the referenced
+authority-input-reproduction/composition instructions. The answer does not select
+those concrete current reconstruction requirements. Naming the current A/F/R kits
+without claiming to verify them is honest but cannot replace reading the actual
+bound protocol/source-membership rules. Any recursively applicable identity
+reproduction instructions must likewise be read; actual source/build/capture
+verification remains NOT RUN without the supplied candidate and run evidence.
+
+The answer otherwise correctly distinguishes current A and R=A+reviewed delta
+from F, historical versus prospective identity/gates, immutable Cargo-discovered
+executable/source series, documentary versus executable/claim identity, raw
+input/environment/command custody, unchanged sample retention, complete-oracle
+and real-consumer prerequisites, audit versus timing, owner pause and production
+HOLD. It does not falsely claim physical/replay/closure qualification and properly
+conditions corresponding scientific chapter expansion on such claims. These
+strengths do not cure the missing external reviewed protocol. No original
+canonical scientific deletion is inferred from this reader omission.
+
+The first-attempt FAIL remains immutable. A corrected source list or carried-
+context answer cannot relabel it PASS; the package requires a fresh affected
+retry. The missing bytes are external, not LSE, so reading them would not itself
+invalidate the observed LSE reduction, but adequacy must actually be demonstrated
+by a sufficient fresh answer rather than forecast. No threshold/rubric relaxation,
+reader coaching, experiment resumption or production adoption is approved.
+
+
+## Prospective post-iteration2 efficiency correction — profile-table proof
+
+Static: independently read all original V28/V29/V30 profile table rows in current
+dependency-replay against their complete retained algorithm/test bodies and
+canonical rows, map-custody full trust-boundary/pending-map authority, common
+physical tests, and water-vapor V1fixture/V9 plus C001 enforcement/test links.
+Ran: exact table byte counts only. No canonical edits were performed by this
+reviewer; current fresh readers must finish before the parent changes source.
+Parent reports solver chose whole water and therefore213035 LSE bytes; its
+finished scientific answer still needs independent assessment. Do not subtract
+consumed water bytes from that immutable first-attempt result.
+
+Preferred bounded correction: move only the three complete V28/V29/V30
+`Profile surface | Binding` tables, unchanged, into normative audit-details.
+No additional physical chapter is necessary for this option. Preserve original
+algorithm bodies, canonical definitions, detailed test/poison obligations and
+effective restrictions in routine replay/map reading. Give each relocated table
+an exact unambiguous anchor and conditional profile/enforcement/binding-
+classification audit link. These records remain normative; they are not history.
+The exact original dates and binding classification remain retained as written.
+
+One explicit condition is necessary: retain a compact visible per-amendment
+statement that V28/V29/V30 require dual review/verification. The original binding
+rows make this obligation explicit, whereas algorithm bodies alone do not. A
+reader must not need an optional audit claim to discover that acceptance duty.
+This is preserving existing authority in routine context, not creating new science.
+
+The following mapping covers every proposed relocated row. Line numbers identify
+the still-frozen current source, not future relocated locations. `Replay` means
+dependency-replay.md; canonical IDs identify the stable actual definitions.
+
+| Original profile row | Retained routine scientific coverage / relocation condition |
+| --- | --- |
+| V28 algorithm342 | Replay287–325 states validated same-solve represented-snow inputs, exact identity expressions, minus/plus domain admission, same arithmetic and canonical finite-difference use; INV162. |
+| V28 branch343 | Replay287–289 and318–329 require proved same-solve boundary, exact sole-coordinate dependency and complete evaluator elsewhere; INV162 Guard explicitly retains private same-solve proof. |
+| V28 guard map344 | Same body plus INV162 private proof/classifier/oracle/call counter and C017 exact residual/Jacobian tests preserve every enforcement obligation. Source-to-profile mapping itself remains in audit. |
+| V28 test345 | Replay331–338 and C017 explicitly cover centered/inward/domain/dependency poisons, exact complete oracle, call elimination and authentic runner output/closure/map/publication parity. |
+| V28 binding346 | Preserve original active/new-INV/162/C017 record verbatim in audit and unique registry definitions. Keep dual review/verification explicit in routine replay. |
+| V28 change347 | Replay287–338 and INV162 retain scope and all unchanged numerical/error/custody restrictions; exact revision/date text remains normative audit provenance. |
+| V29 algorithm391 | Replay353–368 fully states successful current leaf, exact-one or admitted beta-independent branch and complete maximum otherwise; INV163. |
+| V29 branch392 | Replay360–377 plus INV163 require bit-exact beta or returned Inactive/ExactZeroPar, all other calls complete and no cache/fallback. |
+| V29 guard map393 | Replay369–377/379–387 and INV163/C018 retain private same-evaluation state, exact classifier, exhaustive oracle and invocation counts. |
+| V29 test394 | Replay379–387/C018 retain every field/evaluation/residual/full-solve comparison, branch/beta/stencil matrix, call order/count/error precedence and authentic outputs. |
+| V29 binding395 | Preserve original active/new-INV/163/C018 record and canonical ownership; dual review/verification remains explicit in routine replay. |
+| V29 change396 | Replay353–387/INV163 preserve same-evaluation, successful exact leaf reuse and unchanged physics/solver/error/custody; date/revision remains audit provenance. |
+| V30 state531 | Replay403–412/476–491 plus complete map INV159 retain private non-Clone/non-wire structural/forcing/resident proof types and prohibit cached dynamic state/publication/restart. |
+| V30 algorithm532 | Replay414–465 gives lazy original-position validation and exact forcing→V8→fallible ingress→native revision order, with omission of only the two named native checks. |
+| V30 branch533 | Replay414–491/C019 retain exact identity, generation, pointer, revision and original-position rejection/no fallback. Full trust-boundary validation also remains explicit in map-custody64–76 and complete INV159. |
+| V30 guard map534 | Replay403–491/C019 and map INV159 preserve every proof/oracle/poison/rollback obligation. INV159's Authority retains CT030 and INV161; complete pending-map body/INV161 retain role/disposition custody. |
+| V30 units535 | Replay521–527 explicitly adds no symbol/conversion/scalar exception/constant/parameter/tolerance/equation/branch/output/wire and preserves units, aliases and numeric guards. |
+| V30 calibration536 | Replay521–527 keeps calibration/identifiability CALIBRATION_NOT_APPLICABLE and unchanged contract fields; common's complete calibration section retains evidence/observation limits. No new calibration claim is authorized. |
+| V30 tests537 | Replay493–519/C019 retain1/52/52, all applicable regimes/roles, ordinary zero-native, full physical/owner parity, every poison/error order, real source counts, no fallback/publication and exact rollback. Prohibited cache/Arc/wire remains explicit476–491. |
+| V30 binding538 | Preserve active/maps-to-existing-INV/159/C019 and unique registry identity; retain dual review/verification explicitly in routine replay. |
+| V30 change539 | Replay403–527/complete INV159 preserve validation-only architecture, distinct V8/native identities and unchanged science/solver/publication/wire. Exact date/revision stays normative audit provenance. |
+
+No other table-only scientific qualifier was identified after this atom-level
+comparison. Moving those tables is acceptable precisely because the complete
+applicable science/test requirements remain in routine source, not merely because
+the text survives somewhere. Canonical C017/C018/C019 detailed-test links must
+continue to point to their full scientific owning bodies, not redirect those
+requirements solely to the optional profile tables. An actual profile/enforcement
+mapping or binding-classification adjudication still reads its audit sections.
+
+Measured gross tables: V28=1172, V29=1181, V30=2430 bytes, total4783. Starting
+from whole-water213035 and allowing an estimated600-byte direct protocol/input
+link addition gives208852 before new profile links/visible gate wording, roughly
+3038 bytes below211890. This is a forecast, not observed successful fresh reading.
+Measure all actual overhead and applicable recursive audit reading after the
+change; preserve full water reading if a fresh solver reader chooses it.
+
+Alternative water-owner-details split: the actual C001 row links only common
+tests and water errors, whose required ET/signed-energy duties remain read. It
+does not directly require the separate V1fixture/V9 body for bounded represented-
+snow requirements selection. That exclusion was prospectively reviewed already;
+active water publication/physical reconstruction or a specific affected fixture
+claim would activate its complete details. Nevertheless that split saves only
+3479 gross original-body bytes and adds another chapter/dependency/entry cost;
+with protocol links it offers less margin and more routing dependence. Prefer
+the proved profile-table relocation rather than introducing this extra file now.
+No water split is implemented or silently approved by this recommendation.
+
+Direct links from qualification to the existing reviewed experiment-protocol and
+applicable exact input-reproduction instructions are justified discoverability
+corrections, retaining full kickoff/handoff and conditional execution authorization.
+They do not supply exercise answers or alter any protocol. All original content,
+first-attempt FAILs, frozen rubrics, >=20% science savings, bootstrap bound and
+independent fresh/terminal gates remain unchanged. Record the exact amendment
+before editing, recheck source preservation/relocated links and sufficient whole-
+core size, then use new isolated affected exercises. No adoption claim yet.
+
+
+## Fresh surface/soil retry02 — independent unchanged-rubric assessment
+
+Static: complete scientific answer and source ledger in exercise_01_retry_02.md,
+unchanged frozen task01 rubric, actual selected chapter dependency conditions and
+relevant terminal/snow-soil/owner boundaries. Ran: independent full-source hashes,
+every requested inclusive range length and finite union/exposure arithmetic. No
+implementation, physical reconstruction or real-consumer test ran. No feedback
+or rubric answers were supplied to the fresh reader. Source cut115582cd2 remains
+frozen while the other readers finish.
+
+Report47911 bytes SHA-256
+7826256761342684bb4ac87623dc2051e358e16b160b42f702c76e880591bc4b.
+All27 source identities and224 source requests match actual hashes/lengths.
+Finite unique LSE150614, external903134, governance63585, tooling3544 bytes,
+total1120877. Requested exposure1550655 includes429778 repeat/recovery bytes;
+bootstrap52747 and expansion1497908 match the ledger. LSE reduction114249 bytes
+(43.1351%) meets the numeric20% threshold for the recorded subset. This does not
+establish sufficient reading. Truncated requests remain counted and subsequent
+recovery reads remain additional exposure; delivered-token/workflow totals are
+UNOBSERVED, not inferred from source lengths.
+
+First-attempt scientific adequacy: FAIL against the unchanged task01 boundary.
+The frozen task asks for applicable snow-free coupling AND the represented-snow/
+terminal boundary that changes rule selection. The answer elects to exclude
+native snow and terminal receiver authority because it does not claim their
+execution correctness. Avoiding an execution claim is appropriate, but it cannot
+exclude requirements explicitly included in the frozen rule-selection task.
+
+The answer correctly names the separate OFE snow-to-first-soil boundary, no tile
+weighting/duplication and inactive litter custody. It does not state the required
+inside-fixed-point snow/soil coupling, exactly shared opposite-sign accepted heat
+and semantic receipt, or distinguish endpoint reseal1e-9J/m² and1e-8K from the
+1e-6J/m² physical closure threshold/no-credit-repair restriction (frozen item6).
+It also omits the actual scoped terminal receiver, no automatic activation and
+post-event-only [wall_t*,wall_end) flux rebuilding required by frozen item1.
+Correct zero/no-solve,60-second pre-Newton admission and no subfloor retry rules
+are present, but do not replace the distinct event/receiver-selection boundary.
+
+The corresponding source omission is concrete: whole soil-coupling is selected
+and the answer expressly invokes represented-snow boundary rules, while that
+chapter's dependency table requires whole SC-SNOWENERGY-001 for precisely that
+boundary. The report reads no SnowEnergy and only7834 terminal-support bytes,
+then calls the omitted authority untriggered. Requirements selection is not the
+same as runtime implementation certification; this conditional exclusion is too
+narrow for the frozen task. Reading the covered-map handoff/pending text alone
+cannot substitute for the snow/soil endpoint and actual terminal receiver rules.
+
+The retained rain-provider claim also names Harder–Pomeroy without reading the
+frozen rubric's SnowFreeze provider expansion. Its factual Celsius-to-Kelvin
+statement agrees with the retained selected owner text; that is not a numerical
+error. Source completeness still must account for the actual required upstream
+provider authority rather than infer that only implementation would trigger it.
+
+The answer's unfrozen physical core is otherwise substantial and correct: exact
+owner/basis/domain selection, finite versus equilibrium-zero beginning operands,
+N=1/multiple-node CN, half-layer conductance and equal/opposite transfer, shared
+air/reciprocal radiation, signed sensible-plus-latent vapor, beginning-only water
+caps and complete fixed-final solve, actual stateful WB14/parcel-temperature
+partition and same-pass soil credit, bounded representation rules, exact converted
+high/carry custody, original-owner publication and discriminating poisons/tests.
+Its non-execution and missing numeric input limits are honest. These strengths
+do not close the omitted frozen boundary requirements.
+
+V3 phase implementation need not automatically be audited for every unfrozen
+V1 coupling question. Do not fail solely for lacking detailed frozen phase math
+when the active regime is explicitly unfrozen. Nevertheless, the report reads
+whole surface-custody and describes V16 fusion/carry closure while omitting its
+litter-phase dependency; any actual active-phase or phase-operand reconstruction
+claim must expand that authority. This is a conditional route concern, not the
+independent decisive FAIL above. Full solver/replay/qualification implementation
+exclusions remain legitimate when those claims are absent.
+
+The smaller recorded source union cannot be used as sufficient20% evidence until
+a fresh answer covers the unchanged required boundary and all applicable source
+expansion. No retrospective deletion/addition of old requests, carried-context
+correction or rubric narrowing can convert this first attempt to PASS. Preserve
+its useful findings and actual counts; scientific acceptance and adoption remain
+pending a genuinely fresh sufficient affected retry.
+
+
+## Fresh closure retry02 — independent scientific PASS on its frozen cut
+
+Static: complete exercise_04_retry_02 answer, unchanged frozen task04 rubric and
+its actual selected authority/dependency boundaries. Ran: independent all28
+source hashes,77 requested range lengths and unique/exposure arithmetic against
+frozen commit115582cd28b03222a1f3324dbc487c62c45432d3. Parent began authorized
+next-layout edits after all readers finished; initial working-tree comparisons
+therefore detected changed common/surface/audit bytes. Repeating the check against
+the actual report cut verified every recorded identity/range. Current bytes must
+not be substituted for the old report identity. No science workflow executed.
+
+Report51026 bytes SHA-256
+1e4439898f994f8cd9f30edd489c7729dcb4a7d9ea642aa0706c2fac4c7467e0.
+Read union: LSE205332, external903134, governance73718 bytes, total1182184;
+requested exposure1416891. Bootstrap89525 and expansion1327366 are exposure,
+not disjoint unique sums. Tool-source3544 bytes is separately disclosed.
+
+Scientific first-attempt requirements adequacy: PASS for snow-free frozen-litter
+closure reconstructed from accepted primitives. The answer retains independent
+signed radiation/sensible/liquid-and-ice-vapor/ground/advection operands, local
+then area-weighted ledgers, correct finite/equilibrium CN, separate phase pools
+and liquid saturation for both, bounded kinetic transfer/fusion/ending capacity
+and phase-only H invariance. It specifies checked raw-to-retained spill through
+authoritative second subtraction, full-child support, separate negative debit
+and actual retained credit, complete heterogeneous native/ordinary resource join
+and actual stateful liquid-only WB14. Ice is explicitly not WB14 supply and cannot
+become runoff/frozwt. Zero mass has zero energy/no invented temperature.
+
+Exact custody is independently specified from accepted converted binary64 amounts,
+canonical signed dyadics, one finite nearest-even high and exact carry, bit-frozen
+mirrors and preserved high signed-zero semantics. Complete topology/source/order/
+support/lineage, partial/final markers, original-owner replay and single accepted
+publication remain required. Tests cover distinct operands/poisons, ties/subnormal/
+overflow, phase/spill boundaries, rollback and unchanged real p61/native consumers.
+The historical p61 support is contextual, with actual missing receipt operands
+preventing a computed residual. No substituted numeric oracle or invented Ls law
+is provided. Physical closure, exact representation, nonlinear/adaptive acceptance
+and actual process/consumer qualification remain distinct.
+
+Its snow/terminal constitutive implementation, optimization and experiment-protocol
+exclusions are legitimate for this accepted-primitive snow-free scope. The answer
+selects regime exclusion, physical support and receipt/publication boundaries
+without claiming native snow heat, terminal execution or replay equivalence. It
+reads all four crossed external single-file owner contracts. Unlike task01, this
+frozen task does not require a separate full represented-snow/terminal rule-
+selection comparison. Accepted tagged rain/Ls primitives can remain required
+inputs without claiming their meteorological producer internals were verified.
+A changed claim or actual snow/terminal operand activates the relevant full owner.
+No applicable frozen task04 conclusion is identified as missing.
+
+Size:205332 read bytes give22.4761% LSE reduction, but exact search-output delivery
+was not captured. Do not pretend the ledger is an exact total of all exposure.
+The declared LSE searches touch fully read files except the initial heading search
+of partially read terminal-support. Conservatively adding EVERY remaining terminal
+heading, explicit anchor and anchored canonical row costs1332 bytes, giving an
+upper bound206664 (21.9732% reduction), still below211890. This is a conservative
+source-union bound for the disclosed heading-only navigation, not fabricated exact
+search bytes/tokens. Unknown governance/search delivery and repeats remain visible
+as additional/unobserved context. The read-only hash/union check did not exercise
+any physical or real-consumer guard.
+
+PASS scientific selection and size on this frozen cut only. The report remains
+immutable. Later changed audit, routing or profile-source bytes require actual
+affected-source reconciliation; numerical substitution of new file sizes is not
+observed first-attempt reading. A fresh affected closure retry avoids a complex
+counterfactual reuse claim and can directly establish final-cut adequacy/savings.
+Adoption/terminal gates remain pending.
+
+## Prospective physical-route clarification and profile owner variation
+
+Approve precise physical rule-selection dependency clarification: complete terminal
+boundaries are required for a surface/soil rule-selection question that includes
+represented-snow/terminal regime changes; complete litter-phase applies when
+forest phase is active or unspecified. An absence of execution claims does not
+waive those requested rules. Pure snow-free accepted-primitive closure may retain
+complete physical-support section/applicable definitions without unconditionally
+reading terminal implementation. The concrete triggers must preserve that scope
+distinction; forcing all terminal text into every closure route can exceed the
+size gate when a reader also needs common provenance/audit material. No hints
+or rubric answers should be added to exercise prompts.
+
+APPROVE the prospective profile-table owner variation before its edits: place the
+three complete unchanged V28/V29/V30 tables in existing normative binding-index.md,
+under exact profile-v28/profile-v29/profile-v30 anchors. This remains the same
+17-chapter envelope and the exact21-row preservation proof above still applies.
+Profile records are normative conformance/authority mapping, not merely parser
+output or nonbinding historical evidence; the binding-index introduction must
+make that distinction clear. Algorithm/test requirements remain in their full
+routine replay/map bodies and canonical definitions, with dual review/verification
+explicitly visible in routine replay.
+
+Replay's conditional profile-conformance edges may target those exact records.
+Binding-index must expose the corresponding conditional full mechanism/body
+dependency for a profile-conformance audit. Remove only the newly introduced
+audit-details→replay edge whose sole trigger was housing these three profiles;
+preserve any pre-existing applicable source/enforcement authority dependencies.
+No canonical C017–019 test link may be replaced by an audit-only summary.
+Preserve actual definition ownership/BEI classification/original table bytes and
+source mapping. No new file, scientific equation, rule exception, historical
+reclassification or acceptance change is approved.
+
+This variation keeps common provenance/gap reading separate from unrelated profile
+classification without demoting either authority. Refresh the complete manifest,
+check exact relocation/link/mapping and all applicable recursive source costs,
+then use new fresh affected exercises on stable bytes. Old reports remain useful
+evidence of their own cuts; they do not acquire new source observations by arithmetic.
+
+
+## Fresh solver retry02 — independent unchanged-rubric FAIL
+
+Static: complete exercise_02_retry_02 scientific answer (including separately
+recovered middle paragraphs), unchanged frozen solver rubric and bound original
+V2/V11–13, error-order, EXP-R/PC1/SG1/protocol authority. Ran: independent32
+full-source hashes and311 requests with reported multiplicities, inclusive ranges
+and source union/exposure arithmetic against frozen115582cd2. Every recorded
+hash/range matches. No runtime evaluator, numerical solver, experiment or scientific
+test executed; no hints or followups were sent to the reader.
+
+Report50369 bytes SHA-256
+abcde02a02d300201d2286830c31fdcda34cecbaf04888b21b9b8c471c40c115.
+Unique source: LSE213035, external839166, governance114651, tooling3544,
+total1170396. Requested exposure1260906; bootstrap113695, expansion1147211.
+The reader properly charges whole water/map reads and does not relabel its smaller
+theoretical207792 subset as observed. Actual213035 is19.5679% reduction and
+FAILS211890 by1145 bytes. Reported source counts do not include unobserved
+delivered-token/automatic-context/workflow overhead.
+
+Scientific first-attempt adequacy also FAILS. Substantial correct coverage includes
+exact graph/capability lifecycle, full source-order evaluator dependencies, original
+fallibility classes, PC1/SG1 limitations, canonical stencils/LU/scales/thresholds,
+INV162/163, universal P001–004, V30 first-validation/source-position/competing
+poisons, exact pending-map disposition, forced-complete every-field/full-solve
+oracles and actual probe/counter reconciliation. Vegetation, SnowEnergy and
+CoupledTime are read completely. These do not substitute for the following
+unchanged frozen requirements:
+
+- V2 FullSupply exact positive and canonical-zero request identity/amount
+  eligibility, coordinate-only potential seed, complete fixed-final rebuild, and
+  passing iteration-zero with zero step/backtracking/no Jacobian are absent.
+  A generic uncapped→authorization→fixed-cap description is insufficient.
+- Partial positive root authorization in the nonpositive-assimilation branch
+  must fail typed unsupported; the answer does not state it.
+- INV131's exact inactive liquid-vapor max(T_canopy,T_ref) anchor and INV113's
+  joint store-cap/water-rate AND unanchored physical wet-energy predicate are
+  not given. Saying inactive rules cannot broaden active subfreezing behavior
+  does not select those exact eligibility/closure guards.
+- V13's no-update acceptance must retain the unchanged current state and never
+  install its prospective witness, with no public/persisted exponent field.
+  The answer describes first-valid-halved logic but omits these explicit custody/
+  representation conclusions. The complete b0-first/no-update chronology must
+  also remain visible, not only a generic full-trial-invalid posture.
+- V10 scaling's restricted branch is named, but the actual diagonal-coordinate
+  Jacobian/pivot/dimensionless-Newton role and unchanged physical residual/step
+  meaning are not explained. Those numerical obligations remain binding.
+- The complete serialization→identity→topology/owner→nonfinite→unsupported→
+  constitutive→authorization→numerical/acceptance→component/volume/cross-owner
+  first-error hierarchy is omitted. Correct V30 ordering does not replace it.
+- As with identity retry02, the existing reviewed experiment-protocol.md and
+  applicable reconstruction instructions are not read. Kickoff defaults and
+  handoff status alone are not the bound reviewed relative capture protocol.
+- The answer changes a qualification conjunction to an alternative: “Detailed
+  audits must be outside timed intervals or identically matched across arms.”
+  Canonical EXP-R requires detailed oracle/audit work outside performance AND
+  memory intervals, while optional audit posture matches both arms. Matched
+  posture does not authorize timing the detailed audit work.
+
+The full nonlinear/boundary sources were consumed, so most scientific omissions
+are failed returned conclusions rather than unavailable source. The direct
+protocol-link correction addresses a real recursive discoverability problem; no
+source change may quietly weaken the missing scientific conclusions. No execution
+claim is required to identify these rules, and a requirements-only label cannot
+exclude them from the unchanged solver task.
+
+This first-attempt science/size FAIL remains immutable. The already approved
+profile-table relocation/whole-water margin and explicit protocol links may
+improve the next candidate; they do not retroactively repair this answer. All
+four next attempts should be genuinely fresh on the final stable cut, as parent
+proposes, with unchanged tasks/rubrics and no old findings/answers supplied.
+Scientific preservation/route verification and actual fresh adequacy must both
+pass before terminal adoption.
+
+
+### Prospective nonlinear review-scope clarification
+
+Approve the parent-proposed routine introduction before the next freeze:
+“A represented-snow reuse correctness review includes both potential and
+fixed-final solves and the applicability of each V10/V11–13 branch below,
+together with complete solve-boundary error and acceptance rules.” This states
+the already frozen task/authority scope and counters the misleading inference
+that the V2 snow-free heading makes all imported covered-solver branch rules
+irrelevant. It requires determining applicability, not asserting that every
+branch is active in every regime. Original detailed qualifiers remain binding.
+No new science or exercise-prompt rubric answers are introduced. Include actual
+added bytes in the final source union and recheck the stable cut before fresh
+readers. No scientific or context gate is waived.
+
+
+## Iteration3 focused applied-fix review and fresh-launch approval
+
+Static: exact canonical diff from frozen115582cd2 for the seven changed primary
+files, all added dependency/scope text, all three relocated normative profiles,
+retained detailed scientific bodies and C017–019 links, and final manifest/
+prediction/handoff. The changes match the prospectively approved design.
+Ran independently: original source-bound spans/Statements and fenced-body
+preservation (PASS), exact byte equality/one occurrence of each of the three
+profile tables at its new binding-index location (PASS), public strict checker
+(PASS17BEI/100actual definitions), every manifest hash and actual prediction
+range byte count (PASS). No physical workflow or fresh exercise executed here.
+
+All28 manifest entries match actual files and include every one of18 primary
+files. Primary digest:
+45b27ab17a7a186821a04897f2d09365e62db343ca7857abd95a9c53d9e27219.
+Manifest4259 bytes SHA-256
+4201ec8a7b5fc8361869e5c0bc4ca95906a2707120931731a31d78f60ba7cb2c.
+Prediction10559 bytes SHA-256
+96fca192aebc72fd41757d741a4d8a1041518341b69c975a7d6c3857d894dc0f.
+Fresh handoff remains1586 bytes SHA-256
+00f80e082f41b65a25b6864340cd89b6daffbf0d16ba54d6df5612e31d25d6fc.
+
+The profile-v28/29/30 records are explicitly normative, with a conditional full
+scientific-body dependency for profile conformance. Replay retains each
+amendment's dual independent review/verification requirement and all detailed
+scientific/test duties. Its exact profile links activate on profile conformance/
+enforcement classification, not merely bounded scientific requirements selection.
+Original C017–019 detailed links still point to identity-anchor/leaf-reuse/
+validation bodies. All21 scientific row atoms retain the independent mapped
+coverage above. Audit-details is unchanged from115582cd2; no new profile-only
+replay edge remains there. Common-details only removes five trailing blank lines.
+
+Qualification now directly requires complete reviewed experiment-protocol and
+authority-input-reproduction documents, including later reviewed amendments, for
+EXP-R identity/capture or experimental requirements; full frozen kickoff/handoff
+remain required. This fixes discoverability without changing protocol content or
+owner pause. Surface-energy adds whole terminal authority for surface/soil regime-
+rule selection and whole litter-phase for active or unspecified forest phase; its
+existing exact physical-support and solve-boundary requirements remain. The
+nonlinear introduction is the exact prospectively approved applicability statement,
+covering both potential and fixed-final solves and all applicable V10/V11–13 rules.
+It neither activates every branch nor supplies changed numerical criteria.
+
+Verified forecasts: bootstrap12106; physical01/04=194934; whole-water solver02=
+209911; identity03=31428 bytes. Solver headroom is1979 bytes before any further
+reader-selected profile/audit expansion. These are sufficient prospective routes,
+not observed new first-attempt outcomes. All applicable expansion and actual
+repeats/search-source evidence must remain visible; no byte forecast limits what
+a reader is allowed or required to read. No new chapter, science, rubric, gate
+waiver, historical PASS or production qualification appears in this applied diff.
+
+APPROVE four new nonforked isolated fresh attempts on this frozen cut, with
+unchanged tasks/rubrics and no prior answer/finding/prediction hints. Preserve
+all previous results and independently judge the new actual answers/ledgers.
+Parent separately reports98 pytest/53bridge/unit/A0 passes and111pass/18inherited
+Rust failures; this focused science review does not independently rerun that
+full validation set. Final scientific adequacy, observed reading gates and dual
+terminal verification/adoption remain pending.

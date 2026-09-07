@@ -1,0 +1,13 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--exit-code",
+    "fb32d27f2",
+    "--",
+    "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001"
+  ],
+  "exit": 0,
+  "baseline_and_current_tracked_tree": "7c45737560ce09db6d1d3ee058daa0f7e661a43c",
+  "claim": "original package including HOLD, source maps, candidates, logs and reviews unchanged"
+}

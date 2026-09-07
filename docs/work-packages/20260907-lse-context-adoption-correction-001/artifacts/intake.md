@@ -130,3 +130,56 @@ Generated canonical guard/test labels and same-file link spelling may be shorten
 without removing their requirements. Original scientific fields/fences remain exact.
 Initial17file whole-core projections214450/218916 were insufficient; the extension
 must provide measured margin before fresh retries. Hard gates and rubric unchanged.
+
+## Iteration 3 presentation correction (prospectively approved A/B)
+The iteration2 solver actually read the complete water chapter and consumed213035
+LSE bytes: FAIL, not repairable by subtracting voluntary reads. Identity iteration2
+omitted required frozen protocol/reproduction reading: adequacy FAIL despite sizePASS.
+Keep both reports. No acceptance/rubric change and no water-owner-details chapter.
+
+Move only the three complete V28/V29/V30 `Profile surface | Binding` tables from
+dependency-replay into normative audit-details, under unique profile-v28/v29/v30
+anchors. Original table cells remain verbatim. A's21-row and B's independent mapping
+show their algorithm/guard/test/calibration/trust/role/CT030 duties remain fully in
+selected mechanism bodies and canonical162/163/C017–019 plus complete map159.
+Keep dual independent review and verification for all three amendments explicit in
+routine replay text. Keep C017–019 test links on complete scientific bodies; profile
+conformance/enforcement-classification claims expand exact audit tables. Original
+active/new-INV/maps-to-existing classification records remain in BEI/audit.
+
+Add direct complete-document qualification dependencies for the already required
+experiment-protocol.md and authority-input-reproduction.md, including later reviewed
+amendments. Execution pause does not defer requirements reading. Source/identity
+and scientific expectations remain unchanged. Correct the common-details trailing
+blank. Recompute whole-water solver size including all added links before fresh
+solver and identity attempts; unaffected physical evidence may be reused only after
+independent source/requirement identity review. All numeric gates stay frozen.
+
+### Prospective physical-rule route clarification, approved A/B
+Surface-energy directly requires complete terminal-support for surface/soil regime
+rule selection, and complete litter-phase when the snow-free forest-litter phase is
+active or unspecified. Both were already included in the full physical projection.
+Boundary requirements are not deferred by disclaiming execution/certification.
+Accepted-primitive reconstruction retains its own applicable support/phase extents;
+no broader numerical implementation is inferred. All actual selected exposure is
+still measured, and every required canonical definition must be read.
+
+### Prospective profile owner variation, approved A/B before writes
+The three unchanged profile tables belong in existing normative binding-index.md,
+under profile-v28/v29/v30, rather than common provenance/gap audit-details. This
+keeps physical closure's whole common-audit reading free of unrelated profile
+classification. The same21-row coverage proof applies. Binding-index explicitly
+labels these profiles normative; conditional profile-conformance/replay edges run
+between binding-index and dependency-replay. Remove only the new audit→replay edge
+whose sole purpose was those three profiles. Preserve all pre-existing authority
+edges, routine dual-review duty and full C017–19 scientific body links. No new file.
+Use genuinely fresh final attempts for all four tasks; no modified-source arithmetic
+will be represented as observed reading. Frozen thresholds/rubric remain unchanged.
+
+### Prospective applicability clarification, approved A/B before writes
+Add this exact routine nonlinear introduction: “A represented-snow reuse correctness
+review includes both potential and fixed-final solves and the applicability of each
+V10/V11–13 branch below, together with complete solve-boundary error and acceptance
+rules.” This restates required scope, not every branch being active in every regime.
+Original rules and failed returned conclusions remain unchanged; count all added
+bytes and require genuinely fresh adequate answers.

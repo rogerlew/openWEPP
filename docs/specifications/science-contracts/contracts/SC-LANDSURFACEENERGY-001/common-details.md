@@ -296,8 +296,3 @@ Real-consumer proof remains intentionally unsatisfied in version 1.
 
 | ID | Binding rule | Guard/failure |
 |---|---|---|
-
-
-
-
-

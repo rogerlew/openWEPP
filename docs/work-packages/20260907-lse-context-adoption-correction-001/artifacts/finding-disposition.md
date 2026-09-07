@@ -23,3 +23,17 @@ Static/Ran: independent artifacts retain full evidence and focused re-review.
 No current acceptance waived. Fresh adequacy, final code/evidence identities and
 terminal closure remain pending. Incidental numeric predictions in explicitly allowed
 mandatory handoff are disclosed by fresh readers; no rubric/answers were provided.
+
+## Iteration2 failures and prospective correction
+- Surface01: missing mandatory support definitions and cross-regime/terminal
+  requirements. Direct full terminal edge and active/unspecified phase edge added;
+  original failed answer retained. Fresh final acceptance pending.
+- Solver02:213035actualbytesFAIL and incomplete returned solver/protocol conclusions.
+  Independently proven duplicate profile tables moved to normative binding index;
+  solver applicability clarified, protocol links explicit. Fresh final pending.
+- Identity03: bound reviewed protocol/reproduction omitted. Both complete documents
+  are now direct qualification dependencies; first failed answer remains FAIL.
+- Closure04: independent PASS on115582cd2; final fresh rerun required for changed cut,
+  rather than representing counterfactual reading arithmetic as observed.
+- EOF whitespace: corrected; git diff --check now PASS.
+No threshold, scientific predicate, old result or reviewer rubric was relaxed.

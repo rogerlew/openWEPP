@@ -54,7 +54,9 @@ for task in range(1,5):
         for n in ['surface-energy','soil-coupling','water-vapor','litter-phase','soil-custody','surface-custody','solve-boundary','terminal-support','map-custody']:s.add(n)
     elif task==2:
         for n in ['nonlinear-solve','solve-boundary','dependency-replay','qualification','surface-energy','soil-coupling','terminal-support','map-custody']:s.add(n)
-        for a in ['signed-vapor-and-liquid-enthalpy','immutable-beginning-water-transaction-and-current-ingress','independent-closure-and-errors','canonical-invariants','canonical-obligations']:s.add('water-vapor',a)
+        # Conservative preflight includes the full water chapter after actual
+        # readers chose it twice; no smaller theoretical substitute for exposure.
+        s.add('water-vapor')
     else:s.add('qualification')
     out[f'exercise{task:02}']=s.result()
 result={'kind':'prospective explicit source selection; sufficiency not yet qualified; not observed tokens','baseline_lse_bytes':BASE,'always_read_bytes':P.with_suffix('.md').stat().st_size+(P/'interface.md').stat().st_size,'tasks':out}

@@ -1,0 +1,49 @@
+{
+  "candidate_commit": "115582cd28b03222a1f3324dbc487c62c45432d3",
+  "baseline_lse_bytes": 264863,
+  "evidence": "A/B independently verified source identities/ranges against frozen commit; reports remain immutable. Delivered-token/workflow totals UNOBSERVED. No smaller predicted set substitutes for an actual failed union.",
+  "tasks": {
+    "01": {
+      "report": "exercise_01_retry_02.md",
+      "sha256": "7826256761342684bb4ac87623dc2051e358e16b160b42f702c76e880591bc4b",
+      "lse_read_union_bytes": 150614,
+      "reduction_percent": 43.13513023714146,
+      "size_gate": "PASS",
+      "scientific_requirements": "FAIL",
+      "all_selected_source_bytes": 1120877,
+      "requested_exposure_bytes": 1550655
+    },
+    "02": {
+      "report": "exercise_02_retry_02.md",
+      "sha256": "abcde02a02d300201d2286830c31fdcda34cecbaf04888b21b9b8c471c40c115",
+      "lse_read_union_bytes": 213035,
+      "reduction_percent": 19.56785205936654,
+      "size_gate": "FAIL",
+      "scientific_requirements": "FAIL",
+      "all_selected_source_bytes": 1170396,
+      "requested_exposure_bytes": 1260906
+    },
+    "03": {
+      "report": "exercise_03_retry_02.md",
+      "sha256": "a5d521a98a4644fdb56a743823bf81e9d6bd213761993ac26522d11f185e17a1",
+      "lse_read_union_bytes": 30825,
+      "reduction_percent": 88.36190785424918,
+      "size_gate": "PASS",
+      "scientific_requirements": "FAIL",
+      "all_selected_source_bytes": 109022,
+      "requested_exposure_bytes": 109215
+    },
+    "04": {
+      "report": "exercise_04_retry_02.md",
+      "sha256": "1e4439898f994f8cd9f30edd489c7729dcb4a7d9ea642aa0706c2fac4c7467e0",
+      "lse_read_union_bytes": 205332,
+      "reduction_percent": 22.476148046348488,
+      "size_gate": "PASS",
+      "scientific_requirements": "PASS",
+      "all_selected_source_bytes": 1185728,
+      "requested_exposure_bytes": 1420435,
+      "conservative_lse_with_unmeasured_heading_output_upper_bound": 206664,
+      "note": "Reported main totals exclude3544 separately declared tooling bytes; totals here include them. Additional terminal heading/anchor source output is bounded, not fabricated as exact delivery."
+    }
+  }
+}

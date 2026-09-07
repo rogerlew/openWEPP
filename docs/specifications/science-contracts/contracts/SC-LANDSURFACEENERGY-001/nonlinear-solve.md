@@ -17,6 +17,9 @@
 
 <a id="nonlinear-solve"></a>
 # Nonlinear Solve
+
+A represented-snow reuse correctness review includes both potential and fixed-final solves and the applicability of each V10/V11–13 branch below, together with complete solve-boundary error and acceptance rules.
+
 Current complete ordered covered solver and V10-specific specialization. INV-138 retains the exact admitted closed-bound qualifier; valid-current/one-inadmissible-probe summaries do not broaden that scope. INV-139 accepts only the unchanged current iterate. V10 diagonal scaling remains potential/nonpositive-assimilation-only. Identity-anchor and leaf reuse are distinct limited optimizations; component replay additionally requires dependency-replay and its applicable qualification.
 
 <a id="version-11-inactive-liquid-vapor-coordinate-domain-amendment"></a>

@@ -41,3 +41,21 @@ is reused with unchanged candidate source hashes. Python M3 retains the identica
 replay-fallback assertion at the relocated surface-custody owner. One trailing
 blank line in common-details is a known diff-check cleanup deferred until the
 frozen fresh exercises complete; no adoption or diff-check PASS yet.
+
+## Iteration3 corrected cut, before final fresh attempts
+Ran:98PythonPASS, strict17BEI/100definitions, unit/A0PASS, actualbridge53PASS;
+eightRusttargets111PASS18same inheritedFAIL with36same normalized payloads.
+All original scientific cells/fences survive. Source-map616spans; complete28file
+candidate manifest refreshed. Rust/lint inputs unchanged, prior exact-source root
+and helper Clippy evidence reused. git diff --check PASS; EOF cleanup complete.
+
+Static: all three V28/V29/V30 profile tables remain verbatim normative in the
+existing binding index. Independent21-row/parallel QA proofs retain every scientific
+algorithm/guard/test duty in routine bodies/definitions; dual review/verification is
+explicit. Common provenance/gap audit stays separate. Direct protocol/reproduction
+routes and physical regime-selection boundaries fix demonstrated reading omissions.
+Conservative whole-water solver projection209911 (20.7% reduction); physical core
+194934 (26.4%); identity31428; bootstrap12106. These are not actual fresh PASS.
+Iteration2 outcomes are immutable in reading-iteration-02.json:01/03 adequacyFAIL,
+02 adequacy+sizeFAIL,04 boundedadequacy+sizePASS on115582cd2. Four new first-attempt
+answers on the final corrected source, then dual terminal verification, remain NOT RUN.

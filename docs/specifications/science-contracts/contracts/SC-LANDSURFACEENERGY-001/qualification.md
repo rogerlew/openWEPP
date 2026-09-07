@@ -6,6 +6,7 @@
 | interface.md#interface | always | shared authority | whole chapter |
 | dependency-replay.md#dependency-replay | scientific replay/coverage/result claims | graph, custody, errors and forced-complete proof | whole chapter |
 | nonlinear-solve.md#nonlinear-solve | solver scientific result claims | complete ordered solver | whole chapter |
+| [protocol](../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md#exp-stage3-20260906-protocol-original-draft-1-plus-prospective-reviewed-amendments), [inputs](../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md#canonical-adjunct-reproduction-evidence) | EXP-R identity/capture or experimental requirements | reviewed capture, validity and decision rules; exact source composition and executable-input reconstruction | whole document, including later reviewed amendments |
 | ../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md#4-experimental-design-one-baseline-two-independent-treatments | EXP-R executable identity/capture checks | frozen execution requirements; not scientific authority | whole external contract; frozen protocol scope |
 | ../../../../work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md#stage-3-current-continuation | EXP-R execution authorization/status | owner pause and frozen execution posture | whole external contract; frozen protocol scope |
 
