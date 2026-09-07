@@ -96,6 +96,7 @@ Out of scope:
 - `{{test_paths}}`
 - `docs/work-packages/{{package_id}}/**`
 - `docs/work-packages/active.md`
+- `docs/work-packages/README.md`
 
 ## Write Set Guard
 

@@ -1,6 +1,6 @@
 {
   "experiment": {
-    "sha256": "f5e2e94113a65a14cb47c2aaaad64a15d3c31a3fee53f701d25d2b76c9e0f8a8",
+    "sha256": "228198a2391f930476bb1e09b10a6946b9bd978cc3b4f1508682c699d64236a9",
     "members": [
       {
         "path": ".codex/agents/comparator_suite_runner.toml",
@@ -846,8 +846,8 @@
         "path": "docs/work-packages/templates/cqr-nightly-package.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "8417ea40b166ab94cd3de6f8caa3ad78f089cac995752ad5e8d22b7a0152dd66",
-        "size": 12550
+        "sha256": "dc12d845dc7e5e56cafdc96d8c8fb286772edd5cb6b7f35705b068b8faa36f59",
+        "size": 12583
       },
       {
         "path": "docs/work-packages/testgate-quality-observatory-roadmap.md",
@@ -971,7 +971,7 @@
     ]
   },
   "evidence_claim": {
-    "sha256": "5ed4ded1da207ee0f904df9ddd123d7c3e21535facb15850d47c51d01c60776f",
+    "sha256": "acc16d9893d3182812be14666fda14e510d798bc3a9b544601a5420003069202",
     "members": [
       {
         "path": "AGENTS.md",
@@ -1208,8 +1208,8 @@
         "path": "docs/work-packages/templates/cqr-nightly-package.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "8417ea40b166ab94cd3de6f8caa3ad78f089cac995752ad5e8d22b7a0152dd66",
-        "size": 12550
+        "sha256": "dc12d845dc7e5e56cafdc96d8c8fb286772edd5cb6b7f35705b068b8faa36f59",
+        "size": 12583
       },
       {
         "path": "tools/agents/README.md",
@@ -1228,7 +1228,7 @@
     ]
   },
   "publication": {
-    "sha256": "f57e15369ca39688fdbe21b259a9dcb4345a174fc170c8bf8fccdb606b4526cd",
+    "sha256": "0b747f3c0e3a34606224637dbe85c7e7bc3ca303f1e952618455e585cad37fef",
     "members": [
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/final-disposition.md",
@@ -1241,8 +1241,8 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/finding-disposition.md",
         "kind": "file",
         "mode": 436,
-        "sha256": "c2b550e3ce70323b12479cf9acb4f137ac3dfaf9d884dbfe6711a73ab967c9a6",
-        "size": 2120
+        "sha256": "495973c54de857d5d26cfb4ad5a2ff344e9258361fa53de9f3bd3825d1a12d1d",
+        "size": 2422
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/review_agent_a.md",

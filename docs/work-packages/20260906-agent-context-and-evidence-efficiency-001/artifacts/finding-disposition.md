@@ -1,5 +1,10 @@
 # Finding disposition
 
+VA-01 MEDIUM (independent terminal verification): accepted. CQR package
+template's intended write set omitted README.md despite required catalog update.
+Fixed by retaining both active.md and README.md; no obligation removed.
+23-test suite passes after correction; focused review/verification pending.
+
 Static: findings from independent cut 6ab4e5fb6; Ran: corrected tests below.
 
 | Finding | Disposition | Correction and evidence |
