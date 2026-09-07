@@ -1,6 +1,7 @@
 """Source-bound presentation correction; package evidence, not a runtime loader."""
 from pathlib import Path
 import hashlib
+import argparse
 import json
 import re
 
@@ -8,7 +9,11 @@ ROOT = Path(__file__).resolve().parents[4]
 PKG = Path(__file__).resolve().parent
 OLD = ROOT / 'docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts'
 REL = Path('docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md')
-ENTRY = ROOT / REL
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--output-root', type=Path, help='isolated reproduction root; input authority stays source-bound')
+parser.add_argument('--adopted', action='store_true', help='omit candidate restriction only after independently verified adoption')
+args = parser.parse_args()
+ENTRY = (args.output_root.resolve() if args.output_root else ROOT) / REL
 DEST = ENTRY.with_suffix('')
 ARCHIVE = OLD / 'candidate-tree' / REL.with_suffix('')
 BASE = 'b932db101cce07d0860b45b5ecaa8ddb7f455b58'
@@ -181,9 +186,11 @@ for version,block in zip([28,29,30],profiles):
     texts['binding-index']+=f'\n<a id="profile-v{version}"></a>\n## V{version} normative profile classification\n\n'+block
 texts['dependency-replay']=texts['dependency-replay'].replace('# Dependency Replay\n','# Dependency Replay\n\nV28, V29 and V30 each retain dual independent review and verification. Their original profile classification records remain normative in binding-index; all scientific mechanism and test obligations below remain required.\n',1)
 texts['binding-index']=texts['binding-index'].replace('# Binding Index\n','# Binding Index\n\nThe V28–30 profile classification records below are normative authority. Their relocated algorithm/guard/test duties remain in the complete scientific bodies; profile conformance requires both.\n',1)
-texts['nonlinear-solve']=texts['nonlinear-solve'].replace('# Nonlinear Solve\n','# Nonlinear Solve\n\nA represented-snow reuse correctness review includes both potential and fixed-final solves and the applicability of each V10/V11–13 branch below, together with complete solve-boundary error and acceptance rules.\n\n',1)
+texts['nonlinear-solve']=texts['nonlinear-solve'].replace('# Nonlinear Solve\n','# Nonlinear Solve\n\nA represented-snow reuse correctness review includes both potential and fixed-final solves and the applicability of each V10/V11–13 branch below, together with complete solve-boundary error and acceptance rules. Solve equivalence includes initialization and diagnostic accounting below.\n\n',1)
 SUPPORT='version-9-positive-support-admission-owner-amendment'
 ORDER='ordered-numerical-algorithm-active-branches-and-error-precedence'
+texts['nonlinear-solve']=texts['nonlinear-solve'].replace('When every positive final water authorization', '### Final-solve initialization and diagnostic accounting\n\nWhen every positive final water authorization',1)
+texts['nonlinear-solve']=texts['nonlinear-solve'].replace('Nonpositive-assimilation partial positive root authorization is typed unsupported in V2.', '### V10 domain and numerical restrictions\n\nNonpositive-assimilation partial positive root authorization is typed unsupported in V2.',1)
 # Each edge is an authority boundary, not an automatic whole-file dependency.
 D={n:[] for n in NAMES}
 def dep(owner,target,when,why,extent='section'):
@@ -193,15 +200,15 @@ for n in NAMES:
     if n not in ['interface','history','binding-index']:
         whole(n,'interface','every task','universal scope, owners, failure and qualification')
 dep('interface','common-details.md#common-details','physical rules, solver correctness or accepted-primitive closure','shared physical symbols, state, algorithm, guards, units, tolerances and tests','whole chapter')
-dep('interface','qualification.md#qualification','identity capture, experiment or qualification claims','frozen protocols and separate scientific/production limits','whole qualification chapter')
+dep('interface','qualification.md#qualification','executable identity capture, experiment or qualification claims','frozen protocols and separate scientific/production limits','whole qualification chapter')
 # Common detailed schema is not required for identity-only tasks.
 texts['common-details']=texts['common-details'].replace('# Common physical rules\n','# Common physical rules\n\nRead this complete chapter for physical rules, solver correctness and accepted-primitive reconstruction. Interface and the selected physical mechanism retain current regime/owner exclusions and effective supersession. Missing coefficients, constitutive authority or run operands remain missing evidence; no default, numerical closure or production qualification follows from this directory. Underlying source, enforcement and historical applicability claims require the corresponding normative audit sections.\n\n',1)
 dep('common-details','audit-details.md#authority-anchors-with-top-down-citations','source provenance adjudication','complete source anchors and pinned-source paragraph')
 dep('common-details','audit-details.md#invariants-and-invariant-guard-map','enforcement mapping or promotion-path evidence','complete guard map and parent mapping duty')
 for anchor in ['purpose','scientific-scope-and-explicit-out-of-scope-boundaries','gap-register-and-promotability-labels']:
-    dep('common-details','audit-details.md#'+anchor,'retained model scope, authority gaps, their supersession or promotability','complete scope and gaps, including successor GAP007/008')
-whole('common-details','qualification','historical/current experiment retention, identity or capture limits','complete experiment requirements')
-texts['common-details']=texts['common-details'].replace('Underlying source, enforcement and historical applicability claims require the corresponding normative audit sections.', 'Underlying source, enforcement and historical applicability claims require the corresponding normative audit sections. Experiment retention and capture limits, including historical predicates and existing HOLD, are governed by qualification; applying those limits alone does not adjudicate model gaps or enforcement evidence. Actual provenance, gap or enforcement claims expand the audit sections.')
+    dep('common-details','audit-details.md#'+anchor,'retained model scope, authority gaps, their supersession or promotability adjudication','complete scope and gaps, including successor GAP007/008')
+whole('common-details','qualification','historical/current experiment retention, executable identity or capture limits','complete experiment requirements')
+texts['common-details']=texts['common-details'].replace('Underlying source, enforcement and historical applicability claims require the corresponding normative audit sections.', 'Applying those current physical, owner and closure rules and retaining their no-promotion limits does not itself adjudicate authority gaps, source provenance or implementation enforcement. Actual source, gap/supersession or enforcement/promotion adjudication requires the corresponding complete audit sections. Historical/current experiment retention and executable-evidence capture limits, including experiment HOLD, require qualification. Physical owner/receipt identity is governed by its mechanism.')
 for n in ['surface-energy','soil-coupling','water-vapor','nonlinear-solve','litter-phase','soil-custody','surface-custody']:
     dep(n,'terminal-support.md#'+SUPPORT,'physical solve or receipt interval admission, including snow-free work','physical support, zero support and pre-Newton floor')
 whole('nonlinear-solve','solve-boundary','solver correctness or implementation','complete ordered physical algorithm and acceptance')
@@ -234,7 +241,7 @@ whole('map-custody','surface-custody','exact owner/receipt/restart implementatio
 whole('map-custody','terminal-support','represented-snow map or transition','inactive litter/native regime')
 whole('map-custody','soil-custody','unpublished soil continuation implementation or audit','non-owner versus promotion')
 whole('map-custody','dependency-replay','validation-once optimization implementation or error-order audit','V30 detail and C019; complete INV159 remains here')
-for target,why in [('nonlinear-solve','canonical stencils, leaf reuse and errors'),('surface-energy','radiation/turbulent dependencies'),('water-vapor','routing and error chronology'),('qualification','historical versus experimental limits')]:whole('dependency-replay',target,'component-temperature replay correctness',why)
+for target,why in [('nonlinear-solve','canonical stencils, leaf reuse and errors'),('surface-energy','radiation/turbulent dependencies'),('water-vapor','routing and error chronology'),('qualification','retention and capture rules for timing and memory, including oracle separation and matched optional audit posture')]:whole('dependency-replay',target,'component-temperature replay correctness',why)
 for a in ['validated-in-memory-lse-custody-handoff-amendment','covered-nonfinal-physical-only-map-amendment','carrier-parent-static-and-same-map-validation-once-amendment']:dep('dependency-replay','map-custody.md#'+a,'replay custody/error-order review','original validation positions and pending-map identity')
 whole('qualification','dependency-replay','scientific replay/coverage/result claims','graph, custody, errors and forced-complete proof')
 whole('qualification','nonlinear-solve','solver scientific result claims','complete ordered solver')
@@ -257,7 +264,7 @@ whole('surface-energy','water-vapor','snow-free physical rules, active water/ing
 for anchor in ['canonical-invariants','canonical-obligations']:
     dep('surface-energy','water-vapor.md#'+anchor,'represented-snow evaluator/error-order requirements review','complete water definitions, including all universal P001–004')
 texts['surface-energy']=texts['surface-energy'].replace('# Surface Energy\n', '# Surface Energy\nSurface/soil regime-rule selection includes the represented-snow soil boundary and post-event receiver conditions that delimit the snow-free rules, together with their external authority; selecting a snow-free target does not defer that boundary review.\n',1)
-dep('water-vapor','../SC-SNOWFREEZE-001.md#invariants','rain-temperature provider selection or provider-derived ingress-enthalpy requirements/closure','INV-SNOWFREEZE-075 provider; accepted authoritative parcel reconstruction alone does not rederive it','whole external contract')
+dep('water-vapor','../SC-SNOWFREEZE-001.md#invariants','rain-temperature provider-rule review (including the retained provider) or provider-derived ingress-enthalpy requirements/closure','INV-SNOWFREEZE-075 provider; accepted authoritative parcel reconstruction alone does not rederive it','whole external contract')
 # Preserve exact existing external dependencies and their single-file/frozen-protocol extent.
 for name in NAMES:
     if name in ['history','common-details','audit-details','solve-boundary','interface']:continue
@@ -293,7 +300,7 @@ for name,rows in D.items():
         target=refs[0] if len(refs)==1 else ', '.join(f'[{label(r)}]({r})' for r in refs)
         D[name].append([target,when,'; '.join(reasons),extent])
 
-DEST.mkdir(exist_ok=True)
+DEST.mkdir(parents=True, exist_ok=True)
 for name in NAMES:
     if name=='history':s=texts[name]
     else:
@@ -348,5 +355,9 @@ routes=[
 for row, root in zip(routes[:4], ['surface-energy','dependency-replay','qualification','litter-phase']):
     row[2] = f'[{root}]({prefix}{root}.md#{root})'
 s=front+'\n\n# LSE contract\n\nCandidate v32; adoption gates pending. Selective reading is authorized only for this\npackage\'s bounded candidate exercises until independent adoption closure.\nRead the complete [shared interface]('+prefix+'interface.md#interface) for every\ntask, then the applicable route and every conditional dependency. The entire normative\nset remains binding. Sections include subsections to the next same/higher heading,\napplicable marked definitions and their guard/test links; inspect each selected\nchapter\'s Dependencies and introduction. Uncertainty expands reading.\n\n## Document inventory\n'+table(['Path','Kind','Purpose','Applicability'],rows)+'\n\n## Reading routes\n'+table(['Task','Role/check','Initial material','Expansion trigger'],routes)+'\n\n<a id="change-log"></a>\n## Change Log\n2026-09-07 v32: coherent directory presentation; scientific authority, production\nHOLD and frozen identities unchanged. History: history.md.\n'
+candidate_notice = "Candidate v32; adoption gates pending. Selective reading is authorized only for this\npackage's bounded candidate exercises until independent adoption closure.\n"
+if args.adopted:
+    assert s.count(candidate_notice) == 1
+    s = s.replace(candidate_notice, '', 1)
 ENTRY.write_text(s)
 print('entry',ENTRY.stat().st_size,'interface',(DEST/'interface.md').stat().st_size,'total',ENTRY.stat().st_size+sum(f.stat().st_size for f in DEST.glob('*.md')))

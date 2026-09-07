@@ -11,7 +11,7 @@ predictions are not model-token or complete-workflow measurements.
 | Eight Rust targets | Diagnostic FAIL; migration regression PASS | logs/rust-candidate.log and rust-final.log;129run111PASS18inheritedFAIL. Final exact failure names/36normalized emitted payloads baseline-equal (logs/rust-comparison.json); no suffix inference: direct masked predicates separately PASS. |
 | Changed code lint | PASS helper; inherited root diagnostics FAIL | --no-deps reaches seven root test targets. Initial helper case-sensitive extension warning corrected without widening dispatch; actual helper isolated Clippy PASS. Original baseline root-test source independently linted in external fixture;17matching file/diagnostic categories, logs/clippy-comparison.json. No suppression or production repair. Current root17diagnostics match baseline file/function/kind; actual fixturelock pruning and hashes recorded. |
 | Rust format / line count | PASS / PASS WARN | Edition2024 formatting applied within8ownedRustfiles; vegetation2843lines WARN, all other files<2000, no nonexempt3000file. |
-| Current iteration4 routes | Static preflight; independent review/fresh retries pending | 18canonical files,100definitions,bootstrap12106. Conservative explicit01/04=196030,02=211052,03=31428. Predictions are not usability evidence. |
+| Current iteration5 routes | Static preflight; independent review/fresh retries pending | 18canonical files,100definitions,bootstrap12117. Conservative explicit01/04=196206,02=211480,03=31439. Predictions are not usability evidence. |
 | First candidate fresh tasks | FAIL science size; 02 also scientific adequacy FAIL | Actual LSE unions01=250005,02=216016,04=258764; all exceed211890. Identity03=30983 and independently adequate. reading-iteration-01.json binds immutable first reports to d40d9fa1f; initial04 exposure remains INVALID. New reviewed layout and genuinely fresh retries required. |
 | Stable-cut dual review / terminal verification | NOT RUN to completion | Current required closure boundary remains pending. |
 
@@ -33,17 +33,25 @@ or source anti-evasion gate is triggered solely by this presentation/test-consum
 migration. No test expectation is removed, suppressed or rewritten to erase a frozen
 scientific FAIL. Old package HOLD and all18failure/17root-lint diagnostics stay truthful.
 
-Current iteration4 source rerun:98PythonPASS (4.14s),strict17BEI/100definitions,
-unit/A0PASS,53actualbridgePASS;129Rusttests=111PASS18inheritedFAIL (13.196s), same
+Current iteration5 source rerun:98PythonPASS (4.32s),strict17BEI/100definitions,
+unit/A0PASS,53actualbridgePASS;129Rusttests=111PASS18inheritedFAIL (13.047s), same
 18names/36normalized panic payloads. source-map616spans;28source manifest entries
 match. Original scientific cells/fences remain exact. Rust/helper/lint/compiler
 inputs unchanged since d40d9fa1f, so bound lint/rustfmt evidence is reused.
 git diff --check and Python compilation PASS. Frozen predecessor tree remains exact.
 
-Historical reading results remain immutable in reading-iteration-01/02/03.json.
-Iteration3:01 scientificFAIL despite194934bytes;02 science+sizeFAIL229664;
-03 fresh adequatePASS31428;04 incomplete requiredreadingFAIL (partial197353).
-Iteration4 prospectively clarifies audit versus experiment limits and surface/snow/
-provider reading boundaries. Fresh01/02/04 and terminal reviews/verification remain
-NOT RUN. Identity03 reuse requires independent unchanged selected-source/dependency
-verification; it will remain an observed6938ca97d first attempt, never a new run.
+Historical reading results remain immutable in reading-iteration-01/02/03/04.json.
+Iteration4 on7627:01 scienceFAIL (retained-provider authority omitted) andsizeFAIL
+235188;02 scienceFAIL (iterationzero/memory-audit qualifiers) despite211052sizePASS;
+04 accepted-primitive sciencePASS butsizeFAIL235188. A/B reconciliations and earlier
+preliminary B verdict corrections are explicit in independent records. Actual whole
+audit19836+qualification19322 reads are retained; none subtracted to manufacture PASS.
+Iteration5 clarifies current-rule application versus audit/experiment adjudication,
+retained provider review and solver accounting/capture scope; no original science
+changed. Source-map616spans and28source manifest entries match. Isolated generator
+modes again prove18 exact candidate files and sole159-byte restriction removal in
+adopted output; live candidate remains restricted. Fresh01/02/04 remain NOT RUN.
+Identity03 remains observed6938 firstPASS31428. Interface now adds “executable” to
+identity-capture trigger; final reuse requires independent semantic dependency proof,
+not a false assertion all23 original source hashes still match. Other selected identity
+source/protocol bytes remain unchanged; original observed counts never rewritten.

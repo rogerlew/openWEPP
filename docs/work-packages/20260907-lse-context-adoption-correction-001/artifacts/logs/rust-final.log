@@ -16,9 +16,9 @@ warning: field `ending_snow_hint` is never read
      = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
 
 warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
 ────────────
- Nextest run ID fdfc6904-4ff4-4e29-9f83-8813bed2202c with nextest profile: default
+ Nextest run ID 30a1d07e-a1ab-4b28-a064-756ffd3e1ed8 with nextest profile: default
     Starting 129 tests across 8 binaries
         FAIL [   0.019s] (  3/129) openwepp::land_surface_energy_balance_authority_contract revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
   stdout ───
@@ -31,15 +31,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.02s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.01s
 
   stderr ───
 
-    thread 'revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red' (2065946) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:954:5:
+    thread 'revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red' (2108666) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:954:5:
     revision 31 expected-red: production dependency-replay seam is absent: ["struct CoveredComponentTemperatureDependencyGraph", "struct ValidatedCoveredComponentReplaySweepBase", "struct ValidatedCoveredComponentProbeReplay", "struct CoveredComponentDependencyReplayAudit", "fn covered_component_temperature_probe_residuals", "fn begin_covered_component_dependency_replay_audit", "fn take_covered_component_dependency_replay_audit"]
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.107s] ( 24/129) openwepp::snow_stage3_shared_carrier_authority_contract current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation
+        FAIL [   0.094s] ( 23/129) openwepp::snow_stage3_shared_carrier_authority_contract current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation
   stdout ───
 
     running 1 test
@@ -50,15 +50,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.10s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.09s
 
   stderr ───
 
-    thread 'current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation' (2066031) panicked at tests/integration/snow_stage3_shared_carrier_authority_contract.rs:203:9:
+    thread 'current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation' (2108764) panicked at tests/integration/snow_stage3_shared_carrier_authority_contract.rs:203:9:
     missing in-review v17 precipitation authority: contract_version: 58
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.087s] ( 30/129) openwepp::snow_stage3_terminal_receiver_authority_contract all_owner_failure_rolls_back_and_index_records_lifecycle
+        FAIL [   0.093s] ( 34/129) openwepp::snow_stage3_terminal_receiver_authority_contract all_owner_failure_rolls_back_and_index_records_lifecycle
   stdout ───
 
     running 1 test
@@ -69,15 +69,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         all_owner_failure_rolls_back_and_index_records_lifecycle
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.08s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.09s
 
   stderr ───
 
-    thread 'all_owner_failure_rolls_back_and_index_records_lifecycle' (2066044) panicked at tests/integration/snow_stage3_terminal_receiver_authority_contract.rs:155:9:
+    thread 'all_owner_failure_rolls_back_and_index_records_lifecycle' (2108777) panicked at tests/integration/snow_stage3_terminal_receiver_authority_contract.rs:155:9:
     docs/specifications/science-contracts/index.md missing non-versioned ADR-0044 amendments bind one canonical covered solver
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.010s] ( 40/129) openwepp::solver_architecture_authority_contract repository_authoring_instructions_bind_solver_changes_to_the_standard
+        FAIL [   0.006s] ( 38/129) openwepp::solver_architecture_authority_contract repository_authoring_instructions_bind_solver_changes_to_the_standard
   stdout ───
 
     running 1 test
@@ -92,11 +92,11 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
 
   stderr ───
 
-    thread 'repository_authoring_instructions_bind_solver_changes_to_the_standard' (2066094) panicked at tests/integration/solver_architecture_authority_contract.rs:87:9:
+    thread 'repository_authoring_instructions_bind_solver_changes_to_the_standard' (2108809) panicked at tests/integration/solver_architecture_authority_contract.rs:87:9:
     AGENTS.md missing: Production numerical solvers must not accrete
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.025s] ( 42/129) openwepp::solver_architecture_authority_contract stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture
+        FAIL [   0.011s] ( 40/129) openwepp::solver_architecture_authority_contract stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture
   stdout ───
 
     running 1 test
@@ -111,7 +111,7 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
 
   stderr ───
 
-    thread 'stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture' (2066100) panicked at tests/integration/solver_architecture_authority_contract.rs:111:5:
+    thread 'stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture' (2108815) panicked at tests/integration/solver_architecture_authority_contract.rs:111:5:
     assertion failed: roadmap.contains("0044-prohibit-accretive-production-solver-dispatch.md")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
@@ -130,11 +130,11 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
 
   stderr ───
 
-    thread 'coupled_slab_acceptance_consumes_one_private_revision_proof' (2066108) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:192:5:
+    thread 'coupled_slab_acceptance_consumes_one_private_revision_proof' (2108825) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:192:5:
     assertion failed: contract.contains("contract_version: 16")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.097s] ( 51/129) openwepp::stage3_native_vegetation_laned_throughput_recovery canonical_covered_pending_adjudication_is_contract_bound
+        FAIL [   0.134s] ( 54/129) openwepp::stage3_native_vegetation_laned_throughput_recovery canonical_covered_pending_adjudication_is_contract_bound
   stdout ───
 
     running 1 test
@@ -145,15 +145,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         canonical_covered_pending_adjudication_is_contract_bound
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.09s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.13s
 
   stderr ───
 
-    thread 'canonical_covered_pending_adjudication_is_contract_bound' (2066101) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1383:13:
+    thread 'canonical_covered_pending_adjudication_is_contract_bound' (2108821) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1383:13:
     docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md missing contract_version: 60
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.080s] ( 60/129) openwepp::stage3_native_vegetation_laned_throughput_recovery snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable
+        FAIL [   0.080s] ( 70/129) openwepp::stage3_native_vegetation_laned_throughput_recovery snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable
   stdout ───
 
     running 1 test
@@ -168,11 +168,11 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
 
   stderr ───
 
-    thread 'snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable' (2066129) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1271:9:
+    thread 'snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable' (2108848) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1271:9:
     docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md missing contract_version: 16
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.172s] ( 70/129) openwepp::stage3_native_vegetation_laned_throughput_recovery native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable
+        FAIL [   0.182s] ( 74/129) openwepp::stage3_native_vegetation_laned_throughput_recovery native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable
   stdout ───
 
     running 1 test
@@ -183,15 +183,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.17s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.18s
 
   stderr ───
 
-    thread 'native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable' (2066122) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1314:13:
+    thread 'native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable' (2108840) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1314:13:
     docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md missing contract_version: 16
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.101s] ( 78/129) openwepp::surface_liquid_hydrology_custody_authority_contract contract_binds_existing_lse_identity_and_restart_bytes
+        FAIL [   0.091s] ( 76/129) openwepp::surface_liquid_hydrology_custody_authority_contract contract_binds_existing_lse_identity_and_restart_bytes
   stdout ───
 
     running 1 test
@@ -202,15 +202,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         contract_binds_existing_lse_identity_and_restart_bytes
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.10s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.09s
 
   stderr ───
 
-    thread 'contract_binds_existing_lse_identity_and_restart_bytes' (2066166) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:194:9:
+    thread 'contract_binds_existing_lse_identity_and_restart_bytes' (2108882) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:194:9:
     docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md missing contract_version: 25
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.088s] ( 86/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_9_binds_multi_lane_stage3_parent_release
+        FAIL [   0.100s] ( 84/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_9_binds_multi_lane_stage3_parent_release
   stdout ───
 
     running 1 test
@@ -221,15 +221,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         version_9_binds_multi_lane_stage3_parent_release
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.08s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.09s
 
   stderr ───
 
-    thread 'version_9_binds_multi_lane_stage3_parent_release' (2066204) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:593:5:
+    thread 'version_9_binds_multi_lane_stage3_parent_release' (2108933) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:593:5:
     assertion failed: registry_row.contains("v25 admits the complete all-local SurfaceLiquid routing posture")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.108s] ( 88/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
+        FAIL [   0.089s] ( 88/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
   stdout ───
 
     running 1 test
@@ -240,15 +240,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.10s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.08s
 
   stderr ───
 
-    thread 'version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries' (2066206) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:235:5:
+    thread 'version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries' (2108939) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:235:5:
     assertion failed: index.contains("v24 admits private immutable revision-bound surface-resource validation handoffs")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.192s] ( 93/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_five_binds_laned_active_local_surface_routing
+        FAIL [   0.123s] ( 89/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_five_binds_laned_active_local_surface_routing
   stdout ───
 
     running 1 test
@@ -259,34 +259,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         version_twenty_five_binds_laned_active_local_surface_routing
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.18s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.12s
 
   stderr ───
 
-    thread 'version_twenty_five_binds_laned_active_local_surface_routing' (2066208) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:256:5:
+    thread 'version_twenty_five_binds_laned_active_local_surface_routing' (2108936) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:256:5:
     assertion failed: read("docs/specifications/science-contracts/index.md").contains("v25 admits the complete all-local SurfaceLiquid routing posture")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.439s] (112/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_three_binds_exact_owner_order_to_surface_topology
-  stdout ───
-
-    running 1 test
-    test version_twenty_three_binds_exact_owner_order_to_surface_topology ... FAILED
-
-    failures:
-
-    failures:
-        version_twenty_three_binds_exact_owner_order_to_surface_topology
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.43s
-
-  stderr ───
-
-    thread 'version_twenty_three_binds_exact_owner_order_to_surface_topology' (2066214) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:282:5:
-    assertion failed: read("docs/specifications/science-contracts/index.md").contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   0.510s] (113/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_16_binds_exact_surface_enthalpy_custody_before_production
+        FAIL [   0.481s] (107/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_16_binds_exact_surface_enthalpy_custody_before_production
   stdout ───
 
     running 1 test
@@ -297,15 +278,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         version_16_binds_exact_surface_enthalpy_custody_before_production
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.50s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.48s
 
   stderr ───
 
-    thread 'version_16_binds_exact_surface_enthalpy_custody_before_production' (2066194) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:516:5:
+    thread 'version_16_binds_exact_surface_enthalpy_custody_before_production' (2108925) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:516:5:
     assertion failed: registry.contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.549s] (115/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_15_binds_exact_soil_energy_credit_custody_before_production
+        FAIL [   0.503s] (110/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_15_binds_exact_soil_energy_credit_custody_before_production
   stdout ───
 
     running 1 test
@@ -316,15 +297,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         version_15_binds_exact_soil_energy_credit_custody_before_production
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.54s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.50s
 
   stderr ───
 
-    thread 'version_15_binds_exact_soil_energy_credit_custody_before_production' (2066190) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:462:5:
+    thread 'version_15_binds_exact_soil_energy_credit_custody_before_production' (2108915) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:462:5:
     assertion failed: registry.contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.066s] (116/129) openwepp::vegetation_boundary_authority_contract v9_runtime_equivalence_verifier_rejects_every_required_poison
+        FAIL [   0.068s] (115/129) openwepp::vegetation_boundary_authority_contract v9_runtime_equivalence_verifier_rejects_every_required_poison
   stdout ───
 
     running 1 test
@@ -339,12 +320,31 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
 
   stderr ───
 
-    thread 'v9_runtime_equivalence_verifier_rejects_every_required_poison' (2066354) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2827:5:
+    thread 'v9_runtime_equivalence_verifier_rejects_every_required_poison' (2109072) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2827:5:
     V9 equivalence poisons failed: VEG-E-133: runtime mismatch is not libcrypto-only: libcrypto.so.3,libz.so.1
 
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.165s] (121/129) openwepp::vegetation_boundary_authority_contract v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
+        FAIL [   0.483s] (116/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_three_binds_exact_owner_order_to_surface_topology
+  stdout ───
+
+    running 1 test
+    test version_twenty_three_binds_exact_owner_order_to_surface_topology ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_three_binds_exact_owner_order_to_surface_topology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.48s
+
+  stderr ───
+
+    thread 'version_twenty_three_binds_exact_owner_order_to_surface_topology' (2108947) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:282:5:
+    assertion failed: read("docs/specifications/science-contracts/index.md").contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.187s] (121/129) openwepp::vegetation_boundary_authority_contract v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
   stdout ───
 
     running 1 test
@@ -355,17 +355,17 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.16s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.18s
 
   stderr ───
 
-    thread 'v9_oracle_successor_is_exactly_bound_and_v8_is_immutable' (2066352) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2796:5:
+    thread 'v9_oracle_successor_is_exactly_bound_and_v8_is_immutable' (2109076) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2796:5:
     V9 oracle failed: VEG-E-133: runtime mismatch is not libcrypto-only: libcrypto.so.3,libz.so.1
 
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 ────────────
-     Summary [  13.196s] 129 tests run: 111 passed, 18 failed, 0 skipped
+     Summary [  13.047s] 129 tests run: 111 passed, 18 failed, 0 skipped
         FAIL [   0.019s] (  3/129) openwepp::land_surface_energy_balance_authority_contract revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
   stdout ───
 
@@ -377,15 +377,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.02s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.01s
 
   stderr ───
 
-    thread 'revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red' (2065946) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:954:5:
+    thread 'revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red' (2108666) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:954:5:
     revision 31 expected-red: production dependency-replay seam is absent: ["struct CoveredComponentTemperatureDependencyGraph", "struct ValidatedCoveredComponentReplaySweepBase", "struct ValidatedCoveredComponentProbeReplay", "struct CoveredComponentDependencyReplayAudit", "fn covered_component_temperature_probe_residuals", "fn begin_covered_component_dependency_replay_audit", "fn take_covered_component_dependency_replay_audit"]
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.107s] ( 24/129) openwepp::snow_stage3_shared_carrier_authority_contract current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation
+        FAIL [   0.094s] ( 23/129) openwepp::snow_stage3_shared_carrier_authority_contract current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation
   stdout ───
 
     running 1 test
@@ -396,15 +396,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.10s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.09s
 
   stderr ───
 
-    thread 'current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation' (2066031) panicked at tests/integration/snow_stage3_shared_carrier_authority_contract.rs:203:9:
+    thread 'current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation' (2108764) panicked at tests/integration/snow_stage3_shared_carrier_authority_contract.rs:203:9:
     missing in-review v17 precipitation authority: contract_version: 58
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.087s] ( 30/129) openwepp::snow_stage3_terminal_receiver_authority_contract all_owner_failure_rolls_back_and_index_records_lifecycle
+        FAIL [   0.093s] ( 34/129) openwepp::snow_stage3_terminal_receiver_authority_contract all_owner_failure_rolls_back_and_index_records_lifecycle
   stdout ───
 
     running 1 test
@@ -415,15 +415,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         all_owner_failure_rolls_back_and_index_records_lifecycle
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.08s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.09s
 
   stderr ───
 
-    thread 'all_owner_failure_rolls_back_and_index_records_lifecycle' (2066044) panicked at tests/integration/snow_stage3_terminal_receiver_authority_contract.rs:155:9:
+    thread 'all_owner_failure_rolls_back_and_index_records_lifecycle' (2108777) panicked at tests/integration/snow_stage3_terminal_receiver_authority_contract.rs:155:9:
     docs/specifications/science-contracts/index.md missing non-versioned ADR-0044 amendments bind one canonical covered solver
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.010s] ( 40/129) openwepp::solver_architecture_authority_contract repository_authoring_instructions_bind_solver_changes_to_the_standard
+        FAIL [   0.006s] ( 38/129) openwepp::solver_architecture_authority_contract repository_authoring_instructions_bind_solver_changes_to_the_standard
   stdout ───
 
     running 1 test
@@ -438,11 +438,11 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
 
   stderr ───
 
-    thread 'repository_authoring_instructions_bind_solver_changes_to_the_standard' (2066094) panicked at tests/integration/solver_architecture_authority_contract.rs:87:9:
+    thread 'repository_authoring_instructions_bind_solver_changes_to_the_standard' (2108809) panicked at tests/integration/solver_architecture_authority_contract.rs:87:9:
     AGENTS.md missing: Production numerical solvers must not accrete
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.025s] ( 42/129) openwepp::solver_architecture_authority_contract stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture
+        FAIL [   0.011s] ( 40/129) openwepp::solver_architecture_authority_contract stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture
   stdout ───
 
     running 1 test
@@ -457,7 +457,7 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
 
   stderr ───
 
-    thread 'stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture' (2066100) panicked at tests/integration/solver_architecture_authority_contract.rs:111:5:
+    thread 'stage3_chain_is_quarantined_for_replacement_not_accepted_as_architecture' (2108815) panicked at tests/integration/solver_architecture_authority_contract.rs:111:5:
     assertion failed: roadmap.contains("0044-prohibit-accretive-production-solver-dispatch.md")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
@@ -476,11 +476,11 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
 
   stderr ───
 
-    thread 'coupled_slab_acceptance_consumes_one_private_revision_proof' (2066108) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:192:5:
+    thread 'coupled_slab_acceptance_consumes_one_private_revision_proof' (2108825) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:192:5:
     assertion failed: contract.contains("contract_version: 16")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.097s] ( 51/129) openwepp::stage3_native_vegetation_laned_throughput_recovery canonical_covered_pending_adjudication_is_contract_bound
+        FAIL [   0.134s] ( 54/129) openwepp::stage3_native_vegetation_laned_throughput_recovery canonical_covered_pending_adjudication_is_contract_bound
   stdout ───
 
     running 1 test
@@ -491,15 +491,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         canonical_covered_pending_adjudication_is_contract_bound
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.09s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.13s
 
   stderr ───
 
-    thread 'canonical_covered_pending_adjudication_is_contract_bound' (2066101) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1383:13:
+    thread 'canonical_covered_pending_adjudication_is_contract_bound' (2108821) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1383:13:
     docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md missing contract_version: 60
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.080s] ( 60/129) openwepp::stage3_native_vegetation_laned_throughput_recovery snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable
+        FAIL [   0.080s] ( 70/129) openwepp::stage3_native_vegetation_laned_throughput_recovery snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable
   stdout ───
 
     running 1 test
@@ -514,11 +514,11 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
 
   stderr ───
 
-    thread 'snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable' (2066129) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1271:9:
+    thread 'snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable' (2108848) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1271:9:
     docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md missing contract_version: 16
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.172s] ( 70/129) openwepp::stage3_native_vegetation_laned_throughput_recovery native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable
+        FAIL [   0.182s] ( 74/129) openwepp::stage3_native_vegetation_laned_throughput_recovery native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable
   stdout ───
 
     running 1 test
@@ -529,15 +529,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.17s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.18s
 
   stderr ───
 
-    thread 'native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable' (2066122) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1314:13:
+    thread 'native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable' (2108840) panicked at tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs:1314:13:
     docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md missing contract_version: 16
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.101s] ( 78/129) openwepp::surface_liquid_hydrology_custody_authority_contract contract_binds_existing_lse_identity_and_restart_bytes
+        FAIL [   0.091s] ( 76/129) openwepp::surface_liquid_hydrology_custody_authority_contract contract_binds_existing_lse_identity_and_restart_bytes
   stdout ───
 
     running 1 test
@@ -548,15 +548,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         contract_binds_existing_lse_identity_and_restart_bytes
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.10s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.09s
 
   stderr ───
 
-    thread 'contract_binds_existing_lse_identity_and_restart_bytes' (2066166) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:194:9:
+    thread 'contract_binds_existing_lse_identity_and_restart_bytes' (2108882) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:194:9:
     docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md missing contract_version: 25
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.088s] ( 86/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_9_binds_multi_lane_stage3_parent_release
+        FAIL [   0.100s] ( 84/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_9_binds_multi_lane_stage3_parent_release
   stdout ───
 
     running 1 test
@@ -567,15 +567,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         version_9_binds_multi_lane_stage3_parent_release
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.08s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.09s
 
   stderr ───
 
-    thread 'version_9_binds_multi_lane_stage3_parent_release' (2066204) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:593:5:
+    thread 'version_9_binds_multi_lane_stage3_parent_release' (2108933) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:593:5:
     assertion failed: registry_row.contains("v25 admits the complete all-local SurfaceLiquid routing posture")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.108s] ( 88/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
+        FAIL [   0.089s] ( 88/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
   stdout ───
 
     running 1 test
@@ -586,15 +586,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.10s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.08s
 
   stderr ───
 
-    thread 'version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries' (2066206) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:235:5:
+    thread 'version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries' (2108939) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:235:5:
     assertion failed: index.contains("v24 admits private immutable revision-bound surface-resource validation handoffs")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.192s] ( 93/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_five_binds_laned_active_local_surface_routing
+        FAIL [   0.123s] ( 89/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_five_binds_laned_active_local_surface_routing
   stdout ───
 
     running 1 test
@@ -605,34 +605,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         version_twenty_five_binds_laned_active_local_surface_routing
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.18s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.12s
 
   stderr ───
 
-    thread 'version_twenty_five_binds_laned_active_local_surface_routing' (2066208) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:256:5:
+    thread 'version_twenty_five_binds_laned_active_local_surface_routing' (2108936) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:256:5:
     assertion failed: read("docs/specifications/science-contracts/index.md").contains("v25 admits the complete all-local SurfaceLiquid routing posture")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.439s] (112/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_three_binds_exact_owner_order_to_surface_topology
-  stdout ───
-
-    running 1 test
-    test version_twenty_three_binds_exact_owner_order_to_surface_topology ... FAILED
-
-    failures:
-
-    failures:
-        version_twenty_three_binds_exact_owner_order_to_surface_topology
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.43s
-
-  stderr ───
-
-    thread 'version_twenty_three_binds_exact_owner_order_to_surface_topology' (2066214) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:282:5:
-    assertion failed: read("docs/specifications/science-contracts/index.md").contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   0.510s] (113/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_16_binds_exact_surface_enthalpy_custody_before_production
+        FAIL [   0.481s] (107/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_16_binds_exact_surface_enthalpy_custody_before_production
   stdout ───
 
     running 1 test
@@ -643,15 +624,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         version_16_binds_exact_surface_enthalpy_custody_before_production
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.50s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.48s
 
   stderr ───
 
-    thread 'version_16_binds_exact_surface_enthalpy_custody_before_production' (2066194) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:516:5:
+    thread 'version_16_binds_exact_surface_enthalpy_custody_before_production' (2108925) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:516:5:
     assertion failed: registry.contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.549s] (115/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_15_binds_exact_soil_energy_credit_custody_before_production
+        FAIL [   0.503s] (110/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_15_binds_exact_soil_energy_credit_custody_before_production
   stdout ───
 
     running 1 test
@@ -662,15 +643,15 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         version_15_binds_exact_soil_energy_credit_custody_before_production
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.54s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.50s
 
   stderr ───
 
-    thread 'version_15_binds_exact_soil_energy_credit_custody_before_production' (2066190) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:462:5:
+    thread 'version_15_binds_exact_soil_energy_credit_custody_before_production' (2108915) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:462:5:
     assertion failed: registry.contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.066s] (116/129) openwepp::vegetation_boundary_authority_contract v9_runtime_equivalence_verifier_rejects_every_required_poison
+        FAIL [   0.068s] (115/129) openwepp::vegetation_boundary_authority_contract v9_runtime_equivalence_verifier_rejects_every_required_poison
   stdout ───
 
     running 1 test
@@ -685,12 +666,31 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
 
   stderr ───
 
-    thread 'v9_runtime_equivalence_verifier_rejects_every_required_poison' (2066354) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2827:5:
+    thread 'v9_runtime_equivalence_verifier_rejects_every_required_poison' (2109072) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2827:5:
     V9 equivalence poisons failed: VEG-E-133: runtime mismatch is not libcrypto-only: libcrypto.so.3,libz.so.1
 
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-        FAIL [   0.165s] (121/129) openwepp::vegetation_boundary_authority_contract v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
+        FAIL [   0.483s] (116/129) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_three_binds_exact_owner_order_to_surface_topology
+  stdout ───
+
+    running 1 test
+    test version_twenty_three_binds_exact_owner_order_to_surface_topology ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_three_binds_exact_owner_order_to_surface_topology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.48s
+
+  stderr ───
+
+    thread 'version_twenty_three_binds_exact_owner_order_to_surface_topology' (2108947) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:282:5:
+    assertion failed: read("docs/specifications/science-contracts/index.md").contains("v23 binds V16 exact-owner records and operands to authenticated configuration-topology rank")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.187s] (121/129) openwepp::vegetation_boundary_authority_contract v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
   stdout ───
 
     running 1 test
@@ -701,11 +701,11 @@ warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
     failures:
         v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.16s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.18s
 
   stderr ───
 
-    thread 'v9_oracle_successor_is_exactly_bound_and_v8_is_immutable' (2066352) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2796:5:
+    thread 'v9_oracle_successor_is_exactly_bound_and_v8_is_immutable' (2109076) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2796:5:
     V9 oracle failed: VEG-E-133: runtime mismatch is not libcrypto-only: libcrypto.so.3,libz.so.1
 
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

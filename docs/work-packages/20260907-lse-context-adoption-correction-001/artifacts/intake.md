@@ -223,3 +223,65 @@ continue through compaction. No scientific answers, missing-atom or threshold hi
 Identity03 fresh PASS may be reused only after independent exact selected-source,
 required dependency and criteria identity check; remains observed at6938ca97d, never
 relabeled a new run. Any relevant route/source/requirement change invalidates reuse.
+
+### Prospective final adoption activation, conditionally approved A/B
+Candidate restriction removal is a substantive, expressly authorized adoption
+transition, not cosmetic spelling. Only after all fresh criteria, stable dual review
+and two new terminal verifiers PASS may the exact two-sentence candidate restriction
+be removed from the entry. No scientific body, route, version or predicate change.
+Add generator --adopted with default candidate; isolated output-root comparison must
+prove the sole canonical difference is that removal. Current frozen reader sources
+must never be regenerated during exercises. Keep actual7627/6938 observed counts,
+without wrapper subtraction. Refresh final source/evidence/publication identities,
+run affected checks and obtain both verifier final-diff reviews before completion.
+Any additional authority/criteria/dependency/claim change reopens affected assurance;
+only bounded publication collection avoids recursive signoff under testing§10.
+
+### Prospective iteration5 solver readability correction, approved A/B
+Solver04 actual211052bytes passes size, but first answer omits exact iterationzero
+work/diagnostics and full memory-trial oracle/audit limits. Both reviewers retain
+scientific FAIL; B transparently corrected its preliminary PASS. No report repair.
+After all current readers finish, add H3 “Final-solve initialization and diagnostic
+accounting” immediately before original “When every positive final water
+authorization...” within the V2/V10 H2. Keep both FullSupply and iterationzero
+paragraphs contiguous/verbatim. Add H3 “V10 domain and numerical restrictions”
+immediately before original “Nonpositive-assimilation partial positive root
+authorization...”. All following original restrictions and parent extents survive.
+Nonlinear intro adds “Solve equivalence includes initialization and diagnostic
+accounting below.” In replay's existing whole-qualification edge, replace only
+its reason with “retention and capture rules for timing and memory, including
+oracle separation and matched optional audit posture”; preserve other grouped
+reasons/targets/extent and historical/prospective distinction in existing intro.
+Qualification/protocol bodies and scientific definitions stay unchanged. This
+foregrounds existing duties without adding a reader prompt answer or new rubric.
+Charge added bytes, rerun affected preservation/structural checks and fresh solver.
+Other first reports may be reused only after independent exact selected-source,
+dependency and claim impact checks; neither route naming nor a smaller prediction
+establishes reuse. Current frozen primary files stay untouched until01/04 READY.
+
+### Prospective iteration5 application versus adjudication boundary, approved A/B
+Both01/04 actually read235188 LSE bytes: sizeFAIL, never retroactively subtracted.
+Their full audit19836+qualification19322 expansions expose remaining ambiguity
+between applying current physical restrictions and adjudicating source/implementation
+or experiment authority. Keep common intro first3 sentences; replace its rest with:
+“Applying those current physical, owner and closure rules and retaining their
+no-promotion limits does not itself adjudicate authority gaps, source provenance or
+implementation enforcement. Actual source, gap/supersession or enforcement/promotion
+adjudication requires the corresponding complete audit sections. Historical/current
+experiment retention and executable-evidence capture limits, including experiment
+HOLD, require qualification. Physical owner/receipt identity is governed by its
+mechanism.” Add “adjudication” to the third audit trigger; qualify common's identity
+and interface's identity-capture trigger as executable. All actual audit/experiment
+claims, complete applicable section unions, GAP007/008 and uncertainty expansion stay
+binding. No original scientific body/cell/fence, gap or production status changes.
+Surface04 additionally omitted fullSnowFreeze075 while naming the retained rain
+provider, excluding only NEW provider work. Change water trigger to “rain-temperature
+provider-rule review (including the retained provider) or provider-derived
+ingress-enthalpy requirements/closure”; retain accepted-authoritative-parcel-only
+reconstruction distinction. Task4's accepted primitives do not select a new provider.
+Fresh01/02/04 required. Identity03's source bytes no longer all match because of
+interface trigger wording; reuse requires explicit scientific/dependency equivalence
+for its unchanged executable task and full qualification/protocol duties. Preserve
+original6938 observed31428, never relabel it a new run or claim23equal final hashes.
+All current readers completed before these source edits. A/B verified every ledger;
+B's preliminary surface/solver scientificPASS corrections remain transparent.

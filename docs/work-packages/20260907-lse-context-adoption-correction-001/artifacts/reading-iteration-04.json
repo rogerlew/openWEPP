@@ -1,0 +1,51 @@
+{
+  "candidate_commit": "7627c01e2ae1c32ed39fa86e68755f320bdeb9f1",
+  "baseline_lse_bytes": 264863,
+  "evidence": "Independent A/B hashes/ranges and final dispositions; failed first reports immutable. No source-byte subtraction or rubric relaxation. Tokens/workflow telemetry UNOBSERVED.",
+  "tasks": {
+    "01": {
+      "report": "exercise_01_retry_04.md",
+      "sha256": "ebc956f4ff3d3e35dc71351f40e258cfc9ce5f57b9dfb262ba3c11f6fd7eb60f",
+      "lse_read_union_bytes": 235188,
+      "reduction_percent": 11.203905415252413,
+      "scientific_requirements": "FAIL",
+      "size_gate": "FAIL",
+      "all_selected_source_bytes": 1715215,
+      "requested_exposure_bytes": 1974677,
+      "note": "Missing full retained-provider SnowFreeze075 reading; B initial scientific PASS corrected transparently. Whole audit19836+qualification19322 counted as actual reading."
+    },
+    "02": {
+      "report": "exercise_02_retry_04.md",
+      "sha256": "ac0d0e9c829b8c08cabb1eeea3d88296098ca53a7163eaee5baab9391f9a84dc",
+      "lse_read_union_bytes": 211052,
+      "reduction_percent": 20.31654100421727,
+      "scientific_requirements": "FAIL",
+      "size_gate": "PASS",
+      "all_selected_source_bytes": 1201109,
+      "requested_exposure_bytes": 1426051,
+      "note": "Totals include separately declared private reader584bytes; main report1200525/1425467. B initial scientific PASS corrected transparently to FAIL after concrete missing-qualifier reconciliation."
+    },
+    "04": {
+      "report": "exercise_04_retry_04.md",
+      "sha256": "f52a2166e32592c437c4a3f5f9693138ffc5e458867109ae289ce961ea7d14ae",
+      "lse_read_union_bytes": 235188,
+      "reduction_percent": 11.203905415252413,
+      "scientific_requirements": "PASS",
+      "size_gate": "FAIL",
+      "all_selected_source_bytes": 1734733,
+      "requested_exposure_bytes": 1939249,
+      "note": "Accepted-primitive task scientifically sufficient; B withdrew snow-boundary scope concern after exact task distinction. Whole audit19836+qualification19322 counted as actual reading."
+    },
+    "03": {
+      "report": "exercise_03_retry_03.md",
+      "sha256": "6b334dad06a38e4bd59eac206c0eb6e75a11d3e12e9c6b019394ce4c90884e88",
+      "observed_candidate_commit": "6938ca97dedb76c00ead9c2022b7d09adc7c1899",
+      "reuse_at_7627": "A/B verified all23 source identities/dependencies unchanged; not a new run",
+      "lse_read_union_bytes": 31428,
+      "all_selected_source_bytes": 149505,
+      "requested_exposure_bytes": 149667,
+      "scientific_requirements": "PASS",
+      "size_gate": "PASS"
+    }
+  }
+}

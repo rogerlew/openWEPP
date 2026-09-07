@@ -1,0 +1,10 @@
+{
+  "bundle": "/tmp/lse-correction-iteration05-bundle",
+  "manifest_sha256": "325fe6430ee1b3a2daefafa2d90a1ae1c3e31a5e870992937fd71a5a62046088",
+  "capture_exit": 0,
+  "verify_exit": 0,
+  "verify_log": "/tmp/lse-iteration05-bundle-verify.log",
+  "scope": "explicit source/input inventory, generator and current reading protocols; loader source is executable group; immutable source map fixture; prior reports remain bound to6938/7627",
+  "status": "fresh iteration5 NOT RUN; custody does not prove reading/adoption or offline rebuildability",
+  "retention": "openWEPP maintainers through disposition plus explicit audit release"
+}

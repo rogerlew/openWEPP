@@ -1380,3 +1380,448 @@ failures/36 panics; this focused review independently ran only the named
 preservation/strict checks, not that whole validation set. Stable-cut dual
 terminal verification, all scientific fresh sufficiency and adoption remain
 pending. No current FAIL is waived by preflight approval.
+
+
+## Conditional review of final adoption procedure (preparation only)
+
+Static: inspected current candidate entry, source-bound generator entry assembly,
+package acceptance, frozen reader handoff and testing-and-gate-strategy section10.
+No source/generator/status change or validation command executed for this
+prospective procedure review. Fresh01/02/04 remain underway on7627c01e2; no
+new result or adoption PASS is assumed.
+
+CONDITIONALLY APPROVE the planned final transition only after all fresh scientific
+and reading gates PASS (including legitimately reused identity03), independent
+stable-cut A/B reviews and finding dispositions close, and both NEW terminal
+verifiers PASS on the bound substantive cut. Then remove exactly the candidate
+restriction paragraph's two sentences from the LSE entry:
+“Candidate v32; adoption gates pending. Selective reading is authorized only for
+this package's bounded candidate exercises until independent adoption closure.”
+Keep every scientific statement, conditional/universal route, version32 metadata,
+original qualification, historical FAIL/HOLD and independent owner pause unchanged.
+No general selective-reading activation precedes those terminal passes.
+
+This deletion is not equivalent spelling: it publishes the already prospectively
+gated adoption/reading authorization. Its bounded, predeclared scope and completed
+acceptance can support retaining unchanged scientific/executable assurance under
+section10, followed by the required final diff review. The changed claim still
+requires accountable review and verification; calling Markdown editorial cannot
+waive acceptance. Additional authority, predicate, exception, scientific scope,
+dependency or interpretation changes reopen affected assurance.
+
+A generator --adopted flag is acceptable if its default remains candidate and
+its sole canonical output difference is the exact paragraph deletion. Verify
+both modes against the reviewed source tree in isolated output/checkout, including
+byte equality for every chapter and entry equality after that single removal.
+Do not execute regeneration against immutable exercise sources while readers
+are active. Changed generator behavior needs direct evidence; an unchanged
+production test set alone does not prove this publication path.
+
+Preserve actual observed exercise counts, requests/repeats and source identities
+at7627c01e2 and identity6938ca97d. Do not subtract final wrapper bytes from any
+observed read count or describe final modified-entry bytes as freshly observed.
+The final entry remains no larger, with unchanged substantive reading duties;
+record that as a bounded final-diff implication, separately from measurements.
+Identity reuse likewise records this exact final entry wrapper change rather
+than claiming the final entry hash is unchanged from its original exercise.
+
+After gates, reconcile final package/handoff/status/prompt/archive/gate/disposition
+claims with the actual evidence; preserve all earlier failed attempts and the
+predecessor HOLD. Refresh source/evidence/publication identities and directly run
+affected source-capture/metadata/structural checks. Both terminal verifiers must
+inspect the actual final bounded publication diff and corresponding claims.
+Section10 permits binding the final review collection without a self-invalidating
+hash cycle; it does not permit unreviewed substantive claim changes. If the final
+diff exceeds this declared boundary, stop activation/final closure and reopen the
+affected review/verification. This preparation grants no present adoption PASS.
+
+
+## Conditional generator finalization behavior independently verified
+
+Static: inspected the exact generator diff from7627c01e2 and executing-only
+final-disposition draft. The generator adds argparse --output-root/--adopted,
+keeps original source-bound inputs, creates only the chosen output tree, and
+removes the exact single candidate paragraph only when explicitly requested.
+All writes are through DEST or ENTRY derived from the chosen root. Default
+mode remains candidate. The draft makes no fresh-completion/adoption claim and
+correctly binds identity reuse to unchanged inputs at7627c01e2.
+
+Ran independently: repository .venv/bin/python wrapper from /workdir/openWEPP
+created a TemporaryDirectory with prefix /tmp/review-a-generator-, invoked
+build_candidate.py --output-root <temporary-root>/candidate and then
+build_candidate.py --output-root <temporary-root>/adopted --adopted, captured
+exit/stdout/stderr, compared all generated paths/bytes and checked all28 live
+manifest hashes before and after. Both subprocesses exited0; temporary outputs
+were removed by the wrapper. This is independent execution in addition to the
+parent's durable exact-argv log logs/generator-modes.json.
+
+PASS bounded generator behavior. Both modes produce exactly18 canonical files.
+Candidate output equals every live canonical byte: entry4130, interface7976,
+total348530. Adopted output differs only at the entry,3971bytes, with the exact
+159-byte candidate notice removed once; interface and17chapters are unchanged,
+total348371. All28 frozen live source hashes remained unchanged before/after;
+no active reader source was regenerated in place. Reviewed generator SHA-256:
+e160584bd835bc654b84e9bd580bd2a8988e0b6f6e08c52bd3fe24018ff28960.
+Bound live source-manifest SHA-256 remains
+88c1f06036d25494aaee54d44afaa920f354329899bfd6bd38a31b074e2709e4.
+
+This verifies the conditional finalization implementation, not adoption or
+permission to invoke adopted mode against live canonical files before gates.
+The previously reviewed scientific/fresh/dual-terminal prerequisites and final
+source-capture/affected checks remain. Final entry/package/handoff publication
+changes must be separately bound and reviewed. Identity03's all23 unchanged
+source-hash statement applies at7627c01e2; it must not be falsely extended to
+the final administratively changed collection. Retain actual observed old
+counts without deducting159 bytes. No new scientific/production PASS is made.
+
+
+## Iteration4 solver: source arithmetic passes, first-attempt completeness FAIL
+
+Static: inspected the complete scientific answer and request ledger of
+exercise_02_retry_04.md against the unchanged original task2 rubric, with
+focused original numerical and current protocol clauses. Report74928 bytes
+SHA-256 ac0d0e9c829b8c08cabb1eeea3d88296098ca53a7163eaee5baab9391f9a84dc.
+Ran independently: all34 full-source identities,89 requested ranges and per-file
+unique/exposure sums verified against frozen7627c01e2; no discrepancy. This
+checks recorded source exposure, not unobserved delivered tokens. No numerical
+workflow, implementation oracle, benchmark or physical consumer was run.
+
+Correct substantive coverage is extensive: exact inner/outer solver separation;
+immutable regime and owner boundaries; ordered stencils/scales/domains/LU/steps;
+current-state witness rather than installed trial; no new diagnostic field;
+store-cap/water-rate AND physical-energy inactive-wet predicate; full-supply
+identity/amount/canonical zeros and final reevaluation; all three distinct reuse
+mechanisms; complete graph/source ordering and affected evaluator families;
+C017/018/019 distinctions; exact V30 V8/ingress/native proof order and competing
+poisons; pending map dispositions; full first-error hierarchy; fallibility and
+PC1/SG1; universal producers, water/energy/CN boundaries; actual graph/sweep
+oracles and extensive timing/memory/source-reproduction requirements.
+
+The apparent “first domain-valid ... whose governed step norms pass” shorthand
+in the witness paragraph is constrained by its later explicit prohibition on
+skipping an earlier domain-valid witness. It is not interpreted as permission
+to search later witnesses; the faithful restriction is present. Likewise,
+unchanged-current/no-install and no-new-field are concrete enough without
+requiring identical source wording. Corrected previously missing clauses are
+not failed for stylistic differences.
+
+FAIL first-attempt scientific requirement completeness remains for these actual
+omissions, under the unchanged prior rubric/assessment standard:
+
+1. V2 iteration-zero acceptance is listed with residual/branch/domain/F-A-D owner
+   guards, but its exact-zero step norms and zero backtracking are nowhere
+   stated. Canonical nonlinear-solve lines178–181 specify those values and no
+   Jacobian construction. Iteration number alone does not bind diagnostics or
+   prevent inherited potential-solve norms/backtrack counts. This was an
+   explicit frozen task2 requirement and an unchanged prior finding.
+2. Experimental oracle/audit separation remains incomplete. Report section7
+   places oracle/digest/teardown outside the complete performance interval,
+   but does not state that oracle work/audit is also separate from the memory
+   trial, nor explicitly match optional audit posture across A/R. Freezing
+   audit posture within a series and matching memory observers do not state
+   both those restrictions. Qualification lines114–116 and the full frozen
+   kickoff line149 require separate performance AND memory trials plus matched
+   optional audit posture. This is necessary for the claimed interpretation
+   of experimental limits; detailed oracle allocations can change lifetime
+   memory even when outside the timed interval. All relevant sources were
+   selected, so missing fixture data does not excuse the missing requirement.
+
+The answer excludes active litter/high-carry/provider implementation and
+profile/enforcement/model-gap audits for legitimate represented-snow evaluator
+requirements scope. It reads all three required external owner contracts and
+all four qualification documents completely in the recorded union. No new
+mandatory external omission was found. No production/source implementation
+claim or experimental PASS is made; pause and retained failures survive.
+These correct scope exclusions do not cure the two missing conclusions.
+
+Verified LSE unique211052bytes yields20.316541% reduction and meets the numeric
+threshold; exposure259124 includes48072 repeats. Other required sources total
+989473 unique/1166343 exposure. Combined1200525 unique/1425467 requested exposure
+includes224942 repeats. The separately disclosed private reader is584bytes,
+not649; including that reported auxiliary source gives1201109/1426051. The
+repository counts/hashes were independently verified; the private reader's
+reported hash is not frozen repository evidence.
+
+Record numeric arithmetic PASS separately from sufficient-reading FAIL. The
+838-byte numeric margin is not a waiver or authority ceiling. Preserve this
+immutable first report and all previous failures; no carried-context correction
+or weaker rubric may supply a fresh PASS. Any subsequent remedy and genuinely
+fresh affected exercise must retain the complete original obligations.
+
+
+## Prospective solver04 presentation correction: exact placement approved
+
+Static: inspected current nonlinear V2/V10 paragraphs and intro, grouped replay
+dependency row, and qualification's complete performance/memory separation
+paragraph. No source change or new result was produced.
+
+APPROVE the bounded correction prospectively, after current readers finish:
+place “### Final-solve initialization and diagnostic accounting” immediately
+before “When every positive final water authorization...” under the existing
+V2/V10 level-two heading. Keep both original FullSupply and iteration-zero
+paragraphs verbatim. Bound the new subsection accurately with “### V10 domain
+and numerical restrictions” immediately before “Nonpositive-assimilation
+partial positive root authorization...”; retain all following restrictions,
+scaling/inactive-row/migration clauses and the original parent section extent.
+Add the proposed nonlinear introductory sentence: “Solve equivalence includes
+initialization and diagnostic accounting below.” These headings expose already
+binding requirements without introducing a new state rule or diagnostic value.
+
+In replay's grouped whole-chapter dependency row, replace only qualification's
+“historical versus experimental limits” reason with “retention and capture rules
+for timing and memory, including matched optional audit posture”. Preserve
+canonical stencil/leaf/error and radiation/turbulent reasons, all existing
+targets and whole-chapter extent. Qualification already explicitly requires
+detailed oracle/audit outside both performance and memory intervals, matched
+optional A/R audit and bounded counters. Its text and full protocol remain
+unchanged. This is useful canonical discoverability, not a new science rule,
+criterion relaxation or exercise-prompt answer hint.
+
+Recheck actual source preservation, parent/section extents, canonical rows and
+exact generated diff/counts after implementation. Added presentation bytes stay
+in new observed reading; no threshold change or retroactive subtraction. A NEW
+fresh solver report is required; prior solver04 remains immutable FAIL. Current
+01/04 are assessed on their unchanged7627 source; evidence reuse depends on their
+actual selected sources/claims and the exact new diff, not a prediction of what
+they will read. Identity's selected scientific source remains unchanged by this
+proposal, subject to final input/dependency verification and separately reviewed
+publication changes. No source edit while current readers are active is approved.
+
+
+## Refinement of approved solver dependency reason
+
+APPROVE the exact prospective qualification reason “retention and capture rules
+for timing and memory, including oracle separation and matched optional audit
+posture”. “Oracle separation” names the already explicit qualification114–116
+requirement; it changes no authority, route extent or rubric. Other grouped
+dependency reasons/targets remain unchanged. No writes while current readers run.
+
+## Iteration4 closure: scientific PASS, actual reading-size FAIL
+
+Static: complete scientific reconstruction/expansion/ledger in
+exercise_04_retry_04.md assessed against the unchanged original accepted-primitive
+closure rubric. The initial long display was recovered with focused physical
+carry/ingress/receipt and ledger reads. Report55390 bytes SHA-256
+f52a2166e32592c437c4a3f5f9693138ffc5e458867109ae289ce961ea7d14ae.
+Ran independently: all32 source identities,123 ranges/repeats and complete
+per-source coverage verified against7627c01e2; no hash/byte/extent discrepancy.
+No numerical physical reconstruction, process/consumer execution, or test was run.
+
+PASS bounded scientific requirements reconstruction. The answer identifies
+independent primitive beginnings/endings, signs/units/area/support/lineage;
+current radiation/turbulent recipients; both sensible-plus-latent signed vapor
+phases and immutable phase availability; phase-free accepted energy and CN
+opposite transfer; bounded kinetic freeze/melt/fusion and ending capacity;
+checked raw/retained/spill subtraction and full-child one-WB14 timing; liquid-only
+WB14 with ice barred from runoff/infiltration/frozwt; heterogeneous native/ordinary
+partition; zero-mass/no-temperature/no-energy semantics; physical binary64 area
+conversion before exact decode; one-round high/carry with canonical dyadic zero
+and preserved high signed-zero semantics; frozen mirrors; topology-ranked
+receipt/partial-final chains; non-owner soil beginnings and final original-owner
+replay; actual pending/reseal origins and atomic rollback.
+
+All nine frozen rubric families receive concrete rules and required independent
+tests. Missing authority-tagged L_s and actual run operands remain missing; no
+new sublimation formula, numeric residual or p61 oracle is invented. Actual
+WAT5/p61/native-forest receiver/restart/whole-owner evidence remains required,
+not claimed executed. Physical, exact-custody, nonlinear and support tolerances
+are kept separate. Accepted primitive reconstruction does not automatically
+require full solver/replay implementation or active provider-rederivation; the
+reported exclusions are consistent with that bounded question. All five
+selected external owner contracts are fully represented in the verified ledger.
+Qualification context is read without claiming EXP-R execution/capture or a
+new experimental admissibility verdict; no additional protocol omission is
+inferred solely from looking at that contextual chapter.
+
+FAIL actual LSE reading reduction:235188 unique bytes is only11.203905% below
+264863, exceeding211890. LSE requested exposure329692 includes94504 repeats.
+External/governance1499545 unique/1609557 exposure includes110012 repeats;
+total1734733 unique/1939249 exposure,204516 repeats. These exact source
+measurements support no delivered-token/workflow or executed science claim.
+Scientific PASS cannot waive the separate hard size criterion. Preserve the
+first report and actual reads; do not retrospectively replace them by forecast
+or by a narrower selection the reader did not use.
+
+The complete expansion cause is explicit in its reading rationale: physical
+core196030 plus whole audit19836 plus whole qualification19322 gives235188.
+Audit was read to check retained scope/supersession/source anchors/guard duties
+and GAP007/008; qualification was read “to preserve existing HOLD” and distinguish
+historical/prospective regimes despite no experimental claim. Whole audit beyond
+its precise applicable sections is actual voluntary exposure, still charged.
+
+There is a natural scope ambiguity worth correcting prospectively: current
+common intro says existing HOLD is governed by qualification. General current
+production/non-promotion restrictions already bind through interface and the
+selected mechanism, while qualification governs experiment-specific retention/
+identity/capture criteria. Likewise, applying an admitted current model/regime
+is not itself an adjudication that a retained authority gap or typed enforcement
+map has been closed. A dependency trigger mentioning any retained-model scope/
+supersession/promotability can blur those distinct claims. The reader's concern
+about unresolved GAP007/008 is legitimate; actual gap/provenance/enforcement
+adjudication must still read the complete applicable records and cannot be
+declared irrelevant to save bytes.
+
+A prospective clarification may distinguish applying current physical rules/
+existing prohibitions from resolving historical labels, source authority, gap
+closure, typed implementation enforcement or experiment criteria. It must not
+remove any actual requirement or bar voluntary expansion. No exact additional
+source edit or numerical saving is approved by this observation alone. Any
+changed relevant source requires reviewed preservation and a NEW fresh closure
+attempt; this235188-byte result cannot establish adoption on another source cut.
+
+
+## Iteration4 surface: boundary conclusions recovered; retained-provider gap
+
+Static: complete scientific answer/expansion and ledger in
+exercise_01_retry_04.md assessed against the unchanged original task1 rubric.
+Recovered the truncated ingress paragraph with a focused read. Report80095
+bytes SHA-256 ebc956f4ff3d3e35dc71351f40e258cfc9ce5f57b9dfb262ba3c11f6fd7eb60f.
+Ran independently: all30 full-source identities and100 request ranges checked
+against7627c01e2, including recovery row49 (SnowEnergy2037–2040,1630 repeated
+bytes) after the initial parser excluded its recovery phase. No byte/hash/
+coverage discrepancy remains. No scientific execution was performed.
+
+All previously missing represented-snow/terminal conclusions are now concrete: soil
+CN inside the covered fixed point, OFE/lane rather than tile ownership, exact
+opposite accepted receipt, endpoint1e-9J/1e-8K reseal versus1e-6J physical closure,
+actual default-off receiver rebuilt over [wall_t*,wall_end), separate native map
+and inactive litter, exact floor/zero/below-floor admission and rollback. The
+answer correctly develops snow-free current radiation/recipient/signs, finite
+and exact-zero capacity endpoints, harmonic first-node/zero-bottom exchange,
+immutable original water/fixed-final/ingress enthalpy, unspecified litter phase,
+spill and exact-carry custody. It does not invent supplied run inputs/results.
+
+FAIL first-attempt scientific reading completeness remains for the retained rain
+provider boundary. The original frozen task1 rubric explicitly requires
+SnowFreeze075 expansion for the retained rain-temperature provider. The report
+identifies Harder–Pomeroy hourly hydrometeor temperature as the required rain
+operand, but no SC-SNOWFREEZE source occurs in its manifest or requests. Its
+exclusion argues no NEW provider algorithm was selected/rederived. The current
+water edge covers provider selection/provider-derived ingress-enthalpy
+requirements; it is not limited to modifying a provider implementation. Task1
+identifies applicable ingress rules including that retained provider authority.
+This differs from task4's accepted-primitive parcel reconstruction, which can
+consume an already authoritative supplied parcel without selecting/rederiving
+the provider. The frozen task-specific expansion cannot be relaxed based on
+this new-provider inference. This is the sole remaining task1 science blocker
+identified here; prior corrected clauses are explicitly accepted.
+
+The reader completed its five other external contracts and all listed sources.
+LSE235188 unique/312510 requested exposure fails the20% reduction criterion
+(11.203905% saving); other1480027 unique/1662167 exposure gives1715215 unique/
+1974677 exposure,259462 repeats. Extra LSE is again whole audit19836 plus
+qualification19322 beyond196030 physical core. The rationale expressly calls
+these reads voluntary to avoid misrepresenting historical authority/HOLD. They
+remain real charged reads; revised wording cannot retrospectively subtract them.
+Both scientific sufficiency and actual-size gates remain FAIL for this attempt.
+
+## Exact prospective common/identity/provider scope clarification approved
+
+APPROVE the parent's exact common introduction change prospectively. Keep the
+first three sentences through “no default, numerical closure or production
+qualification follows from this directory.” Replace the remainder with:
+
+“Applying those current physical, owner and closure rules and retaining their
+no-promotion limits does not itself adjudicate authority gaps, source provenance
+or implementation enforcement. Actual source, gap/supersession or enforcement/
+promotion adjudication requires the corresponding complete audit sections.
+Historical/current experiment retention and executable-evidence capture limits,
+including experiment HOLD, require qualification. Physical owner/receipt identity
+is governed by its mechanism.”
+
+Add “adjudication” to the third audit trigger; change qualification's identity
+trigger to executable identity. Interface's existing “identity capture, experiment
+or qualification claims” trigger may become “executable identity capture,
+experiment or qualification claims”. These clarify the actual different claim
+boundaries without dismissing GAP007/008, typed promotion-path duties or real
+source provenance adjudication. Actual such claims and uncertainty still require
+complete applicable expansion. All original scientific body/cells remain intact.
+
+APPROVE water's exact trigger refinement to “rain-temperature provider-rule
+review (including the retained provider) or provider-derived ingress-enthalpy
+requirements/closure”, keeping INV075 and the accepted-authoritative-parcel-only
+distinction verbatim. This makes unchanged task1 scope discoverable; it neither
+invents a provider requirement nor expands every accepted parcel reconstruction
+into provider implementation.
+
+New fresh01/02/04 are required after actual diff/preservation/count/dual preflight
+review. No retrospective counts/FAIL change. Identity03's executable question
+continues to trigger exactly the same full qualification and protocol requirements
+when “executable” is added to interface. Reuse can be justified by explicit
+semantic dependency proof of that unchanged task, subject to final review; the
+interface hash does change, so all23 identical-source wording must be limited
+to the prior7627 comparison. Keep observed31428 tied to6938 rather than adding
+or subtracting later presentation bytes and claiming a new observation.
+
+
+## Iteration5 applied preflight and semantic identity evidence reuse
+
+Static: exact complete canonical diff against7627c01e2 contains only the five
+approved files: common-details, interface, nonlinear-solve, dependency-replay
+and water-vapor. Applied words, triggers, heading levels/placement and unchanged
+parent extents match the prospective review. Original scientific bodies,
+Statements, qualification, protocols and owner limits remain intact. Handoff
+remains the clean isolated-reader version without prior answers/findings.
+Ran independently: original scientific lines/Statements/fenced-body preservation
+PASS; public strict directory17/100 PASS; all28 manifest hashes and all forecast
+range arithmetic PASS; identity03's23 selected-input comparison; two isolated
+generator modes with live28-source before/after equality. No physical workflow
+or new exercise was run by this reviewer.
+
+Manifest SHA-256:
+cbd9d6fefb793a9c78d494af8d61bc7b8c39aabdddee82b108f02a784d6226e9.
+All18 primary files included; compact sorted-path/hash primary digest:
+786399ef8f0f48c838816192a91f9beb5c9cd22dc993949c8079160d2d02a809.
+Forecast SHA-256:
+1212ee2990bad57d16105daa442aac62484389311c9abe8b97bb7f44feb74b92.
+Verified bootstrap12117; prospective01/04=196206,02=211480,03=31439. These
+are not observations or sufficient-reading PASS. Solver410-byte headroom
+cannot constrain actual required or voluntary source expansion.
+
+Common now separates applying admitted physical/owner/closure rules and retained
+no-promotion limits from actual source/gap/supersession/enforcement adjudication.
+Those actual claims still require complete applicable audit sections including
+successor007/008. Experiment retention/executable capture, including experiment
+HOLD, still requires qualification. Physical receipts stay with their owners.
+Water's provider-rule trigger expressly includes the retained provider while
+preserving the accepted authoritative parcel distinction. Nonlinear's new
+level-three initialization/diagnostic subsection contains the exact original
+FullSupply and iteration-zero paragraphs, then the new restrictions heading
+contains the remaining original V10 rules. The whole existing V2/V10 parent
+continues through both. Replay's unchanged whole-qualification edge now names
+timing/memory oracle separation and matched optional audit; stencil/radiation
+dependencies and exact original qualification remain unchanged.
+
+APPROVE new isolated fresh01/02/04, with unchanged original tasks/rubrics and
+neutral procedural completeness self-check. Preserve all preceding failures.
+Independent science/ledger assessments and terminal adoption gates remain
+current requirements; this applied preflight does not establish their PASS.
+
+Identity03 comparison:22 of23 selected full-source hashes remain identical.
+Only interface differs by the exact11-byte insertion “executable ” before
+“identity capture”; new interface7987bytes SHA-256
+a827f4099976f9592863b71a12c9059dadd36f8b8037dba4e0ebf8482449c0a0.
+The unchanged task specifically verifies executable identity, so it triggers
+the identical complete qualification and external protocol/reproduction/source
+identity duties before and after this clarifier. No relevant requirement or
+scientific authority changes. APPROVE explicit semantic evidence reuse under
+section10, not an all-hashes-equal claim. The actual fresh result still belongs
+to6938ca97d and observed LSE31428;31439 is a current source forecast, not new
+measured exposure. Final wrapper/status changes need their separate bounded
+publication review as already recorded.
+
+Independent generator commands, cwd /workdir/openWEPP, each exit0:
+/workdir/openWEPP/.venv/bin/python
+/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/build_candidate.py
+--output-root /tmp/review-a-iteration5-fyfstvh1/candidate
+and the same argv with output root /tmp/review-a-iteration5-fyfstvh1/adopted
+and appended --adopted. TemporaryDirectory cleanup removed those outputs after
+comparison. Both generated exactly18 files; default equals every live byte,
+entry4130/interface7987/total348958. Adopted differs only by159 notice bytes,
+entry3971/total348799. All28 live hashes remained unchanged. Generator SHA-256:
+da39f6addf7eafbda4df0946cc3a69f66e9d3aefbd67b99e3a5af368dfc0315f.
+
+Parent reports98 pytest/unit/A0/53 bridge PASS and111/18 Rust with identical
+18 failures/36 panics. These remain attributed validation results, separate
+from this reviewer's independently executed checks above. No adoption or
+production PASS is granted by this preflight.

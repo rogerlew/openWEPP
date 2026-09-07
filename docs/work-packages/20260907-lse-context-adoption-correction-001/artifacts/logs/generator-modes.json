@@ -1,0 +1,43 @@
+{
+  "generator_sha256": "da39f6addf7eafbda4df0946cc3a69f66e9d3aefbd67b99e3a5af368dfc0315f",
+  "source_manifest_sha256": "cbd9d6fefb793a9c78d494af8d61bc7b8c39aabdddee82b108f02a784d6226e9",
+  "runs": [
+    {
+      "mode": "candidate",
+      "argv": [
+        "/workdir/openWEPP/.venv/bin/python",
+        "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/build_candidate.py",
+        "--output-root",
+        "/tmp/lse5-generator-candidate-t0tlenlo"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit": 0,
+      "seconds": 0.04844383499585092,
+      "stdout": "entry 4130 interface 7987 total 348958\n",
+      "stderr": ""
+    },
+    {
+      "mode": "adopted",
+      "argv": [
+        "/workdir/openWEPP/.venv/bin/python",
+        "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/build_candidate.py",
+        "--output-root",
+        "/tmp/lse5-generator-adopted-2xbadolp",
+        "--adopted"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit": 0,
+      "seconds": 0.04412480094470084,
+      "stdout": "entry 3971 interface 7987 total 348799\n",
+      "stderr": ""
+    }
+  ],
+  "canonical_files": 18,
+  "candidate_equals_frozen_live": true,
+  "only_adopted_difference": [
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+  ],
+  "removed_bytes": 159,
+  "live_sources_unchanged": true,
+  "claim": "isolated reproduction proof only; live adoption NOT enabled"
+}

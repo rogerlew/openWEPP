@@ -18,7 +18,7 @@
 <a id="nonlinear-solve"></a>
 # Nonlinear Solve
 
-A represented-snow reuse correctness review includes both potential and fixed-final solves and the applicability of each V10/V11–13 branch below, together with complete solve-boundary error and acceptance rules.
+A represented-snow reuse correctness review includes both potential and fixed-final solves and the applicability of each V10/V11–13 branch below, together with complete solve-boundary error and acceptance rules. Solve equivalence includes initialization and diagnostic accounting below.
 
 Current complete ordered covered solver and V10-specific specialization. INV-138 retains the exact admitted closed-bound qualifier; valid-current/one-inadmissible-probe summaries do not broaden that scope. INV-139 accepts only the unchanged current iterate. V10 diagonal scaling remains potential/nonpositive-assimilation-only. Identity-anchor and leaf reuse are distinct limited optimizations; component replay additionally requires dependency-replay and its applicable qualification.
 
@@ -167,6 +167,8 @@ positive-PAR accepted result. It requires the V10 vegetation identity and
 admits its exact-zero-PAR and respiration-dominated positive-low-light
 branches. It does not recompute, clamp, or relabel V10 gas states.
 
+### Final-solve initialization and diagnostic accounting
+
 When every positive final water authorization is identity- and amount-equal to
 its potential request with `FullSupply`, and every canonical zero request
 retains its exact identity and zero amount, V2 uses the accepted potential
@@ -182,6 +184,8 @@ constructing a Jacobian. Every actual solver step retains V1 strict-decrease
 and convergence rules. Copying the potential candidate without complete final
 reevaluation is forbidden. A residual outside tolerance or any branch,
 identity, owner, or amount mismatch cannot use this acceptance path.
+
+### V10 domain and numerical restrictions
 
 Nonpositive-assimilation partial positive root authorization is typed unsupported in V2.
 

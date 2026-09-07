@@ -1,11 +1,11 @@
 {
   "kind": "prospective explicit source selection; sufficiency not yet qualified; not observed tokens",
   "baseline_lse_bytes": 264863,
-  "always_read_bytes": 12106,
+  "always_read_bytes": 12117,
   "tasks": {
     "exercise01": {
-      "lse_bytes": 196030,
-      "reduction_percent": 25.988152365562577,
+      "lse_bytes": 196206,
+      "reduction_percent": 25.921702918112388,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -25,7 +25,7 @@
               66
             ]
           ],
-          "bytes": 7976
+          "bytes": 7987
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
@@ -35,7 +35,7 @@
               301
             ]
           ],
-          "bytes": 23138
+          "bytes": 23267
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
@@ -65,7 +65,7 @@
               228
             ]
           ],
-          "bytes": 16173
+          "bytes": 16209
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
@@ -130,8 +130,8 @@
       ]
     },
     "exercise02": {
-      "lse_bytes": 211052,
-      "reduction_percent": 20.31654100421727,
+      "lse_bytes": 211480,
+      "reduction_percent": 20.15494802973613,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -151,7 +151,7 @@
               66
             ]
           ],
-          "bytes": 7976
+          "bytes": 7987
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
@@ -161,17 +161,17 @@
               301
             ]
           ],
-          "bytes": 23138
+          "bytes": 23267
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
           "ranges": [
             [
               1,
-              247
+              251
             ]
           ],
-          "bytes": 18949
+          "bytes": 19125
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
@@ -191,7 +191,7 @@
               534
             ]
           ],
-          "bytes": 48072
+          "bytes": 48148
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
@@ -251,13 +251,13 @@
               228
             ]
           ],
-          "bytes": 16173
+          "bytes": 16209
         }
       ]
     },
     "exercise03": {
-      "lse_bytes": 31428,
-      "reduction_percent": 88.13424298599654,
+      "lse_bytes": 31439,
+      "reduction_percent": 88.1300898955309,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -277,7 +277,7 @@
               66
             ]
           ],
-          "bytes": 7976
+          "bytes": 7987
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
@@ -292,8 +292,8 @@
       ]
     },
     "exercise04": {
-      "lse_bytes": 196030,
-      "reduction_percent": 25.988152365562577,
+      "lse_bytes": 196206,
+      "reduction_percent": 25.921702918112388,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -313,7 +313,7 @@
               66
             ]
           ],
-          "bytes": 7976
+          "bytes": 7987
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
@@ -323,7 +323,7 @@
               301
             ]
           ],
-          "bytes": 23138
+          "bytes": 23267
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
@@ -353,7 +353,7 @@
               228
             ]
           ],
-          "bytes": 16173
+          "bytes": 16209
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",

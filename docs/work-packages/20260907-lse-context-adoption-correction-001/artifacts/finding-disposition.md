@@ -51,3 +51,16 @@ Neutral first-report completeness/reading persistence applies to new01/02/04.
 All scientific cells remain exact; audit short aliases and shorter generated section
 extent labels retain the entry's same complete-section rule. Current direct checks
 pass; final fresh sufficiency and terminal dual verification remain OPEN.
+
+## Iteration4 findings / iteration5 current actions
+Both235188-byte physical reports remain sizeFAIL; whole audit/qualification reads
+are actualcost. Applying admitted rules/retaining ordinary restrictions is now
+explicitly distinct from source/gap/enforcement adjudication and experiment HOLD.
+Surface01's retained-provider rule requires fullSnowFreeze even without new provider
+implementation; exact trigger clarifies that existing scope. Solver02's iterationzero
+and memory-audit omissions remain first-answerFAIL; existing paragraphs now have
+natural initialization/accounting and V10 restriction subheadings, and qualification
+edge names timing/memory oracle separation and matched posture. All original source
+clauses survive. Current98Python/strict/unit/A0/53bridge checks PASS; Rust111/18exact
+inherited diagnostics. Fresh01/02/04 and terminal closure remain OPEN. Identity03
+reuse must prove unchanged executable-task duties despite11-byte interface qualifier.

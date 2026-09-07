@@ -4,7 +4,7 @@
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
 | common-details.md#common-details | physical rules, solver correctness or accepted-primitive closure | shared physical symbols, state, algorithm, guards, units, tolerances and tests | whole chapter |
-| qualification.md#qualification | identity capture, experiment or qualification claims | frozen protocols and separate scientific/production limits | whole qualification chapter |
+| qualification.md#qualification | executable identity capture, experiment or qualification claims | frozen protocols and separate scientific/production limits | whole qualification chapter |
 
 <a id="interface"></a>
 # Shared interface
