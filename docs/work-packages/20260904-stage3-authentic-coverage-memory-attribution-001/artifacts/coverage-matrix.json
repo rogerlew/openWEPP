@@ -1,0 +1,107 @@
+{
+  "status": "PHASE_2_V31_RUNTIME_DISCRIMINATOR_CAPTURED_V61_OPEN",
+  "evidence_mode": ["Static", "Ran"],
+  "topology_authority": {
+    "authentic_runner_lane_count": 1,
+    "authentic_runner_occupancy_count": 2,
+    "authentic_runner_soil_thermal_layer_count": 6,
+    "two_ofe_bootstrap": [[1, 100.0, 6], [2, 200.0, 6]],
+    "seed_sha256": "c287477eec29e74fa2102844e473ee8a225e30606697677219cfb5720e0d2dcc"
+  },
+  "revision_31_contract_target": {
+    "vector_length": 29,
+    "logical_probe_count": 58,
+    "identity_anchor_probe_count": 14,
+    "component_replay_probe_count": 16,
+    "complete_probe_count": 28,
+    "completed_required": true,
+    "all_centered_required_by_reviewed_assertion": true
+  },
+  "arms": [
+    {
+      "id": "current_retained_one_ofe_release_ab_control",
+      "workload_identity": "stage3_laned_release_one_ofe_positive_baseline_profile",
+      "runner_path": "real DirectProductionExecutor -> terminal/provider -> strict V8 -> native V3 -> canonical covered solver",
+      "occupancy_count": 2,
+      "soil_count": 6,
+      "stencil": "current production stencil is not instrumented",
+      "lifecycle": "one day; support chronology and committed snapshot complete",
+      "eligibility": "covered supports observed, component replay eligibility not published",
+      "executed_replay": "not applicable; retained implementation has no replay path or published replay counter",
+      "completion": "12 paired blocks complete; 24 arms exit 0",
+      "failure_context": "retained source has no component-replay implementation or published replay counter; carrier finalization timing is unrelated",
+      "independent_reconstruction": "memory JSONL, CSV, raw logs, and exact output/counter checks reconcile"
+    },
+    {
+      "id": "historical_revision_31_candidate",
+      "workload_identity": "same authentic release probe; archived candidate source 039a3125...1abc",
+      "runner_path": "real runner path in historical candidate binary f9386eec...eeaf",
+      "occupancy_count": 2,
+      "soil_count": 6,
+      "stencil": "boundary-aware one-sided stencils selected at closed beta/temperature domains",
+      "lifecycle": "debugger audit-return capture before aggregate assertion; authentic audit once, forced oracle distinct second audit",
+      "eligibility": "2,000 N=2/S=6 sweep records decoded from audit vector; all completed=true and failed=false",
+            "executed_replay": "observed sweep records; no target aggregate",
+            "completion": false,
+            "target_completion": false,
+            "all_captured_sweeps_completed": true,
+            "failure_context": "exit 101 at component_replay_audit.rs:131 after audit-return capture; 200 rows 48/14/10/24, 1,800 rows 54/14/16/24, zero rows 58/14/16/28; no collector/lifecycle loss",
+      "independent_reconstruction": "historical binary direct release replay plus GDB take-return/lifecycle logs; source overlays/session replay failed equivalence and no candidate source cut is authenticated"
+    },
+    {
+      "id": "historical_revision_31_focused_real_runner_diagnostic",
+      "workload_identity": "component_replay_audit::real_one_ofe_replay_and_forced_complete_outputs_are_bit_identical",
+      "runner_path": "historical v31 binary real runner -> focused one-OFE fixture -> component replay audit -> forced-complete oracle",
+      "occupancy_count": 2,
+      "soil_count": 6,
+      "stencil": "diagnostic audit; exact sweep partition not serialized",
+      "lifecycle": "real-runner focused fixture completed; parity oracle returned",
+      "eligibility": "at least one completed replay probe asserted by the diagnostic test",
+      "executed_replay": "observed; positive count asserted but not serialized",
+      "completion": true,
+      "failure_context": "focused parity test exit 0; this is not the release 58/14/16/28 aggregate",
+      "independent_reconstruction": "raw/historical_v31_binary_component_replay_run.log"
+    },
+    {
+      "id": "recovered_revision_31_exact_head_overlay",
+      "workload_identity": "recovered /tmp/v31.diff over package HEAD 0d56001ed",
+      "runner_path": "isolated worktree only",
+      "occupancy_count": null,
+      "soil_count": null,
+      "stencil": null,
+      "lifecycle": "not built",
+      "eligibility": null,
+      "executed_replay": null,
+      "completion": false,
+      "failure_context": "git apply --3way conflicts in evaluation, solve, solver_tests, and runner qualification",
+      "independent_reconstruction": "raw/v31_head_overlay_apply.log"
+    },
+    {
+      "id": "recovered_revision_31_a28_overlay_check",
+      "workload_identity": "recovered candidate diff on base a28c55c2d",
+      "runner_path": "isolated worktree only",
+      "occupancy_count": null,
+      "soil_count": null,
+      "stencil": null,
+      "lifecycle": "cargo check did not complete",
+      "eligibility": null,
+      "executed_replay": null,
+      "completion": false,
+      "failure_context": "missing post-a28 telemetry/audit APIs and supporting files; exit 101",
+      "independent_reconstruction": "raw/v31_a28_overlay_check.log"
+    }
+  ],
+  "required_fields": [
+    "workload_identity",
+    "runner_path",
+    "occupancy_count",
+    "soil_count",
+    "stencil",
+    "lifecycle",
+    "eligibility",
+    "executed_replay",
+    "completion",
+    "failure_context",
+    "independent_reconstruction"
+  ]
+}

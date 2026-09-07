@@ -1,0 +1,546 @@
+warning: Git tree '/tmp/openwepp-v31-replay' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openwepp-v31-replay-e004e8d9d03c
+  scratch: /tmp/openwepp-roger-openwepp-v31-replay-e004e8d9d03c
+  cache:   /workdir/.cache/openwepp
+warning: unexpected `cfg` condition value: `test-support`
+   --> crates/openwepp-land-surface-energy/src/transaction.rs:239:17
+    |
+239 | #[cfg(any(test, feature = "test-support"))]
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^ help: remove the condition
+    |
+    = note: no expected values for `feature`
+    = help: consider adding `test-support` as a feature in `Cargo.toml`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: requested on the command line with `-W unexpected-cfgs`
+
+warning: unexpected `cfg` condition value: `test-support`
+   --> crates/openwepp-land-surface-energy/src/transaction.rs:319:21
+    |
+319 |     #[cfg(any(test, feature = "test-support"))]
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ help: remove the condition
+    |
+    = note: no expected values for `feature`
+    = help: consider adding `test-support` as a feature in `Cargo.toml`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+
+warning: unexpected `cfg` condition value: `test-support`
+   --> crates/openwepp-land-surface-energy/src/transaction.rs:325:21
+    |
+325 |     #[cfg(any(test, feature = "test-support"))]
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ help: remove the condition
+    |
+    = note: no expected values for `feature`
+    = help: consider adding `test-support` as a feature in `Cargo.toml`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+
+warning: unexpected `cfg` condition value: `test-support`
+   --> crates/openwepp-land-surface-energy/src/transaction.rs:331:21
+    |
+331 |     #[cfg(any(test, feature = "test-support"))]
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ help: remove the condition
+    |
+    = note: no expected values for `feature`
+    = help: consider adding `test-support` as a feature in `Cargo.toml`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+
+warning: unexpected `cfg` condition value: `test-support`
+   --> crates/openwepp-land-surface-energy/src/transaction.rs:339:21
+    |
+339 |     #[cfg(any(test, feature = "test-support"))]
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ help: remove the condition
+    |
+    = note: no expected values for `feature`
+    = help: consider adding `test-support` as a feature in `Cargo.toml`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+
+warning: `openwepp-land-surface-energy` (lib) generated 5 warnings
+    Checking openwepp-runner v0.1.0 (/tmp/openwepp-v31-replay/crates/openwepp-runner)
+error[E0425]: cannot find function `begin_release_qualification_telemetry_v1` in module `openwepp_hillslope_orchestrator::snow_stage3_v11_attachment`
+   --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:877:102
+    |
+877 | ...ment::begin_release_qualification_telemetry_v1()
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `openwepp_hillslope_orchestrator::snow_stage3_v11_attachment`
+
+error[E0425]: cannot find function `take_release_qualification_telemetry_v1` in module `openwepp_hillslope_orchestrator::snow_stage3_v11_attachment`
+   --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:891:96
+    |
+891 | ...hment::take_release_qualification_telemetry_v1()
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `openwepp_hillslope_orchestrator::snow_stage3_v11_attachment`
+
+error[E0425]: cannot find function `duplicate_configured_vegetation_mapping_test_seed_bytes` in module `crate::hillslope::snow_stage3_v11_production_seed`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1865:75
+     |
+1865 |     let poison_bytes = crate::hillslope::snow_stage3_v11_production_seed::duplicate_configured_vegetation_mapping_test_seed_bytes(
+     |                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `crate::hillslope::snow_stage3_v11_production_seed`
+
+error[E0609]: no field `attachment_adoption` on type `RunnerStage3V11QualificationAuditV1`
+   --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:734:14
+    |
+734 |             .attachment_adoption
+    |              ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `support_chronology_by_day`, `committed_snapshot`
+
+error[E0609]: no field `attachment_adoption` on type `RunnerStage3V11QualificationAuditV1`
+   --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:741:14
+    |
+741 |             .attachment_adoption
+    |              ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `support_chronology_by_day`, `committed_snapshot`
+
+error[E0609]: no field `attachment_adoption` on type `RunnerStage3V11QualificationAuditV1`
+   --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:748:22
+    |
+748 |         stage3_audit.attachment_adoption.successful_adoption_count, 1,
+    |                      ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `support_chronology_by_day`, `committed_snapshot`
+
+error[E0609]: no field `attachment_adoption` on type `RunnerStage3V11QualificationAuditV1`
+   --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:753:14
+    |
+753 |             .attachment_adoption
+    |              ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `support_chronology_by_day`, `committed_snapshot`
+
+error[E0609]: no field `attachment_adoption` on type `RunnerStage3V11QualificationAuditV1`
+   --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:760:14
+    |
+760 |             .attachment_adoption
+    |              ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `support_chronology_by_day`, `committed_snapshot`
+
+error[E0609]: no field `attachment_adoption` on type `RunnerStage3V11QualificationAuditV1`
+   --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:764:14
+    |
+764 |             .attachment_adoption
+    |              ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `support_chronology_by_day`, `committed_snapshot`
+
+error[E0609]: no field `attachment_adoption` on type `RunnerStage3V11QualificationAuditV1`
+   --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:771:14
+    |
+771 |             .attachment_adoption
+    |              ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `support_chronology_by_day`, `committed_snapshot`
+
+error[E0609]: no field `attachment_adoption` on type `RunnerStage3V11QualificationAuditV1`
+   --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:778:22
+    |
+778 |         stage3_audit.attachment_adoption.accepted_support_sha256[0],
+    |                      ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `support_chronology_by_day`, `committed_snapshot`
+
+error[E0609]: no field `imported_entry_validation_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1022:75
+     |
+1022 |         "entry_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_entry_validation_elapsed),
+     |                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+help: a field with a similar name exists
+     |
+1022 -         "entry_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_entry_validation_elapsed),
+1022 +         "entry_validation": telemetry_elapsed_us(|row| row.profile_detail.unified_entry_validation_elapsed),
+     |
+
+error[E0609]: no field `imported_physical_candidate_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1023:77
+     |
+1023 |         "physical_candidate": telemetry_elapsed_us(|row| row.profile_detail.imported_physical_candidate_elapsed),
+     |                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_physical_setup_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1024:73
+     |
+1024 |         "physical_setup": telemetry_elapsed_us(|row| row.profile_detail.imported_physical_setup_elapsed),
+     |                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_frozen_evaluation_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1025:76
+     |
+1025 |         "frozen_evaluation": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_evaluation_elapsed),
+     |                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_frozen_preparation_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1026:77
+     |
+1026 |         "frozen_preparation": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_preparation_elapsed),
+     |                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_frozen_execute_accept_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1027:80
+     |
+1027 |         "frozen_execute_accept": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_execute_accept_elapsed),
+     |                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_frozen_execution_setup_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1028:81
+     |
+1028 |         "frozen_execution_setup": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_execution_setup_elapsed),
+     |                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_frozen_runtime_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1029:73
+     |
+1029 |         "frozen_runtime": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_runtime_elapsed),
+     |                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_frozen_acceptance_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1030:76
+     |
+1030 |         "frozen_acceptance": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_acceptance_elapsed),
+     |                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_envelope_construction_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1031:80
+     |
+1031 |         "envelope_construction": telemetry_elapsed_us(|row| row.profile_detail.imported_envelope_construction_elapsed),
+     |                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_envelope_validation_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1032:78
+     |
+1032 |         "envelope_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_envelope_validation_elapsed),
+     |                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+help: a field with a similar name exists
+     |
+1032 -         "envelope_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_envelope_validation_elapsed),
+1032 +         "envelope_validation": telemetry_elapsed_us(|row| row.profile_detail.unified_entry_validation_elapsed),
+     |
+
+error[E0609]: no field `imported_accepted_candidate_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1033:77
+     |
+1033 |         "accepted_candidate": telemetry_elapsed_us(|row| row.profile_detail.imported_accepted_candidate_elapsed),
+     |                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_owner_publication_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1034:76
+     |
+1034 |         "owner_publication": telemetry_elapsed_us(|row| row.profile_detail.imported_owner_publication_elapsed),
+     |                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_install_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1035:66
+     |
+1035 |         "install": telemetry_elapsed_us(|row| row.profile_detail.imported_install_elapsed),
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_reuse_validation_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1036:75
+     |
+1036 |         "reuse_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_validation_elapsed),
+     |                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+help: a field with a similar name exists
+     |
+1036 -         "reuse_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_validation_elapsed),
+1036 +         "reuse_validation": telemetry_elapsed_us(|row| row.profile_detail.unified_entry_validation_elapsed),
+     |
+
+error[E0609]: no field `imported_reuse_reseal_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1037:71
+     |
+1037 |         "reuse_reseal": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_reseal_elapsed),
+     |                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `imported_reuse_install_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1038:72
+     |
+1038 |         "reuse_install": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_install_elapsed),
+     |                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `terminal_candidate_setup_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1041:64
+     |
+1041 |         "setup": telemetry_elapsed_us(|row| row.profile_detail.terminal_candidate_setup_elapsed),
+     |                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `terminal_provider_custody_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1042:75
+     |
+1042 |         "provider_custody": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_custody_elapsed),
+     |                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `terminal_provider_projection_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1043:78
+     |
+1043 |         "provider_projection": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_projection_elapsed),
+     |                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `terminal_provider_carrier_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1044:75
+     |
+1044 |         "provider_carrier": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_carrier_elapsed),
+     |                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `terminal_provider_retention_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1045:77
+     |
+1045 |         "provider_retention": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_retention_elapsed),
+     |                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `terminal_result_finalization_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1046:78
+     |
+1046 |         "result_finalization": telemetry_elapsed_us(|row| row.profile_detail.terminal_result_finalization_elapsed),
+     |                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_physical_phase_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1047:75
+     |
+1047 |         "carrier_physical": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_phase_elapsed),
+     |                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_complete_phase_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1048:75
+     |
+1048 |         "carrier_complete": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_phase_elapsed),
+     |                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_physical_setup_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1049:81
+     |
+1049 |         "carrier_physical_setup": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_setup_elapsed),
+     |                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_physical_evidence_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1050:84
+     |
+1050 |         "carrier_physical_evidence": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_evidence_elapsed),
+     |                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_physical_completion_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1051:86
+     |
+1051 |         "carrier_physical_completion": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_completion_elapsed),
+     |                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_complete_envelope_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1052:84
+     |
+1052 |         "carrier_complete_envelope": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_envelope_elapsed),
+     |                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_complete_adoption_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1053:84
+     |
+1053 |         "carrier_complete_adoption": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_adoption_elapsed),
+     |                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_complete_projection_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1054:86
+     |
+1054 |         "carrier_complete_projection": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_projection_elapsed),
+     |                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_complete_owner_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1055:81
+     |
+1055 |         "carrier_complete_owner": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_owner_elapsed),
+     |                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_vegetation_validation_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1056:94
+     |
+1056 | ...lapsed_us(|row| row.profile_detail.carrier_owner_vegetation_validation_elapsed),
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_hydrology_projection_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1057:93
+     |
+1057 | ...lapsed_us(|row| row.profile_detail.carrier_owner_hydrology_projection_elapsed),
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_surface_canonical_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1058:90
+     |
+1058 |         "carrier_owner_surface_canonical": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_surface_canonical_elapsed),
+     |                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_vegetation_encoding_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1059:92
+     |
+1059 | ...elapsed_us(|row| row.profile_detail.carrier_owner_vegetation_encoding_elapsed),
+     |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_surface_encoding_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1060:89
+     |
+1060 |         "carrier_owner_surface_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_surface_encoding_elapsed),
+     |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_soil_encoding_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1061:86
+     |
+1061 |         "carrier_owner_soil_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_soil_encoding_elapsed),
+     |                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_other_encoding_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1062:87
+     |
+1062 |         "carrier_owner_other_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_other_encoding_elapsed),
+     |                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_joint_map_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1063:82
+     |
+1063 |         "carrier_owner_joint_map": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_joint_map_elapsed),
+     |                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_joint_seal_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1064:83
+     |
+1064 |         "carrier_owner_joint_seal": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_joint_seal_elapsed),
+     |                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_soil_custody_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1065:85
+     |
+1065 |         "carrier_owner_soil_custody": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_soil_custody_elapsed),
+     |                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_candidate_bytes_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1066:88
+     |
+1066 |         "carrier_owner_candidate_bytes": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_candidate_bytes_elapsed),
+     |                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0609]: no field `carrier_owner_ephemeral_assembly_elapsed` on type `AdaptiveParentProfileDetailV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1067:91
+     |
+1067 |         "carrier_owner_ephemeral_assembly": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_ephemeral_assembly_elapsed),
+     |                                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `physical_topology_elapsed`, `physical_potential_elapsed`, `physical_request_elapsed`, `physical_unified_elapsed`, `unified_preflight_elapsed` ... and 17 others
+
+error[E0425]: cannot find function `arm_stage3_rejected_day_rollback_audit` in this scope
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1872:5
+     |
+1872 |     arm_stage3_rejected_day_rollback_audit();
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0609]: no field `attachment_adoption` on type `RunnerStage3V11QualificationAuditV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1886:14
+     |
+1886 |             .attachment_adoption
+     |              ^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `support_chronology_by_day`, `committed_snapshot`
+
+error[E0609]: no field `attachment_adoption` on type `RunnerStage3V11QualificationAuditV1`
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1893:14
+     |
+1893 |             .attachment_adoption
+     |              ^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `support_chronology_by_day`, `committed_snapshot`
+
+error[E0425]: cannot find function `take_stage3_rejected_day_rollback_audit` in this scope
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:1905:20
+     |
+1905 |     let rollback = take_stage3_rejected_day_rollback_audit();
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0599]: no method named `test_fixture_vegetation_authorities` found for struct `snow_stage3_v11_production_seed::DirectSnowStage3V11ProductionSeedV1` in the current scope
+    --> crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:2053:62
+     |
+2053 |     let (vegetation_configuration, lse_configuration) = seed.test_fixture_vegetation_authorities();
+     |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `snow_stage3_v11_production_seed::DirectSnowStage3V11ProductionSeedV1`
+     |
+    ::: crates/openwepp-runner/src/hillslope/snow_stage3_v11_production_seed.rs:111:1
+     |
+ 111 | pub(super) struct DirectSnowStage3V11ProductionSeedV1 {
+     | ----------------------------------------------------- method `test_fixture_vegetation_authorities` not found for this struct
+
+Some errors have detailed explanations: E0425, E0599, E0609.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `openwepp-runner` (lib test) due to 60 previous errors

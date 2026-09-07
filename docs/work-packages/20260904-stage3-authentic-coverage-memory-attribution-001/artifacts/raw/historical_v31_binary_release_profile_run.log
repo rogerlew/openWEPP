@@ -1,0 +1,24 @@
+
+running 1 test
+test hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ... 
+thread 'hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile' (3265559) panicked at crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification/component_replay_audit.rs:131:5:
+assertion failed: audit.sweeps.iter().any(|sweep|
+        {
+            sweep.occupancy_count == 2 && sweep.soil_count == 6 &&
+                                sweep.logical_probe_count == 58 &&
+                            sweep.identity_anchor_probe_count == 14 &&
+                        sweep.component_replay_probe_count == 16 &&
+                    sweep.complete_probe_count == 28 && sweep.completed
+        })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 237 filtered out; finished in 11.57s
+
+
+EXIT_STATUS 101

@@ -1,0 +1,53 @@
+Breakpoint 1 at 0x17948b0
+Breakpoint 2 at 0x17947d0
+Breakpoint 3 at 0x29df40
+warning: File "/nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libthread_db.so.1" auto-loading has been declined by your `auto-load safe-path' set to "$debugdir:$datadir/auto-load".
+To enable execution of this file add
+	add-auto-load-safe-path /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libthread_db.so.1
+line to your configuration file "/home/roger/.config/gdb/gdbinit".
+To completely disable this security protection add
+	set auto-load safe-path /
+line to your configuration file "/home/roger/.config/gdb/gdbinit".
+For more information about this security protection see the
+"Auto-loading safe path" section in the GDB manual.  E.g., run from the shell:
+	info "(gdb)Auto-loading safe path"
+warning: Unable to find libthread_db matching inferior's thread library, thread debugging will not be available.
+
+running 1 test
+test hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ... [New LWP 3294183]
+[Switching to LWP 3294183]
+BEGIN_HIT=1 RDI=(nil)
+[Detaching after vfork from child process 3294251]
+TAKE_HIT=1 RDI=0x7ffff7bfd090
+#0  0x0000555556ce87d0 in openwepp_land_surface_energy::solver::take_covered_component_dependency_replay_audit ()
+#1  0x000055555584ca9f in openwepp_runner::hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ()
+#2  0x000055555596c959 in core::ops::function::FnOnce::call_once ()
+BEGIN_HIT=2 RDI=(nil)
+[Detaching after vfork from child process 3294319]
+TAKE_HIT=2 RDI=0x7ffff7bfc740
+#0  0x0000555556ce87d0 in openwepp_land_surface_energy::solver::take_covered_component_dependency_replay_audit ()
+#1  0x00005555557fe9c7 in openwepp_runner::hillslope::tests::component_replay_audit::run_forced_complete_release_oracle ()
+#2  0x00005555558559f5 in openwepp_runner::hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ()
+AGGREGATE_HIT BEGIN=2 TAKE=2 RDI=0x7ffff7bfc950 RSI=0x7ffff1801530 RDX=0x7d0
+
+thread 'hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile' (3294183) panicked at crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification/component_replay_audit.rs:131:5:
+assertion failed: audit.sweeps.iter().any(|sweep|
+        {
+            sweep.occupancy_count == 2 && sweep.soil_count == 6 &&
+                                sweep.logical_probe_count == 58 &&
+                            sweep.identity_anchor_probe_count == 14 &&
+                        sweep.component_replay_probe_count == 16 &&
+                    sweep.complete_probe_count == 28 && sweep.completed
+        })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 237 filtered out; finished in 10.59s
+
+[LWP 3294183 exited]
+[Inferior 1 (process 3294180) exited with code 0145]

@@ -1,0 +1,65 @@
+[package]
+name = "openwepp-runner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = false
+
+[features]
+default = []
+test-fixture-authority = ["openwepp-persisted-restart-v1/fixtures"]
+
+[lints]
+workspace = true
+
+[dependencies]
+openwepp-hillslope-output = { path = "../openwepp-hillslope-output", version = "0.1.0" }
+openwepp-watershed-output = { path = "../openwepp-watershed-output", version = "0.1.0" }
+openwepp-hillslope-orchestrator = { path = "../openwepp-hillslope-orchestrator", version = "0.1.0" }
+openwepp-persisted-restart-v1 = { path = "../openwepp-persisted-restart-v1", version = "0.1.0" }
+openwepp-coupled-time = { path = "../openwepp-coupled-time", version = "0.1.0" }
+openwepp-land-surface-energy = { path = "../openwepp-land-surface-energy", version = "0.1.0" }
+openwepp-vegetation = { path = "../openwepp-vegetation", version = "0.1.0" }
+openwepp-input-contract = { path = "../openwepp-input-contract", version = "0.1.0" }
+openwepp-kernel-contract = { path = "../openwepp-kernel-contract", version = "0.1.0" }
+openwepp-legacy-bridge = { path = "../openwepp-legacy-bridge", version = "0.1.0" }
+openwepp-meteorology = { path = "../openwepp-meteorology", version = "0.1.0" }
+openwepp-plant-phenology = { path = "../openwepp-plant-phenology", version = "0.1.0" }
+openwepp-summary-accumulator = { path = "../openwepp-summary-accumulator", version = "0.1.0" }
+openwepp-topology = { path = "../openwepp-topology", version = "0.1.0" }
+openwepp-watershed-orchestrator = { path = "../openwepp-watershed-orchestrator", version = "0.1.0" }
+openwepp-unit-boundary = { path = "../openwepp-unit-boundary", version = "0.1.0" }
+arrow-array = "54.3.1"
+flate2 = "1.1.0"
+parquet = { version = "54.3.1", default-features = false, features = ["arrow", "snap"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+time = { version = "0.3", features = ["formatting"] }
+toml = "0.8"
+
+[[bin]]
+name = "open_wepp_runner"
+path = "src/bin/open_wepp_runner.rs"
+
+[[bin]]
+name = "openwepp-cli-hill"
+path = "src/bin/openwepp-cli-hill.rs"
+
+[[bin]]
+name = "openwepp-cli-watershed"
+path = "src/bin/openwepp-cli-watershed.rs"
+
+[[bin]]
+name = "openwepp-cli-totalwatsed3"
+path = "src/bin/openwepp-cli-totalwatsed3.rs"
+
+[[bin]]
+name = "openwepp-snowbench"
+path = "src/bin/openwepp-snowbench.rs"
+
+[dev-dependencies]
+arrow-schema = "54.3.1"
+openwepp-persisted-restart-v1 = { path = "../openwepp-persisted-restart-v1", version = "0.1.0", features = ["fixtures"] }

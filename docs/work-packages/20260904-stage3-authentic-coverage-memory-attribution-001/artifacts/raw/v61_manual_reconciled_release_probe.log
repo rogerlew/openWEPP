@@ -1,0 +1,33 @@
+REVISION61_MANUAL_RECONCILED_RELEASE_PROBE 2026-09-05
+TREE /tmp/openwepp-v61-candidate-cut
+UNDOCUMENTED_CANONICAL_MANIFEST 2fc5e8cafdde5520dfaca4c074a8d1d0bc3f60548c44b9abb6817bb981e6eb7f
+DOCUMENTED_CHANGED_RUST_MANIFEST 19a07121e6ecdfd8e1b0bd559404bcc69554943ef5c1d68b5d53d91534623421
+HISTORICAL_SOURCE_MANIFEST 650f67132aec95818228c1f3ed85db7310a7e66671dcb5f94cb18948ae257d41
+BINARY /workdir/.cache/openwepp/targets/openwepp-v61-candidate-cut-adec69f6c6e5/release/deps/openwepp_runner-5d40f797bb21e98c
+BINARY_SHA256 d71fcef567e02ad1a06d5268bfee20dd84c4e751785f5ec4d4798dbe463ce3bb
+COMMAND RUST_MIN_STACK=67108864 <binary> --exact hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile --ignored --nocapture
+TEST_EXIT_STATUS 0
+EXTRACTED_OUTPUT
+accepted_microstep_count=4
+accepted_publication_support_count=56
+direct_trial_count=20
+feed_forward_terminal_carrier_invocation_count=200
+laned_clamp_m3=0.0
+laned_end_window_storage_m3=0.0016956104824910018
+laned_outlet_m3=0.8471105124736579
+laned_source_m3=0.8488061229561478
+qualification_counters_complete=true
+qualification_scopes_balanced=true
+rss_kib=58440
+run_wall_us=4028455
+split_child_trial_count=32
+provider_carrier_us=1046309
+total_parent_support_count=48
+
+The manually reconciled detached candidate compiles and runs the real
+one-OFE release consumer with the expected 200 feed-forward calls and exact
+science/closure counters. The documented changed-Rust identity is reproducible
+for the detached base but is not comparable to the archived digest, which was
+computed against an unavailable historical Git-index/dirty-worktree state and
+has no per-file manifest or candidate binary. The source cut is therefore
+diagnostic-only and cannot establish a matched causal memory treatment.

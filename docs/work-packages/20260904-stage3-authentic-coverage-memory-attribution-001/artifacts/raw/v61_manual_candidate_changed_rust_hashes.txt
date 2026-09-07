@@ -1,0 +1,25 @@
+REVISION61_MANUAL_CANDIDATE_CHANGED_RUST_HASHES 2026-09-05
+TREE /tmp/openwepp-v61-candidate-cut
+BASE_COMMIT 0d56001edbbe55b119a5248249fcedefe2a3bbb0
+COMMAND git ls-files -m -o --exclude-standard -- '*.rs' | sort | while IFS= read -r file; do if test -f "$file"; then sha256sum "$file"; fi; done
+PATH_COUNT 13
+
+c5e5eaedcb000869e4c31a5361112f9931497f5150e9897f817866bbbd1a4d89  crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs
+bed621787a54474cfc239c84de1bf03ab3713ff4b9a68e9ec11cd9538c630de5  crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/mod.rs
+23a0a715020aeb2bcd5ec7bd7bdd92e796b83751000bde08561b367157c3a0e7  crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs
+fac2c5af4aea2e547a992e9d50e5a1a642e1847b4f5318987dbd831ac07cf310  crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/cqr_row5_tests.rs
+63f8a8cd883ddba347aed805c729fd5b13d268533092c7a288c416cb53cccfb3  crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
+c0c11c3853ded7e518e21f2be5c25a9bf5728556c0eae52b3e1514494ceff3a1  crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/stage3_evaluation_validation_tests/persistent_tests.rs
+e5d893e2c7f0e50175137638faaef8bedfab2445905ed87ec1b5a4c589d39ec6  crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
+a6abd7363c32726ef10df5322a1c16d03be1cba528ce4be12a7bbe5ae12a5539  crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs
+093919e44a6ad50856cf642e6a56b842a52fad9c9438c36832ef46f9e9dec98b  crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+6ea0beefaea1952cf0c7bb1db0a6424369cfd908d947e0d1632259c91ab758be  crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
+edf190d93b11bfaed5817cb41a66f45b797ccc960909fc9ab3252d8abfa0a778  crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase/snow_boundary.rs
+cc92ead44ac3071fffdbed930da0b26e2cc0a854f39fdf7858929d4c2e3ae329  crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs
+a5f983822143d26393e8f979bfac96b797146e27d1a0227b1010d16b744dcc77  crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs
+
+ORDERED_HASH_STREAM_SHA256 19a07121e6ecdfd8e1b0bd559404bcc69554943ef5c1d68b5d53d91534623421
+SCOPE_NOTE The stream is a reproducible diagnostic identity for the detached
+tree's changed/untracked Rust paths. It is not the historical v61 source
+manifest: the historical path/hash stream, Git-index bytes, and candidate
+binary are unavailable.

@@ -1,0 +1,1421 @@
+FAIL 0 2026-09-04T20:19:35.269Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    sha256: String,
+    inclusive_closure: BTreeMap<String, BTreeSet<String>>,
+
+PASS 1 2026-09-04T20:19:50.606Z
+FAIL 2 2026-09-04T20:20:07.866Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+struct ValidatedCoveredComponentReplaySweepBase<'a> {
+    jacobian: ValidatedCoveredJacobianBase<'a>,
+    graph: CoveredComponentTemperatureDependencyGraph,
+
+FAIL 3 2026-09-04T20:20:29.801Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    jacobian: ValidatedCoveredJacobianBase<'a>,
+    graph: std::rc::Rc<CoveredComponentTemperatureDependencyGraph>,
+    graph_sha256: String,
+    validated_input_sha256: String,
+    validated_input_address: usize,
+    trial_sha256: String,
+    frozen_sha256: String,
+    frozen_snapshot: CoveredFrozenBranches,
+    caps_snapshot: Option<CoveredWaterCaps>,
+
+FAIL 4 2026-09-04T20:20:45.213Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    static COVERED_COMPONENT_DEPENDENCY_REPLAY_AUDIT: std::cell::RefCell<Option<CoveredComponentDependencyReplayAudit>> = const { std::cell::RefCell::new(None) };
+    static COVERED_COMPONENT_DEPENDENCY_REPLAY_SOLVE_ORDINAL: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+
+FAIL 5 2026-09-04T20:21:03.379Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+        },
+        0,
+        0,
+        0,
+    );
+
+FAIL 6 2026-09-04T20:21:14.145Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    pub complete_probe_count: u32,
+    pub completed: bool,
+    pub failed: bool,
+    pub short_circuited: bool,
+
+PASS 7 2026-09-04T20:22:41.038Z
+PASS 8 2026-09-04T20:22:47.514Z
+PASS 9 2026-09-04T20:23:03.356Z
+FAIL 10 2026-09-04T20:23:10.383Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+        self.version == COVERED_COMPONENT_DEPENDENCY_GRAPH_VERSION
+            && self.occupancy_count == occupancy_count
+            && self.soil_count == soil_count
+            && self.sha256.len() == 64
+
+FAIL 11 2026-09-04T20:23:23.075Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+            && self.occupancy_count == occupancy_count
+            && self.soil_count == soil_count
+            && !self.direct_edges.is_empty()
+            && self.sha256.len() == 64
+
+FAIL 12 2026-09-04T20:23:27.921Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+            && self.occupancy_count == occupancy_count
+            && self.soil_count == soil_count
+            && !self.direct_edges.is_empty()
+            && !self.sha256.is_empty()
+
+PASS 13 2026-09-04T20:23:53.320Z
+PASS 14 2026-09-04T20:24:30.627Z
+PASS 15 2026-09-04T20:24:46.800Z
+PASS 16 2026-09-04T20:24:54.603Z
+FAIL 17 2026-09-04T20:29:10.798Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests.rs:
+    // OBL-LANDSURFACEENERGY-C-019: all four hydraulic columns may recompute
+    // only their six dependent rows through the shared exact evaluator.
+
+PASS 18 2026-09-04T20:29:42.427Z
+PASS 19 2026-09-04T20:30:52.877Z
+FAIL 20 2026-09-04T20:31:25.504Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests.rs:
+    let mut poisoned_graph_base = ValidatedCoveredComponentReplaySweepBase::new(
+
+FAIL 21 2026-09-04T20:41:16.254Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    validated_input_address: usize,
+    solve_class: CoveredComponentReplaySolveClass,
+
+FAIL 22 2026-09-04T20:41:45.087Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    let replay_base = ValidatedCoveredComponentReplaySweepBase::new(
+        owned,
+
+FAIL 23 2026-09-04T20:42:02.387Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+            let mut probe_pair = match replay_base
+                .mint_probe_pair(column_index, perturbations[column_index])
+            {
+                Ok(pair) => pair,
+                Ok(stencil) => stencil,
+                Err(error) => {
+
+FAIL 24 2026-09-04T20:42:58.205Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests.rs:
+    let poisoned_graph_base = ValidatedCoveredComponentReplaySweepBase::new(
+        integrity_owned,
+
+FAIL 25 2026-09-04T20:43:33.893Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+            for target in ["residual.raw", "residual.tolerance", "shared.heat", "shared.vapor", "result.output"] {
+                records.push(format!("edge:occ.output[{occupancy}]->{target}"));
+            }
+
+PASS 26 2026-09-04T20:44:13.829Z
+PASS 27 2026-09-04T20:44:24.203Z
+PASS 28 2026-09-04T20:44:46.667Z
+FAIL 29 2026-09-04T20:45:10.483Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+) -> Result<Vec<f64>, LandSurfaceEnergyError> {
+    let perturbation = probe
+
+FAIL 30 2026-09-04T20:49:04.540Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    solve_class: CoveredComponentReplaySolveClass,
+    map_ordinal: u64,
+
+FAIL 31 2026-09-04T20:49:16.824Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
+    solve_covered_column_impl(beginning, caps, initial_trial, false)
+}
+
+pub(crate) fn solve_v10_full_supply_final(
+
+PASS 32 2026-09-04T20:49:27.079Z
+FAIL 33 2026-09-04T20:49:40.131Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests.rs:
+        integrity_owned,
+        CoveredComponentReplaySolveClass::Potential,
+        0,
+
+FAIL 34 2026-09-04T20:50:22.420Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/transaction.rs:
+    solver::{covered_failure_residuals, open_failure_residuals},
+
+FAIL 35 2026-09-04T20:50:58.402Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/transaction.rs:
+    evaluate_open_surface, liquid_enthalpy_j_kg, solve_covered_column, solve_open_surface,
+
+FAIL 36 2026-09-04T20:51:19.495Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs:
+        root_identities: phase.root_identities().clone(),
+        gas_branches,
+    };
+
+FAIL 37 2026-09-04T20:51:28.419Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+        }))
+    }
+}
+
+FAIL 38 2026-09-04T20:51:57.435Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests.rs:
+    component_probe[component_column] += component_perturbation;
+    let integrity_owned = ValidatedCoveredJacobianBase {
+
+FAIL 39 2026-09-04T20:52:23.150Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+pub(crate) fn solve_v10_full_supply_final(
+    beginning: &CoveredColumnInputs,
+    caps: &CoveredWaterCaps,
+    initial_trial: Vec<f64>,
+) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
+    solve_covered_column_in_map(
+        beginning,
+        Some(caps),
+        initial_trial,
+        true,
+        new_standalone_covered_component_replay_map_identity(),
+    )
+}
+
+pub(crate) fn solve_covered_column_in_map(
+
+FAIL 40 2026-09-04T20:52:48.783Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+) -> Result<CoveredPotentialFinalTransaction, LandSurfaceEnergyError> {
+    let potential = match solve_covered_column(beginning, None, potential_initial_trial)? {
+
+PASS 41 2026-09-04T20:53:01.820Z
+PASS 42 2026-09-04T20:53:07.071Z
+FAIL 43 2026-09-04T20:53:27.401Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests.rs:
+    let transaction = execute_covered_potential_final(&column, full_trial, &caps, capped_trial)
+        .expect("potential/final");
+
+PASS 44 2026-09-04T20:53:43.875Z
+PASS 45 2026-09-04T20:54:52.469Z
+PASS 46 2026-09-04T20:55:03.193Z
+PASS 47 2026-09-04T20:55:31.502Z
+PASS 48 2026-09-04T20:55:49.114Z
+PASS 49 2026-09-04T20:56:10.005Z
+PASS 50 2026-09-04T20:56:42.990Z
+PASS 51 2026-09-04T20:57:48.091Z
+PASS 52 2026-09-04T20:59:42.423Z
+PASS 53 2026-09-04T21:00:19.723Z
+PASS 54 2026-09-04T21:00:41.441Z
+PASS 55 2026-09-04T21:04:10.291Z
+PASS 56 2026-09-04T21:04:25.513Z
+PASS 57 2026-09-04T21:04:47.907Z
+PASS 58 2026-09-04T21:05:15.380Z
+PASS 59 2026-09-04T21:05:23.177Z
+PASS 60 2026-09-04T21:06:28.640Z
+FAIL 61 2026-09-04T21:07:33.898Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests.rs:
+    }
+    begin_covered_component_dependency_replay_audit();
+    let transaction = execute_covered_potential_final(&column, full_trial, &caps, capped_trial)
+        .expect("immutable potential/final transaction");
+
+PASS 62 2026-09-04T21:08:11.885Z
+PASS 63 2026-09-04T21:09:05.127Z
+PASS 64 2026-09-04T21:09:17.835Z
+PASS 65 2026-09-04T21:09:39.714Z
+PASS 66 2026-09-04T21:10:29.391Z
+PASS 67 2026-09-04T21:10:58.978Z
+PASS 68 2026-09-04T21:11:57.800Z
+PASS 69 2026-09-04T21:14:43.805Z
+PASS 70 2026-09-04T21:15:13.166Z
+PASS 71 2026-09-04T21:16:58.183Z
+PASS 72 2026-09-04T21:33:36.148Z
+PASS 73 2026-09-04T21:33:47.971Z
+PASS 74 2026-09-04T21:34:24.079Z
+PASS 75 2026-09-04T21:36:53.096Z
+PASS 76 2026-09-04T21:37:22.712Z
+PASS 77 2026-09-04T21:37:46.043Z
+PASS 78 2026-09-04T21:39:27.534Z
+PASS 79 2026-09-04T21:39:50.517Z
+PASS 80 2026-09-04T21:40:24.968Z
+PASS 81 2026-09-04T21:41:22.903Z
+PASS 82 2026-09-04T21:41:39.461Z
+PASS 83 2026-09-04T21:41:44.220Z
+PASS 84 2026-09-04T21:41:52.302Z
+PASS 85 2026-09-04T21:42:09.967Z
+PASS 86 2026-09-04T21:42:32.699Z
+PASS 87 2026-09-04T21:43:47.012Z
+PASS 88 2026-09-04T21:44:20.308Z
+PASS 89 2026-09-04T21:44:37.343Z
+PASS 90 2026-09-04T21:45:13.742Z
+FAIL 91 2026-09-04T21:47:38.694Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+PASS 92 2026-09-04T21:48:01.847Z
+FAIL 93 2026-09-04T21:48:46.372Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+PASS 94 2026-09-04T21:49:45.247Z
+FAIL 95 2026-09-04T21:50:27.872Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+PASS 96 2026-09-04T21:50:56.340Z
+FAIL 97 2026-09-04T21:51:05.634Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+PASS 98 2026-09-04T21:51:29.685Z
+FAIL 99 2026-09-04T21:51:40.136Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+PASS 100 2026-09-04T21:53:16.883Z
+PASS 101 2026-09-04T21:53:34.259Z
+FAIL 102 2026-09-04T21:55:24.421Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+PASS 103 2026-09-04T21:55:34.105Z
+PASS 104 2026-09-04T21:56:13.465Z
+PASS 105 2026-09-04T21:56:54.624Z
+PASS 106 2026-09-04T21:57:18.078Z
+PASS 107 2026-09-04T21:57:46.219Z
+PASS 108 2026-09-04T21:58:01.669Z
+PASS 109 2026-09-04T21:58:40.086Z
+PASS 110 2026-09-04T21:58:56.074Z
+PASS 111 2026-09-04T21:59:04.817Z
+PASS 112 2026-09-04T21:59:38.507Z
+PASS 113 2026-09-04T22:00:46.388Z
+PASS 114 2026-09-04T22:01:04.600Z
+PASS 115 2026-09-04T22:01:48.789Z
+FAIL 116 2026-09-04T22:01:58.680Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:
+    let validation_wall_us = release_probe_elapsed_us(validation_started.elapsed());
+    let component_replay_json =
+        component_replay_audit::aggregate_component_replay_audit(&component_replay_audit);
+
+PASS 117 2026-09-04T22:02:41.417Z
+FAIL 118 2026-09-04T22:02:50.422Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:
+    });
+    let validation_wall_us = release_probe_elapsed_us(validation_started.elapsed());
+    let forced_complete_full_solve_parity =
+
+PASS 119 2026-09-04T22:03:10.060Z
+PASS 120 2026-09-04T22:03:29.454Z
+PASS 121 2026-09-04T22:04:24.641Z
+PASS 122 2026-09-04T22:04:48.139Z
+FAIL 123 2026-09-04T22:05:22.441Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+PASS 124 2026-09-04T22:06:31.928Z
+PASS 125 2026-09-04T22:12:23.294Z
+PASS 126 2026-09-04T22:12:49.647Z
+PASS 127 2026-09-04T22:15:10.992Z
+FAIL 128 2026-09-04T22:16:28.787Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver.rs:
+use crate::covered_liquid::{
+    CoveredLiquidPass, CoveredLiquidPreparation, CoveredOccupancyLiquidLedger,
+    finalize_covered_liquid, prepare_covered_liquid,
+};
+
+FAIL 129 2026-09-04T22:16:49.608Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+FAIL 130 2026-09-04T22:45:24.879Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:
+    block: &[f64],
+    base: &CoveredOccupancyEvaluation,
+    replay: CoveredOccupancyReplayPlan,
+) -> Result<CoveredOccupancyEvaluation, LandSurfaceEnergyError> {
+    evaluate_covered_occupancy_canonical(context, occupancy, block, Some((base, replay)))
+}
+
+FAIL 131 2026-09-04T22:45:41.555Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:
+struct CoveredComponentReplayBaseNodes {
+    liquid_preparations: Vec<CoveredLiquidPreparation>,
+    routed_liquid: Vec<crate::covered_liquid::CoveredOccupancyLiquidLedger>,
+}
+
+PASS 132 2026-09-04T22:45:55.461Z
+FAIL 133 2026-09-04T22:46:10.254Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+PASS 134 2026-09-04T22:48:02.039Z
+PASS 135 2026-09-04T22:48:38.623Z
+FAIL 136 2026-09-04T22:49:29.749Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:
+#[derive(Clone)]
+struct CoveredComponentReplayBaseNodes {
+    liquid_preparations: Vec<CoveredLiquidPreparation>,
+    routed_liquid: Vec<crate::covered_liquid::CoveredOccupancyLiquidLedger>,
+    leaf: Vec<CoveredOccupancyLeafReplayBaseNodes>,
+}
+
+#[derive(Clone, Copy)]
+struct CoveredOccupancyLeafReplayBaseNodes {
+    current: [LeafTrialState; 2],
+    maximum: [LeafTrialState; 2],
+}
+
+#[derive(Clone, Copy)]
+struct CoveredOccupancyReplayPlan {
+    leaf_current: [bool; 2],
+    leaf_maximum: [bool; 2],
+    vapor: [bool; 2],
+    emax: [bool; 2],
+    wet: bool,
+    hydraulic: bool,
+    liquid: bool,
+    energy: [bool; 4],
+}
+
+struct CoveredComponentTemperatureReplayPlan<'a> {
+    base: &'a CoveredColumnEvaluation,
+    base_nodes: &'a CoveredComponentReplayBaseNodes,
+    execution: &'a CoveredComponentReplayExecutionPlan,
+}
+
+#[allow(clippy::too_many_arguments)]
+fn evaluate_covered_component_temperature_replay(
+    validated: &ValidatedCoveredEvaluationInputs<'_>,
+    trial: &[f64],
+    frozen: &CoveredFrozenBranches,
+    base: &CoveredColumnEvaluation,
+    occupancy_index: usize,
+    component_index: usize,
+    execution: &CoveredComponentReplayExecutionPlan,
+    base_nodes: &CoveredComponentReplayBaseNodes,
+) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
+    if occupancy_index >= validated.column.occupancies.len()
+        || component_index >= 4
+        || execution.occupancy_replay.len() != validated.column.occupancies.len()
+    {
+        return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+            "covered_component_dependency_replay_integrity",
+        ));
+    }
+    let replay = CoveredComponentTemperatureReplayPlan {
+        base,
+        base_nodes,
+        execution,
+    };
+    evaluate_covered_column_validated_with_replay(
+        validated,
+        trial,
+        Some(frozen),
+        None,
+        Some(&replay),
+        None,
+    )
+}
+
+fn evaluate_covered_column_validated_with_replay(
+
+PASS 137 2026-09-04T22:50:42.242Z
+PASS 138 2026-09-04T22:54:43.209Z
+PASS 139 2026-09-04T22:55:04.003Z
+PASS 140 2026-09-04T22:55:49.468Z
+PASS 141 2026-09-04T22:56:08.780Z
+FAIL 142 2026-09-04T22:56:47.322Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:
+        component_replay_audit::run_forced_complete_release_oracle(&run_dir, &report);
+
+PASS 143 2026-09-04T22:59:34.795Z
+PASS 144 2026-09-04T23:01:48.197Z
+PASS 145 2026-09-04T23:02:44.178Z
+PASS 146 2026-09-04T23:03:08.592Z
+PASS 147 2026-09-04T23:03:41.017Z
+PASS 148 2026-09-04T23:04:28.705Z
+PASS 149 2026-09-04T23:07:02.033Z
+PASS 150 2026-09-04T23:07:12.231Z
+PASS 151 2026-09-04T23:12:21.294Z
+PASS 152 2026-09-04T23:13:10.401Z
+PASS 153 2026-09-04T23:13:18.009Z
+PASS 154 2026-09-04T23:13:57.295Z
+PASS 155 2026-09-04T23:14:46.246Z
+PASS 156 2026-09-04T23:15:16.773Z
+PASS 157 2026-09-04T23:15:53.542Z
+PASS 158 2026-09-04T23:16:27.721Z
+PASS 159 2026-09-04T23:17:15.976Z
+PASS 160 2026-09-04T23:17:39.575Z
+PASS 161 2026-09-04T23:18:04.826Z
+FAIL 162 2026-09-04T23:23:16.788Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/transaction.rs:
+    #[cfg(any(test, feature = "test-support"))]
+    {
+        let mut owner_bytes = request_batch
+            .potential_signature_sha256
+            .to_string()
+            .into_bytes();
+        owner_bytes.extend(
+            canonical_digest(&potential_vegetation_operands)?
+                .to_string()
+                .bytes(),
+        );
+
+PASS 163 2026-09-04T23:27:50.981Z
+FAIL 164 2026-09-04T23:48:17.715Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+struct CoveredComponentReplayBaseNodes {
+    liquid_preparations: Vec<CoveredLiquidPreparation>,
+    routed_liquid: Vec<crate::covered_liquid::CoveredOccupancyLiquidLedger>,
+    leaf: Vec<CoveredOccupancyLeafReplayBaseNodes>,
+}
+
+FAIL 165 2026-09-04T23:48:44.180Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    route_prepare: Box<[bool]>,
+    route_wet: Box<[bool]>,
+    route_finalize: Box<[bool]>,
+
+FAIL 166 2026-09-04T23:49:17.486Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:
+                    CoveredLiquidPass::Potential
+                },
+            )?;
+            (preparation, liquid)
+        } else {
+            let plan = replay.ok_or(LandSurfaceEnergyError::ConstitutiveDomain(
+                "covered_component_dependency_replay_integrity",
+            ))?;
+            (
+                *plan.base_nodes.liquid_preparations.get(index).ok_or(
+                    LandSurfaceEnergyError::ConstitutiveDomain(
+                        "covered_component_dependency_replay_integrity",
+                    ),
+                )?,
+                *plan.base_nodes.routed_liquid.get(index).ok_or(
+                    LandSurfaceEnergyError::ConstitutiveDomain(
+                        "covered_component_dependency_replay_integrity",
+                    ),
+                )?,
+            )
+        };
+        incident_rain = liquid.throughfall_kg_m2_tile
+            + liquid.initial_drainage_kg_m2_tile
+            + liquid.second_drainage_kg_m2_tile;
+        ground_stemflow += liquid.stemflow_kg_m2_tile;
+        liquid_preparations.push(preparation);
+        routed_liquid.push(liquid);
+    }
+    if replay.is_some_and(|plan| !plan.execution.longwave) {
+        return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+            "covered_component_dependency_replay_integrity",
+        ));
+    }
+    let longwave_layers: Vec<_> = column
+
+FAIL 167 2026-09-04T23:49:47.565Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:
+    if replay.is_some_and(|(_, _, plan)| !plan.energy.iter().all(|execute| *execute)) {
+        return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+            "covered_component_dependency_replay_integrity",
+        ));
+    }
+    let energy = evaluate_covered_occupancy_energy_tail(
+
+FAIL 168 2026-09-04T23:50:47.463Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:
+    let residuals = std::array::from_fn(|index| {
+        if geometry.areas[index].to_bits() == 0.0_f64.to_bits()
+            || (index == 2 && v10_inactive_wet)
+        {
+            geometry.temperatures_k[index]
+                - inactive_component_temperature_anchor_k(
+                    index,
+                    context.canopy_air_temperature_k,
+                )
+        } else {
+            physical_residuals[index]
+        }
+    });
+    let sensible_to_canopy_air_w_m2 = std::array::from_fn(|index| {
+        if replay.is_some_and(|(_, plan)| !plan.sensible[index]) {
+            replay.map_or(0.0, |(base, _)| base.sensible_to_canopy_air_w_m2[index])
+        } else if geometry.areas[index].to_bits() == 0.0_f64.to_bits() {
+            0.0
+        } else {
+            sensible_raw[index]
+        }
+    });
+
+FAIL 169 2026-09-04T23:51:00.244Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    if occupancy_index >= validated.column.occupancies.len()
+        || component_index >= 4
+        || execution.occupancy_replay.len() != validated.column.occupancies.len()
+
+PASS 170 2026-09-04T23:51:27.295Z
+FAIL 171 2026-09-04T23:52:13.351Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:
+    let latent = std::array::from_fn(|index| {
+
+FAIL 172 2026-09-04T23:54:16.677Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:
+fn evaluate_covered_occupancy_energy_tail(
+    context: &CoveredOccupancyTrialContext<'_>,
+    occupancy: &CoveredOccupancyInputs,
+    geometry: CoveredOccupancyComponentGeometry,
+    gas_branches: [V10LeafGasBranch; 2],
+    wet_branch: WaterBranch,
+    vapor_flux_kg_m2_s: [f64; 3],
+    replay: Option<(&CoveredOccupancyEvaluation, CoveredOccupancyReplayPlan)>,
+) -> CoveredOccupancyEnergyTail {
+    let column = context.column;
+    let rho = column.pressure_pa
+        / (DRY_AIR_GAS_CONSTANT_J_KG_K * context.canopy_air_temperature_k);
+    let execute_sensible = replay.map_or([true; 4], |(_, plan)| plan.sensible);
+    let execute_energy = replay.map_or([true; 4], |(_, plan)| plan.energy);
+    let sensible_to_canopy_air_w_m2 = std::array::from_fn(|index| {
+        if !execute_sensible[index] {
+            return replay.map_or(0.0, |(base, _)| base.sensible_to_canopy_air_w_m2[index]);
+        }
+        if geometry.areas[index].to_bits() == 0.0_f64.to_bits() {
+            return 0.0;
+        }
+        let conductance = if index < 2 {
+            occupancy.gb_leaf_m_s
+        } else if index == 2 {
+            occupancy.gb_wet_m_s
+        } else {
+            occupancy.gb_stem_m_s
+        };
+        rho * AIR_HEAT_CAPACITY_J_KG_K
+            * conductance
+            * geometry.areas[index]
+            * (geometry.temperatures_k[index] - context.canopy_air_temperature_k)
+    });
+    let absorbed_shortwave_w_m2 = std::array::from_fn(|index| {
+        if !execute_energy[index] {
+            return replay.map_or(0.0, |(base, _)| base.absorbed_shortwave_w_m2[index]);
+        }
+        match index {
+            0 => occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - geometry.wet_fraction),
+            1 => occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - geometry.wet_fraction),
+            2 => geometry.wet_fraction
+                * (occupancy.sun.absorbed_shortwave_w_m2_tile
+                    + occupancy.shade.absorbed_shortwave_w_m2_tile
+                    + occupancy.stem_absorbed_shortwave_w_m2_tile),
+            _ => (1.0 - geometry.wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile,
+        }
+    });
+    let latent: [f64; 4] = std::array::from_fn(|index| {
+        if execute_energy[index] && index < 3 {
+            column.latent_heat_j_kg * vapor_flux_kg_m2_s[index]
+        } else {
+            0.0
+        }
+    });
+    let physical_residuals: [f64; 4] = std::array::from_fn(|index| {
+        if execute_energy[index] {
+            absorbed_shortwave_w_m2[index] + context.component_longwave_w_m2[index]
+                - sensible_to_canopy_air_w_m2[index]
+                - latent[index]
+        } else {
+            replay.map_or(0.0, |(base, _)| base.residuals[6 + index])
+        }
+    });
+    let wet_energy_tolerance = crate::physics::energy_tolerance(
+        physical_residuals[2].abs()
+            + context.component_longwave_w_m2[2].abs()
+            + sensible_to_canopy_air_w_m2[2].abs()
+            + latent[2].abs(),
+    );
+    let v10_nonpositive_sun = column.authority.admits_nonpositive_assimilation()
+        && matches!(
+            gas_branches[0],
+            V10LeafGasBranch::ExactZeroPar | V10LeafGasBranch::RespirationDominated
+        );
+    let v10_nonpositive_shade = column.authority.admits_nonpositive_assimilation()
+        && matches!(
+            gas_branches[1],
+            V10LeafGasBranch::ExactZeroPar | V10LeafGasBranch::RespirationDominated
+        );
+    let v10_inactive_wet = column.authority.admits_nonpositive_assimilation()
+        && (v10_nonpositive_sun || v10_nonpositive_shade)
+        && context.caps.is_none()
+        && wet_branch == WaterBranch::AuthorizationActiveOrTie
+        && context.liquid.preliminary_store / column.interval_s
+            <= crate::physics::water_tolerance(context.liquid.preliminary_store / column.interval_s)
+        && physical_residuals[2].abs() <= wet_energy_tolerance;
+    let residuals = std::array::from_fn(|index| {
+        if replay.is_some_and(|(_, plan)| !plan.energy[index]) {
+            replay.map_or(0.0, |(base, _)| base.residuals[6 + index])
+        } else if geometry.areas[index].to_bits() == 0.0_f64.to_bits()
+            || (index == 2 && v10_inactive_wet)
+        {
+            geometry.temperatures_k[index]
+                - inactive_component_temperature_anchor_k(
+                    index,
+                    context.canopy_air_temperature_k,
+                )
+        } else {
+            physical_residuals[index]
+        }
+    });
+    let tolerances = std::array::from_fn(|index| {
+        if replay.is_some_and(|(_, plan)| !plan.tolerance[index]) {
+            replay.map_or(0.0, |(base, _)| base.tolerances[6 + index])
+        } else if geometry.areas[index].to_bits() == 0.0_f64.to_bits() {
+            crate::physics::energy_tolerance(1.0)
+        } else {
+            crate::physics::energy_tolerance(
+                absorbed_shortwave_w_m2[index].abs()
+                    + context.component_longwave_w_m2[index].abs()
+                    + sensible_to_canopy_air_w_m2[index].abs()
+                    + latent[index].abs(),
+            )
+        }
+    });
+    let net_longwave_w_m2 = std::array::from_fn(|index| {
+        if replay.is_some_and(|(_, plan)| !plan.energy[index]) {
+            replay.map_or(0.0, |(base, _)| base.net_longwave_w_m2[index])
+        } else {
+            context.component_longwave_w_m2[index]
+        }
+    });
+    CoveredOccupancyEnergyTail {
+        residuals,
+        tolerances,
+        absorbed_shortwave_w_m2,
+        sensible_to_canopy_air_w_m2,
+        net_longwave_w_m2,
+    }
+}
+
+/// Recomputes graph-reachable nodes; copies exact successful predecessors.
+
+FAIL 173 2026-09-04T23:54:53.237Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    result_ground_stemflow: bool,
+}
+
+impl CoveredComponentTemperatureDependencyGraph {
+
+FAIL 174 2026-09-04T23:55:30.760Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_execution.rs:
+                            .as_ref()
+                            .map(component_dependency_replay::exact_covered_evaluation_projection,),
+                    );
+
+FAIL 175 2026-09-04T23:55:49.204Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_execution.rs:
+                    assert_eq!(
+                        replayed
+                            .as_ref()
+                            .map(component_dependency_replay::exact_covered_evaluation_projection,),
+                        complete
+                            .as_ref()
+                            .map(component_dependency_replay::exact_covered_evaluation_projection,),
+
+FAIL 176 2026-09-04T23:56:06.057Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_execution.rs:
+                    let complete_projection = complete
+                        .as_ref()
+                        .map(component_dependency_replay::exact_covered_evaluation_projection);
+                    assert_eq!(
+
+FAIL 177 2026-09-04T23:56:57.138Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    liquid_preparations: Vec<CoveredLiquidPreparation>,
+    routed_liquid: Vec<crate::covered_liquid::CoveredOccupancyLiquidLedger>,
+    longwave_layers: Vec<crate::physics::CanopyLongwaveLayer>,
+
+FAIL 178 2026-09-04T23:57:04.708Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+    incident_rain_after: Vec<f64>,
+    ground_stemflow_after: Vec<f64>,
+
+FAIL 179 2026-09-04T23:59:20.049Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+PASS 180 2026-09-05T00:00:35.490Z
+PASS 181 2026-09-05T00:00:47.003Z
+PASS 182 2026-09-05T00:01:35.665Z
+FAIL 183 2026-09-05T00:04:27.239Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+    assert!(
+        non_stage3_branch_guards
+            .iter()
+            .all(|name| name.starts_with("v10_"))
+    );
+}
+
+FAIL 184 2026-09-05T00:04:37.041Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+                let mut pair = ValidatedCoveredComponentReplaySweepBase::try_new(
+
+PASS 185 2026-09-05T00:05:01.501Z
+PASS 186 2026-09-05T00:06:49.982Z
+PASS 187 2026-09-05T00:09:00.341Z
+PASS 188 2026-09-05T00:09:34.803Z
+PASS 189 2026-09-05T00:10:05.105Z
+PASS 190 2026-09-05T00:10:59.077Z
+PASS 191 2026-09-05T00:11:25.378Z
+PASS 192 2026-09-05T00:14:10.418Z
+PASS 193 2026-09-05T00:14:24.717Z
+FAIL 194 2026-09-05T00:14:34.783Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/transaction.rs:
+    #[cfg(any(test, feature = "test-support"))]
+    {
+        let mut owner_bytes = format!(
+            "{}{}",
+            request_batch.potential_signature_sha256,
+            canonical_digest(&potential_vegetation_operands)?,
+        )
+        .into_bytes();
+        owner_bytes.extend(gas_branches.iter().flatten().map(|branch| *branch as u8));
+        crate::solver::record_component_replay_internal_candidate(
+            crate::CoveredComponentReplaySolveClass::Potential,
+            &identity.transaction_id.to_string(),
+            &accepted,
+            crate::solver::component_replay_exact_bytes_projection(&owner_bytes),
+        );
+    }
+
+PASS 195 2026-09-05T00:15:25.635Z
+PASS 196 2026-09-05T00:16:53.184Z
+PASS 197 2026-09-05T00:17:01.274Z
+FAIL 198 2026-09-05T00:17:09.144Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/transaction.rs:
+    #[cfg(any(test, feature = "test-support"))]
+    {
+        let owner_bytes = format!(
+            "{}{}{}",
+            canonical_digest(&candidate.water_protocol)?,
+            canonical_digest(&candidate.vegetation_operands)?,
+            canonical_digest(&candidate.rollback_hashes)?,
+        )
+        .into_bytes();
+        crate::solver::record_component_replay_internal_candidate(
+
+PASS 199 2026-09-05T00:17:48.105Z
+PASS 200 2026-09-05T00:17:53.662Z
+PASS 201 2026-09-05T00:18:53.855Z
+FAIL 202 2026-09-05T00:20:22.877Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+                    let Some(probe) = pair.take(sign).expect("guard implication custody") else {
+                        continue;
+                    };
+                    assert!((LIQUID_VAPOR_PHASE_MINIMUM_K..=350.0)
+                        .contains(&probe.probe[coordinate]));
+                    assert!(graph.proves_component_probe(occupancy, component));
+                    evaluate_covered_column_validated(
+                        &validated,
+                        &probe.probe,
+                        Some(&base.frozen),
+                        None,
+                    )
+                    .expect("successful-base facts preserve every named noncrossable leaf guard");
+                }
+
+FAIL 203 2026-09-05T00:20:33.907Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+                    let occupancy_input = &column.occupancies[occupancy];
+                    let leaf = if component == 0 {
+                        occupancy_input.sun
+                    } else {
+                        occupancy_input.shade
+                    };
+                    let evaluation = evaluate_covered_column_validated(
+
+PASS 204 2026-09-05T00:20:58.598Z
+PASS 205 2026-09-05T00:21:33.415Z
+PASS 206 2026-09-05T00:21:49.041Z
+FAIL 207 2026-09-05T00:21:53.816Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/transaction.rs:
+            &potential_vegetation_operands,
+            &identities,
+            &gas_branches,
+            &replay_map_identity,
+        );
+
+FAIL 208 2026-09-05T00:22:28.832Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+                        ("ci_bracket", evaluated.ci_pa[component] > column.ca_pa
+                            && evaluated.ci_pa[component] < column.pressure_pa),
+
+FAIL 209 2026-09-05T00:22:57.967Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+                            V10LeafGasBranch::RespirationDominated => {
+                                evaluated.ci_pa[component].is_finite()
+                                    && evaluated.ci_pa[component] > column.ca_pa
+
+FAIL 210 2026-09-05T00:23:25.396Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+                            assert!(implication, "successful-base implication failed for {guard}");
+
+FAIL 211 2026-09-05T00:23:58.858Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+                            V10LeafGasBranch::PositiveAssimilation => {
+                                evaluated.ci_pa[component] > column.ca_pa
+                                    && evaluated.ci_pa[component] < column.pressure_pa
+
+PASS 212 2026-09-05T00:26:36.187Z
+PASS 213 2026-09-05T00:27:02.726Z
+FAIL 214 2026-09-05T00:29:29.011Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct CoveredOccupancyReplayPlan {
+
+FAIL 215 2026-09-05T00:29:46.279Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+#[derive(Clone, Copy)]
+struct CoveredOccupancyReplayPlan {
+
+FAIL 216 2026-09-05T00:29:52.806Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+FAIL 217 2026-09-05T00:30:04.635Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "each bit is an exact graph-node execution/copy decision, not state"
+)]
+struct CoveredOccupancyReplayPlan {
+
+FAIL 218 2026-09-05T00:30:20.126Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "each bit is an exact graph-node execution/copy decision, not state"
+)]
+
+FAIL 219 2026-09-05T00:32:16.678Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_component_dependency_replay_test_support.rs:
+    update_bytes(
+        &mut digest,
+        &mut fields,
+        &serde_json::to_vec(vegetation).expect("potential vegetation projection"),
+    );
+
+PASS 220 2026-09-05T00:32:42.223Z
+FAIL 221 2026-09-05T00:32:51.221Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/transaction.rs:
+            &accepted,
+            &request_batch,
+            &potential_vegetation_operands,
+            &identities,
+
+PASS 222 2026-09-05T00:55:32.032Z
+FAIL 223 2026-09-05T00:55:41.110Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+PASS 224 2026-09-05T00:56:36.971Z
+FAIL 225 2026-09-05T00:57:15.733Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+#[test]
+fn signed_probe_binding_poisons_reject_and_preserve_complete_custody() {
+    let (column, trial, _) = component_dependency_replay_execution::rainy_n2_s6_fixture();
+    let validated = ValidatedCoveredEvaluationInputs::try_new(&column, None)
+        .expect("validated binding-poison fixture");
+    let base =
+        ValidatedCoveredJacobianBase::evaluate(&validated, &trial).expect("binding-poison base");
+    let sweep = ValidatedCoveredComponentReplaySweepBase::try_new(
+        base,
+        CoveredComponentReplaySolveClass::Potential,
+        new_standalone_covered_component_replay_map_identity(),
+        37,
+        4,
+        3,
+    )
+    .expect("binding-poison sweep");
+    let before = component_dependency_replay::exact_replay_base_projection(&sweep);
+    let perturbation = f64::EPSILON.sqrt() * trial[8].abs().max(1.0);
+    let fresh = || {
+        let mut pair = sweep
+            .mint_probe_pair(8, perturbation)
+            .expect("fresh exact signed pair");
+        tied_probe_lifetime(
+            pair.take_required(CoveredSignedProbe::Plus)
+                .expect("fresh exact plus probe"),
+            &sweep,
+        )
+    };
+    let rejects = |probe: ValidatedCoveredSignedProbe<'_>| {
+        assert!(matches!(
+            probe
+                .into_component_replay()
+                .and_then(ValidatedCoveredComponentProbeReplay::consume),
+            Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "covered_component_dependency_replay_integrity"
+            )),
+        ));
+    };
+    let mut probe = fresh();
+    probe.probe[9] = f64::from_bits(probe.probe[9].to_bits() + 1);
+    rejects(probe);
+    let mut probe = fresh();
+    probe.column_index = 18;
+    rejects(probe);
+    let mut probe = fresh();
+    probe.perturbation_bits = (2.0 * perturbation).to_bits();
+    rejects(probe);
+    let mut probe = fresh();
+    probe.sign = CoveredSignedProbe::Minus;
+    rejects(probe);
+    let mut probe = fresh();
+    probe.stencil = CoveredFiniteDifferenceStencil::InwardFromLowerBound;
+    rejects(probe);
+    let mut probe = fresh();
+    probe.map_ordinal = probe.map_ordinal.saturating_add(1);
+    rejects(probe);
+    let mut probe = fresh();
+    probe.solve_ordinal = probe.solve_ordinal.saturating_add(1);
+    rejects(probe);
+    let mut probe = fresh();
+    probe.graph_sha256 = "foreign-graph";
+    rejects(probe);
+    let mut replay = fresh()
+        .into_component_replay()
+        .expect("valid converted replay capability");
+    replay.sweep_ordinal = replay.sweep_ordinal.saturating_add(1);
+    assert!(matches!(
+        replay.consume(),
+        Err(LandSurfaceEnergyError::ConstitutiveDomain(
+            "covered_component_dependency_replay_integrity"
+        )),
+    ));
+    assert_eq!(
+        component_dependency_replay::exact_replay_base_projection(&sweep),
+        before,
+    );
+}
+
+FAIL 226 2026-09-05T00:57:49.335Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+    let crossable = ["surface_co2"];
+
+PASS 227 2026-09-05T00:59:10.549Z
+PASS 228 2026-09-05T01:00:07.146Z
+FAIL 229 2026-09-05T01:00:37.776Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+FAIL 230 2026-09-05T01:03:08.090Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+    let (column, trial, caps) = component_dependency_replay_execution::rainy_n2_s6_fixture();
+    let constants = column.occupancies[0].biochemical;
+    let immutable_positive = [
+        constants.ha_vcmax_j_mol,
+        constants.hd_vcmax_j_mol,
+        constants.entropy_vcmax_j_mol_k,
+        constants.ha_jmax_j_mol,
+        constants.hd_jmax_j_mol,
+        constants.entropy_jmax_j_mol_k,
+        constants.ha_kc_j_mol,
+        constants.ha_ko_j_mol,
+        constants.ha_gamma_j_mol,
+        constants.electron_curvature,
+        constants.ac_aj_curvature,
+        constants.ag_ap_curvature,
+    ]
+    .iter()
+    .all(|value| value.is_finite() && *value > 0.0);
+    assert!(
+        immutable_positive,
+        "Arrhenius/peaked/quadratic immutable inputs"
+    );
+    for caps in [None, Some(&caps)] {
+        let validated = ValidatedCoveredEvaluationInputs::try_new(&column, caps)
+            .expect("guard implication validated inputs");
+
+PASS 231 2026-09-05T01:03:24.380Z
+FAIL 232 2026-09-05T01:03:28.974Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_execution.rs:
+#[test]
+#[test]
+fn named_noncrossable_guard_boundaries_have_successful_base_witnesses() {
+
+FAIL 233 2026-09-05T01:04:22.462Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+FAIL 234 2026-09-05T01:05:04.075Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+                        let jmax = leaf.jmax25
+
+FAIL 235 2026-09-05T01:05:15.868Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+                            (
+                                "v10_zero_par_stomatal_conductance/v10_zero_par_ci",
+                                leaf.absorbed_par_w_m2_leaf > 0.0,
+                            ),
+                            (
+                                "v10_low_light_stomatal_conductance/v10_low_light_ci_dark/v10_low_light_dark_bracket/v10_low_light_accepted_branch",
+                                base.replay_base_nodes.leaf[occupancy].current[component].gas_branch
+                                    == V10LeafGasBranch::PositiveAssimilation,
+                            ),
+
+FAIL 236 2026-09-05T01:06:30.900Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_execution.rs:
+    for (name, column) in [
+        ("wet-route", &rainy),
+        ("dry-zero", &dry),
+        ("exact-capacity", &capacity),
+    ] {
+        for caps in [None, Some(&caps)] {
+
+FAIL 237 2026-09-05T01:06:39.844Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_execution.rs:
+                ("ground_temperature_k", trial[22] > 0.0),
+
+PASS 238 2026-09-05T01:07:14.703Z
+FAIL 240 2026-09-05T01:18:55.530Z
+Failed to read file to update /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay.rs: No such file or directory (os error 2)
+
+FAIL 242 2026-09-05T01:34:32.203Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:
+#[cfg(doctest)]
+pub struct CoveredReplayCapabilityCompileFail<'a>(ValidatedCoveredComponentProbeReplay<'a>);
+
+#[cfg(doctest)]
+impl CoveredReplayCapabilityCompileFail<'_> {
+
+FAIL 243 2026-09-05T01:36:38.262Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+fn source_real_surface_vpd_crossing(
+
+FAIL 244 2026-09-05T01:37:44.097Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+                    assert!(
+                        (LIQUID_VAPOR_PHASE_MINIMUM_K..=350.0).contains(&temperature),
+                        "liquid_saturation_polynomial admitted bound"
+                    );
+                    if component < 2 {
+                        let occupancy_input = &column.occupancies[occupancy];
+                        let leaf = if component == 0 {
+                            occupancy_input.sun
+                        } else {
+                            occupancy_input.shade
+                        };
+                        let constants = occupancy_input.biochemical;
+                        let positive = |value: f64| value.is_finite() && value > 0.0;
+                        for activation in [
+                            constants.ha_vcmax_j_mol,
+                            constants.ha_kc_j_mol,
+                            constants.ha_ko_j_mol,
+                            constants.ha_gamma_j_mol,
+                        ] {
+                            assert!(positive(activation));
+                            assert!(
+                                arrhenius(temperature, activation).is_ok(),
+                                "arrhenius_response source predicate"
+                            );
+                        }
+                        for (activation, deactivation, entropy) in [
+                            (
+                                constants.ha_vcmax_j_mol,
+                                constants.hd_vcmax_j_mol,
+                                constants.entropy_vcmax_j_mol_k,
+                            ),
+                            (
+                                constants.ha_jmax_j_mol,
+                                constants.hd_jmax_j_mol,
+                                constants.entropy_jmax_j_mol_k,
+                            ),
+                            (46_390.0, 150_650.0, 490.0),
+                        ] {
+                            assert!(positive(activation));
+                            assert!(positive(deactivation));
+                            assert!(positive(entropy));
+                            assert!(
+                                peaked(temperature, activation, deactivation, entropy).is_ok(),
+                                "peaked_response exact admitted endpoint"
+                            );
+                        }
+                        let jmax = leaf.jmax25
+                            * peaked(
+                                temperature,
+                                constants.ha_jmax_j_mol,
+                                constants.hd_jmax_j_mol,
+                                constants.entropy_jmax_j_mol_k,
+                            )
+                            .expect("guard jmax");
+                        let vcmax = leaf.vcmax25
+                            * peaked(
+                                temperature,
+                                constants.ha_vcmax_j_mol,
+                                constants.hd_vcmax_j_mol,
+                                constants.entropy_vcmax_j_mol_k,
+                            )
+                            .expect("guard vcmax");
+                        let rd = leaf.rd25
+                            * peaked(temperature, 46_390.0, 150_650.0, 490.0)
+                                .expect("guard respiration");
+                        let ipsii = 0.5
+                            * constants.electron_quantum_yield
+                            * constants.par_photon_umol_per_j
+                            * leaf.absorbed_par_w_m2_leaf;
+                        assert!(ipsii >= 0.0 && jmax >= 0.0);
+                        assert!(
+                            smaller_quadratic_root(
+                                constants.electron_curvature,
+                                -(ipsii + jmax),
+                                ipsii * jmax,
+                            )
+                            .is_ok(),
+                            "photosynthesis_discriminant electron branch"
+                        );
+                        assert!(
+                            [
+                                constants.electron_curvature,
+                                constants.ac_aj_curvature,
+                                constants.ag_ap_curvature,
+                            ]
+                            .iter()
+                            .all(|curvature| (0.0..=1.0).contains(curvature)),
+                            "quadratic curvature preserves nonnegative canonical discriminants"
+                        );
+                        assert!(canopy_saturation_q(temperature, column.pressure_pa).is_ok());
+                        assert!(positive(occupancy_input.g0_umol_m2_s));
+                        assert!(positive(occupancy_input.gb_leaf_m_s));
+                        assert!(positive(column.ca_pa) && column.ca_pa < column.pressure_pa);
+                        let beta = probe.probe[10 * occupancy + 4 + component];
+                        assert!((0.0..=1.0).contains(&beta));
+                        assert!(leaf.leaf_area_m2_m2_tile > 0.0);
+                        assert!(leaf.absorbed_par_w_m2_leaf > 0.0);
+                        let gamma = constants.gamma25_pa
+                            * arrhenius(temperature, constants.ha_gamma_j_mol)
+                                .expect("guard gamma");
+                        let immutable_finite = [
+                            leaf.vcmax25,
+                            leaf.jmax25,
+                            leaf.rd25,
+                            constants.tp_vcmax_ratio,
+                            constants.electron_quantum_yield,
+                            constants.par_photon_umol_per_j,
+                            vcmax,
+                            jmax,
+                            rd,
+                        ]
+                        .iter()
+                        .all(|value| value.is_finite());
+                        let implications = [
+                            ("arrhenius_response", temperature > 0.0),
+                            (
+                                "peaked_response",
+                                positive(vcmax) && positive(jmax) && positive(rd),
+                            ),
+                            (
+                                "photosynthesis_discriminant",
+                                [
+                                    constants.electron_curvature,
+                                    constants.ac_aj_curvature,
+                                    constants.ag_ap_curvature,
+                                ]
+                                .iter()
+                                .all(|value| (0.0..=1.0).contains(value)),
+                            ),
+                            ("quadratic", positive(constants.electron_curvature)),
+                            (
+                                "liquid_saturation_polynomial",
+                                (LIQUID_VAPOR_PHASE_MINIMUM_K..=350.0).contains(&temperature),
+                            ),
+                            ("photosynthesis_nonfinite", immutable_finite),
+                            (
+                                "stomatal_conductance",
+                                positive(occupancy_input.g0_umol_m2_s)
+                                    && (0.0..=1.0).contains(&beta),
+                            ),
+                            (
+                                "ci_bracket",
+                                positive(gamma)
+                                    && gamma < column.ca_pa
+                                    && column.ca_pa < column.pressure_pa,
+                            ),
+                            (
+                                "v10_zero_area_stomatal_conductance",
+                                leaf.leaf_area_m2_m2_tile > 0.0,
+                            ),
+                            (
+                                "v10_zero_par_stomatal_conductance",
+                                leaf.absorbed_par_w_m2_leaf > 0.0,
+                            ),
+                            ("v10_zero_par_ci", leaf.absorbed_par_w_m2_leaf > 0.0),
+                            (
+                                "v10_low_light_stomatal_conductance",
+                                base.replay_base_nodes.leaf[occupancy].current[component]
+                                    .gas_branch
+                                    == V10LeafGasBranch::PositiveAssimilation,
+                            ),
+                            (
+                                "v10_low_light_ci_dark",
+                                base.replay_base_nodes.leaf[occupancy].current[component]
+                                    .gas_branch
+                                    == V10LeafGasBranch::PositiveAssimilation,
+                            ),
+                            (
+                                "v10_low_light_dark_bracket",
+                                base.replay_base_nodes.leaf[occupancy].current[component]
+                                    .gas_branch
+                                    == V10LeafGasBranch::PositiveAssimilation,
+                            ),
+                            (
+                                "v10_low_light_accepted_branch",
+                                base.replay_base_nodes.leaf[occupancy].current[component]
+                                    .gas_branch
+                                    == V10LeafGasBranch::PositiveAssimilation,
+                            ),
+                        ];
+                        for (name, implication) in implications {
+                            assert!(implication, "pre-evaluation implication failed for {name}");
+                        }
+                    }
+
+FAIL 245 2026-09-05T01:38:22.952Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+fn assert_leaf_probe_guard_implications_before_column_evaluation(
+
+FAIL 246 2026-09-05T01:38:52.114Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_execution.rs:
+    for occupancy in &mut low_light.occupancies {
+        occupancy.sun.absorbed_par_w_m2_leaf = 1.0e-6;
+        occupancy.shade.absorbed_par_w_m2_leaf = 1.0e-6;
+    }
+    let respiration =
+
+FAIL 247 2026-09-05T01:39:17.460Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_execution.rs:
+fn assert_v10_early_branch_guards_before_column_evaluation(
+    column: &CoveredColumnInputs,
+    trial: &[f64],
+    expected: V10LeafGasBranch,
+) {
+    let qcan = trial[10 * column.occupancies.len() + 1];
+    for (occupancy_index, occupancy) in column.occupancies.iter().enumerate() {
+
+FAIL 248 2026-09-05T01:39:45.050Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_integrity.rs:
+    let carbon_at_ci = |ci: f64| {
+        assert!((gamma..=column.ca_pa).contains(&ci));
+
+PASS 249 2026-09-05T01:40:54.055Z
+PASS 250 2026-09-05T01:41:13.868Z
+PASS 251 2026-09-05T01:42:47.836Z
+FAIL 252 2026-09-05T01:43:36.458Z
+Failed to find expected lines in /tmp/openwepp-v31-patch-replay2/crates/openwepp-land-surface-energy/src/solver_tests/component_dependency_replay_execution.rs:
+    for (name, column) in [
+        ("wet-route", &rainy),
+        ("dry-zero", &dry),
+        ("exact-capacity", &capacity),
+    ] {
+        assert_all_component_probe_parity(column, &trial, &caps);
+        for caps in [None, Some(&caps)] {
+            let evaluation = evaluate_covered_column(column, &trial, caps, None)
+                .expect("named noncrossable successful base");
+            let immutable_route_domain = column.top_rain_kg_m2_tile.is_finite()
+                && column.top_rain_kg_m2_tile >= 0.0
+                && column.occupancies.iter().all(|occupancy| {
+                    occupancy.beginning_canopy_liquid_kg_m2_tile.is_finite()
+                        && occupancy.beginning_canopy_liquid_kg_m2_tile >= 0.0
+                        && occupancy.liquid_capacity_kg_m2_plant.is_finite()
+                        && occupancy.liquid_capacity_kg_m2_plant >= 0.0
+                        && occupancy.liquid_interception_fraction.is_finite()
+                        && (0.0..=1.0).contains(&occupancy.liquid_interception_fraction)
+                        && occupancy.stemflow_fraction.is_finite()
+                        && (0.0..=1.0).contains(&occupancy.stemflow_fraction)
+                });
+            let admitted_temperature_domain =
+                column.occupancies.iter().enumerate().all(|(occupancy, _)| {
+                    (0..4).all(|component| {
+                        (LIQUID_VAPOR_PHASE_MINIMUM_K..=350.0)
+                            .contains(&trial[10 * occupancy + 6 + component])
+                    })
+                });
+            let immutable_root_domain = column.occupancies.iter().all(|occupancy| {
+                occupancy.root_layers.iter().all(|root| {
+                    [
+                        root.root_fraction,
+                        root.soil_potential_mm,
+                        root.gravity_head_mm,
+                        root.z3_m,
+                        root.dxroot_m,
+                        root.ksoil_m2_s,
+                    ]
+                    .iter()
+                    .all(|value| value.is_finite())
+                        && root.root_fraction >= 0.0
+                        && root.dxroot_m > 0.0
+                        && root.ksoil_m2_s >= 0.0
+                })
+            });
+            let longwave_inputs = column.occupancies.iter().all(|occupancy| {
+                (0.0..=1.0).contains(&occupancy.clumping_index)
+                    && occupancy.clumping_index > 0.0
+                    && occupancy.lai >= 0.0
+                    && occupancy.sai >= 0.0
+                    && [
+                        occupancy.sun.leaf_area_m2_m2_tile,
+                        occupancy.shade.leaf_area_m2_m2_tile,
+                        occupancy.stem_area_m2_m2_tile,
+                    ]
+                    .iter()
+                    .all(|area| area.is_finite() && *area >= 0.0)
+            });
+            let lower_geometry = column.under_canopy_geometry;
+            let lower_inputs = [
+                lower_geometry.canopy_height_m,
+                lower_geometry.canopy_roughness_m,
+                lower_geometry.reference_height_m,
+                lower_geometry.leaf_area_index,
+                column.reference_wind_m_s,
+            ]
+            .iter()
+            .all(|value| value.is_finite() && *value > 0.0)
+                && crate::physics::under_canopy_neutral_resistance(
+                    lower_geometry,
+                    column.reference_wind_m_s,
+                )
+                .is_ok();
+            for (guard_family, implication) in [
+                ("covered E04 preparation", immutable_route_domain),
+                (
+                    "covered E04 finalization nonfinite",
+                    admitted_temperature_domain,
+                ),
+                (
+                    "covered_canopy_snow",
+                    column.occupancies.iter().enumerate().all(|(occupancy, _)| {
+                        trial[10 * occupancy + 8] >= LIQUID_VAPOR_PHASE_MINIMUM_K
+                    }),
+                ),
+                (
+                    "atmospheric_downward_longwave_w_m2",
+                    column.atmospheric_downward_longwave_w_m2.is_finite()
+                        && column.atmospheric_downward_longwave_w_m2 >= 0.0,
+                ),
+                (
+                    "ground_temperature_k",
+                    trial[10 * column.occupancies.len() + 2] > 0.0,
+                ),
+                ("clumping_index", longwave_inputs),
+                ("plant_area", longwave_inputs),
+                ("component_emissive_area", longwave_inputs),
+                ("component_temperature_k", admitted_temperature_domain),
+                (
+                    "occ.wet liquid saturation",
+                    admitted_temperature_domain && immutable_route_domain,
+                ),
+                (
+                    "hydraulic active/inactive root domain",
+                    immutable_root_domain && admitted_temperature_domain,
+                ),
+                (
+                    "hydraulic_redistribution",
+                    column.authority == CoveredColumnAuthority::V11SnowCovered,
+                ),
+                (
+                    "covered E04 routed/final evaluation mismatch",
+                    immutable_route_domain && admitted_temperature_domain,
+                ),
+                ("under_canopy_geometry", lower_inputs),
+                ("under_canopy_resistance", lower_inputs),
+                (
+                    "represented-snow lower.ground_output",
+                    column.stage3_lower_boundary.is_some()
+                        && column.stage3_optical.is_some()
+                        && lower_inputs,
+                ),
+            ] {
+                assert!(implication, "{name} implication failed for {guard_family}");
+            }
+
+PASS 254 2026-09-05T01:57:11.991Z

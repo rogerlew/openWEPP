@@ -1,0 +1,42 @@
+retained component replay symbol search
+retained canonical solver entry
+   461	pub(crate) fn solve_covered_column(
+   462	    beginning: &CoveredColumnInputs,
+   463	    caps: Option<&CoveredWaterCaps>,
+   464	    initial_trial: Vec<f64>,
+   465	) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
+   466	    solve_covered_column_impl(beginning, caps, initial_trial, false)
+   467	}
+   468	
+   469	pub(crate) fn solve_v10_full_supply_final(
+   470	    beginning: &CoveredColumnInputs,
+   471	    caps: &CoveredWaterCaps,
+   472	    initial_trial: Vec<f64>,
+   473	) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
+   474	    solve_covered_column_impl(beginning, Some(caps), initial_trial, true)
+   475	}
+   476	
+   477	fn solve_covered_column_impl(
+   478	    beginning: &CoveredColumnInputs,
+   479	    caps: Option<&CoveredWaterCaps>,
+   480	    initial_trial: Vec<f64>,
+   481	    allow_v10_initial_final_acceptance: bool,
+   482	) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
+   483	    validate_covered_caps(beginning, caps)?;
+   484	    let ground_uses_liquid_vapor_phase_domain =
+   485	        covered_ground_uses_liquid_vapor_phase_domain(beginning);
+   486	    if !covered_trial_is_valid(
+   487	        &initial_trial,
+   488	        beginning.occupancies.len(),
+   489	        ground_uses_liquid_vapor_phase_domain,
+   490	    ) {
+   491	        return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+   492	            "covered_initial_trial",
+   493	        ));
+   494	    }
+   495	    let validated_evaluation_inputs =
+   496	        ValidatedCoveredEvaluationInputs::try_new_after_caps_validated(beginning, caps)?;
+   497	    let inactive_hydraulic_anchors = initial_trial.clone();
+   498	    let mut x = initial_trial;
+   499	    let mut last_steps = None;
+   500	    let mut backtracking_count = 0;

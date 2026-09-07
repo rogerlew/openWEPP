@@ -1,0 +1,2 @@
+6721032591ac6b215cbdb6a244e65efe690de28743ef140c036aafcb473b2c8f  docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/v31_head_overlay_apply.log
+1ad6069cf355f524ddd2312bb62870ddccb0f7bf935c4102dd5d3831cedc7fa2  docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/v31_a28_overlay_check.log

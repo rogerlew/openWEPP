@@ -1,0 +1,66 @@
+REVISION61_REVERSE_CLEANUP_RECONSTRUCTION_VERIFICATION_B 2026-09-05
+
+Evidence mode: Static + Ran
+
+SOURCE_INVENTORY /workdir/openWEPP/docs/work-packages/20260904-stage3-authentic-coverage-memory-attribution-001/artifacts/raw/v61_ordered_patch_inventory.json
+SOURCE_SESSION /home/roger/.codex/sessions/2026/09/01/rollout-2026-09-01T13-05-03-01a05e93-405f-7912-9703-35f217b13b0a.jsonl
+DETACHED_CLONE /tmp/openwepp-v61-reverse-cleanup-b2.UT3HTi/tree
+BASE_COMMIT 0d56001edbbe55b119a5248249fcedefe2a3bbb0
+
+The verifier created a clean shared clone with no checkout state copied from
+the retained worktree and detached it at BASE_COMMIT. The retained checkout
+and retained Rust source were not modified.
+
+Original cleanup-call results were reconstructed directly from the source
+session's apply_patch outputs. Calls 41,42,43,45,46,47,48,49,50,52,54,55,56
+succeeded in the original cleanup. Calls 44,51,53 failed in the original
+session and therefore were not treated as changes to reverse.
+
+Each originally successful cleanup payload was inverted by swapping its added
+and removed hunk lines, retargeting only the absolute path to DETACHED_CLONE,
+and applying in exact reverse order:
+
+  ATTEMPTED 56,55,54,52,50,49,48,47,46,45,43,42,41
+  REVERSE_APPLY_PASS 56,55,54,50,49,48,47,46,45,43,42,41
+  REVERSE_APPLY_FAIL 52
+
+Index 52 failed because its immediate post-cleanup import context no longer
+matched BASE_COMMIT after subsequent formatting. The retained source places
+ReleaseQualificationLaneDRouteCallV1 and ReleaseQualificationProfileScopeV1
+on the same line, while the payload's reversible context ends after
+ReleaseQualificationLaneDRouteCallV1.
+
+The twelve applied inversions left 11 changed/untracked Rust paths. The
+documented predecessor manifest recipe over those paths produced:
+
+  git ls-files -m -o --exclude-standard -- '*.rs' | sort | while IFS= read -r file; do if test -f "$file"; then sha256sum "$file"; fi; done | sha256sum
+  475580610f492e4f92781cacae3660a9d9dad08dc9cd7c3ccc98307812516c42  -
+
+The resulting source did not compile:
+
+  timeout 900 nix develop -c cargo check -p openwepp-runner --tests
+  EXIT_STATUS 101
+
+Cargo reported 10 errors:
+
+  - snow_stage3_v11_profile.rs:774: two parser errors because index 54's
+    context-free field/initializer hunks were reinserted at module scope rather
+    than into the four original structs/initializers;
+  - stage3_solver/evaluation.rs:485: E0425, `mode` not found because index 47's
+    context-free tuple-field hunk did not restore the intended binding;
+  - stage3_solver/evaluation.rs:2478: E0425, the feed-forward telemetry recorder
+    was not re-exported because reverse index 52 did not apply;
+  - carrier_phase.rs:1288,1296,1357,1365,1803,1815: six E0560 errors because
+    the cleanup payloads do not contain the candidate edits that removed
+    `coupling_iteration` and `ending_snow_hint` from these request literals.
+
+Conclusion: the cleanup payloads retain useful exact candidate fragments, but
+they are neither mechanically reversible against exact retained HEAD nor a
+complete exact-source snapshot. Some hunks omit the location context required
+to restore fields, one applied cleanup no longer matches after formatting, and
+some candidate-side edits are absent from the cleanup payload set. Manual
+placement/reconciliation can produce the separately recorded compiling and
+running diagnostic candidate, but those choices are not authenticated
+historical bytes. This reverse-cleanup route cannot recover the historical
+source cut or historical binary and cannot support a matched causal memory
+treatment.

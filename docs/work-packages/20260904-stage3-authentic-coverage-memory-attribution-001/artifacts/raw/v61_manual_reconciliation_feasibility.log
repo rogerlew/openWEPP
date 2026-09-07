@@ -1,0 +1,48 @@
+REVISION61_MANUAL_RECONCILIATION 2026-09-05
+TREE /tmp/openwepp-v61-candidate-cut
+BASE_COMMIT 0d56001edbbe55b119a5248249fcedefe2a3bbb0
+HISTORICAL_SOURCE_MANIFEST 650f67132aec95818228c1f3ed85db7310a7e66671dcb5f94cb18948ae257d41
+
+The cut-aware automatic replay selected session patch indexes 18..40, before
+cleanup/reversion patch 41. It applied 15 of 23 source/test payloads and
+failed 8. The failed payload contexts were manually reconciled in the
+detached tree only: request-type declaration/import edges (18, 21, 22),
+feed-forward test-field renames (27), and the release-telemetry guard placement
+(40) were applied against the actual post-index-17 file text. The resulting
+tree passed:
+
+  timeout 900 nix develop -c cargo check -p openwepp-runner --tests
+
+An earlier detached-tree run recorded an undocumented canonical production-
+source manifest digest of:
+
+  2fc5e8cafdde5520dfaca4c074a8d1d0bc3f60548c44b9abb6817bb981e6eb7f
+
+That digest's command/domain was not retained in the source-custody record. The
+documented predecessor recipe was rerun over the detached tree:
+
+  git ls-files -m -o --exclude-standard -- '*.rs' | sort | while IFS= read -r file; do if test -f "$file"; then sha256sum "$file"; fi; done | sha256sum
+
+It found 13 changed/untracked Rust paths and produced the ordered stream
+preserved in `v61_manual_candidate_changed_rust_hashes.txt` (SHA-256
+`229b17c644b1e54dbbb9e836752f5f499bb7b6477171d126339dbf879a392348`):
+
+  19a07121e6ecdfd8e1b0bd559404bcc69554943ef5c1d68b5d53d91534623421  -
+
+Neither detached-tree digest equals the historical measurement manifest
+`650f67132aec95818228c1f3ed85db7310a7e66671dcb5f94cb18948ae257d41`, but
+that inequality is not itself an equivalence test: the historical digest was
+computed against a different Git-index/dirty-worktree state. The historical
+record retains only that one-way digest, not the per-file manifest JSON, exact
+Git index bytes, or the historical candidate binary. The package-custodied patch
+payloads also contain multiple context variants and later cleanup/reversion
+edits; the eight failed contexts have no authenticated predecessor text from
+which to choose a unique byte sequence. Replacing them by hand can produce a
+compiling diagnostic candidate, but it cannot prove the historical source cut
+or support a causal treatment claim. The detached tree therefore remains
+nonhistorical evidence and is not used for a candidate/control memory result.
+
+No retained checkout source, production binary, acceptance rule, or science
+contract was changed. Exact historical v61 memory attribution remains
+unavailable because the required source cut is not recoverable from a digest
+alone and no equivalent candidate binary is custodied.

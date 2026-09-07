@@ -1,0 +1,30 @@
+{
+  "result_rows": 26,
+  "warmup_rows": 2,
+  "arm_rows": {"A": 12, "B": 12},
+  "csv_sample_rows": 1611,
+  "pair_endpoint_rss_delta_kib": [8204, -1904, -8360, -228, -1064, -18832, 20, 11360, -368, -936, 44, -156],
+  "pair_endpoint_rss_positive_count": 4,
+  "pair_endpoint_rss_median_delta_kib": -298,
+  "pair_run_wall_delta_us": [673972, 541774, 536427, 48930, 551527, 663532, 631882, 182283, 495343, 739969, 603760, 716025],
+  "pair_run_wall_positive_count": 12,
+  "pair_run_wall_min_delta_us": 48930,
+  "pair_run_wall_median_delta_us": 577643.5,
+  "protected_counts": {
+    "total_parent_support_count": 48,
+    "covered_parent_support_count": 4,
+    "snow_free_parent_support_count": 44,
+    "direct_trial_count": 20,
+    "split_child_trial_count": 32,
+    "accepted_microstep_count": 4,
+    "accepted_publication_support_count": 56,
+    "committed_day_count": 1
+  },
+  "closure_m3": {
+    "source": 0.8488061229561478,
+    "outlet": 0.8471105124736579,
+    "end_window_storage": 0.0016956104824910018,
+    "clamp": 0.0
+  },
+  "source_sha256": "08aa5e5c1282a22e0eceffb40c6fa24ad880bed8b8dcc52d9aef3ab9720b08d0"
+}

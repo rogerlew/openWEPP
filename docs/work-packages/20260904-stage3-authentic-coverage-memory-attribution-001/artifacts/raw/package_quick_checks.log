@@ -1,0 +1,13 @@
+git_diff_check
+json_matrix
+jsonl_parse
+rows=26 arms_A=12 arms_B=12
+observer_shell
+cargo_fmt_check
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+
+EXIT_STATUS 0

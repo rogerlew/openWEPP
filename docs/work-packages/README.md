@@ -1,5 +1,17 @@
 # Work Packages
 
+## 20260904-stage3-authentic-coverage-memory-attribution-001
+
+Diagnostic successor to the terminal-HOLD throughput-recovery package. It
+traces authentic runner coverage for the rejected revision-31 component
+temperature replay, attributes revision-61 `rss_kib` differences with matched
+observers and process lifetimes, corrects only bounded measurement/coverage
+infrastructure, and decides whether either mechanism merits a separately
+authorized successor. It does not restore either rejected optimization, change
+historical acceptance rules, claim throughput qualification, or begin solver
+redesign. Status: `EXECUTED — TERMINAL HOLD / V31 DISCRIMINATOR CLOSED; V61
+HISTORICAL EVIDENCE LIMITATION`.
+
 ## 20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001
 
 Owner-directed replacement for the suspended workspace-gate solver work. It

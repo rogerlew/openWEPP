@@ -1,0 +1,93 @@
+Breakpoint 1 at 0x29df40
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.ubuntu.com>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+warning: File "/nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libthread_db.so.1" auto-loading has been declined by your `auto-load safe-path' set to "$debugdir:$datadir/auto-load".
+To enable execution of this file add
+	add-auto-load-safe-path /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libthread_db.so.1
+line to your configuration file "/home/roger/.config/gdb/gdbinit".
+To completely disable this security protection add
+	set auto-load safe-path /
+line to your configuration file "/home/roger/.config/gdb/gdbinit".
+For more information about this security protection see the
+"Auto-loading safe path" section in the GDB manual.  E.g., run from the shell:
+	info "(gdb)Auto-loading safe path"
+warning: Unable to find libthread_db matching inferior's thread library, thread debugging will not be available.
+
+running 1 test
+test hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ... [New LWP 3278514]
+[Detaching after vfork from child process 3278641]
+[Detaching after vfork from child process 3278756]
+[Switching to LWP 3278514]
+
+Thread 2 "hillslope::test" hit Breakpoint 1, 0x00005555557f1f40 in openwepp_runner::hillslope::tests::component_replay_audit::aggregate_component_replay_audit ()
+AUDIT_ARG_RDI=0x7ffff7bfc950\n0x7ffff7bfc950:	0x0000000000000020	0x00007ffff04380c0
+0x7ffff7bfc960:	0x0000000000000020	0x0000000000000000
+0x7ffff7bfc970:	0x0000000000000000	0x0000000000000000
+0x7ffff7bfc980:	0x0000000000000000	0x0000000000000002
+0x7ffff7bfc990:	0x0000000000000000	0x0000000000000108
+0x7ffff7bfc9a0:	0x0000000000000000	0x0000000000000000
+0x7ffff7bfc9b0:	0x0000000000000000	0x0000000000000000
+0x7ffff7bfc9c0:	0x0000000000000000	0x0000000000000000
+0x7ffff7bfc9d0:	0x0001010000000000	0x0000000000000000
+0x7ffff7bfc9e0:	0x0000000000000000	0x0000000000000000
+0x7ffff7bfc9f0:	0x00007ffff09ee005	0x00007ffff2733900
+0x7ffff7bfca00:	0x0000000000000000	0x0000000000000005
+0x7ffff7bfca10:	0x0000000000000047	0x0000000000000000
+0x7ffff7bfca20:	0x00007ffff0000eb0	0x0000000000000005
+0x7ffff7bfca30:	0x0000000000000005	0x00007ffff0000f00
+0x7ffff7bfca40:	0x0000000000000000	0x0000000000000000
+0x7ffff7bfca50:	0x0000000000000005	0x00007ffff00ebe70
+0x7ffff7bfca60:	0x0000000000000001	0x0000000000000011
+0x7ffff7bfca70:	0x00007ffff096e260	0x0000000000000018
+0x7ffff7bfca80:	0x0bd560fc00000000	0x000baa3617ff8f07
+0x7ffff7bfca90:	0x1533eb741a31064b	0x0000000000000005
+0x7ffff7bfcaa0:	0x00007ffff09ee060	0x0000000000000001
+0x7ffff7bfcab0:	0x000000000000001b	0x0000555556f5e305
+0x7ffff7bfcac0:	0x00007ffff05a4750	0x0000000000000000
+0x7ffff7bfcad0:	0x0000000000000004	0x7fffffffffffffff
+0x7ffff7bfcae0:	0x00007ffff0009300	0x00007ffff1318870
+0x7ffff7bfcaf0:	0x00007ffff0692bc0	0x00007ffff091ef70
+0x7ffff7bfcb00:	0x00007ffff13e1130	0x00007ffff1875550
+0x7ffff7bfcb10:	0x0000000000000010	0x00007ffff39a1d00
+0x7ffff7bfcb20:	0x000000000000008e	0x00007ffff00041a0
+0x7ffff7bfcb30:	0x0000000000000018	0x0000000000000000
+0x7ffff7bfcb40:	0x0000000000000004	0x3feb1b8781658257
+#0  0x00005555557f1f40 in openwepp_runner::hillslope::tests::component_replay_audit::aggregate_component_replay_audit ()
+#1  0x0000555555855a1d in openwepp_runner::hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile ()
+#2  0x000055555596c959 in core::ops::function::FnOnce::call_once ()
+#3  0x0000555555c10b0b in test::__rust_begin_short_backtrace::<core::result::Result<(), alloc::string::String>, fn() -> core::result::Result<(), alloc::string::String>> ()
+#4  0x0000555555c1e402 in <test::types::RunnableTest>::run ()
+#5  0x0000555555c172ed in test::run_test_in_process ()
+#6  0x0000555555c1a7ad in std::sys::backtrace::__rust_begin_short_backtrace::<test::run_test::{closure#1}, ()> ()
+#7  0x0000555555c49530 in <std::thread::lifecycle::spawn_unchecked<test::run_test::{closure#1}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} ()
+#8  0x0000555556ebeb44 in <std::sys::thread::unix::Thread>::new::thread_start ()
+#9  0x00007ffff7c9dd53 in start_thread () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+#10 0x00007ffff7d2563c in __clone3 () from /nix/store/avld9cdn23zab2ssl30h2r6444rqh6ms-glibc-2.42-67/lib/libc.so.6
+
+thread 'hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile' (3278514) panicked at crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification/component_replay_audit.rs:131:5:
+assertion failed: audit.sweeps.iter().any(|sweep|
+        {
+            sweep.occupancy_count == 2 && sweep.soil_count == 6 &&
+                                sweep.logical_probe_count == 58 &&
+                            sweep.identity_anchor_probe_count == 14 &&
+                        sweep.component_replay_probe_count == 16 &&
+                    sweep.complete_probe_count == 28 && sweep.completed
+        })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+[LWP 3278514 exited]
+
+failures:
+
+failures:
+    hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 237 filtered out; finished in 10.71s
+
+[Inferior 1 (process 3278511) exited with code 0145]
+
+EXIT_STATUS 0

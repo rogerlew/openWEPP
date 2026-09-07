@@ -1,0 +1,40 @@
+Historical revision-31 binary bounded pre-assertion capture
+
+Binary: /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/release/deps/openwepp_runner-ce7ba1c0f7527921
+Binary SHA-256: f9386eec584664f9639da281c15796730240239cd43ad2f158f4fa6d27fbeeaf
+Test: hillslope::tests::stage3_laned_release_one_ofe_positive_baseline_profile
+Debugger command script SHA-256: b0cf2e8b157536d894e475930428ca31dbc6ca80fc5c16e544c5806900235eb8
+Raw transcript SHA-256: 1aa29a99c6dc993906fea9fcc2883ef939ba99f05a4fcd67d94297e346425877
+
+The debugger stopped at take_covered_component_dependency_replay_audit return
+for the authentic release run (take 1), decoded the recovered audit Vec layout
+using the package-custodied nonproduction type definition, and scanned every
+N=2/S=6 sweep before aggregate_component_replay_audit ran. The run contained
+2,000 N=2/S=6 sweeps over 400 maps and five iterations per map. Every sweep
+had completed=true and failed=false, but no sweep matched 58/14/16/28:
+
+- 200 sweeps are the iteration-0 and iteration-1 rows for the first 100 maps
+  (map IDs 0..99): logical/identity/component/complete = 48/14/10/24.
+- The other 1,800 sweeps are logical/identity/component/complete = 54/14/16/24:
+  600 rows are iterations 0 and 1 for the remaining 300 maps, and 1,200 rows
+  are iterations 2 through 4 for all 400 maps. The two displayed stencil
+  vectors below are representative captures for iteration 0 and iteration 2;
+  the aggregate distribution is decoded from every returned row.
+- target rows with logical=58 or complete=28: 0.
+
+The first N=2/S=6 stencil vector was
+0,0,0,0,2,2,1,1,1,0,0,0,0,0,2,2,1,1,1,0,0,0,0,0,0,0,0,0,0.
+The iteration-2 vector was
+0,0,0,0,2,2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0.
+Thus the release workload reaches completed sweeps, but closed-domain
+one-sided finite-difference stencils omit one signed probe at each boundary
+coordinate. The observed first-iteration deficit is ten signed probes (58 to
+48); later iterations omit four (58 to 54). The complete-probe bucket remains
+24 rather than the asserted 28 in both patterns. This is direct runtime
+evidence of the first failed release predicate, not an inference from the
+focused positive fixture.
+
+The same GDB transcript also records the distinct lifecycle: the authentic
+release audit is take 1; the forced-complete parity oracle begins and takes its
+own audit as take 2; aggregate consumes the authentic release audit after the
+oracle returns. No assertion bypass or binary mutation was used.

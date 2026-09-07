@@ -1,0 +1,10 @@
+Applied patch to 'crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs' with conflicts.
+Applied patch to 'crates/openwepp-land-surface-energy/src/solver_covered_solve.rs' with conflicts.
+Applied patch to 'crates/openwepp-land-surface-energy/src/solver_tests.rs' with conflicts.
+Applied patch to 'crates/openwepp-land-surface-energy/src/transaction.rs' cleanly.
+Applied patch to 'crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs' cleanly.
+Applied patch to 'crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs' with conflicts.
+U crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
+U crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+U crates/openwepp-land-surface-energy/src/solver_tests.rs
+U crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs
