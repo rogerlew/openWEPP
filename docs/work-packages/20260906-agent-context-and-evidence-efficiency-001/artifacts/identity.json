@@ -1,6 +1,6 @@
 {
   "experiment": {
-    "sha256": "404321eb5f02fbabb28a40e7c05cf59fe9b019839dc41fa776145ed8d0c10a3d",
+    "sha256": "b6dfd668a9eda4515d26a6b87f252c284f444413ed1ecd766d838dd961125ff2",
     "members": [
       {
         "path": ".codex/agents/comparator_suite_runner.toml",
@@ -106,6 +106,13 @@
         "mode": 436,
         "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
         "size": 106779
+      },
+      {
+        "path": "docs/ROADMAP.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ba370ddb875a8bc3734a0bccb85f226cefe4591a5b13486fc3a241ba047acccb",
+        "size": 22154
       },
       {
         "path": "docs/agent-guidance-map.md",
@@ -699,8 +706,8 @@
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/identity-membership.json",
         "kind": "file",
         "mode": 436,
-        "sha256": "2bdb601912bb6aeb26c84e296476ab2e31bb4cc60380681a4c53cb8d864b7edc",
-        "size": 12944
+        "sha256": "3f13ca5f4b7bea88ea8da4412fff71d600e9618dcf04263526e5999ea7b2c7ac",
+        "size": 12990
       },
       {
         "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/owned-files.json",
@@ -964,7 +971,7 @@
     ]
   },
   "evidence_claim": {
-    "sha256": "53968f891c351ee52eca257cbb6ab7d44a23e743256debb8d1bd3c0c3bfdcacc",
+    "sha256": "2abdb82ad13f42265235e47f5c6ff3e3c25f462a82710a2f97289b39ccd1f227",
     "members": [
       {
         "path": "AGENTS.md",
@@ -979,6 +986,13 @@
         "mode": 436,
         "sha256": "89dc6dbe59038858a28a53abf1f1ab5ce733e6b2f38fa75fd922678c56664820",
         "size": 11309
+      },
+      {
+        "path": "docs/ROADMAP.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ba370ddb875a8bc3734a0bccb85f226cefe4591a5b13486fc3a241ba047acccb",
+        "size": 22154
       },
       {
         "path": "docs/agent-guidance-map.md",

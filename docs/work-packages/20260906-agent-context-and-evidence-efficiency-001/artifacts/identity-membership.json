@@ -1,5 +1,6 @@
 {
   "experiment": [
+    "docs/ROADMAP.md",
     ".codex/agents/comparator_suite_runner.toml",
     ".codex/agents/package_verifier.toml",
     ".codex/agents/rust_code_reviewer.toml",
@@ -139,6 +140,7 @@
     "usersum/snow-frost-modeling-and-validation.md"
   ],
   "evidence_claim": [
+    "docs/ROADMAP.md",
     "AGENTS.md",
     "tools/release/authority-policy/impact-map.json",
     "CLAUDE.md",
