@@ -12,7 +12,7 @@ predictions are not model-token or complete-workflow measurements.
 | Changed code lint | PASS helper; inherited root diagnostics FAIL | --no-deps reaches seven root test targets. Initial helper case-sensitive extension warning corrected without widening dispatch; actual helper isolated Clippy PASS. Original baseline root-test source independently linted in external fixture;17matching file/diagnostic categories, logs/clippy-comparison.json. No suppression or production repair. Current root17diagnostics match baseline file/function/kind; actual fixturelock pruning and hashes recorded. |
 | Rust format / line count | PASS / PASS WARN | Edition2024 formatting applied within8ownedRustfiles; vegetation2843lines WARN, all other files<2000, no nonexempt3000file. |
 | Compact primary routes | PASS Static | Review A RCA01-04closed at preserved16filecut; core12068, predicted scientific196660/210669/187596 andidentity30983. No predicted-only usability PASS. |
-| Fresh first-attempt tasks | NOT RUN to completion except03 awaiting review | Fresh01/02/04replacement continue full mandatory external reading. First04 INVALID after other-answer exposure; no repair counted as freshness. |
+| First candidate fresh tasks | FAIL science size; 02 also scientific adequacy FAIL | Actual LSE unions01=250005,02=216016,04=258764; all exceed211890. Identity03=30983 and independently adequate. reading-iteration-01.json binds immutable first reports to d40d9fa1f; initial04 exposure remains INVALID. New reviewed layout and genuinely fresh retries required. |
 | Stable-cut dual review / terminal verification | NOT RUN to completion | Current required closure boundary remains pending. |
 
 Actual Rust command: `nix develop -c cargo nextest run --no-fail-fast --test

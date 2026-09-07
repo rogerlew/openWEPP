@@ -12,6 +12,9 @@ Static/Ran: independent artifacts retain full evidence and focused re-review.
 | B01 original scientific cell test gap | accepted/closed B | Column-wise original Authority/Evidence/Guard/Failure preservation added; on-disk intact-ID publication-poison fails direct test despite structuralPASS. |
 | Fresh closure01 exposure | accepted INVALID | Agent accessed other answers via collaboration listing; immutable invalid record retained; genuinely fresh replacement runs same task without exposed context. |
 
+| Fresh science01/02/04 size | OPEN, correction required | Actual250005/216016/258764 exceed211890; initial predictions were insufficient. Preserve first reports and redesign concern boundaries. |
+| Fresh solver02 adequacy | OPEN, correction required | Independent A found omitted universal producer rows and solver eligibility/failure/qualification requirements; first answer remains FAIL, not repaired into freshPASS. |
+
 No current acceptance waived. Fresh adequacy, final code/evidence identities and
 terminal closure remain pending. Incidental numeric predictions in explicitly allowed
 mandatory handoff are disclosed by fresh readers; no rubric/answers were provided.

@@ -1,0 +1,77 @@
+{
+  "candidate_commit": "d40d9fa1f",
+  "baseline_lse_bytes": 264863,
+  "measure": "actual requested unique LSE source line union, EOF-clipped; no token claim; reports retain external/governance and repeated exposure",
+  "tasks": {
+    "01": {
+      "report_sha256": "e0e2d2b2539fa55fee80f1b563b7bb65784fa91afdb919a502c81a9ed5dc8e22",
+      "lse_bytes": 250005,
+      "reduction_percent": 5.609692558039436,
+      "size_gate": "FAIL",
+      "files": {
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": 3958,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md": 8110,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md": 11388,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md": 41620,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md": 13488,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": 16549,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md": 21230,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md": 29775,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md": 15781,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md": 21567,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md": 35652,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md": 30887
+      }
+    },
+    "02": {
+      "report_sha256": "41e9a3842962629e1d65feffda043e0cb2d9e14143852b8f07047cdab8f45302",
+      "lse_bytes": 216016,
+      "reduction_percent": 18.442364543178925,
+      "size_gate": "FAIL",
+      "files": {
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": 3958,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md": 8110,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md": 28905,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md": 30938,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md": 37448,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md": 11388,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md": 18915,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md": 33017,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": 8619,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md": 13488,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md": 21230
+      }
+    },
+    "03": {
+      "report_sha256": "6021bd9a5825d314c12803c38adb711728da833066e5142e5c14aad87fcdcaeb",
+      "lse_bytes": 30983,
+      "reduction_percent": 88.30225437301549,
+      "size_gate": "PASS",
+      "files": {
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": 3958,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md": 8110,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md": 18915
+      }
+    },
+    "04": {
+      "report_sha256": "ea1e1b5fb19eed7a95de49cd1484f7ab79ec7ddcb3ab6eac5d7cdc0d382b2a07",
+      "lse_bytes": 258764,
+      "reduction_percent": 2.302699886356341,
+      "size_gate": "FAIL",
+      "files": {
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": 3958,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md": 8110,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md": 30887,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md": 41620,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": 16549,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md": 13488,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md": 21567,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md": 21230,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md": 15781,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md": 11388,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md": 37448,
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md": 36738
+      }
+    }
+  }
+}
