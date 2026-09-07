@@ -5,15 +5,15 @@
     "readings": {
       "AGENTS.md": {
         "path": "AGENTS.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/AGENTS.md": {
         "path": "docs/specifications/science-contracts/AGENTS.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md": {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
@@ -25,15 +25,15 @@
       },
       "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
-        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/standards/AGENTS.md": {
         "path": "docs/standards/AGENTS.md",
@@ -61,11 +61,19 @@
       },
       "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+      },
+      "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+      },
+      "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       }
     },
     "roles": {
@@ -113,6 +121,22 @@
           "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
           "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md"
         ]
+      },
+      "exercise01": {
+        "bootstrap": [
+          "AGENTS.md",
+          "docs/specifications/science-contracts/AGENTS.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+        ],
+        "expansion": [
+          "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+          "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+          "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+          "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+          "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+          "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+          "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"
+        ]
       }
     }
   },
@@ -120,15 +144,15 @@
     "readings": {
       "AGENTS.md": {
         "path": "AGENTS.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/AGENTS.md": {
         "path": "docs/specifications/science-contracts/AGENTS.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
@@ -136,11 +160,11 @@
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
@@ -148,23 +172,23 @@
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
-        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md": {
         "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
@@ -176,15 +200,15 @@
       },
       "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
-        "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/standards/AGENTS.md": {
         "path": "docs/standards/AGENTS.md",
@@ -212,23 +236,47 @@
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
-        "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
       },
       "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md": {
         "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
-        "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+      },
+      "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+      },
+      "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md": {
+        "path": "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+        "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+      },
+      "exercise02_header_soil-custody": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+        "lines": [
+          1,
+          18
+        ],
+        "reason": "exercise02 carried-context explicit applicability inspection; not full chapter"
+      },
+      "exercise02_header_surface-custody": {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+        "lines": [
+          1,
+          18
+        ],
+        "reason": "exercise02 carried-context explicit applicability inspection; not full chapter"
       }
     },
     "roles": {
@@ -256,7 +304,9 @@
           "docs/standards/AGENTS.md",
           "docs/standards/numerical-solver-architecture.md",
           "docs/work-packages/AGENTS.md",
-          "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md"
+          "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md",
+          "exercise02_header_soil-custody",
+          "exercise02_header_surface-custody"
         ]
       },
       "exercise03": {
@@ -296,6 +346,32 @@
           "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
           "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
           "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md"
+        ]
+      },
+      "exercise01": {
+        "bootstrap": [
+          "AGENTS.md",
+          "docs/specifications/science-contracts/AGENTS.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md"
+        ],
+        "expansion": [
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+          "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+          "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+          "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+          "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+          "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+          "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+          "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+          "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"
         ]
       }
     }

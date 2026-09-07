@@ -1,52 +1,63 @@
-# Current continuation
-Status: executing HOLD recovery and independent terminal assurance; no adoption.
-Authorization: retained prompts/active/execute.md; local commits only, no push.
-Baseline b932db101cce07d0860b45b5ecaa8ddb7f455b58, main; source-manifest.json
-binds original LSE v31 (264863 bytes). Candidate v32 set is temporarily at canonical
-paths solely for authorized qualification; will restore exact v31 before disposition.
+# Current continuation — executed HOLD
+Status authority: final-disposition.md; adoption NOT complete. Terminal assurance pending.
+Authorization: retained prompts/active/execute.md; local commits only,NO PUSH.
+Baseline b932db101cce07d0860b45b5ecaa8ddb7f455b58 on main. Original canonical LSEv31
+RESTORED byte-for-byte264863bytes SHA2567a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d.
+Legacy whole-contract reading remains mandatory. No current candidate chapters at
+canonical path. Seven original Rust consumers restored; no production/science edits.
 
-## Corrected current cut
-Shared tools/sc_contract_directory.py implements bounded directory-v1 grammar,
-path/anchor/provenance/32-key/actual-definition validation and deterministic test
-aggregate. Binding CLI retains legacy/default/strict outcomes. Unit consumer scans
-all declared normative unit/alias tables. Seven live Rust consumers have loader/
-reference-only candidate changes; three discovered consumers are Git-pinned and
-unchanged. New A0 consumer repair maps chapter paths to validated parent and hashes
-member bytes; no impact-map/gate-definition edits.
-Independent scientific preservation review PASS:36 original fenced bodies,
-100 canonical Statements,74 evidence classifications, bidirectional complete spans;
-RA-F01..04 fixed. Reviewed set hash99ca67fb97351a7eaf495e89fc54720c314795acfbe7bcdc9c3ccab47a8596a8;
-see review_agent_a.md hash method and candidate-manifest.json.
+## Delivered checker and retained candidate
+Canonical tools/sc_contract_directory.py shared by binding,unit,A0. Actual-definition,
+32-key,confined membership/path/anchor/provenance/alias/deferred checks; no semantic
+engine. Candidate v32 entry+14chapters and7Rustconsumers+bridge+checker snapshot under
+artifacts/candidate-tree,immutable evidence only. Candidate source checkpoint5f76475dd;
+reviewed set99ca67fb97351a7eaf495e89fc54720c314795acfbe7bcdc9c3ccab47a8596a8.
+source-manifest.json,candidate-manifest.json,candidate-recovery.json bind all files.
+Original source and frozen historical/experiment identities unchanged. Any mismatch
+requires targeted reconciliation; no cached/aggregate hash implies physical authority.
 
-## Gates and exact limits
-Pytest CLI conformance passes (latest count in logs/pytest-final.log).
-Real candidate strict PASS17 BEI/100 definitions; unit PASS. Initial A0 rejected
-chapter filename as contract ID; corrected parent/member gate PASS, regression added.
-Rust final logs/rust-candidate-reviewed.log:129 run111pass18fail, exit100;
-original baseline same111/18 and exact same normalized failure reasons. See
-logs/rust-baseline-comparison.log and rust-failure-set-comparison.json.
-No-new-failure comparison is preservation evidence, NOT adoption PASS. Both reviewers
-confirm required gate cannot be retrospectively weakened. Missing production v31
-seam is explicitly expected-red; other inherited failures include unrelated stale
-references and frozen V9 external library identity mismatch. Resolving these requires
-out-of-envelope production/authority/runtime work; no predicate/tolerance weakening.
-Required heavy runner actually unavailable due model quota; parent used supported
-nix develop fallback with actual logs. No physics campaign solely for Markdown.
+## Canonical invocation and bounded reconstruction
+From /workdir/openWEPP:
+`.venv/bin/python tools/check_sc_binding_exposure.py --strict docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md`
+This now checks restored LEGACY and passes16BEI; not directory adoption.
+To reproduce candidate structural/unit checks:
+`.venv/bin/python docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/restore_candidate.py /tmp/NEW-UNUSED-DIRECTORY`
+Then use repository .venv Python on restored tools/check_sc_binding_exposure.py --strict
+and its reconstructed absolute LSEentry; unit checker --path sameentry. Recovery
+verifies40files before NEW external tree,never canonical repo/existingoutput. Minimal
+fixture is NOT fullCargo/executable reconstruction. For Rust use fullnamedbaseline
+checkout+archivedoverlay; .venv and supported nix environment remain required.
+Do not run one-time build_candidate.py in canonical checkout to reactivate.
 
-## Fresh exercises
-Four fresh nonforked read-only agents launched with only tasks/instructions/candidate.
-Exercise03 identity PASS independently assessed by both reviewers:99981 LSE bytes
-vs264863 original,62.25% reduction;168600 final unique task-source bytes. No runtime
-context/quota claim. Full frozen kickoff/capture protocol and pause retained.
-Physical/solver exercises still completing explicit adjacent legacy whole reads;
-no sufficiency/savings inferred. Intervening canonical applicability/link metadata
-changes recorded; final section rereads reconcile drift without new freshness claim.
+## Evidence and blockers
+Pytest83PASS;candidate strict17BEI/100defs,unit,A0PASS;restoredlegacy strict/unit/A0PASS.
+Candidate selected8targetnextest129run111PASS18FAIL exit100; samebaseline names AND
+normalized reasons,reviewB independently compared. No-new-failure is not PASS gate.
+Final restoration rerun log rust-restored-final.log. Rust formattingPASS;Clippy
+-DwarningsFAIL1136unchangedproductiondependencyerrors; no blanket suppression.
+Required heavy runner actual modelquota unavailable,logs/runner-unavailable.md;
+parent supported nix fallback disclosed. No physicscampaign merelyforMarkdown.
+Required FAIL cannot be fixed by permitted reference/loader changes: absent v31
+production seam, frozen V9 external runtimeidentity, unrelated staleauthority issues.
+No permission to implementproduction or rewrite frozen predicates/identity. Both
+reviewers reject retrospective acceptance relaxation. All current gates remain current;
+HOLD is not deferred/completed. Paused EXP-R stays paused; unrelated authorized
+architecture not blocked by this pilot.
 
-## Remaining authorized work
-Finish exercises, independent rubric assessments, conformance/A0 review, archive exact
-candidate/consumer overlay with isolated reconstruction, restore original canonical
-LSE and consumer bytes, freeze corrected substantive commit, obtain TWO NEW terminal
-verifiers, finalize truthful executed-hold/handoff and local commit. Do not push.
-No activation route or specification-adopted claim. Preserve unrelated $pkg/ and tmp/.
-Bundle /tmp/openwepp-lse-candidate-before-baseline-20260907 retained verified before
-controlled baseline comparison; no cleanup until explicit owner/audit release.
+## Preservation and usable-reading evidence
+Independent fullsource review PASS36fences/100exactStatements/74Evidence/474tablerows/
+275paragraphs;RA-F01–04 and B findingsclosed. Actual qualifier counterexample remains
+structuralPASS but scienceFAIL. Four initially fresh nonforked readonly exercises;
+initialfailed/incompleteanswers preserved; carriedcontext focusedcorrections now
+independentlyPASS requirements selection. Only03identityreducesLSE62.25%;01/02/04
+increase21.20/11.23/12.68%. No overallruntime/token/quota claim. Detailed paths/ranges/
+repeats/drift in exercise01–04 and context reports; frozenrubric unchanged.
+
+## Next authorized action and reopening boundary
+Two NEW independent terminal verifiers now verify restoredcorrected cut,negative
+cases/corruptunit,archive/source identities,initialFAILs/claims and gatelegitimacy.
+Then finalize reports/localdisposition commit,NO PUSH. Adoption remains HOLD unless
+blockers are resolved under appropriate authorization and ALL frozen gates pass.
+Preserve unrelated $pkg/ and tmp/. Retain verified custody bundle
+/tmp/openwepp-lse-candidate-before-baseline-20260907 until explicitowner/auditrelease.
+No broad reset/clean/stash/branchswitch or authority weakening.

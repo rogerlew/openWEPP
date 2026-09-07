@@ -16,7 +16,7 @@
             "bytes": 9508,
             "exposures": 1,
             "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
-            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/AGENTS.md",
@@ -27,7 +27,7 @@
             "bytes": 6532,
             "exposures": 1,
             "sha256": "bace4ab3e33119e0239f700f92c53707d884f297e92d2454a86c477758c930c7",
-            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -38,7 +38,7 @@
             "bytes": 264863,
             "exposures": 1,
             "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
-            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           }
         ]
       },
@@ -77,7 +77,7 @@
             "bytes": 248829,
             "exposures": 1,
             "sha256": "3b1c8525e6d09d7afae6e27d5fa59f90347d55d8bf34bc6292d0d767d3bfc5fa",
-            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
@@ -88,7 +88,7 @@
             "bytes": 497785,
             "exposures": 1,
             "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d",
-            "reason": "exercise02 expansion: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
@@ -99,7 +99,7 @@
             "bytes": 92552,
             "exposures": 1,
             "sha256": "1d10611b5143be201381f283ec5594d9f65c99f8252e944dfae57076a8a699f7",
-            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/standards/AGENTS.md",
@@ -163,7 +163,7 @@
             "bytes": 9508,
             "exposures": 1,
             "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
-            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/AGENTS.md",
@@ -174,7 +174,7 @@
             "bytes": 6532,
             "exposures": 1,
             "sha256": "bace4ab3e33119e0239f700f92c53707d884f297e92d2454a86c477758c930c7",
-            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -185,7 +185,7 @@
             "bytes": 264863,
             "exposures": 1,
             "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
-            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           }
         ]
       },
@@ -266,7 +266,7 @@
             "bytes": 9508,
             "exposures": 1,
             "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
-            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/AGENTS.md",
@@ -277,7 +277,7 @@
             "bytes": 6532,
             "exposures": 1,
             "sha256": "bace4ab3e33119e0239f700f92c53707d884f297e92d2454a86c477758c930c7",
-            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -288,7 +288,7 @@
             "bytes": 264863,
             "exposures": 1,
             "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
-            "reason": "exercise04 bootstrap: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           }
         ]
       },
@@ -305,7 +305,7 @@
             "bytes": 184116,
             "exposures": 1,
             "sha256": "fbb27d07e4459dabd37330d3292564ccb94789fdc0530fcde07262c00adfcbd4",
-            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
@@ -316,7 +316,7 @@
             "bytes": 377637,
             "exposures": 1,
             "sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c",
-            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
@@ -327,7 +327,7 @@
             "bytes": 248829,
             "exposures": 1,
             "sha256": "3b1c8525e6d09d7afae6e27d5fa59f90347d55d8bf34bc6292d0d767d3bfc5fa",
-            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           },
           {
             "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
@@ -338,11 +338,136 @@
             "bytes": 92552,
             "exposures": 1,
             "sha256": "1d10611b5143be201381f283ec5594d9f65c99f8252e944dfae57076a8a699f7",
-            "reason": "exercise04 expansion: explicit agent selection, sufficiency separately assessed"
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
           }
         ]
       },
       "combined_unique_bytes": 1184037
+    },
+    "exercise01": {
+      "bootstrap": {
+        "unique_bytes": 280903,
+        "exposure_bytes": 280903,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+          },
+          {
+            "path": "docs/specifications/science-contracts/AGENTS.md",
+            "lines": [
+              1,
+              84
+            ],
+            "bytes": 6532,
+            "exposures": 1,
+            "sha256": "bace4ab3e33119e0239f700f92c53707d884f297e92d2454a86c477758c930c7",
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "lines": [
+              1,
+              3346
+            ],
+            "bytes": 264863,
+            "exposures": 1,
+            "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 2157315,
+        "exposure_bytes": 2157315,
+        "reads": [
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+            "lines": [
+              1,
+              3080
+            ],
+            "bytes": 248829,
+            "exposures": 1,
+            "sha256": "3b1c8525e6d09d7afae6e27d5fa59f90347d55d8bf34bc6292d0d767d3bfc5fa",
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+            "lines": [
+              1,
+              2648
+            ],
+            "bytes": 377637,
+            "exposures": 1,
+            "sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c",
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+            "lines": [
+              1,
+              2205
+            ],
+            "bytes": 184116,
+            "exposures": 1,
+            "sha256": "fbb27d07e4459dabd37330d3292564ccb94789fdc0530fcde07262c00adfcbd4",
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+            "lines": [
+              1,
+              4295
+            ],
+            "bytes": 634522,
+            "exposures": 1,
+            "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+            "lines": [
+              1,
+              1108
+            ],
+            "bytes": 92552,
+            "exposures": 1,
+            "sha256": "1d10611b5143be201381f283ec5594d9f65c99f8252e944dfae57076a8a699f7",
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+            "lines": [
+              1,
+              1073
+            ],
+            "bytes": 121874,
+            "exposures": 1,
+            "sha256": "2861a7ba877468e9aa9893266b8c46a09b2ca8181b4b211db756108cb703defa",
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+            "lines": [
+              1,
+              3559
+            ],
+            "bytes": 497785,
+            "exposures": 1,
+            "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d",
+            "reason": "exercise01 final explicit selected dependency closure; baseline same external+instruction union with original full LSE"
+          }
+        ]
+      },
+      "combined_unique_bytes": 2438218
     }
   },
   "workflow_total": "UNOBSERVED",

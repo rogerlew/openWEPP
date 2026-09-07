@@ -193,3 +193,29 @@ Independent arithmetic:
 Recovery validation: executed .venv/bin/python artifacts/restore_candidate.py <new TemporaryDirectory child>. It restored 29 overlay + 11 baseline-dependency files; independently verified all 40 lengths/hashes against candidate-recovery.json. From that external tree, actual strict checker PASS (17 BEI/100 definitions) and unit checker PASS. Reusing the existing output rejected exit 2 with original bytes unchanged; attempting a new checkout-internal output rejected exit 2 without creating it. Script preloads/verifies source identities before directory creation, confines manifest paths, and refuses existing/repository destinations. The .git directory is only a parser confinement marker. The artifact explicitly does not construct a full Cargo workspace; no Rust/A0 execution from this minimal tree is claimed.
 
 Bounded verdict: accepted requirements-selection evidence and safe reproducible structural/unit candidate archive. Physical/solver task reduction acceptance is NOT met; repeated-range metric B-M01 remains to reconcile. Overall adoption HOLD and canonical v31 restoration/terminal verification remain unchanged.
+
+## Final corrected exercise cut
+
+Static: complete updated exercise01, exercise02 and exercise04 records, including retained initial/first-correction failures and final supplements. Ran: direct UTF-8 source-range arithmetic against unchanged candidate files. Candidate and recovery identities reviewed above remain applicable; no new candidate source change was introduced by answer reconciliation.
+
+The earlier B broad sufficiency judgments for initial exercise02/04 answers are superseded and must not serve as terminal evidence. Their corrections expose details insufficiently explicit in those earlier answers: exact solver norms/order/witness conditions and V30 ingress-before-resident error precedence; phase/receiver restrictions, admitted rounding/normalization envelopes and actual primitive evidence limits. Retained initial failures are legitimate, not erased by later reading. This final assessment applies only to the corrected carried-context answers, with the original frozen rubric unchanged.
+
+Final rule-selection assessment:
+- Exercise01 PASS after support-admission correction: zero-duration custody has no solve; positive sub-60-second support rejects before Newton; exact minimum/receipt/model/owner/topology/domain guards and typed errors remain; successor chronology and adaptive-error versus physical-closure tolerances are distinct. This complements finite/equilibrium-zero CN coupling, immutable water, first-node transfer and accepted ingress ownership.
+- Exercise02 PASS after second supplement: exact FD scales, norms, pivot and update/backtracking limits; V10 potential-only transformations, inactive anchors and same-invocation maximum reuse; full base/prospective evaluations; unchanged-current first-valid-step acceptance; and V30 real forcing/V8/ingress/resident order are now explicit. Two owner-chapter headers are actually read, and exclusion is based on represented-snow inapplicability to owner algorithms rather than absence of edits. Broader receipt/closure/constructor/publication verification still requires expansion.
+- Exercise04 PASS after phase-to-receiver supplement: all WB14/current ingress is liquid-only after vapor/phase acceptance; litter ice cannot infiltrate/run off/reclassify as liquid or mutate soil. Actual support chronology, named normalization/tiny-retention envelopes, phase and exact-carry primitive arithmetic, and unavailable full p61 primitive inputs are explicit. No executed reconstruction or latent-family constitutive proof is claimed.
+
+B-M01 disposition FIXED / independently reconciled: WATBAL lines 361-390 contain exactly 10921 bytes first requested within the listed 321-390 recovery range. Thus the listed recovery requests total 202918 bytes = 191997 duplicate-request bytes + 10921 newly requested bytes. This does not imply exact delivered exposure after truncation.
+
+Verified final measurements:
+
+| Task | Unique source files | Selected unique source bytes | LSE subset | Difference from old LSE 264863 bytes |
+| --- | --- | --- | --- | --- |
+| 01 surface/soil | 20 | 2494374 | 321019 | +56156 / +21.2019% |
+| 02 solver/replay | 23 | 1200346 | 294619 | +29756 / +11.2345% |
+| 03 identity (unchanged) | 10 | 168600 | 99981 | -164882 / -62.2518% |
+| 04 physical closure | 17 | 1217616 | 298442 | +33579 / +12.6779% |
+
+Task02 is a mixed full-file/section selection: the added custody headers are 1977 + 1416 = 3393 bytes, not two full chapter reads. Its second correction is 29320 selected repeated-range bytes + 3649 repeated matched-line bytes = 32969. Task04's later rereads sum 179965; the final liquid-only supplement is 783 + 531 = 1314 repeated bytes; no additional unique source. Source-search matches and prior truncated repetitions stay separately disclosed. Full delivered chronology/runtime/token/quota totals remain unobserved. No missing required instruction was demonstrated for these bounded requirements-only tasks; actual package implementation/terminal-verifier bootstraps are not represented by these counts.
+
+Final bounded QA disposition: ACCEPTED corrected checker, consumer preservation, archive/reconstruction, and corrected requirements-selection evidence. No open B code/identity/measurement finding remains. Selective-reading reduction acceptance is not met for physical/solver tasks; required Rust failures remain FAIL despite exact baseline preservation. Overall adoption HOLD, original canonical v31 restoration and final independent terminal assurance remain necessary and are not certified by this artifact in advance.

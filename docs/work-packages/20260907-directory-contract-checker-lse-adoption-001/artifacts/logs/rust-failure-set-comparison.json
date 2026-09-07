@@ -151,5 +151,7 @@
   ],
   "added": [],
   "removed": [],
-  "verdict": "Both FAIL; exact failure-set preservation is not adoption PASS"
+  "verdict": "Both FAIL; exact failure-set preservation is not adoption PASS",
+  "restored_log": "rust-restored-final.log",
+  "restored_failure_set_equal": true
 }

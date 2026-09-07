@@ -1,6 +1,3 @@
-#[path = "support/sc_contract_text.rs"]
-mod sc_contract_text;
-
 use std::fs;
 use std::path::Path;
 
@@ -18,7 +15,7 @@ const PACKAGE: &str =
     "docs/work-packages/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001";
 
 fn read(path: &str) -> String {
-    sc_contract_text::read(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
+    fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
 }
 
 fn read_rust_tree(path: &Path) -> String {
@@ -206,8 +203,10 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
             "LSE water identity missing {required}"
         );
     }
-    assert!(read(LSE)
-        .contains("Hydrology exclusively owns ponded, litter-held and soil-layer water mass"));
+    assert!(
+        read(LSE)
+            .contains("Hydrology exclusively owns ponded, litter-held and soil-layer water mass")
+    );
 }
 
 #[test]
@@ -251,8 +250,10 @@ fn version_twenty_five_binds_laned_active_local_surface_routing() {
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
-    assert!(read("docs/specifications/science-contracts/index.md")
-        .contains("v25 admits the complete all-local SurfaceLiquid routing posture"));
+    assert!(
+        read("docs/specifications/science-contracts/index.md")
+            .contains("v25 admits the complete all-local SurfaceLiquid routing posture")
+    );
 }
 
 #[test]

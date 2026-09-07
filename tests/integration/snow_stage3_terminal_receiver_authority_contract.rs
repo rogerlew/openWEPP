@@ -1,5 +1,4 @@
-#[path = "support/sc_contract_text.rs"]
-mod sc_contract_text;
+use std::fs;
 
 const ENERGY: &str = "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md";
 const FREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
@@ -9,7 +8,7 @@ const TXN: &str = "docs/specifications/science-contracts/contracts/SC-VEGETATION
 const INDEX: &str = "docs/specifications/science-contracts/index.md";
 
 fn read(path: &str) -> String {
-    sc_contract_text::read(path)
+    fs::read_to_string(path)
         .unwrap_or_else(|error| panic!("read {path}: {error}"))
         .split_whitespace()
         .collect::<Vec<_>>()
@@ -171,8 +170,10 @@ fn terminal_liquid_and_energy_have_closed_non_aliasing_semantics() {
 #[test]
 fn partial_wb14_is_a_narrow_reconciled_exception_not_a_scaled_proxy() {
     let liquid = read(LIQUID);
-    assert!(liquid
-        .contains("fixed production base remains exactly 48 parent wall bins of 1800 seconds"));
+    assert!(
+        liquid
+            .contains("fixed production base remains exactly 48 parent wall bins of 1800 seconds")
+    );
     assert!(liquid.contains("terminal exception is a tagged receiver segment"));
     assert!(liquid.contains("unsealed variable-duration calls remain `SURFACELIQUID-E-008`"));
     assert!(liquid.contains("compute_green_ampt_interval_infiltration"));
@@ -234,7 +235,7 @@ fn restart_state_machine_and_canonical_tables_are_enforced() {
         ),
         (TXN, &["INV-VEGTRANSACTION-008"][..]),
     ] {
-        let raw = sc_contract_text::read(path).unwrap();
+        let raw = fs::read_to_string(path).unwrap();
         for invariant in invariants {
             assert!(
                 table_has_row(&raw, invariant),

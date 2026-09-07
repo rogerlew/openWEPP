@@ -1,6 +1,3 @@
-#[path = "support/sc_contract_text.rs"]
-mod sc_contract_text;
-
 use std::fs;
 use std::io::Write;
 use std::process::Command;
@@ -64,7 +61,7 @@ impl Drop for OracleTempRoot {
 }
 
 fn read(path: &str) -> String {
-    sc_contract_text::read(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
+    fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
 }
 
 fn section<'a>(text: &'a str, start: &str, end: &str) -> &'a str {
@@ -78,9 +75,7 @@ fn section<'a>(text: &'a str, start: &str, end: &str) -> &'a str {
 
 fn contains_table_row(table: &str, id: &str) -> bool {
     table.lines().any(|line| {
-        line.starts_with(&format!("| {id} |"))
-            || line.starts_with(&format!("| `{id}` |"))
-            || line.starts_with(&format!("| <a id=\"{id}\"></a> `{id}` |"))
+        line.starts_with(&format!("| {id} |")) || line.starts_with(&format!("| `{id}` |"))
     })
 }
 
@@ -545,15 +540,7 @@ fn adjacent_contracts_retain_current_owners_until_real_consumer_cutover() {
         ),
     ] {
         let adjacent = read(path);
-        let invariant_table = if adjacent.contains("contract_format: directory-v1") {
-            section(
-                &adjacent,
-                "## Canonical invariants",
-                "## Canonical obligations",
-            )
-        } else {
-            section(&adjacent, invariant_start, invariant_end)
-        };
+        let invariant_table = section(&adjacent, invariant_start, invariant_end);
         let guard_table = section(&adjacent, guard_start, guard_end);
         assert!(
             contains_table_row(invariant_table, invariant),
@@ -571,19 +558,11 @@ fn adjacent_contracts_retain_current_owners_until_real_consumer_cutover() {
 
     let energy =
         read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
-    let energy_invariants = if energy.contains("contract_format: directory-v1") {
-        section(
-            &energy,
-            "## Canonical invariants",
-            "## Canonical obligations",
-        )
-    } else {
-        section(
-            &energy,
-            "## Invariants and Invariant Guard Map",
-            "### Invariant Guard Map",
-        )
-    };
+    let energy_invariants = section(
+        &energy,
+        "## Invariants and Invariant Guard Map",
+        "### Invariant Guard Map",
+    );
     let energy_guards = section(
         &energy,
         "### Invariant Guard Map",
@@ -810,7 +789,9 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
         sha256("docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md"),
         "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4"
     );
-    assert!(definition.contains("6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4"));
+    assert!(
+        definition.contains("6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4")
+    );
 }
 
 #[test]
@@ -837,8 +818,11 @@ fn version_thirty_one_binds_private_validated_handoffs_without_trusting_executor
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
     let index = read(INDEX);
-    assert!(index
-        .contains("v31 admits only private immutable revision-bound V10/V11 validation handoffs"));
+    assert!(
+        index.contains(
+            "v31 admits only private immutable revision-bound V10/V11 validation handoffs"
+        )
+    );
 }
 
 #[test]
@@ -1055,11 +1039,13 @@ fn v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_autho
         parsed["oracle_independence"]["expected_values_generated_by_rust"],
         false
     );
-    assert!(parsed["checks"]
-        .as_object()
-        .expect("V3 check object")
-        .values()
-        .all(|value| value.as_bool() == Some(true)));
+    assert!(
+        parsed["checks"]
+            .as_object()
+            .expect("V3 check object")
+            .values()
+            .all(|value| value.as_bool() == Some(true))
+    );
 }
 
 fn assert_v3_radiation_and_aerodynamics(families: &Value) {
@@ -1153,11 +1139,13 @@ fn assert_v3_hydraulics_and_migration(families: &Value) {
     }
     assert_eq!(energy["wet_store_cap_active"], true);
     assert_eq!(energy["normalized_residuals"].as_array().unwrap().len(), 6);
-    assert!(energy["normalized_residuals"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .all(|residual| residual.as_f64().is_some_and(|value| value.abs() <= 1.0)));
+    assert!(
+        energy["normalized_residuals"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|residual| residual.as_f64().is_some_and(|value| value.abs() <= 1.0))
+    );
     assert_eq!(
         hydraulic["internal_maximum_evaluation"]["accepted_state_or_request"],
         false
@@ -1353,9 +1341,11 @@ fn assert_v3_failure_diagnostics(families: &Value) {
         "hydraulic_system",
         "outer_gas_energy_hydraulic_coupling",
     ] {
-        assert!(failures
-            .iter()
-            .any(|failure| failure["diagnostics"]["solve"] == solve));
+        assert!(
+            failures
+                .iter()
+                .any(|failure| failure["diagnostics"]["solve"] == solve)
+        );
     }
     for failure in failures {
         assert!(failure["candidate"].is_null());
@@ -1422,16 +1412,20 @@ fn assert_v3_failure_diagnostics(families: &Value) {
 fn assert_v3_poison_inventory(parsed: &Value) {
     let poisons = parsed["poisons"].as_object().unwrap();
     assert_eq!(poisons.len(), 40);
-    assert!(poisons
-        .values()
-        .all(|poison| poison["executed"].as_bool() == Some(true)));
+    assert!(
+        poisons
+            .values()
+            .all(|poison| poison["executed"].as_bool() == Some(true))
+    );
     for required_poison in V3_REQUIRED_POISONS {
         assert!(poisons.get(required_poison).is_some());
     }
-    assert!(poisons
-        .values()
-        .filter(|poison| poison.get("typed_error").is_some())
-        .all(|poison| poison["executed_by"] == "owning_validator"));
+    assert!(
+        poisons
+            .values()
+            .filter(|poison| poison.get("typed_error").is_some())
+            .all(|poison| poison["executed_by"] == "owning_validator")
+    );
 }
 
 fn assert_json_numbers_finite(value: &Value) {
@@ -1981,11 +1975,13 @@ fn v5_vectors_bind_exact_cap_conversions_tie_rule_operands_and_poison_inventory(
     let fixture = v5_fixture();
     assert_eq!(fixture["model_version"], "OPENWEPP_C3_WOODY_V5");
     assert_eq!(fixture["oracle_independence"]["calls_rust"], false);
-    assert!(fixture["checks"]
-        .as_object()
-        .expect("V5 checks")
-        .values()
-        .all(|value| value == true));
+    assert!(
+        fixture["checks"]
+            .as_object()
+            .expect("V5 checks")
+            .values()
+            .all(|value| value == true)
+    );
 
     let controlled = &fixture["families"]["controlled_layer_complementarity"];
     let fraction = controlled["tile_fraction"].as_f64().expect("tile fraction");
@@ -2311,11 +2307,13 @@ fn v6_vectors_bind_comparison_boundary_identity_transition_and_acceptance_firewa
         fixture["comparison"]["formula"],
         "abs(a-b) <= rtol*max(abs(a),abs(b))"
     );
-    assert!(fixture["checks"]
-        .as_object()
-        .expect("V6 checks")
-        .values()
-        .all(|value| value == true));
+    assert!(
+        fixture["checks"]
+            .as_object()
+            .expect("V6 checks")
+            .values()
+            .all(|value| value == true)
+    );
 
     let numeric_cases = fixture["families"]["numeric_boundary_cases"]
         .as_array()

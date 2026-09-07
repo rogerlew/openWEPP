@@ -225,6 +225,20 @@
       "bytes": 5128,
       "lines": 84,
       "sha256": "1c813fd08e34763808d3ac8a033d18d8c5176857aff76378aa126762166c8883"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+      "bytes": 121874,
+      "lines": 1073,
+      "sha256": "2861a7ba877468e9aa9893266b8c46a09b2ca8181b4b211db756108cb703defa",
+      "note": "reading evidence; not newly normative or required structural recovery input"
+    },
+    {
+      "path": "references/vendorable/surfex-v8/ini_csts.F90.source.html",
+      "bytes": 32016,
+      "lines": 292,
+      "sha256": "f39840df4d851efc70044f9e3ad62822371ed743c3c3a8055a4c940e2f86d73a",
+      "note": "reading evidence; not newly normative or required structural recovery input"
     }
   ]
 }

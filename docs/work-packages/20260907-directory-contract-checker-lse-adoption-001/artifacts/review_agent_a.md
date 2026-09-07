@@ -693,3 +693,215 @@ exposure measures, not delivered runtime tokens or quota use.
 These two FAIL verdicts leave the identity-only exercise 03 PASS intact. Scientific
 preservation of the reviewed candidate remains a separate PASS bounded to its hashes;
 required Rust gate FAIL and overall adoption HOLD remain unchanged.
+
+
+## Exercise 02 carried-context correction — independent reassessment
+
+Static: read the complete appended correction against the same frozen rubric and
+focused canonical numerical/source-order clauses. Ran: answer SHA-256 and byte
+arithmetic only; no production/test/experiment execution. Reviewed answer now
+15,858 bytes, SHA-256
+`c4cab6275126ab2dcafa207179752e0e886d88df0b77d37b53a4d284bf9afd9c`.
+The initial fresh exercise FAIL remains historical evidence; this is a correction
+from the same agent carrying its previous context, not a replacement fresh exercise.
+
+The correction supplies the previously identified FullSupply coordinate-only seed,
+full fixed-final reevaluation, iteration-zero semantics, restricted INV-112 scaling,
+INV-113 dual physical predicates, INV-131 inactive anchor and exact INV-163 reuse
+eligibility. It also supplies useful INV-162 complete-base/prospective evaluation and
+row-construction restrictions. These corrections are consistent with the retained
+primary authority. Its refined exclusions correctly distinguish unchanged inactive
+represented-snow operands from independent owner-constructor/carry/publication audits.
+The latter remain unperformed and are not required executions for a reading exercise.
+
+Verdict on the recorded corrected answer: FAIL, still incomplete under the unchanged
+rubric. In particular, the record still does not state:
+
+- Exact unknown and residual ordering beyond the dimension formula, physical FD unit
+  scales, and each governed residual/step threshold. The frozen rubric requires
+  these numerical conditions, not only generic preservation of norms/limits
+  (`nonlinear-solve.md:24`, `:75`).
+- The existing full `b=0` no-update witness and its precedence/eligibility conditions
+  before the first domain-valid halved witness, including that no new persisted or
+  public exponent field is authorized (`nonlinear-solve.md:47`). The corrected
+  diagnostic-only ci statement closes that particular qualifier, not the rest.
+- V30 checks at their original source positions: V8, then fallible ingress schedule,
+  then native resident proof, with earlier competing poison winning. Generic first
+  error/source-order preservation does not identify this concrete applicable ordering
+  (`map-custody.md:219`, `:236`, `:261`).
+
+These requirements were explicit in the frozen rubric before candidate exercises;
+this is not a new post-answer acceptance condition. Full chapter reads and invariant
+names are not silently substituted for the absent returned conclusions. Parent was
+asked whether the latest compact transcription omitted any of these details; the
+assessment is bounded to the recorded answer hash above and can be reconciled to
+additional original-answer evidence without altering the rubric or initial FAIL.
+
+The new 3,393 custody-header bytes are limited header reads, not full custody-owner
+implementation authority. Corrected selected LSE inventory is 294,619 bytes,
+29,756 larger than the original 264,863 (+11.23%). Total selected source inventory is
+1,200,346 bytes across 23 files. Repeated/truncated delivered exposure and workflow
+runtime tokens remain unobserved. No reduction, scientific qualification or adoption
+PASS follows. The independent candidate-preservation verdict remains separate.
+
+Parent subsequently confirmed all three remaining exercise 02 correction omissions
+were absent from the original returned correction; there was no transcription loss.
+The initial and first corrected-answer FAIL verdicts therefore stand. A further
+primary-authority reread would be another carried-context correction.
+
+
+## Exercise 01 completed reading and exercise 04 first correction
+
+Static: full recorded exercise 01 answer/ledger and exercise 04 appended correction,
+unchanged frozen rubrics, and focused support-admission/phase-owner primary clauses.
+Ran: read-only answer hashes, selected LSE byte arithmetic, and candidate set hash.
+No scientific workflow, tests, or runtime qualification executed. Parent confirmed
+that the remaining omissions below are actual answer omissions, not transcription
+loss. Initial incomplete/FAIL records remain; continuation is carried context.
+
+### Exercise 01: FAIL after completion of selected external reads
+
+Reviewed `exercise_01.md`: 7,687 bytes, SHA-256
+`a9e12f83cd401dedf32c3b54a19a28899f024642460256dd075e17c10a70e21b`.
+The completed answer correctly distinguishes canopy-covered snow-free conditions
+from represented-snow Stage-3 dispatch, preserves water/enthalpy/soil owners, gives
+the exact equilibrium-zero versus finite-capacity CN endpoints and N=1 boundary,
+and states harmonic conduction, once-only opposing transfer, current reciprocal
+radiation, immutable water authorization, complete original-beginning final rebuild,
+signed vapor and real hydrometeor/runon enthalpy, actual receiver partition and
+post-ingress no-recompute. It expands to full Vegetation, WATBAL, SurfaceLiquid,
+SnowFreeze, CoupledTime, RunoffPart and SnowEnergy authorities. The initial incomplete
+external-read posture is resolved for those selected files, not erased.
+
+The applicable physical support-admission rules are still absent: exact 60-second
+policy, zero support skips physical work, and below-domain positive support fails
+before Newton with complete owner rollback. Generic support inputs/shared chronology
+are insufficient. This omission is frozen rubric item 7 and the effective authority
+in `terminal-support.md:88` through its positive-support amendment, especially
+INV-117 (every physical solve carries the sealed admission receipt), together with
+INV-123 zero/below-domain behavior. Parent reports an initial stage message mentioned
+60 seconds while reading SnowFreeze, but the returned answer never supplied concrete
+zero/below-floor behavior. The applicable local support-admission chapter was also
+absent from the final selected LSE read ledger. That is an unresolved dependency
+expansion, not just a missing number in a summary.
+
+The fixed task is snow-free rule selection. Excluding actual represented-snow terminal
+execution and EXP-R qualification is reasonable; it does not exclude the physically
+applicable support-admission policy merely because that policy shares a chapter with
+terminal mechanisms. No independent snow endpoint implementation proof or unrelated
+experiment run is demanded by this assessment. If represented snow or a real terminal
+successor is reviewed, its event receipt, post-event-only operands, snow-soil receipt
+and separate endpoint/physical tolerances activate the broader frozen-rubric clauses.
+
+The returned local surface/soil mechanisms are substantially correct, but the frozen
+any-missing-applicable-rule criterion requires FAIL. Selected LSE bytes independently
+sum to 294,743 against 264,863: +29,880 (+11.28%), so no reduction. The recorded full
+unique source inventory is 2,468,098 bytes across 19 files. It is not measured workflow
+exposure; chronological repeat/delivered/runtime token totals remain unavailable.
+
+### Exercise 04 first correction: FAIL, one confirmed qualifier remains
+
+Reviewed corrected `exercise_04.md`: 12,861 bytes, SHA-256
+`72f5de3a71350d3dfacd188339ccc67fd145c71d17f7101da1668b2450858d87`.
+The correction closes zero-mass zero-energy/no-temperature, full accepted-child spill
+timing, canonical dyadic zero versus preserved high signed-zero semantics, and the
+missing p61 numerical starting operands. The supplied actual p61 support interval
+is distinguished from absent beginning high bits/retained tile credits; no invented
+numeric oracle or replacement latent-heat family is proposed. Additional precise
+normalization, parcel tolerance, phase/capacity, basis-conversion and parent chronology
+conditions are consistent with primary authority.
+
+The answer still does not explicitly require liquid-only WB14 or prohibit litter
+ice from supplying soil/runoff/infiltration. This was one of the original five
+identified omissions and is directly operative for the task's frozen-litter mass
+closure (`litter-phase.md:181`, `:289`, canonical INV-145 at `:414`). Its statement
+that litter ice is not snow or frozwt does not supply the missing receiver restriction.
+A full-artifact text check and parent confirmation establish that this is not compact
+transcription loss. The first correction therefore remains FAIL under the unchanged
+rubric. The original FAIL and four resolved findings remain separately visible.
+
+No new unique sources were added by this correction; selected LSE remains 298,442
+bytes (+12.68%). The measurement correction properly distinguishes the 202,918 bytes
+in listed recovery/refresh requests from 191,997 duplicate-request portions and
+10,921 first-request bytes. Neither is an exact delivered duplicate/runtime token
+count. The further 179,965 requested reread bytes and 2,015 heading-match bytes are
+reported source exposure, not additional unique authority or execution evidence.
+
+Candidate set SHA-256 remains
+`99ca67fb97351a7eaf495e89fc54720c314795acfbe7bcdc9c3ccab47a8596a8`.
+These exercise FAILs do not negate the separate clause-preservation PASS, and that
+PASS does not waive exercise completeness or the required Rust gate/adoption HOLD.
+
+
+## Final focused exercise assessment before candidate archival
+
+Static: latest supplements plus the previously assessed complete answers, against
+this unchanged frozen rubric and the fixed pre-candidate task scopes. Ran: read-only
+SHA-256 of these records and the entry-plus-14-chapter candidate set. No execution of
+physics, runtime audit, numerical closure, experiments or acceptance tests is claimed.
+The earlier initial/first-correction FAIL records above remain accurate. All later
+completeness work is carried context from the originally fresh agents; it is not a
+new fresh exercise, independent re-experiment or retrospective original PASS.
+
+| Exercise | Reviewed record SHA-256 | Bytes | Final bounded corrected-answer verdict |
+| --- | --- | ---: | --- |
+| 01 | `09a2133d69d2ef35641bce4e814eb98d0cf83e8eb04e7f7b749720bf07a30a25` | 10363 | PASS, corrected requirements selection |
+| 02 | `a95497a5f990400610b50a61f03dd9f077d4134faeba3ab09bb8ff377622654f` | 22078 | PASS, corrected requirements selection |
+| 04 | `956036dfda0665e93e49dafa564e9155ea40dbcf82b1feaf842834abcf654410` | 13564 | PASS, corrected requirements selection |
+
+Exercise 01 now reads the complete support chapter and explicitly states zero-support
+no-solve custody, positive below-floor pre-Newton rejection/rollback, exact
+60,000,000,000 ns admission, sealed receipt joins, profile restrictions, and the
+conditional actual post-event interval. Structural nanosecond chronology, adaptive
+truncation tolerances and physical admission remain distinct. This closes the
+missing applicable support dependency and rule selection without demanding unrelated
+represented-snow execution. Its previously established snow-free ownership,
+finite/equilibrium CN, signed vapor/ingress and actual receiver requirements remain.
+
+Exercise 02's second supplement gives exact vector ordering with inherited V8/V7
+within-block authority, FD unit scales, normalized residual and every governed step
+threshold, deterministic pivots/iteration/backtracking, full b=0 witness precedence,
+first-domain-valid halved witness with no new public exponent, and concrete V30
+forcing/V8/ingress/native-proof positions and competing-poison precedence. Together
+with the first correction's V10/FullSupply/inactive/leaf-reuse predicates and the
+original graph/fallibility/PC1/SG1/qualification conditions, this closes the remaining
+identified frozen-rubric requirements. Tests and source-real error proofs remain
+requirements, not fabricated completed evidence. No source-conformance or end-to-end
+owner audit is claimed; the previously assessed represented-snow conditional
+exclusions remain bounded accordingly.
+
+Exercise 04's final phase-to-receiver supplement explicitly restricts WB14/current
+ingress to liquid after vapor/phase acceptance, prohibits litter ice donation to
+infiltration/runoff/drainage/soil/frozwt or reclassification as ordinary ingress,
+and distinguishes phase vapor from liquid receiver supply. This closes the last
+remaining original omission. The preceding correction already supplies the other
+four: zero-mass parcel semantics, full-child spill timing, wire/high signed-zero
+distinction and missing p61 starting operands. Accepted-primitive closure remains
+distinct from independent constitutive recomputation; the unchanged `L_s(T)`
+discoverability observation supplies neither a new equation nor a science defect.
+
+No remaining applicable omission is identified in these final corrected bounded
+answers. That conclusion is not permission to omit additional dependencies if their
+claims expand to actual constructors, charged-map implementation, represented-snow
+heat closure, public outputs or full workflow qualification.
+
+| Exercise | Final selected LSE source bytes | Original LSE bytes | Change |
+| --- | ---: | ---: | ---: |
+| 01 | 321019 | 264863 | +56156 (+21.20%) |
+| 02 | 294619 | 264863 | +29756 (+11.23%) |
+| 04 | 298442 | 264863 | +33579 (+12.68%) |
+
+Exercise 01 adds 26,276 new support-chapter bytes; exercise 02's second supplement
+and exercise 04's final supplement add repeated reads only. These inventories do
+not establish delivered workflow exposure, runtime tokens or quota. Identity-only
+exercise 03 remains the sole demonstrated selected-LSE reduction. The corrections
+required further reading and cannot be reported as unassisted first-pass sufficiency.
+
+Rehashed candidate set remains
+`99ca67fb97351a7eaf495e89fc54720c314795acfbe7bcdc9c3ccab47a8596a8`.
+The previously concluded scientific clause-preservation PASS applies to that exact
+candidate. Required Rust gate FAIL and overall adoption HOLD remain unchanged; no
+corrected exercise verdict authorizes canonical adoption or changes historical
+production/qualification FAIL. Archiving the candidate and restoring original v31
+is consistent with that HOLD disposition. Independent final-cut verifiers must
+inspect the actual retained/archive/restored identities after that operation.

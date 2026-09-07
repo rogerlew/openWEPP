@@ -115,3 +115,71 @@ duplicate-request portions191997; newly requested portion10921. Original report
 mislabeled full recovery ledger as repetitions. Neither is exact delivered duplicate
 text due truncation and candidate drift. Excludes rg/metadata/hash/instructions supplied
 in messages. This follow-up counted bytes without displaying extra source text.
+
+## Affected-exercise completeness correction (carried context)
+Initial A FAIL retained; no rubric/review/answer given. Primary owning rules reread.
+Zero-mass crossing exact0energy/NO temperature; positive mass atTref legitimate0
+sensible energy/identity retained. Empty WB14 mixture hmix0 is arithmetic, not parcelT.
+Positive split Qchild=(mchild/mparent)*Qparent,Qremainder=Qparent−Qchild preserves
+parentT/reference. Empty litter pi0 elseWi0/(Wl0+Wi0), hul=.5(1−cos(piWl0/Wlmax)),
+hui=.5(1−cos(piWi0/Wimax)); raw vapor unchanged: empty zero iceweighted vapor but
+liquid may condense recipient humidity. No denominator floor/empty noexchange.
+Prephase0<=Wi*<=Wimax,Wl*>=0,finite positive depth/endingC; deposition not capped
+withdrawal but still capacityguard; only one melt/freeze positive,Tref both0.
+
+FiniteCpositive; equilibriumzero exactCdry=W=U=0,current trial atbothCN endpoints,
+no oldwarmstart physicalT; doesn't override V3positive endingC. N1 C1*dT/dt=barG,bottom0.
+One named normalization only: before covered liquid ledger/release or massweighted
+Stage3terminal liquid publication0x4071126666666667->0x4071126666666666,firstupper
+neighbor273.15 delta2^-44K. Persist canonicalT+0h together. Reference unchanged,
+belowref rejects,2ndupper+unchanged. No generic litter/residual/receiver normalization.
+
+Actual support absolute halfopen/common dt bits: correctly rounded integer->binary64
+then divide1e9. Day48 consecutive1800s parents. Child latest accepted parentlocal end,
+cumulative WB14, no persistent cursor increment until completeparent once. Current
+canopy release/cond uniform accepted child; runon producing support. Spill FULL CHILD
+[0,dt),not rainhour reassignment; WB14 each actual source boundary. Zero duration
+event,not physical child. Exact60s floor/admission not permission scale larger result.
+
+Authorization OFE sum AND tilebackconversion sum exact, even nominalfull may overdraw;
+only admitted roundingcase common downward scale, every positive rawrow preserved,
+both exactbounds. Tinyretention Mraw<=1e−14+64eps(abs(fWmax)+abs(fW)+abs(Ek)):
+retain0,storebits unchanged, route COMPLETE mass+enthalpy,not discard/carryzeroing.
+Parcel closure mass1e−14kgm−2+64eps*sumabs,energy1e−9Jm−2+64eps*sumabs; identity/
+capacity/ownership/finaluse remain exact.
+
+Carry zero uniquely(0,"0",0); nonzero sign±1/positive odd lowercasehex/no leading0/
+uniqueexponent, arbitraryprecision all reachable carries; equivalentnoncanonical reject.
+Does NOT normalize high signedzero: migration/noop preserves highbits,mirror signedzero
+mismatch rejects. Decode actually accepted binary64 operands,not higherprecision
+replacement. Fusion acceptedbinary64 Lf*(freeze−melt); grouping and binary64 area
+conversion BEFORE exact decode. No reassociation/exactrational improvement; nearest-
+even once,overflow reject,no clamp. Carry closure only, unchanged highT projection.
+
+Child positive contained parent; partial iff end<parentend,final if equal. Beginning
+markers exactpredecessor; partial energy/digests/chain advance retaining marker,final
+stamps once mirrors. No old preposture receipt implicit parse. Numerical reconstruction
+still needs actual beginninghigh/carry/mirrorbits,complete ordered primitive amounts
+AND physicaloperands,mass/capacity/T,phasevapor/admittedlatentfamily,support/chain,
+topology/fractions/areas,retainedgroups,WB14windows/partitions. Digest/formula insufficient.
+Retained p61 support176400000000000..178200000000000ns but beginninghighbits/retained
+tilecredit operands NOT preserved: capture unchangedfixture,never guess oracle from
+subULP predicate. Published WAT5 singlecredit not full p61/surface/soil substitute.
+
+Rereads all previouslyread:water1–175,176–22322752; litter1–165,166–340,341–42535950;
+soilcustody1–153,154–19517427; surfacecustody1–155,156–24223987;
+soil19–95,96–1315017; terminal88–1463717; CoupledTime224–2571897;
+SurfaceLiquid348–658,129–347,885–923,1018–1261,1262–1357,1436–1551,1662–1701,
+1789–1968 =69218. Total179965 requested repeated bytes+48headingmatches2015bytes
+(overlap). No truncation reported;8file hashes match frozen. No new unique sources,
+no runtime token/wrapper count or execution claim. Independent assessment pending.
+
+## Final phase-to-receiver supplement
+V3 WB14 availability and ALL admitted current-ingress parcels LIQUID ONLY, after
+vapor+boundedphase candidates pass,carryingV2liquid sensibleenthalpy. LitterICE cannot
+infiltrate,runoff,drain,satisfyWB14,enter soil liquid/frozwt or mutate soil. No
+reclassification as ingress/retention/overflow/routedrunoff. Sublimation/deposition
+separate phasevapor,notWB14. No retroactive ingress supply vapor/phase. Primary
+litter-phase#ingress-wb14-identity-restart-receipts-and-failure-posture and SurfaceLiquid
+frozen-forest-litter-surface-owner-v2-amendment. Reread litter174–186783bytes,
+SurfaceLiquid1107–1114531=1314 repeatbytes,new0;hashesunchanged,no truncation.

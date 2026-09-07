@@ -1,6 +1,3 @@
-#[path = "support/sc_contract_text.rs"]
-mod sc_contract_text;
-
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -1256,7 +1253,7 @@ fn snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable() {
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
-            "contract_version: 32",
+            "contract_version: 31",
             "INV-LANDSURFACEENERGY-160",
             "OBL-LANDSURFACEENERGY-C-015",
         ),
@@ -1267,7 +1264,7 @@ fn snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable() {
             "OBL-SURFACELIQUID-C-023",
         ),
     ] {
-        let contract = sc_contract_text::read(repository.join(path)).expect("read contract");
+        let contract = fs::read_to_string(repository.join(path)).expect("read contract");
         assert!(contract.contains(version), "{path} missing {version}");
         assert!(contract.contains(invariant), "{path} missing {invariant}");
         assert!(contract.contains(obligation), "{path} missing {obligation}");
@@ -1309,7 +1306,7 @@ fn native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reach
             "SNOWENERGY-ADR0044-NATIVE-INACTIVE-PREFIX-TRANSITION",
         ),
     ] {
-        let contract = sc_contract_text::read(repository.join(path)).expect("read contract");
+        let contract = fs::read_to_string(repository.join(path)).expect("read contract");
         for binding in [version, invariant, obligation, exposure] {
             assert!(contract.contains(binding), "{path} missing {binding}");
         }
@@ -1351,7 +1348,7 @@ fn canonical_covered_pending_adjudication_is_contract_bound() {
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
-            "contract_version: 32",
+            "contract_version: 31",
             "INV-LANDSURFACEENERGY-161",
             "OBL-LANDSURFACEENERGY-C-016",
             "LSE-V27-PENDING-ADJUDICATION",
@@ -1378,7 +1375,7 @@ fn canonical_covered_pending_adjudication_is_contract_bound() {
             "CT-COVERED-NONFINAL-PHYSICAL-ONLY",
         ),
     ] {
-        let contract = sc_contract_text::read(repository.join(path)).expect("read contract");
+        let contract = fs::read_to_string(repository.join(path)).expect("read contract");
         for binding in [version, invariant, obligation, exposure] {
             assert!(contract.contains(binding), "{path} missing {binding}");
         }

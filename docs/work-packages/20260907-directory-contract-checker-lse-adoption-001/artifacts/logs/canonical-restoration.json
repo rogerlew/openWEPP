@@ -1,0 +1,48 @@
+{
+  "restored": [
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+      "sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
+      "baseline": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "sha256": "aea74e997574cb620196ace0da204bfc29f8de3b0b276d4429d85c6448663e80",
+      "baseline": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+      "sha256": "b846eab2526cb30d6e8c84bdac00d489ac75f33ea5d603a82ff6fe3dfa07d77b",
+      "baseline": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "tests/integration/snow_stage3_terminal_receiver_authority_contract.rs",
+      "sha256": "3368d73c7fa64624f1f075a29b54ed74b224230992f5a8e904f5460944dd6428",
+      "baseline": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "tests/integration/solver_architecture_authority_contract.rs",
+      "sha256": "c3acbf7929cb9a27265578b9c6e0e98dfbf267ad5d62abe677bde56af3ff24c6",
+      "baseline": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+      "sha256": "0891e5139d06c0aaed3bc8c77a01f27e9e7a271d523ad514526f71c59b2c1bc8",
+      "baseline": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "tests/integration/surface_liquid_hydrology_custody_authority_contract.rs",
+      "sha256": "2f704c21538ede64f676d9d413b3522308136185465a19c98681382798b3d863",
+      "baseline": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    },
+    {
+      "path": "tests/integration/vegetation_boundary_authority_contract.rs",
+      "sha256": "4e9629b718cef9618396ad562f17aeb8816057b50f431028662cb2081ad7d551",
+      "baseline": "b932db101cce07d0860b45b5ecaa8ddb7f455b58"
+    }
+  ],
+  "removed_only_owned_candidate_members": 14,
+  "removed_only_owned_bridge": true,
+  "candidate_retained": "candidate-tree",
+  "original_lse_sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d"
+}

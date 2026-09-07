@@ -19,3 +19,12 @@ Both reviewers reject retrospective substitution of failure-set equality for PAS
 Fresh exercise findings are assessed against unchanged frozen rubric separately in
 context-usability.md; missing sufficient reads cannot be labeled PASS. Terminal
 verifiers independently verify recovery and final claims after substantive freeze.
+
+## Usability findings closed on corrected answers
+A's initial/first-correction FAILs for support admission, concrete V10/reuse/numerical/
+no-update/competing-error rules and phase/zero/full-child/exact-wire qualifiers remain
+in original exercise records. Focused same-agent rereads supplied concrete requirements
+without receiving rubric answers. Both reviewers accept final bounded requirements
+selection; not new fresh sessions or implementation proof. B-M01 metric discrepancy
+resolved as full recovery request versus duplicated portion, not silently rewritten.
+Physical selections still larger; no claimed full-pilot context benefit or adoption.

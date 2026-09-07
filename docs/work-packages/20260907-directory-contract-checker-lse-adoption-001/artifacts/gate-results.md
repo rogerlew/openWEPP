@@ -15,8 +15,8 @@ PASS is structural, not scientific/activation approval. Required gate failures r
 | Python syntax | PASS exit0 | .venv/bin/python -m py_compile tools/sc_contract_directory.py tools/check_sc_binding_exposure.py tools/release/check_sc_unit_compliance.py tests/python/test_sc_contract_directory.py |
 | Applicable Clippy | FAIL exit101 | nix develop -c cargo clippy same8 targets -- -D warnings; logs/clippy-candidate.log; unchanged production dependencies1136 errors |
 | Science preservation | PASS Static/Ran | Review A complete source audit100IDs/36fences/474table rows/275paragraphs/qualifiers; strict checker separate |
-| Fresh selective exercises | PENDING full assessment | exercise01–04 and context-usability.md;03 sufficient/reduced independently PASS, no runtime total |
-| Exact restoration/archive | PENDING terminal check | candidate-recovery.json,restore_candidate.py; parent isolated strict/unit PASS |
+| Fresh selective exercises | PASS corrected requirements; reduction only03 | exercise01–04 and context-usability.md;03 sufficient/reduced independently PASS, no runtime total |
+| Exact restoration/archive | PASS parent; independent terminal checks pending | candidate-recovery.json,restore_candidate.py; parent isolated strict/unit PASS |
 | Independent terminal assurance | NOT RUN yet | two new verifiers after corrected substantive freeze |
 
 ## Rust command and interpretation
@@ -34,3 +34,15 @@ triggered full correctness/anti-evasion campaign solely from this diff. No TESTG
 Inherited absent v31 production seam and frozen external runtime identity cannot be
 fixed in authorized document/consumer scope. Every raw FAIL remains FAIL. All-pass
 adoption gate remains unmet; no retrospective same-failure-set acceptance substitution.
+
+## HOLD restoration and final reconciliation
+Canonical LSE restored byte-for-byte v31 hash7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d.
+Seven tracked Rust consumers restored exactly;14owned chapters+bridge removed only
+from canonical tree, all exact candidate bytes retained. logs/canonical-restoration.json.
+Restored strict legacy PASS16,unit PASS,A0 PASS49/0; logs/*restored*. Original legacy
+PASS is explicitly not directory adoption. Candidate structural+unit reconstruction
+PASS via restore_candidate.py (new external40file fixture). Reviews accept corrected
+bounded reading answers; no physical-task reduction, initial failed attempts retained.
+No live Rust/source/science/instructions/historical package difference from baseline.
+Live changes only bounded checker/shared parser/unit+A0 consumers/Python tests and
+new package/catalog evidence. No review/test predicates removed or physics changed.

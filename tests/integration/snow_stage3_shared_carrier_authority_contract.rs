@@ -1,6 +1,3 @@
-#[path = "support/sc_contract_text.rs"]
-mod sc_contract_text;
-
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::PathBuf;
@@ -14,7 +11,7 @@ fn root() -> PathBuf {
 }
 
 fn read(relative: &str) -> String {
-    sc_contract_text::read(root().join(relative)).expect("authority file must exist")
+    fs::read_to_string(root().join(relative)).expect("authority file must exist")
 }
 
 fn approx(actual: &Value, expected: &Value, label: &str) {
@@ -423,10 +420,12 @@ fn independent_reference_model_reconstructs_carrier_boundary_and_ledgers() {
                 ticks.windows(2).all(|window| window[0] < window[1]),
                 "candidate ordering {id}"
             );
-            assert!(evaluations
-                .iter()
-                .all(|evaluation| canonical_tick(&evaluation["tick"])
-                    && canonical_tick(&evaluation["event_time_error_ns"])));
+            assert!(
+                evaluations
+                    .iter()
+                    .all(|evaluation| canonical_tick(&evaluation["tick"])
+                        && canonical_tick(&evaluation["event_time_error_ns"]))
+            );
         }
     }
 }
@@ -492,21 +491,27 @@ fn receipt_schemas_and_fixtures_close_wire_and_custody_shape() {
         assert_eq!(schema["additionalProperties"], false);
         assert!(!schema["required"].as_array().unwrap().is_empty());
     }
-    assert!(carrier_schema["required"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|key| key == "owner_map"));
-    assert!(carrier_schema["required"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|key| key == "mass_ledger"));
-    assert!(event_schema["required"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|key| key == "candidate_evaluations"));
+    assert!(
+        carrier_schema["required"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|key| key == "owner_map")
+    );
+    assert!(
+        carrier_schema["required"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|key| key == "mass_ledger")
+    );
+    assert!(
+        event_schema["required"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|key| key == "candidate_evaluations")
+    );
     assert_eq!(
         event_schema["$defs"]["tick"]["pattern"],
         "^(0|[1-9][0-9]*)$"
@@ -518,11 +523,13 @@ fn receipt_schemas_and_fixtures_close_wire_and_custody_shape() {
             .len()
             > 0
     );
-    assert!(fixtures["valid_event"]["candidate_ticks"]
-        .as_array()
-        .unwrap()
-        .windows(2)
-        .all(|pair| pair[0].as_str() < pair[1].as_str()));
+    assert!(
+        fixtures["valid_event"]["candidate_ticks"]
+            .as_array()
+            .unwrap()
+            .windows(2)
+            .all(|pair| pair[0].as_str() < pair[1].as_str())
+    );
     assert!(canonical_tick(
         &fixtures["valid_event"]["accepted_event_tick"]
     ));
@@ -541,19 +548,23 @@ fn receipt_schemas_and_fixtures_close_wire_and_custody_shape() {
         .collect::<Vec<_>>();
     let pre_receipts = valid_event["pre_support_receipts"].as_array().unwrap();
     assert_eq!(pre_receipts.len(), pre_participants.len());
-    assert!(pre_receipts
-        .iter()
-        .all(|receipt| pre_participants.contains(&receipt["participant_id"].as_str())));
+    assert!(
+        pre_receipts
+            .iter()
+            .all(|receipt| pre_participants.contains(&receipt["participant_id"].as_str()))
+    );
     let forged = &fixtures["invalid_event_support_join"];
     assert!(!pre_receipts.iter().any(|receipt| {
         receipt["participant_id"] == forged["participant_id"]
             && receipt["support_receipt_id"] == forged["support_receipt_id"]
     }));
-    assert!(!fixtures["invalid_event_unsorted_ticks"]
-        .as_array()
-        .unwrap()
-        .windows(2)
-        .all(|pair| pair[0].as_str() < pair[1].as_str()));
+    assert!(
+        !fixtures["invalid_event_unsorted_ticks"]
+            .as_array()
+            .unwrap()
+            .windows(2)
+            .all(|pair| pair[0].as_str() < pair[1].as_str())
+    );
     assert!(artifact.ends_with("artifacts/"));
 }
 
