@@ -1,0 +1,747 @@
+{
+  "baseline_revision": "3c6813d39",
+  "convention": "structural representative assignments using old template universal Core and prospective role routes; whole-file conservative authority convention; identical frozen task-state files; not actual session usage",
+  "before": {
+    "readings": {
+      "root": {
+        "path": "AGENTS.md",
+        "reason": "automatic root instruction"
+      },
+      "common": {
+        "path": "docs/work-packages/AGENTS.md",
+        "reason": "common instruction"
+      },
+      "state": {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
+        "reason": "assigned role/task applicable authority or current state",
+        "revision": "3c6813d39"
+      },
+      "handoff": {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
+        "reason": "assigned role/task applicable authority or current state",
+        "revision": "3c6813d39"
+      },
+      "science_state": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
+        "reason": "assigned role/task applicable authority or current state",
+        "revision": "3c6813d39"
+      },
+      "science_handoff": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
+        "reason": "assigned role/task applicable authority or current state",
+        "revision": "3c6813d39"
+      },
+      "plans": {
+        "path": "docs/codex_exec_plans.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "catalog": {
+        "path": "docs/work-packages/README.md",
+        "reason": "baseline required-reading template universal Core; kernel full-catalog requirement"
+      },
+      "active": {
+        "path": "docs/work-packages/active.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "strategy": {
+        "path": "docs/standards/testing-and-gate-strategy.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "prompt": {
+        "path": "docs/standards/prompt-wording-guidance.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "standards": {
+        "path": "docs/standards/AGENTS.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "kernel": {
+        "path": "docs/standards/kernel-work-package-preparation.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "science": {
+        "path": "docs/specifications/science-contracts/AGENTS.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "contract": {
+        "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+        "reason": "initial full touched contract required by science instructions"
+      },
+      "registry": {
+        "path": "docs/specifications/science-contracts/index.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "procedure": {
+        "path": "docs/specifications/science-contract-authoring-procedure.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "profile": {
+        "path": "docs/specifications/science-contracts/kernel-process-contract-profile.md",
+        "reason": "assigned role/task applicable authority or current state",
+        "requires": [
+          "schema"
+        ]
+      },
+      "schema": {
+        "path": "docs/specifications/science-contract-spec.md",
+        "reason": "recursive mandatory profile/schema dependency"
+      },
+      "units": {
+        "path": "docs/specifications/unit-governance.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "correctness": {
+        "path": "docs/specifications/correctness-authority-model.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "solver": {
+        "path": "docs/standards/numerical-solver-architecture.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "source": {
+        "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+        "reason": "mechanism-specific source expansion"
+      },
+      "tool": {
+        "path": "tools/agents/find-agents",
+        "reason": "mechanism-specific administrative source expansion"
+      },
+      "review_config": {
+        "path": ".codex/agents/rust_code_reviewer.toml",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "qa_config": {
+        "path": ".codex/agents/rust_qa_reviewer.toml",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "runner_config": {
+        "path": ".codex/agents/comparator_suite_runner.toml",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "verifier_config": {
+        "path": ".codex/agents/package_verifier.toml",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "obligations": {
+        "path": "docs/work-packages/science-obligations.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "template": {
+        "path": "docs/prompt_templates/assurance-findings-template.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "role_author": {
+        "path": "docs/work-packages/role-authoring.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "role_implementer": {
+        "path": "docs/work-packages/role-implementation.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "role_reviewer": {
+        "path": "docs/work-packages/role-review.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "role_verifier": {
+        "path": "docs/work-packages/role-verification.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "role_runner": {
+        "path": "docs/work-packages/role-runner.md",
+        "reason": "assigned role/task applicable authority or current state"
+      }
+    },
+    "roles": {
+      "administrative.author": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "plans",
+          "catalog",
+          "strategy",
+          "prompt",
+          "standards"
+        ],
+        "expansion": [
+          "tool"
+        ]
+      },
+      "administrative.implementer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "plans",
+          "catalog",
+          "strategy"
+        ],
+        "expansion": [
+          "tool"
+        ]
+      },
+      "administrative.correctness_reviewer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "review_config",
+          "plans",
+          "catalog",
+          "strategy"
+        ],
+        "expansion": [
+          "tool"
+        ]
+      },
+      "administrative.qa_reviewer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "qa_config",
+          "plans",
+          "catalog",
+          "strategy"
+        ],
+        "expansion": [
+          "tool"
+        ]
+      },
+      "administrative.verifier": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "plans",
+          "catalog",
+          "strategy"
+        ],
+        "expansion": [
+          "tool"
+        ]
+      },
+      "administrative.runner": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "runner_config"
+        ],
+        "expansion": []
+      },
+      "science_sensitive.author": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "plans",
+          "catalog",
+          "strategy",
+          "prompt",
+          "standards",
+          "science",
+          "contract",
+          "registry",
+          "procedure",
+          "profile",
+          "schema",
+          "units",
+          "correctness",
+          "solver",
+          "kernel"
+        ],
+        "expansion": [
+          "source"
+        ]
+      },
+      "science_sensitive.implementer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "plans",
+          "catalog",
+          "strategy",
+          "science",
+          "contract",
+          "registry",
+          "procedure",
+          "profile",
+          "schema",
+          "units",
+          "correctness",
+          "solver"
+        ],
+        "expansion": [
+          "source"
+        ]
+      },
+      "science_sensitive.correctness_reviewer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "review_config",
+          "plans",
+          "catalog",
+          "strategy",
+          "science",
+          "contract",
+          "registry",
+          "procedure",
+          "profile",
+          "schema",
+          "units",
+          "correctness",
+          "solver"
+        ],
+        "expansion": [
+          "source"
+        ]
+      },
+      "science_sensitive.qa_reviewer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "qa_config",
+          "plans",
+          "catalog",
+          "strategy",
+          "science",
+          "contract",
+          "registry",
+          "procedure",
+          "profile",
+          "schema",
+          "units",
+          "correctness",
+          "solver"
+        ],
+        "expansion": [
+          "source"
+        ]
+      },
+      "science_sensitive.verifier": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "plans",
+          "catalog",
+          "strategy",
+          "science",
+          "contract",
+          "registry",
+          "procedure",
+          "profile",
+          "schema",
+          "units",
+          "correctness",
+          "solver"
+        ],
+        "expansion": [
+          "source"
+        ]
+      },
+      "science_sensitive.runner": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "runner_config"
+        ],
+        "expansion": []
+      }
+    }
+  },
+  "after": {
+    "readings": {
+      "root": {
+        "path": "AGENTS.md",
+        "reason": "automatic root instruction"
+      },
+      "common": {
+        "path": "docs/work-packages/AGENTS.md",
+        "reason": "common instruction"
+      },
+      "state": {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
+        "reason": "assigned role/task applicable authority or current state",
+        "revision": "3c6813d39"
+      },
+      "handoff": {
+        "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
+        "reason": "assigned role/task applicable authority or current state",
+        "revision": "3c6813d39"
+      },
+      "science_state": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
+        "reason": "assigned role/task applicable authority or current state",
+        "revision": "3c6813d39"
+      },
+      "science_handoff": {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
+        "reason": "assigned role/task applicable authority or current state",
+        "revision": "3c6813d39"
+      },
+      "plans": {
+        "path": "docs/codex_exec_plans.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "catalog": {
+        "path": "docs/work-packages/README.md",
+        "reason": "baseline required-reading template universal Core; kernel full-catalog requirement"
+      },
+      "active": {
+        "path": "docs/work-packages/active.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "strategy": {
+        "path": "docs/standards/testing-and-gate-strategy.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "prompt": {
+        "path": "docs/standards/prompt-wording-guidance.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "standards": {
+        "path": "docs/standards/AGENTS.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "kernel": {
+        "path": "docs/standards/kernel-work-package-preparation.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "science": {
+        "path": "docs/specifications/science-contracts/AGENTS.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "contract": {
+        "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+        "reason": "initial full touched contract required by science instructions"
+      },
+      "registry": {
+        "path": "docs/specifications/science-contracts/index.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "procedure": {
+        "path": "docs/specifications/science-contract-authoring-procedure.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "profile": {
+        "path": "docs/specifications/science-contracts/kernel-process-contract-profile.md",
+        "reason": "assigned role/task applicable authority or current state",
+        "requires": [
+          "schema"
+        ]
+      },
+      "schema": {
+        "path": "docs/specifications/science-contract-spec.md",
+        "reason": "recursive mandatory profile/schema dependency"
+      },
+      "units": {
+        "path": "docs/specifications/unit-governance.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "correctness": {
+        "path": "docs/specifications/correctness-authority-model.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "solver": {
+        "path": "docs/standards/numerical-solver-architecture.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "source": {
+        "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+        "reason": "mechanism-specific source expansion"
+      },
+      "tool": {
+        "path": "tools/agents/find-agents",
+        "reason": "mechanism-specific administrative source expansion"
+      },
+      "review_config": {
+        "path": ".codex/agents/rust_code_reviewer.toml",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "qa_config": {
+        "path": ".codex/agents/rust_qa_reviewer.toml",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "runner_config": {
+        "path": ".codex/agents/comparator_suite_runner.toml",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "verifier_config": {
+        "path": ".codex/agents/package_verifier.toml",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "obligations": {
+        "path": "docs/work-packages/science-obligations.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "template": {
+        "path": "docs/prompt_templates/assurance-findings-template.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "role_author": {
+        "path": "docs/work-packages/role-authoring.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "role_implementer": {
+        "path": "docs/work-packages/role-implementation.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "role_reviewer": {
+        "path": "docs/work-packages/role-review.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "role_verifier": {
+        "path": "docs/work-packages/role-verification.md",
+        "reason": "assigned role/task applicable authority or current state"
+      },
+      "role_runner": {
+        "path": "docs/work-packages/role-runner.md",
+        "reason": "assigned role/task applicable authority or current state"
+      }
+    },
+    "roles": {
+      "administrative.author": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "role_author",
+          "strategy",
+          "plans",
+          "prompt",
+          "standards",
+          "active"
+        ],
+        "expansion": [
+          "tool"
+        ]
+      },
+      "administrative.implementer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "role_implementer",
+          "strategy"
+        ],
+        "expansion": [
+          "tool"
+        ]
+      },
+      "administrative.correctness_reviewer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "review_config",
+          "role_reviewer",
+          "strategy",
+          "template"
+        ],
+        "expansion": [
+          "tool"
+        ]
+      },
+      "administrative.qa_reviewer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "qa_config",
+          "role_reviewer",
+          "strategy",
+          "template"
+        ],
+        "expansion": [
+          "tool"
+        ]
+      },
+      "administrative.verifier": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "role_verifier",
+          "strategy",
+          "verifier_config",
+          "template"
+        ],
+        "expansion": [
+          "tool"
+        ]
+      },
+      "administrative.runner": {
+        "bootstrap": [
+          "root",
+          "common",
+          "state",
+          "handoff",
+          "runner_config",
+          "role_runner"
+        ],
+        "expansion": []
+      },
+      "science_sensitive.author": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "role_author",
+          "strategy",
+          "plans",
+          "prompt",
+          "standards",
+          "active",
+          "science",
+          "contract",
+          "registry",
+          "procedure",
+          "profile",
+          "schema",
+          "units",
+          "correctness",
+          "solver",
+          "obligations",
+          "kernel"
+        ],
+        "expansion": [
+          "source"
+        ]
+      },
+      "science_sensitive.implementer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "role_implementer",
+          "strategy",
+          "science",
+          "contract",
+          "registry",
+          "procedure",
+          "profile",
+          "schema",
+          "units",
+          "correctness",
+          "solver",
+          "obligations"
+        ],
+        "expansion": [
+          "source"
+        ]
+      },
+      "science_sensitive.correctness_reviewer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "review_config",
+          "role_reviewer",
+          "strategy",
+          "template",
+          "science",
+          "contract",
+          "registry",
+          "procedure",
+          "profile",
+          "schema",
+          "units",
+          "correctness",
+          "solver",
+          "obligations"
+        ],
+        "expansion": [
+          "source"
+        ]
+      },
+      "science_sensitive.qa_reviewer": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "qa_config",
+          "role_reviewer",
+          "strategy",
+          "template",
+          "science",
+          "contract",
+          "registry",
+          "procedure",
+          "profile",
+          "schema",
+          "units",
+          "correctness",
+          "solver",
+          "obligations"
+        ],
+        "expansion": [
+          "source"
+        ]
+      },
+      "science_sensitive.verifier": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "role_verifier",
+          "strategy",
+          "verifier_config",
+          "template",
+          "science",
+          "contract",
+          "registry",
+          "procedure",
+          "profile",
+          "schema",
+          "units",
+          "correctness",
+          "solver",
+          "obligations"
+        ],
+        "expansion": [
+          "source"
+        ]
+      },
+      "science_sensitive.runner": {
+        "bootstrap": [
+          "root",
+          "common",
+          "science_state",
+          "science_handoff",
+          "runner_config",
+          "role_runner"
+        ],
+        "expansion": []
+      }
+    }
+  }
+}

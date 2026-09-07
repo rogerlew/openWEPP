@@ -24,42 +24,20 @@
 - If pip is missing, run `.venv/bin/python -m ensurepip --upgrade` before installing packages.
 
 ## Core Directives
-- `??` in a prompt means provide critical analysis only; do not implement code.
-- Ask for clarification when requirements or debug context are ambiguous.
-- Do not stop at an internal milestone, intake result, contract-first gate, partial
-  implementation, or validation subset when the user authorized a larger end-to-end
-  checkpoint. Continue through review, verification, and truthful disposition while
-  safe in-scope work remains. Hand back early only for a genuine authority, safety,
-  external-state, or user-decision blocker; context length, effort, elapsed time, or a
-  convenient progress boundary are not blockers.
-- Keep docs terse: Codex loads context in bulk and does not compress verbose guidance.
-- Work packages are autonomous execution specs; front-load enough planning, context, evidence, review, verification, and gates for no-intervention execution.
-- Do not split work into tiny diagnostic-only packages unless authority, safety, validation-cost, or write-set boundaries require it.
-- Substantive implementation work must occur within an authorized `docs/work-packages/<id>/` scope, or as user-directed follow-on work from that package.
-- If follow-on work extends beyond the current package objective/write set, evaluate closing the package and planning a new one first.
-- For package-required subagent review, verification, comparator, or parallel work,
-  follow `docs/work-packages/AGENTS.md` and `docs/standards/prompt-wording-guidance.md`.
-- Producer-only, skeleton-only, counter-only, or shadow-only evidence cannot close
-  endpoint, direct-path, publication, or cutover claims; prove the real consumer reads it.
-- Do not create or switch git branches unless the user explicitly asks.
-- Keep required scaffold/intermediate commits local and push once per stable
-  increment unless an explicit remote checkpoint is necessary.
+- `??` means critical analysis only; no implementation.
+- Work within authorized packages or user-directed follow-on scope; see
+  docs/work-packages/AGENTS.md for execution, independent closure and handoff.
+- Continue the full authorized checkpoint while safe in-scope work remains.
+  Correctness takes precedence: unresolved invariants/acceptance cannot close.
+- Preserve unrelated dirty/staged work. Do not create/switch branches without
+  explicit user direction. Keep scoped commits local unless pushing is authorized.
 - TESTGATE and the gate planner are frozen historical tooling. Do not dispatch,
-  repair, or extend them for prospective work. Run applicable canonical
-  validation commands directly and record what actually ran. Defunct Omarchy
-  and retained forest1 records remain historical evidence and do not occupy a
-  live queue.
-- Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
-- Production numerical solvers must not accrete historical-version, eligibility,
-  convergence, or recovery fallbacks. Use one canonical solver per physical regime;
-  nonconvergence uses its canonical adaptive response or a typed failure, and successors
-  delete superseded paths. Follow `docs/standards/numerical-solver-architecture.md` and
-  ADR-0044; Stage 3 v33--v57 is quarantined for removal and may not be extended or copied.
-- Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
-- Execute the full authorized checkpoint through gates, review, disposition,
-  and delivery; intermediate progress or HOLD is not a stopping condition
-  while safe in-scope corrective work remains.
-- Inherit the agentic governance posture from wepppy. openWEPP is the simulation engine, not a separate culture.
+  repair, extend or replace them with prospective authority machinery.
+- No silent dependency fallbacks. One canonical numerical solver per physical
+  regime; nonconvergence follows its canonical adaptive response or typed failure.
+  Follow docs/standards/numerical-solver-architecture.md and ADR-0044 for solver
+  work; superseded paths are deleted, quarantined historical chains not extended.
+- openWEPP inherits wepppy's agentic governance posture.
 
 ## Kernel and Science Authority
 - For kernel-affecting work, including runtime projection that controls kernel branches, read `docs/specifications/science-contracts/AGENTS.md` before edits.
@@ -126,35 +104,18 @@ openWEPP is the Rust simulation engine. openWEPP owns its architecture and scien
 - Tests: `tests/AGENTS.md`.
 - Numerics and key ADRs: `docs/numerics/README.md`; ADR-0004 (subprocess), ADR-0011 (architecture), ADR-0012 (baseline), ADR-0017 (comparator), and ADR-0044 (solver anti-accretion).
 
-## Subsystem Maps
-- Nearest `AGENTS.md` wins. See the documentation map above for local playbooks; add new subsystem entries there rather than duplicating detailed guidance in root.
-
 ## Security Guardrails
 - Never commit secrets or tokens.
 - Preserve validation, typed guards, fail-closed behavior, and serialization safeguards.
 - For edits touching external-authority suite posture, cohort fixtures, or required-case bindings, run source-level anti-evasion guards before disposition: `bash tools/release/check_authority_suite_antievasion.sh` and `cargo nextest run --test auth11_required_suite_obligation_guards_contract`.
-
-## Agent Feedback Loop
-- Treat avoidable friction as diagnostic signal about codebase, docs, tooling, or task framing.
-- Surface concise, actionable feedback when it materially improves clarity or agent-facing interfaces.
-- Distinguish confirmed defects, local painpoints, and speculative improvements.
 
 ## Truthfulness
 - Match verbs to evidence. Label evidence class (`Static:` vs `Ran:`) at the top of reviews and audits.
 - A validator (`cargo check`, `cargo build`) is not the workflow (`cargo nextest run`, comparator harness run).
 - When skipping execution, say so plainly.
 
-## Root Exclusions
-- Do not place long tutorials, prompt templates, package procedures, or contract authoring manuals in this file.
-- Do not duplicate subsystem instructions already maintained in nested `AGENTS.md` files.
-- Move growing sections to canonical docs and leave short binding pointers here.
-
-## If Blocked
-- Check the nearest subsystem `AGENTS.md`, then module README, contract, package, and tests.
-- Reuse existing patterns from adjacent code before introducing new abstractions.
-- Ask a human when requirements are unclear or an external dependency blocks progress.
-
-## Root Size Policy
-- Keep this file within roughly 100-160 lines.
-- If a section grows beyond quick onboarding value, move detail to a canonical doc and leave a pointer.
-- Prefer stable links over copied prose; re-check line count after major edits.
+## Guidance maintenance
+Keep root a concise invariant/router. Procedures belong in their task-owning
+guides. Find nearest instructions, then targeted module/contract/package evidence
+when blocked. Record confirmed tooling friction concisely. Never turn reading
+targets into permission to omit authority or stop authorized work.

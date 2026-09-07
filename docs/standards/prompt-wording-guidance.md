@@ -46,12 +46,8 @@ scope.
   authoring/profile documents as pre-edit reads unless the refactor touches
   contract/kernel authority.
 
-3b. Record required-reading budget in kickoff prompts
-- Kickoff prompts must record local required-reading byte total and threshold
-  disposition using the canonical thresholds in
-  `docs/standards/kernel-work-package-preparation.md`.
-- For `REQUIRES-JUSTIFICATION`, include a short rationale for each heavy
-  required pre-read and why it cannot move to `On-demand`.
+3b. Record separate reading measurements
+- Use Context measurements below; necessary authority stays mandatory.
 
 4. Preserve mandatory technical requirements in every prompt
 - Bind governing validation obligations, direct command execution, exact
@@ -108,7 +104,7 @@ scope.
   comparator/parity suites, release gates, population/cohort batches, optional
   operator QA, or explicit metric-package coverage/CRAP, the
   prompt MUST *require* — not merely authorize — spawning the
-  `comparator_suite_runner` subagent (gpt-5.3-codex-spark) for those runs, with an
+  `comparator_suite_runner` subagent (existing locally supported configuration) for those runs, with an
   imperative directive (see the `Subagent requirement:` template line).
 - The parent agent **must not** execute heavy batch/closure runs on its own
   premium model when the subagent is available. If the subagent is genuinely
@@ -120,13 +116,9 @@ scope.
 - If no heavy gate is selected and no other subagents are required, state
   `Subagent requirement: none`.
 
-5. Required fallback when a false-positive block occurs
-- Retry with a shorter prompt that includes only:
-  - scope sentence,
-  - single phase objective,
-  - explicit file list.
-- If blocked again, split further into micro-prompts (one file group each).
-- Record the block event and resumed prompt shape in package artifacts.
+5. Unavailable execution
+- Record actual failure before permitted parent fallback; retain compact logs.
+- Do not repeatedly retry exhausted services or silently substitute models.
 
 6. Prompt template (copy/paste)
 - `Scope: local repository science-contract/kernel migration task; flat-file`
@@ -138,8 +130,8 @@ scope.
   `Core: <explicit path list>.`
   `Conditional: <path list + trigger>.`
   `On-demand: <path list for touched mechanisms only>.`
-- `Required-reading budget: <local_bytes_total>,`
-  `<OK|WARN|REQUIRES-JUSTIFICATION>; map: artifacts/required-reading-map.md.`
+- `Reading: bootstrap <unique/repeated bytes>; expansion <bytes/trigger>;`
+  `workflow-total <observed or UNOBSERVED>; map: artifacts/required-reading-map.md.`
 - `Files: <explicit path list>.`
 - `Task: execute package objective end-to-end for declared scope.`
 - `Constraints: contract-first sequencing; canonical SC authority;`
@@ -178,3 +170,33 @@ Phase-only exception template:
 - `Phase: <A|B|C|D> only.`
 - `Exception rationale: <why phase-only is required now>.`
 - `Next prompt trigger: <condition that starts follow-on prompt>.`
+
+## Context measurements
+Bootstrap includes automatically loaded instructions (known ancestor and runtime
+role instructions), required role guidance, task state and initial authority.
+Target 32-64 KiB per representative role; shared always-read governance preferably
+<=16 KiB. Smaller sufficient sets are fine. Necessary overruns name files, bytes
+and mechanism triggers. Never omit authority or stop authorized work for a target.
+
+Task-specific expansion counts source, contract and evidence read when triggered.
+A later mandatory read is expansion, not eliminated cost. Workflow-total includes
+parent/children and repeated reads only insofar as actual telemetry observes them.
+Missing runtime exposure is UNOBSERVED. Structural file-set reports are not
+session usage, tokens, quota or prices.
+
+Use tools/agents/context_report.py with full-file/line-range selections, automatic
+exposure counts and recursive required dependencies. Separate unique byte coverage
+from repeated exposure. Compare the same six roles (author, implementer,
+correctness reviewer, QA reviewer, verifier, runner), administrative and
+science-sensitive tasks, and selection convention before/after. Report expansion.
+Mandatory pointers count recursively; no quota claim without comparable telemetry.
+The report is read-only, never context admission authority.
+
+## Role configuration
+Correctness high; QA medium; verification low for deterministic checks or medium
+for interpretation; runner lowest supported suitable effort. Retain an appropriate
+existing runner model; verify local support, never invent availability/prices.
+Explicit justified xhigh escalation is recorded in the assigned artifact without
+new ceremony. Independence and number of reviews/verifications never decrease.
+Record configured/requested separately from effective session metadata; otherwise
+UNOBSERVED. Limit telemetry to this package's sessions.

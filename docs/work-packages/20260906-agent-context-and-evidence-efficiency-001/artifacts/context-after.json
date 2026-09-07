@@ -1,0 +1,1924 @@
+{
+  "measurement": "structural declared file/range bytes, not session telemetry",
+  "revision": "working-tree",
+  "roles": {
+    "administrative.author": {
+      "bootstrap": {
+        "unique_bytes": 71218,
+        "exposure_bytes": 71218,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
+            "lines": [
+              1,
+              53
+            ],
+            "bytes": 7308,
+            "exposures": 1,
+            "sha256": "47ac6c2375c199d718f62f87dc79939dcd59effb2de09f79751cea96e4856be5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
+            "lines": [
+              1,
+              3
+            ],
+            "bytes": 293,
+            "exposures": 1,
+            "sha256": "e34374c04b758327fee692a38b111ed96e0b94503dc083cabf14ef3b364b87bb",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-authoring.md",
+            "lines": [
+              1,
+              28
+            ],
+            "bytes": 2393,
+            "exposures": 1,
+            "sha256": "78077ed464ae31296abb902f92467d65b93719a1658e0dab0d28ab6fb057a830",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              494
+            ],
+            "bytes": 25142,
+            "exposures": 1,
+            "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/codex_exec_plans.md",
+            "lines": [
+              1,
+              39
+            ],
+            "bytes": 2473,
+            "exposures": 1,
+            "sha256": "51ae49b7b8345c9735411c694cc60443e35c536dcf44c8854292098efd920aeb",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/prompt-wording-guidance.md",
+            "lines": [
+              1,
+              202
+            ],
+            "bytes": 12057,
+            "exposures": 1,
+            "sha256": "294385612b565fe8be3e9e530caa0792c901406ecf53abc9402649e5568ffe3f",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/AGENTS.md",
+            "lines": [
+              1,
+              58
+            ],
+            "bytes": 4052,
+            "exposures": 1,
+            "sha256": "b62a33d9a70a3d3f45e7eccdcf05ca3a194486fcdbfc7bd439371cf8f0ae3015",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/active.md",
+            "lines": [
+              1,
+              17
+            ],
+            "bytes": 1350,
+            "exposures": 1,
+            "sha256": "62e52e7ed09ae285d27b09d5b1236e4eca04445d9bf23191a213c889ae370413",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 5183,
+        "exposure_bytes": 5183,
+        "reads": [
+          {
+            "path": "tools/agents/find-agents",
+            "lines": [
+              1,
+              181
+            ],
+            "bytes": 5183,
+            "exposures": 1,
+            "sha256": "a81ca556f560999ff4bb44f233ae1c0d281a9b7248b17735cfb18f815277dd89",
+            "reason": "mechanism-specific administrative source expansion"
+          }
+        ]
+      },
+      "combined_unique_bytes": 76401
+    },
+    "administrative.implementer": {
+      "bootstrap": {
+        "unique_bytes": 51620,
+        "exposure_bytes": 51620,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
+            "lines": [
+              1,
+              53
+            ],
+            "bytes": 7308,
+            "exposures": 1,
+            "sha256": "47ac6c2375c199d718f62f87dc79939dcd59effb2de09f79751cea96e4856be5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
+            "lines": [
+              1,
+              3
+            ],
+            "bytes": 293,
+            "exposures": 1,
+            "sha256": "e34374c04b758327fee692a38b111ed96e0b94503dc083cabf14ef3b364b87bb",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-implementation.md",
+            "lines": [
+              1,
+              41
+            ],
+            "bytes": 2727,
+            "exposures": 1,
+            "sha256": "0074b9d95851bdf270136d5204794d84ef241572f4a015e13f0d037d30da6d9e",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              494
+            ],
+            "bytes": 25142,
+            "exposures": 1,
+            "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 5183,
+        "exposure_bytes": 5183,
+        "reads": [
+          {
+            "path": "tools/agents/find-agents",
+            "lines": [
+              1,
+              181
+            ],
+            "bytes": 5183,
+            "exposures": 1,
+            "sha256": "a81ca556f560999ff4bb44f233ae1c0d281a9b7248b17735cfb18f815277dd89",
+            "reason": "mechanism-specific administrative source expansion"
+          }
+        ]
+      },
+      "combined_unique_bytes": 56803
+    },
+    "administrative.correctness_reviewer": {
+      "bootstrap": {
+        "unique_bytes": 52487,
+        "exposure_bytes": 52487,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
+            "lines": [
+              1,
+              53
+            ],
+            "bytes": 7308,
+            "exposures": 1,
+            "sha256": "47ac6c2375c199d718f62f87dc79939dcd59effb2de09f79751cea96e4856be5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
+            "lines": [
+              1,
+              3
+            ],
+            "bytes": 293,
+            "exposures": 1,
+            "sha256": "e34374c04b758327fee692a38b111ed96e0b94503dc083cabf14ef3b364b87bb",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": ".codex/agents/rust_code_reviewer.toml",
+            "lines": [
+              1,
+              27
+            ],
+            "bytes": 1458,
+            "exposures": 1,
+            "sha256": "0c722d5b20fa097c4428460a0cfcb1c8705dd83409b3f807bd164430a8128749",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-review.md",
+            "lines": [
+              1,
+              7
+            ],
+            "bytes": 1400,
+            "exposures": 1,
+            "sha256": "2193e9538ad22dad5678fc5bb59080f686a543f697fec4983208214a73cc5eb1",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              494
+            ],
+            "bytes": 25142,
+            "exposures": 1,
+            "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/prompt_templates/assurance-findings-template.md",
+            "lines": [
+              1,
+              12
+            ],
+            "bytes": 736,
+            "exposures": 1,
+            "sha256": "95373d3c7df1f0a7e3ad7640fa22c0e137095e6cf5c4d92e3803846eb3f6ee83",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 5183,
+        "exposure_bytes": 5183,
+        "reads": [
+          {
+            "path": "tools/agents/find-agents",
+            "lines": [
+              1,
+              181
+            ],
+            "bytes": 5183,
+            "exposures": 1,
+            "sha256": "a81ca556f560999ff4bb44f233ae1c0d281a9b7248b17735cfb18f815277dd89",
+            "reason": "mechanism-specific administrative source expansion"
+          }
+        ]
+      },
+      "combined_unique_bytes": 57670
+    },
+    "administrative.qa_reviewer": {
+      "bootstrap": {
+        "unique_bytes": 52078,
+        "exposure_bytes": 52078,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
+            "lines": [
+              1,
+              53
+            ],
+            "bytes": 7308,
+            "exposures": 1,
+            "sha256": "47ac6c2375c199d718f62f87dc79939dcd59effb2de09f79751cea96e4856be5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
+            "lines": [
+              1,
+              3
+            ],
+            "bytes": 293,
+            "exposures": 1,
+            "sha256": "e34374c04b758327fee692a38b111ed96e0b94503dc083cabf14ef3b364b87bb",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": ".codex/agents/rust_qa_reviewer.toml",
+            "lines": [
+              1,
+              21
+            ],
+            "bytes": 1049,
+            "exposures": 1,
+            "sha256": "8da8d604b7a6435349f56d51d58751892fb49bec228aaa0995993385af7d43bf",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-review.md",
+            "lines": [
+              1,
+              7
+            ],
+            "bytes": 1400,
+            "exposures": 1,
+            "sha256": "2193e9538ad22dad5678fc5bb59080f686a543f697fec4983208214a73cc5eb1",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              494
+            ],
+            "bytes": 25142,
+            "exposures": 1,
+            "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/prompt_templates/assurance-findings-template.md",
+            "lines": [
+              1,
+              12
+            ],
+            "bytes": 736,
+            "exposures": 1,
+            "sha256": "95373d3c7df1f0a7e3ad7640fa22c0e137095e6cf5c4d92e3803846eb3f6ee83",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 5183,
+        "exposure_bytes": 5183,
+        "reads": [
+          {
+            "path": "tools/agents/find-agents",
+            "lines": [
+              1,
+              181
+            ],
+            "bytes": 5183,
+            "exposures": 1,
+            "sha256": "a81ca556f560999ff4bb44f233ae1c0d281a9b7248b17735cfb18f815277dd89",
+            "reason": "mechanism-specific administrative source expansion"
+          }
+        ]
+      },
+      "combined_unique_bytes": 57261
+    },
+    "administrative.verifier": {
+      "bootstrap": {
+        "unique_bytes": 50898,
+        "exposure_bytes": 50898,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
+            "lines": [
+              1,
+              53
+            ],
+            "bytes": 7308,
+            "exposures": 1,
+            "sha256": "47ac6c2375c199d718f62f87dc79939dcd59effb2de09f79751cea96e4856be5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
+            "lines": [
+              1,
+              3
+            ],
+            "bytes": 293,
+            "exposures": 1,
+            "sha256": "e34374c04b758327fee692a38b111ed96e0b94503dc083cabf14ef3b364b87bb",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-verification.md",
+            "lines": [
+              1,
+              5
+            ],
+            "bytes": 945,
+            "exposures": 1,
+            "sha256": "908109839e19467dc45918b88653db205305e0d0616a74d7c6d54846456002c8",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              494
+            ],
+            "bytes": 25142,
+            "exposures": 1,
+            "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": ".codex/agents/package_verifier.toml",
+            "lines": [
+              1,
+              6
+            ],
+            "bytes": 324,
+            "exposures": 1,
+            "sha256": "623dd050071389997df20a2a9d31fa273e2f629b803c124fc7d0e39544d91735",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/prompt_templates/assurance-findings-template.md",
+            "lines": [
+              1,
+              12
+            ],
+            "bytes": 736,
+            "exposures": 1,
+            "sha256": "95373d3c7df1f0a7e3ad7640fa22c0e137095e6cf5c4d92e3803846eb3f6ee83",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 5183,
+        "exposure_bytes": 5183,
+        "reads": [
+          {
+            "path": "tools/agents/find-agents",
+            "lines": [
+              1,
+              181
+            ],
+            "bytes": 5183,
+            "exposures": 1,
+            "sha256": "a81ca556f560999ff4bb44f233ae1c0d281a9b7248b17735cfb18f815277dd89",
+            "reason": "mechanism-specific administrative source expansion"
+          }
+        ]
+      },
+      "combined_unique_bytes": 56081
+    },
+    "administrative.runner": {
+      "bootstrap": {
+        "unique_bytes": 25053,
+        "exposure_bytes": 25053,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/package.md",
+            "lines": [
+              1,
+              53
+            ],
+            "bytes": 7308,
+            "exposures": 1,
+            "sha256": "47ac6c2375c199d718f62f87dc79939dcd59effb2de09f79751cea96e4856be5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md",
+            "lines": [
+              1,
+              3
+            ],
+            "bytes": 293,
+            "exposures": 1,
+            "sha256": "e34374c04b758327fee692a38b111ed96e0b94503dc083cabf14ef3b364b87bb",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": ".codex/agents/comparator_suite_runner.toml",
+            "lines": [
+              1,
+              8
+            ],
+            "bytes": 395,
+            "exposures": 1,
+            "sha256": "a0c1f17bbb3daec08c46483d6df518ce91ea5825d9c58e82712b483b7f75bd21",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-runner.md",
+            "lines": [
+              1,
+              5
+            ],
+            "bytes": 907,
+            "exposures": 1,
+            "sha256": "7c8365c8756fbd0c4fa64f49915a09c81f9031d17fa3d59a023764eee4c1ee9b",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 0,
+        "exposure_bytes": 0,
+        "reads": []
+      },
+      "combined_unique_bytes": 25053
+    },
+    "science_sensitive.author": {
+      "bootstrap": {
+        "unique_bytes": 813801,
+        "exposure_bytes": 827550,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
+            "lines": [
+              1,
+              58
+            ],
+            "bytes": 6653,
+            "exposures": 1,
+            "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
+            "lines": [
+              1,
+              52
+            ],
+            "bytes": 2706,
+            "exposures": 1,
+            "sha256": "26a0431cee8bc7e6cb71543ac2aa3483078d4d89b5433674cb183e7b7210c0dd",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-authoring.md",
+            "lines": [
+              1,
+              28
+            ],
+            "bytes": 2393,
+            "exposures": 1,
+            "sha256": "78077ed464ae31296abb902f92467d65b93719a1658e0dab0d28ab6fb057a830",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              494
+            ],
+            "bytes": 25142,
+            "exposures": 1,
+            "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/codex_exec_plans.md",
+            "lines": [
+              1,
+              39
+            ],
+            "bytes": 2473,
+            "exposures": 1,
+            "sha256": "51ae49b7b8345c9735411c694cc60443e35c536dcf44c8854292098efd920aeb",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/prompt-wording-guidance.md",
+            "lines": [
+              1,
+              202
+            ],
+            "bytes": 12057,
+            "exposures": 1,
+            "sha256": "294385612b565fe8be3e9e530caa0792c901406ecf53abc9402649e5568ffe3f",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/AGENTS.md",
+            "lines": [
+              1,
+              58
+            ],
+            "bytes": 4052,
+            "exposures": 1,
+            "sha256": "b62a33d9a70a3d3f45e7eccdcf05ca3a194486fcdbfc7bd439371cf8f0ae3015",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/active.md",
+            "lines": [
+              1,
+              17
+            ],
+            "bytes": 1350,
+            "exposures": 1,
+            "sha256": "62e52e7ed09ae285d27b09d5b1236e4eca04445d9bf23191a213c889ae370413",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/AGENTS.md",
+            "lines": [
+              1,
+              77
+            ],
+            "bytes": 5942,
+            "exposures": 1,
+            "sha256": "4fdd6c45348538a76fc1b80cce4577116e983f452e63ba789b8014a7345a11b9",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+            "lines": [
+              1,
+              4295
+            ],
+            "bytes": 634522,
+            "exposures": 1,
+            "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+            "reason": "initial full touched contract required by science instructions"
+          },
+          {
+            "path": "docs/specifications/science-contracts/index.md",
+            "lines": [
+              1,
+              80
+            ],
+            "bytes": 14926,
+            "exposures": 1,
+            "sha256": "9a08cf0707c1261d6ea79679679b0110724464b571bec40bfa1ca9c1d86152c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contract-authoring-procedure.md",
+            "lines": [
+              1,
+              280
+            ],
+            "bytes": 13715,
+            "exposures": 1,
+            "sha256": "b3b11281f0706133b3c32885a465f482de911eda47397caa28a1f3ca857b0d17",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/kernel-process-contract-profile.md",
+            "lines": [
+              1,
+              146
+            ],
+            "bytes": 5792,
+            "exposures": 1,
+            "sha256": "0303aac4bb9c5597a730137990b77991e70f98b6d496ce179173f23238bad9d5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contract-spec.md",
+            "lines": [
+              1,
+              286
+            ],
+            "bytes": 13749,
+            "exposures": 1,
+            "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+            "reason": "recursive mandatory profile/schema dependency"
+          },
+          {
+            "path": "docs/specifications/science-contract-spec.md",
+            "lines": [
+              1,
+              286
+            ],
+            "bytes": 13749,
+            "exposures": 1,
+            "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+            "reason": "recursive mandatory profile/schema dependency"
+          },
+          {
+            "path": "docs/specifications/unit-governance.md",
+            "lines": [
+              1,
+              265
+            ],
+            "bytes": 12896,
+            "exposures": 1,
+            "sha256": "ef1f976cdd2bf50f7579ace7ef45bece18360bf434df20566980776f3da4374d",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/correctness-authority-model.md",
+            "lines": [
+              1,
+              221
+            ],
+            "bytes": 11159,
+            "exposures": 1,
+            "sha256": "64275bad708f353c2c3b66f5b1475c070254591e26278d0a4ec442cad6e6eb0f",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/numerical-solver-architecture.md",
+            "lines": [
+              1,
+              152
+            ],
+            "bytes": 6742,
+            "exposures": 1,
+            "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/science-obligations.md",
+            "lines": [
+              1,
+              98
+            ],
+            "bytes": 6149,
+            "exposures": 1,
+            "sha256": "1a0377a3362a6c34d783796b6756854f8630e1f05e994dc3d963eaafd16c542e",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/kernel-work-package-preparation.md",
+            "lines": [
+              1,
+              250
+            ],
+            "bytes": 15233,
+            "exposures": 1,
+            "sha256": "57ccb4016419e1cbb20643119a20399cbcd9b29d9952d992f108600ec95bd20b",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 106779,
+        "exposure_bytes": 106779,
+        "reads": [
+          {
+            "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+            "lines": [
+              1,
+              2654
+            ],
+            "bytes": 106779,
+            "exposures": 1,
+            "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+            "reason": "mechanism-specific source expansion"
+          }
+        ]
+      },
+      "combined_unique_bytes": 920580
+    },
+    "science_sensitive.implementer": {
+      "bootstrap": {
+        "unique_bytes": 778970,
+        "exposure_bytes": 792719,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
+            "lines": [
+              1,
+              58
+            ],
+            "bytes": 6653,
+            "exposures": 1,
+            "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
+            "lines": [
+              1,
+              52
+            ],
+            "bytes": 2706,
+            "exposures": 1,
+            "sha256": "26a0431cee8bc7e6cb71543ac2aa3483078d4d89b5433674cb183e7b7210c0dd",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-implementation.md",
+            "lines": [
+              1,
+              41
+            ],
+            "bytes": 2727,
+            "exposures": 1,
+            "sha256": "0074b9d95851bdf270136d5204794d84ef241572f4a015e13f0d037d30da6d9e",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              494
+            ],
+            "bytes": 25142,
+            "exposures": 1,
+            "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/AGENTS.md",
+            "lines": [
+              1,
+              77
+            ],
+            "bytes": 5942,
+            "exposures": 1,
+            "sha256": "4fdd6c45348538a76fc1b80cce4577116e983f452e63ba789b8014a7345a11b9",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+            "lines": [
+              1,
+              4295
+            ],
+            "bytes": 634522,
+            "exposures": 1,
+            "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+            "reason": "initial full touched contract required by science instructions"
+          },
+          {
+            "path": "docs/specifications/science-contracts/index.md",
+            "lines": [
+              1,
+              80
+            ],
+            "bytes": 14926,
+            "exposures": 1,
+            "sha256": "9a08cf0707c1261d6ea79679679b0110724464b571bec40bfa1ca9c1d86152c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contract-authoring-procedure.md",
+            "lines": [
+              1,
+              280
+            ],
+            "bytes": 13715,
+            "exposures": 1,
+            "sha256": "b3b11281f0706133b3c32885a465f482de911eda47397caa28a1f3ca857b0d17",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/kernel-process-contract-profile.md",
+            "lines": [
+              1,
+              146
+            ],
+            "bytes": 5792,
+            "exposures": 1,
+            "sha256": "0303aac4bb9c5597a730137990b77991e70f98b6d496ce179173f23238bad9d5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contract-spec.md",
+            "lines": [
+              1,
+              286
+            ],
+            "bytes": 13749,
+            "exposures": 1,
+            "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+            "reason": "recursive mandatory profile/schema dependency"
+          },
+          {
+            "path": "docs/specifications/science-contract-spec.md",
+            "lines": [
+              1,
+              286
+            ],
+            "bytes": 13749,
+            "exposures": 1,
+            "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+            "reason": "recursive mandatory profile/schema dependency"
+          },
+          {
+            "path": "docs/specifications/unit-governance.md",
+            "lines": [
+              1,
+              265
+            ],
+            "bytes": 12896,
+            "exposures": 1,
+            "sha256": "ef1f976cdd2bf50f7579ace7ef45bece18360bf434df20566980776f3da4374d",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/correctness-authority-model.md",
+            "lines": [
+              1,
+              221
+            ],
+            "bytes": 11159,
+            "exposures": 1,
+            "sha256": "64275bad708f353c2c3b66f5b1475c070254591e26278d0a4ec442cad6e6eb0f",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/numerical-solver-architecture.md",
+            "lines": [
+              1,
+              152
+            ],
+            "bytes": 6742,
+            "exposures": 1,
+            "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/science-obligations.md",
+            "lines": [
+              1,
+              98
+            ],
+            "bytes": 6149,
+            "exposures": 1,
+            "sha256": "1a0377a3362a6c34d783796b6756854f8630e1f05e994dc3d963eaafd16c542e",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 106779,
+        "exposure_bytes": 106779,
+        "reads": [
+          {
+            "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+            "lines": [
+              1,
+              2654
+            ],
+            "bytes": 106779,
+            "exposures": 1,
+            "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+            "reason": "mechanism-specific source expansion"
+          }
+        ]
+      },
+      "combined_unique_bytes": 885749
+    },
+    "science_sensitive.correctness_reviewer": {
+      "bootstrap": {
+        "unique_bytes": 779837,
+        "exposure_bytes": 793586,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
+            "lines": [
+              1,
+              58
+            ],
+            "bytes": 6653,
+            "exposures": 1,
+            "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
+            "lines": [
+              1,
+              52
+            ],
+            "bytes": 2706,
+            "exposures": 1,
+            "sha256": "26a0431cee8bc7e6cb71543ac2aa3483078d4d89b5433674cb183e7b7210c0dd",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": ".codex/agents/rust_code_reviewer.toml",
+            "lines": [
+              1,
+              27
+            ],
+            "bytes": 1458,
+            "exposures": 1,
+            "sha256": "0c722d5b20fa097c4428460a0cfcb1c8705dd83409b3f807bd164430a8128749",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-review.md",
+            "lines": [
+              1,
+              7
+            ],
+            "bytes": 1400,
+            "exposures": 1,
+            "sha256": "2193e9538ad22dad5678fc5bb59080f686a543f697fec4983208214a73cc5eb1",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              494
+            ],
+            "bytes": 25142,
+            "exposures": 1,
+            "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/prompt_templates/assurance-findings-template.md",
+            "lines": [
+              1,
+              12
+            ],
+            "bytes": 736,
+            "exposures": 1,
+            "sha256": "95373d3c7df1f0a7e3ad7640fa22c0e137095e6cf5c4d92e3803846eb3f6ee83",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/AGENTS.md",
+            "lines": [
+              1,
+              77
+            ],
+            "bytes": 5942,
+            "exposures": 1,
+            "sha256": "4fdd6c45348538a76fc1b80cce4577116e983f452e63ba789b8014a7345a11b9",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+            "lines": [
+              1,
+              4295
+            ],
+            "bytes": 634522,
+            "exposures": 1,
+            "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+            "reason": "initial full touched contract required by science instructions"
+          },
+          {
+            "path": "docs/specifications/science-contracts/index.md",
+            "lines": [
+              1,
+              80
+            ],
+            "bytes": 14926,
+            "exposures": 1,
+            "sha256": "9a08cf0707c1261d6ea79679679b0110724464b571bec40bfa1ca9c1d86152c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contract-authoring-procedure.md",
+            "lines": [
+              1,
+              280
+            ],
+            "bytes": 13715,
+            "exposures": 1,
+            "sha256": "b3b11281f0706133b3c32885a465f482de911eda47397caa28a1f3ca857b0d17",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/kernel-process-contract-profile.md",
+            "lines": [
+              1,
+              146
+            ],
+            "bytes": 5792,
+            "exposures": 1,
+            "sha256": "0303aac4bb9c5597a730137990b77991e70f98b6d496ce179173f23238bad9d5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contract-spec.md",
+            "lines": [
+              1,
+              286
+            ],
+            "bytes": 13749,
+            "exposures": 1,
+            "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+            "reason": "recursive mandatory profile/schema dependency"
+          },
+          {
+            "path": "docs/specifications/science-contract-spec.md",
+            "lines": [
+              1,
+              286
+            ],
+            "bytes": 13749,
+            "exposures": 1,
+            "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+            "reason": "recursive mandatory profile/schema dependency"
+          },
+          {
+            "path": "docs/specifications/unit-governance.md",
+            "lines": [
+              1,
+              265
+            ],
+            "bytes": 12896,
+            "exposures": 1,
+            "sha256": "ef1f976cdd2bf50f7579ace7ef45bece18360bf434df20566980776f3da4374d",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/correctness-authority-model.md",
+            "lines": [
+              1,
+              221
+            ],
+            "bytes": 11159,
+            "exposures": 1,
+            "sha256": "64275bad708f353c2c3b66f5b1475c070254591e26278d0a4ec442cad6e6eb0f",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/numerical-solver-architecture.md",
+            "lines": [
+              1,
+              152
+            ],
+            "bytes": 6742,
+            "exposures": 1,
+            "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/science-obligations.md",
+            "lines": [
+              1,
+              98
+            ],
+            "bytes": 6149,
+            "exposures": 1,
+            "sha256": "1a0377a3362a6c34d783796b6756854f8630e1f05e994dc3d963eaafd16c542e",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 106779,
+        "exposure_bytes": 106779,
+        "reads": [
+          {
+            "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+            "lines": [
+              1,
+              2654
+            ],
+            "bytes": 106779,
+            "exposures": 1,
+            "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+            "reason": "mechanism-specific source expansion"
+          }
+        ]
+      },
+      "combined_unique_bytes": 886616
+    },
+    "science_sensitive.qa_reviewer": {
+      "bootstrap": {
+        "unique_bytes": 779428,
+        "exposure_bytes": 793177,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
+            "lines": [
+              1,
+              58
+            ],
+            "bytes": 6653,
+            "exposures": 1,
+            "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
+            "lines": [
+              1,
+              52
+            ],
+            "bytes": 2706,
+            "exposures": 1,
+            "sha256": "26a0431cee8bc7e6cb71543ac2aa3483078d4d89b5433674cb183e7b7210c0dd",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": ".codex/agents/rust_qa_reviewer.toml",
+            "lines": [
+              1,
+              21
+            ],
+            "bytes": 1049,
+            "exposures": 1,
+            "sha256": "8da8d604b7a6435349f56d51d58751892fb49bec228aaa0995993385af7d43bf",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-review.md",
+            "lines": [
+              1,
+              7
+            ],
+            "bytes": 1400,
+            "exposures": 1,
+            "sha256": "2193e9538ad22dad5678fc5bb59080f686a543f697fec4983208214a73cc5eb1",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              494
+            ],
+            "bytes": 25142,
+            "exposures": 1,
+            "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/prompt_templates/assurance-findings-template.md",
+            "lines": [
+              1,
+              12
+            ],
+            "bytes": 736,
+            "exposures": 1,
+            "sha256": "95373d3c7df1f0a7e3ad7640fa22c0e137095e6cf5c4d92e3803846eb3f6ee83",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/AGENTS.md",
+            "lines": [
+              1,
+              77
+            ],
+            "bytes": 5942,
+            "exposures": 1,
+            "sha256": "4fdd6c45348538a76fc1b80cce4577116e983f452e63ba789b8014a7345a11b9",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+            "lines": [
+              1,
+              4295
+            ],
+            "bytes": 634522,
+            "exposures": 1,
+            "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+            "reason": "initial full touched contract required by science instructions"
+          },
+          {
+            "path": "docs/specifications/science-contracts/index.md",
+            "lines": [
+              1,
+              80
+            ],
+            "bytes": 14926,
+            "exposures": 1,
+            "sha256": "9a08cf0707c1261d6ea79679679b0110724464b571bec40bfa1ca9c1d86152c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contract-authoring-procedure.md",
+            "lines": [
+              1,
+              280
+            ],
+            "bytes": 13715,
+            "exposures": 1,
+            "sha256": "b3b11281f0706133b3c32885a465f482de911eda47397caa28a1f3ca857b0d17",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/kernel-process-contract-profile.md",
+            "lines": [
+              1,
+              146
+            ],
+            "bytes": 5792,
+            "exposures": 1,
+            "sha256": "0303aac4bb9c5597a730137990b77991e70f98b6d496ce179173f23238bad9d5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contract-spec.md",
+            "lines": [
+              1,
+              286
+            ],
+            "bytes": 13749,
+            "exposures": 1,
+            "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+            "reason": "recursive mandatory profile/schema dependency"
+          },
+          {
+            "path": "docs/specifications/science-contract-spec.md",
+            "lines": [
+              1,
+              286
+            ],
+            "bytes": 13749,
+            "exposures": 1,
+            "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+            "reason": "recursive mandatory profile/schema dependency"
+          },
+          {
+            "path": "docs/specifications/unit-governance.md",
+            "lines": [
+              1,
+              265
+            ],
+            "bytes": 12896,
+            "exposures": 1,
+            "sha256": "ef1f976cdd2bf50f7579ace7ef45bece18360bf434df20566980776f3da4374d",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/correctness-authority-model.md",
+            "lines": [
+              1,
+              221
+            ],
+            "bytes": 11159,
+            "exposures": 1,
+            "sha256": "64275bad708f353c2c3b66f5b1475c070254591e26278d0a4ec442cad6e6eb0f",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/numerical-solver-architecture.md",
+            "lines": [
+              1,
+              152
+            ],
+            "bytes": 6742,
+            "exposures": 1,
+            "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/science-obligations.md",
+            "lines": [
+              1,
+              98
+            ],
+            "bytes": 6149,
+            "exposures": 1,
+            "sha256": "1a0377a3362a6c34d783796b6756854f8630e1f05e994dc3d963eaafd16c542e",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 106779,
+        "exposure_bytes": 106779,
+        "reads": [
+          {
+            "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+            "lines": [
+              1,
+              2654
+            ],
+            "bytes": 106779,
+            "exposures": 1,
+            "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+            "reason": "mechanism-specific source expansion"
+          }
+        ]
+      },
+      "combined_unique_bytes": 886207
+    },
+    "science_sensitive.verifier": {
+      "bootstrap": {
+        "unique_bytes": 778248,
+        "exposure_bytes": 791997,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
+            "lines": [
+              1,
+              58
+            ],
+            "bytes": 6653,
+            "exposures": 1,
+            "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
+            "lines": [
+              1,
+              52
+            ],
+            "bytes": 2706,
+            "exposures": 1,
+            "sha256": "26a0431cee8bc7e6cb71543ac2aa3483078d4d89b5433674cb183e7b7210c0dd",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-verification.md",
+            "lines": [
+              1,
+              5
+            ],
+            "bytes": 945,
+            "exposures": 1,
+            "sha256": "908109839e19467dc45918b88653db205305e0d0616a74d7c6d54846456002c8",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/testing-and-gate-strategy.md",
+            "lines": [
+              1,
+              494
+            ],
+            "bytes": 25142,
+            "exposures": 1,
+            "sha256": "56277d9848d80b0672ebeaaa8277ac2ad9888c90e54b4f31aa7c5b8ca9b04230",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": ".codex/agents/package_verifier.toml",
+            "lines": [
+              1,
+              6
+            ],
+            "bytes": 324,
+            "exposures": 1,
+            "sha256": "623dd050071389997df20a2a9d31fa273e2f629b803c124fc7d0e39544d91735",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/prompt_templates/assurance-findings-template.md",
+            "lines": [
+              1,
+              12
+            ],
+            "bytes": 736,
+            "exposures": 1,
+            "sha256": "95373d3c7df1f0a7e3ad7640fa22c0e137095e6cf5c4d92e3803846eb3f6ee83",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/AGENTS.md",
+            "lines": [
+              1,
+              77
+            ],
+            "bytes": 5942,
+            "exposures": 1,
+            "sha256": "4fdd6c45348538a76fc1b80cce4577116e983f452e63ba789b8014a7345a11b9",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+            "lines": [
+              1,
+              4295
+            ],
+            "bytes": 634522,
+            "exposures": 1,
+            "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+            "reason": "initial full touched contract required by science instructions"
+          },
+          {
+            "path": "docs/specifications/science-contracts/index.md",
+            "lines": [
+              1,
+              80
+            ],
+            "bytes": 14926,
+            "exposures": 1,
+            "sha256": "9a08cf0707c1261d6ea79679679b0110724464b571bec40bfa1ca9c1d86152c4",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contract-authoring-procedure.md",
+            "lines": [
+              1,
+              280
+            ],
+            "bytes": 13715,
+            "exposures": 1,
+            "sha256": "b3b11281f0706133b3c32885a465f482de911eda47397caa28a1f3ca857b0d17",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contracts/kernel-process-contract-profile.md",
+            "lines": [
+              1,
+              146
+            ],
+            "bytes": 5792,
+            "exposures": 1,
+            "sha256": "0303aac4bb9c5597a730137990b77991e70f98b6d496ce179173f23238bad9d5",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/science-contract-spec.md",
+            "lines": [
+              1,
+              286
+            ],
+            "bytes": 13749,
+            "exposures": 1,
+            "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+            "reason": "recursive mandatory profile/schema dependency"
+          },
+          {
+            "path": "docs/specifications/science-contract-spec.md",
+            "lines": [
+              1,
+              286
+            ],
+            "bytes": 13749,
+            "exposures": 1,
+            "sha256": "92323bf834f18d545b0ebcc20b7095efec49487dca4a9cbbcce71d802d3de4d5",
+            "reason": "recursive mandatory profile/schema dependency"
+          },
+          {
+            "path": "docs/specifications/unit-governance.md",
+            "lines": [
+              1,
+              265
+            ],
+            "bytes": 12896,
+            "exposures": 1,
+            "sha256": "ef1f976cdd2bf50f7579ace7ef45bece18360bf434df20566980776f3da4374d",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/specifications/correctness-authority-model.md",
+            "lines": [
+              1,
+              221
+            ],
+            "bytes": 11159,
+            "exposures": 1,
+            "sha256": "64275bad708f353c2c3b66f5b1475c070254591e26278d0a4ec442cad6e6eb0f",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/standards/numerical-solver-architecture.md",
+            "lines": [
+              1,
+              152
+            ],
+            "bytes": 6742,
+            "exposures": 1,
+            "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/science-obligations.md",
+            "lines": [
+              1,
+              98
+            ],
+            "bytes": 6149,
+            "exposures": 1,
+            "sha256": "1a0377a3362a6c34d783796b6756854f8630e1f05e994dc3d963eaafd16c542e",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 106779,
+        "exposure_bytes": 106779,
+        "reads": [
+          {
+            "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+            "lines": [
+              1,
+              2654
+            ],
+            "bytes": 106779,
+            "exposures": 1,
+            "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+            "reason": "mechanism-specific source expansion"
+          }
+        ]
+      },
+      "combined_unique_bytes": 885027
+    },
+    "science_sensitive.runner": {
+      "bootstrap": {
+        "unique_bytes": 26811,
+        "exposure_bytes": 26811,
+        "reads": [
+          {
+            "path": "AGENTS.md",
+            "lines": [
+              1,
+              121
+            ],
+            "bytes": 9508,
+            "exposures": 1,
+            "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+            "reason": "automatic root instruction"
+          },
+          {
+            "path": "docs/work-packages/AGENTS.md",
+            "lines": [
+              1,
+              105
+            ],
+            "bytes": 6642,
+            "exposures": 1,
+            "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+            "reason": "common instruction"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/package.md",
+            "lines": [
+              1,
+              58
+            ],
+            "bytes": 6653,
+            "exposures": 1,
+            "sha256": "c07d012b6996f14ae83894ab7ca543e885e29ae593f65342e77596190a517eb1",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/pause-checkpoint.md",
+            "lines": [
+              1,
+              52
+            ],
+            "bytes": 2706,
+            "exposures": 1,
+            "sha256": "26a0431cee8bc7e6cb71543ac2aa3483078d4d89b5433674cb183e7b7210c0dd",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": ".codex/agents/comparator_suite_runner.toml",
+            "lines": [
+              1,
+              8
+            ],
+            "bytes": 395,
+            "exposures": 1,
+            "sha256": "a0c1f17bbb3daec08c46483d6df518ce91ea5825d9c58e82712b483b7f75bd21",
+            "reason": "assigned role/task applicable authority or current state"
+          },
+          {
+            "path": "docs/work-packages/role-runner.md",
+            "lines": [
+              1,
+              5
+            ],
+            "bytes": 907,
+            "exposures": 1,
+            "sha256": "7c8365c8756fbd0c4fa64f49915a09c81f9031d17fa3d59a023764eee4c1ee9b",
+            "reason": "assigned role/task applicable authority or current state"
+          }
+        ]
+      },
+      "expansion": {
+        "unique_bytes": 0,
+        "exposure_bytes": 0,
+        "reads": []
+      },
+      "combined_unique_bytes": 26811
+    }
+  },
+  "workflow_total": "UNOBSERVED",
+  "runtime_automatic_context": "UNOBSERVED beyond declared repository/role instructions"
+}

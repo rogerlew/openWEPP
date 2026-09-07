@@ -28,7 +28,7 @@ requirement, not optional package style guidance.
   materially different validation, or is blocked by evidence that cannot be
   produced in the same autonomous run.
 - Use directory format `YYYYMMDD-<slug>-001` under `docs/work-packages/`.
-- Add/update the entry in `docs/work-packages/README.md` so intent is
+- Add/update the entry in `docs/work-packages/active.md` so intent is
   discoverable.
 
 2. Scaffold required structure
@@ -154,7 +154,7 @@ requirement, not optional package style guidance.
     - `/workdir/openWEPP/AGENTS.md`
     - `/workdir/openWEPP/docs/codex_exec_plans.md`
     - `/workdir/openWEPP/docs/work-packages/AGENTS.md`
-    - `docs/work-packages/README.md`
+    - `docs/work-packages/active.md`
     - package-local `package.md`
   - Conditional (required when applicable):
     - `docs/defect_closure_execplans.md` for defect-closure packages.
@@ -178,13 +178,9 @@ requirement, not optional package style guidance.
 - Require a package-local authority map artifact:
   - `artifacts/required-reading-map.md` with path, tier (Core/Conditional/
     On-demand), rationale, and applicability trigger.
-- Canonical required-reading budget thresholds (single source of truth;
-  local-repo files only):
-  - `OK`: `<=400000` bytes.
-  - `WARN`: `>400000` bytes.
-  - `REQUIRES-JUSTIFICATION`: `>800000` bytes.
-  - For `REQUIRES-JUSTIFICATION`, include why each heavy file must be pre-read
-    and what cannot be deferred to on-demand.
+- Reading measurement authority: docs/standards/prompt-wording-guidance.md#context-measurements.
+  Report bootstrap, expansion and observable workflow-total separately; justify
+  necessary overruns without omitting mandatory scientific authority.
 
 6. Enforce completion gates in the prepared prompt
 - Kickoff prompt must prohibit kernel code edits before contract + test + gate
@@ -238,7 +234,7 @@ requirement, not optional package style guidance.
   - `/workdir/openWEPP/AGENTS.md`
   - `/workdir/openWEPP/docs/codex_exec_plans.md`
   - `/workdir/openWEPP/docs/work-packages/AGENTS.md`
-  - `/workdir/openWEPP/docs/work-packages/README.md`
+  - `/workdir/openWEPP/docs/work-packages/active.md`
   - the package-local `package.md`
 - `Conditional` must include, when applicable:
   - `/workdir/openWEPP/docs/defect_closure_execplans.md` for defect-closure
@@ -249,7 +245,6 @@ requirement, not optional package style guidance.
     authority edits.
 - `On-demand` should contain phase-relevant canonical `SC-*` contracts and
   decision/queue artifacts, loaded only for touched mechanisms.
-- Kickoff prompt must record required-reading budget metrics and disposition:
-  - local bytes total,
-  - `OK`/`WARN`/`REQUIRES-JUSTIFICATION` threshold outcome,
-  - pointer to `artifacts/required-reading-map.md`.
+- Kickoff records bootstrap unique/repeated bytes, triggered expansion and
+  observable workflow-total, with artifacts/required-reading-map.md and necessary
+  overrun triggers under the context-measurements standard.

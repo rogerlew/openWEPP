@@ -17,3 +17,7 @@ config_file = "agents/rust_qa_reviewer.toml"
 [agents.comparator_suite_runner]
 description = "Runs context-heavy batch and comparison work, including tools/owcmp suites, on gpt-5.3-codex-spark and returns compact metrics plus artifact paths."
 config_file = "agents/comparator_suite_runner.toml"
+
+[agents.package_verifier]
+description = "Independent bounded package verification; assigned artifact writes only."
+config_file = "agents/package_verifier.toml"

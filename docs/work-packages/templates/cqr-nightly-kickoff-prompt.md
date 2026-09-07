@@ -44,9 +44,10 @@ On-demand:
 - `{{focused_tests_or_contracts}}`
 - adjacent modules imported by `{{target_module_path}}`
 
-Required-reading budget: `{{local_bytes_total}}`,
-`{{OK_WARN_OR_REQUIRES_JUSTIFICATION}}`; map:
-`artifacts/required-reading-map.md`.
+Reading measurements: bootstrap {{unique_and_exposure_bytes}}; expansion
+{{bytes_and_triggers}}; workflow-total {{observed_or_UNOBSERVED}}.
+Map: artifacts/required-reading-map.md; rules:
+docs/standards/prompt-wording-guidance.md#context-measurements.
 
 Files:
 
@@ -118,12 +119,17 @@ verification subagents for CQR metric checks, selected gate execution,
 behavior-identity verification, review, and verification. Outputs:
 `artifacts/review_agent_a.md`, `artifacts/review_agent_b.md`,
 `artifacts/verification_agent_a.md`, `artifacts/verification_agent_b.md`, compact
-metrics, command logs, and artifact paths. Write access: read-only unless a
-subagent is explicitly assigned a bounded implementation fix in
-`{{target_module_path}}` or package-local artifacts.
+metrics, command logs, and artifact paths. Write access: only explicitly assigned package review/verification artifacts or runner logs/results. Reviewers/verifiers cannot edit production or configuration.
 
 Autonomy: execute package phases end-to-end and update required artifacts without
 requesting additional user direction unless hard-blocked.
 
 Outputs: update all package artifacts, disposition every review finding, and
 leave the package ready for its completion or hold commit.
+
+Role routing: docs/work-packages/AGENTS.md selects author, implementation,
+review, verification and runner procedures. Required reading above applies to
+the author/implementer; reviewers/verifiers receive assigned primary evidence
+and their own role bindings, not automatic full authoring context. Preserve
+conditional scientific authority and frozen acceptance. Use worker-handoff.md
+as sole current continuation view with exact source/evidence bindings.

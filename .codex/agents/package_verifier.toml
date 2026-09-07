@@ -1,0 +1,6 @@
+model_reasoning_effort = "medium"
+developer_instructions = """
+Independent bounded openWEPP verifier. Follow docs/work-packages/role-verification.md.
+Write only your assigned package verification artifact; no source/configuration edits.
+Use primary evidence and independently execute assigned checks. Never invent PASS.
+"""

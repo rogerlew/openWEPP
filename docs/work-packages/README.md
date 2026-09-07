@@ -1,8 +1,19 @@
 # Work Packages
 
+Current-work locator: [active index](active.md). Start there and at the named
+package handoff; this catalog preserves historical evidence. Prospective rules
+in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
+
+## 20260906-agent-context-and-evidence-efficiency-001
+
+IN-PROGRESS: role/context simplification, current-state routing, evidence
+identity and recoverable capture. See
+[package](20260906-agent-context-and-evidence-efficiency-001/package.md) and
+[handoff](20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md).
+
 ## 20260906-stage3-prospective-mechanism-experiments-001
 
-ACTIVE: newly authorized controlled A/F and A/R experiments, lifecycle memory,
+PAUSED BY OWNER: authorized controlled A/F and A/R experiments, lifecycle memory,
 stencil-aware replay coverage, and an actionable architecture handoff.
 See [package](20260906-stage3-prospective-mechanism-experiments-001/package.md).
 Earlier FAIL/HOLD dispositions below remain historical; production remains HOLD.
@@ -5705,11 +5716,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   package scope requires them before edits.
 - Each package should include `artifacts/required-reading-map.md` documenting:
   path, tier, rationale, applicability trigger, and when it was read.
-- Kickoff prompts should record required-reading budget metrics for local-repo
-  files, using canonical thresholds defined in
-  `docs/standards/kernel-work-package-preparation.md`.
-- When `REQUIRES-JUSTIFICATION` is reached, author must explain why each heavy
-  pre-read is mandatory and cannot be deferred to `On-demand`.
+- Reading measurements follow
+  `docs/standards/prompt-wording-guidance.md#context-measurements`.
 - Work-package authoring must reference and follow:
   `docs/codex_exec_plans.md`.
 - Mechanical refactor packages should additionally follow:

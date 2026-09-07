@@ -47,6 +47,11 @@ Use artifacts/worker-handoff.md as the sole continuation view. Package executor 
 Registered reviews request xhigh and grant configuration edits. Historical catalog is nearly 6,000 lines; kernel bootstrap currently requires it in full. Current Stage-3 successor already exists, with queued handoff/disposition.
 
 ## Decision Log
+2026-09-07: add tools/release/authority-policy/impact-map.json prospectively,
+only its live policy_sha256 binding. Focused governance test exposed stale hash
+after authorized standard change; preserve test and all historical identities.
+2026-09-07: prospective write-set addition CLAUDE.md, limited to common workflow
+routing so its duplicated onboarding cannot override current package guidance.
 2026-09-06: preserve all acceptance from the owner; use existing administrative tooling directory and handoff, no ADR required for this owner-authorized workflow change.
 
 ## Outcomes & Retrospective

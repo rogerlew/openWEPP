@@ -73,3 +73,20 @@ Work packages should record the command output in
 `artifacts/required-reading-map.md` or equivalent package-local intake evidence
 before production edits. The tool reports paths from root to nearest local
 instruction file, matching repository instruction precedence.
+
+## Current task first
+
+Start at docs/work-packages/active.md and the named package worker-handoff.md.
+The common package guide routes each role; no blanket full-catalog bootstrap.
+Search exact scope, then expand explicitly when needed:
+
+```sh
+rg -n 'symbol' crates/openwepp-land-surface-energy
+rg -n 'INV-|OBL-' docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md
+rg -n 'HOLD|next|identity' docs/work-packages/<id>/artifacts/worker-handoff.md
+rg -n 'revision.61|Revision.61' docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/final-disposition.md
+rg -n 'keyword' docs/work-packages/README.md docs/work-packages/<historical-id>
+```
+
+Paths are scoped explicitly; no new ignore behavior or client-specific exclusion
+is introduced. Historical source/evidence stays accessible by its existing path.

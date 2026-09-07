@@ -311,7 +311,42 @@ publication, or protected-data boundary explicitly requires stronger
 provenance, use that boundary's separately owned identity mechanism. Do not
 generalize it into routine increment admission.
 
+### Identity membership and change impact
+Keep three minimal identities with explicit file/dependency membership:
+experiment = actual source/build inputs, executable, fixture/configuration,
+relevant environment, exact commands and prospectively frozen protocol;
+evidence/claim = results, reconstruction code/outputs, applicable authority,
+acceptance and reviewed claims; publication = final narratives, dispositions,
+review records and presentation metadata. A file may belong to multiple sets.
+Markdown is not automatically editorial. Manifests list exact paths/hashes;
+detached hashes exclude themselves and never require future commits.
+Use existing manifests or tools/agents/evidence_bundle.py identity/compare.
+Membership selection and semantic judgment remain accountable reviewer duties.
+
+| Changed input | Affected assurance and required response |
+| --- | --- |
+| Source/build inputs/executable/fixture/config/relevant environment/commands/protocol | Invalidate affected experiment and dependent claims; rerun affected evidence unless an explicit dependency proof demonstrates exclusion. |
+| Result row/reconstruction code or output | Invalidate affected claim assurance; independently verify corrections and rerun affected reconstruction/evidence. |
+| Authority/acceptance threshold/predicate/exception/scope | Substantive; invalidate affected assurance, re-adjudicate against legitimate criteria and rerun where required; no retrospective self-waiver. |
+| Claim/verdict/number/unit/interpretation | Substantive even in a report; inspect/review/verify affected claims, rerun evidence if its support changed. |
+| Broken/moved required reference | No reuse until resolution and equivalent authority are verified; inspect affected dependency and acceptance bindings. |
+| Genuinely equivalent spelling/format/layout | Preserve unchanged substantive evidence/reviews only after accountable bounded diff inspection; update publication identity. |
+| Accepted finding fix | Verify actual fix and obtain focused re-review; a new hash alone does not resolve it. |
+| Unknown impact | Explicit conservative escalation or authority clarification; never editorial by default. |
+
+Record who classified impact, the exact diff, affected identities/dependencies,
+retained assurance and checks performed. Independent reviewers challenge the
+classification. Hash comparison detects changed bytes, never semantic equivalence.
+Unchanged review portions may be referenced; changed portions must be inspected.
+Publication changes do not recursively invalidate their own signoffs: freeze the
+substantive cut, review it, then bind the final collection separately and perform
+a bounded final diff check. Changed substantive claims reopen affected assurance.
+Campaign/release exact-clean-source requirements in section 6 remain binding.
+
 ## 11. Campaign Deferral
+
+See section 10 for identity and accountable reuse; no identity utility may
+assign campaign deferral or waive acceptance.
 
 A package may assign a campaign-owned requirement to a later boundary before
 implementation when it records:

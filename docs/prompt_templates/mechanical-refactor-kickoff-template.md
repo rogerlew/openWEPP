@@ -43,7 +43,7 @@ Required reading (read before edits):
    - /workdir/openWEPP/AGENTS.md
    - /workdir/openWEPP/docs/codex_exec_plans.md
    - /workdir/openWEPP/docs/work-packages/AGENTS.md
-   - /workdir/openWEPP/docs/work-packages/README.md
+   - /workdir/openWEPP/docs/work-packages/active.md
    - /workdir/openWEPP/docs/standards/mechanical-refactor-authoring-guide.md
    - /workdir/openWEPP/docs/work-packages/<id>/package.md
 - Conditional (read only when applicable):
@@ -59,13 +59,9 @@ Required reading (read before edits):
    - <queue/hold-lift/disposition artifacts>
    - <baseline source files>
 
-Required-reading budget:
-- local_bytes_total: <value>
-- threshold: <OK|WARN|REQUIRES-JUSTIFICATION>
-- map artifact: artifacts/required-reading-map.md
-- map template (canonical): docs/prompt_templates/required-reading-map-template.md
-- if REQUIRES-JUSTIFICATION: explain why each heavy pre-read cannot be deferred
-   to On-demand.
+Reading measurements: bootstrap <unique/exposure bytes>; expansion <bytes/trigger>;
+workflow-total <observed or UNOBSERVED>; artifacts/required-reading-map.md.
+Follow docs/standards/prompt-wording-guidance.md#context-measurements.
 
 Subagent requirement:
 - REQUIRED for selected heavy closure gates when available: spawn
@@ -165,3 +161,10 @@ Completion checklist (must be true before stopping):
    governance, review, verification, disposition, and handoff.
 - Remaining work (if any) is a blocker-shaped handoff, not an open-ended
    "next investigation" note.
+
+Role routing: docs/work-packages/AGENTS.md selects author, implementation,
+review, verification and runner procedures. Required reading above applies to
+the author/implementer; reviewers/verifiers receive assigned primary evidence
+and their own role bindings, not automatic full authoring context. Preserve
+conditional scientific authority and frozen acceptance. Use worker-handoff.md
+as sole current continuation view with exact source/evidence bindings.

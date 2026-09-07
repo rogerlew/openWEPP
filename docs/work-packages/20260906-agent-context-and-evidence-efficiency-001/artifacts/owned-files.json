@@ -2,6 +2,8 @@
   "base": "033dfe30073bc22aaa30aed877cc301b6745a086",
   "paths": [
     "AGENTS.md",
+    "tools/release/authority-policy/impact-map.json",
+    "CLAUDE.md",
     ".codex/config.toml",
     ".codex/agents/rust_code_reviewer.toml",
     ".codex/agents/rust_qa_reviewer.toml",

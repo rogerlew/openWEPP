@@ -58,9 +58,7 @@ subagents for behavior-preserving CQR review, target metric verification,
 focused/full gate execution, and output-identity checks. Expected outputs are
 package-local `artifacts/review_agent_a.md`, `artifacts/review_agent_b.md`,
 `artifacts/verification_agent_a.md`, `artifacts/verification_agent_b.md`,
-compact metrics, command logs, and artifact paths. Write access is read-only
-unless a subagent is explicitly assigned a bounded implementation fix in
-`{{target_module_path}}` or package-local artifacts.
+compact metrics, command logs, and artifact paths. Write access is limited to assigned review/verification artifacts and runner logs/results; no production/configuration edits.
 
 Subagent requirement: this package requires spawning `comparator_suite_runner`
 for package-owned metric measurement and for heavy correctness requirements
@@ -97,7 +95,7 @@ Out of scope:
 - `{{target_module_path}}`
 - `{{test_paths}}`
 - `docs/work-packages/{{package_id}}/**`
-- `docs/work-packages/README.md`
+- `docs/work-packages/active.md`
 
 ## Write Set Guard
 
@@ -268,3 +266,10 @@ Final status options:
 - `EXECUTED-COMPLETE-CQR-NIGHTLY`
 - `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-*`
 - `EXECUTED-HOLD-CQR-NIGHTLY-GLOBAL-*`
+
+Role routing: docs/work-packages/AGENTS.md selects author, implementation,
+review, verification and runner procedures. Required reading above applies to
+the author/implementer; reviewers/verifiers receive assigned primary evidence
+and their own role bindings, not automatic full authoring context. Preserve
+conditional scientific authority and frozen acceptance. Use worker-handoff.md
+as sole current continuation view with exact source/evidence bindings.

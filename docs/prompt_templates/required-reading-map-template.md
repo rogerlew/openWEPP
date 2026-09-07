@@ -18,20 +18,11 @@ Required maintenance posture:
 A stale or incomplete required-reading map is a governance defect and must keep
 package disposition in HOLD until corrected.
 
-## Reading Budget
-
-- local_required_bytes_total: <value>
-- threshold_outcome: <OK|WARN|REQUIRES-JUSTIFICATION>
-- measurement_method: <command or artifact reference>
-- measured_at_utc: <YYYY-MM-DDTHH:MM:SSZ>
-
-Thresholds:
-- Use the canonical thresholds defined in
-  `docs/standards/kernel-work-package-preparation.md`.
-
-If threshold_outcome is REQUIRES-JUSTIFICATION, include explicit justification
-for each heavy required pre-read and explain why it cannot be moved to
-On-demand.
+## Reading measurements
+Record bootstrap unique/exposure bytes, task expansion bytes/triggers, observed
+workflow-total (otherwise UNOBSERVED), revision and full-file/range selections.
+Include automatic instructions and recursive mandatory references. Targets and
+necessary-overrun treatment: docs/standards/prompt-wording-guidance.md#context-measurements.
 
 ## Map
 
@@ -40,7 +31,7 @@ On-demand.
 | /workdir/openWEPP/AGENTS.md | Core | Root governance for all package work | Always | Pre-edit | Agent | <timestamp> | |
 | /workdir/openWEPP/docs/codex_exec_plans.md | Core | Execution-plan contract for package autonomy | Always | Pre-edit | Agent | <timestamp> | |
 | /workdir/openWEPP/docs/work-packages/AGENTS.md | Core | Work-package execution, gate, review, and conservation/publication acceptance rules | Always | Pre-edit | Agent | <timestamp> | |
-| /workdir/openWEPP/docs/work-packages/README.md | Core | Work-package process and closure conventions | Always | Pre-edit | Agent | <timestamp> | |
+| /workdir/openWEPP/docs/work-packages/active.md | Core | Work-package process and closure conventions | Always | Pre-edit | Agent | <timestamp> | |
 | /workdir/openWEPP/docs/work-packages/<id>/package.md | Core | Package-local authority, write set, and gates | Always | Pre-edit | Agent | <timestamp> | |
 | /workdir/openWEPP/docs/defect_closure_execplans.md | Conditional | Defect-closure envelope and HOLD legitimacy rules | Defect-closure package | Pre-edit when triggered | Agent | <timestamp> | |
 | docs/specifications/science-contract-authoring-procedure.md | Conditional | Contract-authoring procedure authority | Contract or kernel authority edits | Pre-edit when triggered | Agent | <timestamp> | |
@@ -54,3 +45,10 @@ On-demand.
 | UTC | Agent | Change |
 |-----|-------|--------|
 | <timestamp> | <agent> | Initialized required-reading map from canonical template. |
+
+Role routing: docs/work-packages/AGENTS.md selects author, implementation,
+review, verification and runner procedures. Required reading above applies to
+the author/implementer; reviewers/verifiers receive assigned primary evidence
+and their own role bindings, not automatic full authoring context. Preserve
+conditional scientific authority and frozen acceptance. Use worker-handoff.md
+as sole current continuation view with exact source/evidence bindings.
