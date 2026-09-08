@@ -1,3 +1,12 @@
+# Procedure11 current state
+Scientific source remains82b9c72d6:20LSEfiles368798bytes, always-read12021.
+Solver10 failed science and its combined search-union claim; sizePASS204019.
+reading-iteration-10.json records the unchanged first report and independent correction.
+A/B approved a uniform inventory-to-answer clarification in the neutral handoff,
++1063 governance bytes. New nonforked solver11 NOT RUN. This is a procedural
+comparison on unchanged science, not source improvement or identical-prompt evidence.
+Surface09/closure08/identity03 accepted observations and bounded reuse remain intact.
+
 # Iteration10 current reading state
 Static: exact20-file368798-byte candidate; always-read12021. Direct checks pass.
 Ran: completed09 first readings; independent A/B review. Surface09 PASS204063

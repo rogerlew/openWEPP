@@ -1,4 +1,4 @@
-# Validation evidence — iteration10 candidate
+# Validation evidence — current candidate, procedure11
 Ran: actual commands in /workdir/openWEPP. Static: scope, semantic and reuse analysis.
 Live20LSEfiles match independently approved iteration10-approved-manifest.json.
 Candidate-manifest SHA256 cccda2ed4aa97b24c186dde1059a7e2cbef7c2768c50b9e2a7c66429f77ee87f; evidence-manifest binds actual logs/156inputs.
@@ -15,7 +15,7 @@ Candidate-manifest SHA256 cccda2ed4aa97b24c186dde1059a7e2cbef7c2768c50b9e2a7c664
 | Rust line count | WARN retained |Vegetation2843lines, split before3000; other owned files<2000. No new Rust edits. |
 | Always-read budget | PASS |Entry4090+interface7931=12021<=12288. |
 | Surface09 at c2dd | PASS science/reading/ledger/size; A/B applied10 bounded reuse approved | 204063 LSE bytes,22.955264% reduction; failed-request exposure supplement retained separately. |
-| Solver09 at c2dd; fresh10 NOT RUN | FAIL science; PASS reading/ledger/size | 203861 LSE bytes; incomplete FullSupply initialization eligibility. First report immutable. |
+| Solver10 at82b9; fresh11 NOT RUN | FAIL science/combined union claim; PASS required reading/direct ledger/size |204019 LSE bytes; independent corrected combined union1167546. First report immutable. |
 | Closure08 at645b | PASS science/reading/ledger/size; A/B applied10 bounded reuse approved |208928 LSE bytes,21.118465% reduction; concrete arithmetic/vector/real-consumer evidence duties complete. No numerical execution. |
 | Identity03 at6938 | PASS with explicit semantic reuse; A/B applied10 bounded reuse approved | Original31428 retained; bounded identity task only, not solver measurement validity or execution. |
 | Stable complete reviews / two NEW terminal verifiers | NOT RUN to completion |Prospective approval is not terminal adoption approval. |
@@ -54,32 +54,37 @@ No new constitutive campaign or anti-evasion trigger is introduced by this diff.
 No protected assertion is removed, suppressed or rewritten to erase a scientific FAIL.
 The predecessor tree and HOLD remain exact; frozen-predecessor.json records the check.
 
-## Source and observation limits
-Full candidate368798bytes/20files is larger than264863original. Prospective route
-unions: surface207726, solver209734includingprofiles, identity31980, closure207972; solver including
-prior actual heading/profile search union is conservatively209838. All actual
-voluntary/search/recovery/recursive reading counts; no predicted byte is observed
-model context or token savings. Iterations01–07/report hashes stay immutable.
+## Current reading and procedure boundary
+Full candidate368798bytes/20files is larger than264863original. The entry4090 plus
+interface7931 is12021always-read bytes. Actual accepted task observations:
+surface09 atc2dd204063 (22.955264% reduction), closure08 at645b208928 (21.118465%),
+identity03 at6938 31428 (88.134243%). A/B prove selected-duty reuse on82b9;
+these are original observations, not fresh rereads or all-source-hashes-equal.
+Solver10 at82b9 read204019LSE bytes (22.971876%) but failed science and misstated
+combined search union. Independent corrections and every first-report hash remain
+in reading-iteration-10.json. No failed first answer is repaired or relabeled.
+All actual voluntary/search/recursive/recovery reading remains chargeable. External
+and governance bytes are separate; source bytes do not establish model-token or
+runtime-context savings. The report set is not four new successes on one source cut.
 
-Generator candidate reproduction matched all20approved hashes. Isolated adopted
-mode changes only159entry-notice bytes:368798→368639. Live adoption is NOT activated.
-Canonical source remains fixed through upcoming fresh exercises; neutral handoff is
-retained under reviewed blinded-reader exception. After accepted readings, reconcile
-complete state in the normal handoff, stable reviews and two NEW terminal verifiers,
-then actual activation with bounded final verification. No production qualification.
+Source82b9 retains the prospectively approved158-byte initialization table; all other
+19canonical files are unchanged from c2dd. A/B applied checks verify both generator
+modes exactly. Adopted mode removes only159entry-notice bytes:368798→368639.
+A separate187-byte format-guide status correction is prospectively approved for
+actual activation only; it retains predecessor HOLD and all adoption criteria.
+No activation has occurred. Canonical30-file manifest and relevant executable inputs
+remain unchanged since actual10 validation; direct validation is reused on identical
+science/test/tool inputs. Frozen original experiment protocols remain unchanged.
 
-## Iteration10 applied; fresh solver pending
-All09 first reports remain immutable at c2dd and are bound in reading-iteration-09.json.
-Surface09 passes all original eight items and size; solver09 fails only the precise
-positive/zero FullSupply initialization gate. Both reviewers approved the exact
-158-byte table clarification before implementation. An earlier draft changed the
-positive-authorization quantifier and was corrected before approval or live edits.
-The applied table preserves every conjunction, quantifier and all surrounding duties.
-No rubric, generic reading procedure, dependency extent or original authority changed.
-Both generator modes reproduce exactly; only one of20 canonical files changed.
-A/B applied source/reuse review for surface09/closure08/identity03 is approved; fresh solver10
-is NOT RUN. The conservative full physical-methods-plus-capture projection211839 has
-51bytes margin; it is not a fresh observation or guaranteed acceptance.
-
-Custody10 capture/verify PASS: reading-iteration-10-custody.json binds the retained
-external local bundle. Source custody is not scientific or offline Cargo execution.
+A/B prospectively approved procedure11: the reader's own source-derived inventory
+structures a self-contained answer with complete applicable predicates, scope,
+exclusions, order and evidence duties. The neutral handoff is2649bytes/36lines,
++1063governance bytes; no named failed atoms, parent inventory or answers.
+The original task, scientific rubric, source duties and byte budgets are unchanged.
+New nonforked solver11 is NOT RUN. Any eventual PASS is under this clarified
+procedure on unchanged science, not a source improvement, identical-prompt baseline
+experiment or general first-try reliability. Accepted prior answers keep their
+original rubric and measured cuts. Source custody11 capture/verify is bound in
+reading-iteration-11-custody.json; retained local bytes are not scientific execution
+or offline Cargo rebuildability. Stable reviews, two NEW terminal verifiers, actual
+activation and bounded final verification remain required.

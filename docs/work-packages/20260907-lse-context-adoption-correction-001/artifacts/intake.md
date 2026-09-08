@@ -354,3 +354,22 @@ each canonical zero request retains exact identity AND zero. The rejected earlie
 draft's potential-request quantifier was never implemented. No gate/rubric/reading
 procedure or dependency change. Surface09/closure08/identity03 require bounded
 applied reuse; solver needs fresh nonforked10 report after reviewed freeze.
+
+## Procedure11 prospective execution clarification
+After solver10 failed scientific completeness and misstated its combined search
+union, both reviewers approved the uniform generic inventory-to-answer clarification
+before implementation. Canonical source remains exactly82b9c72d6 (candidate manifest
+cccda2ed4aa97b24c186dde1059a7e2cbef7c2768c50b9e2a7c66429f77ee87f).
+The neutral handoff adds only the approved generic operative text:2649bytes/36lines,
+SHA280db6a24f5e3197cbc05e2a521dbd9e1817ab17b9e0dfbba4fe9490642cb217,
++1063 governance bytes, counted in new exposure. No canonical science, question,
+rubric, applicability duty or budget changes. No parent inventory or named failed
+atoms enter the fresh prompt. The private inventory now structures a self-contained
+answer carrying complete independently applicable predicates, scope, exclusions,
+order and evidence, with diagnostics distinguished from acceptance.
+One new nonforked solver on the unchanged science is authorized under this clarified
+procedure. Any eventual PASS is this procedural treatment, not a source improvement,
+identical-prompt baseline experiment, general first-try reliability or repaired old
+answer. Original accepted reports retain their unchanged rubric and measured cuts.
+The temporary blinded-handoff exception ends after fresh reading; normal50–100line
+current-state handoff and independent stable/terminal closure remain mandatory.

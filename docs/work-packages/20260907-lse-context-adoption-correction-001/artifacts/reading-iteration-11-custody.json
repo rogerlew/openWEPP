@@ -1,0 +1,10 @@
+{
+  "bundle": "/tmp/lse-correction-iteration11-bundle",
+  "manifest_sha256": "f45a3506f883fe804afe2bc041fef1d3affea4cb67c78150777c98b044c1142e",
+  "capture_complete_json": true,
+  "capture_and_verify_command_exit": 0,
+  "verify_log": "/tmp/lse-iteration11-bundle-verify.log",
+  "scope": "unchanged82b9scientificsource/inputinventory/generator, approved2649byte neutral handoff and frozenprocedure/acceptance/protocols, actual10report/corrections",
+  "status": "fresh solver11 NOT RUN; changed generic reading procedure only, no scientific/offlineCargo/token claim",
+  "retention": "openWEPP maintainers through disposition plus explicit audit release"
+}

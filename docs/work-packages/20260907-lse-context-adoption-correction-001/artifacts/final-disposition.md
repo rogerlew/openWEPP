@@ -1,9 +1,10 @@
 # Disposition
-Static/Ran: EXECUTING iteration10; migration adoption is not complete.
-Direct preservation, strict binding, unit/A0, bridge and98 Python tests pass.
-Rust111PASS/18 inheritedFAIL and original root lintFAIL remain truthful diagnostics.
-Surface09 science/reading/sizePASS; solver09 scienceFAIL remains immutable.
-The approved158-byte initialization table is applied; fresh solver10 NOT RUN.
-A/B approve bounded applied-cut reuse for surface09, closure08 and identity03.
+Static/Ran: EXECUTING; adoption is not complete.
+Scientific source82b9c72d6 and direct validation remain unchanged:98Python tests,
+strict binding, unit/A0, bridge PASS; Rust111PASS/18 inheritedFAIL, original lintFAIL.
+Surface09, closure08 and identity03 have approved bounded reuse with original counts.
+Solver10 scienceFAIL and combined-union correction remain immutable evidence.
+A/B approved procedure11's generic self-contained inventory-to-answer clarification;
+new nonforked solver11 NOT RUN. No changed scientific rubric, predicates or budget.
 Stable complete reviews, two NEW terminal verifiers, actual activation and bounded
 final verification remain required. No push or production qualification.

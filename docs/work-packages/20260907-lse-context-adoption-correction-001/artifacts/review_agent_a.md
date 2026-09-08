@@ -4220,3 +4220,207 @@ SHA6702c0f2d7c132436e2f40b8a8d9382592552e199acc3dd01749744cb581ca32.
 This closes the pending receipt condition above and permits source freeze/fresh
 solver10 under the stated preflight/reuse approvals. It is source recoverability
 evidence, not independent full verification-log reading or scientific execution.
+
+
+## Conditional activation-only format-guide status correction
+
+Static: reviewed isolated `/tmp/lse-activation-format-guide-proposal.md` and proof.
+Ran: independently verified live old guide SHA4b7aa41200faaac647c8d8624597779a13c50bee444c0ca738ff7fd29653df1c
+and proposed SHA3ce2e7d8c52e4b95f5ebfb8c5234a70b4b8b49013191b41b06605239337cca93;
+exactly the declared status paragraph replacement produces the proposal, with all
+other guide bytes unchanged. The new relative correction-handoff link resolves.
+No live guide/canonical/package/handoff or reader-source byte was modified.
+
+Conditionally APPROVE these exact publication bytes ONLY with actual directory
+activation after every required reading/acceptance/stable-review gate and both
+new terminal readiness verifications PASS. Current tense “adopts” is inaccurate
+before that boundary and must not be installed during fresh solver10 reading.
+At that boundary it corrects the obsolete monolithic-canonical statement, retains
+the predecessor pilot's historical HOLD, identifies this separately authorized
+correction package and makes canonical-entry routes/recursive dependencies subject
+to the full normative set. It does not turn the format specification itself into
+migration permission or confer scientific production/experiment qualification.
+The opening “no contracts migrated by this specification” remains accurate: the
+separate package, not mere existence of this format, supplies adoption authority.
+
+This is administrative status/reference reconciliation on an already authorized
+path, not an equation, format grammar, gate, ownership, protocol or scientific
+activation change. It must be recorded alongside the159-byte candidate-notice
+removal in the exact bounded final diff, with actual source capture and affected
+metadata checks followed by both verifiers' focused final-diff confirmation.
+Do not relabel old reader source hashes as final hashes or subtract removed wrapper
+bytes from observed counts. This prospective approval grants no current adoption,
+selective-reading activation, runtime PASS or permission to skip remaining gates.
+
+
+## Solver10 first-report assessment — source82b9, immutable answer
+
+Static: independently read the complete scientific answer and accounting annex of
+exercise_02_retry_10.md; compared the original frozen task2 rubric, current operative
+admission/solve-boundary rules and applicable replay/owner/protocol scope. Reconciled
+findings independently with Reviewer B; no reader contact or report repair.
+Ran: independently verified report SHA451890b41bba722e75e0ad6df5fb95002e0f6a53da7abde79ce8d5fc12dfc753,
+all35 complete source hashes at82b9c72d65a9ed9467878168e308c13b37608684,
+all85 line-range byte/new/repeat records, all four exact search-hit sets, and17
+retained private-artifact hashes/sizes. Private inventory contents do not supplement
+the submitted scientific answer. No numerical or experimental workflow ran.
+
+**Scientific sufficiency FAIL; required source reading PASS; LSE size PASS.**
+The following are required conclusions already frozen before this reader; they are
+not new stylistic or verbatim-recitation tests:
+
+- S10-A01: report51 names V2 coordinate-only fixed-final seeding, but omits both
+  exact applicability conjuncts: each positive final authorization must preserve
+  its potential request identity AND amount AND FullSupply disposition, and each
+  canonical zero request must preserve exact identity AND zero amount. Report52
+  additionally states “V10 FullSupply applies only on its exact nonpositive-potential
+  identity route,” incorrectly transferring a narrower V10 branch restriction to
+  FullSupply initialization. The complete source table is nonlinear-solve31–36;
+  complete reevaluation/iteration-zero rules follow38–47. FullSupply's name and
+  generic immutable caps/constraints do not convey those equalities. V10 scaling
+  and wet anchoring have narrower potential/nonpositive predicates; they do not
+  restrict the V2 FullSupply initialization branch in this way.
+- S10-A02: the answer never states that nonpositive-assimilation partial positive
+  ROOT authorization is typed unsupported (nonlinear-solve24–27; frozen2.2).
+  Generic cap immutability and no alternate solver are not this refusal predicate.
+- S10-A03: report45/50/51 repeatedly requires a “CI check” to pass, without the
+  required distinction that the prospective ci step norm is diagnostic and has no
+  independent acceptance threshold. Canonical constitutive ci domain checks remain
+  legitimate; the defect is the absent diagnostic-only distinction in a paragraph
+  that describes prospective step acceptance, not an accusation that the report
+  invented a particular numerical threshold. nonlinear-solve73–81 and
+  solve-boundary's full-witness paragraph explicitly separate the four governed
+  norms from diagnostic ci. Frozen2.1 requires this distinction.
+- S10-A04: report52 gives the inactive maximum anchor only for wet coordinates and
+  the dry-stem exception. It omits inactive sun AND shade liquid-vapor coordinates
+  from the same max(T_canopy,T_ref) rule (nonlinear-solve58–63; frozen2.2).
+  Its separate narrow active wet-store predicate does not recover that coverage.
+- S10-A05: report93 and125–131 correctly discuss replay integrity/earliest canonical
+  source errors and V30 competing poisons, but no answer passage gives the global
+  first-error hierarchy required by frozen2.8: serialization, identity, topology/
+  owner, nonfinite, unsupported, constitutive, authorization, numerical failures/
+  acceptance, component closure, volume closure, cross-owner join. The complete
+  hierarchy appears at solve-boundary94–100, which the reader requested in full.
+  “Same earliest existing source error” alone does not supply this ordered rule.
+
+The no-update current-state/public-persisted/cumulative-diagnostic discussion,
+iteration-zero zero-step/backtracking/no-Jacobian wording, detailed graph/affected
+lower-routing and reciprocal-longwave propagation, identity anchors, exact-beta/
+inactive/zero-PAR leaf reuse, PC1/SG1 and historical fallibility distinctions,
+validation-once chronology, real-workload test duties and experiment restrictions
+otherwise have substantial concrete coverage. Report120 explicitly separates BOTH
+detailed oracle AND audit from BOTH timing and memory with matched optional audit
+posture; this prior failure is closed in this answer. Its timeout/series statements
+also preserve the distinct600s primary/scaling and1800s teardown limits.
+
+Do not add a separate lower/shared-order failure from report91 alone: report79
+explicitly makes lower output a predecessor of shared reductions. Its abbreviated
+sequence can refer to later ground/soil result-row assembly. The wrong INV153
+locator at21 is imprecise beside correct SC-SNOWENERGY083 and substantive inactive
+custody, but is not an additional substantive omission. Semantic adequacy, not
+literal matching, controls this assessment.
+
+Required reading is complete for the actual bounded claims: full selected LSE
+mechanisms, whole VEGETATION/SNOWENERGY/COUPLEDTIME and all four frozen experimental
+documents. The output/WAT5 reconstruction list identifies required future evidence;
+it does not claim current WATBAL partition/enforcement adjudication that would
+trigger a newly omitted whole WATBAL read. Represented inactive litter and accepted
+owner custody do not by themselves demand full active-phase/exact-carry algorithm
+review. No production/implementation verification is inferred from requirements.
+
+Accounting: all85 full/range rows reproduce1,166,955 unique bytes,
+1,479,999 requested bytes and313,044 repeat bytes. LSE contributes204,019 unique,
+245,877 requested and41,858 repeat bytes. Entry/interface12,021 meets12,288;
+204,019 is22.971876026474% below264,863 and7,871 below211,890.
+The four searches add2,312 source bytes: water765, map636, testing827, prompt84.
+**The report's claim that every search hit was later covered is false:** testing
+contributes531 and prompt60 previously unrequested governance bytes. Correct combined
+union is1,167,546, combined source/search exposure1,482,311, repeat314,765.
+Adding the separately disclosed9,508 automatic AGENTS source-equivalent proxy gives
+1,491,819 exposure and324,273 repeat; it adds no union. LSE search coverage is
+entirely repeated: its source/search exposure247,278, repeat43,259, union unchanged.
+Preserve this independent correction outside the immutable report; it does not
+subtract reading or alter the LSE numerical verdict. The raw sequence is verified;
+the report's search-inclusive unique-coverage assertion itself does not pass.
+
+Full requested extents remain charged when display truncates, with recovery reads
+additional; delivered token counts remain unobserved. The initial four backfilled
+reads and protocol EOF clamp have explicit recoverable extents. The only declared
+failed JavaScript-input parse initiated no source request; there is no omitted
+failed file-range charge established here. The two helper displays add1,350 derived
+code bytes separately, not canonical source; private inventory/draft delivery is
+not represented as source exposure. Full runtime/automatic/compaction delivery
+remains unobserved. All earlier FAILs and this first-report FAIL remain immutable.
+No stable-cut closure or adoption PASS follows from the size result.
+
+## Prospective uniform procedure11 and exact handoff integration
+
+Static: reviewed /tmp/lse-reading-procedure11-proposal.md and the complete isolated
+handoff proposal. Ran: exact replacement comparison verifies the proposed handoff
+is the existing neutral handoff plus only the procedure's operative paragraph before
+“Complete the assigned question”; SHA280db6a24f5e3197cbc05e2a521dbd9e1817ab17b9e0dfbba4fe9490642cb217,
+2,649 bytes, +1,063. No live handoff or source was edited by this review.
+
+Prospectively APPROVE this exact generic execution clarification and one newly
+nonforked solver first-report exercise after the parent records the new handoff
+identity. It requires the reader's own source-derived inventory to structure the
+answer, retaining complete predicates, scope, order, refusals and evidence and
+checking both directions. These are existing scientific sufficiency duties. It
+provides no named LSE branch, coefficient, identifier, error hierarchy, missing
+answer atom or parent inventory. The distinction between physical/domain checks,
+acceptance, diagnostics and evidence is generic; it changes no canonical acceptance
+predicate. A source-derived inventory is a reader aid, not an authority substitute
+or an extra assurance deliverable. The exact body is reasonably bounded; do not
+expand it into a supplied scientific checklist or require identical prose.
+
+This is a changed reading/answer procedure on UNCHANGED scientific source82b9,
+not a corrected scientific defect or demonstrated further source-size improvement.
+The already explicit source predicates need no cosmetic rewrite solely to obtain a
+new canonical hash. Nevertheless, repeated failed first answers are material
+usability evidence: preserve the full attempt history and report any later success
+as that new procedure-bound first answer, never as the first reader's success or
+proof that unchanged source alone caused the improvement. Package acceptance still
+requires adequate first answers, all mandatory actual reads and unchanged hard
+budgets; this approval supplies none of those outcomes. No current answer repair,
+feedback to the completed reader, best-of-answer merge, retrospective grading-style
+change or suppression of unsuccessful attempts is authorized. Older accepted
+answers remain governed by their original rubric and explicit source-duty reuse
+proofs, not this newly required presentation structure.
+
+Freeze/capture the new handoff alongside the unchanged canonical and protocol
+identities before the new reader starts; charge the additional governance reading
+and all actual repeats. The new reader receives the original task, only permitted
+source/instructions and this uniform procedure, with no review findings. One fresh
+solver result must be independently assessed as submitted. Stable-cut dual review,
+dual new terminal verification and bounded final publication checks remain pending.
+
+
+## Procedure11 applied handoff and custody preflight
+
+Static: inspected the complete applied neutral handoff and iteration10 consolidated
+reading record; the solver10 scientific FAIL and591-byte independent governance
+search correction are preserved. The new procedure contains no named failed atom,
+LSE predicate/identifier, answer or parent inventory. Prior prospective approval's
+changed-procedure/unchanged-science and immutable-first-report limitations remain.
+Ran: live handoff is byte-identical to the exact approved isolated proposal,
+SHA280db6a24f5e3197cbc05e2a521dbd9e1817ab17b9e0dfbba4fe9490642cb217,
+2,649 bytes/36lines. All30 candidate-manifest members independently match both their
+recorded hashes and exact82b9c72d65a9ed9467878168e308c13b37608684 Git bytes;
+manifest SHA remainscccda2ed4aa97b24c186dde1059a7e2cbef7c2768c50b9e2a7c66429f77ee87f.
+Solver10 report's451890b4… hash remains exact. No scientific body, route, predicate,
+external scope, protocol or executable check was changed by this procedure step.
+
+Inspected reading-iteration-11-custody.json: capture_complete_json=true and combined
+capture/verify exit0. Independently checked the actual11,665,572-byte bundle manifest
+against trustedSHAf45a3506f883fe804afe2bc041fef1d3affea4cb67c78150777c98b044c1142e.
+Its240 entries explicitly bind the new handoff at the approved hash/size alongside
+frozen protocol/source inputs. This is receipt/manifest identity verification, not
+an independent reread of the11MB verification log or a claim of bit-reproducible
+rebuildability; the manifest correctly leaves rebuildability/bit reproduction unproven.
+
+Applied preflight PASS; approve local freeze and the newly independent solver11
+exercise under the already approved exact procedure. Charge its new governance
+reading and all actual exposure; preserve original observations for reused tasks.
+No unchanged numerical/executable rerun is warranted by this bounded insertion.
+Fresh solver adequacy, independent stable-cut reviews, dual new terminal verification
+and final activation checks remain pending. This is not adoption or runtime PASS.

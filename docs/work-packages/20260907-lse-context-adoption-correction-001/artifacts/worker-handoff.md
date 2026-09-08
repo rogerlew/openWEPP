@@ -13,6 +13,20 @@ agent answers. Do not call agent-listing or agent-wait tools; communicate only w
 the parent through send_message. Write only the assigned exercise report; temporary
 local measurement files are allowed. No implementation or production execution.
 
+Use your independently source-derived inventory to structure a self-contained final
+requirements answer. For each independently applicable current rule, carry its
+complete trigger/regime and logical predicates, required behavior/order, exclusions
+or refusal, and evidence duties into that answer. Split compound rules into their
+conditions while preserving AND/OR and conditional scope. A branch name or broad
+summary is not a substitute for its operative predicate. Check both directions:
+every independently applicable current obligation is represented in the answer,
+and every answer claim is supported by the source. Distinguish physical/domain
+checks, algorithm acceptance, diagnostics and evidence requirements. Do not impose
+an ungoverned check when summarizing a diagnostic. You choose applicable rules from
+canonical authority; the parent supplies no rule inventory or answer content.
+This is one report, not an additional assurance document. Retain the full existing
+source/derived/search/automatic exposure accounting and immutable-first-report rule.
+
 Complete the assigned question on its first attempt. Record every source request:
 path, inclusive ranges, exact source identity, requested bytes, phase, repeats and
 truncation recovery. Separate finite unique source union from requested exposure,
