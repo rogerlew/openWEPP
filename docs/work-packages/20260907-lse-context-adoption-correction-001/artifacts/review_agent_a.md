@@ -4640,3 +4640,331 @@ scientific adequacy, complete reading and exposure remain unobserved; forecast
 204,270 LSE is not a PASS. Solver11 FAIL stays immutable. Independent stable-cut
 reviews, dual new terminal verification and exact final activation checks remain
 pending; no adoption or execution conclusion is authorized by this preflight.
+
+
+## Solver12 immutable first-report assessment — PASS for bounded task
+
+Static: read the complete405-line/100,455-byte exercise_02_retry_12.md, including
+its complete scientific answer and all accounting annexes, against the unchanged
+original frozen task2/rubric. Assessed actual claimed scope and its recursive
+owner/protocol duties; no reader contact, hints, draft supplementation or report
+repair. Reconciled independent conclusions with Reviewer B after completing the
+scientific review. Ran: independently verified report
+SHA2489cfca6f9539b2c12d6f94e40cbd80ff0b116e91aa4186f6f97aef4e23ce78,
+all35 complete source hashes, all91 source-range/new/repeat records, all34 exact
+source-search lines and17 private-artifact sizes/hashes at frozen
+f70a7c8bceda2302d51823d3872cdff3ebde3694. No production test, numerical workflow,
+implementation conformance review, timing or memory experiment was run.
+
+**Scientific sufficiency PASS; required reading PASS; ledger PASS; LSE size PASS.**
+This first report meets the nine original solver requirements semantically:
+
+1. R04–R05a preserve exact unknown/residual/branch ordering, domain preflight,
+   normalization, finite-difference unit scales/minus-before-plus/centered-inward
+   arithmetic and typed neither-probe failure; deterministic dense LU/pivot/tie,
+   50 updates, b=0..20 strict decrease and all governed residual/step limits. ci
+   is expressly diagnostic with no independent threshold. Full b=0 precedes the
+   first domain-valid halved witness, which accepts CURRENT state only and retains
+   exact existing cumulative exponent accounting without new public/persisted
+   field. The connective “AND…OR” wording is resolved by the immediately following
+   explicit refusal for failing current residuals; no new parentheses/wording test
+   is imposed where the complete predicate is present.
+2. The answer gives each positive final authorization's exact request identity AND
+   amount equality AND FullSupply disposition, exact zero identity/amount, complete
+   fixed-final reevaluation and iteration-zero zero step/backtrack/no-Jacobian;
+   partial positive nonpositive-assimilation ROOT refusal, V10-only scaling scope,
+   all inactive sun/shade/wet versus dry-stem anchors, and the complete wet-store
+   rate AND energy predicate with excluded regimes. Positive V1 results are
+   explicitly imported; no erroneous nonpositive-only FullSupply restriction remains.
+3. R06–R08 and the graph include current/max leaf gas, both liquid-routing passes,
+   every lower occupancy, reciprocal longwave, hydraulic/tolerance reductions,
+   shared air and ground/soil boundary/identity dependencies with immutable water
+   chronology. The answer distinguishes inner LSE finite differences from current
+   outer covered-solver prohibitions and keeps physical closure/support independent.
+4. INV162's exact same-solve anchor expressions/order/trial/stencil restrictions and
+   INV163's successful same-call exact-beta-one OR inactive/exact-zero-PAR eligibility,
+   exclusions/call order/lifetime and complete comparison duties are concrete.
+5. INV164 has successful immutable same-sweep base, fresh signed single-use probe,
+   complete topology/version/direct-edge oracle and all lower-routing/LW propagation;
+   same canonical node/tail source order; unknown/ineligible complete selection
+   before commitment, typed integrity rejection and direct post-start first errors.
+6. The original fallibility table's current-leaf crossability, not-established
+   maximum crossability, every noncrossable guard implication AND authentic boundary
+   success, infallible no-invented-error rule and complete real field/error parity
+   are explicit. A finite no-error search does not become an implication proof.
+7. R-only EXP-R/PC1/SG1 scope, exact affected beta/unchanged wet-stem operands,
+   recomputed same-source-position value-or-error versus skipped-base guard duties,
+   unchanged production HOLD and frozen paused status are retained. Detailed oracle
+   AND audit remain outside BOTH timing and memory with matched optional audit
+   posture. Historical `rss_kib<=65536` is explicitly the late VmRSS ENDPOINT,
+   not peak/post-cleanup memory; all conjunctive historical retention duties and
+   prospective separate timing/memory/scaling/teardown rules remain distinguished.
+8. R17–R20 state the complete global first-error hierarchy and payload, exact V30
+   original source positions (V8, then fallible ingress, then native proof), earlier
+   competing-poison priority, owner/role/custody rollback and no recovery solver.
+9. R21–R28 require forced-complete every-field/residual/Jacobian/full-trajectory/
+   owner/output/error oracle, exact graph deletion/stencils/authentic poisons,
+   lifecycle/counter/real-consumer evidence and independent closure. Historical
+   58=14+16+28 remains named interior-sweep evidence; EXP-R enumerates actual signed
+   stencils/classes and requires nonzero completed real replay, not eligibility.
+
+No additional source-supported scientific contradiction or omitted applicable duty
+was found. Missing actual run payloads, outputs and performance evidence are correctly
+left missing, with required future owner execution distinguished from this reading.
+Private inventories are procedural evidence only; their contents were not used to
+repair or complete the submitted answer. This closes the reading sufficiency gate
+for this report only, not production replay/solver correctness or experimental admission.
+
+Required-reading PASS is scope-bound: all13 selected LSE files including the full
+entry/interface, whole current VEGETATION/SNOWENERGY/COUPLEDTIME, and all four complete frozen
+experimental documents are requested in full with recoveries. Testing strategy and
+prompt guidance retain precisely routed sections plus source-search hits; they are
+not falsely counted whole. The represented-snow inactive-litter/accepted-water scope
+does not itself require a new active WATBAL/SURFACELIQUID/soil-exact arithmetic audit.
+Future WAT5/HBP real-consumer evidence requirements do not claim those implementations
+were independently audited. Rain consumes retained authoritative output, with no
+provider-rule derivation claim requiring a silently omitted SnowFreeze read. No
+profile/enforcement/provenance adjudication is inferred from applying current rules.
+All required whole external scientific reading remains charged (839,166 bytes).
+
+Exact full/range ledger:
+
+| Category | Requests | Unique | Repeat | Requested |
+| --- | ---: | ---: | ---: | ---: |
+| Governance/task |16|75352|2649|78001|
+| LSE |26|204270|141037|345307|
+| Frozen experimental documents |4|45937|0|45937|
+| Tool source |1|3544|0|3544|
+| External contracts |44|839166|310862|1150028|
+| Total explicit |91|1168269|454548|1622817|
+
+All34 search lines reproduce the declared pattern and1,430 source bytes, with531
+new governance bytes and899 repeated bytes. Combined source/search union1,168,800,
+exposure1,624,247 and repeat455,447 are exact. Separately adding9,508 automatic
+root-AGENTS source-equivalent gives1,633,755 declared exposure/464,955 repeat, no new
+union. Actual system/developer/compaction/tool-rendering telemetry remains UNOBSERVED.
+Searches add no LSE bytes:204,270 unique/345,307 requested/141,037 repeat remain its
+actual figures. Entry/interface12,021 meets12,288. LSE is22.877110053122% below264,863
+and7,620 below211,890. Gross requested LSE exposure is larger than the monolith;
+this is not hidden or called20% delivered-context savings. The hard gate is the
+specified sufficient unique LSE union, with repeated/external costs separately exposed.
+
+Initial cat/sed requests are explicitly reconstructed from the retained conversation;
+helper request blocks preserve their declared accounting order, not an invented
+wall-clock sequence. Exact final union/requested totals do not depend on that block
+ordering. Truncated requests remain fully charged; recovery repeats include BOTH
+2045–2100 requests around compaction. No failed source request with an available
+unaccounted source extent is established in the report/ledger. Metadata-only help,
+path and count output is distinct from canonical source; context_report.py itself
+is correctly charged. The17 private-artifact hashes are exact. Authored inventories/
+drafts and the2,596-byte graph-table source-equivalent answer assembly are disclosed
+as derived work using already-read source, not additional tool source displays or
+independent scientific proof. Their construction and declared count outputs do not
+measure actual runtime tokens. No omitted-source fallback is inferred or permitted.
+
+This PASS belongs to the new independent first report on f70 under approved
+procedure11/handoff280db6a2 and the source-bound iteration12 RSS clarification.
+It is not an identical-prompt replication, an unchanged-source-only improvement, or
+a repair of solver11/earlier answers. Every prior first-report failure remains
+immutable and relevant usability history. The newly restored live normal handoff
+is continuation documentation, not the source the reader saw: all identity/ledger
+verification above used the frozen f70 handoff (2,649 bytes), not live replacements.
+Independent complete stable-cut reviews, dual new terminal verification and exact
+bounded activation reconciliation remain pending. No adoption PASS is declared here.
+
+
+## Complete stable-cut closure READINESS review
+
+Static: independent Reviewer A authority/correctness/precedence/non-deferral review;
+requested correctness effort high, effective runtime metadata UNOBSERVED. Read root/
+work-package/role instructions and testing strategy7–10, with previously completed
+applicable science and17–18 guidance retained. Inspected canonical base-to-current
+scope from fb32d27f258ce05c36d66a299c2d09d42fbb030c, including index/worktree/scoped
+untracked paths, every changed Rust consumer/helper diff, focused Python migration
+tests, intake/failure-masking matrix, actual primary manifests/logs, all current
+reading aggregates/claims, normal handoff, activation proof and final membership.
+The abbreviated fb32 lookup was ambiguous with blobs; resolved to the exact commit,
+not an assumed different baseline. Only this assigned review artifact was written.
+
+**Stable readiness PASS: suitable for the TWO NEW independent terminal verifiers.
+Package completion/adoption is NOT yet PASS.** There is no unresolved scientific,
+reading-sufficiency, masking or scope defect preventing that next step. The missing
+terminal roles, actual activation and final checks remain explicit current-package
+work, not waived, passed or deferred to another increment.
+
+Reviewed scientific cut is f70a7c8bceda2302d51823d3872cdff3ebde3694;
+candidate30 manifest SHAfc8604ac789f5edd00183b3675dfc2dfbeb5dda6ad8fedf14158cb093ba18d89.
+Independently reverified all30 live member hashes and exact f70 bytes. Full20 LSE
+files total369,049 before activation, with12,021 entry/interface bytes. Reuse of the
+complete original-source scientific review is justified by this unchanged source
+and the accountable per-iteration accepted-fix proofs already recorded above, not
+merely because the final hash exists. No source was modified during this closure review.
+
+### Authority preservation, scope and non-deferral
+
+The exact live authority diff is20 LSE files plus the LSE index review date. Actual
+non-package code changes are seven integration consumers, one28-line test-local
+shared loader and the204-line Python migration test. README/active changes locate
+this separately authorized package. The approved additional activation path is the
+format-guide status paragraph. The larger initially authorized parser/tool/science
+AGENTS write envelope was not exercised and is explicitly excluded at reconciliation.
+Production crates, tools, Cargo/flake/config and the complete predecessor package
+have empty baseline-to-current diffs. The unrelated literal `$pkg/` and `tmp/`
+untracked files are explicitly excluded and preserved; package untracked reports/
+membership/proof/aggregate are accounted for, not hidden inside an assumed clean tree.
+
+This is a contract-location/reading procedure and test-local consumption change.
+The full original monolith was independently reviewed before migration. All effective
+rules, original equations/scientific cells/36 fenced bodies and616 mapped spans
+remain normative, with only the original changelog historical. The common56-cell/
+7-paragraph and numerical34-block operative equivalence proofs, all unique canonical
+rows/guards/tests, exact original source locators, regime/model-version distinctions,
+authority-gap limits, layer/owner/sign/identity/conservation obligations and recursive
+whole-external reading duties were independently reviewed before and after changes.
+The final corrections preserve those proofs and original qualifiers. Audit/reference
+placement is not a scientific demotion or an excuse to omit uncertainty-driven reads.
+
+The correction package's prospectively approved acceptance is legitimate and distinct
+from predecessor HOLD: no retrospective conversion of the old broader required FAIL
+into PASS. Critical production authority, process equations, selectors, runtime
+publication, schema serialization, required-case/cohort posture, toolchain/dependency
+resolution and frozen experimental identities are unchanged. No new critical runtime
+campaign or anti-evasion requirement is silently narrowed by labeling Markdown
+editorial. A future semantic change to any such boundary would reopen classification;
+none is present in the inspected diff. Current direct authority/consumer validation
+and individual failure-masking obligations remain non-deferrable and are supported.
+
+### Primary validation and retained failures
+
+Inspected the actual original/current consumer diff: entry dispatch uses the existing
+canonical parser; noncontract files remain raw; anchored canonical rows and separate
+guard-map occurrences are recognized without dropping their protected scientific
+assertions. Live LSE revision32/review-date changes are explicit metadata migration;
+frozen model/runtime/source identities are not repaired. Whitespace/entity matching
+changes only representation, backed by original-cell preservation and mutation checks.
+The compiled bridge's legacy output equality and malformed/unknown-format/missing-
+definition negatives exercise actual consumption, not a second maintained monolith.
+
+The independent intake B matrix classifies all18 inherited failures and every
+migration-relevant masked suffix. I compared its M1–M9 requirements with the current
+Python tests, preserved Rust assertions and actual bridge scope. Separate passing
+checks reach snow–soil geometry/receipts, pending/final-reseal tuples, hydrology
+ownership, exact owner definitions, unrelated registry-row predicates, canonical/
+guard counts and whole legacy output equality. Full original scientific-cell tests
+and equation/failure-posture mutations prevent ID-only structural substitutes.
+Matching failure identities alone is expressly insufficient and is not the gate used.
+
+Ran: independently verified the complete evidence-manifest log hashes, its source/
+156-input manifest bindings and actual retained bridge binary SHA. All156 current
+input hashes and corresponding baseline hashes were reconstructed;154 are unchanged,
+with only the declared LSE entry/index migration different. Independently parsed the
+original and current Rust logs: exact18 failure identities and36 normalized emitted
+panic payloads match; actual current summary is129 tests/111PASS/18FAIL/0skipped in
+13.080s. The intentionally absent v31 production seam, stale external/registry tests
+and V9 runtime identity mismatch remain FAIL, never scientific success.
+
+The primary retained logs support98 Python tests4.72s, strict17BEI/100definitions,
+unit zero findings, A0 admission49contracts/0science_surfaces, and53 actual bridge
+cases with48 byte-identical legacy entries. The parent's executed commands/roots and
+input-bound lint comparison are explicit. Original root Clippy17 diagnostics remain
+FAIL, with actual original-source comparison and independently compiled/linted helper;
+no dependency-aborted lint is passed off as changed-code lint. The earlier complete
+lint/format execution is reused with unchanged relevant code/compiler/source inputs,
+not silently rerun or described as a fresh personal run. I did not rerun unchanged
+numerical/executable suites merely to repeat these already bound checks.
+
+Rust line-count WARN is legitimate: vegetation2843 remains below3000 and has named
+maintainer/split-before-expansion intent; no currently required refactor is deferred.
+Other owned files are below2000; bridge harness is11 lines. The clarified “no
+additional Rust edits since validated implementation” does not hide the actual seven
+consumer/helper changes. No protected test is deleted, suppressed or weakened to
+make inherited scientific failures green.
+
+### Reading evidence and bounded reuse
+
+The four required scientific/identity readings are adequate with exact original cuts:
+surface09 204,063@c2dd; solver12 204,270@f70; closure08 208,928@645b; identity03
+31,428@6938. All science unions meet211,890; entry/interface meets12,288; identity
+is smaller. Complete independent original-rubric assessments and exact source/search/
+automatic/derived/recovery/failed-request accounting remain in this record and the
+immutable reports. Surface's two failed available-source requests receive the7,064-
+byte conservative supplement; solver10's591 missing governance bytes are corrected
+outside its immutable report. There is no hidden subtraction or repaired first answer.
+
+Surface/closure/identity reuse follows their already reviewed selected-duty proofs,
+not all-hashes-equal or four-fresh-on-final-cut claims. Identity remains bounded to
+identity requirements, not solver measurement-validity or scientific execution.
+Solver12 is a genuinely new independent first report under approved procedure11 and
+the source-bound251-byte endpoint clarification. Its complete required three external
+contracts/four protocols and ledger pass; earlier failures remain visible. The normal
+83-line handoff was restored AFTER fresh reading; the measured frozen2,649-byte
+handoff remains recoverable through f70/custody12 and is not relabeled as the live one.
+
+The entire369,049-byte set is larger than264,863 original. Unique LSE reading savings
+are not gross requested savings, delivered model tokens, runtime context, quota or
+workflow totals. Solver12 LSE gross345,307 and combined source/search/automatic proxy
+1,633,755 remain explicit, with unobserved runtime categories labeled. Current
+context-usability/gate/final claims respect these limits and do not attribute success
+to source-only causality, an identical prompt or general first-try reliability.
+
+### Findings resolved during stable review
+
+RCA-S01 (medium, final identity membership): initial publication-only placement of
+current verdict/number/claim narratives and indirect experiment-input binding was
+insufficiently explicit under testing strategy10. Parent added command/scope,
+evidence-manifest and Clippy argv/fixture records to experiment membership, and all
+claim-bearing publication records also to evidence_claim. Independently verified the
+corrected241 experiment/67 evidence_claim/13 publication sets, without duplicates;
+only the two intentionally future verifier artifacts are missing. Exact command/
+source/input/executable-hash relationships are now explicit; future verdict changes
+receive substantive claim review rather than editorial exemption. CLOSED/rechecked.
+
+Custody12 was also precisely classified: it is a static reading snapshot whose
+“executable” group contains loader source, NOT compiled bridge/runtime provenance.
+The actual compiled bridge exists and its SHA independently matches the evidence
+manifest; explicit compiled-byte final custody remains an owned terminal step.
+No full historical environment, offline Cargo rebuildability or numerical reproduction
+is claimed. This is a bounded readiness dependency, not a fictitious completed
+capture; terminal verifiers must inspect final executable custody and identity members.
+
+RCA-S02 (low, whitespace result scope; B-origin finding independently checked):
+`git diff --check fb32d27f2` exits2 for ONLY audit-details481/history39 new blank lines
+at EOF. Current-edit `git diff --check` exits0. The final gate now distinguishes these
+scopes and retains both exact diagnostics. These are new EOF-layout diagnostics in
+relocated original-text material, not inherited old-file warnings and not a baseline-
+wide PASS. No scientific/parser/schema/guard effect or frozen zero-Markdown-EOF-warning
+criterion exists; the separately required Rust formatting is retained. Accept the
+explicit nonblocking whitespace disposition and preserve reviewed source bytes;
+no assertion weakening or silent suppression is involved. CLOSED by accurate scope
+and bounded disposition, not by claiming the diagnostic vanished.
+
+### Remaining current-package closure steps
+
+Two NEW terminal verifiers must independently verify this corrected substantive cut
+and current claims; neither parent's self-review nor these reviews replace them.
+After prerequisite PASS, apply ONLY the reviewed159-byte entry-notice removal and
+187-byte format-guide status correction, retaining historical HOLD and full normative
+binding. Preserve observed reading counts rather than subtracting activation bytes.
+Capture final source/evidence/executable identities, run affected structural/unit/A0/
+migration checks, and obtain both verifiers' focused exact activation/status diff
+confirmation. Archive the active execution prompt byte-identically and reconcile
+package/catalog/handoff/disposition after gates, with no push. The actual scientific
+production/experimental HOLD remains unchanged even if directory migration adopts.
+
+Current pending verifier files are honestly absent; detached identities must be
+emitted after the final collection exists, excluding themselves and without future
+commit prediction. Bounded publication collection does not recursively invalidate
+its own signoffs under strategy10, but changed substantive claims reopen affected
+review. This readiness PASS authorizes continued same-package terminal work, not
+premature completion or general selective-reading activation.
+
+Changed claim/membership cut reviewed after the above corrections (review artifact
+itself excluded; later updates require bounded inspection):
+- worker-handoff.md: `98bf88252bfd4bba345778fedaf6081096457b5f94e273de31a456c5497ad45d`
+- gate-results.md: `5aac2de3186185f948522e28f7760f8a29d0de497a32d1d13726498aeeec2818`
+- context-usability.md: `a5013c210b10a547058efa44086a15008d45181fa6689d4db4e25d12af7d6c43`
+- finding-disposition.md: `b83c455493d5a33167bf4d44887fc5b579eb2092353796af2b46c98034011a23`
+- final-disposition.md: `5855ee5ceee571f665156a4cb5bcf5e023b427b454fd203e3bed811782999fbd`
+- reading-iteration-12.json: `c5ad395cd16ac79b89ebdf9ca9524774731e60f880a855d9e3e531379cbc4cfe`
+- closure-membership.json: `144ad3b573e7079a38e187134ca4a28b2d5d10d22756acc2689f75a0bb00b158`
+- activation-guide-proof.json: `81085dd3feba32e8db7f210259d3c32f22298e6fb78f13f1c8bb53102869d11e`

@@ -1,83 +1,60 @@
-# Current context-usability evidence
-Static: current iteration12 source manifestfc8604ac789f5edd00183b3675dfc2dfbeb5dda6ad8fedf14158cb093ba18d89.
-Ran: completed independent first readings and dual source/rubric/accounting reviews.
-Current procedural freezeee899c22c changes only the generic inventory-to-answer
-instructions, not science, the original questions/rubric, reading duties or budgets.
-Solver11 completed with scienceFAIL solely on the historical memory operand.
-Iteration12 makes the existing endpoint definition explicit (+251bytes); a fresh
-nonforked solver12 under the same clarified procedure is NOT RUN. Adoption is incomplete.
+# Context usability
+Static: current source is f70a7c8bceda2302d51823d3872cdff3ebde3694, bound by
+candidate-manifest.json. Ran: independent first readings; A/B independently checked
+science, mandatory reading and byte ledgers. Adoption is still pending terminal work.
 
-| Task evidence | Observed cut | Unique LSE bytes | Reduction from264863 | Science / reading / size |
-| --- | --- | ---: | ---: | --- |
-| Surface09 | c2dd02bc3 |204063|22.955264%|PASS / PASS / PASS|
-| Solver10, failed first report |82b9c72d6|204019|22.971876%|FAIL / PASS / PASS|
-| Identity03, reused |6938ca97d|31428|88.134243%|PASS / PASS / PASS|
-| Closure08, reused |645b816b5|208928|21.118465%|PASS / PASS / PASS|
-| Solver11, clarified procedure |ee899c22c|204019|22.971876%|FAIL / PASS / PASS|
-| Solver12, endpoint clarification |not yet observed|not yet observed|not yet observed|NOT RUN|
+| Accepted task | Observed cut | Unique LSE bytes | Reduction from264863 |
+| --- | --- | ---: | ---: |
+| Surface09 | c2dd02bc3 |204063|22.955264%|
+| Solver12 | f70a7c8bc |204270|22.877110%|
+| Identity03 |6938ca97d|31428|88.134243%|
+| Closure08 |645b816b5|208928|21.118465%|
 
-A/B approved selected-duty reuse of surface09/closure08/identity03 on unchanged
-current science. Original observations, report hashes and cuts remain retained;
-these are not fresh rereads, all-source-hashes-equal, or four new successes on one
-final cut. Identity's bounded PASS does not establish solver measurement validity.
-Every original first report remains immutable. Detailed accepted/failed observations,
-source/range identities and procedural limitations are in reading-iteration-01..10.json
-and the independent review records; none is replaced by this consolidated narrative.
+Each science task passes the frozen211890-byte bound with scientific sufficiency.
+Identity passes its smaller-than-monolith criterion. Surface09/closure08/identity03
+have A/B approved applied12 selected-duty equivalence, retaining original source cuts
+and counts. These are not four fresh successes on one final cut or all-hashes-equal.
+Identity approval is bounded identity evidence, not solver measurement qualification.
+Exact reports/hashes, earlier failures and reuse proofs are in reading-iteration-12.json
+and the earlier numbered records. No failed first report was repaired or relabeled.
 
-## What the measurements establish
-The original single LSE file is264863bytes. The predecessor candidate was410021bytes;
-the current20-file candidate is369049bytes, still larger than the original. Current
-entry4090+interface7931=12021always-read bytes, below the frozen12288limit.
-The three science tasks each require a sufficient unique LSE union at most211890;
-identity must remain smaller than264863. Size alone does not establish sufficiency.
-All recursive mandatory dependencies and actual voluntary/search/recovery reading
-remain included. Unconverted external contracts are whole when applicable; routing
-them to a heading is not permission to omit their remaining authority.
+The candidate contains369049bytes across20files, versus264863 original and410021 in
+the predecessor candidate. It remains larger in full. Always-read entry4090 plus
+interface7931 totals12021, below12288. Compatibility/audit/index material remains
+available outside routine bootstrap; every effective original rule stays binding.
+Only the original changelog is historical.616spans/scientific cells/36fences and
+current56row/7paragraph/34block semantic equivalence proofs preserve obligations.
 
-Surface09 read all six external contracts (2035441unique external bytes). Its complete
-source/search/automatic union is2314243; adding two failed3532-byte available-source
-requests to the declared completed exposure yields2761363conservative requested
-source-equivalent bytes. The unique LSE union stays204063. Derived inventory9142bytes
-is separate. Closure08 records1703658unique/1964719requested source bytes with five
-whole externals; identity03 records149505unique/149667requested. Their reports retain
-the exact automatic-proxy and derived exposure conventions.
+Unique source union is not total exposure. Solver12's91source requests total1622817
+bytes,1168269unique,454548repeated.34search lines add1430bytes/531new; combined
+1168800unique/1624247requested. Separate9508automatic file-equivalent proxy gives
+1633755declared source exposure. Its LSE345307requested bytes exceed the original
+file;204270 is the finite unique union. Three whole external contracts account for
+839166unique/1150028requested bytes; four frozen protocol sources also read whole.
 
-Solver10's85source requests are1479999requested/1166955unique/313044repeated bytes.
-Searches add2312requested and591NEWgovernance bytes, contrary its assertion that all
-were already covered: corrected1167546combinedunique/1482311source-search exposure,
-or1491819with the separate9508automatic source-equivalent proxy. The LSE union is
-unchanged204019. LSE requested exposure245877is only7.1682%below264863; this is not
-silently substituted for the22.971876%unique-union result. Its scientific and combined
-union failures remain failures. Source-byte observations are not model tokens,
-runtime-context delivery, quota or complete workflow cost; those are unobserved.
+Surface09 reads six whole external contracts:2035441unique external bytes. Its combined
+union2314243 and conservative2761363requested source-equivalent exposure include
+7064bytes for two failed available-source requests. LSE attempted exposure432539;
+9142derived inventory bytes separate. Closure08 records1703658unique/1964719requested
+source bytes and five whole external contracts; LSE308466requested. Identity03 records
+149505unique/149667requested. Original reports retain their automatic/derived scopes.
+All recursive, voluntary, search, recovery and failed requests remain chargeable.
+These observations do not measure delivered model tokens, context memory, quota or
+complete workflow cost. Rereading and external contracts remain substantial costs.
 
-## Procedural treatment and preservation
-Solver09/10 read the source but omitted applicable predicates from their answers.
-The exact current table and all original operative rules remain unchanged. A/B
-prospectively approved procedure11: each reader structures one self-contained answer
-from its own independently source-derived inventory, preserving full applicable
-predicates, scope, order, exclusions/refusals and evidence, distinguishing diagnostics
-from acceptance. The neutral handoff adds1063governance bytes (2649total/36lines).
-It contains no named failed atoms or parent inventory. Future tasks use the same
-clarification; prior accepted answers keep the unchanged rubric, not a new style gate.
-Any eventual solver11 PASS is under this clarified procedure, not a scientific-source
-improvement, an identical-prompt baseline experiment or evidence of general first-try
-reliability. All failed attempts and their actual reading costs remain visible.
+Procedure11 prospectively added1063generic governance bytes (neutral handoff2649bytes)
+to make each reader's own source-derived inventory structure its self-contained answer.
+No parent inventory, named failed atoms, rubric or other answers were supplied. The
+original question, scientific rubric, reading duties and budgets stayed unchanged.
+Solver11 still failed by substituting peakRSS for historical JSONrss_kib endpoint.
+Iteration12 added251bytes explicitly identifying that existing lateVmRSS endpoint;
+the frozen protocol, operand, threshold, original source and paused authority stayed
+unchanged. Fresh solver12 passed on this clarified source/procedure. This does not
+isolate source-only improvement, establish an identical-prompt comparison or general
+first-try reliability. All earlier failures and their costs remain visible.
 
-Only the original changelog is historical. Original616spans, scientific cells and
-36fences remain normative; current common and numerical presentations have independent
-clause equivalence proofs. Compatibility/index/audit material stays available outside
-routine bootstrap without authority exemptions. Current custody11 retains the exact
-source/procedure bundle through disposition plus explicit maintainer audit release.
-Stable dual review, two new terminal verifiers and actual checked activation remain
-required after the final reading criterion passes.
-
-## Iteration12 current operand clarification
-The only source change from82b9 is251bytes in replay-evidence, explicitly identifying
-the historical JSONrss_kib as lateVmRSSendpoint, not peak/post-cleanup memory.
-Both reviewers approved it against unchanged frozen kickoff72/protocol95. No threshold,
-command, original body, protocol or rubric changes. A/B applied12 reuse is approved for the
-three prior accepted reports; their observed counts and original cuts stay unchanged.
-Solver11 ledger34hashes77requests is1175695combinedunique/1505862source-search bytes,
-or1515370with separate automatic proxy; LSE204019unique/288071allrequested bytes.
-It passes size and reading, but the endpoint/peak substitution remains a scienceFAIL.
+Custody12 retains frozen source/procedure through disposition and explicit maintainer
+audit release. The neutral handoff was restored to normal continuation form only
+after fresh12 finished. Terminal verification and activation remain required.
+Activation would remove159entry-notice bytes only; no subtracting them from past
+observations. A separately approved format-guide status update preserves prior HOLD.

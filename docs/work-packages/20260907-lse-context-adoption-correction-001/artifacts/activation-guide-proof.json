@@ -1,0 +1,9 @@
+{
+  "path": "docs/specifications/science-contract-directory-format.md",
+  "old_sha256": "4b7aa41200faaac647c8d8624597779a13c50bee444c0ca738ff7fd29653df1c",
+  "new_sha256": "3ce2e7d8c52e4b95f5ebfb8c5234a70b4b8b49013191b41b06605239337cca93",
+  "old": "implements structural checker support. The pilot remains on HOLD; canonical LSE\nretains its original single-file authority and whole-contract reading requirement.\n",
+  "new": "implements structural checker support and retains its historical HOLD. The separate\n[LSE correction package](../work-packages/20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md)\nadopts the v32 LSE directory set; its canonical entry governs selective reading and\nrecursive dependencies. The entire normative set remains binding.\n",
+  "condition": "Only apply with actual activation after all required readings/reviews/two terminal readiness verifiers. Historical pilot HOLD remains unchanged.",
+  "scope": "Already authorized package write set format guide; actual status/reference reconciliation, no changed adoption criteria or physics."
+}
