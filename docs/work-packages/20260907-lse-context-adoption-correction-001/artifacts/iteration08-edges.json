@@ -1,0 +1,308 @@
+[
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+    "before": "| Executable identity | identity verification | [qualification](SC-LANDSURFACEENERGY-001/qualification.md#qualification) | Frozen capture protocol; scientific claims expand physics/closure. |",
+    "after": "| Executable identity | identity verification | [qualification](SC-LANDSURFACEENERGY-001/replay-evidence.md#qualification) | Frozen capture protocol; scientific claims expand physics/closure. |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+    "before": "| [nonlinear-solve](nonlinear-solve.md#nonlinear-solve), [surface-energy](surface-energy.md#surface-energy), [qualification](qualification.md#qualification) | component-temperature replay correctness | canonical stencils, leaf reuse and errors; radiation/turbulent dependencies; retention and capture rules for timing and memory, including oracle separation and matched optional audit posture | whole chapter |",
+    "after": "| [nonlinear-solve](numerical-methods.md#nonlinear-solve), [surface-energy](surface-energy.md#surface-energy), [qualification](qualification.md#qualification) | component-temperature replay correctness | canonical stencils, leaf reuse and errors; radiation/turbulent dependencies; retention and capture rules for timing and memory, including oracle separation and matched optional audit posture | whole chapter |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+    "before": "| [nonlinear-solve](numerical-methods.md#nonlinear-solve), [surface-energy](surface-energy.md#surface-energy), [qualification](qualification.md#qualification) | component-temperature replay correctness | canonical stencils, leaf reuse and errors; radiation/turbulent dependencies; retention and capture rules for timing and memory, including oracle separation and matched optional audit posture | whole chapter |",
+    "after": "| [nonlinear-solve](numerical-methods.md#nonlinear-solve), [surface-energy](surface-energy.md#surface-energy), [qualification](replay-evidence.md#qualification) | component-temperature replay correctness | canonical stencils, leaf reuse and errors; radiation/turbulent dependencies; retention and capture rules for timing and memory, including oracle separation and matched optional audit posture | whole chapter |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/replay-evidence.md",
+    "before": "| nonlinear-solve.md#nonlinear-solve | solver scientific result claims | complete ordered solver | whole chapter |",
+    "after": "| numerical-methods.md#nonlinear-solve | solver scientific result claims | complete ordered solver | whole chapter |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| `INV-LANDSURFACEENERGY-111` | nonlinear-solve.md#INV-LANDSURFACEENERGY-111 |",
+    "after": "| `INV-LANDSURFACEENERGY-111` | numerical-methods.md#INV-LANDSURFACEENERGY-111 |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| `INV-LANDSURFACEENERGY-112` | nonlinear-solve.md#INV-LANDSURFACEENERGY-112 |",
+    "after": "| `INV-LANDSURFACEENERGY-112` | numerical-methods.md#INV-LANDSURFACEENERGY-112 |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| `INV-LANDSURFACEENERGY-113` | nonlinear-solve.md#INV-LANDSURFACEENERGY-113 |",
+    "after": "| `INV-LANDSURFACEENERGY-113` | numerical-methods.md#INV-LANDSURFACEENERGY-113 |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| `INV-LANDSURFACEENERGY-131` | nonlinear-solve.md#INV-LANDSURFACEENERGY-131 |",
+    "after": "| `INV-LANDSURFACEENERGY-131` | numerical-methods.md#INV-LANDSURFACEENERGY-131 |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| `INV-LANDSURFACEENERGY-138` | nonlinear-solve.md#INV-LANDSURFACEENERGY-138 |",
+    "after": "| `INV-LANDSURFACEENERGY-138` | numerical-methods.md#INV-LANDSURFACEENERGY-138 |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| `INV-LANDSURFACEENERGY-139` | nonlinear-solve.md#INV-LANDSURFACEENERGY-139 |",
+    "after": "| `INV-LANDSURFACEENERGY-139` | numerical-methods.md#INV-LANDSURFACEENERGY-139 |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.01 | [original schema surface](audit-details.md#purpose) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.01 | [original schema surface](audit-details.md#purpose) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.02 | [original schema surface](audit-details.md#scope) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.02 | [original schema surface](audit-details.md#scope) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.06 | [original schema surface](common-details.md#algorithm) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.06 | [original schema surface](common-details.md#algorithm) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.07 | [original schema surface](common-details.md#guards) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.07 | [original schema surface](common-details.md#guards) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.08 | [original schema surface](audit-details.md#enforcement) [interface](interface.md#canonical-invariants) [surface-energy](surface-energy.md#canonical-invariants) [soil-coupling](soil-coupling.md#canonical-invariants) [water-vapor](water-vapor.md#canonical-invariants) [nonlinear-solve](nonlinear-solve.md#canonical-invariants) [terminal-support](terminal-support.md#canonical-invariants) [litter-phase](litter-phase.md#canonical-invariants) [soil-custody](soil-custody.md#canonical-invariants) [surface-custody](surface-custody.md#canonical-invariants) [map-custody](map-custody.md#canonical-invariants) [dependency-replay](dependency-replay.md#canonical-invariants) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.08 | [original schema surface](audit-details.md#enforcement) [interface](interface.md#canonical-invariants) [surface-energy](surface-energy.md#canonical-invariants) [soil-coupling](soil-coupling.md#canonical-invariants) [water-vapor](water-vapor.md#canonical-invariants) [nonlinear-solve](numerical-methods.md#canonical-invariants) [terminal-support](terminal-support.md#canonical-invariants) [litter-phase](litter-phase.md#canonical-invariants) [soil-custody](soil-custody.md#canonical-invariants) [surface-custody](surface-custody.md#canonical-invariants) [map-custody](map-custody.md#canonical-invariants) [dependency-replay](dependency-replay.md#canonical-invariants) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.09 | [interface](interface.md#canonical-obligations) [soil-coupling](soil-coupling.md#canonical-obligations) [water-vapor](water-vapor.md#canonical-obligations) [nonlinear-solve](nonlinear-solve.md#canonical-obligations) [terminal-support](terminal-support.md#canonical-obligations) [litter-phase](litter-phase.md#canonical-obligations) [soil-custody](soil-custody.md#canonical-obligations) [surface-custody](surface-custody.md#canonical-obligations) [map-custody](map-custody.md#canonical-obligations) [dependency-replay](dependency-replay.md#canonical-obligations) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.09 | [interface](interface.md#canonical-obligations) [soil-coupling](soil-coupling.md#canonical-obligations) [water-vapor](water-vapor.md#canonical-obligations) [nonlinear-solve](numerical-methods.md#canonical-obligations) [terminal-support](terminal-support.md#canonical-obligations) [litter-phase](litter-phase.md#canonical-obligations) [soil-custody](soil-custody.md#canonical-obligations) [surface-custody](surface-custody.md#canonical-obligations) [map-custody](map-custody.md#canonical-obligations) [dependency-replay](dependency-replay.md#canonical-obligations) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.11 | [original schema surface](common-details.md#constants) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.11 | [original schema surface](common-details.md#constants) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.13 | [original schema surface](common-details.md#tolerances) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [soil-coupling](soil-coupling.md#soil-coupling) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.13 | [original schema surface](common-details.md#tolerances) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [soil-coupling](soil-coupling.md#soil-coupling) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.15 | [original schema surface](common-details.md#tests) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.15 | [original schema surface](common-details.md#tests) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.01 | [original schema surface](audit-details.md#purpose) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.01 | [original schema surface](audit-details.md#purpose) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.05 | [original schema surface](common-details.md#algorithm) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.05 | [original schema surface](common-details.md#algorithm) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.06 | [original schema surface](common-details.md#guards) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.06 | [original schema surface](common-details.md#guards) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.07 | [original schema surface](audit-details.md#enforcement) [interface](interface.md#canonical-invariants) [surface-energy](surface-energy.md#canonical-invariants) [soil-coupling](soil-coupling.md#canonical-invariants) [water-vapor](water-vapor.md#canonical-invariants) [nonlinear-solve](nonlinear-solve.md#canonical-invariants) [terminal-support](terminal-support.md#canonical-invariants) [litter-phase](litter-phase.md#canonical-invariants) [soil-custody](soil-custody.md#canonical-invariants) [surface-custody](surface-custody.md#canonical-invariants) [map-custody](map-custody.md#canonical-invariants) [dependency-replay](dependency-replay.md#canonical-invariants) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.07 | [original schema surface](audit-details.md#enforcement) [interface](interface.md#canonical-invariants) [surface-energy](surface-energy.md#canonical-invariants) [soil-coupling](soil-coupling.md#canonical-invariants) [water-vapor](water-vapor.md#canonical-invariants) [nonlinear-solve](numerical-methods.md#canonical-invariants) [terminal-support](terminal-support.md#canonical-invariants) [litter-phase](litter-phase.md#canonical-invariants) [soil-custody](soil-custody.md#canonical-invariants) [surface-custody](surface-custody.md#canonical-invariants) [map-custody](map-custody.md#canonical-invariants) [dependency-replay](dependency-replay.md#canonical-invariants) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.09 | [original schema surface](common-details.md#constants) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.09 | [original schema surface](common-details.md#constants) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.11 | [original schema surface](common-details.md#tolerances) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [soil-coupling](soil-coupling.md#soil-coupling) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.11 | [original schema surface](common-details.md#tolerances) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [soil-coupling](soil-coupling.md#soil-coupling) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.13 | [original schema surface](common-details.md#tests) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](nonlinear-solve.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.13 | [original schema surface](common-details.md#tests) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.01 | [original schema surface](audit-details.md#purpose) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.01 | [original schema surface](audit-details.md#purpose) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.02 | [original schema surface](audit-details.md#scope) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.02 | [original schema surface](audit-details.md#scope) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.03 | [original schema surface](audit-details.md#sources) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.03 | [original schema surface](audit-details.md#sources) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.13 | [original schema surface](common-details.md#tolerances) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [soil-coupling](soil-coupling.md#soil-coupling) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.13 | [original schema surface](common-details.md#tolerances) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [soil-coupling](soil-coupling.md#soil-coupling) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.14 | [original schema surface](common-details.md#calibration) [map-custody](map-custody.md#map-custody) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.14 | [original schema surface](common-details.md#calibration) [map-custody](map-custody.md#map-custody) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.15 | [original schema surface](common-details.md#tests) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.15 | [original schema surface](common-details.md#tests) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| artifact.section.17 | [original schema surface](audit-details.md#gaps) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| artifact.section.17 | [original schema surface](audit-details.md#gaps) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.01 | [original schema surface](audit-details.md#purpose) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.01 | [original schema surface](audit-details.md#purpose) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.02 | [original schema surface](audit-details.md#sources) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.02 | [original schema surface](audit-details.md#sources) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.11 | [original schema surface](common-details.md#tolerances) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [soil-coupling](soil-coupling.md#soil-coupling) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.11 | [original schema surface](common-details.md#tolerances) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [soil-coupling](soil-coupling.md#soil-coupling) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.12 | [original schema surface](common-details.md#calibration) [map-custody](map-custody.md#map-custody) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.12 | [original schema surface](common-details.md#calibration) [map-custody](map-custody.md#map-custody) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.13 | [original schema surface](common-details.md#tests) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.13 | [original schema surface](common-details.md#tests) [surface-energy](surface-energy.md#surface-energy) [soil-coupling](soil-coupling.md#soil-coupling) [water-vapor](water-vapor.md#water-vapor) [nonlinear-solve](numerical-methods.md#nonlinear-solve) [terminal-support](terminal-support.md#terminal-support) [litter-phase](litter-phase.md#litter-phase) [soil-custody](soil-custody.md#soil-custody) [surface-custody](surface-custody.md#surface-custody) [map-custody](map-custody.md#map-custody) [dependency-replay](dependency-replay.md#dependency-replay) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "before": "| kernel.section.14 | [original schema surface](audit-details.md#gaps) [qualification](qualification.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "after": "| kernel.section.14 | [original schema surface](audit-details.md#gaps) [qualification](replay-evidence.md#qualification) | Applicable; complete mechanism requirements and subordinate rules remain binding |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+    "before": "| nonlinear-solve.md#nonlinear-solve | solver implementation or full evaluator correctness | all active numerical branches | whole chapter |",
+    "after": "| numerical-methods.md#nonlinear-solve | solver implementation or full evaluator correctness | all active numerical branches | whole chapter |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+    "before": "| nonlinear-solve.md#nonlinear-solve | solver implementation or V10/V11\u201313 branch/algorithm review | complete eligibility, scaling, exact stencils and termination | whole chapter |",
+    "after": "| numerical-methods.md#nonlinear-solve | solver implementation or V10/V11\u201313 branch/algorithm review | complete eligibility, scaling, exact stencils and termination | whole chapter |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+    "before": "| qualification.md#qualification | executable identity capture, experiment or qualification claims | frozen protocols and separate scientific/production limits | whole qualification chapter |",
+    "after": "| replay-evidence.md#qualification | executable identity capture, experiment or qualification claims | frozen protocols and separate scientific/production limits | whole qualification chapter |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
+    "before": "| qualification.md#qualification | historical/current experiment retention, executable identity or capture limits | complete experiment requirements | whole chapter |",
+    "after": "| replay-evidence.md#qualification | historical/current experiment retention, executable identity or capture limits | complete experiment requirements | whole chapter |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
+    "before": "| nonlinear-solve.md#nonlinear-solve | solver scientific result claims | complete ordered solver | whole chapter |",
+    "after": "| numerical-methods.md#nonlinear-solve | solver scientific result claims | complete ordered solver | whole chapter |",
+    "scope": "original full obligation retained; inspect exact applicability"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
+    "before": "including experiment HOLD, require qualification.",
+    "after": "including experiment HOLD, require replay-evidence.",
+    "scope": "PROSPECTIVE explicit scope review required; physical admission split must close all relevant atoms"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+    "before": "qualifications remain separate in qualification.",
+    "after": "qualifications remain separate in replay-evidence.",
+    "scope": "PROSPECTIVE explicit scope review required; physical admission split must close all relevant atoms"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+    "before": "solver implementation or V10/V11\u201313 branch/algorithm review | complete eligibility, scaling, exact stencils and termination",
+    "after": "solver implementation, numerical-branch algorithm or evaluator-equivalence review | complete V10 scaling/partial-root and V11\u201313 stencil/witness algorithms and termination",
+    "scope": "PROSPECTIVE explicit scope review required; physical admission split must close all relevant atoms"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+    "before": "and reconstruction from accepted primitives. Reviewing solver implementation or\nV10 eligibility, partial-root, scaling, wet-coordinate or V11\u201313 numerical branches\nalso requires nonlinear-solve.",
+    "after": "and reconstruction from accepted primitives. Complete numerical-methods satisfies accepted-output admission duties.\nThe standalone accepted-primitive route requires the complete nonlinear-solve\ninterface plus its unique definitions, guards and tests. Independent implementation, numerical-branch algorithm (including V10\nscaling/partial-root and V11\u201313 stencil/witness computation), or evaluator-equivalence\nreview requires whole numerical-methods.",
+    "scope": "PROSPECTIVE explicit scope review required; physical admission split must close all relevant atoms"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+    "before": "An independent solver-algorithm or numerical-branch eligibility review additionally requires the full nonlinear-solve chapter.",
+    "after": "Accepted-primitive admission uses the complete nonlinear-solve interface and its required definitions. Independent solver-algorithm, numerical-branch implementation or evaluator-equivalence review additionally requires full numerical-methods.",
+    "scope": "PROSPECTIVE explicit scope review required; physical admission split must close all relevant atoms"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+    "before": "executable identity capture, experiment or qualification claims",
+    "after": "executable identity capture, experiment or replay-retention qualification claims",
+    "scope": "PROSPECTIVE explicit scope review required; physical admission split must close all relevant atoms"
+  },
+  {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+    "before": "whole qualification chapter",
+    "after": "whole chapter",
+    "scope": "PROSPECTIVE explicit scope review required; physical admission split must close all relevant atoms"
+  }
+]

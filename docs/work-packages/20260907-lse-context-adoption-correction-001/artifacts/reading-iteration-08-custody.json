@@ -1,0 +1,10 @@
+{
+  "bundle": "/tmp/lse-correction-iteration08-bundle",
+  "manifest_sha256": "a6a7095f0d6f967f7c7750d184673f56463723468dc2a175bfbcc8b6b314b116",
+  "capture_exit": 0,
+  "verify_exit": 0,
+  "verify_log": "/tmp/lse-iteration08-bundle-verify.log",
+  "scope": "explicit canonical30/input156 inventory, generator and full immutable generator inputs, neutral procedure and four frozen protocols; actual prior07 report summary; loader-source executable group",
+  "status": "fresh01/02/04 iteration8 NOT RUN; custody not adoption or offline rebuildability",
+  "retention": "openWEPP maintainers through disposition plus explicit audit release"
+}

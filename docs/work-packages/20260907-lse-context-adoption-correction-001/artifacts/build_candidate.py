@@ -396,4 +396,116 @@ if args.adopted:
     assert s.count(candidate_notice) == 1
     s = s.replace(candidate_notice, '', 1)
 ENTRY.write_text(s)
+
+# Independently reviewed iteration8 presentation. Original scientific inventories
+# stay normative; compact operative interfaces do not authorize new physics.
+presentation=json.loads((PKG/'iteration08-presentation.json').read_text())
+for old,new in [('nonlinear-solve','numerical-methods'),('qualification','replay-evidence')]:
+    (DEST/(new+'.md')).write_bytes((DEST/(old+'.md')).read_bytes())
+source = DEST/'common-details.md'
+text = source.read_text()
+replacements = presentation['common']
+original = text
+moved = []
+for anchor, body in replacements.items():
+    match = re.search(r'(<a id="[^"]+"></a>\n)?<a id="'+re.escape(anchor)+r'"></a>\n## [^\n]+\n', text)
+    assert match, anchor
+    start = match.start()
+    tail = re.search(r'\n(?=(?:<a id="[^"]+"></a>\n)+## )', text[match.end():])
+    end = match.end()+tail.start()+1 if tail else len(text)
+    old = text[start:end]
+    new = match[0]+'\n'+body+'\n\n'
+    moved.append(old)
+    text=text[:start]+new+text[end:]
+start=text.index('<a id="step-local-preconditions-intermediates-and-postconditions">')
+end=text.index('<a id="guards">',start)
+old=text[start:end]
+moved.append(old)
+new='''<a id="step-local-preconditions-intermediates-and-postconditions"></a>
+### Step-Local Preconditions, Intermediates, and Postconditions
+
+The ordered steps above and guard table below retain all step-local admission and
+atomicity rules. Each delta, integrated sum and residual is independently finite in
+its declared energy/mass units. delta_E/delta_M are the storage changes on the left
+of steps4/5; sum_E/sum_M are their respective right-hand sides.
+epsilon_E=delta_E-sum_E; epsilon_M=delta_M-sum_M.
+Lineage counts are integers exactly one; invalid validation leaves byte-identical
+state. Latent Q_LE=LE*dt and Q_evap=-L_v(T_s)*m_evap are finite J m^-2 with identical
+lineage; require the admitted latent tolerance or LSEB-E-013 (v1 constitutive/tolerance
+authority remains missing). Every advection pair has finite J m^-2 energy and retains its same interval, reference state, temperature/
+enthalpy and lineage. Acquisition requires sealed component/water records with
+matching state AND interval IDs. The surface G/consumer -G pair is finite W m^-2
+and shares the same interval AND lineage. Commit adds no numerical intermediate. The original detailed
+table remains normative for tabular-conformance/interpretation in audit-details.
+
+The missing tolerances and constitutive values in steps 4-8 are precisely
+`GAP-LANDSURFACEENERGY-001..004`; therefore the table makes the ledger
+mechanics reproducible but does not make the runtime algorithm promotable.
+
+'''
+text=text[:start]+new+text[end:]
+dependency='| audit-details.md#current-schema-reference | API/schema/registry or original tabular-conformance audit | complete retained original inventories and step table; current operative rules remain here | section |\n'
+pos=text.index('\n<a id="common-details">')
+text=text[:pos].rstrip()+'\n'+dependency+'\n'+text[pos:]
+source.write_text(text)
+audit=DEST/'audit-details.md'
+audit.write_text(audit.read_text().rstrip()+'\n\n<a id="current-schema-reference"></a>\n# Current schema reference\n\nOriginal normative presentation; no obligation is historical or demoted.\n\n'+''.join(moved))
+interface=DEST/'interface.md'
+current=interface.read_text()
+interface.write_text(presentation['interface_prefix']+current[current.index('<a id="canonical-invariants">'):])
+labels=[('[Ordered domain/closure guards]','[Solve guards]'),
+        ('Typed domain/convergence/closure: [errors]','[Typed failures]'),
+        ('; named fixtures/tests and real consumers','; named fixtures/tests/real consumers'),
+        ('[Local guards/errors]','[Guards/errors]')]
+for f in [ENTRY,*DEST.glob('*.md')]:
+    text=f.read_text()
+    for old,new in [('nonlinear-solve','numerical-methods'),('qualification','replay-evidence')]:
+        text=text.replace(old+'.md#',new+'.md#')
+    lines=[]
+    for line in text.splitlines(keepends=True):
+        if line.startswith('| interface.md#interface | always |'):continue
+        if line.startswith('| <a id='):
+            for old,new in labels:line=line.replace(old,new)
+        lines.append(line)
+    rendered=''.join(lines)
+    rendered=re.sub(r'(## Dependencies\n)\| Target[^\n]+\n\|[-|]+\n(?=\n)',r'\1none beyond entry\n',rendered)
+    f.write_text(rendered)
+(DEST/'nonlinear-solve.md').write_text(presentation['admission'])
+(DEST/'qualification.md').write_text(presentation['capture'])
+plain_changes={
+    'common-details': [('including experiment HOLD, require qualification.', 'including experiment HOLD, require replay-evidence.')],
+    'dependency-replay': [('qualifications remain separate in qualification.', 'qualifications remain separate in replay-evidence.')],
+    'solve-boundary': [
+        ('solver implementation or V10/V11–13 branch/algorithm review | complete eligibility, scaling, exact stencils and termination', 'solver implementation, numerical-branch algorithm or evaluator-equivalence review | complete V10 scaling/partial-root and V11–13 stencil/witness algorithms and termination'),
+        ('and reconstruction from accepted primitives. Reviewing solver implementation or\nV10 eligibility, partial-root, scaling, wet-coordinate or V11–13 numerical branches\nalso requires nonlinear-solve.', 'and reconstruction from accepted primitives. Complete numerical-methods satisfies accepted-output admission duties.\nThe standalone accepted-primitive route requires the complete nonlinear-solve\ninterface plus its unique definitions, guards and tests. Independent implementation, numerical-branch algorithm (including V10\nscaling/partial-root and V11–13 stencil/witness computation), or evaluator-equivalence\nreview requires whole numerical-methods.'),
+    ],
+    'litter-phase': [('An independent solver-algorithm or numerical-branch eligibility review additionally requires the full nonlinear-solve chapter.', 'Accepted-primitive admission uses the complete nonlinear-solve interface and its required definitions. Independent solver-algorithm, numerical-branch implementation or evaluator-equivalence review additionally requires full numerical-methods.')],
+    'interface': [('executable identity capture, experiment or qualification claims', 'executable identity capture, experiment or replay-retention qualification claims'), ('whole qualification chapter', 'whole chapter')],
+}
+for name,changes in plain_changes.items():
+    f=DEST/(name+'.md');text=f.read_text()
+    for old,new in changes:
+        assert old in text,(name,old)
+        text=text.replace(old,new)
+    f.write_text(text)
+f=DEST/'replay-evidence.md'
+f.write_text(f.read_text().replace('### Comparison controls','### Detailed oracle/audit exclusion from both timing and memory'))
+f=DEST/'binding-index.md';text=f.read_text()
+for a in ['variables','state','aliases','constants','units']:
+    text=text.replace('common-details.md#'+a+')','audit-details.md#'+a+')')
+f.write_text(text)
+text=ENTRY.read_text()
+text=text.replace('| nonlinear solve | selected |','| admission | selected |')
+text=text.replace('| replay retention and experiments | selected |','| physical capture | selected |')
+prefix='SC-LANDSURFACEENERGY-001/'
+newrows='\n'.join('| '+prefix+n+'.md | normative | '+purpose+' | selected |' for n,purpose in [('numerical-methods','methods'),('replay-evidence','replay')])
+needle='\n\n## Reading routes'
+assert needle in text;text=text.replace(needle,'\n'+newrows+needle)
+# Physical closure starts at the complete capture/admission interface; all existing
+# core mechanisms and applicable external/definition extents remain mandatory.
+old='[litter-phase]('+prefix+'litter-phase.md#litter-phase)'
+new='[physical capture]('+prefix+'qualification.md#qualification)'
+text=text.replace(old,new)
+text='\n'.join(line.replace(' |','|').replace('| ','|') if line.startswith('|') else line for line in text.splitlines())+'\n'
+ENTRY.write_text(text)
 print('entry',ENTRY.stat().st_size,'interface',(DEST/'interface.md').stat().st_size,'total',ENTRY.stat().st_size+sum(f.stat().st_size for f in DEST.glob('*.md')))

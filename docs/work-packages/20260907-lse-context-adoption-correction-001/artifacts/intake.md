@@ -314,3 +314,16 @@ reuse needs selected-source and unchanged-task semantic proof. Previous observat
 remain at their original cuts. Unique scratch directories are required for new readers;
 no old collided ledger or scientific answer is supplied. Same generic source-selfcheck,
 actual request/recovery accounting and complete reading procedure applies.
+
+## Iteration8 exact prospective implementation approval
+Both reviewers approved the exact isolated20-file prototype bound by
+iteration08-approved-manifest.json (SHA256
+953dd8ccbb63279ca3415952c016e05ac1567a2366d9786ebf7cf4b95e9373f8),
+before canonical implementation. Exact paths include new normative numerical-methods.md
+and replay-evidence.md; all other canonical paths remain inventoried. The approved
+iteration08-design.md and common/admission/edge proofs preserve every effective
+obligation and full-method/protocol scope. Four unit-status qualifiers, finite
+per-advection energy, sealed state/interval and ground lineage, original-v1 absence
+scope, and explicit complete-method admission alternative were corrected before
+approval. Actual fresh02/04, bound01/03 reuse, direct checks and independent terminal
+closure remain required. No existing observation or acceptance threshold changes.

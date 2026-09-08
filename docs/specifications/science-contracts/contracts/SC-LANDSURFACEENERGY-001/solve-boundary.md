@@ -3,17 +3,18 @@
 ## Dependencies
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
-| interface.md#interface | always | shared authority | whole chapter |
-| nonlinear-solve.md#nonlinear-solve | solver implementation or V10/V11–13 branch/algorithm review | complete eligibility, scaling, exact stencils and termination | whole chapter |
+| numerical-methods.md#nonlinear-solve | solver implementation, numerical-branch algorithm or evaluator-equivalence review | complete V10 scaling/partial-root and V11–13 stencil/witness algorithms and termination | whole chapter |
 | dependency-replay.md#dependency-replay | evaluator/reuse equivalence or optimization review | exact reuse predicates, custody, first errors and qualification | whole chapter |
 
 <a id="solve-boundary"></a>
 # Physical solve boundary
 
 Current ordered physical solve and acceptance boundary for physical rule selection
-and reconstruction from accepted primitives. Reviewing solver implementation or
-V10 eligibility, partial-root, scaling, wet-coordinate or V11–13 numerical branches
-also requires nonlinear-solve. Optimization correctness adds dependency-replay;
+and reconstruction from accepted primitives. Complete numerical-methods satisfies accepted-output admission duties.
+The standalone accepted-primitive route requires the complete nonlinear-solve
+interface plus its unique definitions, guards and tests. Independent implementation, numerical-branch algorithm (including V10
+scaling/partial-root and V11–13 stencil/witness computation), or evaluator-equivalence
+review requires whole numerical-methods. Optimization correctness adds dependency-replay;
 accepted primitive reconstruction does not itself claim evaluator/reuse equivalence.
 
 <a id="solve"></a>
@@ -108,6 +109,6 @@ No failed iterate or partial owner candidate is usable.
 ## Canonical invariants
 | Invariant ID | Statement | Authority | Evidence | Guard | Failure posture |
 |---|---|---|---|---|---|
-| <a id="INV-LANDSURFACEENERGY-108"></a> `INV-LANDSURFACEENERGY-108` | Ordered unknowns, residuals, branches, finite differences, pivots, backtracking, tolerances, and error precedence are deterministic. | v31:L1097-L1097 | [INFERENCE][Static] | [Ordered domain/closure guards](#solve) and [typed errors](water-vapor.md#errors) | Typed domain/convergence/closure: [errors](water-vapor.md#errors); no partial state or promotion |
-| <a id="INV-LANDSURFACEENERGY-109"></a> `INV-LANDSURFACEENERGY-109` | LSE-V2 imports exact LSE-V1 physics and accepts only the V10 vegetation owner at the coupled boundary. | v31:L2070-L2070 | [INFERENCE][Static] | [Ordered domain/closure guards](#solve) and [typed errors](water-vapor.md#errors) | Typed domain/convergence/closure: [errors](water-vapor.md#errors); no partial state or promotion |
-| <a id="INV-LANDSURFACEENERGY-110"></a> `INV-LANDSURFACEENERGY-110` | Exact FullSupply finalization seeds only coordinates, then reevaluates the complete fixed-final system from immutable beginning owners; a passing initial evaluation accepts at iteration zero without a Jacobian. | v31:L2071-L2071 | [INFERENCE][Static] | [Ordered domain/closure guards](#solve) and [typed errors](water-vapor.md#errors) | Typed domain/convergence/closure: [errors](water-vapor.md#errors); no partial state or promotion |
+| <a id="INV-LANDSURFACEENERGY-108"></a> `INV-LANDSURFACEENERGY-108` | Ordered unknowns, residuals, branches, finite differences, pivots, backtracking, tolerances, and error precedence are deterministic. | v31:L1097-L1097 | [INFERENCE][Static] | [Solve guards](#solve) and [typed errors](water-vapor.md#errors) | [Typed failures](water-vapor.md#errors); no partial state or promotion |
+| <a id="INV-LANDSURFACEENERGY-109"></a> `INV-LANDSURFACEENERGY-109` | LSE-V2 imports exact LSE-V1 physics and accepts only the V10 vegetation owner at the coupled boundary. | v31:L2070-L2070 | [INFERENCE][Static] | [Solve guards](#solve) and [typed errors](water-vapor.md#errors) | [Typed failures](water-vapor.md#errors); no partial state or promotion |
+| <a id="INV-LANDSURFACEENERGY-110"></a> `INV-LANDSURFACEENERGY-110` | Exact FullSupply finalization seeds only coordinates, then reevaluates the complete fixed-final system from immutable beginning owners; a passing initial evaluation accepts at iteration zero without a Jacobian. | v31:L2071-L2071 | [INFERENCE][Static] | [Solve guards](#solve) and [typed errors](water-vapor.md#errors) | [Typed failures](water-vapor.md#errors); no partial state or promotion |

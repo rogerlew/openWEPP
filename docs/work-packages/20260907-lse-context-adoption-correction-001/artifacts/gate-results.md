@@ -1,27 +1,23 @@
-# Validation evidence — current candidate
-Ran: actual commands in /workdir/openWEPP. Static: authority/diff/reuse analysis is
-labeled separately. Source cut 9baf9ccb7bf7d2d53e24acbf1d1151d3d599e311; detached
-candidate-manifest SHA256 f2ddbc2f71531fc00ec4d4fcc3be9b67e6aad0c2dd70bef9272af1cac19c425a.
-Evidence-manifest binds logs,156relevant input identities and actual bridge binary.
+# Validation evidence — iteration8 candidate
+Ran: actual commands in /workdir/openWEPP. Static: scope, semantic and reuse analysis.
+Live20LSEfiles match independently approved iteration08-approved-manifest.json.
+Candidate-manifest SHA256 6238f437b56e21ffd205ef44e2357cd73b055a44be96ab180ea130c2f35ebcff; evidence-manifest binds actual logs/156inputs.
 
-| Current required criterion | Result | Direct evidence |
+| Required criterion | Result | Evidence |
 | --- | --- | --- |
-| Prospective acceptance legitimacy | PASS Static | Intake A/B before implementation; all18inherited failures individually classified and M1–M9 direct masking obligations frozen. |
-| Scientific preservation and masked obligations | PASS | 15migration tests,616mapped original spans, original scientific cells and36exact fenced occurrences; equation/failure-posture poisons retain structural validity but fail science checks. |
-| Directory/A0/checker tests | PASS | logs/pytest-final.log:98passed4.82s (80directory/A0,3legacychecker,15migration). |
-| Public strict checker | PASS | logs/strict-final.log:17BEI/100actual definitions, structural evidence only. |
-| Unit compliance / A0 | PASS | logs/unit-final.log; logs/admission-final.log:49contracts,0science_surfaces. |
-| Actual Rust directory bridge | PASS | check_bridge.py / logs/bridge-final.log and bridge-results.json:53cases,48legacy entries byte-identical, candidate/positive/three fail-closed negatives. Actual shared helper compiled and separately linted. |
-| Migration regression in eight Rust targets | PASS; inherited diagnostic FAIL retained | logs/rust-final.log:129run111PASS18FAIL. rust-comparison.json proves same18failure names/36normalized emitted panics. Direct M1–M9 tests, not failure-set matching alone, prove masked migration obligations. |
-| Changed-code lint | PASS helper; inherited root diagnostic FAIL | Actual --no-deps lint reaches all7changed test targets.17root diagnostics match original baseline file/function/kind; bridge-clippy.log PASS. No suppression. |
-| Format / line count | PASS / WARN | Bound edition2024rustfmt; vegetation2843lines WARN with split intent before3000. Other owned Rust files<2000. No current refactor requirement deferred. |
-| Always-read LSE budget | PASS | entry4149+interface7987=12136<=12288. |
-| Surface/soil exercise01 | PASS with explicit semantic reuse | Fresh adequate196206LSEbytes atb3b7b57f4,25.921703% reduction.32sources150content requests plus2searches; all2306225unique/2819443exposure. |
-| Executable identity exercise03 | PASS with explicit semantic reuse | Fresh adequate31428LSEbytes at6938ca97d;149505all-selected/149667exposure. |
-| Solver exercise02 | FAIL science; reading/size PASS | Fresh06at29b3:211770LSEbytes,1197191allunique/1404216exposure. Sole remaining omission is the prohibition of a new public nonpersisted exponent field; persisted-only exclusion is insufficient. |
-| Closure exercise04 | FAIL size; science PASS | Fresh06 at29b3:235130LSE,1729860allunique/1983963exposure. Fresh07 pending on9baf; forecasts are not acceptance evidence. |
-| Stable complete review / two NEW terminal verifications | NOT RUN to completion | Applied-cut A/B preflight PASS; remaining fresh scientific criteria and terminal roles still required. |
-| General selective-reading activation | NOT RUN | Candidate restriction remains live. Reviewed isolated adopted mode changes only159notice bytes; actual activation awaits every prerequisite gate. |
+| Prospective acceptance and exact presentation | PASS Static | Intake A/B; iteration8 exact20file approval and56row/7paragraph operative proof before edits. Inherited failures individually classified; no criterion weakened. |
+| Original science and masked migration duties | PASS | 15migration tests;616spans, original scientific cells,36fences and independent equation/failure poisons; M1–M9 passing independently of inherited panics. |
+| Directory/A0/checker Python | PASS |98passed4.97s, logs/pytest-final.log. |
+| Strict binding / unit / A0 | PASS |17BEI/100definitions; unit0findings; logs/a0-final.log49contracts/0science_surfaces. |
+| Compiled actual shared bridge | PASS |53cases,48legacy byte-identical; positive and3fail-closed negatives. |
+| Eight affected Rust targets | PASS migration regression; inherited FAIL |129run111PASS18FAIL; same18names/36normalizedpanics; direct masking tests also PASS. |
+| Lint / format | PASS helper; inherited root FAIL | Unchanged Rust/helper/compiler inputs bind previous helperPASS and17original root diagnostics; no suppression. Python compile/diffcheck PASS. |
+| Rust line count | WARN retained |Vegetation2843lines, split before3000; other owned files<2000. No new Rust edits. |
+| Always-read budget | PASS |Entry4090+interface7931=12021<=12288. |
+| Fresh science01 / solver02 / closure04 | NOT RUN iteration8 |Immutable07 science/sizeFAIL retained. Projections are not acceptance. |
+| Identity03 | PASS with explicit semantic reuse |A/B independently approved full qualification→replay-evidence body/protocol relocation and exact selected duties;20/23 original hashes equal. Original31428at6938 retained. Surface05 oldcutPASS196206 requires fresh01. |
+| Stable complete reviews / two NEW terminal verifiers | NOT RUN to completion |Prospective approval is not terminal adoption approval. |
+| General selective reading | NOT RUN |Candidate restriction remains. |
 
 ## Actual commands and reuse boundaries
 Python: `.venv/bin/python -m pytest -q tests/python/test_sc_contract_directory.py
@@ -56,40 +52,16 @@ No new constitutive campaign or anti-evasion trigger is introduced by this diff.
 No protected assertion is removed, suppressed or rewritten to erase a scientific FAIL.
 The predecessor tree and HOLD remain exact; frozen-predecessor.json records the check.
 
-## Source reading and finalization evidence
-Current source9baf is frozen during fresh solver07/closure07. Full directory349888
-bytes/18files remains larger than original264863. Source-byte reduction for tested
-LSE routes is distinct from total reading or model-token savings. Predictions
-196810/211825/31601/196810 are preflight only. All actual external, voluntary,
-recovery and search requests remain counted. Context-usability.md records current
-observations; reading-iteration-01..06.json preserves immutable historical results.
-No carried-context repair or revised forecast is labeled a fresh success.
+## Source and observation limits
+Full candidate365724bytes/20files is larger than264863original. Prospective route
+unions: surface202493, solver210692, identity31457, closure206606; solver including
+prior actual heading/profile search union is conservatively210796. All actual
+voluntary/search/recovery/recursive reading counts; no predicted byte is observed
+model context or token savings. Iterations01–07/report hashes stay immutable.
 
-A/B applied-cut semantic reuse PASS: surface29/32selected full hashes equal;
-identity20/23. Explicit unchanged-task/dependency proof preserves observations
-196206 atb3 and31428 at6938. Changed presentation does not authorize counterfactual
-updated observed counts or an all-hashes-equal claim. Fresh07 criteria remain pending.
-
-Both isolated generator modes actually executed:18candidate files equal live;
-adopted mode differs only by159entry-notice bytes (349888→349729). All28live hashes
-unchanged through the comparison. This is preparation, not activation. Iteration07
-custody capture/verify PASS preserves explicit recoverable source/input bytes outside
-the checkout; it does not establish offline rebuildability or scientific sufficiency.
-Two NEW terminal verifiers must approve after fresh criteria and stable reviews pass.
-Then actual adoption/status changes receive affected checks and bounded final review.
-
-Iteration7 actual applied changes match prospectively harmonized review: entry purpose,
-nonlinear heading, litter introduction and qualification title. Original616spans,
-cells/fences, anchors and whole applicable extents retained. Direct checks above PASS;
-bound unchanged-Rust/compiler lint and format evidence reused. No acceptance waived.
-
-## Iteration7 completed; substantive correction continues
-Both first reports are complete and bound in reading-iteration-07.json. Solver07:
-217644LSE, science/required-reading/size FAIL; ledger PASS. Closure07:235583LSE,
-science/size FAIL, required-reading/ledger PASS. A/B reconciled closure's concrete
-required-evidence omissions; B's initial sciencePASS is explicitly withdrawn in its
-independent record. All actual additional reading remains charged. Source9baf is
-unchanged. A mechanical concern decomposition is under prospective review: small
-physical admission/capture interfaces, original complete numerical/experimental
-bodies and duties retained, and per-row-proven common schema deduplication. No
-unspecified rewrite or reduced extent is approved; no adoption or terminal PASS.
+Generator candidate reproduction matched all20approved hashes. Isolated adopted
+mode changes only159entry-notice bytes:365724→365565. Live adoption is NOT activated.
+Canonical source remains fixed through upcoming fresh exercises; neutral handoff is
+retained under reviewed blinded-reader exception. After accepted readings, reconcile
+complete state in the normal handoff, stable reviews and two NEW terminal verifiers,
+then actual activation with bounded final verification. No production qualification.

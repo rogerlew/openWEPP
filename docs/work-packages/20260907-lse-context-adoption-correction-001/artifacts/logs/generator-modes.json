@@ -1,43 +1,54 @@
 {
-  "generator_sha256": "8d1a6cdbeab7eff04de96758015a405c7ef55432f3df9e3989c430dc01174b8c",
-  "source_manifest_sha256": "f2ddbc2f71531fc00ec4d4fcc3be9b67e6aad0c2dd70bef9272af1cac19c425a",
-  "runs": [
-    {
-      "mode": "candidate",
-      "argv": [
-        "/workdir/openWEPP/.venv/bin/python",
-        "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/build_candidate.py",
-        "--output-root",
-        "/tmp/lse7-generator-candidate-cwj3ylsu"
-      ],
-      "cwd": "/workdir/openWEPP",
-      "exit": 0,
-      "seconds": 0.05375494388863444,
-      "stdout": "entry 4149 interface 7987 total 349888\n",
-      "stderr": ""
+  "fixture": "/tmp/lse-iteration08-modes-ih0s3jtt",
+  "candidate_matches_approved20": true,
+  "adopted_changes_only_entry_notice159": true,
+  "candidate_total": 365724,
+  "adopted_total": 365565,
+  "files": {
+    "candidate": {
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "391772bfc9345357a654552ae84203809a91e0280f5579693ae73da68119cc53",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": "fda2350a1d4bf826dd3ad6f622e4ee0f41d708860aef6005e8948c27c3d729f8",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md": "6ce8ffe21317027f5d1171579a9059c64c7ae3bd9ba9181ceea91323254b6b25",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/replay-evidence.md": "74eb807e92314f275252c00fcee1285d4833c6f0eb95b8a390dcd51d99debc47",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md": "fbacbdfacc4d2455edd648078fac6aecd0a9e46ebeb56caa2bdb820638670ba5",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md": "4acd7ddf7a20d9c1198a41ee26d4caa8c57361728eb893ae365c31c669fe66e3",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md": "eac50350e934d03e47022dcc51d0c55013c5a5d975f1beceb6f6b7196cc03b18",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "cda1b5e050c4532f4b4bb51c60f7386c4a017b6611e95b593fd9d1030bde1ef2",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md": "2c3afa3f25827508ab9bd4826249d6557d08aa44b8f4ba7f0ecd5c988a900bb8",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "fe3f8fb74ec1143cc69b5ead71949d2549757edb4bbac46b9bc77e175ab00f87",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md": "4fdd656cc3884fafff85fe5d5d3ee30deb9cb5e015c5e6c0ca245c967d4a99e3",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md": "f4ef16b1459c728583634e0110ef31f17a4da19865fee39229c74b5588e4eba7",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md": "042668b12c9bd0c207ab999a63531ccfe69936418555adc1f7917fffb68d9731",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md": "758873659d360c8edfc7bcec7aa6cb58d065d44e221e890166390252810ed481",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md": "a358e2acece25dc440adc8b1d35c732c829b2f8e2c3fbe24e8667c1635bed58e",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md": "b930bbd0f0ce2c16d826be6a6d1d0bb4e6fe0155e611232047e0b4205e2dbfc4",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md": "c42f6fad39dd7b1a549b83ff867aa54af9b86baf7971060e849784880ea9773d",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md": "8508b3ceaa49f081ce8c2df1d7cce39249d8f3875fea5a017404c0816cdae2c1",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md": "b367f5299f4e8eb199e894385aa2b7451672ac3a7ce7d7921dc12ff2d8d0178e",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md": "09cd7e0a7f8601dfdc6eb769513866e21ed4a9d2d77bfd8c8423432323c89f4b"
     },
-    {
-      "mode": "adopted",
-      "argv": [
-        "/workdir/openWEPP/.venv/bin/python",
-        "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/build_candidate.py",
-        "--output-root",
-        "/tmp/lse7-generator-adopted-iteogyqb",
-        "--adopted"
-      ],
-      "cwd": "/workdir/openWEPP",
-      "exit": 0,
-      "seconds": 0.04551835497841239,
-      "stdout": "entry 3990 interface 7987 total 349729\n",
-      "stderr": ""
+    "adopted": {
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "aaa73802884b7cca6f498fc9d8d95ef49eada98625553dbfa8ec4f712da17005",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": "fda2350a1d4bf826dd3ad6f622e4ee0f41d708860aef6005e8948c27c3d729f8",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md": "6ce8ffe21317027f5d1171579a9059c64c7ae3bd9ba9181ceea91323254b6b25",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/replay-evidence.md": "74eb807e92314f275252c00fcee1285d4833c6f0eb95b8a390dcd51d99debc47",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md": "fbacbdfacc4d2455edd648078fac6aecd0a9e46ebeb56caa2bdb820638670ba5",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md": "4acd7ddf7a20d9c1198a41ee26d4caa8c57361728eb893ae365c31c669fe66e3",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md": "eac50350e934d03e47022dcc51d0c55013c5a5d975f1beceb6f6b7196cc03b18",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "cda1b5e050c4532f4b4bb51c60f7386c4a017b6611e95b593fd9d1030bde1ef2",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md": "2c3afa3f25827508ab9bd4826249d6557d08aa44b8f4ba7f0ecd5c988a900bb8",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "fe3f8fb74ec1143cc69b5ead71949d2549757edb4bbac46b9bc77e175ab00f87",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md": "4fdd656cc3884fafff85fe5d5d3ee30deb9cb5e015c5e6c0ca245c967d4a99e3",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md": "f4ef16b1459c728583634e0110ef31f17a4da19865fee39229c74b5588e4eba7",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md": "042668b12c9bd0c207ab999a63531ccfe69936418555adc1f7917fffb68d9731",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md": "758873659d360c8edfc7bcec7aa6cb58d065d44e221e890166390252810ed481",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md": "a358e2acece25dc440adc8b1d35c732c829b2f8e2c3fbe24e8667c1635bed58e",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md": "b930bbd0f0ce2c16d826be6a6d1d0bb4e6fe0155e611232047e0b4205e2dbfc4",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md": "c42f6fad39dd7b1a549b83ff867aa54af9b86baf7971060e849784880ea9773d",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md": "8508b3ceaa49f081ce8c2df1d7cce39249d8f3875fea5a017404c0816cdae2c1",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md": "b367f5299f4e8eb199e894385aa2b7451672ac3a7ce7d7921dc12ff2d8d0178e",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md": "09cd7e0a7f8601dfdc6eb769513866e21ed4a9d2d77bfd8c8423432323c89f4b"
     }
-  ],
-  "canonical_files": 18,
-  "candidate_equals_frozen_live": true,
-  "only_adopted_difference": [
-    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
-  ],
-  "removed_bytes": 159,
-  "live_sources_unchanged": true,
-  "claim": "isolated reproduction proof only; live adoption NOT enabled; disposable output roots cleaned after comparison"
+  },
+  "claim": "isolated generator mode check only; canonical adoption NOT activated"
 }

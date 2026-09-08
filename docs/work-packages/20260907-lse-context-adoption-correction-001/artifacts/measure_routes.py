@@ -52,12 +52,16 @@ for task in range(1,5):
     if task!=3:s.add('common-details')
     if task in [1,4]:
         for n in ['surface-energy','soil-coupling','water-vapor','litter-phase','soil-custody','surface-custody','solve-boundary','terminal-support','map-custody']:s.add(n)
+        s.add('nonlinear-solve')
+        s.add('numerical-methods','canonical-invariants')
+        if task==4:s.add('qualification')
     elif task==2:
-        for n in ['nonlinear-solve','solve-boundary','dependency-replay','qualification','surface-energy','soil-coupling','terminal-support','map-custody']:s.add(n)
+        for n in ['numerical-methods','solve-boundary','dependency-replay','replay-evidence','surface-energy','soil-coupling','terminal-support','map-custody']:s.add(n)
         # Conservative preflight includes the full water chapter after actual
         # readers chose it twice; no smaller theoretical substitute for exposure.
         s.add('water-vapor')
-    else:s.add('qualification')
+        for version in [28,29,30]:s.add('binding-index',f'profile-v{version}')
+    else:s.add('replay-evidence')
     out[f'exercise{task:02}']=s.result()
 result={'kind':'prospective explicit source selection; sufficiency not yet qualified; not observed tokens','baseline_lse_bytes':BASE,'always_read_bytes':P.with_suffix('.md').stat().st_size+(P/'interface.md').stat().st_size,'tasks':out}
 (Path(__file__).parent/'predicted-reading.json').write_text(json.dumps(result,indent=2)+'\n')

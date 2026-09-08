@@ -4,32 +4,32 @@
 | Target | Required when | Boundary/obligation | Reading extent |
 |---|---|---|---|
 | common-details.md#common-details | physical rules, solver correctness or accepted-primitive closure | shared physical symbols, state, algorithm, guards, units, tolerances and tests | whole chapter |
-| qualification.md#qualification | executable identity capture, experiment or qualification claims | frozen protocols and separate scientific/production limits | whole qualification chapter |
+| replay-evidence.md#qualification | executable identity capture, experiment or replay-retention qualification claims | frozen protocols and separate scientific/production limits | whole chapter |
 
 <a id="interface"></a>
 # Shared interface
 
-Energy/mass is positive inward; outgoing water is nonnegative. Preserve units,
-interval, lineage and tile/OFE basis; physical binary64 conversion precedes exact
-decode. Owners: LSE surface thermal, hydrology water, soil thermal soil state,
-vegetation canopy physiology. Keep immutable-beginning/current-ingress chronology,
-exactly-once opposite-sign transfers, typed failure and all-owner atomicity.
+Energy/mass inward positive; outgoing water nonnegative. Preserve units, interval,
+lineage, tile/OFE basis; physical binary64 conversion precedes exact decode.
+Owners: surface thermal=LSE; water=hydrology; soil state=soil thermal; canopy
+physiology=vegetation. Immutable-beginning/current-ingress order, exactly-once
+opposite-sign transfers, typed failure and all-owner atomicity bind.
 
-V1 is snow-free; V2 imports V1 with V10 specialization; V3 adds admitted snow-free
-litter phase. Represented snow uses its separate native map and inactive litter.
-Regime precedes iteration. Covered support floor: 60000000000 ns; one-nanosecond
-structural chronology is not physical admission. Follow applicable support rules.
+V1=snow-free; V2 imports V1 with V10 specialization; V3 adds admitted snow-free litter phase.
+Represented snow: separate native map, inactive litter. Regime precedes iteration.
+Covered physical floor=60000000000 ns; 1 ns structural chronology is not physical
+admission. Apply all support rules.
 
-Effective rules: contract revision 3 (not model V3) supersedes only named V1
-missing/future/ownership labels;
-conservation/failure/owner rules survive. Litter spill adds its negative exact
-operand. V27 finalizes its own pending physical prefix; V30 reuses validation
-only at original positions. Detailed mechanism qualifiers remain binding.
+Contract revision3 is not modelV3. Only named V1 missing/future/ownership labels are
+superseded; conservation/failure/owner rules survive. Litter spill adds its negative exact
+operand; V27 finalizes its own pending physical prefix; V30 validation reuse stays at original
+positions. All mechanism qualifiers bind.
 
-Authority does not activate or qualify production. Retain FAIL/HOLD, expected-red
-seams, frozen identities and paused EXP-R/PC1/SG1. Identity proves no scientific
-result. Uncertainty expands reading; external single-file contracts require full
-reading. No silent defaults, unauthorized normalization, replay fallback or duplicate owners.
+Authority never activates/qualifies production. Retain FAIL/HOLD, expected-red seams,
+frozen identities, paused EXP-R/PC1/SG1. Identity proves no science result.
+Uncertainty expands reading: EVERY selected external single-file contract is read
+WHOLE, even for bounded claims. No silent defaults, unauthorized normalization,
+replay fallback or duplicate owners.
 
 Provenance shorthand `v31:Lx-Ly` means those exact original lines at commit
 `b932db101cce07d0860b45b5ecaa8ddb7f455b58`, path
@@ -63,4 +63,4 @@ Citations remain binding; logical IDs resolve via binding-index.
 ## Canonical obligations
 | Obligation ID | Statement | Applicability | Authority | Enforcement/failure | Test bindings |
 |---|---|---|---|---|---|
-| <a id="OBL-LANDSURFACEENERGY-C-004"></a> `OBL-LANDSURFACEENERGY-C-004` | a real scheduler consumer must prove that the new state and ledger affect the intended direct path before runtime closure. | All scheduler/direct-path consumers claiming runtime closure | v31:L332-L333 | [Local guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests and real consumers |
+| <a id="OBL-LANDSURFACEENERGY-C-004"></a> `OBL-LANDSURFACEENERGY-C-004` | a real scheduler consumer must prove that the new state and ledger affect the intended direct path before runtime closure. | All scheduler/direct-path consumers claiming runtime closure | v31:L332-L333 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |

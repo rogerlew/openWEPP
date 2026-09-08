@@ -1,0 +1,854 @@
+{
+  "kind": "Static parent per-row/cell semantic argument for independent review; not automated equivalence or acceptance",
+  "manifest_sha256": "953dd8ccbb63279ca3415952c016e05ac1567a2366d9786ebf7cf4b95e9373f8",
+  "rows": [
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 1,
+      "original_cells": [
+        " `A` ",
+        " `m^2` ",
+        " represented horizontal area, strictly positive ",
+        " geometry input "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Geometry A>0 horizontal m²; geometry owner.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 2,
+      "original_cells": [
+        " `dt` ",
+        " `s` ",
+        " exact interval duration, strictly positive ",
+        " scheduler input "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Scheduler exact dt>0 seconds; scheduler owner.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 3,
+      "original_cells": [
+        " `T_s` ",
+        " `K` ",
+        " land-surface temperature at an identified state point ",
+        " future LSE state "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Future identified state T_s K.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 4,
+      "original_cells": [
+        " `E_s,0`, `E_s,1` ",
+        " `J m^-2` ",
+        " start/end surface-control-volume energy ",
+        " future LSE state "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Future beginning/ending E_s,0/E_s,1 J m⁻².",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 5,
+      "original_cells": [
+        " `M_l,0`, `M_l,1` ",
+        " `kg m^-2` ",
+        " start/end liquid held at the surface ",
+        " future LSE state "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Future beginning/ending M_l,0/M_l,1 kg m⁻².",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 6,
+      "original_cells": [
+        " `R_sw`, `R_lw` ",
+        " `W m^-2` ",
+        " signed net shortwave and net longwave into surface ",
+        " future exact-one ledger "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Future exact-one flux ledger W m⁻², net R_sw/R_lw; paragraph inward sign governs both.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 7,
+      "original_cells": [
+        " `H` ",
+        " `W m^-2` ",
+        " signed sensible heat into surface ",
+        " future exact-one ledger "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same ledger H sensible, inward sign.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 8,
+      "original_cells": [
+        " `LE` ",
+        " `W m^-2` ",
+        " signed latent heat into surface; evaporation is negative ",
+        " future exact-one ledger "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same ledger LE latent, evaporation negative.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 9,
+      "original_cells": [
+        " `Q_p`, `Q_runon` ",
+        " `W m^-2` ",
+        " precipitation/runon advected heat into surface ",
+        " future exact-one ledger "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same ledger Q_p/Q_runon incoming precipitation/runon.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 10,
+      "original_cells": [
+        " `Q_inf`, `Q_runoff` ",
+        " `W m^-2` ",
+        " non-negative energy advected out with infiltration/runoff ",
+        " future exact-one ledger "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same ledger Q_inf/Q_runoff nonnegative outgoing energy.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 11,
+      "original_cells": [
+        " `G` ",
+        " `W m^-2` ",
+        " ground heat into surface; soil sees exactly `-G` ",
+        " shared boundary "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same ledger G surface-inward, soil exactly −G; ground ownership in ordered step8.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 12,
+      "original_cells": [
+        " `m_p`, `m_runon` ",
+        " `kg m^-2` ",
+        " liquid precipitation and runon admitted during interval ",
+        " climate/hydrology inputs "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Water kg m⁻² climate/hydrology admitted m_p/m_runon.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 13,
+      "original_cells": [
+        " `m_evap` ",
+        " `kg m^-2` ",
+        " actual surface-water evaporation debit ",
+        " `SC-EVAP-001` handoff "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Water actual surface-water EVAP debit m_evap.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 14,
+      "original_cells": [
+        " `m_inf`, `m_runoff` ",
+        " `kg m^-2` ",
+        " infiltration and runoff debits ",
+        " hydrology handoffs "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Water hydrology m_inf/m_runoff, named outgoing nonnegative; equation step5 subtracts.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 15,
+      "original_cells": [
+        " `m_terminal`, `Q_terminal`, `dt_terminal` ",
+        " contract units ",
+        " censored schema-v8 snow-terminal payload ",
+        " prohibited v1 input "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Schema-v8 terminal mass/heat/duration prohibited v1 inputs; no numeric terminal unit admitted.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 16,
+      "original_cells": [
+        " `epsilon_E`, `epsilon_M` ",
+        " `J m^-2`, `kg m^-2` ",
+        " independently reconstructed closure residuals ",
+        " guards only "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Independent epsilon_E/epsilon_M closure guards J m⁻²/kg m⁻²; step-local finite residual definitions.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 17,
+      "original_cells": [
+        " `rho_E`, `rho_M` ",
+        " `dimensionless` ",
+        " non-negative relative closure coefficients ",
+        " authority gap "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Nonnegative dimensionless rho_E/rho_M v1 gaps; complete tolerance formulas retained.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 18,
+      "original_cells": [
+        " `H_hi,k` ",
+        " `J m^-2 OFE-ground` ",
+        " finite binary64 high term of soil-layer enthalpy ",
+        " soil-thermal V2 owner "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Soil V2 finite binary64 H_hi,k, declared OFE-ground energy basis.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 19,
+      "original_cells": [
+        " `R_k` ",
+        " `J m^-2 OFE-ground` ",
+        " exact normalized signed-dyadic soil-layer enthalpy carry ",
+        " soil-thermal V2 owner "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same soil basis, normalized signed-dyadic R_k.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 20,
+      "original_cells": [
+        " `E_k` ",
+        " `J m^-2 OFE-ground` ",
+        " exact soil-layer enthalpy `exact(H_hi,k)+R_k` ",
+        " soil-thermal V2 owner "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same basis, exact E_k=exact(H_hi,k)+R_k.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 21,
+      "original_cells": [
+        " `Q_soil,k`, `Q_top,k`, `Q_inf,k` ",
+        " `J m^-2 OFE-ground interval` ",
+        " exact accepted soil-internal, top-boundary, and infiltration energy operands ",
+        " typed receipt inputs "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same soil basis, typed interval Q_soil,k/Q_top,k/Q_inf,k accepted internal/top/infiltration energy.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 22,
+      "original_cells": [
+        " `U_hi,t` ",
+        " `J m^-2 tile-ground` ",
+        " finite binary64 high term mirrored into frozen LSE V3 and surface-owner V2 fields ",
+        " LSE exact-surface owner; mirror only on the V16 successor path "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "LSE successor finite U_hi,t tile-ground energy; frozen V3/V2 mirror only V16.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 23,
+      "original_cells": [
+        " `R_U,t` ",
+        " `J m^-2 tile-ground` ",
+        " exact normalized signed-dyadic surface-enthalpy carry ",
+        " LSE exact-surface owner "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same successor basis, normalized R_U,t (signed-dyadic type in alias paragraph and full surface-custody).",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 24,
+      "original_cells": [
+        " `U_t` ",
+        " `J m^-2 tile-ground` ",
+        " authoritative exact surface enthalpy `exact(U_hi,t)+R_U,t` ",
+        " LSE exact-surface owner "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same successor authoritative exact U_t=exact(U_hi,t)+R_U,t.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "variables-and-units-using-canonical-symbols-first",
+      "row": 25,
+      "original_cells": [
+        " `Q_surface,t,j` ",
+        " `J m^-2 tile-ground interval` ",
+        " exact dyadic decode of one finite accepted phase-free, fusion, or retained-ingress energy operand ",
+        " typed surface-energy receipt input "
+      ],
+      "current_location": "common-details.md#variables-and-units-using-canonical-symbols-first",
+      "operative_cell_disposition": "Same tile-ground basis typed interval Q_surface,t,j exact finite accepted phase-free/fusion/retained-ingress energy decode.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#variables-and-units-using-canonical-symbols-first"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 1,
+      "original_cells": [
+        " `T_s` ",
+        " none ",
+        " future LSE state ",
+        " gap ",
+        " this contract "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "T_s no API alias; future typed temperature K in variables/units; original gap retained.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 2,
+      "original_cells": [
+        " legacy `surtmp(hour)` / `Thra` ",
+        " not an alias of `T_s` in v1 ",
+        " pinned frost/tmpadj input in `degC` ",
+        " future named `degC <-> K` conversion and atomic cutover required ",
+        " `SC-SNOWFREEZE-001` "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "Pinned Celsius surtmp(hour)/Thra SNOWFREEZE frost/tmpadj boundary, not T_s; named conversion and atomic two-owner cutover; NON_PROMOTABLE.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 3,
+      "original_cells": [
+        " `R_sw`, `R_lw`, `H`, `LE`, `Q_p`, `Q_runon`, `Q_inf`, `Q_runoff`, `G` ",
+        " `SurfaceEnergyBalanceTerms` members are mechanics-only candidates ",
+        " meteorology helper ",
+        " `W m^-2`; no runtime alias admitted ",
+        " this contract "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "SurfaceEnergyBalanceTerms mechanics-only meteorology, no runtime flux alias; all flux symbols and W m⁻² in variables.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 4,
+      "original_cells": [
+        " `m_evap` ",
+        " `Es`/`Er`/`Ep` are not interchangeable aliases ",
+        " ET handoff ",
+        " named `m` or `kg m^-2` conversion required ",
+        " `SC-EVAP-001` "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "EVAP Es/Er/Ep not interchangeable m_evap; named m or kg m⁻² conversion.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 5,
+      "original_cells": [
+        " `m_inf`, `m_runoff` ",
+        " infiltration/runoff records ",
+        " direct hydrology ",
+        " named depth-to-area-mass conversion required ",
+        " `SC-WATBAL-001`, `SC-RUNOFFPART-001` "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "WATBAL/RUNOFFPART infiltration/runoff named depth-to-area-mass conversion.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 6,
+      "original_cells": [
+        " `m_terminal`, `Q_terminal`, `dt_terminal` ",
+        " schema-v8 terminal fields ",
+        " snow trace only ",
+        " prohibited ",
+        " `SC-SNOWENERGY-001` "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "Schema-v8 terminal aliases prohibited snow trace; terminal-support whole when handoff applies.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 7,
+      "original_cells": [
+        " `H_hi` ",
+        " `SoilThermalLayerStateV2.enthalpy_hi_j_m2_ofe_ground` ",
+        " soil-thermal persistent state ",
+        " `J m^-2 OFE-ground`; finite binary64 nearest-even from exact total ",
+        " this contract "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "Finite persistent nearest-even high with soil basis in variables; SoilThermalLayerStateV2 in full soil-custody. Exact field spelling is retained normative API/schema inventory, required for field conformance.",
+      "additional_required_location": "soil-custody.md#soil-custody and/or surface-custody.md#surface-custody for exact owner reconstruction; audit-details.md#current-schema-reference for actual API/schema/registry/tabular-conformance",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 8,
+      "original_cells": [
+        " `R` ",
+        " `SoilThermalLayerStateV2.enthalpy_carry` / `ExactDyadicEnthalpy` ",
+        " soil-thermal persistent state ",
+        " `J m^-2 OFE-ground`; canonical normalized signed dyadic ",
+        " this contract "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "Normalized signed-dyadic persistent carry with soil basis; full soil-custody schema and ExactDyadicEnthalpy fence; field/API conformance additionally reads original inventory.",
+      "additional_required_location": "soil-custody.md#soil-custody and/or surface-custody.md#surface-custody for exact owner reconstruction; audit-details.md#current-schema-reference for actual API/schema/registry/tabular-conformance",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 9,
+      "original_cells": [
+        " `Q_soil/Q_top/Q_inf` ",
+        " `SoilThermalEnergyCreditReceiptV2.accepted_operands` ",
+        " candidate credit receipt ",
+        " `J m^-2 OFE-ground interval`; exact finite-binary64 dyadics ",
+        " this contract + `SC-SURFACELIQUID-001` "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "Candidate finite-binary64 dyadic receipts under LSE/SURFACELIQUID; soil basis/interval in variables; full soil-custody accepted-operand rules and SoilThermalEnergyCreditReceiptV2. API field conformance reads inventory.",
+      "additional_required_location": "soil-custody.md#soil-custody and/or surface-custody.md#surface-custody for exact owner reconstruction; audit-details.md#current-schema-reference for actual API/schema/registry/tabular-conformance",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 10,
+      "original_cells": [
+        " `U_hi` ",
+        " `LseSurfaceEnthalpyStateRecordV1.enthalpy_hi_j_m2_tile` and the bit-identical frozen V3/V2 `surface_enthalpy_j_m2_tile[_ground]` fields ",
+        " successor persistent LSE high term; frozen fields are mirrors ",
+        " `J m^-2 tile-ground`; finite binary64 nearest-even from exact total ",
+        " this contract "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "Finite nearest-even successor persistent high, bit-identical frozen V3/V2 mirrors, tile basis; full surface-custody exact state fence; exact frozen field spellings retained in required inventory for API conformance.",
+      "additional_required_location": "soil-custody.md#soil-custody and/or surface-custody.md#surface-custody for exact owner reconstruction; audit-details.md#current-schema-reference for actual API/schema/registry/tabular-conformance",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 11,
+      "original_cells": [
+        " `R_U` ",
+        " `LseSurfaceEnthalpyStateRecordV1.enthalpy_carry` / `ExactDyadicEnthalpy` ",
+        " successor persistent LSE carry ",
+        " `J m^-2 tile-ground`; canonical normalized signed dyadic ",
+        " this contract "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "Normalized signed-dyadic successor persistent carry tile basis; full surface-custody state fence and ExactDyadicEnthalpy; exact field/API conformance requires inventory.",
+      "additional_required_location": "soil-custody.md#soil-custody and/or surface-custody.md#surface-custody for exact owner reconstruction; audit-details.md#current-schema-reference for actual API/schema/registry/tabular-conformance",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "symbol-alias-map",
+      "row": 12,
+      "original_cells": [
+        " `Q_surface` ",
+        " `LseSurfaceEnthalpyEnergyCreditReceiptV1.accepted_operands` ",
+        " candidate surface-energy receipt ",
+        " `J m^-2 tile-ground interval`; exact finite-binary64 dyadics with typed chronology and source ",
+        " this contract + `SC-SURFACELIQUID-001` "
+      ],
+      "current_location": "common-details.md#symbol-alias-map",
+      "operative_cell_disposition": "Candidate finite-binary64 dyadic surface receipt, source/chronology under LSE/SURFACELIQUID; full surface-custody receipt and exact chronology; API field conformance requires inventory.",
+      "additional_required_location": "soil-custody.md#soil-custody and/or surface-custody.md#surface-custody for exact owner reconstruction; audit-details.md#current-schema-reference for actual API/schema/registry/tabular-conformance",
+      "original_normative_location": "audit-details.md#symbol-alias-map"
+    },
+    {
+      "section": "constants-and-parameters-with-provenance-anchors",
+      "row": 1,
+      "original_cells": [
+        " water density `rho_w` ",
+        " `1000 kg m^-3` ",
+        " fixed conversion constant ",
+        " unit governance / adjacent water contracts "
+      ],
+      "current_location": "common-details.md#constants-and-parameters-with-provenance-anchors",
+      "operative_cell_disposition": "rho_w=1000 kg m⁻³ fixed unit/adjacent-water authority.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#constants-and-parameters-with-provenance-anchors"
+    },
+    {
+      "section": "constants-and-parameters-with-provenance-anchors",
+      "row": 2,
+      "original_cells": [
+        " latent heat `L_v(T_s)` ",
+        " `J kg^-1` ",
+        " required constitutive function; exact authority missing ",
+        " `GAP-LANDSURFACEENERGY-003` "
+      ],
+      "current_location": "common-details.md#constants-and-parameters-with-provenance-anchors",
+      "operative_cell_disposition": "Required L_v(T_s) J kg⁻¹ missing exact v1 authority GAP-003.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#constants-and-parameters-with-provenance-anchors"
+    },
+    {
+      "section": "constants-and-parameters-with-provenance-anchors",
+      "row": 3,
+      "original_cells": [
+        " all roughness, resistance, conductivity, heat-capacity, emissivity, and albedo inputs ",
+        " contract-declared ",
+        " no new value admitted by v1 ",
+        " owning contracts/future authority "
+      ],
+      "current_location": "common-details.md#constants-and-parameters-with-provenance-anchors",
+      "operative_cell_disposition": "All six named parameter families retain owner units/authority; no new v1 values.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#constants-and-parameters-with-provenance-anchors"
+    },
+    {
+      "section": "unit-governance-map",
+      "row": 1,
+      "original_cells": [
+        " `T_s` ",
+        " `K` ",
+        " future typed temperature ",
+        " named Celsius/Kelvin helper ",
+        " none ",
+        " none "
+      ],
+      "current_location": "common-details.md#unit-governance-map",
+      "operative_cell_disposition": "T_s K in variables; future typed temperature, named Celsius/Kelvin helper, no scalar exception, no publication/metadata.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#unit-governance-map"
+    },
+    {
+      "section": "unit-governance-map",
+      "row": 2,
+      "original_cells": [
+        " energy fluxes ",
+        " `W m^-2` ",
+        " future typed flux ",
+        " named flux-duration integration ",
+        " no final scalar exception ",
+        " none "
+      ],
+      "current_location": "common-details.md#unit-governance-map",
+      "operative_cell_disposition": "Flux W m⁻² in variables; future typed flux, named flux-duration integration, no final scalar exception, no publication/metadata.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#unit-governance-map"
+    },
+    {
+      "section": "unit-governance-map",
+      "row": 3,
+      "original_cells": [
+        " `E_s`, energy residual ",
+        " `J m^-2` ",
+        " future typed area energy ",
+        " named integration only ",
+        " internal guarded scalar candidate ",
+        " none "
+      ],
+      "current_location": "common-details.md#unit-governance-map",
+      "operative_cell_disposition": "E_s and energy residual J m⁻² in variables; future typed area energy, named integration only, internal guarded scalar candidate, no publication/metadata.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#unit-governance-map"
+    },
+    {
+      "section": "unit-governance-map",
+      "row": 4,
+      "original_cells": [
+        " water stores/transfers ",
+        " `kg m^-2` ",
+        " future typed area mass ",
+        " named depth/area-mass conversion ",
+        " no final scalar exception ",
+        " none "
+      ],
+      "current_location": "common-details.md#unit-governance-map",
+      "operative_cell_disposition": "Water stores/transfers kg m⁻² in variables; future typed area mass, named depth/area-mass conversion, no final scalar exception, no publication/metadata.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#unit-governance-map"
+    },
+    {
+      "section": "unit-governance-map",
+      "row": 5,
+      "original_cells": [
+        " `dt` ",
+        " `s` ",
+        " future typed duration ",
+        " named cadence conversion ",
+        " none ",
+        " none "
+      ],
+      "current_location": "common-details.md#unit-governance-map",
+      "operative_cell_disposition": "dt seconds in variables; future typed duration, named cadence conversion, no scalar exception, no publication/metadata.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#unit-governance-map"
+    },
+    {
+      "section": "unit-governance-map",
+      "row": 6,
+      "original_cells": [
+        " `H_hi,R,E,Q_soil,Q_top,Q_inf` ",
+        " `J m^-2 OFE-ground` ",
+        " successor exact-carry registry entries required before promotion ",
+        " no conversion; exact binary64-to-dyadic decode and arbitrary-precision integer aggregation ",
+        " internal typed amount; no floating residual exception ",
+        " none "
+      ],
+      "current_location": "common-details.md#unit-governance-map",
+      "operative_cell_disposition": "All soil symbols/basis in variables; successor registry before promotion, no conversion, binary64-to-dyadic exact decode/arbitrary-precision integer aggregation, internal typed amount/no floating-residual exception, no publication/metadata.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#unit-governance-map"
+    },
+    {
+      "section": "unit-governance-map",
+      "row": 7,
+      "original_cells": [
+        " `U_hi,R_U,U,Q_surface` ",
+        " `J m^-2 tile-ground` ",
+        " successor surface-enthalpy exact-carry registry entries required before promotion ",
+        " no conversion after the named retained OFE-to-tile credit is accepted; exact binary64-to-dyadic decode and arbitrary-precision integer aggregation ",
+        " internal typed amount; no floating residual exception ",
+        " none "
+      ],
+      "current_location": "common-details.md#unit-governance-map",
+      "operative_cell_disposition": "All surface symbols/basis in variables; successor registry before promotion, no conversion after named accepted OFE-to-tile credit, exact decode/integer aggregation, internal typed/no floating residual, no publication/metadata.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#unit-governance-map"
+    },
+    {
+      "section": "step-local-preconditions-intermediates-and-postconditions",
+      "row": 1,
+      "original_cells": [
+        " 1 validate ",
+        " complete immutable request; no state mutation ",
+        " finite `A > 0 m^2`, `dt > 0 s`; finite unit-typed operands; unique lineage counts are integers exactly one ",
+        " validated snapshot or one typed error; state byte-identical on error "
+      ],
+      "current_location": "common-details.md#step-local-preconditions-intermediates-and-postconditions",
+      "operative_cell_disposition": "Ordered1 validates immutable inputs/state/units/finiteness/positive geometry-duration before mutation; local note finite unit-typed deltas/lineage integer exactly1/byte-identical failure; guard nonfinite/unit/domain LSEB-E-001. State paragraph immutable snapshot.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#step-local-preconditions-intermediates-and-postconditions"
+    },
+    {
+      "section": "step-local-preconditions-intermediates-and-postconditions",
+      "row": 2,
+      "original_cells": [
+        " 2 branch ",
+        " validated explicit snow-state and terminal-field presence ",
+        " enumerated branch in `{snow_terminal, snow_present, snow_free}` ",
+        " terminal rejected; snow delegated; only snow-free advances "
+      ],
+      "current_location": "common-details.md#step-local-preconditions-intermediates-and-postconditions",
+      "operative_cell_disposition": "Ordered2 plus branch table explicit terminal rejection first, then snow delegation, only snow-free; explicit snow state cannot be temperature-inferred.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#step-local-preconditions-intermediates-and-postconditions"
+    },
+    {
+      "section": "step-local-preconditions-intermediates-and-postconditions",
+      "row": 3,
+      "original_cells": [
+        " 3 acquire ",
+        " snow-free branch; named owner for every operand ",
+        " sealed component/water records with matching state and interval IDs ",
+        " exactly one record per required operand or `LSEB-E-010` "
+      ],
+      "current_location": "common-details.md#step-local-preconditions-intermediates-and-postconditions",
+      "operative_cell_disposition": "Ordered3 authoritative one record/no recomputation; local note sealed component/water records matching state AND interval; missing/duplicate lineage guard LSEB-E-010; prior branch ordering snow-free.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#step-local-preconditions-intermediates-and-postconditions"
+    },
+    {
+      "section": "step-local-preconditions-intermediates-and-postconditions",
+      "row": 4,
+      "original_cells": [
+        " 4 energy reconstruct ",
+        " sealed component records ",
+        " `delta_E = E_s,1-E_s,0` and `sum_E = dt*(R_sw+R_lw+H+LE+Q_p+Q_runon-Q_inf-Q_runoff+G)`, both finite `J m^-2`; `epsilon_E=delta_E-sum_E`, finite `J m^-2` ",
+        " `&#124;epsilon_E&#124;` satisfies `TOL-LANDSURFACEENERGY-001` or `LSEB-E-011` "
+      ],
+      "current_location": "common-details.md#step-local-preconditions-intermediates-and-postconditions",
+      "operative_cell_disposition": "Ordered4 exact equation; local delta_E/sum_E/epsilon_E finite declared units; full tolerance001 retained and guard energy LSEB-E-011. Acquisition sealed records precedes.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#step-local-preconditions-intermediates-and-postconditions"
+    },
+    {
+      "section": "step-local-preconditions-intermediates-and-postconditions",
+      "row": 5,
+      "original_cells": [
+        " 5 water reconstruct ",
+        " sealed water records ",
+        " `delta_M=M_l,1-M_l,0`, `sum_M=m_p+m_runon-m_evap-m_inf-m_runoff`, `epsilon_M=delta_M-sum_M`, all finite `kg m^-2` ",
+        " mass tolerance passes and `M_l,1` is non-negative within tolerance, else `LSEB-E-012/015` "
+      ],
+      "current_location": "common-details.md#step-local-preconditions-intermediates-and-postconditions",
+      "operative_cell_disposition": "Ordered5 exact mass equation; local delta_M/sum_M/epsilon_M finite declared units; full tolerance002 and mass LSEB-E-012, negative end storage no clamp LSEB-E-015. Sealed water acquisition precedes.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#step-local-preconditions-intermediates-and-postconditions"
+    },
+    {
+      "section": "step-local-preconditions-intermediates-and-postconditions",
+      "row": 6,
+      "original_cells": [
+        " 6 latent join ",
+        " passing ledgers; liquid-evaporation branch ",
+        " `Q_LE=LE*dt` finite `J m^-2`; `Q_evap=-L_v(T_s)*m_evap` finite `J m^-2`; exact same lineage ",
+        " admitted latent tolerance passes or `LSEB-E-013`; tolerance/constitutive authority currently missing "
+      ],
+      "current_location": "common-details.md#step-local-preconditions-intermediates-and-postconditions",
+      "operative_cell_disposition": "Ordered6 liquid evaporation only, other phase no alias; local Q_LE/Q_evap finite J m^-2 same lineage, admitted latent tolerance or LSEB-E-013, missing authority; preceding ledgers/ordered commit require all pass.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#step-local-preconditions-intermediates-and-postconditions"
+    },
+    {
+      "section": "step-local-preconditions-intermediates-and-postconditions",
+      "row": 7,
+      "original_cells": [
+        " 7 advection join ",
+        " passing ledgers; each liquid crossing identified ",
+        " four mass/energy pairs with same interval, reference state, temperature/enthalpy, and lineage; energy finite `J m^-2` ",
+        " every pair occurs exactly once or `LSEB-E-010/011`; constitutive authority currently missing "
+      ],
+      "current_location": "common-details.md#step-local-preconditions-intermediates-and-postconditions",
+      "operative_cell_disposition": "Ordered7 explicitly enumerates four mass-energy pairs, same mass/interval/reference/lineage; local finite energy and advection identities; exactly-one acquisition and independent energy closure guard E010/011; missing constitutive authority retained.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#step-local-preconditions-intermediates-and-postconditions"
+    },
+    {
+      "section": "step-local-preconditions-intermediates-and-postconditions",
+      "row": 8,
+      "original_cells": [
+        " 8 ground join ",
+        " passing ledger; one soil/frost consumer identified ",
+        " surface `G` and consumer `-G`, finite `W m^-2`, same interval/lineage ",
+        " equal/opposite pair occurs once or `LSEB-E-014` "
+      ],
+      "current_location": "common-details.md#step-local-preconditions-intermediates-and-postconditions",
+      "operative_cell_disposition": "Ordered8 sole soil/frost consumer G and -G once/no second flux; local finite W m^-2 same interval AND lineage; guard E014; preceding ledgers must pass.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#step-local-preconditions-intermediates-and-postconditions"
+    },
+    {
+      "section": "step-local-preconditions-intermediates-and-postconditions",
+      "row": 9,
+      "original_cells": [
+        " 9 atomic commit ",
+        " all preceding postconditions pass ",
+        " sealed end state and ledger; no additional numeric intermediate ",
+        " `E_s,1` and `M_l,1` commit together and consumer handoffs become visible together; otherwise no mutation "
+      ],
+      "current_location": "common-details.md#step-local-preconditions-intermediates-and-postconditions",
+      "operative_cell_disposition": "Ordered9 both state ledgers after EVERY guard, producer/consumer unchanged on failure; state sealed ledger/end-state same identity; local no numeric intermediate; complete predecessor postconditions and adjacent handoffs once. This preserves atomic visibility.",
+      "additional_required_location": "common-details.md variables/state/algorithm/guards/tolerances as explicitly cited",
+      "original_normative_location": "audit-details.md#step-local-preconditions-intermediates-and-postconditions"
+    }
+  ],
+  "paragraphs": [
+    {
+      "original": "variables sign convention",
+      "destination": "common-details.md#variables",
+      "disposition": "Energy/mass inward, outgoing water nonnegative; no change to signed outgoing energy rule."
+    },
+    {
+      "original": "state inputs/outputs/mutation",
+      "destination": "common-details.md#state",
+      "disposition": "Immutable state identity, area/interval/forcing lineage, beginning E/M, authoritative records; ending state/sealed ledger/residuals/tolerances/branch/operand provenance; only E_s/M_l; soil/frost/ET/infiltration/runoff owners mutate themselves."
+    },
+    {
+      "original": "state original missing consumer",
+      "destination": "common-details.md#state",
+      "disposition": "Explicit ORIGINAL V1 record, no current inference from superseded absence. Stateless flux sum proves neither state nor consumer."
+    },
+    {
+      "original": "state degenerate/invalid/pre/post",
+      "destination": "common-details.md#state",
+      "disposition": "Zero components/liquid require defined closure; nonfinite/nonpositive A/dt/negative storage beyond tolerance/ambiguous lineage/snow/terminal invalid; authoritative beginning zero snow/no event/payload/exact-one lineage/domain; same state+interval, two independent own tolerances, adjacent handoffs once/no uncommitted mutation."
+    },
+    {
+      "original": "constant fallback and Thra",
+      "destination": "common-details.md#constants",
+      "disposition": "All three original filenames forbidden as silent fallback/clamp; Thra neither consumed nor superseded; future replace/supply named Celsius/Kelvin conversion and atomic two-owner cutover, NON_PROMOTABLE in alias paragraph."
+    },
+    {
+      "original": "unit publication and landing",
+      "destination": "common-details.md#units",
+      "disposition": "No publication or metadata; machine registry update and unit guards BEFORE dimensional runtime surface lands."
+    },
+    {
+      "original": "step gap footer",
+      "destination": "common-details.md#step-local-preconditions-intermediates-and-postconditions",
+      "disposition": "Original GAP001..004 missing tolerance/constitutive and nonpromotable footer retained verbatim."
+    }
+  ],
+  "unchanged_required": "ordered9 steps, all guard rows, tolerances, calibration, complete vector table/poison paragraphs and child invariants remain required whole common chapter; all original six moved sections retained normative"
+}

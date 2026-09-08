@@ -1,4 +1,13 @@
-# Recorded reading results — executing
+# Current iteration8 reading state
+Static:20file candidate365724bytes; bootstrap12021. Fresh01/02/04 NOT RUN.
+New admission reading makes old surface05 insufficient for reuse on this cut;
+its original adequate196206 observation stays bound to b3b7b57f4. Identity03
+31428at6938ca97d has independent A/B full-protocol relocation reuse;20/23 original hashes equal, changed entry/interface/full replay body duties proved. No earlier
+failed answer is repaired or retagged PASS. Current predicted-reading.json is
+prospective only; actual upcoming recursive/voluntary/search/repeat exposure counts.
+Exact source: candidate-manifest.json; approved presentation: iteration08-approved-manifest.json;
+recoverable source: reading-iteration-08-custody.json. Live restriction stays.
+
 Static: original task/rubric and prospective acceptance remain frozen. Ran: fresh
 agents report their actual source requests; independent A/B check source hashes,
 range arithmetic, complete required extents and scientific sufficiency. Delivered
