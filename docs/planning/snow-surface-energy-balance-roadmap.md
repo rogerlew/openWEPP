@@ -13,6 +13,12 @@ Disposition 2026-09-08: F shows a bounded one-OFE gain but lacks an applicable
 scale fixture; R is slower; the selected next prototype is lower-cost
 residual/Jacobian evaluation. Package and production remain HOLD.
 
+2026-09-08 successor execution: [residual/Jacobian prototype](../work-packages/20260908-stage3-residual-jacobian-prototype-001/package.md)
+implements the contract-first isolated A-versus-J experiment, with one initial
+component-temperature block and at most one bounded expansion. It must finish
+with measured `EXPAND`, coverage-limited, rejected, or bounded-inconclusive
+architecture disposition; it does not activate a production solver.
+
 ## 1. Outcome
 
 Determine whether explicit sub-canopy longwave exchange and physically coupled

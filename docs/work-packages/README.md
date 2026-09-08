@@ -4,6 +4,15 @@ Current-work locator: [active index](active.md). Start there and at the named
 package handoff; this catalog preserves historical evidence. Prospective rules
 in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
+## 20260908-stage3-residual-jacobian-prototype-001
+
+ACTIVE: contract-first isolated A-versus-J experiment for lower-cost Stage 3/LSE
+residual and Jacobian evaluation. It starts with a complete component-temperature
+derivative block, admits at most one bounded representation expansion, measures
+real-consumer correctness/cost/applicability, and ends with an architecture
+decision. Experimental Rust is detached; production and predecessor HOLDs remain.
+See [package](20260908-stage3-residual-jacobian-prototype-001/package.md).
+
 ## 20260907-lse-context-adoption-correction-001
 
 COMPLETE: LSE v32 directory adopted with migration-specific validation and smaller
