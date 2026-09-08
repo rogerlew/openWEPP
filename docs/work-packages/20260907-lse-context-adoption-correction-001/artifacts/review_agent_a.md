@@ -2491,3 +2491,378 @@ public-field omission and closure06's actual235130-byte reading. This preflight
 and semantic reuse do not grant adoption; remaining fresh science/size results,
 stable independent final reviews, required direct gates and dual new terminal
 verification remain outstanding.
+
+
+## Independent first solver07 assessment at9baf9ccb7
+
+Static: complete returned answer assessed against unchanged original task2/rubric,
+actual scientific and recursive authority claims, and canonical interval controls.
+Ran: all38 full-source SHA-256 comparisons and all312 requested/effective line
+ranges, per-request new/repeat arithmetic, source unions and EOF clipping against
+9baf9ccb7bf7d2d53e24acbf1d1151d3d599e311. No production/scientific/test workflow ran.
+Report `exercise_02_retry_07.md`, SHA-256
+33de8245d07a174fd0ebb20d89eecf24c7724d6481f86cf2f456e712447d5886.
+
+Scientific sufficiency FAIL on the detailed-oracle interval restriction. Report
+section7 says “Oracle/audit timing and performance/memory collection use
+separately declared, matched optional posture” and bans charging expensive
+oracle serialization to only one timed arm. The wording establishes separately
+declared/matched posture; it does not require detailed oracle/audit work outside
+BOTH performance and memory intervals. Equally charging expensive detailed
+audit to both memory arms would satisfy that wording but violate qualification's
+original Comparison-controls paragraph. The later runner-wall clause excludes
+oracle/digest work from timing, while the memory clause lacks the counterpart
+exclusion. This is a missing relation between work and measurement intervals,
+not a demand for verbatim wording: solver06's unqualified “separated from
+measured intervals” correctly covered both series and was accepted semantically.
+The same semantic standard therefore cannot accept mere matched posture here.
+
+The earlier explicit public/persisted exponent restriction is now correct, as
+are ci diagnostic-only role, FullSupply positive/zero exact amounts, full final
+rebuild and iteration-zero diagnostics, V10 scaling and active-store-cap/water/
+physical-energy conjunction, partial-positive-root exclusion, first-valid
+current-only witness chronology, stencils/thresholds/LU, exact anchor/leaf/replay
+eligibility and lifetimes, complete affected graph/both routing passes, source-
+ordered fallibility/error proofs, V30 original positions/competing poisons,
+PC1/SG1 scope and exact600s/1800s series distinction. These do not cure the one
+remaining measurement-condition defect or the required-reading failure below.
+No claimed outcome for an unseen implementation or unexecuted experiment is
+manufactured. Current physical/replay authority and historical retention remain
+distinct from prospective experiment admission.
+
+Required-reading sufficiency FAIL independently. The answer expressly expands
+through VegetationTransaction to WATBAL101/002, their availability/mutation/
+aggregate/guard requirements, and applies those rules in its custody discussion.
+It then reads only8243 of377637 bytes of legacy SC-WATBAL-001 (purpose/scope,
+selected definitions/guards and charged heading search). Science-contracts
+AGENTS25 expressly retains COMPLETE reading for existing single-file contracts;
+section selection is not enabled for WATBAL by this LSE pilot. These are active
+scientific rule/guard claims, not merely a bibliographic citation or historical
+evidence pointer. Thus the omitted369394 source bytes are required unresolved
+reading. Do not treat the narrow WATBAL search as whole authority or a legitimate
+normative-section exemption. Other selected full external contracts/protocols
+are complete; unrelated active litter/exact carry/provider-law implementation
+exclusions remain legitimate for the actual represented-snow scope.
+
+Independent ledger arithmetic PASS: all38 hashes and312 actual ranges, requested
+counts and incremental new/repeat counts match the frozen source. Finite LSE
+217644 unique/334765 requested exposure; other1057427/1145819; all1275071/
+1480584, repeated205513. The original truncated intervals have bounded recovery
+in the reported request sequence; delivered-token/automatic/workflow telemetry
+remain unobserved. This arithmetic verification is not a required-reading PASS.
+
+Observed reading-size FAIL:217644 gives17.8277071543% reduction against264863,
+5754bytes over the integer211890 limit. All12 expected LSE files, including
+whole water-vapor, are fully read. The additional5819 above forecast211825 is
+exactly the selected binding-index profile sections plus their introduction,
+dependencies and heading/search overlaps after unique-union reconciliation.
+Those are genuine normative profile records; displaying them incurs real cost
+whether selected conservatively or for explicit profile audit. The answer says
+it retained V28–30 profile sections; it does not establish that the entire index
+was read. Neither subtract5819 as unnecessary nor replace actual exposure with
+a hypothetical smaller route. Its additional transaction/forcing external
+expansions also remain charged separately.
+
+No evidence of another reader's scientific answer or hidden-rubric exposure is
+reported for this attempt. Tool/path failures are metadata with unobserved exact
+rendered costs, not phantom source reads; the private scratch and exact request
+ledger remain separate from authored report text. Preserve the immutable first
+report, all three independent FAIL reasons and every earlier attempt.
+
+Preliminary representation assessment for later prospective review, no source
+edit authorized here: trivial generated boilerplate compression is insufficient
+for robust profile-inclusive margin. In the selected mechanism files, only eight
+rows have identical Guard and Failure cells (about293bytes saved by an explicit
+same-row reference), and ordinary generated label/boilerplate shortening yields
+about1475bytes. Repeated full-ID display/anchor text is additional presentation
+cost but also needs exact existing-format/discoverability proof before changing.
+Do not use these small opportunities to claim an unmeasured6KiB reduction.
+Prefer a coherent scientific concern boundary or demonstrated duplicate
+metadata representation that preserves every canonical Statement, guard/test
+binding, original source span and mandatory external whole-contract duty. A
+new minimal reading instruction alone would not establish robust benefit.
+
+
+## Substantive decomposition investigation after solver07, prospective only
+
+Static: measured actual9baf common/numerical/qualification concerns and inspected
+their original bodies, tables and current owners. No canonical authorship or
+blanket new reading exemption is approved by this investigation.
+
+The current files conflate three useful reading concerns: effective physical/
+accepted-solve rules, independent numerical/evaluator correctness, and complete
+historical/prospective capture qualification. Whole nonlinear is19308bytes
+(including1889 dependency metadata,V11 inactive1644,
+V12 stencil2863, V13 intro/witness3946, V2 coupling/initialization/restrictions4498,
+and canonical rows3480). Whole qualification19465 contains1675 dependency
+metadata,5335 retention/title content,4035 prospective introduction/controls,
+4316 PC1 and4053 SG1. These measured section spans include some neighboring
+anchor/whitespace bytes and are diagnostic decomposition sizes, not disjoint
+new reading predictions beyond the section listing used to calculate them.
+
+A useful physical-layout change would put complete accepted finalization/
+admission (original FullSupply and iteration-zero paragraphs plus INV108–110)
+with solve-boundary. Numerical mechanism details can then have a compact
+concern-entry with explicit named complete stencils/no-update/V10 specialization
+routes. Likewise qualification can be a compact scope/series entry routing exact
+complete production-retention, EXP-R and PC1/SG1 material. This preserves the
+scientific distinction between authentic accepted-primitives reconstruction and
+an independent solver/capture audit. A conservative complete read of the
+concern-entry would be useful and small; a claimed detailed numerical or
+experimental audit must still expand the exact applicable bodies. Merely moving
+all existing text to another always-required file yields no solver saving and
+must not be sold as one. No closure reader can be required to stop investigating
+uncertainty to satisfy a byte budget.
+
+For genuine additional solver/profile-inclusive reduction, common-details is a
+stronger candidate than tiny link labels. Its measured complete presentation
+sections are variables/units3115bytes (25 rows plus signs), algorithm-state1540,
+alias-map2415, constants/provenance1020 and unit-governance1566:9656 gross bytes.
+They mix original future-interface records with successor exact-owner records,
+while operative current quantities/owners/physical equations are independently
+specified in the mechanism chapters. Examples include old future LSE M_l state
+versus explicit current hydrology ownership; original future T_s/runtime aliases
+versus current named physical state; high/carry API field names already governed
+by exact custody. This supports an explicit per-row duplication/supersession
+proof and a compact operative common presentation, with full original normative
+schema/alias/registry material preserved in appropriately scoped reference
+sections. It does NOT support silently calling every row historical or optional.
+
+Required proof conditions for any exact draft:
+
+1. Map every original row/paragraph/equation atom in BOTH directions: current
+   operative owner and unchanged precondition/value/unit/guard/test, retained
+   original normative record, exact affected scientific/conformance trigger.
+   An original-source-span preservation test proves archival presence, not
+   that a fresh routine route includes every effective qualifier.
+2. Retain positive area/duration, inward versus outward signs, explicit basis,
+   actual source lineage and no alias/substitution semantics in operative rules.
+   Named Celsius/Kelvin and depth/area-mass conversions, forbidden legacy fallback
+   constants, nonpromotable surtmp/Thra cutover, censored terminal fields, and
+   alias exclusions cannot disappear into a generic “see references”.
+3. Keep current exact high/carry units, mirrored-high-only identity, accepted
+   operand conversion-before-decode and normalized-dyadic/scalar exceptions
+   with their applicable physical/exact routes. Actual unit-registry/schema/
+   public-field promotion or conformance claims expand the full original
+   registry/alias records, with inherited no-promotion and tests intact.
+4. Do not use predecessor future/unimplemented labels to weaken current admitted
+   rules, or use successor admission to erase remaining authority gaps. Scope
+   old records only by the actual original amendments and their explicit
+   supersession; no retrospective scientific demotion.
+5. A compact current statement may replace repeated routine exposition only
+   when every effective scientific atom is fully represented in the current
+   route, including branch exclusions, ordered errors, cumulative diagnostics,
+   observer interval controls and test obligations. Concision by omission is
+   not deduplication. Original normative text remains available, source-bound
+   and mandatory wherever the reference-specific claim requires it.
+6. Preserve all full legacy external-contract reading obligations. New wrapper
+   headings or selected INV links cannot authorize WATBAL section-only reading.
+   Source/consumer masking checks, exact parser extents/anchors/definitions,
+   prospective route accounting and independent fresh first attempts remain.
+
+A9656-byte gross common presentation opportunity is enough to investigate robust
+margin even when the existing5819 profile material is read; actual replacement
+and additional reference-context bytes must first be measured. No30KiB or other
+net reduction is certified here. Exact proposed ownership, canonical file
+inventory/write envelope, current statement text, reference triggers and
+bidirectional atom map require independent prospective review before writes.
+The existing thresholds/rubrics and failed observed ledgers are unchanged.
+
+
+## Closure07 first-report assessment on frozen 9baf9ccb7
+
+Static: independently read the complete scientific answer and compared its
+conclusions with the unchanged original task4 rubric, including the actual
+current owning paragraphs. Ran: independently reconstructed all31 full source
+hashes,114 source requests, inclusive line/half-open byte endpoints, repeated
+coverage and category unions from `git show` at
+`9baf9ccb7bf7d2d53e24acbf1d1151d3d599e311`. No physical workflow, test fixture,
+solver or oracle was executed for this exercise assessment. No fresh reader was
+contacted and no report/source was edited.
+
+The immutable report is `exercise_04_retry_07.md`,54186bytes,SHA256
+`a522f2757783f709df7cd966fd9e14c102a30b98a4cd18267ab77ec7b94c6f11`.
+Disposition: scientific completeness FAIL; required selected-source reading
+PASS for the accepted-primitive scope and actual claims; ledger reconstruction
+PASS; LSE reduction FAIL. The scientific failure is independent of the size
+failure. Neither is repaired by the procedural self-check at the report end.
+
+The principal physical reconstruction is substantially complete. Report34–107
+concretely preserves beginning pools and final-use chronology, signed vapor
+sensible-plus-latent, liquid saturation for both V3 components, correct bounded
+freeze/melt constants and phase-only invariant, no same-support re-solve,
+checked spill subtraction and full-child WB14 ingress/returned credit,
+liquid-only WB14 and ice exclusions, native/ordinary resource separation with
+no additional energy, exact carries and destination-group checked binary64
+conversion before exact decoding. It retains actual parcel zero semantics,
+local-to-OFE accounting, opposite surface/soil CN heat, receipt order, mirrors,
+restart, unpublished soil composition, final reseal, pending map chronology and
+complete rollback. Its extra numerical reading supports concrete accepted-solve
+and branch explanations; simply declaring those bytes unnecessary would not
+change the observed reading cost.
+
+Frozen rubric4.8 remains incomplete in two connected evidence conclusions:
+
+1. Report137's required-vector list names positive sub-ULP credits and broad
+   wrong-sign/basis/receipt checks, but never identifies the canonical WAT5
+   transaction or the exact-halfway even-low/odd-low, signed minimum-subnormal/
+   normal-boundary, and largest-finite/overflow vector obligations. Report105
+   correctly states nearest-even arithmetic, finite-subnormal preservation and
+   overflow rejection; these mechanism rules do not establish the distinct
+   required numerical evidence. Current `soil-custody.md:99` supplies the WAT5
+   starting high, negative sub-ULP operand and exact nonzero remainder, followed
+   by the concrete positive/poison vectors and unchanged real-consumer duties.
+   `surface-custody.md:110` separately requires those exact arithmetic vectors.
+   The omission is evidence coverage, not a demand to repeat every source value
+   verbatim or to execute a numerical oracle in a static reading exercise.
+2. Report3/139/143 correctly says no actual primitive bundle was supplied here,
+   refuses a numerical closure verdict and names real p61/native consumers.
+   It nevertheless does not reconstruct the source-specific retained p61
+   evidence limit: the historical failure lacked exact beginning high bits and
+   retained tile-credit operands, which must be captured from the unchanged
+   fixture before an exact independent oracle and split-restart proof exist.
+   `surface-custody.md:124` states that limitation and capture obligation on the
+   retained support. General absence of inputs in this exercise is a different
+   fact from the retained run's missing operands. No oracle was invented, but
+   the frozen required conclusion about that evidence boundary is absent.
+
+The complete five external contracts (SurfaceLiquid, WATBAL, SnowEnergy,
+CoupledTime, Vegetation) and all selected LSE chapters are present in the union.
+Accepted authoritative liquid parcels, without rain-provider rederivation,
+legitimately retain the conditional SnowFreeze exclusion. Reading qualification
+for the physical/experiment boundary does not itself claim EXP-R capture,
+performance, executable reconstruction or historical retention validation; its
+explicitly excluded protocol audit is consistent with the answer's actual scope.
+The read-only accepted-map custody statements retain their physical owner's
+requirements without making a represented-snow evaluator-replay equivalence
+claim. None of these scope exclusions cures missing physical evidence duties.
+
+Independent ledger totals exactly match the report:
+
+| Category | Unique source bytes | Requested source exposure |
+|---|---:|---:|
+| LSE | 235583 | 354267 |
+| External contracts | 1400919 | 2032535 |
+| Governance | 89531 | 92517 |
+| Tool | 3544 | 3544 |
+| Total | 1729577 | 2482863 |
+
+Every one of31 source files is covered completely. Bootstrap exposure is43108;
+expansion is2439755; repeated exposure753286. All114 requests include the
+explicit full497785-byte SnowEnergy search scan, already covered in the unique
+union, plus returned-line rereads. This is the report's declared conservative
+source-scan exposure, not evidence that the model received that entire source
+again as search output. Its actual requested accounting is retained; no search
+or voluntary read is subtracted. Unobserved runtime/token/compaction framing
+remains unobserved. No foreign scientific answer or scratch exposure is claimed
+or evidenced in this report.
+
+Observed LSE reduction is11.0547717122%, not20%;235583 exceeds the211890-byte
+integer gate by23693. The exact38773-byte expansion beyond the reviewed196810
+route is the complete nonlinear chapter19308 plus qualification19465. Report145
+explicitly justifies them as concrete branch/shortcut eligibility and physical
+versus experimental capture review. This corroborates the substantive-layout
+investigation above: repeated concern boundaries invite useful but costly full
+chapter reads. It does not authorize barring uncertainty-driven expansion,
+retrospective selection narrowing or qualification/rubric weakening. Original
+first failures remain immutable; any next exact compact presentation requires
+prospective preservation/route review and a new independent first attempt for
+affected tasks. No adoption or runtime qualification is approved here.
+
+
+## Closure07 reconciliation and prospective mechanical concern split
+
+Static: Reviewer B and Reviewer A independently reconciled report105/137/139
+against the unchanged frozen rubric4.8 and current soil-custody99–118 /
+surface-custody110–133. B withdraws the earlier scientific PASS and retains its
+assessment history. Agreed scientific status is FAIL for incomplete required
+evidence: valid arithmetic semantics and a general no-input/no-oracle disclaimer
+do not replace the specific numerical-vector/WAT5 duties and the retained p61
+missing-operand/unchanged-fixture recapture conclusion. No requirement to repeat
+every numeric source constant or to execute the static exercise is introduced.
+Required selected-source reading PASS, exact ledger PASS and size FAIL remain.
+
+The parent's proposed mechanical concern split is legitimate in principle and
+is more bounded than rewriting three complete scientific chapters. This is
+prospective design assessment, NOT permission to edit an unspecified draft and
+NOT a reading/adoption PASS. The proposed destinations are `numerical-methods.md`
+for the complete current nonlinear body and `replay-evidence.md` for the complete
+current qualification body, with small admission/capture interfaces at the
+existing paths. Full original normative text, definitions and applicable
+protocol scope remain authoritative. An exact package path/inventory amendment,
+source and dependency proof must precede implementation.
+
+Required proof and drafting constraints:
+
+1. Preserve complete original methods and replay-evidence paragraphs, equations,
+   tables, canonical definitions, old owning anchors and complete section extents.
+   All existing links for full solver/evaluator equivalence, independent numerical
+   algorithm review, executable identity, production retention and experiments
+   must reach those complete destinations with their original applicable external
+   obligations. Production retention is not merely an experiment and cannot be
+   lost through the proposed replay-evidence name. Enumerate old/new incoming
+   links, registry destinations, consumer assertions and generator relocation
+   records; a global string replacement is not an applicability proof.
+2. The small nonlinear admission interface may consolidate current accepted-state
+   requirements with complete FullSupply initialization/iteration-zero eligibility,
+   inactive V10 wet and V11 coordinate qualifications, exact closed-bound domain
+   restrictions and no-update chronology/diagnostics. Current solve-boundary
+   already contains the complete ordered numerical algorithm and no-update rule;
+   its whole applicable extent may serve as a required dependency instead of
+   duplicating it again. Neither a short INV summary nor a link to a large
+   optionally-read body substitutes for an omitted active qualifier. Explicitly
+   preserve potential versus fixed-final scope, complete checks/candidates,
+   zero-area flux exclusions, all conjunctions/exclusions, typed failure and
+   unchanged public/persisted diagnostic restrictions. Actual independent
+   algorithm/branch/equivalence review must expand complete numerical-methods.
+3. Canonical definitions remain single and discoverable. If INV/OBL rows move to
+   numerical-methods or replay-evidence, prove recursive physical-interface
+   definition/authority/guard/test edges still expose every applicable scientific
+   atom and evidence duty. Do not waive an otherwise mandatory full-method edge
+   by calling its source an interface. Conversely, assigning all definition links
+   a needless whole-file extent defeats the intended concern separation. Supply
+   actual parser section extents, conditional reasons and transitive read unions,
+   including original owning sections and real test-vector links.
+4. The physical capture interface may make the actual accepted-primitive evidence
+   boundary easier to find: complete source/state/units/support/receipt operands,
+   independent reconstruction, exact numeric vectors, canonical WAT5, retained
+   p61 missing beginning-high/tile-credit evidence and unchanged-fixture recapture,
+   real p61/native consumers, restart and byte-exact rollback. These are existing
+   scientific duties, not fresh-reader hints or new test criteria. Keep custody
+   mechanisms the equation/evidence owners; bind the concise capture presentation
+   to their exact complete sections rather than creating a competing scientific
+   authority or duplicating canonical IDs. It must retain actual production/HOLD
+   limits and fully expand replay-evidence for retention, executable capture and
+   experimental claims, including complete frozen protocol and input authorities.
+5. Common presentation relocation requires the per-row bidirectional atom proof
+   already specified above. Original variable/state/alias/registry records remain
+   normative, with mandatory exact schema/alias/unit/provenance-conformance routes.
+   Every operative sign, domain, unit, conversion, lineage, no-fallback constant,
+   legacy Thra/surtmp nonpromotion rule and current physical/guard/test duty stays
+   on the routine applicable route. Old future labels are not blanket historical
+   status. Prove which rows are duplicate presentations of which current clauses,
+   and which reference-specific requirements still require the original record.
+   File presence and original616-span preservation alone cannot prove this.
+6. Generated mandatory-interface/metadata dedup is acceptable only where repetition
+   is exact and all binding columns/IDs, unique anchors, conditional reasons and
+   resolver/parser behavior survive. Do not silently collapse distinct Guard and
+   Failure duties, canonical source statements or test obligations. Measure actual
+   net savings after new interface, anchor, dependency and audit-context overhead;
+   the8KiB target is not yet a result. For solver, budget the observed217644-byte
+   union including legitimate5819-byte profile reading, whole water and every
+   required legacy external contract. Full-method relocation alone saves none of
+   that solver body. For closure, price whole new admission/capture interfaces
+   and every effective physical dependency, not just their short titles.
+7. Preserve uncertainty-driven expansion and all actual prior reading costs. A
+   reader may still independently investigate methods or experiments; that source
+   reading remains charged. Exact prospective atom/edge review, original-body
+   preservation and real consumer/parser checks precede fresh first attempts on
+   affected tasks. Any reuse of earlier surface/identity evidence requires a new
+   explicit selected-input and semantic-duty proof; meaningful presentation or
+   dependency changes cannot be represented as unchanged-source observation.
+
+This design may give physical readers a useful small complete concern entry and
+solver readers genuine duplicate-presentation savings with profile-inclusive
+margin. Neither benefit is certified until the exact draft and recursive routes
+are reviewed and then independently exercised. No source mutation, criterion
+waiver or retroactive PASS is authorized by this assessment.

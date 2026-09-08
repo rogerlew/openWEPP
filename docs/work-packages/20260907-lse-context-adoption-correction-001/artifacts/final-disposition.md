@@ -1,6 +1,6 @@
 # Adoption disposition — executing
 Static: current disposition draft, not closure or adoption approval. Candidate source
-cut29b3e702253bf3846afb28a8ac2eeda1d481e0e5 is frozen during fresh02/04. General
+cut 9baf9ccb7bf7d2d53e24acbf1d1151d3d599e311 is frozen during fresh02/04. General
 selective reading remains restricted to the package's bounded exercises.
 
 ## Exact diff reconciliation
@@ -28,41 +28,40 @@ failures remain diagnostic FAIL; changed helper lint PASS. No protected assertio
 scientific expectation or historical HOLD is weakened.
 
 ## Reading acceptance and remaining work
-Always-read entry/interface12117bytes satisfies12288. Full directory349435bytes is
-still larger than the original264863; no on-disk or model-token reduction is claimed.
-Surface01 first adequate fresh result atb3b7b57f4:196206LSE bytes,25.921703% smaller.
-Identity03 first adequate fresh result at6938ca97d:31428LSE bytes. A/B explicitly
-prove semantic reuse at29b3: surface's two selected chapters only gain natural
-subheadings; identity's interface/qualification clarifiers preserve the same exact
-executable task and full protocol duties. Original observations remain tied to their
-source cuts; no new reader, revised observed count or all-hashes-equal claim.
+Current frozen source is 9baf9ccb7bf7d2d53e24acbf1d1151d3d599e311. The candidate
+manifest SHA256 is f2ddbc2f71531fc00ec4d4fcc3be9b67e6aad0c2dd70bef9272af1cac19c425a.
+Always-read entry/interface is 12136 bytes, within 12288. Full directory is 349888
+bytes across 18 files, still larger than original 264863; no disk/token saving claim.
+Surface01 at b3b7b57f4 has an adequate fresh answer with 196206 LSE bytes (25.921703%
+smaller); identity03 at 6938ca97d has an adequate fresh answer with 31428 LSE bytes.
+A/B explicitly approve semantic reuse at the current source: surface 29/32 selected
+hashes equal, identity 20/23. Changed presentation preserves their already satisfied
+obligations and dependencies. Counts remain observations at their original cuts.
 
-Solver02 and closure04 failed scientific completeness atb3 despite sizePASS. Their
-immutable reports and all prior failures are retained in reading-iteration-01..05.json.
-Reviewed iteration6 subsections foreground existing solver/owner/comparison rules;
-original bodies, numbered procedure, anchors and complete extents remain intact.
-Solver06 at29b3 passes reading/size211770 but fails the explicit public nonpersisted
-exponent-field exclusion. Closure06 still runs on29b3. A reviewed minimal diagnostic
-heading clarification and genuinely fresh solver retry remain required; no failed
-first answer is repaired or waived.
-Actual source exposure/repeats/external/governance requests remain separately recorded;
-delivered tokens, runtime context and full workflow costs are UNOBSERVED.
+Iteration6 solver science FAIL/size PASS (211770); closure science PASS/size FAIL
+(235130). Both first reports and all prior outcomes remain immutable in
+reading-iteration-01..06.json. Reviewed iteration7 clarifies the existing diagnostic
+heading and physical-versus-experiment reading scope without changing scientific
+bodies, exclusions, protocols or numbered procedures. Fresh solver07 and closure07
+are running on the frozen current source with separate assigned scratch directories.
+Predictions are not adequate-reading evidence. Actual source exposure, repetitions,
+external and governance reading remain separately recorded in context-usability.md.
+Delivered tokens, runtime context and full workflow costs are UNOBSERVED.
 
 Complete fresh02/04 and independent assessments; correct any failure in scope. Then
 obtain stable dual review and two NEW terminal verifications before live adoption.
-After those gates, remove only the159-byte candidate restriction through the reviewed
+After those gates, remove only the 159-byte candidate restriction through the reviewed
 generator mode, finalize status/handoff/prompt/catalog, rerun affected checks and
 obtain bounded final-diff verification. Commit locally; no push authorized. No
 production correctness, scientific execution or experiment resumption follows.
 
-Both iteration6 first reports are complete and bound in reading-iteration-06.json:
-solver scientificFAIL/sizePASS; closure scientificPASS/sizeFAIL. No current acceptance
-waived. Correction and new fresh02/04 remain in scope; canonical29b3 is unchanged
-pending exact prospective navigation review.
-
-Current iteration7 applied preflight and01/03 semantic reuse independently PASS A/B.
-Manifest f2ddbc2f71531fc00ec4d4fcc3be9b67e6aad0c2dd70bef9272af1cac19c425a binds the
-actual current sources. Bootstrap12136,fullset349888; predictions196810/211825/31601/
-196810 are not observations. Surface29/32selected hashes equal, identity20/23; explicit
-unchanged-task dependency proof preserves observed196206atb3 and31428at6938. New
-fresh02/04 remain required, with unique assigned scratch directories. No adoptionPASS.
+## Iteration7 completed; substantive correction continues
+Both first reports are complete and bound in reading-iteration-07.json. Solver07:
+217644LSE, science/required-reading/size FAIL; ledger PASS. Closure07:235583LSE,
+science/size FAIL, required-reading/ledger PASS. A/B reconciled closure's concrete
+required-evidence omissions; B's initial sciencePASS is explicitly withdrawn in its
+independent record. All actual additional reading remains charged. Source9baf is
+unchanged. A mechanical concern decomposition is under prospective review: small
+physical admission/capture interfaces, original complete numerical/experimental
+bodies and duties retained, and per-row-proven common schema deduplication. No
+unspecified rewrite or reduced extent is approved; no adoption or terminal PASS.

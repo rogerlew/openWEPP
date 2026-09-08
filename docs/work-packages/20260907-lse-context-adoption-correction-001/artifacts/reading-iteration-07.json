@@ -1,0 +1,59 @@
+{
+  "candidate_commit": "9baf9ccb7bf7d2d53e24acbf1d1151d3d599e311",
+  "baseline_lse_bytes": 264863,
+  "evidence": "Independent A/B first-answer science and exact source/range/byte assessment; no failure repaired or actual reading subtracted. Tokens/workflow UNOBSERVED.",
+  "tasks": {
+    "02": {
+      "report": "exercise_02_retry_07.md",
+      "sha256": "33de8245d07a174fd0ebb20d89eecf24c7724d6481f86cf2f456e712447d5886",
+      "lse_read_union_bytes": 217644,
+      "reduction_percent": 17.82770715426466,
+      "scientific_requirements": "FAIL",
+      "required_reading": "FAIL",
+      "size_gate": "FAIL",
+      "all_selected_source_bytes": 1275071,
+      "requested_exposure_bytes": 1480584,
+      "note": "38sources312requests exact. Extra5819 is selected binding-index intro/dependencies/profiles/heading exposure; all other12LSEfiles whole. ScientificFAIL: memory-interval detailed-oracle exclusion is not established by matched posture. Required-readingFAIL: active WATBAL101/002guard claims with only8243/377637legacycontractbytes. Public/persisted exclusion now correct. No scientific execution."
+    },
+    "04": {
+      "report": "exercise_04_retry_07.md",
+      "sha256": "a522f2757783f709df7cd966fd9e14c102a30b98a4cd18267ab77ec7b94c6f11",
+      "lse_read_union_bytes": 235583,
+      "reduction_percent": 11.054771712168176,
+      "scientific_requirements": "FAIL",
+      "required_reading": "PASS",
+      "size_gate": "FAIL",
+      "all_selected_source_bytes": 1729577,
+      "requested_exposure_bytes": 2482863,
+      "note": "31sources114requests exact; all selected source unions whole. Extra38773=nonlinear19308+qualification19465; none subtracted. Full SnowEnergy search scan497785 charged conservatively as repeat exposure. A/B reconciled scientificFAIL for missing concrete exact-arithmetic vector/WAT5 evidence and retained p61 missing beginning operands/unchanged-fixture capture duty; arithmetic mechanism is correct. B earlier sciencePASS explicitly withdrawn, history retained. Required-readingPASS. No numerical execution."
+    },
+    "01": {
+      "report": "exercise_01_retry_05.md",
+      "sha256": "078607c759c99c6cac207c84d27348f2ce40ffb6568e39c4d770e474fccafd83",
+      "lse_read_union_bytes": 196206,
+      "reduction_percent": 25.921702918112388,
+      "scientific_requirements": "PASS",
+      "size_gate": "PASS",
+      "other_selected_source_bytes": 2110019,
+      "all_selected_source_bytes": 2306225,
+      "requested_exposure_bytes": 2819443,
+      "note": "All six whole external contracts, including retained-provider SnowFreeze. 150 content requests plus two separately measured source searches; scans add430unique/637exposure governance bytes.",
+      "observed_candidate_commit": "b3b7b57f4fefc14a39cb7cfa0c96ebc6c2eb40aa",
+      "reuse_at_29b3": "Independent A/B selected-source and exact unchanged-task semantic dependency proof; original observed counts retained, no new reader/all-hashes-equal claim.",
+      "reuse_at_9baf": "Independent A/B exact selected-source/unchanged-task semantic dependency proof: surface29/32hashes equal;identity20/23. Original observed cuts/counts retained; no new reading/all-hashes-equal claim."
+    },
+    "03": {
+      "report": "exercise_03_retry_03.md",
+      "sha256": "6b334dad06a38e4bd59eac206c0eb6e75a11d3e12e9c6b019394ce4c90884e88",
+      "observed_candidate_commit": "6938ca97dedb76c00ead9c2022b7d09adc7c1899",
+      "lse_read_union_bytes": 31428,
+      "all_selected_source_bytes": 149505,
+      "requested_exposure_bytes": 149667,
+      "scientific_requirements": "PASS",
+      "size_gate": "PASS",
+      "reuse_at_b3": "A/B proved unchanged executable task duties despite11-byte interface qualifier; not a fresh run or23identical source hashes.",
+      "reuse_at_29b3": "Independent A/B selected-source and exact unchanged-task semantic dependency proof; original observed counts retained, no new reader/all-hashes-equal claim.",
+      "reuse_at_9baf": "Independent A/B exact selected-source/unchanged-task semantic dependency proof: surface29/32hashes equal;identity20/23. Original observed cuts/counts retained; no new reading/all-hashes-equal claim."
+    }
+  }
+}

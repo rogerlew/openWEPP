@@ -12,88 +12,48 @@ Static/Ran: independent artifacts retain full evidence and focused re-review.
 | B01 original scientific cell test gap | accepted/closed B | Column-wise original Authority/Evidence/Guard/Failure preservation added; on-disk intact-ID publication-poison fails direct test despite structuralPASS. |
 | Fresh closure01 exposure | accepted INVALID | Agent accessed other answers via collaboration listing; immutable invalid record retained; genuinely fresh replacement runs same task without exposed context. |
 
-| Fresh science01/02/04 size | OPEN, correction required | Actual250005/216016/258764 exceed211890; initial predictions were insufficient. Preserve first reports and redesign concern boundaries. |
-| Fresh solver02 adequacy | OPEN, correction required | Independent A found omitted universal producer rows and solver eligibility/failure/qualification requirements; first answer remains FAIL, not repaired into freshPASS. |
+| Physical boundary extent / manifest (RCA05/06) | accepted/closed A | Complete solve-boundary108–110 and all18 canonical files/28 source entries covered. |
+| EOF whitespace | accepted/closed | Current git diff --check passes; no candidate edit deferred. |
+| Surface reading sufficiency | accepted/closed with explicit reuse | Fresh05 atb3:196206LSE bytes, science/reading/size PASS; full six external contracts. A/B approve unchanged-task semantic reuse at9baf, preserving original observations. |
+| Identity reading sufficiency | accepted/closed with explicit reuse | Fresh03 at6938:31428LSE bytes, full executable qualification/four protocols. A/B approve unchanged-task semantic reuse at9baf; no new observation claimed. |
+| Solver reading sufficiency | OPEN | Fresh06 sizePASS211770 but scienceFAIL for public nonpersisted diagnostic exclusion. Approved existing-paragraph heading clarification applied at9baf; fresh07 in progress. |
+| Closure reading sufficiency | OPEN | Fresh06 sciencePASS but sizeFAIL235130. Actual extra38737 nonlinear/qualification bytes remain charged. Approved physical/retention/experiment navigation clarification applied at9baf; fresh07 in progress. |
+| Stable reviews / terminal verification / activation | OPEN | Both current fresh criteria must pass, then stable dual reviews and two NEW terminal verifiers before live adoption and bounded final verification. |
 
-| Fresh closure04 adequacy | OPEN, fresh retry required | First completed answer omitted explicit liquid-only WB14/ice ineligibility. A credited its separate canonical-zero/high-signed-zero treatment; no zero-semantics defect retained. |
-| RCA05 physical boundary definition extent | accepted/closed A | Surface route reads complete solve-boundary including108–110; already charged in projection. |
-| RCA06 complete candidate manifest | accepted/closed A | All28 source entries match; all18 canonical files included. |
-| Candidate EOF whitespace | OPEN, final cleanup | One trailing blank in common-details deferred during frozen readings; final diff check required. |
+## Historical first-answer integrity
+The independent review artifacts and reading-iteration-01..06.json retain detailed
+findings, first-report hashes, exact measurements and corrected reviewer verdicts.
+No historical failed answer is repaired or waived. Iteration1 science reading sizes
+250005/216016/258764 failed; initial closure exposure was INVALID and preserved.
+Iteration2 exposed missing complete physics/producer/protocol duties. Iteration3
+surface/solver failed; identity passed; closure stopped early without an actual blocker.
+Iteration4 physical reads235188 failed size, and solver omitted initialization/audit
+conditions. Iteration5 surface passed, solver and closure fit size but omitted concrete
+scientific conditions. These led to reviewed presentation changes preserving every
+original body, explicit anchor, whole applicable extent and frozen protocol.
 
-No current acceptance waived. Fresh adequacy, final code/evidence identities and
-terminal closure remain pending. Incidental numeric predictions in explicitly allowed
-mandatory handoff are disclosed by fresh readers; no rubric/answers were provided.
+Iteration6 solver resolved prior FullSupply/zero-amount, store-cap/tolerance, coordinate,
+V2/root and comparison/timeout omissions, but its persisted-only exclusion still omitted
+public nonpersisted output. Closure resolved destination-key/order/fold/tile conversion,
+liquid-only WB14 and mass-only/no-new-energy joins, but voluntarily expanded reading.
+Current natural navigation changes do not supply answers outside canonical authority,
+relax a rubric, prohibit uncertainty-driven reading or subtract earlier actual requests.
 
-## Iteration2 failures and prospective correction
-- Surface01: missing mandatory support definitions and cross-regime/terminal
-  requirements. Direct full terminal edge and active/unspecified phase edge added;
-  original failed answer retained. Fresh final acceptance pending.
-- Solver02:213035actualbytesFAIL and incomplete returned solver/protocol conclusions.
-  Independently proven duplicate profile tables moved to normative binding index;
-  solver applicability clarified, protocol links explicit. Fresh final pending.
-- Identity03: bound reviewed protocol/reproduction omitted. Both complete documents
-  are now direct qualification dependencies; first failed answer remains FAIL.
-- Closure04: independent PASS on115582cd2; final fresh rerun required for changed cut,
-  rather than representing counterfactual reading arithmetic as observed.
-- EOF whitespace: corrected; git diff --check now PASS.
-No threshold, scientific predicate, old result or reviewer rubric was relaxed.
+Iteration6 helper collisions remain disclosed in the first reports and reading record.
+Solver reconstructed its own bootstrap from transcript; failed argv not fully retained.
+Closure exposed foreign metadata, not source or another scientific answer. Reviewers
+accepted exact reconciled source ledgers with these limitations, not perfect isolation.
+Iteration7 readers have assigned unique scratch directories and frozen source/package/
+neutral handoff. First completed reports will be independently assessed before any
+further change. Current gate remains unmet while safe in-scope execution continues.
 
-## Iteration3 retained findings / iteration4 current actions
-See reading-iteration-03.json and independent A/B records for immutable measured
-failures. Surface01 omitted boundary requirements despite complete terminal text;
-positive canonical scope and full external triggers clarified. Solver02 retained
-FullSupply/iteration0, INV113 exact eligibility, no public exponent and V30 competing
-error-order omissions plus229664-byteFAIL; no failed answer repaired or rubric changed.
-Precise audit routes separate experimental history from model gap/enforcement claims.
-Closure04 stopped from anticipated context pressure with no actual blocker: FAIL.
-Identity03 independently PASS; unchanged-source reuse still requires focused proof.
-Neutral first-report completeness/reading persistence applies to new01/02/04.
-All scientific cells remain exact; audit short aliases and shorter generated section
-extent labels retain the entry's same complete-section rule. Current direct checks
-pass; final fresh sufficiency and terminal dual verification remain OPEN.
-
-## Iteration4 findings / iteration5 current actions
-Both235188-byte physical reports remain sizeFAIL; whole audit/qualification reads
-are actualcost. Applying admitted rules/retaining ordinary restrictions is now
-explicitly distinct from source/gap/enforcement adjudication and experiment HOLD.
-Surface01's retained-provider rule requires fullSnowFreeze even without new provider
-implementation; exact trigger clarifies that existing scope. Solver02's iterationzero
-and memory-audit omissions remain first-answerFAIL; existing paragraphs now have
-natural initialization/accounting and V10 restriction subheadings, and qualification
-edge names timing/memory oracle separation and matched posture. All original source
-clauses survive. Current98Python/strict/unit/A0/53bridge checks PASS; Rust111/18exact
-inherited diagnostics. Fresh01/02/04 and terminal closure remain OPEN. Identity03
-reuse must prove unchanged executable-task duties despite11-byte interface qualifier.
-
-## Iteration5 final first-answer findings / correction continues
-Both independent reviews accept surface01:196206bytes with all six required external
-contracts, including retained provider; reading-iteration-05.json includes its two
-additional source searches. Identity03 remains explicit semantic reuse, not a new run.
-Solver02:211480bytes sizePASS, scienceFAIL. Preserve exact FullSupply/zero-amount
-eligibility, V10 store-cap/rate-tolerance predicate, no-update coordinate/diagnostic
-rules and V2/nonpositive/root authorization boundary; generic summaries did not
-preserve them. Comparison controls omit both timing/memory oracle exclusion and
-matched optional posture; scaling timeout was incorrectly reported1800 instead of600.
-Closure04:196206bytes sizePASS, scienceFAIL. Its answer omits complete-destination
-receipt grouping/order/OFE fold before binary64 tile conversion, explicit ice exclusion
-from liquid-onlyWB14, and mass-only ordinary joins without synthesized energy.
-All three complete first reports and their full actual ledgers remain immutable.
-Natural subsection presentation corrections are prospectively reviewed; no criterion,
-original body, protected disposition or frozen protocol is changed. Fresh02/04 and
-terminal closure remain current-scope requirements. Surface/identity reuse needs exact
-changed-cut semantic proof; no hypothetical revised byte count becomes observation.
-
-A/B exact iteration6 preflight and01/03 semantic reuse PASS; original observations
-remain immutable. New02/04 first-answer sufficiency is the current unresolved gate.
-
-## Iteration6 first answers — scientific progress, current failures retained
-Solver02: all33sourcehashes/94requests exact;211770LSE sizePASS, scientificFAIL solely
-because no new persisted field does not forbid a public nonpersisted exponent field.
-All prior other solver/protocol findings resolved semantically. Closure04: all32hashes/
-113requests exact; scientificPASS, sizeFAIL235130. Its additional38737bytes are actual
-nonlinear19291 and qualification19446 reads for eligibility and p61capture scope.
-No actual bytes are removed. Collision disclosures are metadata/CLI audit limitations,
-not demonstrated foreign scientific-answer exposure. Reading-iteration-06.json binds
-immutable first reports. Approved diagnostic-title clarification and prospective
-physical/experiment navigation clarification retain current gates and require new
-fresh02/04. Surface01/identity03 remain explicitly reused with observed old cuts/counts.
+## Iteration7 completed; substantive correction continues
+Both first reports are complete and bound in reading-iteration-07.json. Solver07:
+217644LSE, science/required-reading/size FAIL; ledger PASS. Closure07:235583LSE,
+science/size FAIL, required-reading/ledger PASS. A/B reconciled closure's concrete
+required-evidence omissions; B's initial sciencePASS is explicitly withdrawn in its
+independent record. All actual additional reading remains charged. Source9baf is
+unchanged. A mechanical concern decomposition is under prospective review: small
+physical admission/capture interfaces, original complete numerical/experimental
+bodies and duties retained, and per-row-proven common schema deduplication. No
+unspecified rewrite or reduced extent is approved; no adoption or terminal PASS.

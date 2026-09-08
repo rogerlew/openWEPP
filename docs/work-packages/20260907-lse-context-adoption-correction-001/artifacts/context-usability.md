@@ -13,70 +13,70 @@ contracts, governance, tool-source requests and repetitions remain visible separ
 LSE union savings do not imply the same reduction in total reading or actual tokens.
 
 ## Latest completed observations
+
 | Task | Observed cut | LSE unique bytes | All unique / requested exposure | Independent result |
 | --- | --- | ---: | ---: | --- |
-| Surface/soil01 | b3b7b57f4 | 196206 | 2306225 / 2819443 | Science/reading/size PASS; explicit reuse at29b3. |
+| Surface/soil01 | b3b7b57f4 | 196206 | 2306225 / 2819443 | Science/reading/size PASS; explicit reuse at 9baf9ccb7. |
 | Solver/reuse02 | 29b3e7022 | 211770 | 1197191 / 1404216 | Reading/size PASS; science FAIL on public nonpersisted diagnostic-field exclusion. |
-| Executable identity03 | 6938ca97d | 31428 | 149505 / 149667 | Science/reading/size PASS; explicit reuse at29b3. |
-| Frozen-litter closure04 | b3b7b57f4 | 196206 | 1684890 / 2226199 | Size PASS; science FAIL. Fresh06pending. |
+| Executable identity03 | 6938ca97d | 31428 | 149505 / 149667 | Science/reading/size PASS; explicit reuse at 9baf9ccb7. |
+| Frozen-litter closure04 | 29b3e7022 | 235130 | 1729860 / 1983963 | Science PASS; size FAIL. |
 
-Reading-iteration-05.json binds immutable report identities and exact accounting.
-Surface01 totals include150content requests PLUS2source searches: the searches add
-430unique/637exposure governance bytes. Whole six external contracts are included.
-Solver05 omissions concern concrete solver eligibility/diagnostics and experimental
-comparison controls/timeout. Closure05 omits grouped physical conversion order,
-explicit ice-ineligible WB14 and mass-only/no-new-energy resource joins. Their first
-answers remain FAIL; headings or forecasts do not repair them into fresh successes.
+Reading-iteration-05.json and reading-iteration-06.json bind immutable first report
+identities and accounting. Surface includes 150 content requests plus two searches;
+searches add 430 unique/637 exposure governance bytes. Six whole external contracts
+are included. Solver06's three-external scope is independently legitimate for the
+bounded task; prior voluntary expansion is not a new universal duty. Closure06
+actually read nonlinear-solve and qualification; those bytes cannot be subtracted
+from its observation. Its 38737 extra bytes remain charged even though its physical
+answer was adequate. Neither failed first report is repaired or waived.
 
-## Corrected cut and explicit evidence reuse
-Current source29b3e702253bf3846afb28a8ac2eeda1d481e0e5 contains the independently
-reviewed iteration6 correction. All original scientific bodies, numbered procedures,
-anchors and complete parent/whole-document extents remain intact. New fresh02/04 run
-on this fixed cut. The actual first reports/assessment, not projections, govern them.
+## Current candidate and evidence reuse
+Source 9baf9ccb7bf7d2d53e24acbf1d1151d3d599e311 is frozen during fresh solver07 and
+closure07. Candidate manifest SHA256:
+f2ddbc2f71531fc00ec4d4fcc3be9b67e6aad0c2dd70bef9272af1cac19c425a.
+All original scientific bodies, numbered procedures, anchors and complete applicable
+extents remain intact. Iteration7's independently reviewed wording clarifies existing
+public/persisted diagnostics, physical primitive reading and replay retention/experiments.
 
-A/B surface01 reuse:30/32selected source hashes equal; only117litter+70surface
-heading bytes differ. Its adequate task1answer already preserves those unchanged
-rules, required scopes and dependencies. A/B identity03 reuse:21/23hashes equal;
-interface adds11bytes clarifying executable identity and qualification changes124bytes
-of subsection/introduction/dependency wording. The exact executable task retains the
-same full qualification and four frozen protocol duties. Original observed counts
-stay tied to b3/6938. No new reader, counterfactual updated observation, all-hashes-equal
-claim or four same-cut fresh successes is asserted. Final publication/status changes
-will need separate bounded semantic verification.
+A/B surface01 reuse: 29/32 selected hashes equal; changed entry/litter/surface
+presentation preserves its already adequate duties and dependencies. A/B identity03
+reuse: 20/23 hashes equal; entry/interface/qualification presentation preserves the
+same exact executable task and full qualification/four frozen protocol duties.
+Original observed counts stay tied to b3/6938. No new reader, counterfactual observation,
+all-hashes-equal claim or four same-cut fresh successes is asserted. Final publication
+and status changes require separate bounded semantic verification.
 
-Current full directory349435bytes/18files is still larger than the monolith.
-Always-read entry/interface12117bytes passes12288. Projections for01/02/03/04 are
-196393/211770/31563/196393; these are preflight only, not fresh adequate-read evidence.
-The solver projection has120bytes of margin; actual expansion cannot be constrained
-to preserve that forecast. Missing authority and uncertainty still expand reading.
+Full directory: 349888 bytes/18 files, larger than the monolith. Always-read union:
+12136 bytes, passing 12288. Prospective LSE route sizes for 01/02/03/04 are
+196810/211825/31601/196810. These are preflight, never observed adequate-read evidence.
+The solver projection has 65 bytes of margin; actual necessary or voluntary expansion
+is fully counted. Missing authority and uncertainty still expand reading.
 
-All preceding failures and reviewer verdict corrections remain in immutable
-reading-iteration-01..05.json and individual reports. Initial closure01 exposure was
-invalid due to other-agent answer exposure; iteration3 closure stopped early without
-an actual external blocker and remains FAIL. No carried-context answer repair is
-labeled fresh. General candidate selective-reading restriction stays active until
-all fresh criteria, dual stable reviews and two NEW terminal verifications pass.
+## Historical integrity and measurement limits
+All preceding first reports and reviewer verdict corrections remain in immutable
+reading-iteration-01..06.json and individual reports. Initial closure01 was invalid
+due to other-agent answer exposure. Iteration3 closure stopped early without an actual
+external blocker and remains FAIL. No carried-context repair is labeled fresh.
+General selective-reading restriction remains until fresh criteria, stable dual reviews
+and two new terminal verifications pass.
 
-Iteration6 procedural friction: generic temporary helper paths collided; readers
-moved to isolated scratch directories and must reconcile their own actual displayed
-requests. Solver reported only a CLI traceback, no other scientific answer exposure;
-an unused copied ledger was not inspected or used. Canonical/package/handoff hashes
-were independently checked unchanged. Final first reports must disclose actual lost,
-recovered, repeated or accidental exposure; no source bytes are silently removed.
+Iteration6 temporary helper paths collided. Solver had two pre-exposure traceback
+failures, recovered its first nine requests from its transcript and did not inspect
+an unused copied foreign ledger. Exact failed argv was not retained through compaction.
+Closure displayed foreign metadata rows during reconciliation, including a replay
+path/byte count, but no foreign source/answer/notes. Those metadata are disclosed;
+they are not represented as 22545 bytes of scientific reading. Reviewers found no
+scientific-answer contamination; custody limitations remain explicit. Iteration7
+uses assigned unique scratch directories. Every actual request, recovery and repeat
+must remain accounted; no source bytes are silently removed.
 
-Solver06 report is now independently FAIL on its remaining public-output restriction,
-with all33sourcehashes/94requests and within-line spans exact. Its three-external scope
-is independently legitimate for the bounded task; previous voluntary expansion is not
-a new universal duty. A fresh solver attempt is required after the reviewed correction.
-
-Both iteration6 first reports are complete and bound in reading-iteration-06.json:
-solver scientificFAIL/sizePASS; closure scientificPASS/sizeFAIL. No current acceptance
-waived. Correction and new fresh02/04 remain in scope; canonical29b3 is unchanged
-pending exact prospective navigation review.
-
-Current iteration7 applied preflight and01/03 semantic reuse independently PASS A/B.
-Manifest f2ddbc2f71531fc00ec4d4fcc3be9b67e6aad0c2dd70bef9272af1cac19c425a binds the
-actual current sources. Bootstrap12136,fullset349888; predictions196810/211825/31601/
-196810 are not observations. Surface29/32selected hashes equal, identity20/23; explicit
-unchanged-task dependency proof preserves observed196206atb3 and31428at6938. New
-fresh02/04 remain required, with unique assigned scratch directories. No adoptionPASS.
+## Iteration7 completed; substantive correction continues
+Both first reports are complete and bound in reading-iteration-07.json. Solver07:
+217644LSE, science/required-reading/size FAIL; ledger PASS. Closure07:235583LSE,
+science/size FAIL, required-reading/ledger PASS. A/B reconciled closure's concrete
+required-evidence omissions; B's initial sciencePASS is explicitly withdrawn in its
+independent record. All actual additional reading remains charged. Source9baf is
+unchanged. A mechanical concern decomposition is under prospective review: small
+physical admission/capture interfaces, original complete numerical/experimental
+bodies and duties retained, and per-row-proven common schema deduplication. No
+unspecified rewrite or reduced extent is approved; no adoption or terminal PASS.
