@@ -1,6 +1,8 @@
 # Final disposition
 
-Proposed terminal status: **INCONCLUSIVE_WITH_BOUND**. Production remains HOLD.
+Terminal status: **INCONCLUSIVE_WITH_BOUND**. Production remains HOLD. Both
+independent terminal reviews and both independent terminal verifications PASS
+the corrected cut.
 
 The exact mathematical target and analytic dry-stem block were prospectively
 specified, but no implementation was admitted. A lawful authentic corpus proved

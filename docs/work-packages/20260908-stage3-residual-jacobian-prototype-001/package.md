@@ -1,7 +1,7 @@
 # Stage 3 residual/Jacobian prototype
 
-Status: TERMINAL REVIEW CORRECTION — proposed INCONCLUSIVE_WITH_BOUND at the
-frozen Phase-A oracle; production HOLD.
+Status: COMPLETE — INCONCLUSIVE_WITH_BOUND at the frozen Phase-A oracle;
+production HOLD.
 Execution mode: package-end-to-end.
 Owner authorization: `prompts/active/kickoff.md` (source brief:
 `/tmp/openwepp_residual_jacobian_prototype_kickoff.md`).
@@ -158,7 +158,8 @@ serialized.
   0/16 columns admitted under the frozen convergence-basin rule.
 - [x] Stop before J implementation: derivative, cost, runner, expansion, timing,
   memory and scale gates are NOT RUN because Phase A did not admit a column.
-- [ ] Dual terminal review and verification on the corrected stable cut.
+- [x] Dual terminal review and dual verification PASS on the corrected stable cut;
+  disposition `INCONCLUSIVE_WITH_BOUND`, production HOLD.
 
 Recovery uses Git history for committed compact documents and external immutable
 evidence bundles for source/executable/fixture/protocol/result bytes. No source

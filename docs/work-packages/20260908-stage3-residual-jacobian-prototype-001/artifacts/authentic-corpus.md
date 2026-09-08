@@ -1,4 +1,16 @@
-# Authentic residual corpus — superseded inactive-stem attempt
+# Authentic residual corpora
+
+## Admitted positive-stem Phase-A corpus
+
+Ran: the lawful existing two-rank covered Potential+FixedFinal transaction
+produced `/tmp/openwepp-rj-active-stem-corpus-v1.json`, SHA-256
+`a05ca09031c28f863bc8dd8f3cc8d605459a683abc2af6e0f37dd84c713068c0`,
+509,132 bytes. Its 8 records (4 Potential, 4 FixedFinal) are N=2/S=2/D=25,
+contain 4,636 exact tagged binary64 values, and have both dry stems positive in
+every record. Full inputs, caps, frozen branches, trials and base evaluations
+round-trip and replay exactly. The frozen baseline oracle admitted 0/16 columns.
+
+## Superseded inactive-stem attempt
 
 Ran: detached A-source-05 observation build, 2026-09-08 PDT. **Disposition:
 INVALID for v33 derivative admission.** Both occupancies in all eight records
@@ -28,6 +40,6 @@ path in `solver_litter_phase.rs`; the final observation hook clones its already
 computed predecessor/trial/frozen/caps without evaluating again. The combined
 file supersedes the Potential-only `/tmp/openwepp-rj-corpus-v1.json` for claims.
 
-This attempt demonstrates an authentic inactive-stem workload only. A separately
-identified positive-stem capture with complete replay inputs is required before
-Phase A can exit.
+This attempt demonstrates an authentic inactive-stem workload only and remains
+excluded from derivative admission and denominators. The positive-stem corpus
+above supersedes it for the bounded Phase-A result.

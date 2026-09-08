@@ -15,6 +15,8 @@ Ran:
   PASS after terminal correction.
 - exact 16-candidate/0-supported assertion and per-column missing-row log: PASS.
 - terminal custody bundle v2 verify: PASS; manifest `ea4b4217…`.
+- independent terminal reviews A/B: PASS after finding correction.
+- independent terminal verifications A/B: PASS on the corrected cut.
 
 Heavy comparator delegation failed once due the comparator service quota;
 documented local fallback was used as authorized. Candidate, affected full

@@ -1,121 +1,87 @@
-# Independent terminal review A
+# Independent terminal review A — corrected-cut re-review
 
-Static: primary-checkout v33 authority/package cut and detached Phase-A source
-at `/tmp/openwepp-residual-jacobian-FC2T1v/J`; Ran: focused oracle selector and
-positive-stem transaction/oracle tests, corpus/manifest digest checks, and
-evidence-bundle verification. Role/session: terminal reviewer A; configured /
-requested effort: primary correctness review; effective runtime setting:
-UNOBSERVED. Reviewed identity: scaffold commit
-`827a7470e058a5e09f9feced9375b776e5959789` plus the current primary diff;
-A-source-05 identity `e9899b0e...`; detached oracle blobs
-`3ae38b0830472d404b4378c7fea82a08172182f4` and
-`8acff12d8e571914c6ced1f69973c0d8e99d3ad6`; active corpus
+Static: corrected primary-checkout v33 authority/package cut and detached
+Phase-A source at `/tmp/openwepp-residual-jacobian-FC2T1v/J`. Ran: focused
+oracle selector and positive-stem transaction/oracle tests; corpus, source and
+protocol digest checks; terminal custody-bundle verification; line inventory;
+and `git diff --check`. Role/session: terminal reviewer A; configured/requested
+effort: primary correctness review; effective runtime setting: UNOBSERVED.
+
+Reviewed identity: scaffold commit
+`827a7470e058a5e09f9feced9375b776e5959789` plus the corrected primary diff;
+A-source-05 `e9899b0e...`; corrected detached oracle blobs
+`b39fe2b56be540369fa7800fcd69224ebc7f95c0` and
+`7786a69d1438bc0f6dbbbaf0df0fcd336958cd7e`; active corpus
 `a05ca09031c28f863bc8dd8f3cc8d605459a683abc2af6e0f37dd84c713068c0`;
-custody manifest
-`488eaff372f48802efc1ccf59a7deb8d5fdd27aacf25d06900f5896e0c8293ad`.
+terminal custody bundle v2 manifest
+`ea4b42170f458bb24a3e073e734758cf52f320112ab49376bc5ea7e132726f26`.
 
 ## Findings
 
-### TRA-001 — MEDIUM — terminal corpus and expected-red records contradict the corrected cut
+None on the corrected cut.
 
-Location: `artifacts/authentic-corpus.md`, `artifacts/expected-red.md`, and
-`artifacts/preimplementation-contract-gate.md`.
+## Prior-finding disposition and independent re-check
 
-Evidence: `authentic-corpus.md` documents only the superseded zero-stem corpus
-and ends by saying a positive-stem capture is still required, while
-`oracle-results.md`, `worker-handoff.md`, and the external fixture establish the
-later positive-stem corpus. The preimplementation gate likewise still calls the
-invalid `b8f6a923...` corpus a PASS and leaves corrected review pending.
-`expected-red.md` says an executable expected-red assertion remains and must be
-turned green rather than deleted, but the captured/current
-`solver_stem_jacobian_tests.rs` contains no such test. These are false current
-state statements in required closure artifacts, not merely historical prose.
+- `TR-A-001` is closed. `authentic-corpus.md` now leads with the lawful active
+  positive-stem corpus and 0/16 outcome and separately quarantines the earlier
+  zero-stem/incomplete-V3 capture. The preimplementation gate records the
+  inactive capture as invalid, the active capture as PASS, and the oracle as a
+  boundary. `expected-red.md` now truthfully records that the E0425 compile-fail
+  seam was removed before the baseline-only Phase-A tests and that no candidate
+  test was authorized.
+- `TR-A-002` is closed. The exact detached inventory includes the 364-line
+  capture codec, 327-line oracle, 1,909-line test owner, 309-line litter hook,
+  and 2,685-line evaluator. The evaluator's WARN rationale and future
+  extraction/split trigger are explicit; no file reaches 3,000 lines. The two
+  observation-hook warnings are removed, and the package records the focused
+  tests warnings-denied Clippy PASS.
+- `TR-A-003` is closed. Bundle v2 verifies and contains the exact corrected
+  oracle/capture source, byte-identical active corpus, explicit no-executable
+  marker, exact per-column missing-row log, and protocol record. The protocol
+  hashes match the current v33 entry
+  (`47d4590b...`), numerical-method chapter (`b05a332f...`), and
+  authority/protocol artifact (`7285ffd4...`). The authentic test now asserts
+  exactly 16 candidates and exactly zero supported columns rather than merely
+  printing an observational count.
 
-Required disposition: update the corpus artifact to include the active corpus
-and clearly retain the first capture only as quarantined history; reconcile the
-preimplementation gate with the 0/16 Phase-A stop; and state exactly that only
-the retained E0425 record exists because J was never implemented. Do not claim a
-surviving behavior test.
-
-### TRA-002 — MEDIUM — Rust line-count and warnings evidence is incorrectly marked not applicable
-
-Location: `artifacts/line-count-governance.md`, `artifacts/gate-results.md`, and
-detached `solver_covered_evaluation.rs` / `solver_litter_phase.rs`.
-
-Evidence: Phase A changed and retained Rust source in the detached tree.
-`solver_covered_evaluation.rs` is 2,685 lines and therefore requires the
-repository's WARN rationale and follow-on split intent, but the line-count
-artifact says no Rust source changed. Both focused review reruns emitted two
-`unused_mut` warnings introduced by the observation hook in
-`solver_litter_phase.rs:245,249`; no warnings-denied result is recorded. The
-package may preserve this research source without implementing J, but cannot
-close by calling its applicable source-governance checks N/A.
-
-Required disposition: inventory the retained detached `.rs` files, disposition
-the 2,685-line WARN file with rationale/split intent, and either remove the two
-new warnings and run the focused warnings gate or record that gate honestly as
-an unresolved package-closure HOLD.
-
-### TRA-003 — MEDIUM — Phase-A custody does not bind the exact v33 protocol bytes or a retained run log
-
-Location: `artifacts/source-and-build-manifest.json` and
-`/tmp/openwepp-rj-phase-a-terminal-bundle/manifest.json`.
-
-Evidence: the bundle correctly preserves the active corpus and the exact oracle
-/capture source bytes, and its manifest verifies. Its protocol member is only a
-one-line pointer to mutable primary-checkout v33/package documents; neither
-those authority bytes nor their digests are in the compact source/build
-manifest. Its result member records only `0/16`, not the command output or the
-per-column/row basin decisions. The implementation test also prints whatever
-support count it observes but asserts only `candidates > 0`, so the retained
-test result does not itself pin `supported == 0`. My rerun independently
-reproduced `0/16`, which supports the present review, but the declared custody
-is weaker than the package's exact experiment/evidence identity rule.
-
-Required disposition: bind hashes for the exact v33 authority/protocol files
-used by Phase A and retain a compact exact command/result log (or a deterministic
-machine-readable per-column support report) in a verified bundle. The absence
-of a J executable is correctly and explicitly recorded; no candidate binary
-should be invented.
+The additional terminal correction also closes the shared-normalizer mask
+risk: every probe now preserves the shared-heat pre-floor `y<1`/`y>1` region,
+and exact floor ties, crossings, and absolute-zero branch crossings have
+explicit negative self-tests. The frozen step scales, basin ratio, uncertainty,
+and candidate bounds were not widened.
 
 ## Correctness assessment and residual risk
 
-The mathematical target, coordinate order, quotient-rule normalization,
-cross-occupancy longwave map, own-stem/shared-heat/ordinary-ground rows,
-same-layer exact zeros, represented-snow identities, and pre-entry structural
-fallback/no-post-entry-recovery boundary are coherent with the inspected
-canonical primal source. The corrected shared-heat pre-floor `y` rule,
-nonfinite validation precedence, and deterministic N=1 directions resolve the
-prior authority defects.
+The mathematical target, coordinate/residual order, derivative-through-
+normalization rule, exact longwave affected-row map, own-stem/shared-heat /
+ordinary-ground dependencies, same-layer zeros, represented-snow identities,
+and guard/no-recovery precedence agree with the inspected canonical primal
+source. The active corpus has eight exact-bit records, four Potential and four
+FixedFinal, N=2/S=2/D=25, two positive dry stems throughout, complete ordinary
+covered-evaluator replay inputs, and real distinct solver lifecycle joins.
 
-The active corpus is authentic for the ordinary covered potential/final
-transaction: eight exact-bit records, four per pass, N=2/S=2/D=25, two positive
-executed dry-stem areas in every record, distinct real solver lifecycle joins,
-and exact base replay. The focused transaction/oracle rerun passed and printed
-`0/16`; the selector self-test passed. The bundle and corpus hashes also match
-the package. The oracle's smooth-mask helper does not explicitly test the
-shared-heat pre-floor `y<1/y>1` class, but because every column already fails a
-mandatory affected-row basin, that omission cannot turn any of these 16 columns
-into an admitted column. It would be blocking before any future J comparison.
+Independent reruns passed the selector self-test and the authentic transaction /
+oracle test. The latter emitted a missing-row record for each of the 16 columns
+and reproduced the asserted `0/16` outcome. No candidate derivative or
+executable exists. Accordingly, derivative correctness, hybrid integration,
+full-solve/consumer/closure parity, local cost, end-to-end timing, memory, and
+multi-OFE scale are correctly reported NOT RUN, not passed or failed.
 
-No analytic derivative, hybrid assembly, J full solve, consumer comparison,
-closure, local-cost, end-to-end timing, memory, or multi-OFE evidence exists.
-The package consistently labels those scientific/performance gates NOT RUN;
-that is honest and is not a failed J result.
+Stopping before J is mandatory under the frozen authority: no authentic stem
+column has a complete affected-row reference. Retuning v33 after observing that
+result, implementing a zero-admission hybrid, or expanding to leaf temperatures
+would evade the prospective gate. `INCONCLUSIVE_WITH_BOUND` is therefore the
+correct completed experimental decision. It neither accepts nor rejects the
+analytic representation, and production remains HOLD. The next bounded work is
+properly identified as a new-authority oracle-conditioning/precision study with
+an early 12/16 rejection threshold.
 
-Stopping before J is correct under the kickoff. The frozen method requires a
-complete affected-column reference, and each authentic stem column lacks at
-least one resolvable mandatory entry. Implementing J, retuning v33 after that
-observation, expanding to leaf temperatures, or timing a zero-participation
-hybrid would violate the prospective admission rule. `INCONCLUSIVE_WITH_BOUND`
-is therefore the correct scientific outcome: it neither accepts nor rejects
-the analytic representation, and production remains HOLD. The proposed next
-experiment correctly identifies a new authority-first oracle-conditioning /
-precision study with an early 12/16 rejection threshold.
+Residual risk is confined to that unexecuted future work: no analytic Jacobian,
+same-state J parity, accepted-result closure, performance, memory, or scaling
+claim is supported by this package.
 
 ## Verdict
 
-**HOLD for package closure on TRA-001 through TRA-003; no scientific blocker to
-the bounded `INCONCLUSIVE_WITH_BOUND` / stop-before-J decision itself.** After
-the required artifact, line-count/warnings, and custody corrections, request a
-focused independent re-review. No production promotion is admissible.
+**PASS for the bounded `INCONCLUSIVE_WITH_BOUND` terminal disposition and
+stop-before-J decision. No blocker remains on the corrected cut. Production
+HOLD remains mandatory.**

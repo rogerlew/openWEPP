@@ -10,5 +10,6 @@ Static + Ran: correction cut after terminal reviews A/B and verifiers A/B.
 | TR-B-003 / TV-A-002 exact outcome evidence | Authentic test now asserts exactly 16 candidates and 0 supported; exact per-column missing-row log retained in custody. |
 | TR-A-003 custody membership | Corrected source, byte-identical corpus, exact oracle log, no-executable marker and a protocol record with exact v33 entry/numerical-method/protocol hashes captured and verified in terminal bundle v2. |
 
-The fixes do not widen oracle constants or change the 0/16 result. Independent
-re-review/verification must confirm this corrected cut before COMPLETE.
+The fixes do not widen oracle constants or change the 0/16 result. Both
+independent re-reviews and both independent fresh verifications PASS the
+corrected cut; all listed terminal findings are closed.

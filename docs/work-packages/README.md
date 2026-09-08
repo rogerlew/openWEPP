@@ -6,11 +6,11 @@ in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
 ## 20260908-stage3-residual-jacobian-prototype-001
 
-TERMINAL REVIEW CORRECTION: the contract-first isolated A-versus-J experiment
+COMPLETE — `INCONCLUSIVE_WITH_BOUND`: the contract-first isolated A-versus-J experiment
 stopped before J. A lawful active-stem corpus passed exact replay, but the frozen
 baseline oracle admitted 0/16 columns. Proposed disposition is
-`INCONCLUSIVE_WITH_BOUND`; candidate, performance and scale are NOT RUN and
-production remains HOLD.
+`INCONCLUSIVE_WITH_BOUND`; candidate, performance and scale are NOT RUN,
+dual terminal review/verification PASS, and production remains HOLD.
 See [package](20260908-stage3-residual-jacobian-prototype-001/package.md).
 
 ## 20260907-lse-context-adoption-correction-001
