@@ -11,7 +11,7 @@ Candidate-manifest SHA256 fc8604ac789f5edd00183b3675dfc2dfbeb5dda6ad8fedf14158cb
 | Strict binding / unit / A0 | PASS |17BEI/100definitions; unit0findings; logs/a0-final.log49contracts/0science_surfaces. |
 | Compiled actual shared bridge | PASS |53cases,48legacy byte-identical; positive and3fail-closed negatives. |
 | Eight affected Rust targets | PASS migration regression; inherited FAIL |129run111PASS18FAIL; same18names/36normalizedpanics; direct masking tests also PASS. |
-| Lint / format | PASS helper; inherited root FAIL | Unchanged Rust/helper/compiler inputs bind previous helperPASS and17original root diagnostics; no suppression. Python compile and current worktree `git diff --check` PASS; baseline-wide check has two preserved EOF findings, below. |
+| Lint / format | PASS helper; inherited root FAIL | Unchanged Rust/helper/compiler inputs bind previous helperPASS and17original root diagnostics; no suppression. Python compile and current worktree `git diff --check` PASS; baseline-wide check has three preserved EOF findings at c008, below. |
 | Rust line count | WARN retained |Vegetation2843lines, split before3000; other owned files<2000. No additional Rust edits since validated implementation. |
 | Always-read budget | PASS |Entry4090+interface7931=12021<=12288. |
 | Surface09 at c2dd | PASS science/reading/ledger/size; A/B applied12 bounded reuse approved | 204063 LSE bytes,22.955264% reduction; failed-request exposure supplement retained separately. |
@@ -19,7 +19,7 @@ Candidate-manifest SHA256 fc8604ac789f5edd00183b3675dfc2dfbeb5dda6ad8fedf14158cb
 | Closure08 at645b | PASS science/reading/ledger/size; A/B applied12 bounded reuse approved |208928 LSE bytes,21.118465% reduction; concrete arithmetic/vector/real-consumer evidence duties complete. No numerical execution. |
 | Identity03 at6938 | PASS with explicit semantic reuse; A/B applied12 bounded reuse approved | Original31428 retained; bounded identity task only, not solver measurement validity or execution. |
 | Stable complete A/B reviews | PASS readiness |Both independent records verify corrected source, claims, membership and whitespace dispositions. |
-| Two NEW terminal verifiers | NOT RUN |Readiness is not adoption approval. |
+| Two NEW terminal verifiers | PASS readiness |Independent A/B behavior, scope, identity and exact activation checks; final adoption still pending. |
 | General selective reading | NOT RUN |Candidate restriction remains. |
 
 ## Actual commands and reuse boundaries
@@ -141,3 +141,10 @@ metadata is suppressed. A/B must assess this declared bounded disposition.
 
 A/B complete stable readiness PASS; exact source unchanged. Proceed two NEW terminal
 verifiers, then only approved activation and bounded final verification.
+
+Terminal B correction after c008 staged the immutable solver12 report: baseline-wide
+`git diff --check fb32d27f2` still exits2, now THREE findings: audit-details.md:481,
+history.md:39 and exercise_02_retry_12.md:405. Parent reproduced all three. Earlier
+stable check had two because the first report was then untracked. Preserve the report
+hash and original source endings; these are non-scientific whitespace diagnostics,
+not a baseline-wide PASS. This reconciles the newly committed exact diff.

@@ -1,5 +1,5 @@
 # LSE directory correction continuation
-Static/Ran: executing; all four reading criteria PASS; stable A/B readiness PASS; terminal verification pending.
+Static/Ran: executing; all four reading criteria PASS; stable A/B and two NEW terminal readiness verdicts PASS; actual activation pending.
 This is the authoritative continuation view after all fresh readers finished.
 1. User authorized correction-package scaffolding and full execution on2026-09-07.
 2. Branch main; local commits authorized, no push for this package.
@@ -52,7 +52,7 @@ This is the authoritative continuation view after all fresh readers finished.
 49. Blinded36line handoff remained frozen at f70 during fresh12; no rubric hints.
 50. Fresh12 is complete; the normal continuation handoff now replaces that exception.
 51. Dual stable reviews PASS readiness; current findings and accepted evidence reconciled.
-52. Two NEW terminal verifiers still required; prospective review is not adoption.
+52. Two NEW terminal verifiers PASS readiness; actual activation/final verification remains required.
 53. Generator --adopted is prepared; removes ONLY159bytecandidate notice.
 54. Actual activation is substantive and requires all prerequisite criteria.
 55. Recheck affected bindings/unit/A0/migration behavior after activation.
@@ -60,7 +60,7 @@ This is the authoritative continuation view after all fresh readers finished.
 57. Archive active execution prompt byte-identically and update catalog status.
 58. Preserve unrelated literal untracked $pkg/ and tmp/ work.
 59. No scientific executable/closure/performance qualification follows from migration.
-60. Next action: two NEW verifiers, then verified activation/local commit.
+60. Next action: exact approved activation, final checks/custody, both final verifications and local closure commit.
 61. Original numerical presentation34blocks remain normative in audit-details; clause proof binds every duty.
 62. Mandatory admission retains all inactive/diagnostic/refusal/test duties and scoped physical reconstruction.
 63. Closure08 observed208928bytes at645b has independent A/B bounded current-source reuse.

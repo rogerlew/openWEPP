@@ -78,3 +78,12 @@ scoped; no broad PASS claimed and no source trimming undertaken. Independent A/B
 Stable A/B readiness PASS: membership RCA-S01 CLOSED; whitespace RCA-S02 explicitly
 nonblocking with baseline-wide exit2 retained. Two NEW terminal verifiers, actual
 activation and final inspection remain the only open closure work.
+
+Terminal B EOF count correction: c008 adds the immutable first report to the baseline
+Git diff, exposing exercise_02_retry_12.md:405 as the THIRD blank-EOF finding alongside
+both source endings. Parent reproduced exit2/all three and corrected current gate
+count. Earlier two-finding execution remains historical; no immutable report/source
+trim. Both terminal verifiers independently accept the nonblocking three-EOF disposition.
+
+Both NEW terminal readiness verdicts PASS; actual approved activation, affected checks,
+compiled byte custody and both bounded final verifications remain required.
