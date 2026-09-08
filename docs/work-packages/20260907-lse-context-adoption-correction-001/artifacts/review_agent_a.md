@@ -3826,3 +3826,171 @@ immutable. General selective reading/adoption is still pending all required fres
 results, dual stable-cut reviews, dispositions and dual terminal verification.
 Neither bounded prior-reading reuse is a new fresh execution or an all-source-hash
 equality claim, and neither closes scientific production HOLD.
+
+
+## Solver09 immutable first-report assessment atc2dd02bc33
+
+Static: independently read the complete scientific answer and its measurement
+appendix in exercise_02_retry_09.md,77894bytes/SHA-256
+`1693a4cb38737ac22005851599a6cf03a020f56fcc98458c8eb26ea97a932e6b`,
+against the unchanged original task2 rubric and actual required source. Ran:
+independent exact checks of35 full-source hashes at
+`c2dd02bc33aa5dace9013970d1001cdcd6e8d72a`, all80 numbered requested-range hashes,
+byte/new/repeat calculations and unions, both retained source-content search
+outputs/hits, and13 private artifact metadata hashes/sizes. No scientific runtime
+execution, reader feedback, report repair or canonical change. Surface09 remained
+active and frozen during this review.
+
+Disposition: scientific adequacy FAIL narrowly as S09-A01 below; required reading
+PASS for the bounded actual claims; ledger PASS with disclosed telemetry limits;
+LSE size PASS. Overall solver reading exercise does not satisfy acceptance because
+of the scientific omission. A/B reconciled the finding independently. All earlier
+immutable failures and the original frozen rubric remain intact.
+
+**S09-A01 — FullSupply initialization eligibility is named but incomplete
+(high; open, first answer unchanged).** Report56 says “FullSupply fixed-final
+admission may seed coordinates from potential” and correctly requires fresh
+immutable-beginning final evaluation, fixed caps, residual/domain/branch/F≤A≤D
+checks and no copied potential products. It never states the branch's positive
+request equality AND canonical-zero request custody conditions: every positive
+final authorization must have the same identity AND amount as its potential
+request AND FullSupply disposition; every canonical zero must retain its exact
+identity AND zero amount. Actual admission29–34 and solve-boundary INV110 contain
+this precise conjunction, inherited from originalv31 V2 initialization authority.
+This is the applicability of the initialization branch required by frozen task2
+item2, not incidental source wording or an implementation execution result.
+Generic request/authorization/final identity preservation at92 and F≤A≤D allow
+unequal demand/authorization and do not state the positive equality or exact-zero
+identity condition. No other part of the complete answer supplies that conjunction.
+The private55-item inventory and an assertion that it was checked cannot stand in
+for a missing conclusion in the first returned answer.
+
+B initially considered the named FullSupply predicate sufficient shorthand, then
+concurred after distinguishing the disposition from the required initialization
+identity/amount conjunction. This does not demand copying every canonical sentence.
+In particular, report56's “specified zero-step/backtracking posture and no Jacobian”
+is accepted semantically as iteration-zero diagnostic behavior, not failed for
+omitting another literal zero. The inactive-only max anchor and its separate wet
+exception meet the frozen conclusion; no new direct-zero-area-Newton-row reporting
+criterion is introduced merely because the source contains additional detail.
+
+The rest of the frozen solver spine is substantially concrete. The answer supplies
+ordered topology/unknown/residual construction, exact bounds/domain precedence,
+scales/stencil and pivot rules, thresholds,50 updates and ordered20 halvings;
+current-state-only b0/first-valid no-update with complete governed norms, diagnostic
+ci, exact cumulative exponent and no new public/persisted field; V10-only scaling,
+partial positive root refusal and dual water/energy wet-store qualification.
+Ground/soil identity synthesis, leaf maximum private classification/beta-one rules,
+complete exact direct-edge graph and global/lower-occupancy propagation, one shared
+canonical source-ordered evaluator, capability/base custody, preselection versus
+integrity/post-start failures and full authentic fallibility/parity evidence are
+all stated. V30 preserves original guard/forcing/V8/fallible ingress/native-proof
+positions and earlier competing poisons. Historical C020 versus EXP-R/PC1/SG1 scope,
+original qualifying sweep versus actual new stencils/lifecycles, original retention
+conjunction, correct per-series protocol timeouts and future evidence limits survive.
+
+Report139 now explicitly puts detailed ORACLE AND detailed AUDIT outside BOTH
+TIMING and MEMORY and matches optional audit posture with bounded compact counters.
+This resolves the earlier family of omitted control relations in this answer.
+Full required field/trajectory/error/output parity is a requirement, not a claimed
+execution. The report's independent WAT5/source/outlet/storage checklist is a
+future experimental-output evidence requirement; it does not claim an active
+WATBAL101/002 partition/guard audit or reconstruct actual WB14 owner outputs.
+Likewise the borrowed-soil/native-prefix descriptions state required origin
+boundaries from the read current SnowEnergy/map authority, not an actual unpublished
+soil implementation or physical primitive reconstruction audit. Do not automatically
+impose every physical-owner chapter or all five adjacent contracts from names alone.
+
+Required source extents are covered:13 LSE entry/chapters are whole, including
+current methods AND mandatory complete admission, all water definitions/P001–004,
+map-custody, terminal/support and full replay-evidence. Complete Vegetation,
+SnowEnergy and CoupledTime, and all four required frozen protocol/reproduction/
+kickoff/handoff sources are in the union. Only two governance sources are selected
+by required sections. No actual original-presentation provenance/guard-classification
+audit, atmospheric provider implementation or full physical-owner reconstruction
+claim triggers omitted reference/owner extents. Current versus historical snow
+solver and support authority is reconciled; no production/experiment authorization
+or successful implementation is inferred from this reading.
+
+Independent numbered requested-source accounting (the80 records include the
+failed-but-available water slice, not80 successfully delivered excerpts):
+
+| Category | Requests | Unique bytes | Requested bytes | Repeat bytes |
+|---|---:|---:|---:|---:|
+| Governance/current package |17|74289|81179|6890|
+| LSE |24|203861|277811|73950|
+| Mandatory external contracts |34|839166|1055390|216224|
+| Four frozen experiment sources |4|45937|45937|0|
+| Repository measurement helper |1|3544|3544|0|
+| Total |80|1166797|1463861|297064|
+
+Every row's available range hash and new/repeat count matches exact frozen source.
+Water request23 asks209–229 against EOF227 and fails before display; its available
+4328 bytes remain requested exposure and are recovered by25. Other declared
+truncation recoveries are retained, including the reported missed interiors within
+large original requests. Whole-source request unions and declared recovery evidence
+are not a claim to independently observe hidden tool delivery or perfect retained
+model context after compaction. The unavailable initial system Python command is
+not reported as source-reading or scientific success.
+
+Search1's73 source hits are2312 bytes/display, twice exposed:4624 total,591 new
+GOv bytes and2802 LSE exposure bytes; saved output is7443bytes/SHAead84f2d….
+Search3's169 hits contribute6408 bytes once, all repeated LSE; saved output is
+22406bytes/SHAfb3b8d4a…. Every hit's content/path/line matches the exact frozen
+source. Path-only search2 has zero source-content bytes. Thus direct plus searches
+is1474893 requested/1167388 unique/307505 repeat source-equivalent bytes. Adding
+the separately disclosed9508 root-AGENTS automatic SOURCE EQUIVALENT yields1484401
+requested/1167388 unique/317013 repeat; this is not the full automatic message's
+serialized size. LSE including searches is203861 unique/287021 requested/83160
+repeat. Hash/counting I/O does not create another model-visible source request.
+
+Private helper, inventory, draft, audit and ledger metadata are retained and all13
+listed path hashes/sizes match. Their derived content is not original authority,
+and file size does not establish how often it was exposed. The report does not
+supply a complete count of private-note/helper/metadata/compaction delivery, nor
+claim one: exact raw transcript/model/runtime/workflow exposure stays UNOBSERVED.
+The scoped source totals above therefore must not be relabeled total session cost
+or proof of reduced actual inference context. No private inventory content was
+used to supplement the missing FullSupply conclusion during this review.
+
+Actual LSE203861 is23.0315295077% below264863,8029 below211890; bootstrap12021
+is within12288. It happens to equal the approved core projection, without profile
+or reference-audit expansion. Actual requested LSE287021 exceeds the monolith's
+size and is separately visible. This is an actual source-union size PASS only;
+it cannot compensate for S09-A01 or retroactively make any earlier first report
+pass. No further source mutation is approved by this assessment during active
+surface09 reading. Any prospective correction and new fresh solver evidence
+remain separately reviewed work.
+
+
+### Prospective iteration10 initialization table — latest isolated text only
+
+Static: reviewed `/tmp/lse-iteration10-admission-proposal.md` and its exact proof;
+Ran: independently verified original c2dd source hashbb75c924…, proposed SHA-256
+`0c0dd52cb94ceafd48aeac5c5555cae9ac4eb1ce81b47f93a2f4708e1e64881b`,
+6707bytes, and that exactly one replacement produces the proposal with158 added
+bytes. The earlier173-byte proposal is not approved; the latest corrected row
+preserves the original quantifier “Each positive final authorization.”
+
+APPROVE this exact prospective presentation for implementation only AFTER the
+active surface09 first report finishes and its frozen source can change. The two
+rows preserve the full conjunction: each positive authorization's identity AND
+amount equal its potential request AND FullSupply disposition; each canonical
+zero's exact identity AND zero amount retained. Stating FullSupply alone is
+insufficient distinguishes a disposition from the complete branch predicate; it
+adds no eligibility rule. The following coordinate-only seed/full immutable-owner
+reevaluation/no-copy sentence, iteration-zero/refusal/migration rules, all other
+text, dependencies, definitions and guards/tests remain byte-identical. The new
+H3 does not truncate its original parent V2 section or change any existing anchor;
+whole admission remains mandatory. Original source wording remains normative in
+the already retained reference. No new solver or altered success/error result is
+introduced by this presentation change.
+
+Forecasts after the verified158-byte addition: solver204019, surface207726,
+closure207972, conservative whole physical methods plus capture211839 (51bytes
+below211890); bootstrap12021 unchanged. These are projections, not actual passing
+readings, and all voluntary/uncertain expansion remains chargeable. No procedure,
+frozen rubric, old failure or measured count is changed. New solver evidence and
+applied-cut checks remain required. Closure08/identity03 reuse and surface09's
+actual result require their later exact applied-cut treatment; this prospective
+approval does not grant either reuse or adoption in advance.
