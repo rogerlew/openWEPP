@@ -1,7 +1,7 @@
 # Findings and disposition
 Static/Ran: independent A/B records and reading-iteration-01..12.json retain the
 original findings, measured cuts, first-report hashes and focused re-review.
-Current source isf70a7c8bc, bound by candidate-manifest.json; all four bounded reading criteria now PASS.
+Current adopted source is8b08f54e0, bound by candidate-manifest.json; all four reading criteria and both FINAL verifications PASS.
 
 | Finding | Current disposition | Evidence and resolution |
 | --- | --- | --- |
@@ -19,7 +19,7 @@ Current source isf70a7c8bc, bound by candidate-manifest.json; all four bounded r
 | Identity reading sufficiency | PASS with bounded reuse | Fresh03 at6938:31428 LSE bytes,88.134243% reduction. A/B applied12 selected-duty proof; identity task only, not solver measurement validity. |
 | Solver09 FullSupply eligibility | FAIL first report retained; source fix verified | Report named FullSupply but omitted exact positive authorization identity/amount equality and zero-request predicates. Original reading/ledger/size passed203861. A/B approved and verified the158-byte explicit table; solver10/11 failed unchanged; fresh solver12 now independently passes. |
 | Iteration10 draft quantifier | CLOSED before implementation | First draft used positive potential request instead of each positive final authorization. B rejected it; corrected exact quantifiers approved by A/B before live edit. |
-| Stable reviews / terminal verification / activation | OPEN | All reading criteria pass; complete stable dual reviews, two NEW terminal verifiers, actual activation and bounded final verification. |
+| Stable reviews / terminal verification / activation | CLOSED |Stable A/B and two NEW readiness/FINAL verifier verdicts PASS; exact activation applied and checked. |
 
 No first completed exercise report is repaired, discounted or relabeled after a miss.
 Earlier failed reports remain failed on their original cuts. The later accepted
@@ -93,3 +93,15 @@ guide +187, all other19chapters identical. Direct final checks pass; inherited18
 failures,17root lint diagnostics and three EOF whitespace findings retain their exact
 limits. No open scientific/masking/reading finding. Final custody/identities and both
 bounded final activation/status reviews remain required before COMPLETE.
+
+## Terminal disposition — all current findings closed
+Both NEW verifiers PASS actual adoption and current claims; B verified restored
+compiled bridge execution with positive and three negative cases. All science,
+reading, masking, source and custody requirements have direct accepted evidence.
+RCA-S01 membership binding is CLOSED; RCA-S02/TVA-01/TB01 whitespace diagnostics are
+explicitly nonblocking with all THREE findings and exit2 retained. No historical
+failed reader, production predicate or predecessor HOLD is rewritten as PASS.
+Earlier OPEN/pending paragraphs above describe completed phases; this terminal
+section and current table supersede those phase statuses. Completion bookkeeping
+and source-locator clarification add no new scientific or measured claim. Final
+collection hashes and exact protected-tree/immutable-report checks close publication.

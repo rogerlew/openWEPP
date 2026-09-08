@@ -1,8 +1,8 @@
-# Validation evidence — adopted v32
+# Validation evidence — complete adopted v32
 Ran: actual final commands in /workdir/openWEPP; Static: scope, semantic/reuse and claims.
 Current source manifest SHA256 0c74dbf28f765e0d93790038e75f70d60b916ebd83f7cfad9c3f568c5647f17e.
 31files:20LSE,8Rust,focused Python,index,format guide. evidence-manifest binds actual logs.
-Actual activation is applied; both bounded final inspections and closure remain pending.
+Actual activation and both bounded FINAL inspections PASS; package COMPLETE.
 
 | Required criterion | Result | Direct evidence |
 | --- | --- | --- |
@@ -23,7 +23,8 @@ Actual activation is applied; both bounded final inspections and closure remain 
 | Stable independent A/B reviews | PASS readiness |Accepted source/claims/fixes and exact scope, explicit membership/whitespace dispositions. |
 | Two NEW terminal verifiers | PASS readiness |Independent actual checks, reconstruction/negative/recovery/identity and planned activation. |
 | General selective reading | ACTIVATED |Exact entry restriction removed after both NEW readiness verdicts. |
-| Both bounded FINAL verifications / final custody / identities | NOT RUN to completion |Required before COMPLETE; no deferred current obligation. |
+| Both bounded FINAL verifications | PASS |Independent A/B exact source/status/reuse, current claims and actual compiled-byte custody checks. |
+| Final custody / detached identities | PASS |final-custody.json, closure-membership.json and closure-identities.json; all selected paths/hash values bound. |
 
 ## Actual final commands and identities
 logs/activation-commands.json retains exact argv,cwd,start/end,duration,exit and output.
@@ -106,3 +107,17 @@ actual validation results. Captured verifier reports are readiness records; fina
 signoffs bind separately through final identities. The bridge embeds the repository
 root and depends on external Python/Nix/Cargo; custody is not relocated execution.
 Temporary in-package binary staging was removed after verified capture and is not committed.
+
+## Final disposition
+Both NEW terminal verifiers independently PASS actual adoption at8b08f54e0. B also
+restored the captured actual bridge and executed normative equality, valid and three
+fail-closed cases. Completion changes only current status/claim bookkeeping and final
+identity collection; source31, executed inputs, logs and all immutable reports remain
+unchanged. Current context source locator corrected to actual adopted8b08; historical
+reader cuts stay unchanged. No missing increment obligation is deferred or waived.
+closure-identities.json is the completed detached collection, generated after final
+signoffs; activation-identities.json remains the earlier collection. Membership is
+unchanged. Overlapping gate command record changes only status prose, not argv or
+executed inputs; affected claim/publication inspection remains explicit. Parent and
+both verifiers perform a read-only bounded final collection check without rewriting
+signoffs or recursively hashing their own receipts. No push or production qualification.

@@ -121,3 +121,66 @@ is NOT YET VERIFIED: retain the candidate restriction until the parent applies t
 authorized transition. Any extra scientific, dependency, threshold, protocol or
 substantive claim change reopens affected assurance. Final bounded verification will
 be appended here after the actual activation and custody/status/identity checks.
+
+## Bounded FINAL activation verification
+
+Static/Ran: final adoption check at `8b08f54e0ac1e0c26e51877a73f99b05ce5e2d18`,
+against readiness `2cfddc33f` and protected baseline fb32d27f2. Same independent role,
+effort/telemetry limits and artifact-only ownership as above. Ran independent
+Python/hashlib/Git assertions and custody verification; final broad test execution
+below is attributed parent evidence, not another verifier rerun.
+
+Ran: exact source comparison exits0. Entry differs ONLY by approved159-byte notice
+removal; guide is exactly activation-guide-proof's approved replacement (+187bytes).
+All19 chapters equal readiness bytes. Current31-member source manifest SHA
+`0c74dbf28f765e0d93790038e75f70d60b916ebd83f7cfad9c3f568c5647f17e`
+matches every path; all29 evidence logs and156 current inputs match their manifests.
+Adopted source368890 and bootstrap3931+7931=11862 independently recompute. Four
+accepted reports retain their original observed counts; there is no159-byte discount.
+The new permission follows the approved dual-readiness sequence and retains every
+recursive dependency, full normative authority, whole external-contract duty and
+predecessor HOLD. No new scientific qualification claim accompanies adoption.
+
+Ran: `.venv/bin/python tools/agents/evidence_bundle.py verify
+/tmp/lse-correction-adopted-bundle` exits0; output retained outside the repository at
+`/tmp/lse-terminal-a-final-custody.log`. Independently checked manifest SHA
+`f68863afdf4f4224ea48eda2afc0f905d15973cb96922ff5b08b9ec47ccf7a16`.
+Its executable entry contains677968 actual compiled bytes, SHA
+`bd72ce8c0c1dd42291437ea4c47f83d74a2bf534126e9a66ecb3fa7f6f92f09e`.
+This resolves the pending compiled-custody obligation; it is distinct from custody12's
+loader-source snapshot. Captured readiness records remain readiness records. The
+repository-root embedding/external runtime dependencies and explicit bundle retention
+limit remain disclosed; this is neither relocated execution nor offline rebuilding.
+
+Static: inspected activation command argv/cwd/times/environment and primary logs:
+98Python PASS in4.09s; strict17/100, unit, A0 49contracts/0science_surfaces,
+616span preservation and53actual rebuilt bridge cases PASS. Actual toolchain log
+records rustc1.95.0; bridge build records CARGO_MANIFEST_DIR and actual command.
+Eight Rust targets report129run/111PASS/18FAIL; comparison retains18identities and
+36normalized panics. Parent command wall16.900s/exit100 is distinct from nextest's
+13.052s suite summary. Inherited failures/lint remain FAIL, and direct M1–M9 evidence
+is not replaced by aggregate equality. No unchanged broad rerun by A was necessary:
+the sole substantive activation differences were checked exactly, and affected
+fresh parent execution is source/log/input-bound above.
+
+Ran: protected baseline crate/tool/Cargo/flake, predecessor and frozen prospective
+experiment trees have empty diffs, exit0. Prompt active/execute.md→completed/execute.md
+is byte-identical to readiness, SHA
+`2cb184216e4341b72608672a44665fc9c53d0a28a355f794b0c6b2fa7c0624c1`.
+Inspected package, handoff, catalog and disposition: adopted/final-verification-pending
+truthfully describes the present boundary. Baseline whitespace recheck exits2 for
+the same THREE accepted EOF diagnostics, with no broad PASS claim.
+
+Ran: activation-identities member selection equals closure-membership for all three
+sets:248 experiment/76 evidence_claim/14 publication; every listed current file hash
+matches at inspection. No future final signoff is pretended captured. These identities
+must be regenerated after this and B's final records and completion bookkeeping.
+Such collection does not require a recursive own-hash update; substantive changed
+claims still require bounded inspection under testing strategy10.
+
+FINAL verdict: PASS for actual approved directory adoption and scoped closure
+requirements inspected here. No unresolved A adoption finding or science/migration
+gate deferral. Parent may complete the promised status/collection/local-commit steps
+after B's final PASS. Final collection receives the requested read-only bounded check;
+this verdict does not certify not-yet-created collection bytes. Scientific production,
+experimental performance and inherited failing runtime qualification remain unpassed.

@@ -1,7 +1,7 @@
 # Context usability
-Static: current source is f70a7c8bceda2302d51823d3872cdff3ebde3694, bound by
+Static: adopted source is8b08f54e0, bound by
 candidate-manifest.json. Ran: independent first readings; A/B independently checked
-science, mandatory reading and byte ledgers. The exact reviewed activation is applied; final terminal inspection is pending.
+science, mandatory reading and byte ledgers. The exact reviewed activation and both independent FINAL inspections PASS.
 
 | Accepted task | Observed cut | Unique LSE bytes | Reduction from264863 |
 | --- | --- | ---: | ---: |
@@ -57,4 +57,4 @@ Custody12 retains frozen source/procedure through disposition and explicit maint
 audit release. The neutral handoff was restored to normal continuation form only
 after fresh12 finished. Both terminal readiness verdicts passed, then activation removed159entry-notice
 bytes only. No subtracting them from past observations. The exact approved
-format-guide status update preserves prior HOLD. Both bounded final inspections remain.
+format-guide status update preserves prior HOLD. Both bounded final inspections PASS.

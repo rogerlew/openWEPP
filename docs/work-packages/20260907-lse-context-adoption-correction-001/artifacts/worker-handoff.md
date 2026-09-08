@@ -1,5 +1,5 @@
 # LSE directory correction continuation
-Static/Ran: v32 activation applied; both bounded final verifications and closure pending.
+Static/Ran: COMPLETE; v32 directory adopted, both bounded FINAL verifications PASS.
 User authorized full correction-package execution on2026-09-07; local commits, no push.
 Branch main. Preserve unrelated literal untracked `$pkg/` and `tmp/`.
 Baseline fb32d27f258ce05c36d66a299c2d09d42fbb030c; terminal readiness cut2cfddc33f.
@@ -49,7 +49,7 @@ Solver12 also uses251-byte existing JSONrss_kib endpoint clarification; frozen p
 Its PASS is not identical-prompt baseline or isolated source-only causal evidence.
 Blinded2649-byte handoff stayed frozen through fresh12; normal handoff restored afterward.
 Custody04–12 retains original static reading/source snapshots, not compiled bridge execution.
-Both stable reviews PASS; both NEW terminal verifiers independently PASS readiness.
+Both stable reviews PASS; both NEW terminal verifiers independently PASS readiness and FINAL adoption.
 Actual activation removed ONLY159entry-notice bytes and applied approved187-byte guide update.
 Other19chapters/scientific duties remain identical; prior measured counts not discounted.
 Final98Python tests, strict/unit/A0,616span mapping and53compiled bridge cases PASS.
@@ -64,4 +64,5 @@ Current numeric/verdict/status changes require substantive bounded final inspect
 Final identities bind the completed collection without self-hash or future-commit prediction.
 Retain external bundles through disposition plus explicit maintainer audit release.
 No simulation, scientific closure, throughput or experimental production qualification follows.
-Next: both bounded final activation/status checks, completed final identities and local closure.
+Final collection: closure-identities.json binds explicit membership after independent signoffs.
+Next: no remaining authorized implementation; no push. Retain artifacts for maintainer audit.

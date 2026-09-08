@@ -79,3 +79,60 @@ candidate notice and apply activation-guide-proof.json's exact187-byte status ex
 retaining historical HOLD and full normative authority. Parent must wait for both NEW terminal
 readiness verifiers, then return the bounded final activation/status/identity diff for inspection.
 Final adoption verification: PENDING.
+
+## Bounded FINAL activation inspection
+
+Static/Ran: independent final inspection at8b08f54e0ac1e0c26e51877a73f99b05ce5e2d18.
+Source manifest31files SHA256
+0c74dbf28f765e0d93790038e75f70d60b916ebd83f7cfad9c3f568c5647f17e.
+Both NEW readiness verifications preceded activation. Exact c008-to-current specification
+diff is only159-byte entry restriction removal and approved187-byte guide expansion.
+Independently compared every19chapter bytes, entry replacement and guide proof hash.
+Historical predecessor HOLD and complete normative authority remain explicit. The frozen
+execution prompt moved active→completed byte-identically. Package/catalog/handoff truthfully
+state adoption with final closure pending; completing that status after both final PASS is
+permitted bookkeeping, not new science or acceptance.
+
+Ran: independent SHA256 checks matched all31source inputs,29evidence logs and actual
+activation-inputs source hashes. Independently reran evidence_bundle.py identity over
+closure-membership.json: exact equality to activation-identities.json for all248experiment,
+76evidence_claim and14publication members, including membership hashes. This is the reviewed
+activation collection; parent must regenerate after both final records and completion status,
+without recursively hashing the detached manifest into itself.
+
+Ran: evidence_bundle.py verify on /tmp/lse-correction-adopted-bundle exited0 and its manifest
+hash equals f68863afdf4f4224ea48eda2afc0f905d15973cb96922ff5b08b9ec47ccf7a16.
+Independently restored the bundle to an absent temporary child, exit0. Located actual compiled
+bytes in restored executable group (.custody-stage/compiled-bridge), SHA256
+bd72ce8c0c1dd42291437ea4c47f83d74a2bf534126e9a66ecb3fa7f6f92f09e,677968bytes.
+Ran that restored executable against the adopted entry: exit0 and exact canonical normative
+output. Independent isolated valid fixture exit0; missing definition, unknown format and
+malformed format each exit1. All five actual restored-consumer checks passed. An initial
+lookup omitted the restore's executable group directory; corrected path then passed, with
+no product change. This demonstrates actual compiled-byte recovery and behavior using the
+bound live Python loader, not offline Cargo reconstruction or a scientific simulation.
+
+Static: inspected actual argv/cwd/timing/environment/toolchain records and matching logs:
+rustc1.95.0 build preceded53bridge cases;98pytest PASS4.09s; strict/unit/A0 PASS;
+616bidirectional mappings. Final8Rust targets129run111PASS18FAIL, actual command wall16.900s.
+Independently parsed final Rust log and matched all18failure identities to retained baseline.
+Bound baseline comparison also retains36normalized panics. No new failure or global gate
+suppression follows from activation. Earlier own comprehensive runs remain valid for
+unchanged19chapters/consumers, with the affected adopted bridge directly re-executed here.
+
+Static/Ran: source full368890/bootstrap11862; no159-byte discount from original accepted
+reading counts. All original reports/cuts/failed answers remain untouched, and selected-duty
+reuse retains its bounded meaning. Baseline-wide diffcheck independently remains exit2 with
+exactly the same THREE EOF diagnostics; protected production/tool/Cargo/global-policy diff
+is empty. TB01 remains corrected and nonblocking, not a baseline-wide whitespace PASS.
+Final custody explicitly captures readiness reports; final publication signoffs belong in the
+completed detached collection. No falsely current signoff is inferred from the earlier bundle.
+
+Findings: no new blocker. Non-deferral: all substantive migration/adoption requirements in
+this verifier's scope now have direct or explicitly bound unchanged evidence; no scientific
+execution, frozen identity qualification, full campaign, Clippy-green or token claim is made.
+Verdict: FINAL adoption/closure PASS for the bounded LSE directory migration. This supersedes
+PENDING above. Parent may perform only completion-status reconciliation, completed detached
+identity regeneration and authorized local closure commit, followed by read-only final
+collection comparison. Any new substantive source/acceptance change reopens affected assurance.
+No push authorized or performed.

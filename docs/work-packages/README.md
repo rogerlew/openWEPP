@@ -6,8 +6,8 @@ in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
 ## 20260907-lse-context-adoption-correction-001
 
-LSE v32 directory adopted with migration-specific validation and smaller sufficient
-scientific reading; final verification/closure pending. See
+COMPLETE: LSE v32 directory adopted with migration-specific validation and smaller
+sufficient scientific reading; independent final verification PASS. See
 [handoff](20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md) and
 [package](20260907-lse-context-adoption-correction-001/package.md).
 
