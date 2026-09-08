@@ -9,6 +9,9 @@ independently evaluate feed-forward and stencil-aware dependency replay from
 one newly frozen baseline, then hand off the coupled evaluation architecture.
 This new owner authorization preserves previous FAIL/HOLD evidence and does
 not promote production or qualify watershed throughput.
+Disposition 2026-09-08: F shows a bounded one-OFE gain but lacks an applicable
+scale fixture; R is slower; the selected next prototype is lower-cost
+residual/Jacobian evaluation. Package and production remain HOLD.
 
 ## 1. Outcome
 

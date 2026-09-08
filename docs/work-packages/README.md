@@ -27,8 +27,10 @@ identity and recoverable capture. See
 
 ## 20260906-stage3-prospective-mechanism-experiments-001
 
-PAUSED BY OWNER: authorized controlled A/F and A/R experiments, lifecycle memory,
-stencil-aware replay coverage, and an actionable architecture handoff.
+EXECUTED HOLD: F retained as a one-OFE architecture building block, R rejected,
+and lower-cost residual/Jacobian evaluation selected for the next prototype.
+F's mandatory multi-OFE scale obligation remains blocked because the authenticated
+fixture does not enter its native provider branch.
 See [package](20260906-stage3-prospective-mechanism-experiments-001/package.md).
 Earlier FAIL/HOLD dispositions below remain historical; production remains HOLD.
 

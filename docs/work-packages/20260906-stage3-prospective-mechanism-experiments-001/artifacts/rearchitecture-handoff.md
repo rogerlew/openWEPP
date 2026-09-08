@@ -1,6 +1,6 @@
-Status: ACTIVE draft; replace provisional costs with controlled results before disposition.
-Static + Ran arithmetic: source analysis by feed_forward_design, exploratory A
-real consumer counters/timers; F/R measurements pending. Not a promotion decision.
+Status: OWNER-READY architecture decision, 2026-09-08 PDT.
+Static + Ran arithmetic: source analysis, exploratory A attribution, and final
+controlled A/F and A/R campaigns. Not a promotion decision.
 
 ## Observable structure and bounds
 
@@ -56,7 +56,8 @@ local savings would leave roughly1600x event gap. No F+R gain addition is valid.
    and error-poison comparator remains mandatory. Proposed kill: less than50%
    assembly/validation-cost and20% complete-run reduction, or rejected-trial
    dependent post-teardown scratch growth. Anonymous RSS alone is not heap proof.
-   F's invocation-local boundary may be reused if its actual admission succeeds.
+   F's admitted one-OFE invocation-local boundary is reusable, subject to its
+   explicitly unqualified multi-OFE branch.
 
 3. **Newly justified coupled solver/controller reducing nested independent solves.**
    Entry points: snow_stage3_v11_adaptive_execution.rs and stack helpers,
@@ -68,7 +69,57 @@ local savings would leave roughly1600x event gap. No F+R gain addition is valid.
    no fallback solver cascade. Proposed kill: less than4x coupled-solve reduction
    on supported cases while meeting predeclared accuracy/event/error obligations.
 
+## Selected first prototype and executable scope
+
+Select kickoff Direction **B, lower-cost residual/Jacobian evaluation**. F
+observed a 22.44% (1.1207 s) saving from eliminating duplicated carrier work on
+the admitted one-OFE workload; this is not a multi-OFE causal/scaling claim,
+because the prescribed 10-OFE workload does not enter the native provider branch.
+R supplies a reviewed lawful dependency graph and oracle, yet
+runtime replay adds 5.72%. The graph/oracle should therefore validate a new
+derivative/residual boundary rather than remain in the production hot path.
+
+Exact entry points are
+`crates/openwepp-land-surface-energy/src/solver_covered_solve.rs` functions
+`covered_jacobian_probe_residuals` (current lines 291–355) and the Jacobian loop
+(509–670), plus the validated map/evaluator in
+`solver_covered_evaluation.rs` (1842–1957, 1966–1982, 2048–2076). Prototype one
+bounded component-temperature block over the authentic N=2/S=6 saved sweep
+states, then the existing `stage3_controlled_mechanism_experiment` one-OFE real
+consumer.
+
+Contract-first authority is required: amend SC-LANDSURFACEENERGY numerical
+methods because current authority fixes finite-difference perturbations/order;
+INV-164 replay authority alone cannot authorize analytic/automatic/sparse
+directional derivatives. Preserve equations, domains, active-set classification,
+normalized residual acceptance, typed error precedence, rollback, restart,
+conservation, custody, receipt identity, and accepted-boundary publication.
+Numerical error, conservation closure, and discrete identity are separate gates.
+
+Comparator plan: independently reconstruct canonical centered/inward FD columns
+for every supported node; compare residual/Jacobian values under the new approved
+tolerance authority; then compare solve/error behavior, exact physical/control
+outputs, custody receipts, and independently reconstructed public closure on the
+authentic runner. A different approved derivative algorithm need not reproduce
+the old iteration trajectory bit-for-bit, but any relaxation requires explicit
+future physical/tolerance authority.
+
+Prospective success: at least 10x fewer charged residual/leaf evaluations for
+the supported block and at least 30% median complete-run wall saving with a
+gain-supported paired interval, without material CPU/RSS regression. Early
+reject on any physical/custody/error/active-set/closure violation, or if either
+10x block reduction or 30% end-to-end saving is missed after the declared
+authentic coverage. A 30% gain saves about 1.5 s from the observed ~5 s run and
+still leaves over three seconds; it is a discriminator, not throughput closure.
+
+Ready-to-issue next scope: first implement the decisive bounded derivative block
+at `covered_jacobian_probe_residuals` behind prospective contract-derived tests;
+do not begin with another general audit. Reuse R's independent stencil/dependency
+oracle and F's invocation/custody parity machinery. No implementation is
+authorized by this handoff.
+
 All proposed kill thresholds are engineering priority choices for a future
 authorized package, not scientific tolerances. Final F/R classifications,
 absolute controlled savings, memory limits and reuse/subsume/abandon decisions
-remain pending this package's measurements and independent terminal review.
+are bound in treatment-results.md; independent terminal review findings remain
+governed by finding-disposition.md.

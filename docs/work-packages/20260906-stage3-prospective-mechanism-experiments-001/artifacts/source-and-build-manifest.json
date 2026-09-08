@@ -1,0 +1,32 @@
+{
+  "status": "postmeasurement-review",
+  "recorded_date_pdt": "2026-09-08",
+  "protocol_sha256": "40033ea2e536984ae5a7455e99509e7e760624b78cdb08ee347597fe2f5f115f",
+  "arms": {
+    "A": {
+      "kit": "artifacts/reproduction/A-source-05",
+      "manifest_sha256": "aa1abb4b48a089f31e4d73bc271637947b55f5ac5638489e165e365654cefc1b",
+      "source_identity": "e9899b0ef0aef86ba7fe670b66b5ab8d67446603035482a48aaf52fffbeff2b4",
+      "authority_recipe": "current-A-SG1",
+      "executable_sha256": "43b64b3b135990cbddb9f6bebd82d6aff397ac1fc1055228a567839f9f9b228a",
+      "measurement_status": "PASS_CONTROLLING_F_COMPARISON"
+    },
+    "F": {
+      "kit": "artifacts/reproduction/F-source-06",
+      "manifest_sha256": "d9fa2541b17bcfe5358cd2bd26e37b92fbd9143150924ef9b5ece71f59f0ecd4",
+      "source_identity": "290a346d8aa7af254d7a3bacdc005b923ec4c17299803d884fc3ebdb55b55f99",
+      "authority_recipe": "current-F-common",
+      "executable_sha256": "71cee13d9615f78d168da77c1800d3e059ddd4c27bbfa069813cefbe5b933d45",
+      "admission": "PASS_PRIMARY_SCALE_NOT_APPLICABLE"
+    },
+    "R": {
+      "kit": "artifacts/reproduction/R-source-05",
+      "manifest_sha256": "275da2b1184f72db1eb57deeabde6cf89e2ab1f0efb63665358fc25e9e749ecc",
+      "source_identity": "28c3310d916593bc941706e36bf6d4188ebd755b50d5ebb8cc356f9459e05027",
+      "authority_recipe": "current-R-SG1",
+      "executable_sha256": "5a7619bbdc8644ceb64ba79b7fc6052747398a773d9f2d3a0f6674d9c80c79a8",
+      "measurement_status": "PASS_EXECUTION_REJECTED_PERFORMANCE"
+    }
+  },
+  "authority_composition_manifest_sha256": "0a03c8e58192368dd72c6ea8e30afe40ad8a4c72c0a18459faec746b7cd04b42"
+}

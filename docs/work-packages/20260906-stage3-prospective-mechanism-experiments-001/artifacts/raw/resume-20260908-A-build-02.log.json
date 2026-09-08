@@ -1,0 +1,29 @@
+{
+  "pid": 3070807,
+  "command": [
+    "nix",
+    "develop",
+    "--offline",
+    "-c",
+    "env",
+    "CARGO_PROFILE_RELEASE_LTO=false",
+    "cargo",
+    "test",
+    "--release",
+    "--offline",
+    "-p",
+    "openwepp-runner",
+    "--lib",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "cwd": "/tmp/openwepp-A-source04-reconstruct-emUn88qF/source",
+  "checkout": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+  "exit_code": 0,
+  "duration_ns": 396294047254,
+  "log_sha256": "9b024baa2ae0ae4673f5c97499e411fcbed377d9a4f512a351807e23e60ca813",
+  "environment_overrides": {
+    "RUST_MIN_STACK": "67108864",
+    "CARGO_NET_OFFLINE": "true"
+  }
+}

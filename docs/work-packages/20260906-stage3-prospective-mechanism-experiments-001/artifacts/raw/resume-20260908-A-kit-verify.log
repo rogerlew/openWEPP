@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "name": "A-final-common-validation",
+  "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+  "source_identity": "98ee7bafe471bfc73fec07909b3bb81f16cc55ab4518675fab62d621fc2ae4ae",
+  "manifest_rows": 10147,
+  "present_rows": 10147,
+  "deleted_rows": 0,
+  "removed_base_paths": [],
+  "new_archive_paths": 1,
+  "scratch_source": "/tmp/openwepp-source-kit-verify-r2b8ipht/source",
+  "umask": "0002",
+  "permission_restorations": [
+    {
+      "path": "crates/openwepp-runner/tests/fixtures/snow_stage3_v11_owner_seed_frozen_litter_v3.json",
+      "from": "0o664",
+      "to": "0o644"
+    },
+    {
+      "path": "crates/openwepp-runner/tests/fixtures/snow_stage3_v11_owner_seed_frozen_litter_v4.json",
+      "from": "0o664",
+      "to": "0o644"
+    },
+    {
+      "path": "crates/openwepp-runner/tests/fixtures/snow_stage3_v11_owner_seed_two_day.json",
+      "from": "0o664",
+      "to": "0o644"
+    },
+    {
+      "path": "tests/fixtures/watershed/p102-sediment-active/runs/H1.source.run.snow_stage3_v11_owner_seed.json",
+      "from": "0o664",
+      "to": "0o644"
+    }
+  ],
+  "failures": [],
+  "builds_executed": false,
+  "scope": "all declared executable-input paths; documentary outputs excluded"
+}
+kit_verify_exit=0

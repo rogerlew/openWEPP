@@ -1,0 +1,17 @@
+
+running 1 test
+test hillslope::tests::stage3_controlled_mechanism_experiment ... 
+thread 'hillslope::tests::stage3_controlled_mechanism_experiment' (3100041) panicked at crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs:250:5:
+assertion `left == right` failed
+  left: 48
+ right: 480
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    hillslope::tests::stage3_controlled_mechanism_experiment
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 238 filtered out; finished in 12.59s
+

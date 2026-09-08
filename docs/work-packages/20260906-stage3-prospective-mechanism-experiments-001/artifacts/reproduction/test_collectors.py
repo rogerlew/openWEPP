@@ -4,7 +4,6 @@ import copy
 import json
 from pathlib import Path
 import unittest
-from admit_identity import identity
 from run_series import FRAME_POINTER, exact_json, frame_work_comparison, frame_work_rule, record_identity, validate_memory
 from audit_stencils import bits, enumerate_sweep, proof_closed_component
 from analyze_series import summarize
@@ -14,11 +13,10 @@ ROOT=Path(__file__).resolve().parents[1]
 class CollectorTests(unittest.TestCase):
     def setUp(self):
         records=[json.loads(line.split('STAGE3_CONTROLLED_MECHANISM ',1)[1])
-                 for line in (ROOT/'raw/A-admission-01.log').read_text().splitlines()
+                 for line in (ROOT/'raw/resume-20260908-A05-admission.log').read_text().splitlines()
                  if 'STAGE3_CONTROLLED_MECHANISM ' in line]
         self.record=records[0]
-        source=json.loads((ROOT/'reproduction/A-source/source-manifest.json').read_text())
-        self.frozen=identity(self.record, self.record['output_manifest']['binary_path'],source)
+        self.frozen=json.loads((ROOT/'raw/resume-20260908-A05-identity.json').read_text())
 
     def test_every_retained_scientific_leaf_is_exact(self):
         original=exact_json(self.frozen['common_identity'])
@@ -37,8 +35,8 @@ class CollectorTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 record_identity(bad,self.frozen['manifest_rules'])
 
-    def test_actual_exploratory_a_runs_have_same_identity(self):
-        for name in ('A-admission-01.log','A-trace-01.log'):
+    def test_current_a_runs_have_same_identity(self):
+        for name in ('resume-20260908-A05-admission.log',):
             for line in (ROOT/'raw'/name).read_text().splitlines():
                 if 'STAGE3_CONTROLLED_MECHANISM ' in line:
                     record=json.loads(line.split('STAGE3_CONTROLLED_MECHANISM ',1)[1])

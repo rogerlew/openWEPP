@@ -1,6 +1,6 @@
 # Prospective Stage 3 mechanism experiments
 
-Status: PAUSED BY OWNER REQUEST — pre-measurement checkpoint; not complete.
+Status: EXECUTED HOLD — results complete; dual review and verification accepted.
 Execution mode: package-end-to-end. Owner authorization: prompts/active/kickoff.md.
 Implementation intent: controlled mechanism evaluation + minimal measurement/coverage correction + re-architecture decision support.
 
@@ -11,6 +11,11 @@ Freeze A from checkpoint e89befa4678eadec039b3e7f7fe0a176af8e9dc5 plus common ob
 The kickoff is the full executable specification and binding sampling/decision protocol. Historical FAIL/HOLD conclusions remain historical; the owner's new authorization admits these prospective experiments without requiring historical binary/index custody.
 
 ## Progress
+
+- [x] 2026-09-08 PDT: owner lifted the pause through
+  `prompts/active/resume-20260908.md`; the original pause remains historical.
+- [x] Bounded resumption reconciliation started from A-source-04,
+  F-source-05, and R-source-05 without rebasing the kits.
 
 - [x] 2026-09-06 PDT: kickoff and core guidance read; no equivalent package; checkout equals accepted checkpoint, branch main, existing untracked tmp/ preserved.
 - [x] Resolve exact source paths and prospective authority/test amendments.

@@ -169,8 +169,9 @@ def run(args, arm, pair, label, binary, environment, frozen):
     started = time.monotonic_ns()
     timeout = 1800 if args.repeats == 10 else 600
     timed_out = False
+    arm_cwd = args.baseline_cwd if arm == 'A' else args.candidate_cwd
     with log.open('xb') as output:
-        process = subprocess.Popen(command, cwd=args.cwd, env=env, stdout=output,
+        process = subprocess.Popen(command, cwd=arm_cwd, env=env, stdout=output,
                                    stderr=subprocess.STDOUT, start_new_session=True)
         next_sample = started
         while True:
@@ -211,7 +212,7 @@ def run(args, arm, pair, label, binary, environment, frozen):
                     parse_errors.append(str(error))
     result = dict(series=args.series, arm=arm, pair=pair, label=label,
                   executable=str(binary), executable_sha256=binary_hash,
-                  command=command, cwd=str(args.cwd), pid=process.pid,
+                  command=command, cwd=str(arm_cwd), pid=process.pid,
                   start_monotonic_ns=started, end_monotonic_ns=ended,
                   process_wall_s=(ended-started)/1e9, process_user_s=usage.ru_utime,
                   process_system_s=usage.ru_stime, lifetime_peak_rss_kib=usage.ru_maxrss,
@@ -267,7 +268,8 @@ def main():
     for field in ('baseline', 'candidate', 'environment', 'series', 'baseline-manifest', 'candidate-manifest', 'baseline-identity', 'candidate-identity'):
         parser.add_argument('--' + field, required=True)
     parser.add_argument('--out', type=Path, required=True)
-    parser.add_argument('--cwd', type=Path, required=True)
+    parser.add_argument('--baseline-cwd', type=Path, required=True)
+    parser.add_argument('--candidate-cwd', type=Path, required=True)
     parser.add_argument('--cpu', type=int, required=True)
     parser.add_argument('--ofes', type=int, choices=(1,10,19), default=1)
     parser.add_argument('--repeats', type=int, choices=(1,10), default=1)

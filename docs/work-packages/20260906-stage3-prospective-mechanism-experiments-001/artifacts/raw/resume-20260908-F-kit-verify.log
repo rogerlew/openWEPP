@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "name": "F-final-common-validation",
+  "base": "2b56e6ebc9c8e8073fb68b89626d4d4e2b4602e3",
+  "source_identity": "7a41232f6e513fab954244151c74fac5b9426acc0d83cca372defeb19856dc0f",
+  "manifest_rows": 10151,
+  "present_rows": 10151,
+  "deleted_rows": 0,
+  "removed_base_paths": [],
+  "new_archive_paths": 5,
+  "scratch_source": "/tmp/openwepp-source-kit-verify-5wlwwlo_/source",
+  "umask": "0002",
+  "permission_restorations": [],
+  "failures": [],
+  "builds_executed": false,
+  "scope": "all declared executable-input paths; documentary outputs excluded"
+}

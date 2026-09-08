@@ -127,3 +127,29 @@ R release Cargo artifact identifies the runner executable as
 `/workdir/.cache/openwepp/targets/R-344ae65295ff/release/deps/openwepp_runner-682944f41aa5eb67`.
 Its later measurement hash must be bound separately; successful build is not
 R real-consumer, forced-complete parity, full-workspace or comparative admission.
+
+## Resumed controlled campaign, 2026-09-08 PDT
+
+Ran: comparator_suite_runner became unavailable through a recorded service quota;
+the authorized serial local fallback executed the frozen scripts. A/F final
+timing PASS 12/12 pairs plus four warmups, F memory PASS 6/6 pairs, and teardown
+PASS 3/3 pairs of ten runs. A/R timing PASS execution 12/12 pairs plus warmups,
+memory PASS 6/6 pairs, teardown PASS 3/3 pairs of ten runs. PASS here means
+valid execution/parity, not favorable performance or release qualification.
+
+The first A/F warmup series FAILed collector validity on a shared-cwd provenance
+binding and produced no measured pairs. `run_series.py` was corrected to accept
+separate frozen arm cwd values; collector syntax passed. Historical collector
+unit tests initially FAILed because their external A-runner fixture was replaced
+by the new explicitly identified binary cut. The fixture now consumes the durable
+current admission record/identity; focused rerun PASS 8/8.
+
+The 10-OFE A/F admissions initially FAILed a common assertion multiplying the
+48 temporal supports by lane count. Corrected A05/F06 builds and one-OFE
+admissions PASS. Corrected 10-OFE executions PASS, but mechanism qualification
+FAILS applicability: provider=carrier=0 and both arms D=5330. The reviewed
+scale relation requires a matched native branch with positive provider work.
+19 OFE is therefore NOT RUN. R scale is NOT RUN under the frozen competitive rule.
+
+Full-workspace and broad Clippy failures remain FAIL exactly as previously
+recorded. Release golden remains FAIL. No production PASS is claimed.

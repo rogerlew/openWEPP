@@ -4,6 +4,17 @@ Static: intake completed before common harness implementation, 2026-09-06 PDT.
 Exact checkout e89befa4678eadec039b3e7f7fe0a176af8e9dc5; main; no tracked
 differences from accepted checkpoint. Existing untracked tmp/ is excluded.
 
+## 2026-09-08 continuation bootstrap
+
+Ran: read the owner continuation prompt, root/package instructions,
+role-implementation.md, package.md, worker-handoff.md, pause-checkpoint.md,
+active kickoff, complete experiment protocol, standards routing,
+prompt-wording guidance, testing-and-gate strategy, tools/agents README, and
+role-runner.md before resumed execution. Triggered expansion was limited to
+source/build manifests, current gate/parity/results artifacts, collector scripts,
+and exact retained receipts needed for admission reconciliation. Workflow-total
+exposure remains UNOBSERVED. No kernel/runtime edit is presently made.
+
 ## Core and conditional readings
 
 | Path | Lines | Actual bytes | Purpose |

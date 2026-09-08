@@ -34,3 +34,8 @@ No present mandatory >=3000 refactor blocker was observed. The 2952/2954/2942/
 is future architecture maintenance, not authorization to alter this package's
 physics or silently expand its treatment. Optional CRAP/coverage is not used
 as a substitute for this line-count rule.
+
+Terminal reconciliation 2026-09-08 PDT: the only resumed Rust delta is the
+common test-harness OFE support-count assertion captured in A-source-05/F-source-06;
+it adds no lines and creates no new threshold. No experimental Rust remains
+applied in the primary checkout.
