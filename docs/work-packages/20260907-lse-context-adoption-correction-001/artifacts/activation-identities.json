@@ -1,0 +1,2383 @@
+{
+  "experiment": {
+    "sha256": "bb8bbe955bf06f1104035798259e814e39a7f0fbb823127e9bfc8522e673707e",
+    "members": [
+      {
+        "path": "AGENTS.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9bd7887bcae731debc64689a4774ac222d529bcd527ebea2293e3ffd600289f6",
+        "size": 9508
+      },
+      {
+        "path": "Cargo.lock",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c",
+        "size": 57343
+      },
+      {
+        "path": "Cargo.toml",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+        "size": 31622
+      },
+      {
+        "path": "clippy.toml",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6bcaaf24bd65b7ead78a207a92d05ce1c1516ae69bdb1c240689a34b3bc6cd81",
+        "size": 692
+      },
+      {
+        "path": "crates/AGENTS.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c09b4fbfb7a49aab4029312987155adb93835399c22d42e5ed9293e161a02334",
+        "size": 5436
+      },
+      {
+        "path": "crates/openwepp-coupled-time/src/transaction.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "56d095e6f91996120baae2dc661bcc7fb6b82611bc4f5d979b911ca093db652e",
+        "size": 27838
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a006362e61e20483420882ff2250dbfa7186b5675cbceb75eb3d2e6f49251a99",
+        "size": 44009
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "883e450fff067a198c181ae85f739d4fb41cfba6dc62456e2510a1989cf0e0a9",
+        "size": 105010
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "0b64393a0c4c2b86341c1900339f72fe698f916c4646a2b37b914988ee9a3df9",
+        "size": 28907
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d089925a6b89f18abea883f49552a26d884b3feb4646299e095e270d0eba8c19",
+        "size": 111026
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests_tail.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2cce7fb12d3a7aed3d1d78669fceafefeceb1a9a2e3ec9165db98cd6d219c832",
+        "size": 38215
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_wat5.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5211a424c41ff2005da19e08151191eb4cc0163bb8a1bdf732beb30cf3d57389",
+        "size": 24300
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/subhourly_generation.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6d97e7b1258a29093f8896ffa81099cf6038f62328fa0f9bb668cce606f8815f",
+        "size": 42429
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8148fb4930701e57c05a31dfff2941ef1eaa83129922a2a5bb3e1ab4a608a260",
+        "size": 116206
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "146e6e95cc4853719acae379d715242b8761d2629310657334a20d169f24cd1d",
+        "size": 108529
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "60245f2938f2473fd6cd4ffc44865f601a692265b678f3ca9d05dfc0b4f68508",
+        "size": 112175
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/identity_validation.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e19dd3a4b694ea37de36880b45e9f721e59c88431bf1909754328bd9b3d22b51",
+        "size": 12648
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2_ingress_adapter.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2231c74cf9dd5e21b7614dee4de74f55ccc7fe6245ce5be4f914bd1fb9417426",
+        "size": 69405
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2_ingress_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7837b5708a8c325108fcada2a7fe53cdade4584f29e7fd25b26178da2249060d",
+        "size": 42342
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v3_exact_enthalpy.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a8e41c25e74ead06f8bc92ef847f8e5a06acec52c3c328c3c5e86abb57dc9ed2",
+        "size": 49877
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v3_projection.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6b136014939c69aa40dc23a74e7896dc2491dbd32d1f8744746eaced6ce14ae4",
+        "size": 61591
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v4_projection.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "21bc70815672635ecbc1198d39eb487ded9ddbf8fd55209293e9c905e7a2cb55",
+        "size": 28307
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "dfef7863a6ec427ec7f2c2a461def09be1e60c0b4ad592fd71942df4291c32c7",
+        "size": 115682
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_v8_owner.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "941cd35325b337916866990d269de1d48f096b84d6875f667983cef07df8d18b",
+        "size": 104644
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "bbd3e5be82d72c1d5b37fbb2e354a0536a0b840cf4398e0b07437e7557e8b5d9",
+        "size": 52888
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9534694f30227a53cf85549e574a685de6b218ca80f18ef95b9e8033876e5dee",
+        "size": 115261
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "84a21a88fbfe9e315095bb22f1f6436b438bee71193932205ab4e68ee9db77a0",
+        "size": 46172
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_input_projection.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "de3043e79d493f8563e3a888383df663012f3a09fcfbb16a5e267809152a5f58",
+        "size": 14913
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2b5ac06b8ff67f0c5d7f087cc007134860d6c1f92557eb1843253f02ba39fd45",
+        "size": 76853
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "af52e2ca19029819259a6bda5fdd24109a2eb73f6d38ce656c89fcd11ae31d45",
+        "size": 83447
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6a17e546274a8d3dacbe9e73b1fb50e0f936bc4ab8d5eb5e8c8032457e392261",
+        "size": 114936
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9723f0f4681bdf295083914e6d7cdee8f5a4a09063ed2434297bed1df89fd51d",
+        "size": 107109
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "76cf8b211cbbb46bf748a6374da857006f181ebdf8ac93d0ab43f47518a3e20a",
+        "size": 24205
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d9231c16f4a3c7bd3e863cf06964ed752a41e882ff0ab0385d754ad826c3b36b",
+        "size": 128531
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_parent_chronology_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4514e2300a57e375dc6391a8b799950d0e0a27c6a878fcd4a91575eb613d24f3",
+        "size": 80165
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_precipitation.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ad3a34f7bcdaa6454e1074bf692d4d8524935f7b73191fd04b254d149bbc6eed",
+        "size": 16989
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c839b30a22733c9ae220577a4eba7366b96c8815d1ea7e2fe38320541da56710",
+        "size": 9929
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_snow_soil_heat.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2085f4253f5cd676768cebf3d1236e9105e67f2542f75fdcb2156139a4ef2160",
+        "size": 11344
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "fc540651075fa8425b66bc1705e3b68233dbb1981de2f55f4210b7438d240402",
+        "size": 22959
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1b009574ad56fe8246616ec4d4c54e0687413ab347af550200681d54a979e1a9",
+        "size": 86565
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f76877c53c848faa65d2fc231e6332fa9753ae57e32a63a25104293c1e630b37",
+        "size": 44118
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "31850f373247284b6ce928baf291cd27415f8a0aea88d0185f39206dedef34f7",
+        "size": 122708
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/fixed_point.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a9400b656991d7fa314a985528329bd8c832635985be24bb93cc19dcedaed911",
+        "size": 275
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e4672403c0f8fff5e3252d0f776f5603bc2d1612e8ad67161f1f2fa923b7856e",
+        "size": 2754
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "646a6646814dea9f728c2c9996d290b2271c9b55f921f882fb5d7ab33f81d83b",
+        "size": 43333
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization_v50_transition.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a12ced8a4dbfee3c6c82d2f949e4bc775e33fad3f19a426e0bf43d148a594ed0",
+        "size": 7469
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "477fe93f3c87eca1a7b66203977377636c61fb669724921358fc563d9c06d79f",
+        "size": 117586
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_adoption.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6c1c1f5acf36ea9b146f9916fa10417fba5cabfdc0dfd3abc5095d45826e83fb",
+        "size": 65270
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6ec915b969def38718f243027e95c20dc7336f928f3f2b9ea8d12d18e8f1acda",
+        "size": 58869
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a24a76320972e93d967ffcfd74eef0d8b055e5fda04e523a91825e8a58a584fb",
+        "size": 130914
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_unpublished_continuation.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a2a9b8fe893c3e53cb268824bd628d02c80444537b45ad5a3535cdc8edce02b4",
+        "size": 31291
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_v49_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "11a912c5629b151f69b9eb5647a2d1c430510f755ba5c0b908712e3407f880a9",
+        "size": 35293
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ba3d1ceda7a7d19012815b8343a800dfb4282fda2e69d59cd57d252d44c08d51",
+        "size": 58367
+      },
+      {
+        "path": "crates/openwepp-hillslope-output/src/hillslope_wat.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c9e72a08014385dc2ded2e2ee61e3368112979ad9e99afa4bc3d62c5d7582fee",
+        "size": 36246
+      },
+      {
+        "path": "crates/openwepp-hillslope-output/src/hillslope_wat_subhourly.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "09447460dffd703127ed9a09592fff31a634da391a85df0380389ed411ec07ef",
+        "size": 58157
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/exact_dyadic_enthalpy.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4ee8a66aecffcb2f8db56234f7d127b55a0bf722b36bd4535402b42009279165",
+        "size": 82026
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "91d83b22a17b197a12fdf4204cbe12541c98aa119691a4406c64aa56b3577924",
+        "size": 13878
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/litter_phase.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a3aabedf1598e7573a506122142e112079c5550f846372f58d0785e9dbf7ef75",
+        "size": 20395
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/litter_phase_closure.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a5987cdf7d5b4893597d04d6f33314e0887527a06685e33242fc5a0311ca21ad",
+        "size": 9040
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/litter_phase_output.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "20c5c8487f07fd4e1f14b7ffbb0390f7c2fd62024b5a372503ea72a7fbf5769a",
+        "size": 6235
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/litter_phase_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d1ecae5cdfec71d7337cf18555a68ad78f83dede0f3011dc5b57f69a31644ddb",
+        "size": 18693
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/owner_envelope.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e2a6b95c2a04000830bd0f2a371796a3cedda8ae53f93c08ceae7c89b9ee7e2b",
+        "size": 81535
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f3b2db2402a665b8758d7933336836eac6b6bd02bf3bbd5d3cf732357f3f1366",
+        "size": 102170
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "bf13c0fee7fc2183d7c55a1f9619bd800551beaebbbe7730abc9097f6931eb7c",
+        "size": 52982
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_litter_phase.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5679b5c30ed11344639f097583637a7c6d7a857850ddf9a8d57bb1799d2da836",
+        "size": 10535
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/transaction.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6a4a8687c4536f263101290eb57c1dd624ed8caf2ca0ac973760028e3b92cf41",
+        "size": 120019
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/transaction_v3.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8b781c05bce72d7a2537e8004a5ede492b62a9bfb186155f4308f67d398fe73c",
+        "size": 36510
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d6842a728672e2c97045d3205fe6da2377deb9053f42b5a4160d129725ee076a",
+        "size": 18042
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/v3_state.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a86a0d6a06191ddb381c8ed9ff10615ab96c9dbf9d30baac2df3db3d17233730",
+        "size": 14612
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/water.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "01dd1dabb42ec6b9454a281790aae0757fc3a80acf56d334c5b7d9acfd307515",
+        "size": 15609
+      },
+      {
+        "path": "crates/openwepp-persisted-restart-v1/src/lib.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6b4ec9480c945c95b180a569ce2571c071e6f7cb1e3d46d035bc78bb168acc2d",
+        "size": 5875
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/03_tests.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9fe774795e8dee6aa92e58aa22d154f879a990af0fd53d828da83d0a3fda080d",
+        "size": 117612
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/04_direct_publication.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "fd343040fc1d7d80272c76a58303b3f6ac75dca7f7b0f658b3d90b1533e24278",
+        "size": 48049
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4e95e0bb80c94599196ff4731578b4ac3e3389059936f20d3fbe09a9b5b6ddbe",
+        "size": 94673
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/snow_stage3_v11_production_seed.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ee47c53f35ce9d1f49703b0bd5d47c01fab4cefa1693976f5f2ce673ebbad4e3",
+        "size": 98418
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d37a7f681223117eaa3fb34f6b2a66ce80448cb2f5b021c01a64cca86d397aeb",
+        "size": 27286
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_long_run_qualification.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1ff05c78c3b8bacf43b8a8334f62e39aa9eab8be99006cf9e1a830790378ce6f",
+        "size": 127559
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+        "size": 106779
+      },
+      {
+        "path": "crates/openwepp-runner/src/hillslope/tests03/wat5_output_transaction.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7adde207582a161bd8c2d7be8a8075282ff0db46ebfa834d34cf1a36858fbc7e",
+        "size": 10083
+      },
+      {
+        "path": "crates/openwepp-vegetation/src/v11.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "93bb948f7c57114a96a2ab6373ea0ca108c2d74cb5559c2ef17e58851ca818ff",
+        "size": 92271
+      },
+      {
+        "path": "docs/ROADMAP.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ba370ddb875a8bc3734a0bccb85f226cefe4591a5b13486fc3a241ba047acccb",
+        "size": 22154
+      },
+      {
+        "path": "docs/decisions/0044-prohibit-accretive-production-solver-dispatch.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a597aaf802917e1ed9c21db1f4453c571dde09ad48684c0f7d0ff9062b6645e6",
+        "size": 3817
+      },
+      {
+        "path": "docs/decisions/README.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b3a832e3c84cebf9cff42164cdf02a2e3399e5f1aac8e2839b03d243f0e8d53e",
+        "size": 14291
+      },
+      {
+        "path": "docs/specifications/science-contract-directory-format.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3ce2e7d8c52e4b95f5ebfb8c5234a70b4b8b49013191b41b06605239337cca93",
+        "size": 21553
+      },
+      {
+        "path": "docs/specifications/science-contracts/AGENTS.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "bace4ab3e33119e0239f700f92c53707d884f297e92d2454a86c477758c930c7",
+        "size": 6532
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4",
+        "size": 12547
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9ab58b4c5da79aa3e4e8855a57d76d2b1c94d3b22002342bc8a8689a560b35ff",
+        "size": 70251
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1d10611b5143be201381f283ec5594d9f65c99f8252e944dfae57076a8a699f7",
+        "size": 92552
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-EVAP-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b9edfef1d644b48f487fe95138761765ca24ffa58b323120e9585a22004a45be",
+        "size": 86971
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60",
+        "size": 30111
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1b5d02f6f7115c1a04f56e3ea933773876fc2ccc874e862e17e683fdc960bb93",
+        "size": 37789
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-IMPOUND-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ebad8c01395e85b638124b296923f85bbc8bcdbd6d898fe081b9ed8dd53a2e76",
+        "size": 36598
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-CHANINP-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "da94093ff009be0e8ee618783c799d1ed70c0377b398e546fecd7e5c6c605be6",
+        "size": 30201
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-CLIMATE-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "dafd32adf1975202525eba3985aa5b0c4bad00201859bc80c92ee31964c68264",
+        "size": 21831
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-FROST-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "da9a81713b6f10e401604fe36e44d782534fcbb487c21b18cb83356ea39237fa",
+        "size": 16098
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-GWCOEFF-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "af29486e9e90c30906ae9a103b14ce1ba48edb64bc623a03f5e2df705f79ed51",
+        "size": 15170
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-HBP-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ead119f5280cab6bec23f1ffa39e71a2bc83cb17f6943184423b803d0cbe5d18",
+        "size": 25262
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-DEPLETION-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f9127c610bdd9e72cf9a4487d4717a40860fe7bab5f929d7644dc17627a76b92",
+        "size": 23369
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-FIXEDDATE-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8ab23208b0e7c9c6c7ef221c1f4f7a4698c1d235c7ce386acec54b920523df64",
+        "size": 28627
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-LCWB-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f9db7b19ab3d5a87e7911724e32d65cf761fb764e84133402913a30e36b1615a",
+        "size": 17067
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e2e4f70c91ea874bb37f60a7b516232d5e44b53ba4066e560a0565d972f2dca7",
+        "size": 58586
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "752c834592654cf0b7017a46dc82b5b6483e0c3a5b3279dffe77a5e71e5b027d",
+        "size": 9406
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-PHOSPHORUS-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "13c5d5179a08d9c7b56733e574b7f394685b4b35c6ce5cf5e41aa6cc71eb0ba8",
+        "size": 17581
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-PMETPARA-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "86997e0979b7c682a360ecced231c2eef661d3195f2f4c454230934b9010a54c",
+        "size": 14547
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-SLOPE-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "0944911bf268f4655f26694eb41882e5cba20abeffa431aa203eecf709196b5f",
+        "size": 15722
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-SNOW-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "bcfe7c665a73bc45d89816de84179350ce11cfb78e4b6472e60b28c0c9e7003b",
+        "size": 14419
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "122de662fd9414c44edbc5284db08e348e0138aeba728ec6603141b65c37e9f1",
+        "size": 31223
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-TC-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6e01d483be28290e39b441a1eebcd923d2f8fc38b5c632f0b4efc3b1c51074cd",
+        "size": 15519
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-TCR-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b7efb516ba3d2cf6fe4e53f3e2fb21ac723a561009ff81adcad162878cafa639",
+        "size": 19351
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-CHANNEL-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "835facb44b2065f5c4505228d83d52200e8472e9826e54db75efe553850cdb0c",
+        "size": 29027
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-IMPOUNDMENT-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e8655b9284f700de90273197c178343fd9d8a7ec77ce7f8fe5072a9a8d2696bf",
+        "size": 60453
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-STRUCTURE-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2019152be93ef5cb5281950cd2efc0e21ba91cd141ad71545126c0acdd6b80f3",
+        "size": 17779
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f4dfb7758ea7e9c819a4db404137288fd8dbe9e852fec28b4b09f7c35fea0779",
+        "size": 18782
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-IRRIG-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d8a257c5f1880947fb5b78083681e17fe445dc104eef1ada42f494070403d6ab",
+        "size": 29137
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "aaa73802884b7cca6f498fc9d8d95ef49eada98625553dbfa8ec4f712da17005",
+        "size": 3931
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "39276470c46a5f15ca3c8b273577236bb7a97851d362f2d1eb103899f67fcef9",
+        "size": 42576
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "cda1b5e050c4532f4b4bb51c60f7386c4a017b6611e95b593fd9d1030bde1ef2",
+        "size": 39197
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b930bbd0f0ce2c16d826be6a6d1d0bb4e6fe0155e611232047e0b4205e2dbfc4",
+        "size": 17798
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6ce8ffe21317027f5d1171579a9059c64c7ae3bd9ba9181ceea91323254b6b25",
+        "size": 48043
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b367f5299f4e8eb199e894385aa2b7451672ac3a7ce7d7921dc12ff2d8d0178e",
+        "size": 7184
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "758873659d360c8edfc7bcec7aa6cb58d065d44e221e890166390252810ed481",
+        "size": 7931
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4fdd656cc3884fafff85fe5d5d3ee30deb9cb5e015c5e6c0ca245c967d4a99e3",
+        "size": 30863
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8508b3ceaa49f081ce8c2df1d7cce39249d8f3875fea5a017404c0816cdae2c1",
+        "size": 19110
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "0c0dd52cb94ceafd48aeac5c5555cae9ac4eb1ce81b47f93a2f4708e1e64881b",
+        "size": 6707
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "172438a4196f13e3b9260845680abc81b98c55d3af044dbda744f5a1ca6932f8",
+        "size": 9876
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "09cd7e0a7f8601dfdc6eb769513866e21ed4a9d2d77bfd8c8423432323c89f4b",
+        "size": 4113
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/replay-evidence.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "607794e36841d3238df031e523bccbe1e5873e0056cbd5732b52401e07a7b0e4",
+        "size": 20210
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a85b0aa76a404143b049a56a25225250b4eddeabdf8ac2fc895c1aee27a4434d",
+        "size": 13780
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "eac50350e934d03e47022dcc51d0c55013c5a5d975f1beceb6f6b7196cc03b18",
+        "size": 15323
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "62e13854fe0bdddb71a4e5aae874aa13c89431bef3d47526b9af973ec8014b54",
+        "size": 8368
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4acd7ddf7a20d9c1198a41ee26d4caa8c57361728eb893ae365c31c669fe66e3",
+        "size": 25523
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2c3afa3f25827508ab9bd4826249d6557d08aa44b8f4ba7f0ecd5c988a900bb8",
+        "size": 11494
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2222800b0e5fa73d281ba68ec21961a6fcc8b38401f9c59d045139e2671dd709",
+        "size": 20914
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "fda2350a1d4bf826dd3ad6f622e4ee0f41d708860aef6005e8948c27c3d729f8",
+        "size": 15949
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1a78c926c65d869a4f738c073ba841861a24602989521f33cc90f28e615b1f82",
+        "size": 183762
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "cf336d5425644aceb83b877e0075ffd6da8dd9fe3b76af4c3f35a5bc2075f1c8",
+        "size": 39533
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-PERC-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "74cf1282d9dcfe6cf84767f1e3c6ec4d4b20a1cb8b2852bbc40ad7495e0b09af",
+        "size": 73686
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-PLANT-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "76c876d91ec95dfb18b436ebd1ff232f31d412bf42bc82cdd272d158a7ee459c",
+        "size": 116206
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c3cc6da20f39ead5b465db66be5bd5b60b99d1326c219955444075fdff05c991",
+        "size": 65190
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-ROOTZONEHYDRAULICS-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "428fe3c3956c792a4768e11360373709f84d8936834dc310ec7e998d831c475d",
+        "size": 11521
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-ROUTE-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e6aa282c81f10f25341875b7d5f793b77e4b355a8ae6ee970bcc3d357780a11c",
+        "size": 137454
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2861a7ba877468e9aa9893266b8c46a09b2ca8181b4b211db756108cb703defa",
+        "size": 121874
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-SED-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5586a8eec6f790014172acffc8701ff514fac944639e4f7991f9357460a3a353",
+        "size": 115217
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "94eb7a73ed2d0de50f5a354a200467809154c2e4ecfa0792677942343cc4943d",
+        "size": 497785
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEFORCING-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1dc78f05bf6841254da2016f7eeec69d4a84963af763603d53a5ae5e6dc0e638",
+        "size": 20166
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
+        "size": 634522
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-SOIL-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f81809c50944d186fcfdf42bf66d2db821595b7bbce54083e71a8b0d58694afd",
+        "size": 51414
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "fb9360da5eb303b2fa61e8da1daccfed62f4d944ee76f3c367474b679ac3fbcb",
+        "size": 111309
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "fbb27d07e4459dabd37330d3292564ccb94789fdc0530fcde07262c00adfcbd4",
+        "size": 184116
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9d5dde7b02fdfa594b8b5572dbfd628b7c03ab77bdb073eeb4bbb13198632b45",
+        "size": 151563
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3b1c8525e6d09d7afae6e27d5fa59f90347d55d8bf34bc6292d0d767d3bfc5fa",
+        "size": 248829
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "39e48280cae983b47dc20fd2b9d9472a9d7e205299aade165b03938f56268ac4",
+        "size": 54827
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c",
+        "size": 377637
+      },
+      {
+        "path": "docs/specifications/science-contracts/index.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "50e20891b603c0b4cbce575128555118c9245d272a59c3c3c3c23ca43d94ccd3",
+        "size": 14926
+      },
+      {
+        "path": "docs/standards/numerical-solver-architecture.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "46089ca55bb565b7dc67ea1b2075bbcc16db6902eeba1952572b072abadd0738",
+        "size": 6742
+      },
+      {
+        "path": "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/authority-decision.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9fa6af0a988b55798426093d120f5d37cdb7a7d59adbd09c2fd8cba91f2f7374",
+        "size": 1310
+      },
+      {
+        "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts/carrier-boundary-vectors.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "68f6daab7d72eb8ba26b11f93358840fe32f500ef7ce1b9d64ffa6eb665af0a2",
+        "size": 17307
+      },
+      {
+        "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts/carrier-receipt-schema.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5bf61b6e13cbb32067b922ddf3aae5722c49a94622ade8bd01b27dd701443e93",
+        "size": 5786
+      },
+      {
+        "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts/event-boundary-receipt-schema.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ff5e712c7b84574a41f2b52e460262ecab3e6dfd4c50ae59cf5bdf8fb250eb74",
+        "size": 4683
+      },
+      {
+        "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts/receipt-schema-fixtures.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "bc4c6d32d17982f4e81d56ef0756de137d81c9d5c61c43d4388914cd9068acac",
+        "size": 5311
+      },
+      {
+        "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts/restart-rollback-vectors.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3e3d3f9c4fc2a52f5a108b8bf80232c69579dc7787c9498a693ca6908f188271",
+        "size": 2873
+      },
+      {
+        "path": "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "99af825f00d386dab93c3dbfd36908be1b0e97d517c63f41a71f6bfb3fbe3171",
+        "size": 13260
+      },
+      {
+        "path": "docs/work-packages/20260826-vegetation-v9-libcrypto-runtime-equivalence-defect-closure-001/artifacts/verify_v9_runtime_equivalence.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "71ccef3c97cf23a5e28e1b74f2a0d8a94751cdf4af7e8bdcd56079c925d6148d",
+        "size": 13421
+      },
+      {
+        "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/representative-10ofe-100year-workload.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f47d249abdc61b9fdce3b581996d8be7461c02412990af34327498270330e633",
+        "size": 1608
+      },
+      {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/authority-input-reproduction.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1c813fd08e34763808d3ac8a033d18d8c5176857aff76378aa126762166c8883",
+        "size": 5128
+      },
+      {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "40033ea2e536984ae5a7455e99509e7e760624b78cdb08ee347597fe2f5f115f",
+        "size": 11541
+      },
+      {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/worker-handoff.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b3ca642a6b4fd94f6e1459f07058cd9fc18fab747368421fc0dc6e591d143183",
+        "size": 3718
+      },
+      {
+        "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+        "size": 25550
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-recovery.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9ca04d0addb60803d5cf12a47f88efe71fdf636753d522b17e0e4af784eda131",
+        "size": 9280
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7660946ea994082dc60b1dca8722e062b908e2748b3d546feaa9df2871aa08e9",
+        "size": 33598
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "84ec3ee981218e535fa37cd0e883e3c6b8f094627b6e639713fe86a671164a6f",
+        "size": 34247
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8eb123e056f1698a0b8ea39530ebcb1782aa619bd6d7f4baa3a516194de911c9",
+        "size": 28666
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b367f5299f4e8eb199e894385aa2b7451672ac3a7ce7d7921dc12ff2d8d0178e",
+        "size": 7184
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "568b505669cee5fe1ce8fcbe2eb612f312f737959a1b078cdf7bb7cefb5dcd53",
+        "size": 47478
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b3da428d546339b577bc9a486d69a0fc0ccb712b9b8ef8f4788d19da366e0ee6",
+        "size": 35950
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "62df075bada5ab1a40b70a8e3d17debffcc22576559a46008234ed031cea5da1",
+        "size": 41482
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "844a1a4abab9c12394d479189f336b9d018112f3225d85477d576be0fb0212f3",
+        "size": 42920
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "847c892d4f57d565483a860bdef617b9224feb0e7d0b6eecba61bd5e0287d5e8",
+        "size": 18905
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5016e10077745fc6698f828f1a87e4d45e7bd9666e11282f2a0e4492d6e0dff5",
+        "size": 17308
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c36cee5ad980e204a265565f415bc9f8f2eaf894d258a573af7559043763d42b",
+        "size": 17427
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "10cd16a6a118375fcc73605b5411afaa6c6709a5c8066e96cf8a635ee9b28ff6",
+        "size": 23987
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c03d78309d5669170a12c489a941124f5ffc146163f7ab3c646bfd717b217280",
+        "size": 11841
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "20cd98c07c65421f5fd0a3830c44f28d5a1a90841f9bf8ae254b8111e9acb39f",
+        "size": 26276
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d00d2d46d9c86d9b44fb95c964355470097033b67f8a00c0606a0c7786bcea08",
+        "size": 22752
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tests/integration/land_surface_energy_balance_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ae9cd357adf690a58db43f5f05a877f174dc5ea568e0bcb3000558ac088e12e4",
+        "size": 73788
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "38406f5ab4f7f06c769696f90194d95994bfe0db5c06d217cc1af9dcfc62ed22",
+        "size": 28733
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tests/integration/snow_stage3_terminal_receiver_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3967cbd329e5c10df4507a4ab44eb12e5ec761ebbe89bffbd1ea18b5f0853aa3",
+        "size": 11136
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tests/integration/solver_architecture_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b910be59cdc45c4cec9eb8cc7875a0c58b28b48d117af34728f1576f7bc98878",
+        "size": 5824
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "001703ec24d193a4e612aaa05a93430b03f7ed0e291d9ad69215c89ed4f77492",
+        "size": 64033
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tests/integration/support/sc_contract_text.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c2b03e16eeba168e0d3fbaf4e2ade4aaf5c68df5b0fba5be8e6c3fe09874b65b",
+        "size": 1067
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tests/integration/surface_liquid_hydrology_custody_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9df27ed8c346133a5f80b5df9670a3323320e177260b13a64099e4a618848ddd",
+        "size": 36096
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tests/integration/vegetation_boundary_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5ff969756b5e0ddf8500961db525ecddaed6be3a52116fbf75e85419a3792710",
+        "size": 105225
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tests/python/test_check_sc_binding_exposure.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d0bc5442087bb822cb5cd29a00493f61f653b8fe266057f1452d1ded2c2840ed",
+        "size": 1668
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tests/python/test_sc_contract_directory.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "19c4bafd3ed5743a420c4459495fd4ef29ebd6de6304669ff1cf5f6be0c07974",
+        "size": 21459
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tools/check_sc_binding_exposure.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "df3bc341901ef34d90a1110b75507432e1fae98e82a4eeabe9f6b225cf7b89f3",
+        "size": 5024
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tools/release/check_sc_unit_compliance.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2999db488e3723f6aa8c4dfe31469bcf9692f46e1b8127eaa980435e69f42fbe",
+        "size": 22320
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tools/release/check_science_contract_admission.sh",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5a44470d75042a04912f7a52b05a72767a49d1c3c67494891e5a530b15ab327d",
+        "size": 15177
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/candidate-tree/tools/sc_contract_directory.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "758ae0fffdee4146d12d36fc91f6970e5d1fae867b78beb1ee02345153760d6b",
+        "size": 29228
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/clause-map.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8fec452402f1d8ae100b473458d8f877d173565875b332c22d9247f72a6e8465",
+        "size": 724730
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/bridge_harness.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "99092ac32dc2dfd3c9e5a633bae03241b58f339aaa1534b4df30987c956a63c1",
+        "size": 443
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/build_candidate.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b2a3396264b3e367329fd40796d78ea608cb92c6dbee279e28f93f449eb23fb4",
+        "size": 52694
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/capture_evidence.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "83c4835e2b86675bb091d2d03d07c5f2d5571ce48e538bbd133c48aa911b2182",
+        "size": 4415
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/check_baseline_clippy.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a3ae1933df47ff7674a50815a56ed8bdb79e26df3e0be21fa8ce61edad68871b",
+        "size": 3390
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/check_bridge.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "86845f909c37d1d5cdaaf1184998c6ee66bcce9ea9206a3979a5615458a7e71d",
+        "size": 1735
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/check_preservation.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c87849493a32d52cb2ab1e9def466a84f3e63c60dda9fb2859d965d6c62ef542",
+        "size": 2812
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/evidence-manifest.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6cdd2ed995a62acd830408947bd3dde82d2eeba72225a5cf69012a522a3a28b8",
+        "size": 5457
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/final-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4621b3cb08a410b2648dcd12c07f7e2d5f2123be73abad544cc14d22c9326165",
+        "size": 1246
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/gate-results.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "62872bc42ff1330afd0bf16106213089fd7a3f52cf85ba30247730c8b4067e6c",
+        "size": 8766
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration08-presentation.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "323651828432da69e6920337dc7d4d48b848628062a1b2f76cb2bc629b5ebd52",
+        "size": 17939
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-bridge-build.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "43fd0499f49ef6564189b8636fc38973e8f4ee3b489831c01084b89be01f50f7",
+        "size": 221
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-commands.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "86b48af3e59b9ed09be029e6788d6bf111cdf992ee7032e30b29c2bff1edab44",
+        "size": 5891
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-inputs.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e86e00b9b1620c1633b18921ec099c846de7d870cb5afbfb788febd677bb5a87",
+        "size": 5324
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-python.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4c3569f5da09975434dd9fd9a91fadbc4367a91d8f3c3fab59e9241ab9ee4bd8",
+        "size": 15
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-toolchain.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8832d9c2667ef033aa29b5c6efbcbb84c93bff8b5f6e2fbcb6322d555006cc8c",
+        "size": 447
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-baseline-command.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e6504b06bece3fbf1b7565713d8c50520cef29c813b745e6f507970c6870e538",
+        "size": 4312
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/measure_routes.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "0a7f9595dfd3d2692eae145c730b94f8a11f1ea033b0396fe59c4dbc04531899",
+        "size": 4444
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-04-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "5b5fd795a3a3678b1a43ea90592a12ad1db308877f29387509683fc9c8f8b07e",
+        "size": 808
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-05-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9ed941cc16031495d44dc14ee2c83aca734086334d0ff0965f4cc1d92cb44eac",
+        "size": 631
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-06-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "26c8febbd602ab7f5db1f8826f30c4b769cb4d1c9929e74e761af84a12d3a9e5",
+        "size": 618
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-07-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a49fbd662106307fa5e89b699c9035f4341e44d95e43893988a485d81874aef7",
+        "size": 607
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-08-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "0b76532fb1d2e2b463d661ab208f06805a508a0f6e9b4c11041f2efeb2e16022",
+        "size": 637
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-09-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4aead03030109b01b83cf35cda287ac025f326e61e083505fa529d29fad7354c",
+        "size": 636
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-10-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a47350c720e0e27355ed8719fc8cc10adde242921ade0b51faeb003628c45fa9",
+        "size": 626
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-11-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b3fd3987e4b3ea0c5179f98e3aee850c151d9c476a42cbd1e8338ead9adff1dd",
+        "size": 654
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-12-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9e6847a90d85c31795f4372f8b9c8d84526fca95028ad1fa673e8d3b7b0c8cc2",
+        "size": 609
+      },
+      {
+        "path": "docs/work-packages/AGENTS.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "29e2f48a0b69fd9f43eb8d3a6dc2b72d30792337f90a2141b89df105726282a5",
+        "size": 6642
+      },
+      {
+        "path": "flake.lock",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+        "size": 564
+      },
+      {
+        "path": "flake.nix",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+        "size": 2041
+      },
+      {
+        "path": "tests/AGENTS.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a611de77a1e0f892a7f10736aff40e9d8fa408d4caf8b360907166d4eabc6fe4",
+        "size": 4723
+      },
+      {
+        "path": "tests/integration/dff_ws1_native_forest_cli.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "fd5552ec4436a684050ea16e614290d85795e3a2e9e2f5546f14b27ea482cca3",
+        "size": 5779
+      },
+      {
+        "path": "tests/integration/erosion_single_ofe_p61_sediment.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7722709013c995e1b094bb02e19e8a3555525bb48cbc6f725d5364c3918d8768",
+        "size": 16578
+      },
+      {
+        "path": "tests/integration/land_surface_energy_balance_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "177e1a0b2cd47dd9dd4ffc771a26ab66bb71f01a92d9cd816f15743b001e30bd",
+        "size": 74201
+      },
+      {
+        "path": "tests/integration/snow_stage3_shared_carrier_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4271b07c3bad035a549bb82b53a3684eb6052404f471bdd176a28d79d52a885c",
+        "size": 28947
+      },
+      {
+        "path": "tests/integration/snow_stage3_terminal_receiver_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4150997abd72dd3a00bc36f6ef3da798d077c5675b7d2a053adecb065075aa4f",
+        "size": 11154
+      },
+      {
+        "path": "tests/integration/solver_architecture_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b910be59cdc45c4cec9eb8cc7875a0c58b28b48d117af34728f1576f7bc98878",
+        "size": 5824
+      },
+      {
+        "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "001703ec24d193a4e612aaa05a93430b03f7ed0e291d9ad69215c89ed4f77492",
+        "size": 64033
+      },
+      {
+        "path": "tests/integration/subhourly_generation_properties.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7c0cf7bd6a7247543f08a9112f8755018ef8f9a8a2d5b60bf20e9595f2fbe595",
+        "size": 1620
+      },
+      {
+        "path": "tests/integration/subhourly_water_output_roundtrip.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c5c5d140b1dd4ae2eebe149bc5a07b511c241f6c9e6be3492ddc7294c55f9b24",
+        "size": 10364
+      },
+      {
+        "path": "tests/integration/support/sc_contract_text.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "99114663b4e46eb808f9f78b6e1ed19555657ccc35dee9875972f9305dc9dec9",
+        "size": 1106
+      },
+      {
+        "path": "tests/integration/surface_liquid_hydrology_custody_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3dc8313efae9c975025c42f0a8e8783fcfa43830f39f99ec3fc755be4124f671",
+        "size": 36132
+      },
+      {
+        "path": "tests/integration/vegetation_boundary_authority_contract.rs",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b161d90e898d65fa2c3c18bec2396eb227e88037270eed2eb238b1abb3c55fe8",
+        "size": 105464
+      },
+      {
+        "path": "tests/python/test_check_sc_binding_exposure.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d0bc5442087bb822cb5cd29a00493f61f653b8fe266057f1452d1ded2c2840ed",
+        "size": 1668
+      },
+      {
+        "path": "tests/python/test_lse_directory_migration.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8dc40da983c91d05c304b7bfbde57aff149c523c2a9ed51b66e5ff44695b9281",
+        "size": 9181
+      },
+      {
+        "path": "tests/python/test_sc_contract_directory.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "19c4bafd3ed5743a420c4459495fd4ef29ebd6de6304669ff1cf5f6be0c07974",
+        "size": 21459
+      },
+      {
+        "path": "tools/check_sc_binding_exposure.py",
+        "kind": "file",
+        "mode": 509,
+        "sha256": "df3bc341901ef34d90a1110b75507432e1fae98e82a4eeabe9f6b225cf7b89f3",
+        "size": 5024
+      },
+      {
+        "path": "tools/release/check_sc_unit_compliance.py",
+        "kind": "file",
+        "mode": 509,
+        "sha256": "2999db488e3723f6aa8c4dfe31469bcf9692f46e1b8127eaa980435e69f42fbe",
+        "size": 22320
+      },
+      {
+        "path": "tools/release/check_science_contract_admission.sh",
+        "kind": "file",
+        "mode": 509,
+        "sha256": "5a44470d75042a04912f7a52b05a72767a49d1c3c67494891e5a530b15ab327d",
+        "size": 15177
+      },
+      {
+        "path": "tools/sc_contract_directory.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "758ae0fffdee4146d12d36fc91f6970e5d1fae867b78beb1ee02345153760d6b",
+        "size": 29228
+      }
+    ]
+  },
+  "evidence_claim": {
+    "sha256": "e1b96366582a90498d4f18f91cc1bc2dd09bd4fd8929b8929afb2e27468def02",
+    "members": [
+      {
+        "path": "docs/specifications/science-contract-directory-format.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3ce2e7d8c52e4b95f5ebfb8c5234a70b4b8b49013191b41b06605239337cca93",
+        "size": 21553
+      },
+      {
+        "path": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/context-usability.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9e0659099704d197ef231f07edfefe4a7eaff8f042f02197453dcfdafc153ed8",
+        "size": 8115
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/activation-guide-proof.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "81085dd3feba32e8db7f210259d3c32f22298e6fb78f13f1c8bb53102869d11e",
+        "size": 1095
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/candidate-manifest.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "0c74dbf28f765e0d93790038e75f70d60b916ebd83f7cfad9c3f568c5647f17e",
+        "size": 4721
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/check_preservation.py",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c87849493a32d52cb2ab1e9def466a84f3e63c60dda9fb2859d965d6c62ef542",
+        "size": 2812
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/context-usability.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ba9977c60de75284e28632360633fba5dcc0790f1f7d7acfeeadd144d0f6e09e",
+        "size": 4200
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/evidence-manifest.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6cdd2ed995a62acd830408947bd3dde82d2eeba72225a5cf69012a522a3a28b8",
+        "size": 5457
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/exercise_01_retry_09.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "bce0e517e551b4b463f494874149c6a49808edd9f245fad18e7c9c955c79ac93",
+        "size": 76803
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/exercise_02_retry_12.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2489cfca6f9539b2c12d6f94e40cbd80ff0b116e91aa4186f6f97aef4e23ce78",
+        "size": 100455
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/exercise_03_retry_03.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6b334dad06a38e4bd59eac206c0eb6e75a11d3e12e9c6b019394ce4c90884e88",
+        "size": 26674
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/exercise_04_retry_08.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c51c237c1e9635890163a382c713b4e1c5f9f6b30a0e3048cce30de58294e25a",
+        "size": 52341
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/final-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4621b3cb08a410b2648dcd12c07f7e2d5f2123be73abad544cc14d22c9326165",
+        "size": 1246
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/final-disposition.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b7038581c05066c0c36a57b3c6fa1bc77db9df5369c4ecec5c68788b3b058617",
+        "size": 1176
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/finding-disposition.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ee8140f44c3fefc14ab128b8c4ec6a23c0ce721d016f091c94c63d5b5f1dec5f",
+        "size": 8522
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/gate-results.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "62872bc42ff1330afd0bf16106213089fd7a3f52cf85ba30247730c8b4067e6c",
+        "size": 8766
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/intake.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9d460c05fa5b2da2392c00397d282c4241e02de2c62bc6cdacacd8eea5c8ddea",
+        "size": 30473
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration08-admission-proof.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9239c067debb87af63b75365201532577a37fc191021254784f5d7640de9a207",
+        "size": 6433
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration08-approved-manifest.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "953dd8ccbb63279ca3415952c016e05ac1567a2366d9786ebf7cf4b95e9373f8",
+        "size": 3253
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration08-common-proof.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2e7648128c7a826cbba35b13f2532034db1085adf0ed8680c5559614766965a4",
+        "size": 47724
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration08-edges.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "97ff38976307984c33468f21de2b1b84707cf7c257d74456bc9066ff5cd64c35",
+        "size": 50970
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration09-approved-manifest.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8931cb4e6e844e6be7cde8962e341b566da4edd4a439229a1cde66135c971584",
+        "size": 3253
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration09-clause-proof.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "470ace8bade5f35686848393ab59ad01013e56cdbecb8ffc356e323707ad9a2b",
+        "size": 30940
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration09-edges.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1b3ec18d8343cb46104623718fd03cb125fe837e0adf103d957f1f328158c003",
+        "size": 7669
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration10-admission-proof.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1184f6655b7ce592915d149b263042fd024c0e11c196773fedd2f5e548a17258",
+        "size": 1242
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration10-approved-manifest.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7bf27c5f311daf3d0eee91bfde8b9a1ac91b1eb01947c417193e8e691153a6c5",
+        "size": 3253
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration12-approved-manifest.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "270cb1cc0585f5f0107bea6fffedcac643e82e47e81939d69f79fa7c1ab60976",
+        "size": 3253
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/iteration12-replay-proof.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "40f888bf43a0e917eed205d02d8b36d11e9e8ee6891b8dcdb15dc920f1269f90",
+        "size": 1423
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/line-count-governance.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "66aa3e41efdff43f94c0c75ba060cafbdbe524c9f5d2a13d15156744548632e3",
+        "size": 595
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/a0-final.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "31c4253bfc9d92881a9174ebf1fcaff4c60ede60bbe6c9e008e6a977941db533",
+        "size": 186
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-bridge-build.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "43fd0499f49ef6564189b8636fc38973e8f4ee3b489831c01084b89be01f50f7",
+        "size": 221
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-commands.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "86b48af3e59b9ed09be029e6788d6bf111cdf992ee7032e30b29c2bff1edab44",
+        "size": 5891
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-inputs.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e86e00b9b1620c1633b18921ec099c846de7d870cb5afbfb788febd677bb5a87",
+        "size": 5324
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-preservation.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "de463897095ca140ce9e363dd7c90e451b3fc661e0184524d3b03a0b2621bec5",
+        "size": 46
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-python.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4c3569f5da09975434dd9fd9a91fadbc4367a91d8f3c3fab59e9241ab9ee4bd8",
+        "size": 15
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-toolchain.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8832d9c2667ef033aa29b5c6efbcbb84c93bff8b5f6e2fbcb6322d555006cc8c",
+        "size": 447
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-whitespace.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d4c4fb4cba426245b9c0bb853099cac9ff9479faecbf241d95d49fd14eb4aefe",
+        "size": 355
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/admission-final.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "913cd188facdcbf18afe61c41b4ad6e507636726572ead0da13939dfac15db6d",
+        "size": 186
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/admission.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9f6fb5423884ca18883c736030d11718179dfe080ee84016ee1cd82d5a42b5c6",
+        "size": 186
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/bridge-clippy.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "43fd0499f49ef6564189b8636fc38973e8f4ee3b489831c01084b89be01f50f7",
+        "size": 221
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/bridge-final.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2068c8cca26b1565da79d9d5a3a0d7139ee1ddfe744e4762ce271d21c4eab281",
+        "size": 74
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/bridge-results.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "35e1fef7eaf44ba21ae2ca8681abcc4ba64165d411a56212a48009041eed4977",
+        "size": 8128
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/bridge-summary.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2068c8cca26b1565da79d9d5a3a0d7139ee1ddfe744e4762ce271d21c4eab281",
+        "size": 74
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-baseline-command.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e6504b06bece3fbf1b7565713d8c50520cef29c813b745e6f507970c6870e538",
+        "size": 4312
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-baseline-root.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b1e27892a022adcffbb799effb6f97bdac8514ae5c6b9049f30cc38b8f96f5af",
+        "size": 14828
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-comparison.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7ebaab88b54911b7db17284914a3cf2d2ed9349d5590b4d0a255f98ac053fb81",
+        "size": 7282
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-root-final.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b1637179dcae67017adae4c4973fbf0aec2d52f08aeac3e648b77fa041650b80",
+        "size": 13078
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/clippy-root.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "64027e31973469165cff023091059cde21b193173b3541e815c8c25a4d2eb6cc",
+        "size": 16180
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/frozen-predecessor.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9144a772363365b2aa87d958d029a54b42415ddf564b6cd21e20216438c980ae",
+        "size": 365
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/generator-modes.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a24acac226ba5560fb5a24d105f3021025a03e64861a806fe7e7c3d34915fdc1",
+        "size": 6924
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/pytest-final.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9442b2e2f7635a32b227e810a72cc7fcb9893fe093a71696356682365636de07",
+        "size": 179
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/rust-candidate.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ff5d255fc642a4bc7a5605230481e83caa08e63545a2b011bc27b727816f8669",
+        "size": 33926
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/rust-comparison.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e6a7dfb52261856baf5d7d1483ae13f58006ad4d81c7099a5693a3cb41de8ba6",
+        "size": 5525
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/rust-final.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1ee0552147e93de84a3d35212e359b38c1eab68584d71b2bbc2e5f6819783889",
+        "size": 33877
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/rustfmt.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "43fd0499f49ef6564189b8636fc38973e8f4ee3b489831c01084b89be01f50f7",
+        "size": 221
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/strict-final.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1de9ba212befc4625ee01ffaaf5735fb60626e245d8379096e90a00121bb5820",
+        "size": 175
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/unit-final.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8b7cb5e42506defea3f986af17b397222e6a6c4f7cf9a7957e4f04d7a6770273",
+        "size": 48
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/unit.log",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8b7cb5e42506defea3f986af17b397222e6a6c4f7cf9a7957e4f04d7a6770273",
+        "size": 48
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-08.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e0e39dfceb23a5fe8128e0d574cee5bef6bb8836ba473f15cbb81a8d712f8dce",
+        "size": 5029
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-09-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4aead03030109b01b83cf35cda287ac025f326e61e083505fa529d29fad7354c",
+        "size": 636
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-09.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "956cfb61940b9570c280b769c9a58700e35dc002f8b19bec12b06dd30aa19437",
+        "size": 5173
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-10-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "a47350c720e0e27355ed8719fc8cc10adde242921ade0b51faeb003628c45fa9",
+        "size": 626
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-10.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7724fd19aadeb454edea447a2ec105a20258dce71acd83c0b65b84f384fbbdbe",
+        "size": 6690
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-11-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b3fd3987e4b3ea0c5179f98e3aee850c151d9c476a42cbd1e8338ead9adff1dd",
+        "size": 654
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-11.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7ff58354edb05ee4083b8221edd17a88f50a44e7103e5b0cbfae2c15f121c450",
+        "size": 7342
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-12-custody.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9e6847a90d85c31795f4372f8b9c8d84526fca95028ad1fa673e8d3b7b0c8cc2",
+        "size": 609
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/reading-iteration-12.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c5ad395cd16ac79b89ebdf9ca9524774731e60f880a855d9e3e531379cbc4cfe",
+        "size": 8578
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/review_agent_a.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b70a07e864fd3852bb3b6ff63431bfdb84ed8882f588d2315f965f302195a4f4",
+        "size": 340412
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/review_agent_b.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6312de16b8fa8cd53ab334a367f1033ff6a276498541b9f917c1d3b9ce21c7de",
+        "size": 230950
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/source-map.json",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "7b4b7ec5c72c1d8f583f4550d263e5ef9b34cd449c15f936189690792d56ea2c",
+        "size": 63634
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/verification_agent_a.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9eb687467ceacfb17e6ca23f2bf06e8d99b1f18f96f88038a7a922ff4919f6f2",
+        "size": 8881
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/verification_agent_b.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b9f5ffb2fe5fd21f4f58548fa56139a7020088db6a288d9a6e41af1fba137f31",
+        "size": 7695
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "006fe61002b7e7fc5651b232ffdc6427523e7204ca8ec143cfb2d2fbf7a1e6dd",
+        "size": 5729
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/package.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "693383f5314a7bb9fd0b3c1d7e7a3b54133982aaa994b454833c1f1387837672",
+        "size": 5328
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/prompts/completed/execute.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2cb184216e4341b72608672a44665fc9c53d0a28a355f794b0c6b2fa7c0624c1",
+        "size": 402
+      },
+      {
+        "path": "docs/work-packages/README.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b280e4133d0cc1d31d3a19e7d22be58d5ccc53fa8c4acbef14557b31b83709b9",
+        "size": 411685
+      },
+      {
+        "path": "docs/work-packages/active.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e45d1c9481c32839177064551bc603633b4990dfe301c7b852f4eecd80796402",
+        "size": 2126
+      }
+    ]
+  },
+  "publication": {
+    "sha256": "651225ed3168ca51a9eddc8e0af189460e4e091127cdd4ccf2e2501e55d42ae7",
+    "members": [
+      {
+        "path": "docs/specifications/science-contract-directory-format.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "3ce2e7d8c52e4b95f5ebfb8c5234a70b4b8b49013191b41b06605239337cca93",
+        "size": 21553
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/context-usability.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ba9977c60de75284e28632360633fba5dcc0790f1f7d7acfeeadd144d0f6e09e",
+        "size": 4200
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/final-disposition.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b7038581c05066c0c36a57b3c6fa1bc77db9df5369c4ecec5c68788b3b058617",
+        "size": 1176
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/finding-disposition.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "ee8140f44c3fefc14ab128b8c4ec6a23c0ce721d016f091c94c63d5b5f1dec5f",
+        "size": 8522
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/gate-results.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "62872bc42ff1330afd0bf16106213089fd7a3f52cf85ba30247730c8b4067e6c",
+        "size": 8766
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/line-count-governance.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "66aa3e41efdff43f94c0c75ba060cafbdbe524c9f5d2a13d15156744548632e3",
+        "size": 595
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/review_agent_a.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b70a07e864fd3852bb3b6ff63431bfdb84ed8882f588d2315f965f302195a4f4",
+        "size": 340412
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/review_agent_b.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6312de16b8fa8cd53ab334a367f1033ff6a276498541b9f917c1d3b9ce21c7de",
+        "size": 230950
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/verification_agent_a.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9eb687467ceacfb17e6ca23f2bf06e8d99b1f18f96f88038a7a922ff4919f6f2",
+        "size": 8881
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/verification_agent_b.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b9f5ffb2fe5fd21f4f58548fa56139a7020088db6a288d9a6e41af1fba137f31",
+        "size": 7695
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "006fe61002b7e7fc5651b232ffdc6427523e7204ca8ec143cfb2d2fbf7a1e6dd",
+        "size": 5729
+      },
+      {
+        "path": "docs/work-packages/20260907-lse-context-adoption-correction-001/prompts/completed/execute.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "2cb184216e4341b72608672a44665fc9c53d0a28a355f794b0c6b2fa7c0624c1",
+        "size": 402
+      },
+      {
+        "path": "docs/work-packages/README.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "b280e4133d0cc1d31d3a19e7d22be58d5ccc53fa8c4acbef14557b31b83709b9",
+        "size": 411685
+      },
+      {
+        "path": "docs/work-packages/active.md",
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e45d1c9481c32839177064551bc603633b4990dfe301c7b852f4eecd80796402",
+        "size": 2126
+      }
+    ]
+  }
+}

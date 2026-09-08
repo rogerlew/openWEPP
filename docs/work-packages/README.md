@@ -6,8 +6,10 @@ in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
 ## 20260907-lse-context-adoption-correction-001
 
-Authorized corrective execution: migration-specific acceptance and smaller sufficient
-LSE scientific reading. See [package](20260907-lse-context-adoption-correction-001/package.md).
+LSE v32 directory adopted with migration-specific validation and smaller sufficient
+scientific reading; final verification/closure pending. See
+[handoff](20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md) and
+[package](20260907-lse-context-adoption-correction-001/package.md).
 
 ## 20260907-directory-contract-format-spec-001
 

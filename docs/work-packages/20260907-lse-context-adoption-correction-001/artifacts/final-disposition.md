@@ -1,14 +1,15 @@
 # Disposition
-Static/Ran: EXECUTING, stable A/B and two NEW terminal readiness verdicts PASS; ready for activation; adoption is not complete.
-All four bounded reading criteria now PASS after independent A/B assessment.
-Unique LSE bytes: surface204063, solver204270, closure208928, identity31428;
-original observed cuts/counts and explicit bounded reuse retained. Full set remains
-larger; actual gross reading/model-token savings are not claimed.
-Direct98Python tests, strict/unit/A0 and53compiled bridge cases PASS. Eight Rust
-targets111PASS/18identical inheritedFAIL; M1–M9 pass independently of masked panics.
-Original root lintFAIL remains with input-bound helper/original-source comparison.
-All first-report failures and historical predecessor HOLD remain immutable.
-Normal continuation handoff restored after every fresh reader finished.
-Actual159-byte entry-notice removal,
-187-byte approved format-guide status correction and bounded final verification
-remain required. No push or production qualification.
+Static/Ran: ADOPTED v32; final verification and closure pending.
+Stable dual reviews and both NEW terminal readiness verifiers PASS. Applied exactly
+the159-byte candidate restriction removal and187-byte guide status correction.
+General selective reading now follows the canonical entry and recursive dependencies.
+All original scientific obligations and historical predecessor HOLD remain binding.
+Final98Python tests, strict/unit/A0,616preserved spans and53actual compiled bridge
+cases PASS. Eight Rust targets111PASS/18unchanged inheritedFAIL; direct M1–M9 checks
+pass independently. Root lintFAIL remains with input-bound comparison/helperPASS.
+Three non-scientific EOF diagnostics remain disclosed, not a baseline-wide PASS.
+Always-read LSE11862bytes. Accepted observed unique LSE: surface204063, solver204270,
+closure208928, identity31428; original cuts/counts and explicit reuse retained.
+The full368890-byte set remains larger; no gross/model-token/workflow saving claim.
+Actual compiled-byte custody PASS in final-custody.json. Three detached identities
+and both bounded FINAL verification verdicts remain pending. No push or production qualification.

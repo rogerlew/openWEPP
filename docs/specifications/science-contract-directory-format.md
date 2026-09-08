@@ -18,8 +18,10 @@ permission to migrate an existing contract. Until a separately authorized
 migration meets [Adoption gates](#adoption-gates), existing single-file schema,
 whole-contract reading, checker behavior and frozen package bindings continue.
 The separately authorized [checker implementation and LSE pilot](../work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/worker-handoff.md)
-implements structural checker support. The pilot remains on HOLD; canonical LSE
-retains its original single-file authority and whole-contract reading requirement.
+implements structural checker support and retains its historical HOLD. The separate
+[LSE correction package](../work-packages/20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md)
+adopts the v32 LSE directory set; its canonical entry governs selective reading and
+recursive dependencies. The entire normative set remains binding.
 A legacy lint PASS cannot qualify a directory contract. Small contracts may remain
 single files indefinitely.
 

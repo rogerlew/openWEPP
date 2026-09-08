@@ -1,0 +1,185 @@
+[
+  {
+    "argv": [
+      "nix",
+      "develop",
+      "-c",
+      "rustc",
+      "--version",
+      "--verbose"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:12.955632+00:00",
+    "end_utc": "2026-09-08T05:25:16.662347+00:00",
+    "duration_seconds": 3.707,
+    "exit": 0,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-toolchain.log"
+  },
+  {
+    "argv": [
+      ".venv/bin/python",
+      "--version"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:16.662862+00:00",
+    "end_utc": "2026-09-08T05:25:16.665377+00:00",
+    "duration_seconds": 0.003,
+    "exit": 0,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-python.log"
+  },
+  {
+    "argv": [
+      "nix",
+      "develop",
+      "-c",
+      "rustc",
+      "--edition=2024",
+      "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/bridge_harness.rs",
+      "-o",
+      "/tmp/openwepp-lse-correction-bridge"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:16.665745+00:00",
+    "end_utc": "2026-09-08T05:25:18.280178+00:00",
+    "duration_seconds": 1.614,
+    "exit": 0,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-bridge-build.log",
+    "explicit_environment_override": {
+      "CARGO_MANIFEST_DIR": "/workdir/openWEPP"
+    }
+  },
+  {
+    "argv": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/python/test_sc_contract_directory.py",
+      "tests/python/test_check_sc_binding_exposure.py",
+      "tests/python/test_lse_directory_migration.py"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:18.280519+00:00",
+    "end_utc": "2026-09-08T05:25:22.507694+00:00",
+    "duration_seconds": 4.227,
+    "exit": 0,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/pytest-final.log"
+  },
+  {
+    "argv": [
+      ".venv/bin/python",
+      "tools/check_sc_binding_exposure.py",
+      "--strict",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:22.507986+00:00",
+    "end_utc": "2026-09-08T05:25:22.652799+00:00",
+    "duration_seconds": 0.145,
+    "exit": 0,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/strict-final.log"
+  },
+  {
+    "argv": [
+      ".venv/bin/python",
+      "tools/release/check_sc_unit_compliance.py",
+      "--path",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:22.653093+00:00",
+    "end_utc": "2026-09-08T05:25:22.814073+00:00",
+    "duration_seconds": 0.161,
+    "exit": 0,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/unit-final.log"
+  },
+  {
+    "argv": [
+      "bash",
+      "tools/release/check_science_contract_admission.sh",
+      "--base-ref",
+      "fb32d27f2",
+      "--worktree"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:22.814527+00:00",
+    "end_utc": "2026-09-08T05:25:23.132952+00:00",
+    "duration_seconds": 0.318,
+    "exit": 0,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/a0-final.log",
+    "explicit_environment_override": {
+      "PATH_prefix": "/workdir/openWEPP/.venv/bin"
+    }
+  },
+  {
+    "argv": [
+      ".venv/bin/python",
+      "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/check_preservation.py"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:23.133355+00:00",
+    "end_utc": "2026-09-08T05:25:33.031918+00:00",
+    "duration_seconds": 9.899,
+    "exit": 0,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-preservation.log"
+  },
+  {
+    "argv": [
+      ".venv/bin/python",
+      "/workdir/openWEPP/docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/check_bridge.py"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:33.032216+00:00",
+    "end_utc": "2026-09-08T05:25:35.538144+00:00",
+    "duration_seconds": 2.506,
+    "exit": 0,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/bridge-final.log"
+  },
+  {
+    "argv": [
+      "nix",
+      "develop",
+      "-c",
+      "cargo",
+      "nextest",
+      "run",
+      "--no-fail-fast",
+      "--test",
+      "land_surface_energy_balance_authority_contract",
+      "--test",
+      "solver_architecture_authority_contract",
+      "--test",
+      "surface_liquid_hydrology_custody_authority_contract",
+      "--test",
+      "snow_stage3_terminal_receiver_authority_contract",
+      "--test",
+      "snow_stage3_shared_carrier_authority_contract",
+      "--test",
+      "vegetation_boundary_authority_contract",
+      "--test",
+      "stage3_native_vegetation_laned_throughput_recovery",
+      "--test",
+      "hphys0279_sc_unit_compliance_lint_contract"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:35.538488+00:00",
+    "end_utc": "2026-09-08T05:25:52.438288+00:00",
+    "duration_seconds": 16.9,
+    "exit": 100,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/rust-final.log"
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--check",
+      "fb32d27f2"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "start_utc": "2026-09-08T05:25:52.438638+00:00",
+    "end_utc": "2026-09-08T05:25:52.466158+00:00",
+    "duration_seconds": 0.028,
+    "exit": 2,
+    "log": "docs/work-packages/20260907-lse-context-adoption-correction-001/artifacts/logs/activation-whitespace.log"
+  }
+]

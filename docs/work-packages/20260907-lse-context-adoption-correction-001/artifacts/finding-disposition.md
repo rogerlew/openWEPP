@@ -87,3 +87,9 @@ trim. Both terminal verifiers independently accept the nonblocking three-EOF dis
 
 Both NEW terminal readiness verdicts PASS; actual approved activation, affected checks,
 compiled byte custody and both bounded final verifications remain required.
+
+Actual activation applied after both NEW terminal readiness PASS: exact entry -159 and
+guide +187, all other19chapters identical. Direct final checks pass; inherited18Rust
+failures,17root lint diagnostics and three EOF whitespace findings retain their exact
+limits. No open scientific/masking/reading finding. Final custody/identities and both
+bounded final activation/status reviews remain required before COMPLETE.

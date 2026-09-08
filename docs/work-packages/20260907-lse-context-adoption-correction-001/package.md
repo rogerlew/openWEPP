@@ -1,7 +1,7 @@
 # LSE context adoption correction
 
-Status: executing; prospective acceptance/design frozen in artifacts/intake.md
-and approved independently in intake-review-a.md and intake-review-b.md.
+Status: adopted v32; final verification/closure pending. Prospective acceptance/design
+frozen in artifacts/intake.md and approved in intake-review-a.md and intake-review-b.md.
 Authorization: user requested scaffolding and execution of the two corrections on
 2026-09-07. Local scaffold and closure commits authorized; no push.
 Baseline: fb32d27f2. Predecessor: ../20260907-directory-contract-checker-lse-adoption-001/.

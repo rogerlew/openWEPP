@@ -1,83 +1,67 @@
 # LSE directory correction continuation
-Static/Ran: executing; all four reading criteria PASS; stable A/B and two NEW terminal readiness verdicts PASS; actual activation pending.
-This is the authoritative continuation view after all fresh readers finished.
-1. User authorized correction-package scaffolding and full execution on2026-09-07.
-2. Branch main; local commits authorized, no push for this package.
-3. Baseline fb32d27f258ce05c36d66a299c2d09d42fbb030c.
-4. Candidate sourcef70a7c8bceda2302d51823d3872cdff3ebde3694.
-5. Current source identity: candidate-manifest.json (excludes this handoff).
-6. Current evidence identity: evidence-manifest.json (excludes this handoff).
-7. Acceptance authority: package.md and prospectively approved intake.md.
-8. Science authority: canonical SC-LANDSURFACEENERGY-001 entry and inventory.
-9. Original v31 atb932db101cce07d0860b45b5ecaa8ddb7f455b58 remains source provenance.
-10. Predecessor package is immutable evidence; its HOLD is not rewritten.
-11. No production physics, frozen identity, paused experiment or global gate changes.
-12. New acceptance covers migration preservation/direct passing checks/no regression.
-13. All18inherited Rust failures retain individual relevance/masking dispositions.
-14. Matching failure sets alone is insufficient; direct M1–M9 tests pass separately.
-15. Root Clippy's17inherited diagnostics remain FAIL; no suppression or repair.
-16. Actual original-source lint comparison and helperPASS are input-bound reuse.
-17. Complete source comprises20LSEfiles; full size369049bytes before activation.
-18. Entry4090+interface7931=12021always-read bytes, below12288.
-19. No claim that the full contract became smaller or source bytes equal model tokens.
-20. Common physical rules now have compact operative variable/state/alias/unit text.
-21. Every original inventory/step table stays normative in audit-details.
-22. Current semantic proof covers56rows and7paragraphs; independent A/B approved.
-23. Current numerical methods/6definitions reside in numerical-methods.md.
-24. Accepted-primitive interface is nonlinear-solve.md, with required defs/guards/tests.
-25. Whole methods REQUIRES whole admission; algorithm/equivalence reads both.
-26. Full original retention/EXP-R/PC1/SG1 lives in replay-evidence.md.
-27. Physical capture and real-consumer obligations route via qualification.md.
-28. Exact p61 missing capture and WAT5/numeric-vector requirements remain explicit.
-29. Applicable unconverted external contracts require whole reading.
-30. Original616spans/scientificcells/36fences survive; only original changelog historical.
-31. Logical binding definitions stay unique; strict checker17BEI/100definitions.
-32. No new parser/tool implementation; existing shared loader bridges seven consumers.
-33. Actual compiled bridge53cases pass,48legacy entries byte-identical.
-34.98Python tests pass, including15independent migration tests.
-35. Unit compliance and A0 pass49contracts/0science_surfaces.
-36. Eight Rust targets129run:111PASS18inheritedFAIL,36normalizedpanics unchanged.
-37.156relevant input identities protect production/tools/compiler/protocol boundaries.
-38. Vegetation test2843lines WARN, split before3000; no additional Rust edits since validated implementation.
-39. Original request tasks/rubric and every failed first report remain immutable.
-40. Identity03 original31428LSEbytes at6938ca97d has explicit A/B semantic reuse.
-41. Its full qualification relocation/protocols preserve duties;20/23hashes equal.
-42. Surface05 old196206success atb3 is not reused after new admission route.
-43. Surface09 PASS204063; solver12 PASS204270; closure08 and identity03 approved reuse.
-44. All actual external/governance/search/voluntary/recovery/repeat readings count.
-45. Runtime context, delivered model tokens and workflow totals remain UNOBSERVED.
-46. Source custody: reading-iteration-12-custody.json and external verified bundle.
-47. It includes generator inputs and frozen protocols, not offline Cargo rebuildability.
-48. Retain bundle through disposition plus explicit maintainer audit release.
-49. Blinded36line handoff remained frozen at f70 during fresh12; no rubric hints.
-50. Fresh12 is complete; the normal continuation handoff now replaces that exception.
-51. Dual stable reviews PASS readiness; current findings and accepted evidence reconciled.
-52. Two NEW terminal verifiers PASS readiness; actual activation/final verification remains required.
-53. Generator --adopted is prepared; removes ONLY159bytecandidate notice.
-54. Actual activation is substantive and requires all prerequisite criteria.
-55. Recheck affected bindings/unit/A0/migration behavior after activation.
-56. Both terminal verifiers inspect bounded final activation/status diff and reuse.
-57. Archive active execution prompt byte-identically and update catalog status.
-58. Preserve unrelated literal untracked $pkg/ and tmp/ work.
-59. No scientific executable/closure/performance qualification follows from migration.
-60. Next action: exact approved activation, final checks/custody, both final verifications and local closure commit.
-61. Original numerical presentation34blocks remain normative in audit-details; clause proof binds every duty.
-62. Mandatory admission retains all inactive/diagnostic/refusal/test duties and scoped physical reconstruction.
-63. Closure08 observed208928bytes at645b has independent A/B bounded current-source reuse.
-64. Identity reuse is bounded identity evidence, never solver measurement validity or scientific execution.
-65. Detailed oracle/audit exclusions and matched optional controls remain conjunctive in replay-evidence.
-66. Actual source reading counts retain all expansion; prospective routes are not observations.
-67. Exact two-class initialization predicates are tabled; all original quantifiers/conjunctions preserved.
-68. Solver09 scienceFAIL203861 remains immutable; source presentation changed under prospective A/B review.
-69. Activation also updates the exact stale format-guide monolith status; prospective A/B approve only after readiness.
-70. Guide change retains predecessor HOLD, links this handoff and preserves all adoption criteria/full authority.
-71. Procedure11 at ee899c22c adds1063governance bytes; scientific source remains82b9 byte-identical.
-72. Any solver12 PASS belongs to clarified source/procedure, not identical-prompt baseline or general first-try reliability.
-73. Solver10 scientific FAIL and591newgovernance correction remain immutable in reading-iteration-10.json.
-74. Prior accepted readings retain original cuts and counts; no fourfresh-on-final-cut or workflow-token claim.
-75. Iteration12 adds251bytes defining historicalJSONrss_kib as lateVmRSSendpoint; frozen protocol/threshold unchanged.
-76. Solver11 solepeak/endpoint scienceFAIL204019 remains immutable; both reviewers approved exactsourceclarification.
-77. Current scientific source differs from82b9 only by that251byte paragraph; procedure11 stays unchanged.
-78. Identity03 already distinguishesendpoint/peak; surface09/closure08 do not select retention; applied12reuse approved.
-79. Solver12 first report SHA2489cfca6f9539b2c12d6f94e40cbd80ff0b116e91aa4186f6f97aef4e23ce78.
-80. Its91requests record1622817requested/1168269unique/454548repeat; A/B accounting review PASS.
+Static/Ran: v32 activation applied; both bounded final verifications and closure pending.
+User authorized full correction-package execution on2026-09-07; local commits, no push.
+Branch main. Preserve unrelated literal untracked `$pkg/` and `tmp/`.
+Baseline fb32d27f258ce05c36d66a299c2d09d42fbb030c; terminal readiness cut2cfddc33f.
+Current source: candidate-manifest.json (31files), excluding this handoff.
+Current validation: evidence-manifest.json and logs/activation-commands.json.
+Acceptance: package.md and prospectively frozen intake.md; no weakened criteria.
+Science: canonical SC-LANDSURFACEENERGY-001 entry and its complete normative inventory.
+Original v31 atb932db101cce07d0860b45b5ecaa8ddb7f455b58 remains provenance.
+Predecessor package and its HOLD remain byte-identical historical evidence.
+No production physics, frozen runtime identity, paused experiment or global gate edits.
+Migration acceptance covers direct passing preservation, loading and masked obligations.
+All18inherited Rust failures retain individual relevance/masking dispositions.
+Matching failure sets alone is insufficient; M1–M9 direct checks independently pass.
+Root Clippy17original diagnostics remain FAIL; original-source comparison is bound.
+Helper lint/rustfmt reuse has unchanged Rust/compiler/settings inputs; no suppression.
+Actual package Rust changes are seven consumers plus28-line shared test-only loader.
+Vegetation test2843lines WARN; maintainer splits before3000 without losing assertions.
+No additional Rust changes since the validated implementation; bridge harness11lines.
+Existing parser/checker/unit/A0 infrastructure required no production/tool changes.
+Current contract consists of20LSEfiles; full368890bytes is larger than original264863.
+Always-read entry3931+interface7931=11862bytes, below12288.
+General selective reading follows entry routes and all recursive dependencies.
+The complete normative set remains binding for implementation regardless of task routing.
+Current common physical schema replaces routine repeated inventories, preserving duties.
+Original inventories/step tables remain normative audit-details;56row/7paragraph proof.
+Current numerical-methods contains full operative stencils/scaling/six definitions.
+Whole numerical-method review requires whole nonlinear-solve admission authority.
+Original34numerical narrative blocks remain normative audit references with equivalence proof.
+Physical capture qualification is separate from full replay/experiment retention evidence.
+Every616original span/scientific cell and36fences survives; only original changelog historical.
+Each logical binding has one definition; strict checker17BEI/100definitions PASS.
+Applicable unconverted external contracts require whole reading; no implicit truncation.
+All four bounded reading criteria PASS with distinct independent A/B assessments.
+Surface09:204063unique LSE atc2dd02bc3,22.955264%reduction; bounded applied12 reuse.
+Solver12:204270unique LSE atf70a7c8bc,22.877110%reduction; immutable first answer.
+Closure08:208928unique LSE at645b816b5,21.118465%reduction; bounded applied12 reuse.
+Identity03:31428unique LSE at6938ca97d,88.134243%reduction; bounded semantic reuse.
+reading-iteration-12.json binds all four original reports/cuts/counts and prior proofs.
+No four-new-successes-on-final-cut, all-hashes-equal or general first-try reliability claim.
+All earlier failed/invalid first reports and attempted exposure remain immutable.
+Surface09 LSE attempted432539bytes; solver12 LSE requested345307; closure08 requested308466.
+Unique union reductions are not gross exposure, delivered model-token or workflow savings.
+Solver12 source/search1168800unique/1624247requested;9508automatic proxy separate.
+All recursive/voluntary/search/recovery/failed requests and whole external reading count.
+Procedure11 adds1063generic governance bytes; no parent inventory/failed-atom hints.
+Solver12 also uses251-byte existing JSONrss_kib endpoint clarification; frozen protocol unchanged.
+Its PASS is not identical-prompt baseline or isolated source-only causal evidence.
+Blinded2649-byte handoff stayed frozen through fresh12; normal handoff restored afterward.
+Custody04–12 retains original static reading/source snapshots, not compiled bridge execution.
+Both stable reviews PASS; both NEW terminal verifiers independently PASS readiness.
+Actual activation removed ONLY159entry-notice bytes and applied approved187-byte guide update.
+Other19chapters/scientific duties remain identical; prior measured counts not discounted.
+Final98Python tests, strict/unit/A0,616span mapping and53compiled bridge cases PASS.
+The shared bridge was rebuilt with actual recorded rustc1.95.0 before final execution.
+Eight Rust targets reran:129tests,111PASS18inheritedFAIL,36normalizedpanics unchanged.
+156bound inputs and empty protected tree diffs retain production/tool/protocol boundaries.
+Baseline-wide diffcheck exit2 has THREE preserved EOF findings; no broad PASS claim.
+They are audit-details481/history39/immutable solver12 report405, accepted nonblocking.
+Final compiled byte custody PASS: final-custody.json; no offline Cargo rebuild claim.
+closure-membership.json defines overlapping experiment/evidence_claim/publication sets.
+Current numeric/verdict/status changes require substantive bounded final inspection.
+Final identities bind the completed collection without self-hash or future-commit prediction.
+Retain external bundles through disposition plus explicit maintainer audit release.
+No simulation, scientific closure, throughput or experimental production qualification follows.
+Next: both bounded final activation/status checks, completed final identities and local closure.

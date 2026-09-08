@@ -1,0 +1,20 @@
+{
+  "bundle": "/tmp/lse-correction-adopted-bundle",
+  "manifest_sha256": "f68863afdf4f4224ea48eda2afc0f905d15973cb96922ff5b08b9ec47ccf7a16",
+  "capture_exit": 0,
+  "verify_exit": 0,
+  "capture_command": [
+    ".venv/bin/python",
+    "tools/agents/evidence_bundle.py",
+    "capture",
+    "/tmp/lse-final-custody-selection.json",
+    "--root",
+    "/workdir/openWEPP",
+    "--destination",
+    "/tmp/lse-correction-adopted-bundle"
+  ],
+  "verify_log": "/tmp/lse-final-custody-verify.log",
+  "compiled_bridge_sha256": "bd72ce8c0c1dd42291437ea4c47f83d74a2bf534126e9a66ecb3fa7f6f92f09e",
+  "scope": "Actual adopted-source/validation-result and compiled-test-bridge byte custody. Prior observed readings retain their own cuts and static source bundles. Verification reports captured here are readiness records; later final signoffs bind through detached final identities. No scientific simulation, release qualification, model-token or whole-runtime telemetry claim. Origin root /workdir/openWEPP. Explicit build environment CARGO_MANIFEST_DIR=/workdir/openWEPP; A0 PATH prepends repo .venv/bin, as actual command record states.",
+  "retention": "openWEPP maintainers through disposition plus explicit maintainer audit release; no automatic cleanup"
+}

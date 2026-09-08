@@ -796,7 +796,7 @@
     {
       "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
       "baseline_sha256": "7a002bcac2ad640716b52f4bd59326f241d5fd3084d26e56f6a703eb496ed61d",
-      "current_sha256": "391772bfc9345357a654552ae84203809a91e0280f5579693ae73da68119cc53",
+      "current_sha256": "aaa73802884b7cca6f498fc9d8d95ef49eada98625553dbfa8ec4f712da17005",
       "unchanged": false,
       "disposition": "migration authority/date"
     },

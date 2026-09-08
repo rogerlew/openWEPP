@@ -21,8 +21,6 @@ binding_index: SC-LANDSURFACEENERGY-001/binding-index.md#binding-exposure-index
 
 # LSE contract
 
-Candidate v32; adoption gates pending. Selective reading is authorized only for this
-package's bounded candidate exercises until independent adoption closure.
 Read the complete [shared interface](SC-LANDSURFACEENERGY-001/interface.md#interface) for every
 task, then the applicable route and every conditional dependency. The entire normative
 set remains binding. Sections include subsections to the next same/higher heading,

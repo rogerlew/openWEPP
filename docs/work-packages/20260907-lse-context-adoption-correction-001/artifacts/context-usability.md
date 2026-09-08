@@ -1,7 +1,7 @@
 # Context usability
 Static: current source is f70a7c8bceda2302d51823d3872cdff3ebde3694, bound by
 candidate-manifest.json. Ran: independent first readings; A/B independently checked
-science, mandatory reading and byte ledgers. Adoption is still pending terminal work.
+science, mandatory reading and byte ledgers. The exact reviewed activation is applied; final terminal inspection is pending.
 
 | Accepted task | Observed cut | Unique LSE bytes | Reduction from264863 |
 | --- | --- | ---: | ---: |
@@ -18,9 +18,9 @@ Identity approval is bounded identity evidence, not solver measurement qualifica
 Exact reports/hashes, earlier failures and reuse proofs are in reading-iteration-12.json
 and the earlier numbered records. No failed first report was repaired or relabeled.
 
-The candidate contains369049bytes across20files, versus264863 original and410021 in
-the predecessor candidate. It remains larger in full. Always-read entry4090 plus
-interface7931 totals12021, below12288. Compatibility/audit/index material remains
+The adopted set contains368890bytes across20files, versus264863 original and410021 in
+the predecessor candidate. It remains larger in full. Always-read entry3931 plus
+interface7931 totals11862, below12288. Compatibility/audit/index material remains
 available outside routine bootstrap; every effective original rule stays binding.
 Only the original changelog is historical.616spans/scientific cells/36fences and
 current56row/7paragraph/34block semantic equivalence proofs preserve obligations.
@@ -55,6 +55,6 @@ first-try reliability. All earlier failures and their costs remain visible.
 
 Custody12 retains frozen source/procedure through disposition and explicit maintainer
 audit release. The neutral handoff was restored to normal continuation form only
-after fresh12 finished. Terminal verification and activation remain required.
-Activation would remove159entry-notice bytes only; no subtracting them from past
-observations. A separately approved format-guide status update preserves prior HOLD.
+after fresh12 finished. Both terminal readiness verdicts passed, then activation removed159entry-notice
+bytes only. No subtracting them from past observations. The exact approved
+format-guide status update preserves prior HOLD. Both bounded final inspections remain.

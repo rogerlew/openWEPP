@@ -6,7 +6,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
-| LSE context adoption correction | [handoff](20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md) | Authorized scaffold and execution; migration-specific validation, efficient scientific reading, no production changes or push. |
+| LSE context adoption correction (adopted; final verification) | [handoff](20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md) | v32 selective reading activated after independent readiness; final verification/local closure pending, no production changes or push. |
 | Directory checker and LSE adoption (executed HOLD) | [handoff](20260907-directory-contract-checker-lse-adoption-001/artifacts/worker-handoff.md) | Checker, meaning-preserving LSE pilot and independent adoption gates; no production changes or push. |
 | Directory contract format specification (complete) | [handoff](20260907-directory-contract-format-spec-001/artifacts/worker-handoff.md) | Specification delivered; checker/LSE migration requires separate authorization. |
 | Agent context/evidence efficiency (complete) | [handoff](20260906-agent-context-and-evidence-efficiency-001/artifacts/worker-handoff.md) | Administrative tools available; no further implementation authorization. |
