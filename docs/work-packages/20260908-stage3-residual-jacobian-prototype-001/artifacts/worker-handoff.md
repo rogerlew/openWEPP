@@ -2,7 +2,8 @@
 
 Static: initialized 2026-09-08 PDT at
 `da16c7640851f4dad15583bd95aaf5324f19f3a8` with a clean primary checkout.
-Status: ACTIVE; production and predecessor HOLDs unchanged.
+Status: terminal review pending; proposed `INCONCLUSIVE_WITH_BOUND`; production
+and predecessor HOLDs unchanged.
 
 ## Authorization and protected boundaries
 
@@ -25,12 +26,17 @@ named branch changes, new controller/solver/physics, or historical reconstructio
 
 ## Current work and next action
 
-Four read-only investigations are mapping source, authority dependencies,
-predecessor assets and test/capture infrastructure. Next: reconcile their exact
-paths, complete the selected LSE reading route, freeze the derivative/corpus /
-oracle/tolerance/write-set protocol, amend canonical authority, add expected-red
-tests, then delegate two independent prospective reviews before implementation.
+The first N=2/S=6 capture (`b8f6a923…`) is quarantined: every stem area is zero
+and its V3 FixedFinal context is incomplete. A lawful existing two-rank
+positive-stem transaction then produced 8 exact replay records (4 Potential,
+4 FixedFinal), N=2/S=2/D=25, corpus `a05ca090…`; both stems are active in every
+record and full inputs/caps/frozen/trial/base/lifecycle data round-trip exactly.
 
-No candidate result, timing, derivative tolerance, or implementation claim exists
-yet. Unknown workflow-total reading exposure remains UNOBSERVED.
-
+The independently implemented baseline-only nine-scale oracle and its selector
+self-tests PASS as software, but frozen scientific admission is 0/16 active
+columns. Every column lacks at least one required second-order FD basin; the
+first own-stem row is visibly roundoff dominated. No v33 constant was tuned.
+Therefore Phase A cannot exit, J was not implemented, and all candidate,
+full-solve, cost, timing, memory, expansion and scale work is NOT RUN by design.
+Next action is terminal review/verification of this bounded negative result.
+Unknown workflow-total reading exposure remains UNOBSERVED.

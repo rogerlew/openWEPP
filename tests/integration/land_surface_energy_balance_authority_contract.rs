@@ -4,6 +4,60 @@ mod sc_contract_text;
 use std::fs;
 
 #[test]
+fn version_thirty_three_binds_experimental_residual_jacobian_policy() {
+    let contract = read(CONTRACT);
+    let method = contract
+        .split("## Version 33 experimental residual/Jacobian representation\n")
+        .nth(1)
+        .expect("v33 experimental numerical-method authority")
+        .split("\n## ")
+        .next()
+        .expect("v33 method body");
+    for required in [
+        "r(x; u, b0)",
+        "R_raw(x; u, b0) / s(x; u, b0)",
+        "every active dry-stem temperature coordinate",
+        "upward propagation for `i<o`",
+        "downward propagation for `i>o`",
+        "same-layer sun/shade/wet rows are exact zeros",
+        "ordinary non-represented-snow ground-energy row",
+        "The second term is mandatory",
+        "structurally unsupported before candidate execution",
+        "there is no FD retry",
+        "paired active sun/shade\nleaf-temperature block",
+        "Differentiating the finite\niteration program is not admitted",
+        "h_k=2^k*h0",
+        "k=-4..4",
+        "J_oracle=(4*D_q-D_(q+1))/3",
+        "8*U + 2e-7 K^-1",
+        "5e-5*max",
+        "Independent directional checks use eight vectors",
+        "[3.2,4.8]",
+        "2e-8 K + 2e-10*max(abs(A),abs(J))",
+        "A.complete_residual_calls/J.complete_residual_calls >= 10",
+        "paired release-mode median block-time ratio at most `0.50`",
+        "at least 75% of baseline\nJacobian-construction wall time",
+        "candidate median CPU ratio at most `1.03`",
+        "CALIBRATION_NOT_APPLICABLE",
+    ] {
+        assert!(method.contains(required), "v33 method missing {required}");
+    }
+
+    assert!(row(&contract, "INV-LANDSURFACEENERGY-165")
+        .contains("actual normalized canonical residual"));
+    assert!(row(&contract, "OBL-LANDSURFACEENERGY-C-021")
+        .contains("Isolated v33 residual/Jacobian prototype only"));
+    let exposure = row(&contract, "LSE-V33-EXPERIMENTAL-RESIDUAL-JACOBIAN");
+    assert!(exposure.contains("INV-LANDSURFACEENERGY-165, OBL-LANDSURFACEENERGY-C-021"));
+    assert!(exposure.contains("| `maps-to-existing-INV` |"));
+    assert!(contract.contains("| `INV-LANDSURFACEENERGY-165` | numerical-methods.md#INV-LANDSURFACEENERGY-165 |"));
+    assert!(contract.contains("| `OBL-LANDSURFACEENERGY-C-021` | numerical-methods.md#OBL-LANDSURFACEENERGY-C-021 |"));
+    assert!(contract.contains("contract_version: 33"));
+    assert!(contract.contains("It does not activate a production algorithm"));
+    assert!(read(INDEX).contains("v33 prospectively authorizes only the isolated active dry-stem"));
+}
+
+#[test]
 fn prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation() {
     let contract = read(CONTRACT);
     let experiment = contract

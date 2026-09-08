@@ -6,11 +6,11 @@ in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
 ## 20260908-stage3-residual-jacobian-prototype-001
 
-ACTIVE: contract-first isolated A-versus-J experiment for lower-cost Stage 3/LSE
-residual and Jacobian evaluation. It starts with a complete component-temperature
-derivative block, admits at most one bounded representation expansion, measures
-real-consumer correctness/cost/applicability, and ends with an architecture
-decision. Experimental Rust is detached; production and predecessor HOLDs remain.
+TERMINAL REVIEW CORRECTION: the contract-first isolated A-versus-J experiment
+stopped before J. A lawful active-stem corpus passed exact replay, but the frozen
+baseline oracle admitted 0/16 columns. Proposed disposition is
+`INCONCLUSIVE_WITH_BOUND`; candidate, performance and scale are NOT RUN and
+production remains HOLD.
 See [package](20260908-stage3-residual-jacobian-prototype-001/package.md).
 
 ## 20260907-lse-context-adoption-correction-001

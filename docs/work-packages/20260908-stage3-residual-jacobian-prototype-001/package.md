@@ -1,6 +1,7 @@
 # Stage 3 residual/Jacobian prototype
 
-Status: ACTIVE — contract-first experimental execution; production HOLD.
+Status: TERMINAL REVIEW CORRECTION — proposed INCONCLUSIVE_WITH_BOUND at the
+frozen Phase-A oracle; production HOLD.
 Execution mode: package-end-to-end.
 Owner authorization: `prompts/active/kickoff.md` (source brief:
 `/tmp/openwepp_residual_jacobian_prototype_kickoff.md`).
@@ -150,15 +151,16 @@ serialized.
 - [x] 2026-09-08 PDT: authorization read; checkpoint identity and clean primary
   checkout confirmed; no equivalent package found.
 - [x] Package scaffold, active locator, catalog and roadmap forward reference.
-- [ ] Complete authority/dependency/source/corpus map and freeze protocol.
-- [ ] Contract amendment, expected-red tests, dual prospective review/disposition.
-- [ ] Detached implementation, correctness/oracle/local-cost evidence.
-- [ ] Conditional bounded expansion and real-consumer/multi-OFE evidence.
-- [ ] Controlled timing/memory, full applicable gates, dual terminal review and
-  verification, findings, final disposition and scoped commits.
+- [x] Complete authority/dependency/source/corpus map and freeze protocol.
+- [x] Contract amendment, expected-red/oracle tests, dual prospective review and
+  finding disposition.
+- [x] Authentic positive-stem Phase-A corpus and independent baseline oracle:
+  0/16 columns admitted under the frozen convergence-basin rule.
+- [x] Stop before J implementation: derivative, cost, runner, expansion, timing,
+  memory and scale gates are NOT RUN because Phase A did not admit a column.
+- [ ] Dual terminal review and verification on the corrected stable cut.
 
 Recovery uses Git history for committed compact documents and external immutable
 evidence bundles for source/executable/fixture/protocol/result bytes. No source
 kit or candidate is removed before recoverable capture and verification. Current
 continuation authority is `artifacts/worker-handoff.md`.
-

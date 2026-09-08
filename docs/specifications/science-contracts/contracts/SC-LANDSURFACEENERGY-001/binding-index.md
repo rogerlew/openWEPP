@@ -32,6 +32,7 @@ Structural schema/definition and original-span preservation locators. Scientific
 | `LSE-V30-CARRIER-PARENT-STATIC-VALIDATION-ONCE` | [Original LSE-V30-CARRIER-PARENT-STATIC-VALIDATION-ONCE](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L582-L582) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-159, OBL-LANDSURFACEENERGY-C-019` | `flagged-binding-addition` | One generation-bound parent plan retains only validated immutable structure; the existing first forcing validation can authorize its later pointer-identical V8 use; and the resident's validated revision can authorize omission of only the repeated native V3/V2 validation. |
 | `LSE-V31-COMPONENT-TEMPERATURE-DEPENDENCY-REPLAY` | [Original LSE-V31-COMPONENT-TEMPERATURE-DEPENDENCY-REPLAY](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L583-L583) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-164, OBL-LANDSURFACEENERGY-C-020` | `flagged-binding-addition` | Revision 31 introduces new IDs `INV-164/C-020`; private same-iteration evidence may replay only the transitive dependents of component-temperature probes, while all other probes and every solver operation remain complete and bit-identical. |
 | `EXP-STAGE3-20260906-R` | [Original EXP-STAGE3-20260906-R](https://github.com/rogerlew/openWEPP/blob/b932db101cce07d0860b45b5ecaa8ddb7f455b58/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md#L584-L584) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-164, OBL-LANDSURFACEENERGY-C-020` | `flagged-binding-addition` | Separately identified stencil-aware experimental qualification; preserves graph/custody/forced-complete scientific obligations and historical results; no production promotion. |
+| `LSE-V33-EXPERIMENTAL-RESIDUAL-JACOBIAN` | [Version 33 experimental method](numerical-methods.md#version-33-experimental-residual-jacobian-representation) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-165, OBL-LANDSURFACEENERGY-C-021` | `flagged-binding-addition` | Isolated active dry-stem analytic derivative block of the actual normalized residual, with smooth-branch admission, independent multistep oracle, hybrid FD boundary, frozen cost criteria and no production activation. |
 | `LSE-DIRECTORY-HISTORY` | [Original change log](history.md#history) | `historical` | `historical-or-superseded` | `none` | `none` | Original history retained; no authority demotion. |
 
 
@@ -112,6 +113,7 @@ Structural schema/definition and original-span preservation locators. Scientific
 | `INV-LANDSURFACEENERGY-162` | dependency-replay.md#INV-LANDSURFACEENERGY-162 |
 | `INV-LANDSURFACEENERGY-163` | dependency-replay.md#INV-LANDSURFACEENERGY-163 |
 | `INV-LANDSURFACEENERGY-164` | dependency-replay.md#INV-LANDSURFACEENERGY-164 |
+| `INV-LANDSURFACEENERGY-165` | numerical-methods.md#INV-LANDSURFACEENERGY-165 |
 | `OBL-LANDSURFACEENERGY-C-001` | water-vapor.md#OBL-LANDSURFACEENERGY-C-001 |
 | `OBL-LANDSURFACEENERGY-C-002` | water-vapor.md#OBL-LANDSURFACEENERGY-C-002 |
 | `OBL-LANDSURFACEENERGY-C-003` | soil-coupling.md#OBL-LANDSURFACEENERGY-C-003 |
@@ -132,6 +134,7 @@ Structural schema/definition and original-span preservation locators. Scientific
 | `OBL-LANDSURFACEENERGY-C-018` | dependency-replay.md#OBL-LANDSURFACEENERGY-C-018 |
 | `OBL-LANDSURFACEENERGY-C-019` | dependency-replay.md#OBL-LANDSURFACEENERGY-C-019 |
 | `OBL-LANDSURFACEENERGY-C-020` | dependency-replay.md#OBL-LANDSURFACEENERGY-C-020 |
+| `OBL-LANDSURFACEENERGY-C-021` | numerical-methods.md#OBL-LANDSURFACEENERGY-C-021 |
 | `OBL-LANDSURFACEENERGY-P-001` | water-vapor.md#OBL-LANDSURFACEENERGY-P-001 |
 | `OBL-LANDSURFACEENERGY-P-002` | water-vapor.md#OBL-LANDSURFACEENERGY-P-002 |
 | `OBL-LANDSURFACEENERGY-P-003` | water-vapor.md#OBL-LANDSURFACEENERGY-P-003 |

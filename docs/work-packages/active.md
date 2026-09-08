@@ -6,7 +6,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
-| Stage 3 residual/Jacobian prototype (active) | [handoff](20260908-stage3-residual-jacobian-prototype-001/artifacts/worker-handoff.md) | Contract-first isolated A-versus-J derivative representation experiment through measured decision; detached experimental Rust only; production HOLD. |
+| Stage 3 residual/Jacobian prototype (terminal correction) | [handoff](20260908-stage3-residual-jacobian-prototype-001/artifacts/worker-handoff.md) | Frozen Phase-A oracle admitted 0/16 active-stem columns; proposed INCONCLUSIVE_WITH_BOUND, no J/performance claim, production HOLD. |
 | LSE context adoption correction (complete) | [handoff](20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md) | v32 selective reading adopted and independently verified; no remaining implementation or push authorization. |
 | Directory checker and LSE adoption (executed HOLD) | [handoff](20260907-directory-contract-checker-lse-adoption-001/artifacts/worker-handoff.md) | Checker, meaning-preserving LSE pilot and independent adoption gates; no production changes or push. |
 | Directory contract format specification (complete) | [handoff](20260907-directory-contract-format-spec-001/artifacts/worker-handoff.md) | Specification delivered; checker/LSE migration requires separate authorization. |

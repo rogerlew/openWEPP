@@ -19,8 +19,13 @@ UNOBSERVED. Unique/repeated byte counts will be generated with
 | kernel profile and science-contract spec | Conditional | kernel numerical authority | read |
 | work-package science obligations | Conditional | kernel/consumer/closure | read |
 | numerical-solver architecture and kernel preparation | Conditional | solver-affecting experiment | read |
-| LSE entry + complete shared interface | On-demand, triggered | every LSE task | entry read; interface pending |
-| LSE numerical methods, solve boundary, nonlinear solve | On-demand, triggered | derivative/residual authority | pending |
-| derivative-affected physics/custody chapters and recursive dependencies | On-demand | exact source dependency map | pending reconciliation |
-| predecessor source kits/oracles/collectors/fixtures | On-demand | selected reuse only | investigators reading |
+| LSE entry + complete shared interface/common details | On-demand, triggered | every LSE task/solver correctness | read by parent/source and both reviewers |
+| LSE numerical methods, solve boundary, nonlinear solve | On-demand, triggered | derivative/residual authority | read by parent/contract investigator and both reviewers |
+| surface energy + terminal/replay/dependency chapters | On-demand, triggered | stem longwave, Stage-3 anchors, experimental evidence | read across parent/investigator/review roles; exact source cross-check complete |
+| vegetation/water/soil complete contracts | Conditional, not triggered for initial stem block | leaf expansion or changed active water/lower boundary | not read; expansion remains inactive |
+| predecessor source kits/oracles/collectors/fixtures | On-demand | selected reuse only | A05 and R oracle/harness assets inspected; no F/R treatment reuse |
 
+Role bootstrap/expansion is intentionally distributed: each independent role
+read its own mandatory procedure and scientific surface. Unknown aggregate
+runtime exposure and repeated-token telemetry remain UNOBSERVED; no quota or
+context-efficiency claim is made.

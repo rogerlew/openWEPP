@@ -4,7 +4,7 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 32
+contract_version: 33
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -12,7 +12,7 @@ producer_scope:
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
 evidence_level: static+independent_oracle+contract_vectors
-last_reviewed: 2026-09-07
+last_reviewed: 2026-09-08
 supersedes: []
 superseded_by: []
 contract_format: directory-v1
@@ -61,5 +61,11 @@ chapter's Dependencies and introduction. Uncertainty expands reading.
 
 <a id="change-log"></a>
 ## Change Log
+2026-09-08 v33: prospective experimental residual/Jacobian representation for
+active dry-stem temperature columns, with derivative-through-normalization,
+smooth-branch admission, independent multistep FD/Taylor authority, hybrid
+assembly boundaries, and no production activation; scientific equations,
+accepted-result construction, solver controller and custody are unchanged.
+
 2026-09-07 v32: coherent directory presentation; scientific authority, production
 HOLD and frozen identities unchanged. History: history.md.

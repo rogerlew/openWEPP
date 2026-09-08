@@ -1,0 +1,94 @@
+{
+  "status": "terminal_inconclusive_with_bound",
+  "review_checkpoint": "da16c7640851f4dad15583bd95aaf5324f19f3a8",
+  "package_scaffold_commit": "827a7470e058a5e09f9feced9375b776e5959789",
+  "baseline": {
+    "name": "A-source-05",
+    "kit_path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/A-source-05",
+    "base_commit": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+    "source_identity": "e9899b0ef0aef86ba7fe670b66b5ab8d67446603035482a48aaf52fffbeff2b4",
+    "source_manifest_sha256": "aa1abb4b48a089f31e4d73bc271637947b55f5ac5638489e165e365654cefc1b",
+    "tracked_patch_sha256": "dc6fd04b2d0600ee35d6871720d7e96acccb1d730211cb5ecb13032c4af1d567",
+    "new_source_archive_sha256": "b18bafb50bcb3e186f1087e3f4af05f6322e89685ff2c5882b915f1b92a0429c",
+    "verification": "PASS: 10147/10147 present rows; no failure; no build"
+  },
+  "detached_source": {
+    "path": "/tmp/openwepp-residual-jacobian-FC2T1v/J",
+    "head": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+    "construction": "detached worktree + exact A-source-05 tracked patch + new-source archive",
+    "historical_f_r_worktrees_mutated": false
+  },
+  "authority_inputs": {
+    "manifest_path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/authority-inputs/manifest.json",
+    "manifest_sha256": "63d57160e82ddec88fe307af7c7a104dc4a96ffafc7be526cdb8da3586debbd3",
+    "canonical_v33_primary_checkout": true
+  },
+  "toolchain": {
+    "environment": "nix develop --offline",
+    "rustc": "1.95.0 (59807616e 2026-04-14)",
+    "host": "x86_64-unknown-linux-gnu",
+    "target_directory": "/workdir/.cache/openwepp/targets/J-8971b92b1700"
+  },
+  "initial_exact_write_set": [
+    "crates/openwepp-land-surface-energy/src/lib.rs: module wiring only",
+    "crates/openwepp-land-surface-energy/src/physics.rs: canonical longwave tangent alongside existing primal recurrence and elementary tests",
+    "crates/openwepp-land-surface-energy/src/solver.rs: experimental v33 diagnostic selector/export only",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs: package-private validated base operands; no primal arithmetic reorder",
+    "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs: pre-entry applicability and hybrid stem-column assembly",
+    "crates/openwepp-land-surface-energy/src/solver_stem_jacobian.rs: new capability, tangent/normalization/typed integrity implementation",
+    "crates/openwepp-land-surface-energy/src/solver_stem_jacobian_tests.rs: expected-red, oracle, branch, ownership and full-solve tests",
+    "crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs: named nonoverlapping counters/spans",
+    "crates/openwepp-land-surface-energy/src/solver_litter_phase.rs: observation-only actual V3 fixed-final Jacobian-base capture hook",
+    "crates/openwepp-land-surface-energy/src/covered_output.rs: test-support exact corpus serialization only",
+    "crates/openwepp-land-surface-energy/src/physics.rs: tangent implementation plus test-support exact corpus serialization",
+    "crates/openwepp-land-surface-energy/src/solver.rs: diagnostic selection plus test-support exact corpus serialization",
+    "crates/openwepp-land-surface-energy/src/covered_liquid.rs: test-support exact corpus serialization only",
+    "crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs: frozen corpus capture, actual J selection/participation and parity records",
+    "crates/openwepp-runner/src/hillslope/03_tests.rs: test wiring only",
+    "docs/work-packages/20260908-stage3-residual-jacobian-prototype-001/artifacts/reproduction/: package-owned collector/oracle adaptations only"
+  ],
+  "eligible_expansion_write_set": "NOT ACTIVE; must be separately frozen/reviewed before sun/shade leaf derivative edits",
+  "superseded_inactive_stem_corpus": {
+    "path": "/tmp/openwepp-rj-corpus-v1-combined.json",
+    "sha256": "b8f6a923065e7b396f84831ae6e3435cded05fae324b92d13c05ac646b783fec",
+    "bytes": 600588,
+    "schema": "openwepp.covered-residual-corpus.v1",
+    "records": 8,
+    "potential": 4,
+    "fixed_final": 4,
+    "shape": "N=2,S=6,D=29",
+    "exact_tagged_f64_words": 5338,
+    "native_encode_decode_equality": "PASS",
+    "derivative_admission": "INVALID: all stem areas exact zero; FixedFinal generic V3 replay context incomplete"
+  },
+  "active_stem_corpus": {
+    "path": "/tmp/openwepp-rj-active-stem-corpus-v1.json",
+    "sha256": "a05ca09031c28f863bc8dd8f3cc8d605459a683abc2af6e0f37dd84c713068c0",
+    "bytes": 509132,
+    "records": 8,
+    "potential": 4,
+    "fixed_final": 4,
+    "shape": "N=2,S=2,D=25",
+    "exact_tagged_f64_words": 4636,
+    "active_dry_stems": "2/2 in every record",
+    "native_encode_decode_equality": "PASS",
+    "baseline_oracle_admission": "0/16 columns"
+  },
+  "phase_a_oracle_sources": {
+    "crates/openwepp-land-surface-energy/src/solver_stem_jacobian_tests.rs_git_blob_sha1": "b39fe2b56be540369fa7800fcd69224ebc7f95c0",
+    "crates/openwepp-land-surface-energy/src/solver_tests.rs_git_blob_sha1": "7786a69d1438bc0f6dbbbaf0df0fcd336958cd7e"
+  },
+  "builds": [
+    "release openwepp-runner ignored authentic corpus capture: PASS 1/1"
+  ],
+  "executables": [],
+  "candidate": "NOT BUILT: frozen Phase-A oracle admitted 0/16 columns",
+  "measurements": "NOT RUN",
+  "custody_bundle": {
+    "path": "/tmp/openwepp-rj-phase-a-terminal-bundle-v2",
+    "manifest_sha256": "ea4b42170f458bb24a3e073e734758cf52f320112ab49376bc5ea7e132726f26",
+    "verification": "PASS",
+    "contents": "explicit corrected Phase-A source, active corpus fixture, exact oracle log, hashed protocol record, result record, no-executable marker"
+  },
+  "retention": "openWEPP package owner through disposition plus explicit audit release"
+}
