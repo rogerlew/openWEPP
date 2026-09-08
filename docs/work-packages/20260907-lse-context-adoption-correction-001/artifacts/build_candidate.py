@@ -577,4 +577,10 @@ old="FullSupply initialization requires each positive final authorization's iden
 new='### Initialization eligibility\n\nFullSupply alone is insufficient; both exact predicates are required:\n\n| Request | Required before potential-coordinate initialization |\n| --- | --- |\n| Each positive final authorization | Identity AND amount equal its potential request AND disposition is FullSupply. |\n| Each canonical zero request | Exact request identity AND zero amount are retained. |\n\n'
 assert old in text
 f.write_text(text.replace(old,new,1))
+# Iteration12: explicit source-defined historical memory operand; no gate change.
+f=DEST/'replay-evidence.md';text=f.read_text()
+needle='Production retention uses this exact command for baseline and candidate:\n'
+insertion='Historical `rss_kib` is the late `VmRSS` endpoint defined by the required frozen\nkickoff/protocol, not peak or post-cleanup memory. The `65536 KiB` retention bound\napplies to that JSON endpoint; lifetime peaks and sampled active maxima are distinct.\n\n'
+assert text.count(needle)==1
+f.write_text(text.replace(needle,insertion+needle,1))
 print('entry',ENTRY.stat().st_size,'interface',(DEST/'interface.md').stat().st_size,'total',ENTRY.stat().st_size+sum(f.stat().st_size for f in DEST.glob('*.md')))

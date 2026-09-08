@@ -1,9 +1,11 @@
 # Current context-usability evidence
-Static: canonical science remains82b9c72d6; source manifestcccda2ed4aa97b24c186dde1059a7e2cbef7c2768c50b9e2a7c66429f77ee87f.
+Static: current iteration12 source manifestfc8604ac789f5edd00183b3675dfc2dfbeb5dda6ad8fedf14158cb093ba18d89.
 Ran: completed independent first readings and dual source/rubric/accounting reviews.
 Current procedural freezeee899c22c changes only the generic inventory-to-answer
 instructions, not science, the original questions/rubric, reading duties or budgets.
-New nonforked solver11 is in progress. Adoption is not complete.
+Solver11 completed with scienceFAIL solely on the historical memory operand.
+Iteration12 makes the existing endpoint definition explicit (+251bytes); a fresh
+nonforked solver12 under the same clarified procedure is NOT RUN. Adoption is incomplete.
 
 | Task evidence | Observed cut | Unique LSE bytes | Reduction from264863 | Science / reading / size |
 | --- | --- | ---: | ---: | --- |
@@ -11,7 +13,8 @@ New nonforked solver11 is in progress. Adoption is not complete.
 | Solver10, failed first report |82b9c72d6|204019|22.971876%|FAIL / PASS / PASS|
 | Identity03, reused |6938ca97d|31428|88.134243%|PASS / PASS / PASS|
 | Closure08, reused |645b816b5|208928|21.118465%|PASS / PASS / PASS|
-| Solver11, clarified procedure |ee899c22c|not yet observed|not yet observed|NOT RUN to completion|
+| Solver11, clarified procedure |ee899c22c|204019|22.971876%|FAIL / PASS / PASS|
+| Solver12, endpoint clarification |not yet observed|not yet observed|not yet observed|NOT RUN|
 
 A/B approved selected-duty reuse of surface09/closure08/identity03 on unchanged
 current science. Original observations, report hashes and cuts remain retained;
@@ -23,7 +26,7 @@ and the independent review records; none is replaced by this consolidated narrat
 
 ## What the measurements establish
 The original single LSE file is264863bytes. The predecessor candidate was410021bytes;
-the current20-file candidate is368798bytes, still larger than the original. Current
+the current20-file candidate is369049bytes, still larger than the original. Current
 entry4090+interface7931=12021always-read bytes, below the frozen12288limit.
 The three science tasks each require a sufficient unique LSE union at most211890;
 identity must remain smaller than264863. Size alone does not establish sufficiency.
@@ -68,3 +71,13 @@ routine bootstrap without authority exemptions. Current custody11 retains the ex
 source/procedure bundle through disposition plus explicit maintainer audit release.
 Stable dual review, two new terminal verifiers and actual checked activation remain
 required after the final reading criterion passes.
+
+## Iteration12 current operand clarification
+The only source change from82b9 is251bytes in replay-evidence, explicitly identifying
+the historical JSONrss_kib as lateVmRSSendpoint, not peak/post-cleanup memory.
+Both reviewers approved it against unchanged frozen kickoff72/protocol95. No threshold,
+command, original body, protocol or rubric changes. A/B applied12 reuse is approved for the
+three prior accepted reports; their observed counts and original cuts stay unchanged.
+Solver11 ledger34hashes77requests is1175695combinedunique/1505862source-search bytes,
+or1515370with separate automatic proxy; LSE204019unique/288071allrequested bytes.
+It passes size and reading, but the endpoint/peak substitution remains a scienceFAIL.

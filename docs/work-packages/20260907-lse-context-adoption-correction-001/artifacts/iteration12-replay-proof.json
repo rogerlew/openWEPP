@@ -1,0 +1,21 @@
+{
+  "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/replay-evidence.md",
+  "old_sha256": "d29eeca69cf60d1a0953f6fb0cc2ac3841c100159961f01394fdbdf17d5403b7",
+  "new_sha256": "607794e36841d3238df031e523bccbe1e5873e0056cbd5732b52401e07a7b0e4",
+  "delta_bytes": 251,
+  "needle": "Production retention uses this exact command for baseline and candidate:\n",
+  "insertion": "Historical `rss_kib` is the late `VmRSS` endpoint defined by the required frozen\nkickoff/protocol, not peak or post-cleanup memory. The `65536 KiB` retention bound\napplies to that JSON endpoint; lifetime peaks and sampled active maxima are distinct.\n\n",
+  "authority": [
+    {
+      "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/prompts/active/kickoff.md",
+      "sha256": "6f3f0852afbfae138c4e40c62e15bf727c569611d00dec08bc8338e05ebdd9b3",
+      "line": 72
+    },
+    {
+      "path": "docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/experiment-protocol.md",
+      "sha256": "40033ea2e536984ae5a7455e99509e7e760624b78cdb08ee347597fe2f5f115f",
+      "line": 95
+    }
+  ],
+  "scope": "Explicit existing historical JSON memory operand only. Exact threshold, command, all original body, mandatory dependencies, paused status, new-series controls, scientific rubric and procedure11 remain unchanged. No live edit before prospective dual approval."
+}

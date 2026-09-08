@@ -1,7 +1,7 @@
 {
   "baseline_log": "docs/work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/logs/rust-baseline-comparison.log",
   "baseline_log_sha256": "41e99dd3eeb935fe405284504559cbaf1d174b1a4f797f020115a686be351bd5",
-  "candidate_log_sha256": "5dbff343f4132955813a38079ba99ca9fc7387649cacb4cc7140f2ae7a3ba2e3",
+  "candidate_log_sha256": "5b2ab537fb5a14002bd2ee37a5ccedd3d532367a58e1978420d5b1861acf7e7e",
   "same_failure_identities_and_normalized_panics": true,
   "failures": [
     [

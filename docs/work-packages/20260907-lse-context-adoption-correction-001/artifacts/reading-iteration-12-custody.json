@@ -1,0 +1,10 @@
+{
+  "bundle": "/tmp/lse-correction-iteration12-bundle",
+  "manifest_sha256": "c0bcd5a253f06512cdf0c2128b5f3f7e7cacbd64329b192827c4790e48533600",
+  "capture_exit": 0,
+  "verify_exit": 0,
+  "verify_log": "/tmp/lse-iteration12-bundle-verify.log",
+  "scope": "currentcanonical30/inputinventory/allgeneratorinputs; unchangedprocedure11handoff/acceptance/fourfrozenprotocols; actual11report/finding and approved12operandproof",
+  "status": "fresh solver12 NOT RUN; source custody only, no scientific/offlineCargo/token claim",
+  "retention": "openWEPP maintainers through disposition plus explicit audit release"
+}

@@ -373,3 +373,14 @@ identical-prompt baseline experiment, general first-try reliability or repaired 
 answer. Original accepted reports retain their unchanged rubric and measured cuts.
 The temporary blinded-handoff exception ends after fresh reading; normal50–100line
 current-state handoff and independent stable/terminal closure remain mandatory.
+
+## Iteration12 prospective correction
+Both reviewers approved exactly+251bytes in replay-evidence before implementation,
+SHA607794e36841d3238df031e523bccbe1e5873e0056cbd5732b52401e07a7b0e4.
+iteration12-replay-proof.json binds the unchanged frozen kickoff72/protocol95: old
+JSONrss_kib is a lateVmRSSendpoint, not peak/post-cleanup memory. The old65536KiB
+candidate bound applies to that field. Original retention body/thresholds/commands,
+all protocols, dependencies, scientific predicates/rubric and procedure11 stay unchanged.
+Only replay-evidence changes among20canonical files. Surface09/closure08 do not select
+it; identity03 already reads the full protocol and distinguishes endpoint/peak. Bounded
+applied reuse must preserve original counts; new nonforked solver12 remains required.

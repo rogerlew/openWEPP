@@ -13,6 +13,10 @@
 # Replay retention and experiments
 Binding qualification and capture requirements, not evidence of successful adoption or current execution authorization. Historical revision-31 thresholds/results remain unchanged. EXP-R changes only its stated gates; PC1 and SG1 retain their exact experimental scope. The frozen prospective kickoff remains binding and owner-paused; format migration does not resume it. Apply each protocol limit to its named performance, memory, scaling or teardown series.
 
+Historical `rss_kib` is the late `VmRSS` endpoint defined by the required frozen
+kickoff/protocol, not peak or post-cleanup memory. The `65536 KiB` retention bound
+applies to that JSON endpoint; lifetime peaks and sampled active maxima are distinct.
+
 Production retention uses this exact command for baseline and candidate:
 
 ```text

@@ -1,10 +1,11 @@
 # Disposition
-Static/Ran: EXECUTING; adoption is not complete.
-Scientific source82b9c72d6 and direct validation remain unchanged:98Python tests,
-strict binding, unit/A0, bridge PASS; Rust111PASS/18 inheritedFAIL, original lintFAIL.
-Surface09, closure08 and identity03 have approved bounded reuse with original counts.
-Solver10 scienceFAIL and combined-union correction remain immutable evidence.
-A/B approved procedure11's generic self-contained inventory-to-answer clarification;
-new nonforked solver11 NOT RUN. No changed scientific rubric, predicates or budget.
-Stable complete reviews, two NEW terminal verifiers, actual activation and bounded
-final verification remain required. No push or production qualification.
+Static/Ran: EXECUTING iteration12; adoption is not complete.
+Current direct validation:98Python tests, strict binding, unit/A0 and53bridge cases PASS;
+Rust111PASS/18 identical inheritedFAIL, original lintFAIL retained with bound reuse.
+Solver11 scienceFAIL solely on historical endpoint/peak substitution remains immutable.
+A/B prospectively approved and parent applied the251-byte existing-field definition;
+all original thresholds, commands, protocols, bodies and science duties remain.
+A/B approve applied12 bounded reuse of surface09/closure08/identity03. Fresh solver12 NOT RUN
+under the same approved generic procedure11. No scientific rubric or budget changed.
+Stable reviews, two NEW terminal verifiers, actual activation and bounded final
+verification remain required. No push or production qualification.

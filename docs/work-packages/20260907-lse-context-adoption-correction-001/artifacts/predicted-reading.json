@@ -150,8 +150,8 @@
       ]
     },
     "exercise02": {
-      "lse_bytes": 209734,
-      "reduction_percent": 20.814156752736324,
+      "lse_bytes": 209985,
+      "reduction_percent": 20.71939077938406,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -228,10 +228,10 @@
           "ranges": [
             [
               1,
-              255
+              259
             ]
           ],
-          "bytes": 19959
+          "bytes": 20210
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
@@ -300,8 +300,8 @@
       ]
     },
     "exercise03": {
-      "lse_bytes": 31980,
-      "reduction_percent": 87.9258333553573,
+      "lse_bytes": 32231,
+      "reduction_percent": 87.83106738200503,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -328,10 +328,10 @@
           "ranges": [
             [
               1,
-              255
+              259
             ]
           ],
-          "bytes": 19959
+          "bytes": 20210
         }
       ]
     },

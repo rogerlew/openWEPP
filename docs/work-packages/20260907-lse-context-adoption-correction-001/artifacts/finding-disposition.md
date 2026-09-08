@@ -49,3 +49,10 @@ combined union wrongly omitted591 new governance bytes. Corrected1167546unique a
 All rules are already explicit in source. A/B approved one new nonforked reader with
 the generic inventory-to-self-contained-answer procedure on unchanged science.
 No cosmetic source edit, rubric relaxation, report repair or merged best answer.
+
+## Solver11 and iteration12
+Solver11 resolves previous central predicates; its sole scienceFAIL is substituting
+peakRSS for historical endpoint JSONrss_kib. Reading/ledger/size PASS204019; first
+report and all exposure remain immutable in reading-iteration-11.json. Both reviewers
+prospectively approved the251-byte source-defined operand clarification beside the
+unchanged retention rule. Applied verification/reuse and fresh solver12 are pending.

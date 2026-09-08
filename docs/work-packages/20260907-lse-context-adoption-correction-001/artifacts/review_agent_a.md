@@ -4591,3 +4591,52 @@ preflight under the unchanged approved procedure11. Solver11's failure is not
 repaired or retrospectively passed by this source explanation. No rubric/question,
 byte threshold, frozen protocol, ordinary reader prompt answer content or acceptance
 criterion changes are approved. No stable closure/terminal/adoption PASS follows.
+
+
+## Applied iteration12 source/custody and bounded evidence reuse
+
+Static: applied historical-memory clarification has the exact previously approved
+meaning and scope; it grants no measurement or production permission. The three
+prior evidence-reuse arguments above remain applicable to the actual sole diff.
+Ran: all20 approved LSE hashes and all30 candidate-manifest members match live bytes;
+manifest SHAfc8604ac789f5edd00183b3675dfc2dfbeb5dda6ad8fedf14158cb093ba18d89.
+Compared all30 members directly with ee899c22c9bb24cf91153f33991402b0978c6af0:
+ONLY replay-evidence differs, by exactly the approved251-byte insertion, now20,210
+bytes/SHA607794e36841d3238df031e523bccbe1e5873e0056cbd5732b52401e07a7b0e4.
+Live handoff remains2,649 bytes/SHA280db6a24f5e3197cbc05e2a521dbd9e1817ab17b9e0dfbba4fe9490642cb217.
+Also independently compared all six whole external contracts relevant across the
+reused physical tasks and all four frozen experimental documents with that prior
+cut; all are byte-identical. All four referenced immutable exercise report hashes
+(surface09, closure08, identity03 and failed solver11) remain exact.
+
+Inspected the parent's retained isolated generator outputs rather than rerunning
+unchanged workflows: all40 output hashes (20 each mode) verify on disk, all20
+candidate outputs equal live, and the sole adopted-mode difference is the159-byte
+entry candidate notice removal. Totals369,049 candidate/368,890 adopted are source
+sizes, not observed reading. Parent reports98 Python tests/strict/unit/A0/53bridge
+PASS and Rust111PASS/18 unchangedFAIL/36samepanics; this reviewer does not relabel
+those as newly executed personal tests or full-workspace correctness PASS.
+
+Custody receipt reading-iteration-12-custody.json records capture_exit0/verify_exit0.
+Independently verified the actual bundle manifest against trusted
+SHA c0bcd5a253f06512cdf0c2128b5f3f7e7cacbd64329b192827c4790e48533600;
+its243 entries bind the new replay-evidence hash/20,210 bytes and unchanged neutral
+handoff hash/2,649 bytes. This is bounded receipt/manifest verification, not a claim
+that the full verification log was read or that numerical reproducibility ran.
+
+Applied preflight PASS. Reuse remains APPROVED for surface09's204,063@c2dd and
+closure08's208,928@645b: neither selects the changed retention chapter and no new
+route/duty is introduced for their bounded claims. Identity03's31,428@6938 remains
+boundedly reusable because its complete historical qualification/protocol read
+already bound the exact `rss_kib` endpoint; answer55/59 distinguishes memory surfaces
+and uses the precise historical field, with no peak substitution. The applied
+paragraph merely co-locates that existing mandatory qualifier. Its current chapter
+hash differs; original counts/cuts are retained, not a fresh reading or a claim of
+all-input hash equality. Prior broader semantic reuse proofs remain necessary and
+are not replaced by this one-file comparison.
+
+Approve source freeze and a fresh solver12 under unchanged procedure11. Its actual
+scientific adequacy, complete reading and exposure remain unobserved; forecast
+204,270 LSE is not a PASS. Solver11 FAIL stays immutable. Independent stable-cut
+reviews, dual new terminal verification and exact final activation checks remain
+pending; no adoption or execution conclusion is authorized by this preflight.
