@@ -327,3 +327,19 @@ per-advection energy, sealed state/interval and ground lineage, original-v1 abse
 scope, and explicit complete-method admission alternative were corrected before
 approval. Actual fresh02/04, bound01/03 reuse, direct checks and independent terminal
 closure remain required. No existing observation or acceptance threshold changes.
+
+## Iteration9 exact current-method correction
+Before implementation, A/B independently approved final20file prototype manifest
+8931cb4e6e844e6be7cde8962e341b566da4edd4a439229a1cde66135c971584.
+Paths remain the existing20file inventory. Complete V12, exact V10scaling and6unique
+definitions remain current methods; EVERY full-method correctness route requires
+whole admission and physical boundary. Original V11/V13/V2 narratives stay normative
+in audit after34block operative/evidence proof; no duty becomes historical. Exact
+soil reseal/physicalclosure, pre-Newton support and conjunctive audit controls restate
+existing source only. Shorter intro retains all dependencies; no pastread subtracted.
+Source proposals/proofs are iteration09-*; independent exact approval in both reviews.
+Uniform future readers privately inventory all independently applicable source duties
+and compare answers for omissions as well as claim accuracy. No parent inventory,
+missedatom/rubric hints, mandatoryreading omission or08report repair; derivednote
+exposure stays separate where observed. Fresh01/02 required; closure08/identity03
+reuse requires applied-cut exact selected-duty proof. All adoption gates remain.

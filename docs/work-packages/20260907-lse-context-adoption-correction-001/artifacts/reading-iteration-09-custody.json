@@ -1,0 +1,10 @@
+{
+  "bundle": "/tmp/lse-correction-iteration09-bundle",
+  "manifest_sha256": "7a1dbe73af4a47bb3ba2a5f1840ce70eb96f4be71f991fd0dc0ebddac62ede0d",
+  "capture_exit": 0,
+  "verify_exit": 0,
+  "verify_log": "/tmp/lse-iteration09-bundle-verify.log",
+  "scope": "explicit currentcanonical30/inputinventory, allgeneratorinputs, selectedPythonfixture sources, frozenprocedure/acceptance/fourprotocols, original08actualreports and09prospectiveproofs",
+  "status": "fresh09surface/solver NOT RUN; source custody only, no scientific/offlineCargo/token claim",
+  "retention": "openWEPP maintainers through disposition plus explicit audit release"
+}

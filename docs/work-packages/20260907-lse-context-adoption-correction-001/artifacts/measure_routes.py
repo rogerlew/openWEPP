@@ -53,9 +53,12 @@ for task in range(1,5):
     if task in [1,4]:
         for n in ['surface-energy','soil-coupling','water-vapor','litter-phase','soil-custody','surface-custody','solve-boundary','terminal-support','map-custody']:s.add(n)
         s.add('nonlinear-solve')
-        s.add('numerical-methods','canonical-invariants')
+        # Include actual surface08 full-method expansion prospectively.
+        if task==1:s.add('numerical-methods')
+        else:s.add('numerical-methods','canonical-invariants')
         if task==4:s.add('qualification')
     elif task==2:
+        s.add('nonlinear-solve')
         for n in ['numerical-methods','solve-boundary','dependency-replay','replay-evidence','surface-energy','soil-coupling','terminal-support','map-custody']:s.add(n)
         # Conservative preflight includes the full water chapter after actual
         # readers chose it twice; no smaller theoretical substitute for exposure.

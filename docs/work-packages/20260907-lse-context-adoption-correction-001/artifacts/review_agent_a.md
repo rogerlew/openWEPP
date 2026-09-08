@@ -3562,3 +3562,267 @@ reseal/physical-closure relation and a positive statement of existing support
 receipt pre-Newton admission can make those boundary obligations easier to find.
 This permits drafting for exact independent review; it does not approve unseen
 wording, alter science, supply answers to fresh readers or presume a later PASS.
+
+
+## Iteration09 exact isolated proposal — prospective implementation approval
+
+Static: independently inspected the frozen20-file candidate under
+`/tmp/lse-current09-zun9byeh/candidate`, its actual diff from645b816b5, all34
+individual original-block/current-destination arguments in clause-proof.json,
+original moved text, explicit dependency introductions/tables and projected ranges.
+The reviewed proposal-manifest.json SHA-256 is
+`059431db449cf12f871093b1220acf014519fe2f104dc7a475a1a133c92e112d`.
+Ran: all20 manifest hashes and368931 total source bytes independently matched;
+all projected file/range byte counts independently recomputed; all34 original
+blocks independently matched both the exact645b numerical source and the retained
+normative audit section; the complete original V12 section matched the current
+methods verbatim. Both original scientific-line/Statement and original fenced-body
+preservation tests PASS against the isolated candidate. Strict directory checker
+PASS17 exposure rows/100 actual definitions. These are structural/preservation
+checks, not an automated proof of scientific equivalence or a physics execution.
+
+Disposition: APPROVE implementation of these exact prospective source bytes,
+subject to actual integration/source-bound generator and affected-consumer checks.
+No scientific qualifier, refusal, chronology or required test lost in this examined
+relocation. This is not adoption, a passing fresh exercise, an approval of unseen
+subsequent text, or automatic reuse of earlier source observations.
+
+The new current numerical layer requires its COMPLETE admission interface for
+EVERY numerical-method correctness review, including represented-snow potential
+and fixed-final cases. Solve-boundary expressly requires methods WITH admission;
+physical accepted-primitive reconstruction still requires complete admission and
+its unique definitions/metadata/applicable guards/tests. The current six marked
+definitions111/112/113/131/138/139 remain unique, including their unchanged Statements
+and guard/failure cells. No canonical definition is replaced by the optional audit
+reference. V12 remains complete in methods, with exact delta/unit scales, ordered
+minus/plus evaluation, centered/inward stencils, invalid-current/neither-probe
+failure, all covered potential/final applicability, unchanged branch/scaling/pivot
+rules and test vectors. The exact V10 scaling paragraph remains current: only
+uncapped active nonpositive-assimilation potential, exact D/Jy/pivot/step mapping,
+all excluded regimes/final solves and prohibited numerical substitutes.
+
+Admission supplies the complete operative counterparts of moved V11/V13/V2 prose:
+liquid-vapor anchor/domain, exactly zero-area direct row and no physical operands,
+distinct dry stem, and complete wet-store dual water/energy predicate with normal
+mass/enthalpy/area/ledger evaluation and all exclusions. It preserves b0-first and
+first-domain-valid halving order, complete prospective hydraulic/beta/temperature/
+humidity norms versus diagnostic ci, exact current-state acceptance/no trial
+installation, exact examined exponent in EXISTING cumulative diagnostics and no
+separate PUBLIC OR PERSISTED field. Every refusal, unchanged strict-decrease update,
+limit/rollback rule, positive/poison vector and two actual interior terminal-event
+FinalFixedCap iteration4/20-halving evidence duties is still mandatory.
+
+V2 import/FullSupply/migration rules retain positive-PAR results and explicitly
+respiration-dominated positive-low-light applicability; identity AND amount AND
+FullSupply, exact-zero request identity/amount, immutable-beginning full final
+reevaluation, all iteration-zero acceptance checks, exact zero step/backtrack/no
+Jacobian and all copied-potential exclusions remain. Partial positive ROOT supply
+under nonpositive assimilation stays typed unsupported, with forbidden floors,
+capacitance/attenuation/donation. Migration remains bitwise scientific preservation
+with complete owner identities and only identity/derived-receipt changes. All three
+typed error associations, their before-physics/envelope/no-V2-state chronology,
+default-off and production/output/cutover/snow-handoff/deployment/calibration/
+empirical-claim limits survive. The historical raw-fallback reference does not
+create dispatch authority: unchanged mandatory terminal and whole adjacent current
+snow contracts still resolve its expressly superseded lifecycle.
+
+All original moved blocks remain normative under audit-details#numerical-presentation-reference;
+the explicit reference/uncertainty route requires the complete section for original
+wording/source-interpretation/provenance adjudication. They do not become historical
+science or an alternative algorithm. The proof correctly distinguishes explanatory
+rationale/heading structure from operative predicates; no unique current duty relies
+on merely accessible old text. No direct physical incoming numerical-methods link
+to the moved V11/V13/V2 anchors was found in the inspected live specifications/tests/
+tools or candidate, consistent with the empty direct-rewrite list; logical definition
+identity is retained by the binding registry. Ordinary full-method review consumes
+current methods plus mandatory admission without pretending to audit original
+presentation provenance. Actual uncertainty can still expand that reference.
+
+The soil introduction accurately restates the retained TOL-SNOWENERGY-005 endpoint
+reseal1e-9 J m^-2/1e-8 K, unchanged applied equal/opposite heat and soil enthalpy,
+separate1e-6 J m^-2 physical closure and canonical retry/fail-closed response.
+The full original paragraphs remain. Terminal's positive statement accurately
+foregrounds below-active-policy LSEB-E-041 rejection BEFORE Newton, no candidate,
+byte-identical owners, exact-minimum ordinary positive support and zero no-physics.
+Neither statement modifies external current solver/lifecycle authority. These are
+legitimate source-bound presentations addressing S08-A01/A02, not evidence that a
+future reader will necessarily answer them correctly.
+
+The added replay paragraph is an accurate conjunction of its existing control
+paragraph: detailed oracle AND audit outside BOTH performance/timing and memory
+intervals, matched optional A/R audit posture and bounded compact timing counters.
+It neither substitutes matched outputs/observers for audit enabledness nor changes
+any per-series protocol limit, allocation rule, empirical claim or owner pause.
+All frozen protocol bodies and whole-external reading duties remain binding.
+The previously approved uniform private-inventory/final-omission-check procedure
+remains legitimate neutral reader procedure, without supplying a parent inventory,
+missed atoms or rubric answers, repairing08, or treating notes as authority.
+
+Independently recomputed prospective unions (not observations): bootstrap12021;
+solver204152; surface with whole methods207859; closure with methods intro/canonical
+section208105. Solver includes complete current methods10167 AND admission6549,
+whole water definitions/body, map/replay/current qualification and required common
+physical sections. Adding the prior actual5819-byte profile selection would make
+209971, still below211890; this is a forecast only. Surface already includes whole
+methods but not the distinct physical-capture qualification. Closure includes
+physical capture and selected methods; actual whole methods there would add3867,
+reaching211972. Similarly, adding4113 physical-capture bytes to the projected
+surface union would reach211972. These legitimate possible expansions are not
+forbidden or subtracted; there is no guarantee that every future reading choice
+fits the threshold. Actual sufficient first-reading unions control acceptance.
+No new scientific scope reduction is inferred to protect the projections.
+
+Live integration, stable-cut reviews, original frozen-rubric fresh results, any
+explicitly justified source/requirement-bound evidence reuse and terminal dual
+verification remain separate outstanding gates. Identity03/closure08 reuse requires
+its own exact applied-cut assessment; this prospective approval grants neither.
+
+
+### Iteration09 bounded final introduction trim and edge-proof clarification
+
+Static: focused exact re-review APPROVES implementation of revised manifest
+`8931cb4e6e844e6be7cde8962e341b566da4edd4a439229a1cde66135c971584`.
+Ran: all20 current hashes and368640 total bytes independently verified. Replacing
+only the numerical-methods hash with its previously reviewed2376d433… identity
+reconstructs the exact059431db… original manifest hash, independently proving the
+other19 member hashes unchanged. Restoring the prior introduction in memory also
+reconstructs that exact old methods hash, proving the sole scientific-file diff is
+the described291-byte generated introductory trim. No body, table, anchor, guard,
+definition, original block, dependency row or mandatory scope changed in this trim.
+
+The shorter introduction still expressly requires whole methods, whole admission
+and solve-boundary for solver correctness including represented-snow replay and
+both potential/fixed-final evaluation, retaining all numerical/owner/refusal/
+diagnostic/test duties and normative original reference with uncertainty-driven
+expansion. The unchanged methods dependency row and complete admission introduction
+retain standalone physical applicability; removing their duplicated explanation
+here does not narrow it. No new alternative solver or optional predicate results.
+
+The clarified edges.json now distinguishes zero direct moved-anchor rewrites from
+actual old/new dependency headers and introductory scope changes. This closes the
+evidence-presentation ambiguity of the earlier empty array; it does not claim zero
+dependency changes. All34 previously reviewed clause arguments remain applicable.
+
+Independently recomputed prospective totals are203861 solver,207568 surface with
+whole methods and207814 closure with selected methods; bootstrap12021 unchanged.
+Whole physical methods PLUS physical-capture qualification would now be211681,
+209 below211890. These remain projections: no actual read is subtracted and no
+scientific, reading or adoption result is inferred. Prior exact-proposal approval
+and outstanding applied-cut/freshness/terminal conditions otherwise remain intact.
+
+
+## Iteration09 applied integration and bounded prior-reading reuse
+
+Static: reviewed actual live generator integration and required-source duties after
+applying the approved20-file8931cb4e6e844e6be7cde8962e341b566da4edd4a439229a1cde66135c971584
+proposal. Ran: all20 live LSE hashes match that exact approved manifest; all30
+candidate-manifest members match actual files and manifest SHA-256
+`f9de0b38e122bd61f7a88f35a4798179f00421c50bce709c11f6d9de81e31969`.
+Independent isolated candidate AND adopted generator runs each produced20 files;
+the candidate matches all approved hashes, adopted differs only by the159-byte
+pending-adoption entry notice, and all30 live hashes remain unchanged afterward.
+Live original scientific-line/Statement and original fenced-body preservation
+functions both PASS. No physics or Rust regression execution was repeated by A.
+Parent's recorded98Python, strict17/100, unit/A049/0, bridge53/48legacy and eight
+Rust111PASS/18sameFAIL/36samepanics are distinct execution evidence; inherited FAILs
+are neither scientific preservation proof nor relabeled whole-suite PASS.
+
+The actual source-bound generator slices original V11/V13/V2 into the normative
+reference, retains complete V12/scaling and sole canonical rows in methods, adds
+the mandatory admission dependency and applies only the approved current wording.
+Its default remains candidate. It does not use the prospective proof as runtime
+science authority or adopt via an output-root side effect. The already independently
+reviewed34 operative mappings and explicit dependency changes apply unchanged to
+these exact live files. No lost or newly optional scientific duty was found.
+
+The156-row input inventory matches current path hashes exactly.154 rows are
+baseline-unchanged; the two explicitly different rows are LSE entry and registry
+index for the authorized migration/metadata change. Thus “156 inputs” does not
+mean every inventory member is baseline-identical. Bound unchanged Rust/helper/
+compiler/lint inputs support focused lint/format reuse with their recorded source
+identities, not a new execution claim. Custody09 receipt records capture_exit0 and
+verify_exit0; independently verified the actual retained bundle manifest SHA
+`7a1dbe73af4a47bb3ba2a5f1840ce70eb96f4be71f991fd0dc0ebddac62ede0d`
+at `/tmp/lse-correction-iteration09-bundle`. The receipt names canonical30,
+generator inputs, frozen procedures/protocols and original reports. This is source
+recoverability evidence, not independent full-log reading, offline scientific
+execution or delivered-token telemetry.
+
+**Closure08 bounded reuse: APPROVE for unchanged original task4 requirements.**
+The immutable report remains52341bytes/SHA
+`c51c237c1e9635890163a382c713b4e1c5f9f6b30a0e3048cce30de58294e25a`,
+with its actual208928 LSE-byte observation at645b816b55219c299c4db23c6096898c76e61680.
+Independently compared all33 original source identities against frozen source and
+live:28 are still byte-identical; changed members are admission, soil-coupling,
+solve-boundary, terminal-support and numerical-methods. Their changed hashes must
+not be labeled unchanged or as files freshly read by the original exercise agent.
+
+Actual closure08 read the complete admission interface, soil/boundary/terminal
+chapters and all six marked numerical definitions, their metadata and linked
+guards/tests; numerical-methods1–30/220–266 also exposed adjacent wet/migration
+prose. The current canonical-invariant/obligation tail matches that old tail
+BYTE-EXACTLY. The whole admission it already read now explicitly applies to both
+full-method and physical tasks, with positive-low-light/empirical-claim qualifiers
+that preserve its already-read original owner predicates. No previously omitted
+algorithm is made mandatory for accepted-primitive reconstruction by this change.
+The current methods introduction/dependencies continue to distinguish actual
+algorithm/equivalence review from this bounded accepted-primitive task. All required
+current physical/refusal/guard/test atoms are supplied by the old complete admission
+plus identical marked definitions and unchanged whole linked physical/error sources.
+The relocated original numerical-reference audit is not triggered by the report's
+scope: it makes no original-wording adjudication or solver-implementation claim.
+
+The soil/terminal additions restate original complete sections actually read.
+Closure08 already specifies pre-Newton support receipt and floor/zero behavior,
+and keeps physical closure, nonlinear/adaptive/event and exact-custody predicates
+separate. Its first answer does not claim a represented-snow endpoint-termination
+implementation audit; task1's omitted numerical TOL-005 answer is not newly imposed
+on task4. Physical capture, p61 missing high/credit evidence, WAT5 numeric vector,
+phase/spill/native joins, destination grouping/conversion, exact arithmetic and
+all five complete external owners are byte-identical. No new physical primitive,
+source provider, captured input, protocol, test duty or external expansion is
+needed to answer the unchanged task. Reuse preserves the original complete
+scientific/read/ledger/size PASS, not an assertion of new208928-byte reading at
+this changed cut. Current207814 selection is only a prospective comparison;
+no old voluntary/recovery bytes are subtracted.
+
+**Identity03 bounded reuse: APPROVE for unchanged original identity task.**
+The immutable report remains26674bytes/SHA
+`6b334dad06a38e4bd59eac206c0eb6e75a11d3e12e9c6b019394ce4c90884e88`
+and actual31428 LSE bytes at6938ca97dedb76c00ead9c2022b7d09adc7c1899.
+All23 old report hashes match that original cut.20 source identities still match
+live, including complete frozen protocol, reproduction inputs, owner-paused handoff,
+kickoff, metadata and reconstruction tooling. Entry/interface changed as previously
+reviewed; the old full qualification body is now full replay-evidence, NOT the new
+physical-capture chapter occupying qualification.md. Comparing old qualification
+to current replay-evidence confirms no original scientific/protocol paragraph was
+removed: differences are retained-identity title/routing, redundant always-interface
+row, correct relocated methods target, per-series wording and the explicit existing
+measurement-control restatement. Required source/protocol/input identities and
+historical-versus-prospective distinction remain complete.
+
+The old identity report concretely separates source/binary/protocol/claim identity,
+requires exact reconstruction and immutable executable/series inputs, independently
+sorted historical medians/ceilings, genuine raw capture, full current protocol and
+no promotion or inferred execution. It states detailed-oracle separation from
+performance/memory intervals and matched optional audit posture. It does NOT
+separately enumerate the phrase “detailed audit outside both intervals”; do not
+claim that literal completeness or reuse this bounded identity answer as a full
+solver-task/measurement-validity assessment. The original identity task conditions
+real experimental qualification on complete bound protocol/capture verification,
+which it actually read, and claims no measured result. A and B agree this scoped
+semantic reuse introduces no new duty or waiver and preserves the original bounded
+identity assessment; it does not certify that unseen audit/timing/memory controls
+were satisfied. The new control paragraph restates an existing rule, not a changed
+capture protocol or a retroactive pass for failed solver answers. Current31980
+identity-route bytes, if quoted, are a prediction rather than that agent's original
+31428 observation. Any actual later executable/protocol/requirement change reopens
+this reuse decision.
+
+Applied integration/preflight therefore permits freezing this substantive cut and
+launching genuinely fresh surface/solver attempts with the approved neutral private
+inventory and final completeness procedure. Prior08surface/solver FAILs remain
+immutable. General selective reading/adoption is still pending all required fresh
+results, dual stable-cut reviews, dispositions and dual terminal verification.
+Neither bounded prior-reading reuse is a new fresh execution or an all-source-hash
+equality claim, and neither closes scientific production HOLD.

@@ -10,7 +10,7 @@
 # Physical solve boundary
 
 Current ordered physical solve and acceptance boundary for physical rule selection
-and reconstruction from accepted primitives. Complete numerical-methods satisfies accepted-output admission duties.
+and reconstruction from accepted primitives. Complete numerical-methods WITH its required admission dependency satisfies accepted-output admission duties.
 The standalone accepted-primitive route requires the complete nonlinear-solve
 interface plus its unique definitions, guards and tests. Independent implementation, numerical-branch algorithm (including V10
 scaling/partial-root and V11–13 stencil/witness computation), or evaluator-equivalence

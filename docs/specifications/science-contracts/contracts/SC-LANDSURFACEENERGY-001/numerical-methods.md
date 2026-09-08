@@ -13,45 +13,16 @@
 | water-vapor.md#water-vapor | active water/ingress implementation or full water-owner audit | complete owner duties | whole chapter |
 | ../SC-VEGETATION-001.md#openwepp_c3_woody_v10-nonpositive-assimilation-amendment | V10 gas/evaluator equivalence or full solver correctness | V10 gas branch owner | whole external contract; frozen protocol scope |
 | ../SC-VEGETATION-001.md#purpose | cross-contract vegetation scope | vegetation scope | whole external contract; frozen protocol scope |
+| nonlinear-solve.md#nonlinear-solve | numerical-method correctness or accepted-solve admission | complete V2 ownership/FullSupply, inactive coordinates, no-update refusals, diagnostics and tests | whole chapter |
+| audit-details.md#numerical-presentation-reference | original numerical wording, source interpretation or provenance adjudication | retained normative V11/V13/V2 presentation; complete operative rules are in methods and required admission | section |
 
 <a id="nonlinear-solve"></a>
-# Nonlinear Solve
+# Current numerical methods
 
-Represented-snow reuse review covers potential and fixed-final solves, every applicable V10/V11–13 branch below, and complete solve-boundary error/acceptance rules, including initialization and diagnostics.
-
-Current complete ordered covered solver and V10-specific specialization. INV-138 retains the exact admitted closed-bound qualifier; valid-current/one-inadmissible-probe summaries do not broaden that scope. INV-139 accepts only the unchanged current iterate. V10 diagonal scaling remains potential/nonpositive-assimilation-only. Identity-anchor and leaf reuse are distinct limited optimizations; component replay additionally requires dependency-replay and its applicable qualification.
-
-<a id="version-11-inactive-liquid-vapor-coordinate-domain-amendment"></a>
-## Version 11 inactive liquid-vapor coordinate domain amendment
-
-The sun-leaf, shade-leaf, and wet-surface temperature coordinates use the
-covered solver's liquid-vapor saturation law, whose admitted phase domain
-begins at `T_ref = 273.15 K`. When one of those component coordinates is
-numerically inactive because its physical component area is exactly zero, or
-when the existing `INV-LANDSURFACEENERGY-113` wet-coordinate predicate has
-already proven its physical energy residual inside the canonical tolerance,
-its deterministic representational anchor is
-
-```text
-T_inactive_liquid_vapor - max(T_canopy, T_ref) = 0.
-```
-
-The dry-stem inactive anchor remains exactly `T_stem - T_canopy = 0` because
-that coordinate does not invoke the liquid-vapor law. The amended target only
-keeps an otherwise unconstrained numerical coordinate inside its existing
-constitutive domain. For an exactly zero-area component the Newton row is the
-direct deterministic anchor row; it does not inherit the nondifferentiable
-phase-boundary slope from a finite difference through `max`. An exactly
-zero-area component contributes no physical
-radiative, sensible, latent, mass, enthalpy, or ledger operand, and the
-existing V10 inactive-wet predicate still requires the unanchored physical
-wet-energy residual to pass before the row substitution. Active components,
-physical residual equations, tolerances, ledgers, receipts, events, the exact
-60-second raw fallback, backtracking limits, rollback, and fail-closed behavior
-are unchanged.
-
-| ID | Binding rule | Guard/failure |
-|---|---|---|
+Solver correctness (including represented-snow replay, potential and fixed-final)
+requires this whole chapter, whole admission and solve-boundary. All numerical,
+owner, refusal, diagnostic and test duties apply. Original wording remains
+normative in the reference; uncertainty expands reading.
 
 <a id="version-12-exact-closed-bound-finite-difference-amendment"></a>
 ## Version 12 exact closed-bound finite-difference amendment
@@ -103,107 +74,7 @@ the inward derivative rule is not scaling authority for any other solve.
 |---|---|---|
 | `INV-LANDSURFACEENERGY-138` | Every covered potential/final Jacobian retains centered differences for two valid probes and uses the unique inward one-sided difference only when a valid current iterate has exactly one inadmissible canonical probe. | beta lower/upper, active/zero-area canopy and liquid-bearing-ground vapor lower bound, interior centered, potential/final, invalid-current, and neither-probe poisons; typed `covered_jacobian_bound` rejection |
 
-<a id="version-13-first-domain-valid-no-update-termination-amendment"></a>
-## Version 13 first-domain-valid no-update termination amendment
-
-The covered solver already admits a no-update termination when the current
-complete normalized residual vector passes and a valid full Newton trial proves
-that every governed prospective component step is inside its unchanged
-threshold. A closed phase bound can make that full trial invalid, while an
-otherwise valid full trial can exceed one unchanged governed step threshold.
-In either case a deterministic halving can produce a domain-valid governed
-step too small to produce an observable strict residual decrease in binary64.
-
-### Witness coordinates and public/persisted diagnostics
-
-For both owner-uncapped potential and fixed-authorization final solves, first
-retain the existing no-update witness on a domain-valid full `b=0` Newton
-trial. If and only if the current complete residual vector passes and that
-full-trial witness cannot accept because the full trial is outside the existing
-covered-trial domain or any governed full-trial prospective step exceeds its
-unchanged threshold, examine the existing ordered backtracking sequence from
-`b=1` until its first domain-valid halved trial. A
-complete prospective evaluation of that trial supplies the exact applied
-hydraulic, beta, temperature and humidity norms and the diagnostic derived
-`ci` norm. When all four governed norms pass their unchanged thresholds,
-accept the current iterate without applying, projecting, or publishing any
-part of the trial. Record the prospective norms and add the exact examined
-exponent to the existing cumulative backtracking-count diagnostic; do not add a
-separate public or persisted field. Retain the current solution, evaluation,
-active branches, state, water requests/uses, ledgers, owner candidates, and
-closure operands exactly.
-
-The halved witness is refused when the current residual vector has any nonfinite or
-out-of-tolerance member; when the full trial itself passes the existing
-no-update witness; when the first domain-valid halved trial cannot be
-completely evaluated; or when any governed prospective step norm fails. After
-refusal, that same first domain-valid trial
-and all later factors remain eligible only under the unchanged strict-residual-
-decrease rule for an actual installed update. Exhaustion remains the existing
-typed backtracking-limit failure with exact rollback. The solver may not skip
-the first domain-valid candidate to obtain a smaller no-update witness.
-
-This amendment changes no closed bound, constitutive equation, residual or
-step threshold, finite-difference rule, pivot rule, iteration/backtracking
-limit, active branch, event chronology, 60-second floor, mass/energy ledger,
-receipt, custody, topology, publication, or rollback rule. It admits no trial
-clamp or projected state and does not turn strict decrease into a tolerance;
-strict decrease remains mandatory for every actual update.
-
-| ID | Binding rule | Guard/failure |
-|---|---|---|
-| `INV-LANDSURFACEENERGY-139` | After the full Newton trial fails the existing no-update witness by domain invalidity or a governed step excess, a passing current residual vector and passing governed step norms on the first domain-valid halved trial accept only the unchanged current iterate. | positive full-outside and full-step-excess/first-valid witnesses; residual/nonfinite, already-passing-full, per-thresholded-coordinate, prospective-evaluation and skip-first poisons; unchanged strict-decrease update/backtracking-limit/rollback vectors |
-
-Required real-consumer vectors are the two interior terminal-event paths that
-previously reached `FinalFixedCap` iteration 4 and exhausted 20 halvings. They
-must complete with current-state acceptance, unchanged owner closure, and no
-trial installation. Existing oracle backtracking-limit and genuine strict-
-decrease vectors remain required and must retain their prior disposition.
-
-<a id="openwepp_snow_free_lse_v2-v10-coupling-amendment"></a>
-## `OPENWEPP_SNOW_FREE_LSE_V2` V10 Coupling Amendment
-
-V2 imports every V1 control volume, tolerance, owner, rollback rule, and
-positive-PAR accepted result. It requires the V10 vegetation identity and
-admits its exact-zero-PAR and respiration-dominated positive-low-light
-branches. It does not recompute, clamp, or relabel V10 gas states.
-
-### Final-solve initialization and diagnostic accounting
-
-#### Full-supply initialization
-
-When every positive final water authorization is identity- and amount-equal to
-its potential request with `FullSupply`, and every canonical zero request
-retains its exact identity and zero amount, V2 uses the accepted potential
-coordinates as the deterministic fixed-final initial iterate. It rebuilds the
-complete fixed-final evaluation from immutable beginning owners and exact
-per-resource caps. No potential flux, candidate state, branch, receipt, or
-diagnostic is copied.
-
-#### Iteration-zero acceptance
-
-If that initial evaluation satisfies every residual tolerance, active-branch
-inequality, domain and bound, `F<=A<=D`, identity, and owner check, V2 accepts
-at iteration zero with exact-zero step norms and zero backtracking without
-constructing a Jacobian. Every actual solver step retains V1 strict-decrease
-and convergence rules. Copying the potential candidate without complete final
-reevaluation is forbidden. A residual outside tolerance or any branch,
-identity, owner, or amount mismatch cannot use this acceptance path.
-
-### V10 domain and numerical restrictions
-
-#### Authorization exclusions
-
-Nonpositive-assimilation partial positive root authorization is typed unsupported in V2.
-
-It does not invoke hydraulic attenuation, conductance or vulnerability floors,
-plant capacitance, or authorization donation.
-
-#### Derivative scope
-
-Every covered potential and final solve uses the exact closed-bound derivative
-rule in `INV-LANDSURFACEENERGY-138`. This general numerical-domain rule does
-not broaden the V10-only coordinate-scaling authority below.
+## V10 coordinate scaling
 
 #### V10 unit scaling
 
@@ -218,36 +89,6 @@ direction. It is forbidden for V1, V8/V9-derived behavior, positive-PAR V10,
 and fixed-final solves. Reducing the pivot multiplier, accepting a rejected
 pivot, regularization, larger iteration/trust bounds, or physiological floors
 is not an equivalent implementation.
-
-#### Potential wet-store eligibility
-
-When the uncapped V10 nonpositive-assimilation potential evaluation selects the
-canopy-liquid store-cap branch and the preliminary store rate is no larger
-than the canonical water residual tolerance, the wet-surface temperature is a
-numerically inactive coordinate: the wet-energy residual is already below its
-admitted closure scale and cannot determine that temperature. V2 replaces
-that one row with the existing inactive-component anchor
-`T_wet - max(T_canopy, 273.15 K) = 0`. Liquid mass, enthalpy, longwave area, and every owner
-ledger remain evaluated normally; no liquid amount is clamped or discarded.
-The predicate additionally requires the unanchored physical wet-energy
-residual already satisfy its canonical energy tolerance. It is unavailable to
-V1, positive-assimilation V10, condensation, or a constitutive-law wet flux.
-
-#### Identity migration
-
-V1-to-V2 migration validates complete V1 and V10 owner identities, copies all
-LSE scientific values bit-identically, and changes only the LSE identity and
-transitively derived receipts. V1 remains immutable and is not a V2 alias.
-
-| ID | Binding rule |
-|---|---|
-| `LSE-E-109` | V8/V9 vegetation identity, mixed V1/V2 receipts, or any owner alias rejects before V2 physics. |
-| `LSE-E-110` | Missing, duplicated, mutated, or locally recomputed V10 nighttime gas state rejects the coupled owner envelope. |
-| `LSE-E-111` | Partial or value-mutating V1-to-V2 migration rejects without a V2 state. |
-
-This amendment remains default-off. It authorizes no production selector,
-default/output change, cutover, snow handoff, deployment, calibration, or
-empirical claim.
 
 <a id="canonical-invariants"></a>
 ## Canonical invariants

@@ -13,7 +13,7 @@
 
 <a id="terminal-support"></a>
 # Terminal Support
-Current receiver/regime and positive-support admission rules. The released covered-forest policy is exactly 60000000000 ns; wire chronology at one nanosecond is not physical admission. Earlier floor-dependent evidence is superseded only as stated. V3 remains snow-free; represented snow uses one separate standard native covered map and retains inactive litter bytes.
+Current receiver/regime and positive-support admission rules. The released covered-forest policy is exactly 60000000000 ns; wire chronology at one nanosecond is not physical admission. Positive support below the active policy minimum rejects with LSEB-E-041 BEFORE Newton, returns no candidate, and leaves every owner byte-identical. Exactly the minimum is an ordinary positive-support solve; zero support performs no physical solve. Earlier floor-dependent evidence is superseded only as stated. V3 remains snow-free; represented snow uses one separate standard native covered map and retains inactive litter bytes.
 
 <a id="terminal-receiver-remaining-support-amendment"></a>
 ## Terminal Receiver Remaining-Support Amendment

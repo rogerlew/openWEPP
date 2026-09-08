@@ -106,6 +106,14 @@ record; missing or unexplained dropped records invalidate coverage evidence.
 
 ### Detailed oracle/audit exclusion from both timing and memory
 
+The measurement controls are conjunctive: detailed ORACLE work and detailed AUDIT
+work both run outside BOTH timing/performance intervals and memory intervals.
+A and R must have matched OPTIONAL AUDIT posture and bounded COMPACT timing
+counters. Matching observers, output settings or counters alone does not replace
+matched optional-audit posture; calling detailed work an audit does not admit it
+inside a measurement interval. These are existing experiment controls, not new
+permission to run the owner-paused protocol.
+
 Require nonzero completed component replay on the real primary workload;
 eligibility alone is insufficient. Neither an all-centered sweep nor a
 hardcoded 54/14/16/24 pattern is required by this protocol. Existing lawful

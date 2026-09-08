@@ -5,12 +5,13 @@
 |---|---|---|---|
 | numerical-methods.md#canonical-invariants | accepted-solve admission | unique INV-111/112/113/131/138/139 definitions and applicable guards/tests | section |
 | solve-boundary.md#solve-boundary | accepted-solve admission | complete physical evaluation, domain, error and acceptance order; INV-108–110 | whole chapter |
-| numerical-methods.md#nonlinear-solve | solver algorithm, numerical-branch implementation or evaluator equivalence review | all original numerical methods, branch qualifiers and test duties | whole chapter |
+| numerical-methods.md#nonlinear-solve | solver algorithm, numerical-branch implementation or evaluator equivalence review | complete current numerical methods, branch qualifiers and test duties | whole chapter |
 
 <a id="nonlinear-solve"></a>
 # Accepted-solve admission
 
-This complete interface supports reconstruction from accepted physical primitives.
+This complete interface governs accepted-solve predicates in full numerical-method
+review AND reconstruction from accepted physical primitives.
 It preserves the admission conditions below; it does not establish that an unseen
 solver followed its algorithm. Actual algorithm/branch implementation or equivalence
 claims require the complete numerical-methods chapter. Read its selected canonical
@@ -20,7 +21,7 @@ identities or primitive values remain missing; no result is inferred from eligib
 ## V2 ownership and fixed-final admission
 
 V2 imports V1 control volumes, tolerances, owners, rollback and positive-PAR accepted
-results, with V10 identity and its exact-zero-PAR/respiration-dominated low-light
+results, with V10 identity and its exact-zero-PAR/respiration-dominated positive-low-light
 branches. It never recomputes, clamps or relabels gas state. Nonpositive-assimilation
 partial positive ROOT authorization is typed unsupported; no attenuation, conductance/
 vulnerability floor, capacitance or authorization donation follows.
@@ -43,7 +44,7 @@ bitwise, changing only LSE identity/transitively derived receipts. V1 remains im
 not an alias. V8/V9 identity, mixed receipts or owner alias fail LSE-E-109 before
 physics; missing/duplicate/mutated/recomputed V10 nighttime gas fails envelope -110;
 partial/value-mutating migration fails -111 without a V2 state. Default-off and all
-production/output/cutover/snow-handoff/deployment/calibration limits remain unchanged.
+production/output/cutover/snow-handoff/deployment/calibration/empirical-claim limits remain unchanged.
 
 ## Inactive temperature is a numerical representation
 

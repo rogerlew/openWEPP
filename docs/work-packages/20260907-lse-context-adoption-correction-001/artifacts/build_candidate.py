@@ -508,4 +508,67 @@ new='[physical capture]('+prefix+'qualification.md#qualification)'
 text=text.replace(old,new)
 text='\n'.join(line.replace(' |','|').replace('| ','|') if line.startswith('|') else line for line in text.splitlines())+'\n'
 ENTRY.write_text(text)
+
+# Iteration9: complete current methods plus mandatory admission. Independent
+# clause equivalence preserves the full original normative reference wording.
+f=DEST/'numerical-methods.md';s=f.read_text()
+a11=s.index('<a id="version-11-inactive-liquid-vapor-coordinate-domain-amendment">')
+a12=s.index('<a id="version-12-exact-closed-bound-finite-difference-amendment">')
+a13=s.index('<a id="version-13-first-domain-valid-no-update-termination-amendment">')
+a2=s.index('<a id="openwepp_snow_free_lse_v2-v10-coupling-amendment">')
+a_defs=s.index('<a id="canonical-invariants">')
+scale_start=s.index('#### V10 unit scaling');scale_end=s.index('#### Potential wet-store eligibility',scale_start)
+header=s[:s.index('<a id="nonlinear-solve">')].rstrip()+'\n'
+header+='| nonlinear-solve.md#nonlinear-solve | numerical-method correctness or accepted-solve admission | complete V2 ownership/FullSupply, inactive coordinates, no-update refusals, diagnostics and tests | whole chapter |\n'
+header+='| audit-details.md#numerical-presentation-reference | original numerical wording, source interpretation or provenance adjudication | retained normative V11/V13/V2 presentation; complete operative rules are in methods and required admission | section |\n\n'
+intro='''<a id="nonlinear-solve"></a>
+# Current numerical methods
+
+Solver correctness (including represented-snow replay, potential and fixed-final)
+requires this whole chapter, whole admission and solve-boundary. All numerical,
+owner, refusal, diagnostic and test duties apply. Original wording remains
+normative in the reference; uncertainty expands reading.
+
+'''
+new=header+intro+s[a12:a13]+'## V10 coordinate scaling\n\n'+s[scale_start:scale_end]+s[a_defs:]
+f.write_text(new)
+originals=s[a11:a12]+s[a13:a_defs]
+audit=DEST/'audit-details.md';audit.write_text(audit.read_text().rstrip()+'''\n\n<a id="numerical-presentation-reference"></a>
+# Numerical presentation reference
+
+Original normative V11/V13/V2 wording is retained below. The complete operative
+rules and evidence duties are required through numerical-methods and its admission
+dependency. No requirement is historical or waived; source/interpretation
+adjudication reads this whole section.
+
+'''+originals)
+# Any original direct section reference still resolves to its entire original body.
+moved=['version-11-inactive-liquid-vapor-coordinate-domain-amendment','version-13-first-domain-valid-no-update-termination-amendment','openwepp_snow_free_lse_v2-v10-coupling-amendment']
+for f in [ENTRY,*DEST.glob('*.md')]:
+ text=f.read_text()
+ for anchor in moved:
+  old='numerical-methods.md#'+anchor;new='audit-details.md#'+anchor
+  text=text.replace(old,new)
+ f.write_text(text)
+f=DEST/'solve-boundary.md';text=f.read_text();old='Complete numerical-methods satisfies accepted-output admission duties.';new='Complete numerical-methods WITH its required admission dependency satisfies accepted-output admission duties.';assert old in text;f.write_text(text.replace(old,new))
+f=DEST/'nonlinear-solve.md';text=f.read_text().replace('all original numerical methods, branch qualifiers and test duties','complete current numerical methods, branch qualifiers and test duties')
+text=text.replace('This complete interface supports reconstruction from accepted physical primitives.','This complete interface governs accepted-solve predicates in full numerical-method\nreview AND reconstruction from accepted physical primitives.')
+text=text.replace('respiration-dominated low-light', 'respiration-dominated positive-low-light').replace('deployment/calibration limits', 'deployment/calibration/empirical-claim limits')
+f.write_text(text)
+f=DEST/'replay-evidence.md';text=f.read_text();needle='### Detailed oracle/audit exclusion from both timing and memory\n';assert needle in text
+text=text.replace(needle,needle+'''\nThe measurement controls are conjunctive: detailed ORACLE work and detailed AUDIT
+work both run outside BOTH timing/performance intervals and memory intervals.
+A and R must have matched OPTIONAL AUDIT posture and bounded COMPACT timing
+counters. Matching observers, output settings or counters alone does not replace
+matched optional-audit posture; calling detailed work an audit does not admit it
+inside a measurement interval. These are existing experiment controls, not new
+permission to run the owner-paused protocol.\n''')
+f.write_text(text)
+f=DEST/'soil-coupling.md';text=f.read_text();pos=text.index('\n<a id=',text.index('# Soil Coupling')+1)
+text=text[:pos]+'\n## Endpoint reseal and physical closure\n\nAt the represented-snow soil boundary, TOL-SNOWENERGY-005 retains the exact\nequal/opposite heat ALREADY consumed by snow and soil. Reconstructed installed\nendpoints must agree within 1e-9 J m^-2 and 1e-8 K before the consumed receipt\nis resealed to those exact installed candidate identities. Resealing changes\nneither soil enthalpy nor applied credit. The independent physical-ledger closure\nthreshold remains 1e-6 J m^-2; endpoint consistency is not a substitute for it.\nReconstruct both from primitive operands. Larger/nonfinite endpoint residuals\nretain the canonical retry/iteration-limit and fail-closed response, never heat\nrepair. The complete original boundary and validation rules below remain required.\n'+text[pos:]
+f.write_text(text)
+f=DEST/'terminal-support.md';text=f.read_text();needle='wire chronology at one nanosecond is not physical admission.'
+assert needle in text
+text=text.replace(needle,needle+' Positive support below the active policy minimum rejects with LSEB-E-041 BEFORE Newton, returns no candidate, and leaves every owner byte-identical. Exactly the minimum is an ordinary positive-support solve; zero support performs no physical solve.',1)
+f.write_text(text)
 print('entry',ENTRY.stat().st_size,'interface',(DEST/'interface.md').stat().st_size,'total',ENTRY.stat().st_size+sum(f.stat().st_size for f in DEST.glob('*.md')))

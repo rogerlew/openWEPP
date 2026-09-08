@@ -1,4 +1,10 @@
-# Reading evidence and current limits
+# Iteration9 current reading state
+Static: exact20file368640byte candidate; always-read12021. Direct checks pass.
+Fresh09surface/solver NOT RUN. Closure08/identity03 bounded current reuse approved independently by A/B.
+Original cuts/counts retained; identity approval covers its identity task only. Projections in predicted-reading.json are not observed reading or tokens.
+All08firstresults below remain tied to645b; no repair or retrospective subtraction.
+
+# Completed iteration8 evidence
 Static: current source645b816b5; complete20file candidate365724bytes, always-read12021.
 Ran: fresh source-reading exercises and independent A/B source/range/accounting checks.
 No scientific production execution, delivered-model-token or whole-workflow claim.

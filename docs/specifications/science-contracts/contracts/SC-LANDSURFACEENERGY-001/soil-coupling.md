@@ -15,6 +15,18 @@
 # Soil Coupling
 Current surface humidity/thermal-state and soil transfer rules, plus the separate persistent represented-snow bottom-volume/first-OFE-node boundary. Select the actual regime; tile and OFE/lane bases never alias. Exact storage representation is owned by soil-custody and surface-custody.
 
+## Endpoint reseal and physical closure
+
+At the represented-snow soil boundary, TOL-SNOWENERGY-005 retains the exact
+equal/opposite heat ALREADY consumed by snow and soil. Reconstructed installed
+endpoints must agree within 1e-9 J m^-2 and 1e-8 K before the consumed receipt
+is resealed to those exact installed candidate identities. Resealing changes
+neither soil enthalpy nor applied credit. The independent physical-ledger closure
+threshold remains 1e-6 J m^-2; endpoint consistency is not a substitute for it.
+Reconstruct both from primitive operands. Larger/nonfinite endpoint residuals
+retain the canonical retry/iteration-limit and fail-closed response, never heat
+repair. The complete original boundary and validation rules below remain required.
+
 <a id="surface-humidity-surface-enthalpy-litter-and-soil-heat"></a>
 ### Surface humidity, surface enthalpy, litter, and soil heat
 

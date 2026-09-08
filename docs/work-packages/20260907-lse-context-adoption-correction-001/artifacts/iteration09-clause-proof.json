@@ -1,0 +1,300 @@
+{
+  "kind": "Parent static argument for independent exact review, not automated semantic proof",
+  "source": "645b816b55219c299c4db23c6096898c76e61680 numerical-methods.md",
+  "proposal_manifest_sha256": "8931cb4e6e844e6be7cde8962e341b566da4edd4a439229a1cde66135c971584",
+  "rows": [
+    {
+      "block": 0,
+      "original_sha256": "8596fd17e40e275924348ed72b630c612f979914ad2dff9bba57c0396aa17bfe",
+      "original": "<a id=\"version-11-inactive-liquid-vapor-coordinate-domain-amendment\"></a>\n## Version 11 inactive liquid-vapor coordinate domain amendment",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 1,
+      "original_sha256": "6b25e1a0294707daea087fd2986642c928bfa1283dbff3aef60a92a1d0414e72",
+      "original": "The sun-leaf, shade-leaf, and wet-surface temperature coordinates use the\ncovered solver's liquid-vapor saturation law, whose admitted phase domain\nbegins at `T_ref = 273.15 K`. When one of those component coordinates is\nnumerically inactive because its physical component area is exactly zero, or\nwhen the existing `INV-LANDSURFACEENERGY-113` wet-coordinate predicate has\nalready proven its physical energy residual inside the canonical tolerance,\nits deterministic representational anchor is",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#inactive-temperature-is-a-numerical-representation + numerical-methods.md#version-12-exact-closed-bound-finite-difference-amendment",
+      "equivalence_argument": "Sun/shade/wet liquid-vapor T_ref273.15 and closed domain; exactly-zero area OR complete INV113 wet predicate; max anchor. Full V12 keeps actual closed-domain bounds."
+    },
+    {
+      "block": 2,
+      "original_sha256": "ba6ea4f3772d0e8d1cdc49b8560022050ff00f0afb1997e169d6441843ef6e6e",
+      "original": "```text\nT_inactive_liquid_vapor - max(T_canopy, T_ref) = 0.\n```",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#inactive-temperature-is-a-numerical-representation",
+      "equivalence_argument": "Exact T−max(Tcanopy,Tref)=0 formula; original fenced formula retained byte-identically in audit."
+    },
+    {
+      "block": 3,
+      "original_sha256": "b30b81d60d901b5bd776d60ffc9c7deeb59187fe68b70590798d4c5e208c1121",
+      "original": "The dry-stem inactive anchor remains exactly `T_stem - T_canopy = 0` because\nthat coordinate does not invoke the liquid-vapor law. The amended target only\nkeeps an otherwise unconstrained numerical coordinate inside its existing\nconstitutive domain. For an exactly zero-area component the Newton row is the\ndirect deterministic anchor row; it does not inherit the nondifferentiable\nphase-boundary slope from a finite difference through `max`. An exactly\nzero-area component contributes no physical\nradiative, sensible, latent, mass, enthalpy, or ledger operand, and the\nexisting V10 inactive-wet predicate still requires the unanchored physical\nwet-energy residual to pass before the row substitution. Active components,\nphysical residual equations, tolerances, ledgers, receipts, events, the exact\n60-second raw fallback, backtracking limits, rollback, and fail-closed behavior\nare unchanged.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#inactive-temperature-is-a-numerical-representation; #no-update-acceptance-retains-the-current-physical-state; whole solve-boundary/terminal",
+      "equivalence_argument": "Inactive dry-stem Tstem−Tcanopy because no liquid-vapor; zero-area direct row, no finite difference through max; no radiative/sensible/latent/mass/enthalpy/ledger operand; wet unanchored physical residual passes first; active equations/tolerances/ledgers/receipts/events/backtracking/rollback/fail-closed preserved. Current support rules remain mandatory; original historical raw-fallback wording survives normative reference under applicable later external supersession, not new dispatch authority."
+    },
+    {
+      "block": 4,
+      "original_sha256": "f9ee9f543ce03dbc0c44e150e68f6e000b9e15756318a6eaaba9ad2029fe8b26",
+      "original": "| ID | Binding rule | Guard/failure |\n|---|---|---|",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 5,
+      "original_sha256": "f291fc6e730cd98b3e1800e547302fcf1d83c778ea7f6d7be915712ad8bc5143",
+      "original": "<a id=\"version-13-first-domain-valid-no-update-termination-amendment\"></a>\n## Version 13 first-domain-valid no-update termination amendment",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 6,
+      "original_sha256": "de9008682ae1009e9c8fc879145c564f4191c69181d6a2815ea48f8269c1e7e1",
+      "original": "The covered solver already admits a no-update termination when the current\ncomplete normalized residual vector passes and a valid full Newton trial proves\nthat every governed prospective component step is inside its unchanged\nthreshold. A closed phase bound can make that full trial invalid, while an\notherwise valid full trial can exceed one unchanged governed step threshold.\nIn either case a deterministic halving can produce a domain-valid governed\nstep too small to produce an observable strict residual decrease in binary64.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#no-update-acceptance-retains-the-current-physical-state",
+      "equivalence_argument": "Existing domain-valid full b0 witness priority, current complete normalized residuals pass, full domain-invalid or governed-step excess before halved witness. Small-step binary64 explanatory rationale remains reference; strict decrease requirement fully current."
+    },
+    {
+      "block": 7,
+      "original_sha256": "13e7088764ca51348a7e8152bf93cba8aed1df22a857b6473499972b1a651179",
+      "original": "### Witness coordinates and public/persisted diagnostics",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 8,
+      "original_sha256": "10242a6c57e0f3e634940b16603d751d1ce583cb2d8d7f5473af34c5bf78d3d3",
+      "original": "For both owner-uncapped potential and fixed-authorization final solves, first\nretain the existing no-update witness on a domain-valid full `b=0` Newton\ntrial. If and only if the current complete residual vector passes and that\nfull-trial witness cannot accept because the full trial is outside the existing\ncovered-trial domain or any governed full-trial prospective step exceeds its\nunchanged threshold, examine the existing ordered backtracking sequence from\n`b=1` until its first domain-valid halved trial. A\ncomplete prospective evaluation of that trial supplies the exact applied\nhydraulic, beta, temperature and humidity norms and the diagnostic derived\n`ci` norm. When all four governed norms pass their unchanged thresholds,\naccept the current iterate without applying, projecting, or publishing any\npart of the trial. Record the prospective norms and add the exact examined\nexponent to the existing cumulative backtracking-count diagnostic; do not add a\nseparate public or persisted field. Retain the current solution, evaluation,\nactive branches, state, water requests/uses, ledgers, owner candidates, and\nclosure operands exactly.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#no-update-acceptance-retains-the-current-physical-state",
+      "equivalence_argument": "Both potential/fixed-final; full b0 first; all current residuals; full trial domain-invalid OR governed excess; ordered b1 through FIRST domain-valid; complete hydraulic/beta/temp/humidity and diagnostic ci; all4pass; accept CURRENT only/no apply/project/publish trial; prospective norms plus exact exponent into EXISTING cumulative backtracking; no new PUBLIC OR PERSISTED field; solution/evaluation/branches/state/waterrequestsuses/ledgers/ownercandidates/closure unchanged."
+    },
+    {
+      "block": 9,
+      "original_sha256": "e22a78d7c13a37f81611e2aaab9a70e14e419c90fb9acffb19a763574bbce5ef",
+      "original": "The halved witness is refused when the current residual vector has any nonfinite or\nout-of-tolerance member; when the full trial itself passes the existing\nno-update witness; when the first domain-valid halved trial cannot be\ncompletely evaluated; or when any governed prospective step norm fails. After\nrefusal, that same first domain-valid trial\nand all later factors remain eligible only under the unchanged strict-residual-\ndecrease rule for an actual installed update. Exhaustion remains the existing\ntyped backtracking-limit failure with exact rollback. The solver may not skip\nthe first domain-valid candidate to obtain a smaller no-update witness.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#no-update-acceptance-retains-the-current-physical-state",
+      "equivalence_argument": "Refuse nonfinite/failing current residual, already-passing full, incomplete first-valid evaluation or failed governed norm; cannot skip firstvalid for smaller witness; that and later trials install only strict-decrease updates; exhaustion typed limit and exact rollback."
+    },
+    {
+      "block": 10,
+      "original_sha256": "44065052fc59cc0db919b733842184b8f0c417302ea61511bea44c1704cd72e6",
+      "original": "This amendment changes no closed bound, constitutive equation, residual or\nstep threshold, finite-difference rule, pivot rule, iteration/backtracking\nlimit, active branch, event chronology, 60-second floor, mass/energy ledger,\nreceipt, custody, topology, publication, or rollback rule. It admits no trial\nclamp or projected state and does not turn strict decrease into a tolerance;\nstrict decrease remains mandatory for every actual update.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#no-update-acceptance-retains-the-current-physical-state",
+      "equivalence_argument": "No bound/equation/residual-or-step-threshold/stencil/pivot/iteration-halving limit/activebranch/event/floor/mass-energy/receipt/custody/topology/publication/rollback change; no clamp/projectedstate/tolerance substitution for strict decrease."
+    },
+    {
+      "block": 11,
+      "original_sha256": "066ed766a8c6901016ccd5031f3c18ef4a0ab77610c21bae2c7fe3826a167e39",
+      "original": "| ID | Binding rule | Guard/failure |\n|---|---|---|\n| `INV-LANDSURFACEENERGY-139` | After the full Newton trial fails the existing no-update witness by domain invalidity or a governed step excess, a passing current residual vector and passing governed step norms on the first domain-valid halved trial accept only the unchanged current iterate. | positive full-outside and full-step-excess/first-valid witnesses; residual/nonfinite, already-passing-full, per-thresholded-coordinate, prospective-evaluation and skip-first poisons; unchanged strict-decrease update/backtracking-limit/rollback vectors |",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md final evidence paragraphs + numerical-methods.md#canonical-invariants INV139",
+      "equivalence_argument": "Original plain reference table retained audit. Current complete witness rule and positive full-outside/full-step-excess FIRSTvalid successes, residual/nonfinite/alreadypassingfull/pergovernedcoordinate/evaluation/skipfirst poisons; strictdecrease/limit/rollback tests remain explicit; sole marked139 stayscurrent."
+    },
+    {
+      "block": 12,
+      "original_sha256": "f76dff4b55393ba1f0fcb294c3202306f492fb08c65bd92bd6709d6d18073636",
+      "original": "Required real-consumer vectors are the two interior terminal-event paths that\npreviously reached `FinalFixedCap` iteration 4 and exhausted 20 halvings. They\nmust complete with current-state acceptance, unchanged owner closure, and no\ntrial installation. Existing oracle backtracking-limit and genuine strict-\ndecrease vectors remain required and must retain their prior disposition.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md final evidence paragraphs",
+      "equivalence_argument": "Two actual interior terminal-event paths formerly FinalFixedCap iteration4 exhausting20halvings; currentstateacceptance/unchangedclosure/noinstall; existing oracle-limit and genuine strict-decrease dispositions retained. No execution inferred."
+    },
+    {
+      "block": 13,
+      "original_sha256": "2d34beb7c538855def3b999041facf96ffedb558326ac269eba803fea3e5fff3",
+      "original": "<a id=\"openwepp_snow_free_lse_v2-v10-coupling-amendment\"></a>\n## `OPENWEPP_SNOW_FREE_LSE_V2` V10 Coupling Amendment",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 14,
+      "original_sha256": "84b1fe4e4c9d5443d2dae12c0966114b198a4290f483fa9db01946701a248328",
+      "original": "V2 imports every V1 control volume, tolerance, owner, rollback rule, and\npositive-PAR accepted result. It requires the V10 vegetation identity and\nadmits its exact-zero-PAR and respiration-dominated positive-low-light\nbranches. It does not recompute, clamp, or relabel V10 gas states.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#v2-ownership-and-fixed-final-admission + solve-boundary.md INV109",
+      "equivalence_argument": "Every V1controlvolume/tolerance/owner/rollback/positivePARaccepted result; V10identity/exactzeroPAR/respiration-dominated POSITIVE lowlight; no recompute/clamp/relabel gasstate. Explicit positive-low-light restored in compact wording."
+    },
+    {
+      "block": 15,
+      "original_sha256": "8cb5c000b0f1b3d66b85a34d3915492dc19fdc5f4870ee0386a89c7003bf7f3e",
+      "original": "### Final-solve initialization and diagnostic accounting",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 16,
+      "original_sha256": "6499652c5d5ca5c4d3e9a3b76ad3fbe584ae55a7826ab90158878e5d310efc0f",
+      "original": "#### Full-supply initialization",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 17,
+      "original_sha256": "7e6d2c8b25e7af025fccba045a0af46bf5a47f4f167d52706db969670248d4b5",
+      "original": "When every positive final water authorization is identity- and amount-equal to\nits potential request with `FullSupply`, and every canonical zero request\nretains its exact identity and zero amount, V2 uses the accepted potential\ncoordinates as the deterministic fixed-final initial iterate. It rebuilds the\ncomplete fixed-final evaluation from immutable beginning owners and exact\nper-resource caps. No potential flux, candidate state, branch, receipt, or\ndiagnostic is copied.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#v2-ownership-and-fixed-final-admission + solve-boundary.md INV110",
+      "equivalence_argument": "Every positive authorization identity AND amount equal potential AND FullSupply; every zero exactidentity AND zeroamount; only acceptedpotentialcoordinates initialize; COMPLETE immutablebeginning/exactcaps evaluation; no potentialflux/candidatestate/branch/receipt/diagnostic copied."
+    },
+    {
+      "block": 18,
+      "original_sha256": "8501fa301b0fdcc32fc967661b94fef82112f6e13d2453d907eac2caae8082ba",
+      "original": "#### Iteration-zero acceptance",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 19,
+      "original_sha256": "87645617c50247485a3231825a47280669ad109568bac6b865728c80bc90e50b",
+      "original": "If that initial evaluation satisfies every residual tolerance, active-branch\ninequality, domain and bound, `F<=A<=D`, identity, and owner check, V2 accepts\nat iteration zero with exact-zero step norms and zero backtracking without\nconstructing a Jacobian. Every actual solver step retains V1 strict-decrease\nand convergence rules. Copying the potential candidate without complete final\nreevaluation is forbidden. A residual outside tolerance or any branch,\nidentity, owner, or amount mismatch cannot use this acceptance path.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#v2-ownership-and-fixed-final-admission + solve-boundary.md INV110",
+      "equivalence_argument": "Every residualtol/activebranch/domainbound/F≤A≤D/identityowner passes; iteration0exactzerostepnorm/zerobacktracking/NOJacobian; actualsteps strictdecrease/convergence; anyresidual/branch/identity/owner/amount mismatch forbids; no copiedcandidate."
+    },
+    {
+      "block": 20,
+      "original_sha256": "68939107486765f0c67ab85d17c7e7ce130696cc02243dbd15b071a03be3fe42",
+      "original": "### V10 domain and numerical restrictions",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 21,
+      "original_sha256": "a70e191e7ca1d5fa20b2575b24565a39d830ab4bce6f3ebe0ce99b5a1e066931",
+      "original": "#### Authorization exclusions",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 22,
+      "original_sha256": "aaaa81f65f4216ea4e6647f65f9eb338a4ab77c2f1f6afa9db2626e682e5a80b",
+      "original": "Nonpositive-assimilation partial positive root authorization is typed unsupported in V2.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#v2-ownership-and-fixed-final-admission + numerical-methods.md INV111",
+      "equivalence_argument": "Nonpositive-assimilation partial POSITIVE ROOT authorization typedunsupported."
+    },
+    {
+      "block": 23,
+      "original_sha256": "65d6430999abbeea9693c9da178194d43bd6c8f942ee749f71d2cb9472eadb4c",
+      "original": "It does not invoke hydraulic attenuation, conductance or vulnerability floors,\nplant capacitance, or authorization donation.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#v2-ownership-and-fixed-final-admission",
+      "equivalence_argument": "No attenuation, conductance/vulnerability floor, plant capacitance, authorization donation."
+    },
+    {
+      "block": 24,
+      "original_sha256": "b61e64215e594d86ed50144930bb283db016da9f8c5774b66cd045df85a6ad69",
+      "original": "#### Derivative scope",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 25,
+      "original_sha256": "76f6af133c13ad25f5fd321aac752f7b087618d90d3eff771078c685e11f7c15",
+      "original": "Every covered potential and final solve uses the exact closed-bound derivative\nrule in `INV-LANDSURFACEENERGY-138`. This general numerical-domain rule does\nnot broaden the V10-only coordinate-scaling authority below.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "numerical-methods.md#version-12-exact-closed-bound-finite-difference-amendment",
+      "equivalence_argument": "ENTIRE original V12 retained current: every coveredpotential/final exactclosed-bound derivative; no broadeningV10-onlyscaling. Every original domain, order, delta, formula, refusal, exclusion and vector table is byte-preserved in currentlayer."
+    },
+    {
+      "block": 26,
+      "original_sha256": "b451c66388ef01f8be1d153314e3049aeede9bb2d72074b9731ded60b6eb4005",
+      "original": "#### V10 unit scaling",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 27,
+      "original_sha256": "daee7b7a00ae1d88d2fa4f1144a630f9f623532defb0a710d8380d37331e8705",
+      "original": "For that same uncapped active V10 nonpositive-assimilation potential solve only, the\nNewton linear system is expressed in the declared coordinate units. With\n`x = D y`, where `D` is the exact finite-difference unit-scale diagonal, the\nsolver forms `J_y[:,j] = J_x[:,j] * D[j]`, applies the canonical pivot test to\n`J_y`, solves `J_y delta_y = -r`, and maps\n`delta_x[j] = D[j] * delta_y[j]`. This deterministic nondimensionalization\nchanges neither the residual equations nor the represented physical Newton\ndirection. It is forbidden for V1, V8/V9-derived behavior, positive-PAR V10,\nand fixed-final solves. Reducing the pivot multiplier, accepting a rejected\npivot, regularization, larger iteration/trust bounds, or physiological floors\nis not an equivalent implementation.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "numerical-methods.md#v10-unit-scaling",
+      "equivalence_argument": "ENTIRE original scaling paragraph retained current verbatim: uncappedactiveV10nonpositive potential only; x=Dy, exactFDunitsD; Jy=JxD; pivotJy; solveJyδy=−r; δx=Dδy; unchangedphysicaldirection/residuals; forbidV1/V8V9/positivePARV10/final; no pivotmultiplier/rejectedpivot/regularization/iterationtrust/physiologicalfloor substitute."
+    },
+    {
+      "block": 28,
+      "original_sha256": "766cb381d954de636f97a54faa1cc122f1b8630d9b91ee8b569aa7444fcecb18",
+      "original": "#### Potential wet-store eligibility",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 29,
+      "original_sha256": "44c8236f9c1861ef5cba55c1d38061040199670ff8420edb8d348e0ea8ccb1d5",
+      "original": "When the uncapped V10 nonpositive-assimilation potential evaluation selects the\ncanopy-liquid store-cap branch and the preliminary store rate is no larger\nthan the canonical water residual tolerance, the wet-surface temperature is a\nnumerically inactive coordinate: the wet-energy residual is already below its\nadmitted closure scale and cannot determine that temperature. V2 replaces\nthat one row with the existing inactive-component anchor\n`T_wet - max(T_canopy, 273.15 K) = 0`. Liquid mass, enthalpy, longwave area, and every owner\nledger remain evaluated normally; no liquid amount is clamped or discarded.\nThe predicate additionally requires the unanchored physical wet-energy\nresidual already satisfy its canonical energy tolerance. It is unavailable to\nV1, positive-assimilation V10, condensation, or a constitutive-law wet flux.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#inactive-temperature-is-a-numerical-representation + numerical-methods.md INV113/131",
+      "equivalence_argument": "ALL uncappedV10nonpositive potential/STORE-CAP/preliminaryrate≤watertol/unanchoredphysicalwet-energytol predicates; max(Tcanopy,273.15) anchor; normallyevaluate liquidmass/enthalpy/longwavearea/everyowner; no clamp/discard; forbidV1/positiveV10/condensation/constitutivelaw wetflux. Smallpositive rate allowed; no erroneous exactzero substitute."
+    },
+    {
+      "block": 30,
+      "original_sha256": "4a09520df9e6ece187aecdf57d65a313665d6ea636c9f7b0e77602671d4beaeb",
+      "original": "#### Identity migration",
+      "kind": "structure",
+      "mandatory_current_destination": "audit-details.md#numerical-presentation-reference",
+      "equivalence_argument": "Heading/empty table structure retained exactly; no operative clause removed."
+    },
+    {
+      "block": 31,
+      "original_sha256": "62affe108632af4f870ef2eba6f5e91d378bda81b36f47ad350e1ebfa23ae340",
+      "original": "V1-to-V2 migration validates complete V1 and V10 owner identities, copies all\nLSE scientific values bit-identically, and changes only the LSE identity and\ntransitively derived receipts. V1 remains immutable and is not a V2 alias.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#v2-ownership-and-fixed-final-admission + numerical-methods.md INV111",
+      "equivalence_argument": "Validate completeV1/V10owneridentities, bitwise scientificcopy, change onlyLSEidentity/transitivelyderivedreceipts; V1immutable/notV2alias."
+    },
+    {
+      "block": 32,
+      "original_sha256": "a6bd1c2c0c3845e9355256a9b4962a2ac5ae033bef1a9c974c29ab7eb59854ef",
+      "original": "| ID | Binding rule |\n|---|---|\n| `LSE-E-109` | V8/V9 vegetation identity, mixed V1/V2 receipts, or any owner alias rejects before V2 physics. |\n| `LSE-E-110` | Missing, duplicated, mutated, or locally recomputed V10 nighttime gas state rejects the coupled owner envelope. |\n| `LSE-E-111` | Partial or value-mutating V1-to-V2 migration rejects without a V2 state. |",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#v2-ownership-and-fixed-final-admission",
+      "equivalence_argument": "E109 V8/V9identity/mixedreceipts/owneralias BEFOREphysics; E110 missingduplicate/mutated/recomputedV10night gas rejects coupled envelope; E111 partial/valuemutatingmigration withoutV2state. Original three-cell error table remains normative audit."
+    },
+    {
+      "block": 33,
+      "original_sha256": "45e32045c12905519b4114c92da2193e97fc6e7ee7ad8e18860012112bc8bfa0",
+      "original": "This amendment remains default-off. It authorizes no production selector,\ndefault/output change, cutover, snow handoff, deployment, calibration, or\nempirical claim.",
+      "kind": "operative or explanatory with complete current operative counterpart",
+      "mandatory_current_destination": "nonlinear-solve.md#v2-ownership-and-fixed-final-admission; common-details.md#calibration; interface.md",
+      "equivalence_argument": "Default-off, no productionselector/defaultoutput/cutover/snowhandoff/deployment/calibration/empiricalclaim authorization. Explicit empirical-claim added to compact list; common/interface retain full nonpromotion/calibration posture."
+    }
+  ],
+  "preserved_current": [
+    "complete original V12 section including every cell/fence",
+    "complete original V10 scaling paragraph",
+    "six sole marked definitions111/112/113/131/138/139 plus original guards/testmetadata",
+    "whole solve-boundary and mandatory whole admission"
+  ],
+  "reading_boundary": "Whole CURRENT methods includes whole admission dependency for EVERY solver correctness review; physical selected definitions retain metadata/applicableguards/tests and alreadywholeadmission. Source-interpretation audit expands whole original reference, not an alternative algorithm. No old observed read is subtracted.",
+  "measurement_control": "New paragraph restates original replay-evidence107–122 conjunction: detailed oracle AND audit outside performance AND memory; A/R matched optional-audit posture; bounded compact timing counters. Matched observers/output alone not a substitute. Owner pause unchanged.",
+  "physical_clarifications": [
+    {
+      "current": "soil-coupling.md#endpoint-reseal-and-physical-closure",
+      "original": "645b soil-coupling.md170–181, full original paragraph remains unchanged",
+      "equivalence": "Same represented-snow TOL-SNOWENERGY005 installed-endpoint residual bounds1e-9Jm^-2/1e-8K; exactalreadyconsumed equaloppositeheat, soilenthalpy andappliedcredit unchanged; separate1e-6Jm^-2 physicalledger; primitive reconstructionboth; larger/nonfinitecanonicalretry/limit/failclosed, no heatrepair."
+    },
+    {
+      "current": "terminal-support.md introduction",
+      "original": "645b terminal-support.md54–60,70–74,123–131,167",
+      "equivalence": "Released coveredforestactivepolicyminimum60000000000ns unchanged; positivebelowminimumLSEB-E-041 BEFORENewton/no candidate/byteidenticalowners; exactlyminimumordinarypositivesolve;zero nophysicalsolve;1nsclockvalidnotphysicaladmission. Full originalregime/support duties stillrequired."
+    }
+  ],
+  "fresh_reader_procedure": "A/B prospectively approve generic PRIVATE inventory of independently selected applicable source rules/qualifiers/exclusions/evidence duties and final omission check in addition to claim correctness. Uniform futuretasks, no parentinventory/rubric/missedatom hints; no mandatoryextent omitted; count actual source and derived-note rereads separately; old08firstreportsimmutable."
+}
