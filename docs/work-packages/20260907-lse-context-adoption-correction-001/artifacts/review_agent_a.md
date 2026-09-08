@@ -4424,3 +4424,170 @@ reading and all actual exposure; preserve original observations for reused tasks
 No unchanged numerical/executable rerun is warranted by this bounded insertion.
 Fresh solver adequacy, independent stable-cut reviews, dual new terminal verification
 and final activation checks remain pending. This is not adoption or runtime PASS.
+
+
+## Solver11 first report — clarified procedure, unchanged science
+
+Static: independently read the complete80827-byte/368-line first report
+exercise_02_retry_11.md and assessed the original frozen task2/rubric against the
+complete selected authority and actual claim scope. The complete scientific answer
+was read before ledger review; later truncated duplicate search/display output was
+not used as a substitute for a missing primary read. No reader contact or repair.
+Ran: report SHAb2638e3764f274c5445a5d14febe6302224d3275418ecd4df16075a5a19a61ca
+verified; all34 source identities,77 explicit source-request/new/repeat records,
+exact search-hit sets and18 private-artifact sizes/hashes independently reconstructed
+at ee899c22c9bb24cf91153f33991402b0978c6af0. Canonical science is unchanged82b9;
+new handoff280db6a2 binds the approved clarified procedure. No numerical workflow,
+production implementation review or experiment was executed by this reviewer.
+
+**Scientific sufficiency FAIL (S11-A01); required reading PASS; ledger PASS;
+LSE size PASS.** The remaining error is an actual acceptance-operand substitution:
+
+S11-A01 — report156 states the historical retention gate requires “peak RSS at most
+65,536 KiB.” Canonical replay-evidence28–43 binds the exact JSON field `rss_kib`;
+the fully selected frozen kickoff72 explicitly identifies that old field as a late
+VmRSS point sample, NOT peak or post-cleanup memory. The fully selected experiment
+protocol95 requires original late `rss_kib` remain labeled endpoint. Neither this
+historical paragraph nor another answer passage identifies the bound historical
+operand as that endpoint field. Report171 correctly distinguishes prospective sampled
+active peak, endpoint and lifetime high-water metrics, but does not correct the
+historical gate's specific operand. A ceiling applied to a peak can reject a run
+whose bound endpoint passes, so this is not harmless wording, a request to execute
+an experiment, or a requirement to reproduce an incidental source constant verbatim.
+The original task requires current versus experimental authority and unchanged
+retention/qualification rules; an incorrectly restated inherited gate cannot pass.
+No source defect is inferred: the source and required frozen protocol already give
+the exact field and its measurement meaning. Keep the first report immutable.
+
+All prior solver10 failures are substantially addressed in the submitted answer:
+
+- The FullSupply paragraph now carries positive request identity, exact A=D and
+  FullSupply posture, with exact zero request identity/amount, full fixed-final
+  reevaluation, zero-iteration steps and no Jacobian/backtracking. Its scoped phrase
+  “V2 FullSupply nonpositive-assimilation final path” does not repeat solver10's
+  claim that FullSupply applies ONLY there; read as describing that branch, it
+  does not introduce an independent prohibition on the imported positive regime.
+  The partial-positive refusal is explicitly scoped to that nonpositive path.
+- ci step has explicitly NO independent threshold. The full b=0 witness, first
+  domain-valid halved witness, current-state-only result, four governed norms and
+  exact existing cumulative exponent accounting are concrete. “Without adding a
+  public persisted diagnostic” is compressed, but in its existing-accounting-only
+  context does not claim a new public or persisted surface; no literal OR test is
+  imposed. It is stronger than the earlier answer that mentioned only persistence.
+- Inactive sun, shade and wet anchors, dry-stem exception, zero-area direct row and
+  all wet STORE-CAP/water-rate AND physical-energy predicates are explicit.
+- The complete global first-error hierarchy and retained failure payload appear,
+  alongside original-source-position replay and validation-once chronology.
+
+The rest of frozen task2's nine groups is concretely represented: canonical vector/
+residual/branch ordering, bounds/unit scales/stencils/pivot/backtracking/tolerances;
+complete affected upper/lower routing, reciprocal longwave, shared-air and hydraulic
+reads; represented-snow identity anchors and strict leaf-result eligibility;
+same-sweep base/single-use signed capability with full direct-edge oracle and
+source-order/error semantics; historical guard implications AND authentic boundary
+successes versus crossable/not-established/infallible families; PC1/SG1 limits and
+production HOLD; all real field/Jacobian/full-solve/owner/error/call-count evidence.
+The report explicitly puts ORACLE_AND_AUDIT outside BOTH timing and memory, matches
+optional audit posture, and separates600s primary/scaling from1800s teardown.
+No extra failure is inferred from absence of numerical execution or actual inputs,
+which the report properly identifies as missing evidence rather than inventing it.
+
+Required-reading PASS applies to this bounded requirements review: all selected LSE
+mechanisms are whole, including admission, methods, map and water. All three required
+legacy single-file external contracts (VEGETATION248829, SNOWENERGY497785,
+COUPLEDTIME92552) and all four frozen experimental documents45937 are complete.
+Only testing strategy is intentionally section-selected (188 of494 source lines,
+plus discovery hits), under the review guide's specified sections. No current active
+WATBAL/SURFACELIQUID implementation/partition or exact-owner arithmetic adjudication
+is claimed by the future WAT5/output evidence requirements. Thus those independent
+whole-owner audit triggers are not silently omitted; they remain conditional on
+actual expanded claims. Historical content inside required whole current external
+contracts is not treated as revived authority or as a forbidden historical-tree read.
+
+Exact accounting, with newline bytes retained:
+
+| Category | Requests | Unique | Repeat | Requested |
+| --- | ---: | ---: | ---: | ---: |
+| Governance/task |16|86076|1400|87476|
+| LSE |22|204019|63180|267199|
+| Frozen protocols |4|45937|0|45937|
+| External contracts |35|839166|244419|1083585|
+| Total explicit |77|1175198|308999|1484197|
+
+Six per-path search rows belong to four declared source-bearing pattern requests,
+including a retained empty result. All matched lines independently reproduce21,665
+source bytes and497 additional unique governance bytes. The earlier heading hits
+later covered by full reads are not double-added to union. Combined explicit/search
+union1,175,695, requested1,505,862 and repeat330,167 are exact. Automatic root-AGENTS
+source-equivalent9,508 adds no union: identified requested/exposure proxy1,515,370,
+repeat339,675. This is not actual runtime-delivered automatic/system/compaction
+telemetry. LSE search contributes20,872 repeated bytes: combined LSE exposure288,071,
+repeat84,052 and unchanged union204,019. Entry/interface12,021 meets12,288; LSE
+union is22.971876026474% below264,863 and7,871 below211,890. Gross exposure remains
+separate and is not claimed to meet the20% unique-reading threshold.
+
+Truncated full requests remain fully charged and recovery repeats are included.
+The failed unavailable Python and nonexistent-path attempts have no extant displayed
+source range to add; no hidden successful source request is established. The one
+2,681-byte derived per-file summary display is separately disclosed; private authored
+inventory/draft sizes and18 verified hashes do not add canonical source authority.
+Exact delivery of later derived metadata, automatic compaction/system context and
+tool truncation remains unobserved. Private inventory entries were NOT read as
+substitute answers or used to fill the submitted answer's missing historical metric.
+
+This is a new first report under the clarified procedure, not an identical-prompt
+replication or a source-size/science improvement. The stronger predicate coverage
+cannot erase earlier failed reports, and the remaining S11-A01 cannot be repaired
+inside this completed answer. A/B stable-cut closure, new terminal verification and
+adoption remain pending; no acceptance waiver follows from the size/ledger PASS.
+
+
+## Prospective iteration12 historical-memory operand clarification
+
+Static: reviewed the exact isolated /tmp/lse-iteration12-replay-proposal.md and
+/tmp/lse-iteration12-replay-proof.json. Ran: independently verified current
+replay-evidence SHAd29eeca69cf60d1a0953f6fb0cc2ac3841c100159961f01394fdbdf17d5403b7,
+proposed SHA607794e36841d3238df031e523bccbe1e5873e0056cbd5732b52401e07a7b0e4,
+and exact sole251-byte insertion immediately before the retained historical command.
+The resulting20,210-byte file preserves every other byte. Independently verified
+both frozen authority hashes and the exact cited kickoff72/protocol95 source lines.
+No canonical, handoff, protocol, report or generator edit was made by this review.
+
+Prospectively APPROVE this exact source-bound explanation: historical JSON `rss_kib`
+is the late VmRSS endpoint, not peak or post-cleanup memory; the65,536KiB bound
+applies to that endpoint, with lifetime peak and sampled active maximum distinct.
+This brings an existing mandatory external qualifier beside its specific inherited
+retention predicate. It adds no measurement series, threshold, physical rule or
+experimental permission and does not reinterpret the historical baseline's failed
+RSS observation. All commands, historical failures/HOLD, future-series controls,
+original text, anchors, canonical definitions and recursive whole-protocol duties
+remain unchanged. The new paragraph is inside the existing complete replay-evidence
+extent, not an optional replacement for the required original protocol.
+
+Budget impact is bounded and must remain prospective: the solver's observed prior
+204,019-byte whole selected set would be204,270 if exactly that set is selected on
+the new source, leaving7,620 below211,890. Actual future extra reads still count.
+Entry/interface stays12,021. The physical accepted-primitive selections do NOT
+select replay-evidence; therefore their physical/method/capture forecasts do not
+increase by251 simply because total directory size increases. No new observation
+or source-only cause of improved answer adequacy is claimed.
+
+Prospective affected-evidence reuse is legitimate, subject to applied sole-diff
+verification: surface09@c2dd204,063 and closure08@645b208,928 have no replay-evidence
+source-table selection and make no replay-experiment retention adjudication that
+this clarification newly expands. Their reviewed duties and actual old counts/cuts
+remain intact. Identity03@6938 selected the then-complete qualification (now complete
+replay-evidence) plus all four frozen protocols. Its answer59 explicitly binds
+historical<=65,536 `rss_kib`;55 distinguishes endpoint, sampled active maximum and
+lifetime high-water memory. It contains no solver11 peak substitution. The added
+paragraph restates a protocol qualifier already inside that required whole read,
+so bounded identity reuse remains supported, preserving31,428 observed bytes and
+its original source cut. Do NOT label old/current chapter hashes identical or call
+this a new identity exercise; its previously stated bounded identity/requirements
+scope remains separate from executed memory-validity proof.
+
+Fresh solver12 remains required after exact integration, source capture and applied
+preflight under the unchanged approved procedure11. Solver11's failure is not
+repaired or retrospectively passed by this source explanation. No rubric/question,
+byte threshold, frozen protocol, ordinary reader prompt answer content or acceptance
+criterion changes are approved. No stable closure/terminal/adoption PASS follows.

@@ -1,65 +1,70 @@
-# Procedure11 current state
-Scientific source remains82b9c72d6:20LSEfiles368798bytes, always-read12021.
-Solver10 failed science and its combined search-union claim; sizePASS204019.
-reading-iteration-10.json records the unchanged first report and independent correction.
-A/B approved a uniform inventory-to-answer clarification in the neutral handoff,
-+1063 governance bytes. New nonforked solver11 NOT RUN. This is a procedural
-comparison on unchanged science, not source improvement or identical-prompt evidence.
-Surface09/closure08/identity03 accepted observations and bounded reuse remain intact.
+# Current context-usability evidence
+Static: canonical science remains82b9c72d6; source manifestcccda2ed4aa97b24c186dde1059a7e2cbef7c2768c50b9e2a7c66429f77ee87f.
+Ran: completed independent first readings and dual source/rubric/accounting reviews.
+Current procedural freezeee899c22c changes only the generic inventory-to-answer
+instructions, not science, the original questions/rubric, reading duties or budgets.
+New nonforked solver11 is in progress. Adoption is not complete.
 
-# Iteration10 current reading state
-Static: exact20-file368798-byte candidate; always-read12021. Direct checks pass.
-Ran: completed09 first readings; independent A/B review. Surface09 PASS204063
-(22.955264% reduction); solver09 scienceFAIL203861 despite sizePASS.
-Fresh solver10 NOT RUN. Applied10 semantic reuse of surface09/closure08/identity03
-is approved independently by A/B; original cuts/counts remain observations.
-reading-iteration-09.json binds complete counts and conservative failed-request
-exposure. Full external reading remains separately visible; no token/runtime claim.
-The sole10 source change is the prospectively approved158-byte initialization table.
-
-# Completed iteration8 evidence
-Static: current source645b816b5; complete20file candidate365724bytes, always-read12021.
-Ran: fresh source-reading exercises and independent A/B source/range/accounting checks.
-No scientific production execution, delivered-model-token or whole-workflow claim.
-
-| Task | Observed cut | LSE unique bytes | Reduction | Science / reading / size |
+| Task evidence | Observed cut | Unique LSE bytes | Reduction from264863 | Science / reading / size |
 | --- | --- | ---: | ---: | --- |
-| Surface08 |645b816b5|215666|18.5745%|FAIL / PASS / FAIL|
-| Solver08 |645b816b5|204977|22.6102%|FAIL / PASS / PASS|
-| Closure08 |645b816b5|208928|21.1185%|PASS / PASS / PASS|
-| Identity03 reused |6938ca97d|31428|88.1342%|PASS / PASS / PASS|
+| Surface09 | c2dd02bc3 |204063|22.955264%|PASS / PASS / PASS|
+| Solver10, failed first report |82b9c72d6|204019|22.971876%|FAIL / PASS / PASS|
+| Identity03, reused |6938ca97d|31428|88.134243%|PASS / PASS / PASS|
+| Closure08, reused |645b816b5|208928|21.118465%|PASS / PASS / PASS|
+| Solver11, clarified procedure |ee899c22c|not yet observed|not yet observed|NOT RUN to completion|
 
-Exact report hashes, source cuts, independent dispositions and detailed accounting:
-reading-iteration-08.json. Every first report is immutable. Identity reuse explicitly
-proves full qualification→replay-evidence duty/protocol equivalence;20/23hashes equal.
-It is not a new identity read or an all-hashes-equal claim. Original surface05success
-196206atb3 is retained but not reused after expanded admission requirements.
+A/B approved selected-duty reuse of surface09/closure08/identity03 on unchanged
+current science. Original observations, report hashes and cuts remain retained;
+these are not fresh rereads, all-source-hashes-equal, or four new successes on one
+final cut. Identity's bounded PASS does not establish solver measurement validity.
+Every original first report remains immutable. Detailed accepted/failed observations,
+source/range identities and procedural limitations are in reading-iteration-01..10.json
+and the independent review records; none is replaced by this consolidated narrative.
 
-Surface08 actually read whole methods; its9060extra vs206606projection is +13173
-wholemethods instead of definition selection, offset no4113physicalcapture chapter.
-It omitted the endpoint-reseal versus physical-closure distinction and pre-Newton
-below-support rejection. Solver08 omitted diagnostic/inactive/audit qualifiers.
-Closure08 includes its extra2322method reading, all original arithmetic/evidence
-requirements and explicit missing current/retainedp61 inputs; no numeric oracle made.
+## What the measurements establish
+The original single LSE file is264863bytes. The predecessor candidate was410021bytes;
+the current20-file candidate is368798bytes, still larger than the original. Current
+entry4090+interface7931=12021always-read bytes, below the frozen12288limit.
+The three science tasks each require a sufficient unique LSE union at most211890;
+identity must remain smaller than264863. Size alone does not establish sufficiency.
+All recursive mandatory dependencies and actual voluntary/search/recovery reading
+remain included. Unconverted external contracts are whole when applicable; routing
+them to a heading is not permission to omit their remaining authority.
 
-Surface:2334492all-source unique/2754498requestexposure including failedavailable
-reads and privatehelper displays; automaticroot9508source-equivalent separate.
-Solver:1179007allunique/1427830exposure including searches/declaredautomaticroot.
-Closure:1703658allunique/1964719requests; automaticroot source-equivalent separate.
-These categories are not silently pooled as comparable complete runtime telemetry.
-All selected external contracts, voluntary additions, recovered truncation and repeats
-are charged. Source requirements can exceed the LSE-only saving substantially.
+Surface09 read all six external contracts (2035441unique external bytes). Its complete
+source/search/automatic union is2314243; adding two failed3532-byte available-source
+requests to the declared completed exposure yields2761363conservative requested
+source-equivalent bytes. The unique LSE union stays204063. Derived inventory9142bytes
+is separate. Closure08 records1703658unique/1964719requested source bytes with five
+whole externals; identity03 records149505unique/149667requested. Their reports retain
+the exact automatic-proxy and derived exposure conventions.
 
-The closure report finished before a quota interruption and was confirmed unchanged;
-surface continued the same private draft/ledger after interruption before first READY.
-No reader received review findings or scientific hints. Canonical/package/neutral
-handoff stayed fixed. Private notes are neither new authority nor hidden token proof.
-Recoverability: reading-iteration-08-custody.json; no offline Cargo rebuildability.
+Solver10's85source requests are1479999requested/1166955unique/313044repeated bytes.
+Searches add2312requested and591NEWgovernance bytes, contrary its assertion that all
+were already covered: corrected1167546combinedunique/1482311source-search exposure,
+or1491819with the separate9508automatic source-equivalent proxy. The LSE union is
+unchanged204019. LSE requested exposure245877is only7.1682%below264863; this is not
+silently substituted for the22.971876%unique-union result. Its scientific and combined
+union failures remain failures. Source-byte observations are not model tokens,
+runtime-context delivery, quota or complete workflow cost; those are unobserved.
 
-Historical attempts01–07 remain bound by reading-iteration-01..07.json and their
-immutable reports/review records. Failures are not repaired, removed or waived.
-Next exact current-method/admission draft is under review, with no canonical edit.
-Future readers will independently inventory applicable source duties privately and
-check omissions as well as written-claim accuracy; original tasks/rubric unchanged.
-Successful08closure and earlieridentity need new explicit reuse proof after any edit.
-Stable dual reviews, two NEW terminal verifiers and verified activation remain required.
+## Procedural treatment and preservation
+Solver09/10 read the source but omitted applicable predicates from their answers.
+The exact current table and all original operative rules remain unchanged. A/B
+prospectively approved procedure11: each reader structures one self-contained answer
+from its own independently source-derived inventory, preserving full applicable
+predicates, scope, order, exclusions/refusals and evidence, distinguishing diagnostics
+from acceptance. The neutral handoff adds1063governance bytes (2649total/36lines).
+It contains no named failed atoms or parent inventory. Future tasks use the same
+clarification; prior accepted answers keep the unchanged rubric, not a new style gate.
+Any eventual solver11 PASS is under this clarified procedure, not a scientific-source
+improvement, an identical-prompt baseline experiment or evidence of general first-try
+reliability. All failed attempts and their actual reading costs remain visible.
+
+Only the original changelog is historical. Original616spans, scientific cells and
+36fences remain normative; current common and numerical presentations have independent
+clause equivalence proofs. Compatibility/index/audit material stays available outside
+routine bootstrap without authority exemptions. Current custody11 retains the exact
+source/procedure bundle through disposition plus explicit maintainer audit release.
+Stable dual review, two new terminal verifiers and actual checked activation remain
+required after the final reading criterion passes.
