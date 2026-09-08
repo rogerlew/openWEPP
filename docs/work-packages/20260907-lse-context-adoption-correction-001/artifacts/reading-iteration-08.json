@@ -1,0 +1,72 @@
+{
+  "candidate_commit": "645b816b55219c299c4db23c6096898c76e61680",
+  "candidate_manifest_sha256": "6238f437b56e21ffd205ef44e2357cd73b055a44be96ab180ea130c2f35ebcff",
+  "baseline_lse_bytes": 264863,
+  "evidence": "Independent A/B originaltask/rubric science and exactsourceaccounting; no oldreportrepair or observedreadsubtraction. Different reports expose automatic source-equivalent counts separately; deliveredruntime/modeltokens UNOBSERVED.",
+  "tasks": {
+    "01": {
+      "report": "exercise_01_retry_08.md",
+      "sha256": "9546db22ba3a374468ab8b7d0f91eb4ece4e801d1034d13c76fdc3c6115891ee",
+      "lse_read_union_bytes": 215666,
+      "lse_requested_exposure_bytes": 298616,
+      "scientific_requirements": "FAIL",
+      "required_reading": "PASS",
+      "size_gate": "FAIL",
+      "ledger": "PASS",
+      "completed_repository_source_unique_bytes": 2333759,
+      "completed_repository_source_exposure_bytes": 2751446,
+      "all_selected_source_bytes": 2334492,
+      "requested_exposure_bytes": 2754498,
+      "automatic_root_source_equivalent_bytes_separate": 9508,
+      "note": "32hashes140completedrepositoryrequests exact.2failedsource requests and2privatehelper displays retained; one733byteprivatehelper version reconstructed/hashverified after EOF-clipping edit. All6externalswhole. Actual fullmethods19108 replaces5935selecteddefinitionextent (+13173); capture4113notselected, net+9060vs206606projection. ScienceFAIL endpointresealTOL005 vsphysicalclosure/appliedheat and positivebelow-domain rejectionBEFORENewton. Samefirstreader continuedafterquota; no correctionfeedback or reset.",
+      "reduction_percent": 18.57450833072192,
+      "observed_candidate_commit": "645b816b55219c299c4db23c6096898c76e61680"
+    },
+    "02": {
+      "report": "exercise_02_retry_08.md",
+      "sha256": "11f858c62e2a7015bc6c24799881df71c3dc14b4e60a4a66722cd818a387e018",
+      "lse_read_union_bytes": 204977,
+      "lse_requested_exposure_bytes": 259971,
+      "scientific_requirements": "FAIL",
+      "required_reading": "PASS",
+      "size_gate": "PASS",
+      "ledger": "PASS",
+      "all_selected_source_bytes": 1179007,
+      "requested_exposure_bytes": 1427830,
+      "note": "34hashes82numberedrequests exact;12481searchbytes add370newgov;9508automaticrootdeclared separately then included in complete exposure. LSE248043numbered+11928search. ScienceFAIL exactexponent/existingcumulative/no-public-or-persisted diagnostic, fullinactive/INV113predicates and detailed-audit exclusion/matchedoptionalA/Rauditposture. Detailedoracle outsidebothintervals nowcorrect. Actualscope doesnotrepeat07WATBALguardadjudication; requiredreadingPASS.",
+      "reduction_percent": 22.61017960228495,
+      "observed_candidate_commit": "645b816b55219c299c4db23c6096898c76e61680"
+    },
+    "04": {
+      "report": "exercise_04_retry_08.md",
+      "sha256": "c51c237c1e9635890163a382c713b4e1c5f9f6b30a0e3048cce30de58294e25a",
+      "lse_read_union_bytes": 208928,
+      "lse_requested_exposure_bytes": 308466,
+      "scientific_requirements": "PASS",
+      "required_reading": "PASS",
+      "size_gate": "PASS",
+      "ledger": "PASS",
+      "all_selected_source_bytes": 1703658,
+      "requested_exposure_bytes": 1964719,
+      "automatic_root_source_equivalent_bytes_separate": 9508,
+      "note": "33hashes148requests exact;5externalswhole. Actualmethod1\u201330/220\u2013266 adds2322vsprojection, retained. WAT5/ties/subnormals/overflow/p61missingoperands+unchangedfixturecapture explicit. Completefirstreport writtenBEFOREquotaerror, subsequentlyconfirmedunchanged; no numericalexecution or repair.",
+      "reduction_percent": 21.1184650177639,
+      "observed_candidate_commit": "645b816b55219c299c4db23c6096898c76e61680"
+    },
+    "03": {
+      "report": "exercise_03_retry_03.md",
+      "sha256": "6b334dad06a38e4bd59eac206c0eb6e75a11d3e12e9c6b019394ce4c90884e88",
+      "observed_candidate_commit": "6938ca97dedb76c00ead9c2022b7d09adc7c1899",
+      "lse_read_union_bytes": 31428,
+      "all_selected_source_bytes": 149505,
+      "requested_exposure_bytes": 149667,
+      "scientific_requirements": "PASS",
+      "size_gate": "PASS",
+      "reuse_at_b3": "A/B proved unchanged executable task duties despite11-byte interface qualifier; not a fresh run or23identical source hashes.",
+      "reuse_at_29b3": "Independent A/B selected-source and exact unchanged-task semantic dependency proof; original observed counts retained, no new reader/all-hashes-equal claim.",
+      "reuse_at_9baf": "Independent A/B exact selected-source/unchanged-task semantic dependency proof: surface29/32hashes equal;identity20/23. Original observed cuts/counts retained; no new reading/all-hashes-equal claim.",
+      "reuse_at_645b": "A/B independently proved whole qualification\u2192replay-evidence relocation and all selected executable/protocol duties;20/23 sourcehashes equal,9experimentinputs individuallyunchanged. Original31428@6938 retained; no newfresh/allhashesequal claim.",
+      "reduction_percent": 88.13424298599654
+    }
+  }
+}

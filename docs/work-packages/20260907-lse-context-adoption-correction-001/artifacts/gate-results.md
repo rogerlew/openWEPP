@@ -14,7 +14,9 @@ Candidate-manifest SHA256 6238f437b56e21ffd205ef44e2357cd73b055a44be96ab180ea130
 | Lint / format | PASS helper; inherited root FAIL | Unchanged Rust/helper/compiler inputs bind previous helperPASS and17original root diagnostics; no suppression. Python compile/diffcheck PASS. |
 | Rust line count | WARN retained |Vegetation2843lines, split before3000; other owned files<2000. No new Rust edits. |
 | Always-read budget | PASS |Entry4090+interface7931=12021<=12288. |
-| Fresh science01 / solver02 / closure04 | NOT RUN iteration8 |Immutable07 science/sizeFAIL retained. Projections are not acceptance. |
+| Fresh surface01 | FAIL science/size; PASS reading/ledger |215666LSEbytes; missing reseal/physicalclosure relation and pre-Newton support rejection. |
+| Fresh solver02 | FAIL science; PASS reading/ledger/size |204977LSEbytes; missing diagnostic/inactive/audit controls. |
+| Fresh closure04 | PASS science/reading/ledger/size |208928LSEbytes,21.118465%reduction; concrete arithmetic/vector/real-consumer evidence duties complete. No numerical execution. |
 | Identity03 | PASS with explicit semantic reuse |A/B independently approved full qualification→replay-evidence body/protocol relocation and exact selected duties;20/23 original hashes equal. Original31428at6938 retained. Surface05 oldcutPASS196206 requires fresh01. |
 | Stable complete reviews / two NEW terminal verifiers | NOT RUN to completion |Prospective approval is not terminal adoption approval. |
 | General selective reading | NOT RUN |Candidate restriction remains. |
@@ -65,3 +67,11 @@ Canonical source remains fixed through upcoming fresh exercises; neutral handoff
 retained under reviewed blinded-reader exception. After accepted readings, reconcile
 complete state in the normal handoff, stable reviews and two NEW terminal verifiers,
 then actual activation with bounded final verification. No production qualification.
+
+## Next correction remains prospective
+All08firstreports are immutable. Current-method/admission decomposition and concise
+existing soil/support/measurement controls are under exact independent review in
+/tmp/lse-current09-zun9byeh; no next canonical changes or adoption approval yet.
+Generic future private source-duty inventory/omission check is prospectively A/B
+approved, with no supplied scientific inventory/rubric/hints or changed criterion.
+Closure08 and identity03 reuse on any later cut require exact selected-duty proof.

@@ -57,3 +57,12 @@ unchanged. A mechanical concern decomposition is under prospective review: small
 physical admission/capture interfaces, original complete numerical/experimental
 bodies and duties retained, and per-row-proven common schema deduplication. No
 unspecified rewrite or reduced extent is approved; no adoption or terminal PASS.
+
+## Completed iteration8 first reports
+Accepted A/B findings: surfaceS08-A01 missing endpoint-reseal/physicalclosure
+relation; S08-A02 missing pre-Newton support rejection; solver missing complete
+inactive/diagnostic and optional-audit controls. Their scienceFAIL stays immutable.
+Surface actual215666sizeFAIL; solver204977sizePASS; both requiredreading/ledgerPASS.
+Closure208928science/reading/ledger/sizePASS, original report completed beforequota.
+No report repair or actual-reading subtraction. Exact prospective09 source/equivalence
+review is pending; correction is not claimed implemented.
