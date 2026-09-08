@@ -26,9 +26,16 @@ branches. It never recomputes, clamps or relabels gas state. Nonpositive-assimil
 partial positive ROOT authorization is typed unsupported; no attenuation, conductance/
 vulnerability floor, capacitance or authorization donation follows.
 
-FullSupply initialization requires each positive final authorization's identity AND
-amount to equal its potential request AND its disposition to be FullSupply. Each
-canonical zero request retains its exact identity AND zero amount. Only the accepted
+### Initialization eligibility
+
+FullSupply alone is insufficient; both exact predicates are required:
+
+| Request | Required before potential-coordinate initialization |
+| --- | --- |
+| Each positive final authorization | Identity AND amount equal its potential request AND disposition is FullSupply. |
+| Each canonical zero request | Exact request identity AND zero amount are retained. |
+
+Only the accepted
 potential coordinates initialize fixed-final; rebuild the COMPLETE final evaluation
 from immutable beginning owners and exact per-resource caps. Copy no potential flux,
 candidate state, branch, receipt or diagnostic.

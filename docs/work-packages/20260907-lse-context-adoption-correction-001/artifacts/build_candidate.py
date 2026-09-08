@@ -571,4 +571,10 @@ f=DEST/'terminal-support.md';text=f.read_text();needle='wire chronology at one n
 assert needle in text
 text=text.replace(needle,needle+' Positive support below the active policy minimum rejects with LSEB-E-041 BEFORE Newton, returns no candidate, and leaves every owner byte-identical. Exactly the minimum is an ordinary positive-support solve; zero support performs no physical solve.',1)
 f.write_text(text)
+# Iteration10: expose the unchanged two-class initialization predicate explicitly.
+f=DEST/'nonlinear-solve.md';text=f.read_text()
+old="FullSupply initialization requires each positive final authorization's identity AND\namount to equal its potential request AND its disposition to be FullSupply. Each\ncanonical zero request retains its exact identity AND zero amount. "
+new='### Initialization eligibility\n\nFullSupply alone is insufficient; both exact predicates are required:\n\n| Request | Required before potential-coordinate initialization |\n| --- | --- |\n| Each positive final authorization | Identity AND amount equal its potential request AND disposition is FullSupply. |\n| Each canonical zero request | Exact request identity AND zero amount are retained. |\n\n'
+assert old in text
+f.write_text(text.replace(old,new,1))
 print('entry',ENTRY.stat().st_size,'interface',(DEST/'interface.md').stat().st_size,'total',ENTRY.stat().st_size+sum(f.stat().st_size for f in DEST.glob('*.md')))

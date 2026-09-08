@@ -4,8 +4,8 @@
   "always_read_bytes": 12021,
   "tasks": {
     "exercise01": {
-      "lse_bytes": 207568,
-      "reduction_percent": 21.631938020788112,
+      "lse_bytes": 207726,
+      "reduction_percent": 21.57228453955441,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -132,10 +132,10 @@
           "ranges": [
             [
               1,
-              94
+              101
             ]
           ],
-          "bytes": 6549
+          "bytes": 6707
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
@@ -150,8 +150,8 @@
       ]
     },
     "exercise02": {
-      "lse_bytes": 209576,
-      "reduction_percent": 20.873810233970012,
+      "lse_bytes": 209734,
+      "reduction_percent": 20.814156752736324,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -188,10 +188,10 @@
           "ranges": [
             [
               1,
-              94
+              101
             ]
           ],
-          "bytes": 6549
+          "bytes": 6707
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
@@ -336,8 +336,8 @@
       ]
     },
     "exercise04": {
-      "lse_bytes": 207814,
-      "reduction_percent": 21.53905981582932,
+      "lse_bytes": 207972,
+      "reduction_percent": 21.47940633459562,
       "readings": [
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
@@ -464,10 +464,10 @@
           "ranges": [
             [
               1,
-              94
+              101
             ]
           ],
-          "bytes": 6549
+          "bytes": 6707
         },
         {
           "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",

@@ -3994,3 +3994,229 @@ frozen rubric, old failure or measured count is changed. New solver evidence and
 applied-cut checks remain required. Closure08/identity03 reuse and surface09's
 actual result require their later exact applied-cut treatment; this prospective
 approval does not grant either reuse or adoption in advance.
+
+
+## Surface09 immutable first-report assessment atc2dd02bc33
+
+Static: independently read the complete R01–R13 answer, scope and measurement
+appendices of exercise_01_retry_09.md,76803bytes/SHA-256
+`bce0e517e551b4b463f494874149c6a49808edd9f245fad18e7c9c955c79ac93`,
+against all eight unchanged original task1 rubric requirements and actual primary
+rule boundaries. Ran: independently verified34 frozen full-source hashes at
+`c2dd02bc33aa5dace9013970d1001cdcd6e8d72a`, all158 completed reader-record ranges
+and byte/new/repeat unions, all eight source-pattern search records and21 private
+artifact hashes/sizes. Inspected the retained reader versions to adjudicate failed
+and budget-selected requests. No physics, implementation, simulation, test or
+consumer execution was performed; no report was repaired or canonical file edited.
+
+Disposition: PASS scientific adequacy, required reading, source-ledger identity/
+coverage and actual LSE unique-byte reduction for the original surface task.
+The completed-request ledger is exact; the additional failed-attempt exposure
+annotation below is required whenever reporting all attempted source requests.
+The first report remains immutable. A and B agree the scientific PASS and precise
+measurement limitation. This is a bounded requirements-reading result, not adoption
+or proof of physical/production conformance.
+
+R01–R04 preserve immutable model/regime/owner selection, V1/V2 versus V3 scope,
+hydrology-owned water, soil-owned ordered thermal nodes, exact finite-capacity/
+equilibrium-zero state and the current algebraic beginning/end CN distinction.
+Half-layer harmonic conductance, downward versus generic inward signs, N=1 and
+multi-node storage, exact zero lower flux and once-only first-node heat are concrete.
+Current reciprocal component longwave, ground/reflection lineage, one zero-storage
+shared canopy-air heat/vapor node, neutral geometry/domain and separate litter
+humidity/thermal law retain the selected source rules and forbidden shortcuts.
+
+R05–R08 state beginning-store potential requests, once-only hydrology authorization,
+complete fixed-cap reevaluation from original owners, cap equality and F≤A≤D,
+then accepted debits/condensation and once-only current ingress. They preserve signed
+liquid sensible-plus-latent vapor, zero-mass zero-energy/no-temperature, accepted
+rain-provider and canopy-release/runon identities, surface retention versus separate
+first-node infiltration, area routing/outlet export and no same-interval H/LE/G
+feedback. Real SurfaceLiquid/WATBAL partition/continuation and downstream owner
+claims are supported by those COMPLETE contracts. R08 also explicitly gives both
+positive and canonical-zero FullSupply equality predicates, complete reevaluation,
+iteration-zero diagnostics and admission exceptions. The solver09 omission is not
+present here. This surface answer does not claim an unseen algorithm/equivalence
+review, so its selected numerical-definition route is legitimate.
+
+R09–R11 preserve the frozen-litter conditional phase-only operator, separate pools
+and vapor enthalpies, bounded freeze/melt and U−LfWi identity, ending capacity and
+no re-solve, raw-temperature spill/second subtraction/negative energy operand,
+full-child once-only WB14 and distinct retained credit, ice exclusions and the
+mass-only heterogeneous join. Exact primitive high/carry decoding, physical area
+conversion before exact arithmetic, signed-zero/mirror rules, one rounding and all
+prohibited repairs remain. Borrowed-soil non-owner versus final replay, distinct
+source/target identities, parent-local markers and identity-only final reseal are
+covered by complete selected custody chapters and actual adjacent owners.
+
+R12 closes both earlier surface08 answer omissions. It explicitly distinguishes
+TOL-SNOWENERGY-005 endpoint reseal1e-9 J m^-2/1e-8 K from independent1e-6 J m^-2
+physical closure while preserving exactly consumed heat/enthalpy and no repair.
+It joins bottom represented snow directly to ordered OFE soil node1 inside the
+coupled solve, with no tile selection/fraction/averaging and one semantic receipt.
+It states60000000000ns physical support BEFORE Newton, subfloor rejection without
+candidate construction, zero no-solve and complete-owner failure posture, distinct
+from1ns chronology. Actual post-event receiver and remaining support, inactive
+represented-snow litter, current adaptive all-lane lifecycle and no old dispatch/
+phase-provider shortcut are reconciled using whole current snow/time authorities.
+No production or experimental activation follows from these boundary requirements.
+
+R13 gives primitive inputs that are missing here and independently meaningful
+sign/storage/area/N=1/multi-node/equilibrium/finite/chronology/support/receipt poisons,
+late all-owner rollback, exact carry and real downstream evidence duties. Producer
+residuals or hashes do not replace reconstruction; no result is fabricated. Tests
+and actual consumers remain required future work, not “passed” by this reading.
+
+Required reading is complete for actual scope: all selected physical LSE chapters
+and admission are whole; numerical-methods intro/dependencies and all six unique
+canonical rows/guards/tests are selected. Its actual definition/guard obligations
+do not demand a whole algorithm audit absent such a claim. The only other bounded
+sources are the appropriate testing/measurement standards sections. All SIX external
+contracts are whole: Vegetation, CoupledTime, SurfaceLiquid, SnowEnergy, WATBAL and
+SnowFreeze. Unlike accepted-opaque-parcel-only closure, this report reviews the
+retained phase/rain provider and correctly expands SnowFreeze fully. No unselected
+reference-adjudication/replay-experiment/physical-capture chapter is required by
+these claims; required physical evidence is already in selected custody/owner
+sources. No missing mandatory authority is excused by size or by “no execution.”
+
+Independent completed-reader ledger:
+
+| Category | Requests | Unique bytes | Requested bytes | Repeat bytes |
+|---|---:|---:|---:|---:|
+| Governance/package |20|70604|89556|18952|
+| LSE |44|203883|417548|213665|
+| External contracts |92|2035441|2221761|186320|
+| Measurement helper |2|3544|7088|3544|
+| Total |158|2313472|2735953|422481|
+
+All row computations match. Whole selected extents and all six external line
+unions are complete. Numerical-methods selected1–26/93–107 is6191bytes. Eight
+search records independently match their exact regex results/source positions:
+8838 source-equivalent exposure bytes,771 new bytes (180 LSE,591 governance).
+Adding searches gives2744791 requested/2314243 unique. Adding the separately
+specified automatic root AGENTS source equivalent9508 yields the report's
+2754299 requested/2314243 unique/440056 repeat. Initial search renderer prefixes
+and timing order are unobserved; the reconstructed matching source lines themselves
+are exact. Metadata/file-scan I/O is not a second scientific text exposure.
+
+**Failed-attempt accounting qualification:** report292 discloses two earlier
+numerical-methods93–109/93–108 requests against EOF107. Retained reader-v1 computes
+the available slice but raises in its out-of-range count before printing or logging
+content. Both returned tracebacks only, yet each requested an available3532-byte
+source slice. As in prior conservative attempted-request accounting, retain7064
+additional attempted source bytes, all in the existing union: all-attempt combined
+source-equivalent exposure2761363, unique2314243, repeat447120. This means160 source
+reader attempts,158 completed records, plus searches; the unavailable bare-Python
+command exposes no source body. Do not relabel the report's completed2754299 total
+as encompassing those failed attempts. Their actual extents are disclosed and
+reconstructable, so no first-report repair, union deletion or reading retry is
+needed for this accounting annotation. LSE attempted exposure is432539 with204063
+unique; the smaller completed/search LSE exposure is425475.
+
+The v3 helper's explicit28000-byte whole-line selection cap chooses effective
+ranges before output; its unused suffix is not a model source request. Continuation
+rows actually read those suffixes. Truncated renderer requests/recoveries remain
+charged; full requested-byte coverage does not invent exact delivered-token or
+compaction telemetry. Private inventory-v1 was displayed once:9142 derived bytes,
+separate from original authority source. Other private/helper/draft/control delivery
+is expressly UNOBSERVED, not counted as zero or as new authority.21 retained private
+artifact hashes/sizes match; no private inventory content supplements this verdict.
+Bootstrap/expansion unions overlap and must not be summed as disjoint source sets.
+
+Observed finite LSE204063 is22.9552636646% below264863 and7827 below211890.
+Always-required entry/interface12021 remains below12288. The actual source union
+includes the180 search-only numerical bytes and does not subtract recoveries,
+voluntary reads, external expansions or failed-attempt source availability. Its
+source-union size PASS does not imply smaller total requested exposure or model
+context. This observation belongs only to c2dd02bc33 and this first report.
+Prospective iteration10 implementation and any later surface09 reuse require
+separate exact applied-source/duty reconciliation; this verdict grants no future
+cut hash equality, refreshed reading count or adoption.
+
+
+## Iteration10 applied table preflight and bounded three-report reuse
+
+Static: focused review of live admission and generator against exact approved
+iteration10-admission-proof.json. Ran: all20 live LSE hashes match the actual
+iteration10-approved-manifest.json SHA
+`7bf27c5f311daf3d0eee91bfde8b9a1ac91b1eb01947c417193e8e691153a6c5`;
+all30 actual candidate-manifest members match its SHA
+`cccda2ed4aa97b24c186dde1059a7e2cbef7c2768c50b9e2a7c66429f77ee87f`.
+Independent comparison against c2dd02bc33 proves the sole canonical change is
+nonlinear-solve.md's approved158-byte replacement. The exact proposed new SHA
+`0c0dd52cb94ceafd48aeac5c5555cae9ac4eb1ce81b47f93a2f4708e1e64881b`
+is live; the other19 LSE files are unchanged. All156 current input-inventory
+hashes still match; prior unchanged Rust/helper/compiler/lint binding remains.
+
+Independent isolated candidate/adopted generator runs each produced20 exact
+members. Candidate totals368798 bytes; adopted368639 and changes only the159-byte
+entry pending-adoption notice. All30 live hashes remained unchanged after these
+runs. Both original scientific-line/Statement and original-fence preservation
+functions PASS on live source. Parent's98Python4.66s, strict/unit/A0, bridge and
+Rust111/18same/36panics results are separately recorded executions; A did not
+repeat their unchanged runtime checks or relabel inherited failures.
+
+Applied fix verification: PASS. The two-row presentation preserves each POSITIVE
+FINAL AUTHORIZATION's identity AND amount equality to its potential request AND
+FullSupply disposition; each CANONICAL ZERO REQUEST's exact identity AND zero
+amount remains required. It introduces no new gate, numerical branch, tolerance,
+owner identity or failure behavior. Existing full final reevaluation, coordinate-only
+seed, no-copy/iteration-zero/refusal/migration clauses and every dependency/guard/
+definition/test remain. The new H3 changes no prior anchor or mandatory parent
+extent. Generator applies the same one asserted replacement. This fixes source
+presentation only; it does not repair solver09's returned answer or establish
+fresh solver sufficiency.
+
+**Surface09 reuse APPROVED for its unchanged original task1.** Report
+bce0e517… remains immutable and its204063 observed LSE bytes remain attached to
+c2dd02bc33. Of its34 selected source identities, only the complete admission
+chapter changes in this increment. R08 already spells out each positive identity/
+amount equality AND disposition plus every zero identity/amount; R05/R13 supply
+original-owner reevaluation and evidence. Both table predicates were actually read
+in the old full admission and are concretely answered. There is no new required
+source/section, physics or proof scope. All six whole external authorities and
+surface/soil/support/custody boundaries remain unchanged. The source table update
+does not demand a new surface attempt or subtract158 bytes from any observation.
+The existing conservative failed-attempt exposure annotation also remains.
+
+**Closure08 reuse APPROVED for its unchanged original task4.** Report
+c51c237c… remains immutable and its208928 observed LSE bytes remain attached to
+645b816b5. Carry forward the explicit iteration09 mapping of the five changed
+selected LSE members and28 unchanged sources; the sole new increment modifies
+only admission presentation. Its old COMPLETE admission already required both
+predicates; chronological step2 expressly requires complete FullSupply identity/
+amount/disposition conditions including exact zero requests, coordinate-only
+initialization and complete reevaluation. No new primitive, source owner, capture,
+canonical-definition recursion or algorithm-implementation claim is introduced.
+All actual physical capture/phase/spill/custody/WAT5/p61 and whole-external evidence
+duties remain those already independently judged sufficient. This preserves that
+bounded prior observation, not a fresh208928-byte reading of current files.
+
+**Identity03 reuse APPROVED for its unchanged original task3.** Report
+6b334dad… remains immutable and its31428 observed LSE bytes remain attached to
+6938ca97d. Current entry/interface/replay-evidence and all external/protocol/input
+sources relevant to that identity route are unchanged by this increment. Admission
+is not selected for an identity-only claim; changing its table does not activate
+its conditional solver/physical routes. Carry forward the explicit prior20/23
+hash equality and old qualification→current replay-evidence mapping, not an
+all-current-hashes-equal claim. Retain the previous limitation: bounded identity
+requirements PASS is not a full solver measurement-control or executed timing/
+memory validity result. No experimental/production authorization changes.
+
+All three original report hashes were independently rechecked as unchanged.
+Counts and original source cuts stay in the evidence ledger; no current projected
+count is relabeled observed and no old repeated/voluntary bytes are erased. Current
+solver09 FAIL stays immutable. Approve freezing this substantive source and a
+GENUINELY FRESH solver10 once the parent completes the source-bound custody10
+capture/verification record. At this check that receipt was not yet present; this
+preflight does not claim recoverability verification already ran. Remaining fresh
+solver, dual stable-cut and terminal/adoption gates are still required.
+
+
+Iteration10 custody completion: inspected reading-iteration-10-custody.json after
+parent completion. It records capture_exit0/verify_exit0; independently verified
+the actual `/tmp/lse-correction-iteration10-bundle/manifest.json` against trusted
+SHA6702c0f2d7c132436e2f40b8a8d9382592552e199acc3dd01749744cb581ca32.
+This closes the pending receipt condition above and permits source freeze/fresh
+solver10 under the stated preflight/reuse approvals. It is source recoverability
+evidence, not independent full verification-log reading or scientific execution.

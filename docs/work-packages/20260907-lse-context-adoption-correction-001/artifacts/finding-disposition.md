@@ -66,3 +66,12 @@ Surface actual215666sizeFAIL; solver204977sizePASS; both requiredreading/ledgerP
 Closure208928science/reading/ledger/sizePASS, original report completed beforequota.
 No report repair or actual-reading subtraction. Exact prospective09 source/equivalence
 review is pending; correction is not claimed implemented.
+
+## Completed iteration9 and current10 correction
+Surface09 all science/reading/ledger/size PASS204063; solver09 scienceFAIL203861
+because named FullSupply did not state exact positive/zero initialization predicates.
+Other previously missing solver duties now pass; no extra literal-wording requirement
+was introduced. Both first reports stay immutable in reading-iteration-09.json.
+The exact +158byte two-class predicate table was approved prospectively and applied;
+initial draft quantifier drift was rejected and corrected before implementation.
+Applied reuse and fresh solver10 remain open; no adoption or terminal PASS yet.

@@ -1,0 +1,10 @@
+{
+  "source_cut": "c2dd02bc33aa5dace9013970d1001cdcd6e8d72a",
+  "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+  "old_sha256": "bb75c9248557ae704992c1f5629c1b0ab563d764cef193f6a8e220907671dc43",
+  "new_sha256": "0c0dd52cb94ceafd48aeac5c5555cae9ac4eb1ce81b47f93a2f4708e1e64881b",
+  "delta_bytes": 158,
+  "old": "FullSupply initialization requires each positive final authorization's identity AND\namount to equal its potential request AND its disposition to be FullSupply. Each\ncanonical zero request retains its exact identity AND zero amount. ",
+  "new": "### Initialization eligibility\n\nFullSupply alone is insufficient; both exact predicates are required:\n\n| Request | Required before potential-coordinate initialization |\n| --- | --- |\n| Each positive final authorization | Identity AND amount equal its potential request AND disposition is FullSupply. |\n| Each canonical zero request | Exact request identity AND zero amount are retained. |\n\n",
+  "claim": "Only existing initialization eligibility presentation changes; both conjunctive predicates retained explicitly. Other admission body and all other canonical files unchanged. No live edits while surface09 reads."
+}

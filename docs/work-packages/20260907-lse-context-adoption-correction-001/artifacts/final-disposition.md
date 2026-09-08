@@ -1,10 +1,9 @@
-# Current disposition
-Static: EXECUTING; iteration9 candidate applied, adoption NOT complete.
-Live20files match prospectively approved8931manifest. Direct migration checks pass;
-111RustPASS18inheritedFAIL remain unchanged, with direct masked-obligation testsPASS.
-Fresh09surface/solver NOT RUN;08failures immutable. Closure08 and identity03 oldPASS
-have A/B-approved bounded current applied-cut reuse; original cuts/counts remain. Current source/evidence: candidate/evidence manifests;
-prior actual readings: reading-iteration-08.json. No oldcount becomes a new observation.
-Continue recoverable source freeze, fresh affected evidence, stable dual reviews and
-two NEW terminal verifiers, then verified activation/local commit. No push; predecessor
-HOLD, production identities and paused experiment posture remain unchanged.
+# Disposition
+Static/Ran: EXECUTING iteration10; migration adoption is not complete.
+Direct preservation, strict binding, unit/A0, bridge and98 Python tests pass.
+Rust111PASS/18 inheritedFAIL and original root lintFAIL remain truthful diagnostics.
+Surface09 science/reading/sizePASS; solver09 scienceFAIL remains immutable.
+The approved158-byte initialization table is applied; fresh solver10 NOT RUN.
+A/B approve bounded applied-cut reuse for surface09, closure08 and identity03.
+Stable complete reviews, two NEW terminal verifiers, actual activation and bounded
+final verification remain required. No push or production qualification.

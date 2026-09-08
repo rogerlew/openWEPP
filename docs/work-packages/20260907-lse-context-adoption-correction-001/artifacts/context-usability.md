@@ -1,8 +1,12 @@
-# Iteration9 current reading state
-Static: exact20file368640byte candidate; always-read12021. Direct checks pass.
-Fresh09surface/solver NOT RUN. Closure08/identity03 bounded current reuse approved independently by A/B.
-Original cuts/counts retained; identity approval covers its identity task only. Projections in predicted-reading.json are not observed reading or tokens.
-All08firstresults below remain tied to645b; no repair or retrospective subtraction.
+# Iteration10 current reading state
+Static: exact20-file368798-byte candidate; always-read12021. Direct checks pass.
+Ran: completed09 first readings; independent A/B review. Surface09 PASS204063
+(22.955264% reduction); solver09 scienceFAIL203861 despite sizePASS.
+Fresh solver10 NOT RUN. Applied10 semantic reuse of surface09/closure08/identity03
+is approved independently by A/B; original cuts/counts remain observations.
+reading-iteration-09.json binds complete counts and conservative failed-request
+exposure. Full external reading remains separately visible; no token/runtime claim.
+The sole10 source change is the prospectively approved158-byte initialization table.
 
 # Completed iteration8 evidence
 Static: current source645b816b5; complete20file candidate365724bytes, always-read12021.

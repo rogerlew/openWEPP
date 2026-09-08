@@ -343,3 +343,14 @@ and compare answers for omissions as well as claim accuracy. No parent inventory
 missedatom/rubric hints, mandatoryreading omission or08report repair; derivednote
 exposure stays separate where observed. Fresh01/02 required; closure08/identity03
 reuse requires applied-cut exact selected-duty proof. All adoption gates remain.
+
+## Iteration10 prospective correction record
+After09 originaltask reviews, both reviewers approved exactly one initialization
+paragraph-to-table change before live implementation: proof iteration10-admission-proof.json,
+new admission SHA0c0dd52cb94ceafd48aeac5c5555cae9ac4eb1ce81b47f93a2f4708e1e64881b,
++158bytes; all other19 canonical files unchanged. Each positive final authorization
+identity AND amount must equal its potential request AND disposition be FullSupply;
+each canonical zero request retains exact identity AND zero. The rejected earlier
+draft's potential-request quantifier was never implemented. No gate/rubric/reading
+procedure or dependency change. Surface09/closure08/identity03 require bounded
+applied reuse; solver needs fresh nonforked10 report after reviewed freeze.
