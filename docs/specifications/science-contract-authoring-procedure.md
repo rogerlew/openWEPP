@@ -92,18 +92,11 @@ are evidence and workflow records, not authority replacements.
 
 ## Required Contract Cycle Layout
 
-All review, disposition, and verification artifacts for a contract cycle must
-live under one work package. Suggested layout:
-
-- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/contract_ref.md`
-- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/review_agent_a.md`
-- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/review_agent_b.md`
-- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/disposition.md`
-- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/verification_agent_a.md`
-- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/verification_agent_b.md`
-
-`contract_ref.md` and `disposition.md` must reference the canonical contract path
-and commit SHA under review.
+Use the work-package's single package.md for authority references, acceptance,
+current state, attributable reviews, finding dispositions and fix verification.
+Identify the canonical contract and actual reviewed source revision/diff. Retain
+necessary raw/schema-defined scientific evidence separately. No contract_ref,
+disposition, handoff or fresh verification reports are required.
 
 ## Authoring Workflow
 
@@ -217,7 +210,9 @@ constitutive suites:
 
 ## Required Dual-Agent Review Gate
 
-Two independent agent reviews are mandatory for every contract revision.
+Two independent reviews are mandatory for substantive scientific authority
+revisions. Pure spelling/link repairs with unchanged authority follow the common
+guide's editorial route; unclear semantic impact receives two reviews.
 
 1. Agent A and Agent B receive independent prompts.
 2. Agent B is not primed with Agent A findings before submitting its first
@@ -228,7 +223,7 @@ Two independent agent reviews are mandatory for every contract revision.
 
 ## Disposition Workflow
 
-After both reviews land, produce `disposition.md` with one row per finding.
+After required reviews land, disposition each finding in package.md.
 Each row must include:
 
 - `finding_id`
@@ -241,11 +236,12 @@ Each row must include:
 
 `amended` is retained as a compatibility value for older contract-review artifacts and means accepted with an amended fix path. Accepted and amended findings must be fixed and verified. Rejected findings require rationale
 tied to contract authority. Deferred or follow-up findings must be linked from
-disposition and worker-handoff artifacts. No silent closure is allowed.
+the same package record. No silent closure is allowed.
 
 ## Mandatory Verification Gate
 
-After fixes are applied, agent verification is a separate hard gate.
+Accepted fixes require verification by the original independent reviewers; no
+automatic fresh-agent verification stage or separate reports are required.
 
 1. Agent A verifies closure of accepted findings.
 2. Agent B verifies no new regressions and validates rejected-finding rationale.
@@ -257,11 +253,11 @@ After fixes are applied, agent verification is a separate hard gate.
 
 A contract revision is promotable only if all conditions are true:
 
-1. Two independent reviews completed.
+1. The common guide's required independent reviews completed (two for substantive authority).
 2. Disposition completed with no missing finding rows.
 3. Accepted findings are fixed and verified.
 4. Rejected findings carry authority-backed rationale.
-5. Both verification agents return `PASS` or `PASS-WITH-NOTES`.
+5. Required reviewers confirm their assigned fixes and affected regression checks.
 6. Remaining open items are listed in the gap register with non-promotable
    labeling when applicable.
 7. No invariant is left without declared guard mapping and enforcement path.
@@ -295,4 +291,4 @@ or omit applicable physical/operand authority merely because of the role label.
 
 Verifier prompt:
 
-`Given disposition.md and the updated SC-... contract, verify each accepted or rejected finding disposition and check for regressions. Return closure status per finding and verdict: PASS / PASS-WITH-NOTES / FAIL.`
+`Given package.md and the corrected SC-... diff, verify your assigned accepted fixes and rejected-finding rationale. Check affected regressions and return closure status per finding with a bounded verdict.`

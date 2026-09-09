@@ -13,10 +13,11 @@ document extends `docs/codex_exec_plans.md`; it does not replace it.
 
 ## 1. What a Defect-Closure ExecPlan is
 
-A DC-ExecPlan is an ExecPlan first. Everything in `docs/codex_exec_plans.md`
-applies: it is self-contained, it is a living document, it uses milestones, it
-maintains `Progress` / `Surprises & Discoveries` / `Decision Log` /
-`Outcomes & Retrospective`, and it carries the dual-review and disposition gates.
+A DC-ExecPlan uses the single maintained package.md under
+`docs/codex_exec_plans.md` and the common package guide. Sections are flexible;
+review count follows consequences, and the reviewers verify their assigned fixes.
+The correction envelope, scientific acceptance and legitimate HOLD rules below
+remain mandatory; they do not require extra administrative records.
 
 What distinguishes it is its **objective and its terminal states**. A
 DC-ExecPlan does not exist to "trace the next variable" or "produce one more
@@ -187,7 +188,7 @@ This is the normative core. State it, or an equivalent, in every DC-ExecPlan:
 > contract authority, pinned-baseline provenance, or a contract-authorized
 > physical invariant**, then the package **must** proceed through contract
 > amendment, contract-derived tests, a pre-implementation gate, the production
-> correction, validation, and dual-review disposition. It **may not** close as
+> correction, validation, and required independent review/disposition. It **may not** close as
 > `HOLD` on the grounds that further investigation is possible.
 
 **Authority ordering.** Pinned-baseline provenance and physical invariants are
@@ -278,6 +279,9 @@ own acceptance; a grind-HOLD produces a **diagnostic breadcrumb**.
 
 ## 7. The handoff and kickoff contract
 
+Continuation is a section of package.md, not a separate maintained handoff or
+kickoff file. The fields below describe its needed content, not extra artifacts.
+
 Because the autonomous trigger inherits the handoff's first item (§2.3.3), the
 handoff is the highest-leverage surface. A DC-ExecPlan handoff names a **defect**,
 with these fields:
@@ -305,7 +309,7 @@ The kickoff is correspondingly defect-shaped:
 > internally until the mechanism is owned or a branch condition is met. If the
 > mechanism is owned and contract-supported, amend contracts and tests, record
 > the pre-implementation gate, implement the correction, validate, and complete
-> dual review and disposition. Do not request a new package for intermediate
+> required independent review and disposition. Do not request a new package for intermediate
 > diagnostic steps. Do not stop at `HOLD` while source reading, implementation,
 > or validation remains possible inside the declared envelope. Do not introduce
 > surrogate physics or compatibility wrappers as substitutes for the direct
@@ -368,7 +372,9 @@ shields an in-scope, authority-backed fix from the conversion rule (§4).
   producer intermediate as authority.
 - **ADR-0017.** The fixed comparator is an investigation flag, not a target.
   §5 carries ADR-0017's like-for-like burden into the fix decision.
-- **Dual review and disposition.** Unchanged and required. Four review
+- **Independent review and disposition.** Common consequence-based review counts
+  apply, with two reviewers for scientific/consequential corrections and
+  reviewer-owned fix verification. Four review
   obligations are added: a reviewer must check (a) **`HOLD` legitimacy** — that no
   in-scope, authority-backed defect was diagnosed and then deferred, and that
   any hold includes the required legitimacy audit (§6);
@@ -385,10 +391,9 @@ shields an in-scope, authority-backed fix from the conversion rule (§4).
   direct-path or publication packages, review must explicitly check that the real
   downstream consumer reads the corrected path and that wrappers/adapters are
   not masking an incomplete correction.
-- **Line-count governance disposition.** Required. Review artifacts must
-   explicitly evaluate `.rs` file thresholds (2000=`WARN`, 3000=`required
-   refactor`) and disposition any exception. Any approved 3000+ generated/fixture
-   exception must include owner and sunset plan in package artifacts.
+- **Maintainability.** File length alone does not force unrelated refactoring or
+   a separate report. Explicitly owned size targets and concrete maintainability
+   defects remain reviewable.
 - **Not every package is a DC-ExecPlan.** Pure validation/characterization passes
   (such as WBVAL01), architecture scaffolding, and audits keep their own shapes.
   The DC-ExecPlan is specifically for *closing an observed defect*.

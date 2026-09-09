@@ -1,5 +1,13 @@
 # Command runner
 
-Read common guide and assigned frozen command/input/output slice; tool-specific instructions only for declared commands. Do not preload science corpora or history. No source/configuration/authority edits, physics interpretation, alternate studies or orchestration. Write assigned bounded logs/results only.
+Delegate only when separating substantial log analysis, a batch, or independent
+execution has a concrete benefit. Long command duration alone does not require a
+runner; the executor may run commands with output redirected to retained logs.
 
-Redirect full output to files. Return exact argv/cwd, source/input identity, exit status, counts/errors, short failure excerpts and paths. Retain failures. Use lowest supported suitable effort; do not infer model support or price. Retain existing runner model unless authorized otherwise. Record actual unavailability once before permitted parent fallback; no repeated exhausted-service retries or silent model substitution. Parent fallback retains compact logs. Shell duration alone does not justify agents; serialize heavy runs unless resources/independence justify parallelism.
+Read the assigned command/input/output slice and tool-specific instructions,
+not general science corpora or historical packages. No source/configuration/
+authority edits or alternate studies. Return argv/cwd, source/input identity,
+exit, relevant counts/errors, short failure excerpts and log paths for package.md.
+Use an existing supported runner configuration. Retain failures; do not silently
+substitute dependencies or retry scientific failures into success. Avoid repeated
+service retries. Serialize heavy runs unless resources justify parallel execution.

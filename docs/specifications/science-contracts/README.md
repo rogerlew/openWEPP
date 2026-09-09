@@ -32,8 +32,8 @@ authority location.
 
 Required practice:
 
-1. `disposition.md` must reference the canonical contract path and commit SHA
-   under review.
+1. The package.md disposition identifies the canonical contract path and actual
+   source revision/diff under review; no separate disposition file is required.
 2. A contract is not promotable if edits exist only in work-package artifacts
    and are not reflected in the canonical `SC-*` file.
 

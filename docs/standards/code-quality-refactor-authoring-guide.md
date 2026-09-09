@@ -154,12 +154,12 @@ the metric loop.
 
 ## 7) Required evidence artifacts
 
-- The mechanical guide §9 artifact set (modularization/parity, line-count
-  governance, dual review/verification, disposition, handoff).
-- `*_before` / `*_after` for the dimension metric (e.g. `crap_before.md` /
-  `crap_after.md`, or the clippy/allow census).
+- The mechanical guide §9 single package.md record: implementation/parity,
+  attributable reviews and fix verification, current state and disposition.
+- Raw before/after metric outputs; summarize the result in package.md.
 - Raw-to-actionable eligibility ledger: exact row, classification, source hash,
-  gate treatment, evidence, and dual-review disposition.
+  gate treatment and evidence. Exclusions retain dual review; ordinary bounded
+  implementation follows the common consequence-based review count.
 - **Numeric-equivalence statement** — how output identity was preserved and which
   characterization tests evidence it.
 
@@ -212,5 +212,6 @@ A code-quality refactor package is complete only when:
 2. Numeric equivalence is preserved and evidenced (§4).
 3. The module's coverage gate is not regressed.
 4. Exactly one quality dimension was touched.
-5. Mechanical guide §10 acceptance (seam complete, gates recorded, line-count
-   dispositioned, reviews dispositioned) is satisfied.
+5. Mechanical guide §10 acceptance (authorized seam complete, gates recorded,
+   required reviews/fixes resolved in package.md) is satisfied. File length alone
+   does not add a separate closure requirement.

@@ -143,7 +143,7 @@ If one function mixes an observability/delegation shell with eligible behavior,
 the whole function is eligible. Extract the pure shell behavior-preserving
 before requesting a narrower exception.
 
-Every `R-*` or `X-*` entry in `coverage-closure.md` must record:
+Every `R-*` or `X-*` entry in the package.md coverage section must record:
 
 1. stable classification ID and exact symbol/arm plus source lines;
 2. source SHA-256 and measured profile;
@@ -164,7 +164,7 @@ complexity, or public behavior changes.
    package `YYYYMMDD-mte<NN>-<module-slug>-001` under `docs/work-packages/` and
    register it in `docs/work-packages/README.md`. Scaffold per
    [kernel-work-package-preparation.md](kernel-work-package-preparation.md) §2
-   (truthfulness labels, dual review/verification where the package requires).
+   (truthfulness labels, common consequence-based review and reviewer-owned fix verification).
 2. **Baseline measurement.** Pin the before-numbers as evidence:
    - `cargo llvm-cov --workspace --ignore-run-fail --json --output-path <artifacts>/coverage_before.json`
    - Use the **one-shot** form above. The standalone `cargo llvm-cov report`
@@ -217,13 +217,13 @@ complexity, or public behavior changes.
 - `lcov.info` — LCOV used for CRAP.
 - `crap_before.md` / `crap_after.md` — `cargo-crap` report (markdown) with the
   module's eligible functions and their CRAP scores before/after.
-- `coverage-closure.md` — raw and eligible-adjusted before/after tables,
+- A package.md coverage section — raw and eligible-adjusted before/after tables,
   classification ledger with exact symbols/lines/hashes and reviewer
   dispositions, tier + thresholds, pass/fail.
-- `obligation-to-test-map.md` — family/obligation → test fn → status; 100%
+- A package.md obligation map — family/obligation → test fn → status; 100%
   bound.
 - `gate-logs/` — per the gate loop (§4.7).
-- Standard package scaffolding per the kernel preparation guide.
+- Single package.md per the common guide; no duplicate narrative scaffolding.
 
 ## 6) Exit criteria
 

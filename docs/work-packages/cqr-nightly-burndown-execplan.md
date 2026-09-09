@@ -3,7 +3,11 @@
 Status: **ACTIVE / exact quality-evidence intake required**
 Dispatch surface: **main** unless the operator explicitly authorizes a branch.
 Owner: maintainers.
-Last updated: 2026-07-24.
+Last updated: 2026-09-09.
+
+Package narrative and review lifecycle follow the lightweight common guide.
+Specialized committed aggregate inputs and quality-evidence receipts remain;
+no prompt archive, reading map or separate review/verification reports are required.
 
 This ExecPlan defines the operator shorthand:
 
@@ -94,8 +98,8 @@ The complete control receipt supplies the independently bound admission object;
 the locator itself is not authority. Preserve the canonical `CURRENT` receipt
 and candidate exact rows in the aggregate and first module package. Intake
 launches no measurement command. Its `candidate_selection` is a deterministic
-metric ordering, not final selection authority; finalize `N` only after the two
-semantic/evidence reviews below apply the fourth ranking criterion.
+metric ordering, not final selection authority; finalize `N` only after the required
+semantic/evidence review below applies the fourth ranking criterion.
 
 Only typed `STALE` or `INVALID` evidence plus the explicit CQR directive permits
 fresh recollection. Before collection, retain the intake receipt and run:
@@ -145,23 +149,22 @@ module path and rank modules by:
 3. maximum CRAP in the module;
 4. review judgment about output-risk and available characterization coverage.
 
-Before finalizing the selected `N`, obtain two independent read-only reviews of
-the proposed ledger: Review A checks semantic/consumer eligibility and closed-
-list fit; Review B checks source identity, metric deduplication, and evidence.
-Only jointly accepted `R-OBSERVABILITY`, `R-IRREDUCIBLE-CRAP`, or `X-*` rows
-leave the actionable set. Any disagreement defaults to `E-PRODUCTION`.
-Preserve both reviews with the first selected package as
-`artifacts/target-selection-review-a.md` and
-`artifacts/target-selection-review-b.md`.
+Before finalizing the selected N, obtain independent review of semantic/consumer
+eligibility, source identity, deduplication and evidence. Two reviewers are required
+for any proposed exclusion/denominator disposition; otherwise one suffices.
+Only jointly accepted R-OBSERVABILITY, R-IRREDUCIBLE-CRAP or X-* rows leave the
+actionable set. Disagreement defaults to E-PRODUCTION. Keep attributable reviews
+in the first package.md, and reuse those reviewers for implementation/fix review
+where practical; do not add a fresh four-assignment closure cycle.
 
 Continue down the raw ranking until the requested `N` actionable modules are
 selected. A module containing only accepted `R-OBSERVABILITY`,
 `R-IRREDUCIBLE-CRAP`, or `X-*` rows is `DISPOSITIONED-NO-ACTION`, not one of the
 `N`; record it and continue scanning.
 Record the raw ranking, actionable ranking, classification ledger, conflicts,
-and every accepted disposition in the first selected package's
-`artifacts/target-selection.md`; repeat the selected target row and relevant
-symbol ledger in each module package.
+and every accepted disposition in the first selected package.md. Each module
+record identifies its selected target and relevant ledger; link unchanged batch
+evidence rather than duplicating it.
 
 ## Per-Module Package Shape
 
@@ -172,24 +175,11 @@ Each selected module is executed as its own normal work package:
 Use an empty `<batch-prefix>` for the first batch on a date and `bNN-` for a
 second or later batch that day.
 
-Use `docs/work-packages/templates/cqr-nightly-package.md` as the package-local
-starting point and `docs/work-packages/templates/cqr-nightly-kickoff-prompt.md`
-as the active prompt starting point. The package must include:
-
-- `package.md`
-- `artifacts/`
-- `prompts/active/`
-- `prompts/archived/`
-- package-local review, verification, gate, disposition, and handoff artifacts.
-- `prompts/active/<date>-codex-cqr-nightly-<module-slug>_prompt.md`
-- `artifacts/required-reading-map.md`
-
-The scaffolded package and active kickoff prompt must explicitly authorize
-subagent spawning/delegation for review, verification, comparator, and
-closure-runner work, with bounded write access. The active kickoff prompt must
-also include `Execution mode: package-end-to-end`, tiered required reading, a
-required-reading budget, `Autonomy:`, and the required heavy-run subagent
-directive from `docs/standards/prompt-wording-guidance.md`.
+Use docs/work-packages/templates/cqr-nightly-package.md for the single maintained
+record. Store raw reports, exact aggregate manifest and quality-evidence receipts
+separately where the existing tool schemas require them. A kickoff can reference
+package.md directly. No prompt directories, placeholder reports, reading maps,
+separate handoffs or fresh terminal verifiers are required.
 
 ## Required Commit Boundaries
 
@@ -201,7 +191,7 @@ After scaffolding a per-module CQR package, commit the scaffold before any
 production/test implementation edits for that target. The scaffold commit
 contains:
 
-- package directory and prompt skeletons;
+- package.md with specialized aggregate binding fields;
 - selected module row and intended write set;
 - verified QA evidence identity and compact baseline row provenance;
 - package gates and hold/rollback rules.
@@ -215,7 +205,7 @@ direction.
 After executing a target package, commit one of:
 
 - `EXECUTED-COMPLETE-*`: implementation, tests, after-metrics, review,
-  verification, gates, disposition, and handoff;
+  reviewer-owned fix verification, gates and disposition in package.md;
 - `EXECUTED-HOLD-*`: hold evidence, rollback proof, disposition, and first
   actionable follow-on.
 
@@ -244,7 +234,8 @@ For each selected module:
 11. Reconcile the exact terminal plan and run every selected correctness gate
     plus the package's target metric gates, recording command/receipt
     identities, exit codes, and evidence.
-12. Complete dual review, disposition findings, and dual verification.
+12. Complete common consequence-based review and reviewer-owned fix verification;
+    retain two perspectives for exclusion/denominator decisions.
 13. Commit completion or hold evidence.
 14. Continue to the next selected target only when the current target is
     complete or has a local hold.
@@ -300,33 +291,13 @@ For a global hold:
    package-specific evidence exists yet.
 5. Stop the batch and report the blocker.
 
-## Required Artifacts
-
-Each per-module package records:
-
-- `artifacts/target-selection.md`
-- `artifacts/eligibility-classification.md` with raw/actionable counts and the
-  exact symbol-level ledger
-- `artifacts/target-selection-review-a.md`
-- `artifacts/target-selection-review-b.md`
-- `artifacts/crap-before.md`
-- `artifacts/coverage-before.md`
-- `artifacts/coverage-closure.md` when characterization tests are added or
-  materially changed
-- `artifacts/characterization.md`
-- `artifacts/implementation.md` or `artifacts/hold-legitimacy-audit.md`
-- `artifacts/crap-after.md` when implementation lands
-- `artifacts/coverage-after.md` when implementation lands
-- `artifacts/numeric-equivalence.md`
-- `artifacts/line-count-governance.md`
-- `artifacts/gate-results.md`
-- `artifacts/review_agent_a.md`
-- `artifacts/review_agent_b.md`
-- `artifacts/verification_agent_a.md`
-- `artifacts/verification_agent_b.md`
-- `artifacts/disposition.md`
-- `artifacts/final-disposition.md`
-- `artifacts/worker-handoff.md`
+## Required evidence
+Each module has one maintained package.md: selected target and eligibility,
+baseline/after metrics, coverage obligations, characterization, numerical parity,
+commands/results, attributable findings/fix verification, blockers and disposition.
+Link exact raw reports, quality intake/authorization receipts and aggregate
+manifest/validator outputs. No duplicated report, line-count checklist, prompt,
+handoff or review/verification files are required.
 
 Raw LCOV/profraw remains forest1-local under quality-observatory retention
 policy. Commit compact package-local summaries, QA evidence identity, hashes,
@@ -344,7 +315,6 @@ At minimum:
   on hold; fresh before acquisition is allowed only through the typed
   `STALE`/`INVALID` plus operator-directive path
 - output identity or API/fixture identity appropriate to the touched surface
-- `.rs` line-count governance;
 - the intent/terminal gate-plan reconciliation required by
   `docs/standards/testing-and-gate-strategy.md`;
 - every selected affected correctness gate.
@@ -359,11 +329,9 @@ required-case bindings, also run:
 - `bash tools/release/check_authority_suite_antievasion.sh`
 - `cargo nextest run --test auth11_required_suite_obligation_guards_contract`
 
-Heavy closure/comparator runs are required to be delegated to the
-`comparator_suite_runner` subagent when available, per
-`docs/standards/prompt-wording-guidance.md`. The parent agent must not run those
-heavy gates locally unless the subagent is unavailable and that unavailability is
-recorded with command-level evidence.
+Commands may run locally with compact logs. Delegate substantial batch analysis
+only when useful, with assigned input/output scope; duration alone creates no
+mandatory agent assignment.
 
 ## Completion
 

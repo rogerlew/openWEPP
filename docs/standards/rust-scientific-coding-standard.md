@@ -162,24 +162,13 @@ Prefer many focused files over monoliths. A practical target is one primary
 kernel responsibility per file/module (for example infiltration, runoff,
 erosion detachment, channel routing adapter).
 
-### 5.1.1 `.rs` file line-count governance (required)
+### 5.1.1 File length and maintainability
 
-Line count is governed through coding standards and code review (not CI signal
-quality alone):
-
-- `WARN threshold`: 2000 lines in a single `.rs` file.
-- `Required refactor threshold`: 3000 lines in a single `.rs` file.
-
-Review policy requirements:
-
-1. Files at or above 2000 lines must include an explicit decomposition note in
-   review/disposition artifacts describing current boundary rationale and
-   follow-on split intent.
-2. Files at or above 3000 lines must be split before closure/disposition unless
-   the file is generated data/code or fixture content explicitly marked as an
-   exception with rationale.
-3. Exception approvals for 3000+ non-generated files must be documented in
-   package artifacts with owner and sunset plan.
+File length is a maintenance signal, not an automatic closure gate. Review the
+actual boundary/coupling defect when it affects the task; do not require an
+unrelated split, threshold exception or separate report because of line count.
+Explicitly authorized size-reduction packages retain their declared targets.
+Record material maintainability findings and corrections in package.md.
 
 ### 5.2 Keep orchestration thin
 

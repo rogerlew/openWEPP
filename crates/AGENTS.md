@@ -47,7 +47,8 @@
 - Fast iteration when useful: focused `cargo nextest run -p <crate>` or `cargo check -p <crate>`.
 - Execute the exact increment terminal plan selected under
   `docs/standards/testing-and-gate-strategy.md`; critical changes, campaign
-  closure, and release retain full-workspace gates and global CRAP.
+  closure, and release retain full-workspace correctness. Coverage/CRAP remains
+  observational except for explicitly owned metric-package acceptance.
 - Use `cargo nextest run --workspace --profile quick` for ordinary local loops and `cargo nextest run --workspace --profile frost` for snow/frost-focused work; fall back to `cargo test` only for libtest-specific behavior or explicitly required legacy harness checks.
 - Contract-derived tests and closure checks for touched state surfaces.
 - Legacy comparator delta review using confidence tiers when migration/parity is in scope.
@@ -59,9 +60,10 @@
   generic workspace `cargo build --release` to refresh non-default runner bins.
 
 ## Line-Count Governance
-- `.rs` files at or above 2000 lines are `WARN` and need decomposition rationale plus follow-on split intent in review/checklist artifacts.
-- `.rs` files at or above 3000 lines require refactor before closure unless an approved generated/fixture exception documents owner and sunset plan.
-- Package closure is blocked while any 3000+ nonexempt file remains undispositioned.
+- File length is a maintenance signal, not an automatic closure gate. Do not
+  force an unrelated refactor or separate report because a file exceeds a line
+  threshold. Record a concrete maintainability defect when it affects the task.
+- Explicitly authorized size-reduction packages retain their declared targets.
 
 ## Common Pitfalls
 - Do not hide behavior changes inside mechanical refactors.

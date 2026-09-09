@@ -1,12 +1,13 @@
-# Independent assurance record
+# Review section template
 
-Static: <sources>; Ran: <own commands or NOT RUN>.
-Role/session: <id>; configured/requested effort: <value>; effective: <metadata or UNOBSERVED>.
-Reviewed identity: <manifest/revision>; assigned scope: <paths/claims>.
-Independent checks: <primary evidence; command/exit/log>.
-Findings: <ID, severity, location, evidence, correction; or none>.
-Disposition: <accepted/fixed/rechecked; rejected/reason; deferred/follow-up owner/link>.
-Uncertainty: <limits, unobserved context/runtime>.
-Verdict: <PASS/FAIL/BLOCKED, bounded claim>.
+Use inside package.md; a separate report is not required.
 
-Reference unchanged evidence/identity; inspect changed portions. Do not copy whole narratives or hash tables. Explicitly check non-deferral, accepted fixes and cut freshness.
+Reviewer/session and assigned scope: <identity; changed source/claims>.
+Static: <primary sources>; Ran: <actual checks/results or NOT RUN>.
+Findings: <severity, location, evidence and required correction; or none>.
+Fix verification: <accepted fixes checked; rejected finding reasons>.
+Verdict and limits: <bounded conclusion; unresolved acceptance if any>.
+
+Keep findings attributable. Do not copy another review or overwrite its section.
+Reference retained evidence instead of reproducing logs/hash tables. Recheck
+changed substantive claims/fixes only. Cosmetic preferences are nonblocking.

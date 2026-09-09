@@ -10,6 +10,12 @@ state was reached. Execution history lives in the
 [work-package catalog](work-packages/README.md); unprioritized ideas live in the
 [backlog tracker](backlog/TRACKER.md).
 
+Solver authority: [ADR-0044](decisions/0044-prohibit-accretive-production-solver-dispatch.md)
+records the historical requirement to
+replace—not extend—the accretive v33–v57 solver dispatch.
+The prohibition on solver accretion remains binding; this reference creates no
+new execution or production-activation authorization.
+
 ## Operating Contract
 
 1. Every item here is prospective and has a state, an owning queue, and an

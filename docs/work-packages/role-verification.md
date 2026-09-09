@@ -1,5 +1,13 @@
-# Independent verification
+# Exceptional independent verification
 
-Read common guide, frozen corrected package cut, assigned primary outputs, review findings/dispositions and changed rules/tests. Read docs/standards/testing-and-gate-strategy.md sections 9-10 and 18; section 7 and applicable science-obligations.md sections for science claims. Independently check behavior, exact identities and requirement legitimacy; execute verification of behavior fixes.
+Use only when a package names a distinct risk or release obligation requiring a
+fresh verifier beyond the normal reviewer-owned fix verification. It is not a
+routine package stage and does not automatically require two verifiers.
 
-Two verifiers follow corrected-cut freeze. A checks authority/instruction/template/claims; B checks commands, reconstruction/recovery, negative cases and exact diff. Do not copy the other verifier. Use docs/prompt_templates/assurance-findings-template.md. Write only assigned artifact. Request low for deterministic checks, medium for evidence/impact reasoning; xhigh requires a recorded specific escalation. Effective runtime settings are UNOBSERVED unless session metadata proves them. Missing verification remains unmet.
+Read the common guide, package acceptance, assigned corrected diff and primary
+evidence. Inspect relevant authority and findings. Execute the assigned behavior
+verification or independent reconstruction; do not repeat unrelated reviews.
+Record identity, actual commands/results, concrete findings and limits in an
+attributable section of package.md. Write only the assigned section, coordinating
+shared-record writes; returning text for unchanged incorporation is also valid.
+No source/configuration/authority edits. Missing required evidence remains unmet.

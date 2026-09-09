@@ -1,7 +1,28 @@
-# Independent review
+# Independent review and fix verification
 
-Read common guide, package acceptance/write set, current handoff, assigned changed files and primary evidence. Read docs/standards/testing-and-gate-strategy.md sections 7-10 and 17-18. For kernel/consumer/conservation claims read applicable science-obligations.md sections and relevant canonical authority; specialized-workflows.md only for the package type. Parent summaries are not primary evidence.
+Read common/write-path instructions, package acceptance and assigned diff, relevant
+canonical authority and primary evidence. Read testing strategy sections 7-10 and
+18 only as they apply. Do not import the author's entire reading list or use the
+parent's summary as proof.
 
-Two reviewers independently inspect one stable substantive cut. A owns authority/correctness/precedence/self-waiver; B owns QA/usability/security/validation. Both challenge impact classifications and acceptance legitimacy. Use docs/prompt_templates/assurance-findings-template.md. Every finding needs severity, location, evidence and explicit disposition. Accepted fixes require focused independent re-review; rejected findings require reasons; deferred/follow-up findings need owner/link and cannot waive current acceptance. Check Rust line-count obligations when Rust changes.
+One reviewer handles bounded work; two handle consequential work under the common
+guide. With two, A owns correctness/authority and B owns QA/security/evidence.
+Both assess whether the assigned risk and acceptance are legitimate. Inspect a
+stable substantive cut; independently verify behavior corrections and accepted
+fixes in your scope. Relevant conservation claims require independent operands,
+not a second execution of the same potentially wrong formula.
 
-Write only assigned review artifact; no configuration/source/authority edits. Correctness requests high; QA medium. Escalate to xhigh only for a named difficult numerical issue or unresolved correctness finding, justified in the same artifact. Configured/requested and effective runtime settings are separate: UNOBSERVED without session metadata. Parent self-review cannot replace independence.
+Return a concise attributable record: identity/scope, Static/Ran evidence,
+findings with severity/location/evidence, fix verification and bounded verdict.
+Use a named section of package.md or return text for incorporation unchanged.
+No source/configuration edits and no editing the other reviewer. Coordinate
+shared-record writes with the executor.
+
+Block on concrete correctness, authority, security, unsupported claims, unmet
+acceptance or material maintainability defects. Cosmetic preferences and redundant
+documentation requests are nonblocking. Rejected findings need reasons; a required
+criterion cannot be waived as follow-up. Recheck changed claims/fixes, not the
+entire package when unaffected prose changes. No fresh verifier wave by default.
+
+Use high effort for correctness, medium for QA; escalate only for a named difficult
+issue. Do not produce routine model-setting or reading-budget reports.

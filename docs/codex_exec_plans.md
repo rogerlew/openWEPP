@@ -1,39 +1,30 @@
-# Codex Execution Plans
+# Execution plans
 
-"The plan and its explicit, versioned dependencies contain everything required to execute the task. The plan states the objective, current state, authority, write set, steps, acceptance criteria, and recovery/handoff information; it does not duplicate referenced procedures or historical narratives."
+The execution plan is the package's single maintained package.md, governed by
+docs/work-packages/AGENTS.md. It contains objective/scope, relevant authority,
+acceptance, current state/next action, checks/results, attributable reviews/fixes
+and disposition. Sections are flexible. No separate handoff or kickoff is needed.
 
-## Plan contract
-State objective/observable outcome, authorization/protected boundaries, current
-state, exact write set, steps/commands, acceptance and recovery. Maintain
-Progress, Surprises & Discoveries, Decision Log, Outcomes & Retrospective as
-concise sections or explicit handoff links. Bind required dependencies to exact
-paths, relevant sections and revision/content hashes; freeze new documents
-before review. Check bindings on continuation. Changed authority/criteria need
-explicit impact review; missing references block dependent action. Never follow
-acceptance drift silently. Versioned dependencies supply context without
-teaching repository basics or duplicating procedures/historical narratives.
+Scaffold before substantive implementation. A scaffold commit is optional unless
+explicitly requested. State intended surfaces; routine path adjustments inside
+authorized boundaries do not require a new package. Reconcile the final diff.
+Freeze result-bearing scientific predicates/protocols before measurement. Record
+material acceptance changes with authority; never silently lower a failed gate.
 
-The common execution/closure contract is docs/work-packages/AGENTS.md.
-Authors follow docs/work-packages/role-authoring.md. Preserve autonomous steps,
-observable tests and recovery. Scaffold before substantive edits; freeze
-acceptance. Direct validation follows docs/standards/testing-and-gate-strategy.md.
-DC additionally binds docs/defect_closure_execplans.md; triggered specialized
-procedures route through the common guide. Historical artifacts retain original
-meaning; this guidance and active templates are prospective.
+Read relevant dependencies, not every linked document recursively. Bind source,
+inputs and authority precisely enough to support the actual claim and recovery;
+do not hash routine planning prose. Continue in-scope execution through correction
+and validation. Historical records retain their original meaning.
 
 ## Comparator authority
-ADR-0017 makes comparator agreement a flag rather than a target for all
-comparator/ledger work packages. ExecPlans that classify legacy-comparator
-residuals must require like-for-like unit and lineage-stage proof before any
-`OPENWEPP-DEFECTIVE` verdict, must include `HARNESS-SURFACE-MISMATCH` as a peer
-verdict for unit or surface-pairing defects, must prohibit waiving independent
-correctness authority for openWEPP-defect labels, and must keep `HOLD` findings
-owned by a named follow-on gate rather than unscoped.
+ADR-0017 makes comparator agreement a flag rather than a correctness target.
+Before OPENWEPP-DEFECTIVE classification require like-for-like units and lineage
+plus independent correctness authority. HARNESS-SURFACE-MISMATCH is a peer
+classification for unit/surface pairing errors. Retain failures and owned blockers.
+Plans must prohibit waiving independent
+correctness authority for openWEPP-defect labels.
 
-
-## Compact skeleton
-Objective/authorization; current state; versioned dependencies; intended paths;
-steps/validation commands; frozen acceptance; Progress; Surprises & Discoveries;
-Decision Log; Outcomes & Retrospective; recovery/worker-handoff link.
-The common guide owns independent reviews, dispositions, verifications,
-line-count and non-deferral obligations.
+## Specialized work
+DC packages also use docs/defect_closure_execplans.md for their correction envelope
+and legitimate stop conditions. Kernel preparation uses the kernel preparation
+standard. Common review counts and single-record structure apply to both.

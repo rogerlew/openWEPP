@@ -1,11 +1,13 @@
 # Current work locator
 
 Maintainer: executor updates this locator when package authorization/status changes.
-Status authority is each package's current handoff and bound execution contract.
+Status authority for new/resumed work is its single package.md record.
+Older handoff/disposition links below preserve historical state until resumed.
 This is the current owner-directed queue, not a claim every old catalog HOLD is live.
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
+| Lightweight governance replacement | [record](20260909-lightweight-governance-001/package.md) | Owner-authorized structural replacement; one record per package, consequence-based review and preserved scientific correctness. |
 | Stage 3 attribution and recomputation experiment (executed HOLD) | [disposition](20260909-stage3-attribution-recomputation-001/artifacts/final-disposition.md) | Study complete; no distinct reusable operation passed the >=5% gate, no prototype was built, and frozen Clippy remains failed; production HOLD. |
 | Stage 3 compact cost breakdown (complete characterization) | [handoff](20260909-stage3-compact-cost-breakdown-001/artifacts/worker-handoff.md) | Observation-only one-OFE additive profiling and next-architecture ranking; no optimization; production HOLD. |
 | Integrated hot-path Jacobian prototype (executed HOLD) | [handoff](20260908-stage3-hotpath-jacobian-reference-and-prototype-001/artifacts/worker-handoff.md) | J implemented and measured; REJECTED_IMPLEMENTATION under frozen memory bound, broad gates non-green; production HOLD. |

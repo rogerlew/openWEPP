@@ -35,11 +35,14 @@
    fallback as a safety or compatibility mechanism.
 
 ## Prompt Wording Maintenance
-- Kernel/science kickoff prompts should start with an explicit local-repository scope sentence.
-- Default execution mode is package-end-to-end; phase-only prompts are exception-only and must state rationale plus next trigger.
-- Required reading lists should name exact files.
-- Prompts must preserve contract-first sequencing, canonical `SC-*` authority, baseline provenance when applicable, typed guards, no silent defaults, and autonomous execution expectations.
-- If a false-positive block occurs, record the shorter resumed prompt shape in package artifacts.
+- A kickoff may simply reference package.md for end-to-end execution; no copied
+  prompt, magic scope/delegation phrase or separate reading list is required.
+- Put authorized scope, relevant authority sections, acceptance and selected
+  checks in that single record. Do not invent external-action restrictions.
+- Preserve contract-first, canonical `SC-*`, applicable baseline provenance,
+  typed guards and autonomous execution through the governing references.
+- Reading metrics are optional. Review counts and fix verification follow the
+  common package guide; do not restate a stricter generic lifecycle in templates.
 
 ## Validation Checklist
 - Confirm referenced paths exist after any move.

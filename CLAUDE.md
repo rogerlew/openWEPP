@@ -11,7 +11,7 @@ For repository invariants and current package execution, read AGENTS.md and
 docs/work-packages/AGENTS.md, then only the assigned role procedure. Their
 prospective authority, validation, provenance and continuation rules govern
 over duplicated orientation below. Start at docs/work-packages/active.md and
-the named package worker-handoff; historical catalog reading is targeted.
+the named package.md, the single maintained record; historical reading is targeted.
 User authorization and actual tool permissions govern delegation and writes.
 
 **Codex** owns code authoring: implementation, refactoring, test writing, AGENTS.md maintenance.

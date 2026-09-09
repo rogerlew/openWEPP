@@ -16,7 +16,8 @@ Reading selection routes access to authority, never exemptions from authority.
 This specification defines a prospective format, not scientific amendments or
 permission to migrate an existing contract. Until a separately authorized
 migration meets [Adoption gates](#adoption-gates), existing single-file schema,
-whole-contract reading, checker behavior and frozen package bindings continue.
+checker behavior and frozen scientific bindings continue. Reading selection for
+both formats follows science-contracts/AGENTS.md; it does not require migration.
 The separately authorized [checker implementation and LSE pilot](../work-packages/20260907-directory-contract-checker-lse-adoption-001/artifacts/worker-handoff.md)
 implements structural checker support and retains its historical HOLD. The separate
 [LSE correction package](../work-packages/20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md)
@@ -124,7 +125,7 @@ justify a mechanism's equations/constants cannot become optional history.
 Each normative chapter starts with a parent-entry link and a `## Dependencies`
 table: Target (path plus explicit anchor), Required when, Boundary/obligation,
 and Reading extent. State `none beyond entry` explicitly if there are none.
-The current package reading map binds those targets to revisions/hashes.
+The current package.md identifies relevant targets and the reviewed source cut.
 References labelled dependencies are binding reading when their condition applies;
 bibliographic or historical links alone do not create whole-file reading rules.
 Conditions must name concrete task effects/regimes, not agent discretion.
@@ -306,19 +307,18 @@ acceptance before edits, then complete all of these gates:
    reconcile affected live links, templates, guides and source-coupled Rust tests
    without deleting or weakening the obligation each test protects.
 4. Strict checker PASS, complete schema/profile coverage, all affected checks,
-   dual independent review, finding resolution and dual independent verification.
-5. Fresh non-forked agents perform bounded surface/coupling, solver-review and
-   identity-versus-closure verification reading exercises. They identify exact
-   applicable rules from primary modules without reconstructing historical
-   amendments. Incorrect or missing authority selection fails usability acceptance.
-6. Measure same tasks/roles before and after: full/range bytes, unique versus
-   repeated exposure, automatically required instructions, recursively applicable
-   dependencies, bootstrap versus later expansion. Record workflow-total only if
-   observed. An unconditional pointer is no saving; do not report bytes as tokens
-   or quota. Demonstrate a smaller sufficient reading set, not just a smaller entry.
+   two independent reviews and reviewer-owned finding/fix verification.
+5. Those reviewers inspect the affected routing from primary modules and verify
+   that definitions, physical/operand authority and cross-cutting dependencies
+   remain discoverable. Missing authority is blocking; fresh reading-exercise
+   agents are not a routine adoption requirement.
+6. Reading measurements are optional unless the owner requests a measured saving.
+   If measured, compare the same tasks, count repeated/expanded exposure and
+   distinguish source bytes from observed tokens or quota. Keep results in
+   package.md; do not create a second efficiency-certification workflow.
 7. Reconcile exact final diff and publish the coherent entry/set revision with
-   reviewed source identities. Only then enable its selective-reading route.
+   reviewed source identities. Only then publish the migrated directory authority.
 
-The migration package owns exact numeric byte results and reopening triggers.
+The migration package owns any measured results and concrete reopening triggers.
 This specification provides neither an LSE scientific adjudication nor measured
 savings, and authorizes no solver experiment or rejected-candidate resurrection.

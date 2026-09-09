@@ -1,286 +1,80 @@
 # Mechanical Refactor Authoring Guide
 
-- **Status:** Active
-- **Last updated:** 2026-06-07
-- **Applies to:** work packages whose goal is structural/mechanical code reorganization with no intended behavior change
+Status: Active. Behavior-preserving structural work uses the single package.md
+record and review selection in ../work-packages/AGENTS.md.
 
 ## 1) Purpose
-
-This guide standardizes how openWEPP authors and executes mechanical refactor
-packages. It exists to make refactor work reproducible, reviewable, and safe,
-including when using smaller or more cost-effective coding models that need
-more explicit instructions.
-
-Use this guide in addition to:
-
-- `docs/codex_exec_plans.md`
-- `docs/work-packages/README.md`
-- `AGENTS.md`
-
-For defect closure packages, also follow:
-
-- `docs/defect_closure_execplans.md`
+Move/split code safely with a small, reviewable record. Keep the authorized
+package scope and cadence. DC work also follows ../defect_closure_execplans.md.
 
 ## 1.1 End-to-End Execution Requirement (Required)
-
-Mechanical refactor packages are end-to-end executions, not partial edit
-sessions.
-
-Required posture:
-
-1. Continue from intake through code movement, validation, artifact updates,
-   review/verification readiness, and disposition readiness in one run.
-2. Do not stop after source edits while required gates remain unrun.
-3. If a gate fails, attempt a mechanical-only correction and rerun gates.
-4. Stop only at a declared hard blocker, and record exact command output,
-   file/symbol context, and first actionable follow-up.
-5. Package closure or handoff must be blocker-shaped, never an open-ended
-   "continue investigation" note for in-scope work.
-6. Required cargo closure commands are mandatory execution steps; reasoning
-   about expected outcomes is not a substitute for running them.
-7. Required gate execution in a package/work-package prompt overrides any
-   generic or ambient instruction to skip tests/validation. For mechanical
-   refactor packages, do not treat "don't run tests" guidance as applicable
-   to closure gates.
-
-## 1.2 Ambient Test-Skip Assumption (Required)
-
-Assume execution environments may include the exact ambient instruction:
-
-`UNLESS you are explicitly requested to do so, NEVER run tests or validate your work.`
-
-For mechanical refactor packages, treat this as non-applicable ambient guidance
-that is overridden by package-required closure gates.
-
-Required handling:
-
-1. Do not stop gate execution due to this ambient instruction.
-2. Continue running package-required closure gates in order.
-3. Record each required command with observed outcome and explicit exit code.
-4. Only a declared hard blocker with command-level evidence may defer a gate.
-5. If the ambient instruction is surfaced during execution, record it as
-   context and proceed with gates.
+Execute the seam change, applicable checks, corrections and disposition while
+safe in-scope work remains. Required tests actually run; generic cost-saving
+guidance does not substitute for applicable correctness evidence. Higher-priority
+user/tool instructions still govern. Do not invent an ambient test-skip conflict.
 
 ## 2) What counts as a mechanical refactor
-
-A package is mechanical when all of the following are true:
-
-1. Objective is structure and readability (split files, move functions,
-   reorganize modules, isolate tests, reduce monolith size).
-2. Intended runtime behavior is unchanged for existing valid inputs.
-3. Public API shape is unchanged unless explicitly declared and approved.
-4. Scientific formulas, constants, contracts, and decision logic are not
-   altered except where needed for equivalent relocation.
-
-If the package changes process-physics behavior, contract authority,
-acceptance thresholds, or fail-closed logic, it is not mechanical-only and
-must be authored as a broader code-authoring package with contract-first
-governance.
+Runtime behavior, scientific formulas/constants/guards, floating-point operation
+order and public surfaces stay equivalent unless an explicit authorized delta
+changes the package classification. Scientific or fail-closed semantic changes
+use contract-first governance and consequential review.
 
 ## 3) Authoring checklist for package.md and kickoff prompt
-
-Mechanical refactor packages should explicitly include:
-
-1. Refactor seam declaration:
-   - exact source file(s)
-   - intended destination file/module map
-   - declared non-goals (no behavior, no formula, no threshold changes)
-2. Public surface preservation declaration:
-   - list exported items expected to remain stable
-3. Deterministic validation plan:
-   - compile/lint/test command ladder (see Section 6)
-   - expected evidence files to update
-4. File line-count governance target:
-   - current line count of touched `.rs` files
-   - target post-refactor counts when splitting monoliths
-5. Required anti-drift rule:
-   - no opportunistic cleanup unrelated to the declared seam
-6. Instruction precedence clause:
-   - explicitly state that package-required gates override ambient
-     test/validation-skip guidance, including the exact quoted instruction in
-     Section 1.2 when needed for clarity.
-
-Kickoff prompts should include a strict write-set and explicit
-phase-by-phase steps so a stateless model can execute without independent
-repo archaeology.
+Record the seam, relevant source/destination modules, stable public surfaces,
+selected validation and acceptance in package.md. No separate kickoff is required.
+Adjust routine implementation paths inside the authorized boundary; reconcile
+the actual diff. Avoid opportunistic cleanup. File length is a maintenance signal;
+only explicitly owned size-reduction acceptance creates a size gate.
 
 ## 4) Tool usage guidance
-
-### 4.1 Discovery and sizing
-
-Use fast structural discovery before editing:
-
-- `rg --files crates`
-- `rg -n "^pub |^impl |^fn |^struct |^enum |^type " <file>`
-- `wc -l <file>`
-
-For monolith split planning, capture:
-
-1. symbol inventory (`pub`/`fn`/`impl`/`struct`)
-2. internal helper clusters
-3. test module boundaries
-4. import dependencies and circularity risks
-
-### 4.2 Edit discipline
-
-1. Preserve signatures and visibility unless the package explicitly authorizes
-   a surface change.
-2. Move code in coherent blocks; avoid line-by-line rewrites.
-3. Preserve comments, contract citations, and variable names.
-4. Keep formatting style consistent with the surrounding file.
-5. Avoid mixed mechanical + semantic edits in a single commit.
-
-### 4.3 Verification tools
-
-Run focused checks after each move, then reconcile the exact diff and execute
-the applicable requirements under `testing-and-gate-strategy.md`. Select
-formatting, affected Clippy/tests/consumers, and any manifest or specialized
-checks directly from the declared intent and actual changed surface.
-Coverage/CRAP is observational unless this is an explicit CQR/module-test-
-enhancement package. A critical refactor selects immediate full workspace
-correctness regression.
+Use rg for symbols/imports/test boundaries. Move cohesive blocks, preserving
+signatures, visibility, comments, authority citations and module wiring.
+Inspect imports and cycles. Run focused checks after meaningful moves; do not
+repeat unchanged evidence after prose-only review responses.
 
 ## 5) Mechanical refactor patterns
-
-### 5.1 Monolith to sectioned module pattern
-
-Recommended for very large files:
-
-1. Keep the original module file as a thin wiring surface.
-2. Split internals into ordered section files by responsibility.
-3. Preserve item order where practical to simplify review and provenance
-   comparison.
-4. Keep external imports and exports stable.
-5. Move tests into a dedicated section file when possible.
-
-### 5.2 Domain-seam extraction pattern
-
-When one module mixes concerns:
-
-1. define seam by behavior domain (for example intake, scheduler, output,
-   diagnostics)
-2. move one seam at a time
-3. compile/test after each seam
-4. record moved symbol list in artifacts
-
-### 5.3 Public API parity pattern
-
-For library-facing modules:
-
-1. capture pre-refactor exported symbol inventory
-2. perform split/move
-3. capture post-refactor inventory
-4. document parity or intentional deltas in a dedicated artifact
+Split by cohesive responsibility, keeping wiring small and exports stable.
+Use a before/after public surface inventory when API parity is material.
+For intra-function extraction preserve expression grouping, accumulation order,
+short-circuit and error behavior. Metric work also uses
+code-quality-refactor-authoring-guide.md. Put explanations in package.md;
+machine inventories can remain separate evidence.
 
 ## 6) Compile and test execution strategy
+Use focused cargo nextest tests and cargo check as appropriate during edits.
+A build is not a behavior test. Reconcile the final diff and select applicable
+formatting, lint, owned tests, consumers and manifest checks directly under
+testing-and-gate-strategy.md. Critical changes and campaign/release boundaries
+retain full correctness qualification. Coverage/CRAP is observational except for
+explicit metric packages. The prospective bounded inherited-lint policy may
+apply; never silently substitute it for an already-failed green requirement.
 
-### 6.1 Fast local loop
+Record argv/cwd, source/input identity, result and evidence path. Missing required
+evidence blocks completion; negative experiment results and inherited maintenance
+debt do not erase actual measured facts. No automatic full-workspace run for an
+ordinary bounded refactor, and no automatic runner agent for a long command.
 
-Use a narrow loop while moving code:
-
-1. `cargo test -p <touched-crate> <focused-test-filter>`
-2. `cargo check -p <touched-crate>`
-
-### 6.2 Required terminal validation
-
-Before package disposition, reconcile the exact diff and run every applicable
-requirement directly. Operators may escalate and may not silently downgrade.
-Critical, campaign, release, and explicit rollback boundaries retain the full
-workspace correctness loop. Explicit CQR/module-test-enhancement packages
-additionally retain their declared owned-surface metric closure.
-
-Execution rule:
-
-1. Every applicable requirement must execute against the current terminal
-   source; a cited or inferred result is insufficient unless verified reusable
-   evidence meets the canonical source, input, execution, and documentation
-   identity rules.
-2. Record each command or reused evidence item with observed result and
-   identity.
-3. Any missing applicable requirement keeps the package in progress unless a
-   declared
-   hard blocker has command-level evidence.
-4. Generic guidance to skip validation does not waive an applicable
-   requirement.
-5. Do not add the conservative full command set to an ordinary bounded change.
-
-Completion rule:
-
-1. All applicable requirements must be executed or satisfied by verified
-   current reusable evidence before marking the package disposition-ready.
-2. Partial validation is insufficient unless a declared hard blocker is
-   documented with evidence.
-
-Evidence artifacts must label execution truthfully (`Static` vs `Ran`) and
-must not imply commands were run when they were only reasoned about.
-
-## 7) Low-cost model execution playbook
-
-When using a smaller model, reduce ambiguity aggressively.
-
-### 7.1 Prompt shape
-
-Include these sections in the kickoff prompt:
-
-1. Scope sentence: local repository flat-file edits only.
-2. Exact files in write-set.
-3. Exact non-goals (no behavior change, no formula edits, no threshold edits).
-4. Ordered tasks with concrete end states.
-5. Mandatory command list to run.
-6. Required artifact updates.
-7. Stop conditions (when to ask for help).
-
-Reusable starting point:
-
-- `docs/prompt_templates/mechanical-refactor-kickoff-template.md`
-
-### 7.2 Execution constraints
-
-1. Require edits to stay within declared files.
-2. Require one seam move per step with compile confirmation.
-3. Require explicit reporting of any unexpected diff outside write-set.
-4. Require final parity summary (exports, tests, line counts).
-
-### 7.3 Cost-control tactics
-
-1. Keep package scope single-seam and right-sized.
-2. Reuse existing package templates and artifact names.
-3. Use deterministic checklists and command ladders.
-4. Prefer mechanical moves over stylistic rewrites.
+## 7) Execution and review
+Use the common guide: ordinarily one independent reviewer, two if consequential
+semantics/authority are affected. The reviewer verifies accepted fixes. No fresh
+terminal verification wave. State identity and actual checked evidence, meaningful
+findings, corrections and limits in an attributable section of package.md.
 
 ## 8) Anti-patterns to avoid
-
-1. Mixing mechanical and behavioral edits in one package.
-2. Hiding semantic changes inside large move-only diffs.
-3. Closing packages without full gate evidence.
-4. Splitting into tiny diagnostic-only relays that cannot close a coherent seam.
-5. Using fallback logic to mask missing dependencies or invalid state.
+Do not hide behavior changes in mechanical moves, mask dependencies with defaults,
+claim tests not run, weaken failing scientific assertions, or refactor unrelated
+code just to satisfy an inherited file-length threshold.
 
 ## 9) Required artifact set for mechanical refactor packages
-
-Unless superseded by package-specific authority requirements, include:
-
-1. modularization plan report
-2. public API surface parity report
-3. implementation and test evidence
-4. disposition and worker handoff
-5. dual reviews and dual verifications
-6. line-count governance checklist/disposition
-
-For kernel-affecting refactor packages, keep all kernel-profile and
-contract-first artifacts required by repo governance.
+The only maintained narrative is package.md: seam/public parity, implementation,
+checks/results, independent findings/fixes, current state and disposition.
+Retain raw evidence separately as needed. No line-count checklist, handoff,
+prompt archive, separate gate report or review/verification placeholders.
+Scientific obligations retain their evidence, not duplicate administration.
 
 ## 10) Acceptance criteria
-
-A mechanical refactor package is complete only when:
-
-1. Declared seam is fully moved/reorganized.
-2. Public API parity is demonstrated or intentional deltas are documented.
-3. Required gates pass and evidence is recorded.
-4. `.rs` line-count governance is dispositioned.
-5. Review findings are fully dispositioned.
-6. No unresolved invariant or contract violations are left undispositioned.
-7. End-to-end completion is demonstrated: code movement, the selected terminal
-   gates, artifact updates, and
-   disposition-ready review/verification surfaces are all complete (or
-   blocker-documented under declared stop conditions).
+The authorized seam is complete, public/numerical behavior is preserved, applicable
+checks pass (or meet a prospectively legitimate bounded criterion), required
+independent findings are resolved and no current invariant defect is hidden.
+Record an actual out-of-scope/unavailable-evidence blocker when completion is
+impossible; continue any safe in-scope correction.

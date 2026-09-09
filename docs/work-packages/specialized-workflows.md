@@ -1,6 +1,8 @@
 # specialized-workflows
 
-Read only sections triggered by the assigned mechanism or package type. Their explicit mandatory references remain binding. Relocated obligations, no waiver.
+Read only sections triggered by the assigned mechanism or package type. Follow
+dependencies needed for the obligation. Common single-record and review rules
+apply; specialized scientific/metric evidence and executable schemas remain binding.
 
 ## DC-ExecPlan Requirements
 - Use a Defect-Closure ExecPlan when closing an observed invariant violation, fail-closed event on valid input, or conservation residual.
@@ -95,10 +97,10 @@ Read only sections triggered by the assigned mechanism or package type. Their ex
   but it never satisfies or suppresses the new request. Interpret the request as
   status-only or audit-only only when the operator explicitly asks to inspect,
   summarize, verify, or avoid rerunning an existing batch.
-- Each scaffolded package must also copy
-  `docs/work-packages/templates/cqr-nightly-kickoff-prompt.md` into
-  `prompts/active/` and fill in `Execution mode`, `Autonomy`, tiered required
-  reading, required-reading budget/map, and required heavy-run subagent wording.
+- Each scaffolded package uses package.md only; the kickoff can reference it.
+  No prompt copy, reading map or required heavy-run subagent wording. Retain
+  specialized aggregate binding fields/commits and machine receipts required by
+  the existing CQR validator; no additional narrative artifacts are implied.
 - CQR nightly packages are behavior-preserving maintenance. They may add
   characterization tests and decompose high-CRAP functions, but they must not
   change science formulas, contract authority, thresholds, serialization,

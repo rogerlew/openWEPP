@@ -140,7 +140,8 @@ Before an implementation increment closes:
 
 1. reconcile the exact terminal diff with declared intent and write set;
 2. run affected-language formatting and warnings-denied lint for affected
-   packages and applicable reverse dependents;
+   packages and applicable reverse dependents (the prospectively selected
+   bounded inherited-lint policy below may apply);
 3. run component and contract-obligation tests owned by the changed surface;
 4. prove current A0 authority admission and run every applicable A1 hard
    invariant and A3 constitutive-authority suite;
@@ -161,6 +162,24 @@ Documentation-only increments run affected documentation, reference, schema,
 catalog, and generated-drift checks. They do not run Rust requirements solely
 because the repository contains Rust.
 
+### Bounded inherited-lint policy
+
+Before implementation, a bounded noncritical package may select no-new-relevant-
+diagnostics acceptance in place of green Clippy when the baseline already fails.
+Run the same command/toolchain against baseline and candidate; compare actual
+diagnostics by lint, source location/content and relevant dependency surface,
+not counts alone. Record both failures, evidence of inheritance and the reviewer's
+assessment. New or materially changed diagnostics must be fixed or explained as
+an equivalent relocation with independent review. Ambiguous attribution blocks.
+Missing builds, tests, scientific evidence or a correctness/security issue cannot
+be accepted by this policy. It does not apply to critical changes, campaign or
+release closure, nor a package explicitly tasked with clearing the lint debt.
+
+This is prospective acceptance, never a rewrite of historical failed gates.
+A valid negative experiment may be COMPLETE for its stated study objective while
+integration/release readiness remains NOT QUALIFIED. Retain separate conclusions
+in package.md; completion never implies an unperformed production qualification.
+
 ### 6.3 Campaign Checkpoint
 
 A campaign checkpoint integrates multiple increments when its package names a
@@ -175,9 +194,10 @@ Campaign closure requires an exact clean commit and runs workspace formatting,
 warnings-denied Clippy, full-workspace correctness regression, full doctests,
 placeholder/stub scanning, cargo-deny, and every campaign-owned contract,
 consumer, conservation, comparator, empirical, external-authority, stability,
-provenance, assurance, and distribution obligation. It includes required dual
-review/verification and resolves every failed, stale, blocked, deferred, and
-unmapped item. Optional coverage/CRAP remains observational under ADR-0041.
+provenance, assurance, and distribution obligation. It includes independent
+reviews and reviewer-owned fix verification selected under the common package
+guide and resolves every failed, stale, blocked, deferred, and unmapped item.
+Optional coverage/CRAP remains observational under ADR-0041.
 
 ### 6.5 Release Qualification
 
@@ -312,16 +332,15 @@ provenance, use that boundary's separately owned identity mechanism. Do not
 generalize it into routine increment admission.
 
 ### Identity membership and change impact
-Keep three minimal identities with explicit file/dependency membership:
-experiment = actual source/build inputs, executable, fixture/configuration,
-relevant environment, exact commands and prospectively frozen protocol;
-evidence/claim = results, reconstruction code/outputs, applicable authority,
-acceptance and reviewed claims; publication = final narratives, dispositions,
-review records and presentation metadata. A file may belong to multiple sets.
-Markdown is not automatically editorial. Manifests list exact paths/hashes;
-detached hashes exclude themselves and never require future commits.
-Use existing manifests or tools/agents/evidence_bundle.py identity/compare.
-Membership selection and semantic judgment remain accountable reviewer duties.
+Record source identity (commit or base plus retained diff), relevant execution
+inputs, exact binary when used, commands and results in package.md. Use a
+manifest when needed to identify a large or external input set; there is no
+routine requirement for three identity manifests or hashes of narrative signoffs.
+Scientific measurements retain exact source/build, fixture/configuration,
+environment and protocol identities needed to reproduce the claim. Reviews bind
+inspected source/claims; a final bounded diff check detects substantive drift.
+Markdown is not automatically editorial. Existing identity/compare utilities are
+optional aids, not admission gates. Reviewers assess relevant dependency changes.
 
 | Changed input | Affected assurance and required response |
 | --- | --- |
@@ -464,12 +483,16 @@ Review checks:
 - evidence identity/reuse;
 - underlying correctness/science/security/protected-data obligations;
 - source-coupled guard migration without semantic weakening;
-- line-count governance; and
+- material maintainability concerns and explicitly owned size targets; and
 - truthful package/prompt/catalog status.
 
-Package-required independent review and verification remain binding. Review
-economy may reuse unchanged evidence but cannot reduce the required independent
-perspective.
+Independent review count follows docs/work-packages/AGENTS.md: zero for editorial
+work, one for bounded work, two for consequential changes. Reviewers verify their
+assigned fixes; fresh terminal verifiers require a named distinct risk or release
+obligation. Scientific independent reconstruction is preserved, not replaced by
+review count. Block on concrete defects or unmet acceptance, not formatting
+preferences, missing redundant narratives or optional reading measurements.
+Keep findings, fix evidence and disposition in the single package.md record.
 
 ## 19. Transition
 

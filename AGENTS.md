@@ -27,6 +27,9 @@
 - `??` means critical analysis only; no implementation.
 - Work within authorized packages or user-directed follow-on scope; see
   docs/work-packages/AGENTS.md for execution, independent closure and handoff.
+- Keep one maintained `package.md` per work-package. The common guide owns
+  consequence-based review counts and reviewer-owned fix verification; no
+  universal separate handoff, artifact checklist, or fresh verifier wave.
 - Continue the full authorized checkpoint while safe in-scope work remains.
   Correctness takes precedence: unresolved invariants/acceptance cannot close.
 - Preserve unrelated dirty/staged work. Do not create/switch branches without
@@ -35,6 +38,7 @@
   repair, extend or replace them with prospective authority machinery.
 - No silent dependency fallbacks. One canonical numerical solver per physical
   regime; nonconvergence follows its canonical adaptive response or typed failure.
+  Production numerical solvers must not accrete historical fallback chains.
   Follow docs/standards/numerical-solver-architecture.md and ADR-0044 for solver
   work; superseded paths are deleted, quarantined historical chains not extended.
 - openWEPP inherits wepppy's agentic governance posture.
@@ -44,6 +48,9 @@
 - For work-package preparation, execution, review, verification, or closure, read `docs/work-packages/AGENTS.md`.
 - For prompt wording and reusable standards, read `docs/standards/AGENTS.md` plus the referenced standard.
 - Canonical process contract authority lives in `docs/specifications/science-contracts/contracts/SC-<DOMAIN>-<NNN>.md`.
+- Read affected canonical sections and their scientific dependencies, including
+  in single-file contracts; links alone do not require full recursive onboarding.
+  All applicable authority remains binding. Expand reading when impact is unclear.
 - Work-package artifacts are evidence, not authority replacement; authoritative science remains an implementation obligation when calibration data are limited, with claims governed by ADR-0042 and `docs/work-packages/AGENTS.md`.
 - Do not implement provisional, surrogate, or heuristic process-physics math in production kernel/runtime publication paths.
 - For legacy migration, implementation target is baseline-authoritative physics migration from `/workdir/wepp-forest_260430_baseline`, not behavioral approximation.

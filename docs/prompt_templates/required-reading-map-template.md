@@ -1,63 +1,12 @@
-# Required Reading Map Template
+# Optional reading selection example
 
-Use this template as the canonical starting point for package-level
-`artifacts/required-reading-map.md`.
+A separate reading map is no longer required. Put relevant authority references
+in package.md when they help execution. No stale-map or byte-budget closure gate.
 
-## Authority and Maintenance Responsibility
+Example: "Authority: SC-<DOMAIN>-001 sections <mechanism, units, guards, closure>;
+baseline <commit/path> for migration; consumer <call site> for output acceptance."
 
-Agents executing or authoring the package have explicit authority and
-responsibility to maintain this file as a living control artifact.
-
-Required maintenance posture:
-- Keep entries accurate, complete, and current with package scope.
-- Add newly required readings immediately when scope expands.
-- Re-tier readings when they move between Core, Conditional, and On-demand.
-- Remove stale entries only after verifying they are no longer required.
-- Record rationale and trigger updates when authority assumptions change.
-
-A stale or incomplete required-reading map is a governance defect and must keep
-package disposition in HOLD until corrected.
-
-## Reading measurements
-Record bootstrap unique/exposure bytes, task expansion bytes/triggers, observed
-workflow-total (otherwise UNOBSERVED), revision and full-file/range selections.
-Include automatic instructions and recursive mandatory references. Targets and
-necessary-overrun treatment: docs/standards/prompt-wording-guidance.md#context-measurements.
-
-## Map
-
-For a contract that has passed directory-v1 adoption gates, record its entry,
-exact contract revision/source identity, selected normative module sections,
-applicable direct/recursive dependencies, task and role, and expansion triggers.
-Use [the directory format](../specifications/science-contract-directory-format.md#mechanism-chapters-and-dependencies).
-Before adoption retain existing whole-contract and frozen kickoff requirements.
-The whole contract remains binding; review the selected set against the actual
-diff and expand on missing authority. Role alone never exempts closure operands
-or other relevant scientific requirements. Count all mandatory linked material.
-
-| Path | Tier | Why required | Trigger / applicability | Read timing | Owner / maintainer | Last verified UTC | Notes |
-|------|------|--------------|-------------------------|-------------|--------------------|-------------------|-------|
-| /workdir/openWEPP/AGENTS.md | Core | Root governance for all package work | Always | Pre-edit | Agent | <timestamp> | |
-| /workdir/openWEPP/docs/codex_exec_plans.md | Core | Execution-plan contract for package autonomy | Always | Pre-edit | Agent | <timestamp> | |
-| /workdir/openWEPP/docs/work-packages/AGENTS.md | Core | Work-package execution, gate, review, and conservation/publication acceptance rules | Always | Pre-edit | Agent | <timestamp> | |
-| /workdir/openWEPP/docs/work-packages/active.md | Core | Work-package process and closure conventions | Always | Pre-edit | Agent | <timestamp> | |
-| /workdir/openWEPP/docs/work-packages/<id>/package.md | Core | Package-local authority, write set, and gates | Always | Pre-edit | Agent | <timestamp> | |
-| /workdir/openWEPP/docs/defect_closure_execplans.md | Conditional | Defect-closure envelope and HOLD legitimacy rules | Defect-closure package | Pre-edit when triggered | Agent | <timestamp> | |
-| docs/specifications/science-contract-authoring-procedure.md | Conditional | Contract-authoring procedure authority | Contract or kernel authority edits | Pre-edit when triggered | Agent | <timestamp> | |
-| docs/specifications/science-contracts/kernel-process-contract-profile.md | Conditional | Kernel-profile compliance authority | Contract or kernel authority edits | Pre-edit when triggered | Agent | <timestamp> | |
-| docs/specifications/science-contracts/contracts/SC-<DOMAIN>-001.md | On-demand | Mechanism-specific canonical contract authority | Only for touched mechanism | Phase-local | Agent | <timestamp> | |
-| docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md | Conditional | Baseline provenance requirement | Legacy migration/parity scope | Pre-edit when triggered | Agent | <timestamp> | |
-| /workdir/wepp-forest_260430_baseline/src/<file>.for | On-demand | Baseline source provenance for touched mechanism | Legacy migration/parity scope | Phase-local | Agent | <timestamp> | |
-
-## Change Log
-
-| UTC | Agent | Change |
-|-----|-------|--------|
-| <timestamp> | <agent> | Initialized required-reading map from canonical template. |
-
-Role routing: docs/work-packages/AGENTS.md selects author, implementation,
-review, verification and runner procedures. Required reading above applies to
-the author/implementer; reviewers/verifiers receive assigned primary evidence
-and their own role bindings, not automatic full authoring context. Preserve
-conditional scientific authority and frozen acceptance. Use worker-handoff.md
-as sole current continuation view with exact source/evidence bindings.
+Read definitions and cross-cutting dependencies needed for the affected obligation,
+including in single-file contracts. Expand when the diff or uncertainty exposes a
+dependency. Whole authority remains binding; reading less is not an exemption.
+See ../specifications/science-contracts/AGENTS.md for the canonical selection rule.

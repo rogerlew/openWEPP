@@ -21,12 +21,17 @@
 - `docs/decisions/0011-architecture-first-top-down-science-contracts.md`, `docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md`, and `docs/decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md`.
 
 ## Standard Workflow
-1. Read root `AGENTS.md`, this file, and the target `SC-*` contract before edits.
-   Existing single-file contracts still require the full contract. Only after
-   [directory-format adoption](../science-contract-directory-format.md#adoption-gates),
-   read its entry, applicable task/role modules and recursive section dependencies.
-   The entire set remains binding; uncertainty expands reading, never authority exemptions.
-   Format-only specification work reads the schema/profile, not unrelated SC corpora.
+1. Read root `AGENTS.md`, this file and affected `SC-*` authority before edits.
+   For single-file or adopted directory contracts, inspect scope and affected
+   equations, definitions/units, guards, invariants, consumers and cross-cutting
+   dependencies. Cite relevant sections in package.md; no separate reading map
+   or format migration is needed. Follow dependencies needed to apply the
+   obligation, not every unrelated link. Shared solver, state, closure or
+   authority changes require broader inspection of affected regimes/consumers.
+   Uncertainty expands reading. The whole contract remains binding; reading
+   selection never exempts an applicable obligation. Directory adoption still
+   requires preservation/format checks before moving canonical authority.
+   Format-only work reads the schema/profile, not unrelated SC corpora.
 2. For kernel-affecting packages, read the package-local `package.md` and `docs/work-packages/AGENTS.md`.
 3. Amend canonical `SC-*` authority before contract-derived tests and production code.
 4. Preserve variable naming continuity with legacy WEPP symbols; when runtime names differ, add explicit alias mappings.

@@ -3,7 +3,8 @@
 - [20260909 Stage 3 bounded attribution and recomputation](20260909-stage3-attribution-recomputation-001/artifacts/final-disposition.md): EXECUTED HOLD / NO NEW PROTOTYPE. Outside-named time is 7.44%; nominal repeats lack effective-input authority and the proven two-call pattern is existing F. Dual review/verification support the characterization, while frozen warnings-denied Clippy remains failed; production HOLD.
 
 Current-work locator: [active index](active.md). Start there and at the named
-package handoff; this catalog preserves historical evidence. Prospective rules
+package.md; this catalog preserves historical evidence. Older handoff links remain
+historical entrypoints; new state belongs in package.md. Prospective rules
 in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
 ## 20260909-stage3-compact-cost-breakdown-001
@@ -5723,81 +5724,17 @@ are not summarized here; the canonical forward queue is
 
 Initiative tracking convention inherited from wepp-palimpsest. Each work package lives in a dated directory under this tree.
 
-## Directory naming
-`YYYYMMDD-<short-slug>/`
+## Package procedure
 
-## Required files
-- `package.md` — scope, deliverables, dependencies, exit criteria
-- `prompts/` — agent prompts (active and archived)
-- `artifacts/` — produced docs, contracts, evidence
+Create YYYYMMDD-<slug>-001/package.md as the single maintained record.
+Follow [the common guide](AGENTS.md) for scope, acceptance, relevant reading,
+consequence-based independent review, reviewer-owned fix verification and
+truthful disposition. Raw evidence may be separate; prompt archives, reading
+maps, handoffs and duplicate closure reports are not required.
 
-## Autonomous execution intent (required)
-- A work package is an execution-ready plan, not a lightweight task note.
-- Planning must be front-loaded into the package so execution can proceed
-  autonomously from kickoff through disposition without user intervention.
-- `package.md` and kickoff prompts must define concrete sequencing, explicit
-  file targets, gate commands, and expected evidence updates.
-- Kickoff prompts must include an explicit `Autonomy:` line requiring
-  end-to-end execution for the declared scope without additional user
-  intervention unless hard-blocked.
-- Kickoff prompts default to `Execution mode: package-end-to-end` and should
-  direct execution across all package phases through disposition.
-- Single-phase kickoff prompts are exception-only and must declare
-  `Execution mode: phase-only (exception)` plus explicit rationale and
-  follow-on trigger.
-- Kickoff prompts must include a `Required reading` list with explicit path
-  references to orientation and authority documents so agents do not need to
-  independently search onboarding context.
-- Kickoff prompts must tier required-reading as `Core`, `Conditional`, and
-  `On-demand` to preserve authority while minimizing unnecessary pre-read load.
-- `Core` should remain small and stable (global governance + package-local
-  authority). Put large mechanism-specific authorities in `On-demand` unless
-  package scope requires them before edits.
-- Each package should include `artifacts/required-reading-map.md` documenting:
-  path, tier, rationale, applicability trigger, and when it was read.
-- Reading measurements follow
-  `docs/standards/prompt-wording-guidance.md#context-measurements`.
-- Work-package authoring must reference and follow:
-  `docs/codex_exec_plans.md`.
-- Mechanical refactor packages should additionally follow:
-  `docs/standards/mechanical-refactor-authoring-guide.md`.
-
-## Dual review and disposition (required)
-
-- Every work package must include two independent review artifacts:
-  `artifacts/review_agent_a.md` and `artifacts/review_agent_b.md`.
-- Every review finding must be dispositioned as `accepted`, `rejected`,
-  `deferred`, or `follow-up` before package closure.
-- Accepted findings must be fixed and verified; rejected findings must include
-  rationale; deferred/follow-up findings must be linked from
-  `artifacts/disposition.md` and `artifacts/worker-handoff.md`.
-- Dual verification artifacts must verify both technical gates and that no
-  review findings remain undispositioned.
-
-## Phase shape (inherited from wepp-palimpsest)
-- **Phase 0**: docs-only audit / inventory
-- **Phase 1**: architecture decision with operator-signed acceptance
-- **Phase 2**: single-mechanism implementation, replay-and-checkpoint between mechanisms
-- **Phase 3**: closeout disposition
-
-## Conventions
-- Dates are UTC.
-- Evidence classification per claim: `[DIRECT]` (read source / contract / output) vs `[INFERENCE]` (reasoned from evidence).
-- Evidence mode per assessment: **Static** (read and reasoned) vs **Ran** (commands actually invoked).
-- Single-mechanism rule: one landed change per replay checkpoint.
-- Correctness over completion: unresolved contract/invariant correctness gaps keep package disposition in `HOLD` until explicitly resolved or risk-accepted.
-- Kernel-affecting packages (including runtime projection controlling kernel branches) must list:
-  - `docs/specifications/science-contract-authoring-procedure.md`
-  - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
-  as dependencies, and must include a kernel-profile compliance checklist artifact.
-- Code-authoring work packages should use contract-first sequencing when applicable:
-  1. implement/ratify canonical contract amendments,
-  2. implement contract-derived tests,
-  3. record a pre-implementation contract gate, then
-  4. modify production code.
-- `package.md` dependencies for authored packages should include:
-  - `/workdir/openWEPP/docs/codex_exec_plans.md`
-- Missing kernel-profile/procedure compliance keeps disposition in `HOLD`.
+Historical package records below keep their original evidence and meaning.
+New or resumed state belongs in package.md; generic former ceremony does not
+override the current guide. Scientific acceptance and user-frozen boundaries bind.
 
 ## Active / Recent Snow-Density Packages
 

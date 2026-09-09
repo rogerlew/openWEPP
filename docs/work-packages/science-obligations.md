@@ -27,8 +27,8 @@ Read only sections triggered by the assigned mechanism or package type. Their ex
 - Values or bounds introduced only to execute a demonstration must be labeled
   `ASSUMED_FOR_EXECUTION`; never label them observations, probability priors,
   physiological bounds, or calibrated results.
-- Report three orthogonal fields in `artifacts/calibration-readiness-matrix.md`
-  or its machine-readable equivalent:
+- Report three orthogonal fields in package.md or a necessary machine-readable
+  calibration-readiness matrix:
   `science_implementation_status` (`IMPLEMENTED`, `NOT_IMPLEMENTED`,
   `AUTHORITY_MISSING`), `calibration_evidence_status`
   (`EMPIRICALLY_CALIBRATED`, `CALIBRATION_READY_DATA_LIMITED`,
@@ -71,10 +71,10 @@ Read only sections triggered by the assigned mechanism or package type. Their ex
   state, runtime symbols, writeback payloads, stale logical state, or a wrapper
   around those structures, the package must close in `HOLD` or continue until
   the consumer is moved.
-- If that check exposes a blocker outside the package envelope, immediately
-  scaffold or update a hold-lift package with the concrete blocker, write set,
-  consumer-path proof requirements, and first actionable implementation step.
-  Do not leave only a narrative handoff note.
+- If that check exposes a blocker outside the package envelope, record the
+  concrete blocker, owner, consumer-path proof and first actionable correction
+  in package.md. Link an existing follow-on if present; a new package is needed
+  when that follow-on is authorized, not just to disposition the current finding.
 
 
 ## Conservation / Publication Acceptance Rule
