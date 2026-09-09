@@ -1,6 +1,6 @@
 # Work Packages
 
-- [20260909 Stage 3 bounded attribution and recomputation](20260909-stage3-attribution-recomputation-001/package.md): executing observation-only successor to split dominant compact-cost regions and test actual recomputation before any conditional single-pass prototype; production HOLD.
+- [20260909 Stage 3 bounded attribution and recomputation](20260909-stage3-attribution-recomputation-001/artifacts/final-disposition.md): EXECUTED HOLD / NO NEW PROTOTYPE. Outside-named time is 7.44%; nominal repeats lack effective-input authority and the proven two-call pattern is existing F. Dual review/verification support the characterization, while frozen warnings-denied Clippy remains failed; production HOLD.
 
 Current-work locator: [active index](active.md). Start there and at the named
 package handoff; this catalog preserves historical evidence. Prospective rules

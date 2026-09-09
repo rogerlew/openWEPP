@@ -1,6 +1,6 @@
 # Stage 3 bounded attribution and recomputation experiment
 
-Status: executing; production HOLD. Date: 2026-09-09 America/Los_Angeles.
+Status: executed HOLD; dual review and verification closed; production HOLD. Date: 2026-09-09 America/Los_Angeles.
 
 ## Objective and authorization
 
@@ -114,11 +114,12 @@ applicable; none is selected for observation-only isolated Rust.
 
 - [x] Owner authorization received.
 - [x] Package scaffold and acceptance frozen before substantive Q edits.
-- [ ] P identity/custody and Q protocol frozen.
-- [ ] Attribution refinement implemented and validated.
-- [ ] Authentic measurements and offline recomputation study complete.
-- [ ] Conditional implementation decision made.
-- [ ] Review, verification, disposition, and local commit complete.
+- [x] P identity/custody and Q protocol frozen.
+- [x] Attribution refinement implemented and validated.
+- [x] Authentic measurements and offline recomputation study complete.
+- [x] Conditional implementation decision made: no new prototype.
+- [x] Review, verification, and disposition complete; local commit follows this
+  terminal reconciliation.
 
 ## Surprises, decisions, outcomes, recovery
 

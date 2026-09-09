@@ -1,0 +1,13 @@
+{
+  "evaluator_groups": 200,
+  "evaluator_groups_distinct_request_same_output": 200,
+  "evaluator_groups_two_calls": 200,
+  "interpretation": "Recorded request equality is insufficient effective-input authority: some equal recorded inputs produced multiple outputs. The two-call-per-evaluator pattern is the already-established F feed-forward mechanism.",
+  "provider_executions": 400,
+  "redundant_executions_by_recorded_key": 196,
+  "repeated_groups_multiple_outputs": 8,
+  "repeated_groups_single_output": 124,
+  "repeated_input_executions": 328,
+  "repeated_input_groups": 132,
+  "unique_recorded_request_inputs": 204
+}

@@ -1,0 +1,1351 @@
+{
+  "accounting_difference_ns": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "assembly_plus_linear": {
+    "deprioritize_by_owner_5_percent_rule": true,
+    "hypothetical_2x_saved_fraction": {
+      "max": 0.006609167504884998,
+      "median": 0.006307564911504717,
+      "min": 0.0062311744126073414,
+      "values": [
+        0.006260193084563238,
+        0.0062311744126073414,
+        0.006354936738446197,
+        0.006565711711120622,
+        0.006235210715005795,
+        0.006609167504884998
+      ]
+    },
+    "hypothetical_5x_saved_fraction": {
+      "max": 0.010574668007815998,
+      "median": 0.010092103858407548,
+      "min": 0.009969879060171747,
+      "values": [
+        0.010016308935301182,
+        0.009969879060171747,
+        0.010167898781513916,
+        0.010505138737792996,
+        0.009976337144009272,
+        0.010574668007815998
+      ]
+    },
+    "limitations": "Not all assembly/linear work is removable; mapping/reconstruction/guards remain. No cubic prediction.",
+    "perfect_elimination_ceiling": {
+      "max": 0.013218335009769997,
+      "median": 0.012615129823009434,
+      "min": 0.012462348825214683,
+      "values": [
+        0.012520386169126476,
+        0.012462348825214683,
+        0.012709873476892394,
+        0.013131423422241243,
+        0.01247042143001159,
+        0.013218335009769997
+      ]
+    }
+  },
+  "costs": {
+    "Assembly": {
+      "exclusive_seconds": {
+        "max": 0.050126152,
+        "median": 0.043625764,
+        "min": 0.038094974,
+        "values": [
+          0.038270221,
+          0.038094974,
+          0.045940552,
+          0.050126152,
+          0.041310976,
+          0.047933877
+        ]
+      },
+      "runner_share": {
+        "max": 0.008099084799390598,
+        "median": 0.007729913189673683,
+        "min": 0.007598750218785612,
+        "values": [
+          0.007636226097292491,
+          0.007598750218785612,
+          0.007823600282054874,
+          0.008099084799390598,
+          0.007632186209524808,
+          0.008095042306644826
+        ]
+      }
+    },
+    "CarrierCompletionConstruction": {
+      "exclusive_seconds": {
+        "max": 0.757886228,
+        "median": 0.6816197545,
+        "min": 0.626635449,
+        "values": [
+          0.626635449,
+          0.627806849,
+          0.700428946,
+          0.757886228,
+          0.662810563,
+          0.754946271
+        ]
+      },
+      "runner_share": {
+        "max": 0.12749484050682464,
+        "median": 0.12374503754783442,
+        "min": 0.11928189499083507,
+        "values": [
+          0.12503533672153078,
+          0.12522773821013386,
+          0.11928189499083507,
+          0.12245473837413805,
+          0.1224539850730221,
+          0.12749484050682464
+        ]
+      }
+    },
+    "CarrierCustody": {
+      "exclusive_seconds": {
+        "max": 0.020797743,
+        "median": 0.018987508,
+        "min": 0.017674374,
+        "values": [
+          0.017674374,
+          0.017724978,
+          0.019352272,
+          0.020797743,
+          0.018622744,
+          0.02063808
+        ]
+      },
+      "runner_share": {
+        "max": 0.0035355761223375597,
+        "median": 0.0034629450697804447,
+        "min": 0.0032956600233624237,
+        "values": [
+          0.003526645848010856,
+          0.0035355761223375597,
+          0.0032956600233624237,
+          0.003360375322504951,
+          0.003440544467899061,
+          0.003485345671661828
+        ]
+      }
+    },
+    "CarrierOrchestration": {
+      "exclusive_seconds": {
+        "max": 0.007153645,
+        "median": 0.0063706545,
+        "min": 0.005774138,
+        "values": [
+          0.005774138,
+          0.005793594,
+          0.006547152,
+          0.007144014,
+          0.006194157,
+          0.007153645
+        ]
+      },
+      "runner_share": {
+        "max": 0.0012081029648763487,
+        "median": 0.0011532132148757194,
+        "min": 0.0011149691939673718,
+        "values": [
+          0.0011521392386254646,
+          0.0011556399454441158,
+          0.0011149691939673718,
+          0.001154287191125974,
+          0.0011443680157794277,
+          0.0012081029648763487
+        ]
+      }
+    },
+    "CarrierPhysicalCompletion": {
+      "exclusive_seconds": {
+        "max": 0.2921478,
+        "median": 0.260254076,
+        "min": 0.234699467,
+        "values": [
+          0.234980031,
+          0.234699467,
+          0.269467849,
+          0.2921478,
+          0.251040303,
+          0.289614261
+        ]
+      },
+      "runner_share": {
+        "max": 0.04890987005709295,
+        "median": 0.046850885563363795,
+        "min": 0.04588993052240905,
+        "values": [
+          0.04688660264242526,
+          0.046815168484302325,
+          0.04588993052240905,
+          0.047203499804960185,
+          0.04637959506431243,
+          0.04890987005709295
+        ]
+      }
+    },
+    "CarrierPhysicalEvidence": {
+      "exclusive_seconds": {
+        "max": 0.891796278,
+        "median": 0.791726885,
+        "min": 0.720855056,
+        "values": [
+          0.724842557,
+          0.720855056,
+          0.814849805,
+          0.891796278,
+          0.768603965,
+          0.886906717
+        ]
+      },
+      "runner_share": {
+        "max": 0.14978023572269086,
+        "median": 0.1439395287385036,
+        "min": 0.1387675786792975,
+        "values": [
+          0.1446310344064023,
+          0.14378793156526934,
+          0.1387675786792975,
+          0.14409112591173787,
+          0.14199927356495012,
+          0.14978023572269086
+        ]
+      }
+    },
+    "CarrierPhysicalSetup": {
+      "exclusive_seconds": {
+        "max": 0.152063177,
+        "median": 0.137104005,
+        "min": 0.126075675,
+        "values": [
+          0.126075675,
+          0.126135385,
+          0.140769965,
+          0.152063177,
+          0.133438045,
+          0.151271397
+        ]
+      },
+      "runner_share": {
+        "max": 0.02554661619589555,
+        "median": 0.02490453051322336,
+        "min": 0.023972893009184017,
+        "values": [
+          0.025156435853055735,
+          0.025160045636607006,
+          0.023972893009184017,
+          0.02456946157342662,
+          0.024652625173390987,
+          0.02554661619589555
+        ]
+      }
+    },
+    "ImportedAcceptedCandidate": {
+      "exclusive_seconds": {
+        "max": 0.217643844,
+        "median": 0.197184494,
+        "min": 0.176733891,
+        "values": [
+          0.176733891,
+          0.178454057,
+          0.217643844,
+          0.217311537,
+          0.189751003,
+          0.204617985
+        ]
+      },
+      "runner_share": {
+        "max": 0.037064387892115594,
+        "median": 0.03518819792597401,
+        "min": 0.03455575365363032,
+        "values": [
+          0.035264493265671146,
+          0.035595976641746234,
+          0.037064387892115594,
+          0.03511190258627687,
+          0.0350564215268141,
+          0.03455575365363032
+        ]
+      }
+    },
+    "ImportedEnvelopeConstruction": {
+      "exclusive_seconds": {
+        "max": 0.066436817,
+        "median": 0.0591892955,
+        "min": 0.055149011,
+        "values": [
+          0.055149011,
+          0.05516418,
+          0.066436817,
+          0.066430621,
+          0.058083592,
+          0.060294999
+        ]
+      },
+      "runner_share": {
+        "max": 0.011314080427680277,
+        "median": 0.010868492065460814,
+        "min": 0.01018258063674064,
+        "values": [
+          0.011004125558566037,
+          0.011003520434063791,
+          0.011314080427680277,
+          0.010733463696857836,
+          0.010730920273151269,
+          0.01018258063674064
+        ]
+      }
+    },
+    "ImportedFrozenEvaluation": {
+      "exclusive_seconds": {
+        "max": 5.5099e-05,
+        "median": 4.6522e-05,
+        "min": 4.1433e-05,
+        "values": [
+          4.1433e-05,
+          4.6524e-05,
+          5.0671e-05,
+          5.5099e-05,
+          4.652e-05,
+          4.4259e-05
+        ]
+      },
+      "runner_share": {
+        "max": 9.280076032570118e-06,
+        "median": 8.611869539424896e-06,
+        "min": 7.474431443335855e-06,
+        "values": [
+          8.267309349719193e-06,
+          9.280076032570118e-06,
+          8.6291877792849e-06,
+          8.9025679322367e-06,
+          8.594551299564893e-06,
+          7.474431443335855e-06
+        ]
+      }
+    },
+    "ImportedFrozenExecute": {
+      "exclusive_seconds": {
+        "max": 0.000233608,
+        "median": 0.0002030085,
+        "min": 0.000193913,
+        "values": [
+          0.000193913,
+          0.000200916,
+          0.000233608,
+          0.000219681,
+          0.000202771,
+          0.000203246
+        ]
+      },
+      "runner_share": {
+        "max": 4.007642842747523e-05,
+        "median": 3.807708872056611e-05,
+        "min": 3.43240537095786e-05,
+        "values": [
+          3.869231670243762e-05,
+          4.007642842747523e-05,
+          3.978305734528995e-05,
+          3.549474629161492e-05,
+          3.74618607386946e-05,
+          3.43240537095786e-05
+        ]
+      }
+    },
+    "ImportedFrozenRuntime": {
+      "exclusive_seconds": {
+        "max": 0.578698535,
+        "median": 0.508870861,
+        "min": 0.462476022,
+        "values": [
+          0.462476022,
+          0.463272399,
+          0.574590015,
+          0.578698535,
+          0.492584372,
+          0.52515735
+        ]
+      },
+      "runner_share": {
+        "max": 0.09785173246111441,
+        "median": 0.09234408375484532,
+        "min": 0.08868823537673541,
+        "values": [
+          0.09227988175371175,
+          0.09240828575597887,
+          0.09785173246111441,
+          0.09350265921565469,
+          0.09100476471448746,
+          0.08868823537673541
+        ]
+      }
+    },
+    "ImportedPhysicalCandidate": {
+      "exclusive_seconds": {
+        "max": 4.8665e-05,
+        "median": 3.91575e-05,
+        "min": 3.5805e-05,
+        "values": [
+          4.0125e-05,
+          3.5805e-05,
+          4.8665e-05,
+          4.7598e-05,
+          3.819e-05,
+          3.6648e-05
+        ]
+      },
+      "runner_share": {
+        "max": 8.287569285763053e-06,
+        "median": 7.416286718646927e-06,
+        "min": 6.18909066032609e-06,
+        "values": [
+          8.006318337013555e-06,
+          7.14197236579342e-06,
+          8.287569285763053e-06,
+          7.690601071500435e-06,
+          7.055587148116579e-06,
+          6.18909066032609e-06
+        ]
+      }
+    },
+    "ImportedPublicationInstall": {
+      "exclusive_seconds": {
+        "max": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "values": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "runner_share": {
+        "max": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "values": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "InactiveLeafProbe": {
+      "exclusive_seconds": {
+        "max": 0.089710559,
+        "median": 0.07661838900000001,
+        "min": 0.065168998,
+        "values": [
+          0.065641973,
+          0.065168998,
+          0.081378488,
+          0.089710559,
+          0.07185829,
+          0.085115272
+        ]
+      },
+      "runner_share": {
+        "max": 0.01449489728917818,
+        "median": 0.013567206281056253,
+        "min": 0.012999167234253503,
+        "values": [
+          0.013097832575891555,
+          0.012999167234253503,
+          0.013858622370710722,
+          0.01449489728917818,
+          0.013275790191401782,
+          0.014374212371379468
+        ]
+      }
+    },
+    "Linear": {
+      "exclusive_seconds": {
+        "max": 0.031145713,
+        "median": 0.0274402485,
+        "min": 0.024382781,
+        "values": [
+          0.024477783,
+          0.024382781,
+          0.028692428,
+          0.031145713,
+          0.026188069,
+          0.030336998
+        ]
+      },
+      "runner_share": {
+        "max": 0.005123292703125171,
+        "median": 0.004885216633335751,
+        "min": 0.004838235220486781,
+        "values": [
+          0.004884160071833985,
+          0.00486359860642907,
+          0.0048862731948375185,
+          0.005032338622850645,
+          0.004838235220486781,
+          0.005123292703125171
+        ]
+      }
+    },
+    "NativeEt": {
+      "exclusive_seconds": {
+        "max": 0.063885533,
+        "median": 0.057638560000000005,
+        "min": 0.051888449,
+        "values": [
+          0.052029867,
+          0.051888449,
+          0.05985423,
+          0.063885533,
+          0.05542289,
+          0.063781532
+        ]
+      },
+      "runner_share": {
+        "max": 0.010771384086511942,
+        "median": 0.010336179293498827,
+        "min": 0.010193076711620211,
+        "values": [
+          0.010381748990267324,
+          0.010350115035941384,
+          0.010193076711620211,
+          0.01032224355105627,
+          0.010239356648218876,
+          0.010771384086511942
+        ]
+      }
+    },
+    "OtherNamed": {
+      "exclusive_seconds": {
+        "max": 0.160522602,
+        "median": 0.14545347749999998,
+        "min": 0.131496544,
+        "values": [
+          0.131496544,
+          0.131755774,
+          0.155337958,
+          0.160522602,
+          0.139916978,
+          0.150989977
+        ]
+      },
+      "runner_share": {
+        "max": 0.026453798204745735,
+        "median": 0.026087185400374822,
+        "min": 0.02549909016736387,
+        "values": [
+          0.02623808576899962,
+          0.02628113662733482,
+          0.026453798204745735,
+          0.02593628503175003,
+          0.025849605440694163,
+          0.02549909016736387
+        ]
+      }
+    },
+    "OtherProbe": {
+      "exclusive_seconds": {
+        "max": 0.428499626,
+        "median": 0.368527311,
+        "min": 0.314466131,
+        "values": [
+          0.316271674,
+          0.314466131,
+          0.391765251,
+          0.428499626,
+          0.345289371,
+          0.405882061
+        ]
+      },
+      "runner_share": {
+        "max": 0.06923441495132433,
+        "median": 0.065254524495662,
+        "min": 0.06272611136936108,
+        "values": [
+          0.06310708294141242,
+          0.06272611136936108,
+          0.0667169765009114,
+          0.06923441495132433,
+          0.0637920724904126,
+          0.06854510131327779
+        ]
+      }
+    },
+    "OutsideNamed": {
+      "exclusive_seconds": {
+        "max": 0.459046832,
+        "median": 0.42890835650000003,
+        "min": 0.370545246,
+        "values": [
+          0.370545246,
+          0.377130538,
+          0.452707927,
+          0.456513094,
+          0.459046832,
+          0.405108786
+        ]
+      },
+      "runner_share": {
+        "max": 0.08480871768114245,
+        "median": 0.07458110984794736,
+        "min": 0.06841451112881032,
+        "values": [
+          0.0739365282926604,
+          0.07522569140323433,
+          0.07709541377225239,
+          0.07376066410081052,
+          0.08480871768114245,
+          0.06841451112881032
+        ]
+      }
+    },
+    "PreparationBase": {
+      "exclusive_seconds": {
+        "max": 0.021862505,
+        "median": 0.0193574965,
+        "min": 0.017328659,
+        "values": [
+          0.017443977,
+          0.017328659,
+          0.020258027,
+          0.021862505,
+          0.018456966,
+          0.021094672
+        ]
+      },
+      "runner_share": {
+        "max": 0.0035624546348461657,
+        "median": 0.0034685983267564785,
+        "min": 0.0034099170490396614,
+        "values": [
+          0.0034806737177705345,
+          0.0034565229357424224,
+          0.003449908606911716,
+          0.003532413218594975,
+          0.0034099170490396614,
+          0.0035624546348461657
+        ]
+      }
+    },
+    "RequiredIntegrity": {
+      "exclusive_seconds": {
+        "max": 0.313788701,
+        "median": 0.277653702,
+        "min": 0.255535064,
+        "values": [
+          0.255535064,
+          0.256898484,
+          0.312438755,
+          0.313788701,
+          0.274781925,
+          0.280525479
+        ]
+      },
+      "runner_share": {
+        "max": 0.05320780498551418,
+        "median": 0.050876944639574075,
+        "min": 0.047374962400742265,
+        "values": [
+          0.050988039094159054,
+          0.051243174795202434,
+          0.05320780498551418,
+          0.05070010757038803,
+          0.050765850184989095,
+          0.047374962400742265
+        ]
+      }
+    },
+    "Routing": {
+      "exclusive_seconds": {
+        "max": 0.000894188,
+        "median": 0.000846336,
+        "min": 0.000758972,
+        "values": [
+          0.000760615,
+          0.000758972,
+          0.00088874,
+          0.000886221,
+          0.000894188,
+          0.000806451
+        ]
+      },
+      "runner_share": {
+        "max": 0.00016520087354805098,
+        "median": 0.00015137101060184454,
+        "min": 0.0001361929260017091,
+        "values": [
+          0.00015176886783570254,
+          0.00015139106410867097,
+          0.0001513509570950181,
+          0.00014319030573104304,
+          0.00016520087354805098,
+          0.0001361929260017091
+        ]
+      }
+    },
+    "RunnerPublication": {
+      "exclusive_seconds": {
+        "max": 0.022531387,
+        "median": 0.022379394499999997,
+        "min": 0.021875115,
+        "values": [
+          0.021875115,
+          0.022531387,
+          0.022261668,
+          0.022497121,
+          0.0225281,
+          0.021947443
+        ]
+      },
+      "runner_share": {
+        "max": 0.004494303681524846,
+        "median": 0.003976591392809309,
+        "min": 0.003634950688438063,
+        "values": [
+          0.004364838239221938,
+          0.004494303681524846,
+          0.0037911253666218893,
+          0.003634950688438063,
+          0.00416205741899673,
+          0.0037064700526451434
+        ]
+      }
+    },
+    "RunnerSetup": {
+      "exclusive_seconds": {
+        "max": 0.000424686,
+        "median": 0.0003461565,
+        "min": 0.000327915,
+        "values": [
+          0.000327915,
+          0.000339479,
+          0.000338527,
+          0.000424686,
+          0.000352834,
+          0.000422064
+        ]
+      },
+      "runner_share": {
+        "max": 7.127789675998337e-05,
+        "median": 6.657285994829874e-05,
+        "min": 5.765059010791142e-05,
+        "values": [
+          6.543032716465545e-05,
+          6.771539273194203e-05,
+          5.765059010791142e-05,
+          6.861823199821912e-05,
+          6.518593966531985e-05,
+          7.127789675998337e-05
+        ]
+      }
+    },
+    "SolverRemaining": {
+      "exclusive_seconds": {
+        "max": 0.009748785,
+        "median": 0.0086392385,
+        "min": 0.00778209,
+        "values": [
+          0.007803204,
+          0.00778209,
+          0.00895885,
+          0.009748785,
+          0.008319627,
+          0.009503121
+        ]
+      },
+      "runner_share": {
+        "max": 0.0016048809600810066,
+        "median": 0.0015546450718575426,
+        "min": 0.001525677388179561,
+        "values": [
+          0.0015570077326519007,
+          0.0015522824110631845,
+          0.001525677388179561,
+          0.0015751505602510057,
+          0.0015370477438681248,
+          0.0016048809600810066
+        ]
+      }
+    },
+    "Stage3LseParent": {
+      "exclusive_seconds": {
+        "max": 1.377486664,
+        "median": 1.262915778,
+        "min": 1.128127239,
+        "values": [
+          1.132502794,
+          1.128127239,
+          1.315182404,
+          1.377486664,
+          1.210649152,
+          1.321204985
+        ]
+      },
+      "runner_share": {
+        "max": 0.22597328065598216,
+        "median": 0.22382016988023118,
+        "min": 0.22256608290549937,
+        "values": [
+          0.22597328065598216,
+          0.22502593397673032,
+          0.22397339559367957,
+          0.22256608290549937,
+          0.2236669441667828,
+          0.22312424779086912
+        ]
+      }
+    },
+    "TerminalCarrier": {
+      "exclusive_seconds": {
+        "max": 0.015547018,
+        "median": 0.0143762805,
+        "min": 0.013483945,
+        "values": [
+          0.013483945,
+          0.01348942,
+          0.014649421,
+          0.015532046,
+          0.01410314,
+          0.015547018
+        ]
+      },
+      "runner_share": {
+        "max": 0.0026907153992621444,
+        "median": 0.00261555992123047,
+        "min": 0.002494772249744422,
+        "values": [
+          0.0026905110556705854,
+          0.0026907153992621444,
+          0.002494772249744422,
+          0.002509575394138284,
+          0.002605549445721101,
+          0.0026255703967398387
+        ]
+      }
+    },
+    "TerminalCustody": {
+      "exclusive_seconds": {
+        "max": 0.031411251,
+        "median": 0.02842677,
+        "min": 0.025935115,
+        "values": [
+          0.025935115,
+          0.02609842,
+          0.029101146,
+          0.031411251,
+          0.027752394,
+          0.03126531
+        ]
+      },
+      "runner_share": {
+        "max": 0.005280065436400347,
+        "median": 0.005151095796478742,
+        "min": 0.004955877196550012,
+        "values": [
+          0.0051749479575590104,
+          0.005205814674790401,
+          0.004955877196550012,
+          0.005075242669813209,
+          0.005127243635398473,
+          0.005280065436400347
+        ]
+      }
+    },
+    "TerminalProjection": {
+      "exclusive_seconds": {
+        "max": 0.042361855,
+        "median": 0.0383403275,
+        "min": 0.035422096,
+        "values": [
+          0.035422096,
+          0.035713746,
+          0.039324823,
+          0.042361855,
+          0.037355832,
+          0.042111359
+        ]
+      },
+      "runner_share": {
+        "max": 0.00712377006035373,
+        "median": 0.006984701045807918,
+        "min": 0.006696952538022573,
+        "values": [
+          0.007067927146174566,
+          0.00712377006035373,
+          0.006696952538022573,
+          0.006844575979111435,
+          0.006901474945441268,
+          0.007111739213068627
+        ]
+      }
+    },
+    "TerminalSetup": {
+      "exclusive_seconds": {
+        "max": 0.07195607,
+        "median": 0.0658547375,
+        "min": 0.059013339,
+        "values": [
+          0.059018041,
+          0.059013339,
+          0.067847652,
+          0.07195607,
+          0.063861823,
+          0.071270247
+        ]
+      },
+      "runner_share": {
+        "max": 0.012036073457401045,
+        "median": 0.011773718444398918,
+        "min": 0.011554343302709139,
+        "values": [
+          0.011776130189979259,
+          0.011771306698818576,
+          0.011554343302709139,
+          0.011626232804801889,
+          0.01179844612762754,
+          0.012036073457401045
+        ]
+      }
+    },
+    "Trial": {
+      "exclusive_seconds": {
+        "max": 0.016155626,
+        "median": 0.01396352,
+        "min": 0.012162904,
+        "values": [
+          0.012209017,
+          0.012162904,
+          0.014700983,
+          0.016155626,
+          0.013226057,
+          0.015655332
+        ]
+      },
+      "runner_share": {
+        "max": 0.0026438623953695746,
+        "median": 0.0024735309437010694,
+        "min": 0.0024261171416226296,
+        "values": [
+          0.002436119045084367,
+          0.0024261171416226296,
+          0.0025035531733550763,
+          0.0026103297328955058,
+          0.0024435087140470624,
+          0.0026438623953695746
+        ]
+      }
+    }
+  },
+  "evidence_class": "profiled exclusive costs; hypothetical savings are optimistic models",
+  "limitations": [
+    "One OFE day only; same-thread attribution.",
+    "Do not add inclusive LSE to these exclusive children.",
+    "Medians are descriptive and are not a reconciled synthetic run.",
+    "No global overhead subtraction from individual buckets."
+  ],
+  "measured_pairs": 6,
+  "off_runner_seconds": {
+    "max": 6.139837,
+    "median": 5.2832609999999995,
+    "min": 5.008455,
+    "values": [
+      5.008455,
+      5.015656,
+      5.029923,
+      6.139837,
+      5.994415,
+      5.536599
+    ]
+  },
+  "on_runner_seconds": {
+    "max": 6.189113,
+    "median": 5.642389,
+    "min": 5.011666,
+    "values": [
+      5.011666,
+      5.01332,
+      5.872047,
+      6.189113,
+      5.412731,
+      5.921386
+    ]
+  },
+  "paired_process_cpu_perturbation": {
+    "max": 0.16699810754121636,
+    "median": 0.004735500278412075,
+    "min": -0.09673997744769247,
+    "values": [
+      0.0014895936273233712,
+      -0.00023438650473517342,
+      0.16699810754121636,
+      0.007981406929500778,
+      -0.09673997744769247,
+      0.07077615830235917
+    ]
+  },
+  "paired_runner_wall_perturbation": {
+    "max": 0.1674228412641705,
+    "median": 0.004333368048589303,
+    "min": -0.09703765922112495,
+    "values": [
+      0.0006411158730585953,
+      -0.00046574166968393893,
+      0.1674228412641705,
+      0.008025620224120011,
+      -0.09703765922112495,
+      0.06949880242365403
+    ]
+  },
+  "populations": [
+    {
+      "dimension": 29,
+      "family": "CoveredPotential",
+      "fd_columns": 44000,
+      "identity_columns": 14000,
+      "inactive_input_leaf_coordinates": 4,
+      "inactive_input_leaf_fd_columns": 8000,
+      "solves": 400,
+      "sweeps": 2000
+    },
+    {
+      "dimension": 29,
+      "family": "CoveredFixedFinal",
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 4,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 400,
+      "sweeps": 0
+    },
+    {
+      "dimension": 29,
+      "family": "V3Potential",
+      "fd_columns": 6641,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 4,
+      "inactive_input_leaf_fd_columns": 916,
+      "solves": 52,
+      "sweeps": 229
+    },
+    {
+      "dimension": 29,
+      "family": "V3FixedFinal",
+      "fd_columns": 6728,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 4,
+      "inactive_input_leaf_fd_columns": 928,
+      "solves": 52,
+      "sweeps": 232
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    },
+    {
+      "dimension": 0,
+      "family": null,
+      "fd_columns": 0,
+      "identity_columns": 0,
+      "inactive_input_leaf_coordinates": 0,
+      "inactive_input_leaf_fd_columns": 0,
+      "solves": 0,
+      "sweeps": 0
+    }
+  ],
+  "receipt_hashes": {
+    "00.json": "a01ca75969b091b3e5fe08cd357e637626ad665b083fb1752b31343c63fa021c",
+    "01.json": "e80d65ece430ecd571cea95ae94da1bea50a1cec43154c4bda8271321ead5724",
+    "02.json": "c80d6b543737ec2c187ce102b7b50b910a42ba373d5c0cc332a4d92aafdf12a0",
+    "03.json": "3c324bb745b42868b7b90581c92a79fcf0a77f81961979fa28f49e64d2acdfda",
+    "04.json": "a1c4c81f064361aa283890fa2a5194e533e465ba55f67cb40dd3650dcdd7e1f6",
+    "05.json": "5684dfbce8097c15e489f8bf5e331c4d15c6b9b10e09f7f3bec0d1f487f54244",
+    "06.json": "018fd049112acd61804a001f509f6310a93bd7c4e15ece7184e50995fab694fb",
+    "07.json": "7103ecf948445c6512193584a834f4b552221276fbeb03b091c40db5014283b3",
+    "08.json": "9cf3069346aa0e6f3cbbd8dc02daf30217e528b989322d184fb2a3de9b5f59d7",
+    "09.json": "a237a9dce779a948535009302203bb1c2cf5de58d4e7a2599ac1938a60fea2af",
+    "10.json": "f6cd44b508633f351360e188d5e3dc35ba510904b39b0b48cb84081307a21388",
+    "11.json": "0168a8bd2c18bb16393cdb2eebc85ec6a57b1455999defcce62156bfdadffa10",
+    "12.json": "8f96a4a4bc9079205cf1095483ae22b1080151f3ed80f12174f03941abebeb8c",
+    "13.json": "96d549cb241df0f37e6315be74c6e34c5573ad083d9c0f343fa6a0fa40190314",
+    "14.json": "8209b22ad278d3b0e798128487f6c06567a3f1f5850588e28815af9c9fc05b5d",
+    "15.json": "fb53c732b2c3677feffb51b051887ca11841b1471e149b6f7546366b53e40143"
+  }
+}

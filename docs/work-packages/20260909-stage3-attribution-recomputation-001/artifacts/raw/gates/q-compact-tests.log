@@ -1,0 +1,18 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openwepp-attribution-Q-3r3eP8-a0d08c9a4ce0
+  scratch: /tmp/openwepp-roger-openwepp-attribution-Q-3r3eP8-a0d08c9a4ce0
+  cache:   /workdir/.cache/openwepp
+    Blocking waiting for file lock on artifact directory
+    Finished `release` profile [optimized] target(s) in 12.63s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openwepp-attribution-Q-3r3eP8-a0d08c9a4ce0/release/deps/openwepp_land_surface_energy-93c08e6f1abb26cf)
+
+running 3 tests
+test solver_mechanism_audit::compact_cost::tests::compact_cost_live_stale_order_and_overflow ... ok
+test solver_mechanism_audit::compact_cost::tests::compact_cost_accounting_and_off_neutrality ... ok
+test solver_mechanism_audit::compact_cost::tests::compact_cost_rejects_clock_reversal_and_preserves_errors ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 156 filtered out; finished in 0.00s
+
+led; 0 ignored; 0 measured; 156 filtered out; finished in 0.00s
+

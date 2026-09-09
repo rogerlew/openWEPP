@@ -1,0 +1,254 @@
+--- a/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
+@@ -506,12 +506,31 @@
+     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+     #[repr(usize)]
+     pub enum Bucket {
+-        RunnerUnassigned,
+-        OtherPhysical,
+-        Orchestration,
+-        Custody,
++        OutsideNamed,
++        RunnerSetup,
++        RunnerPublication,
++        NativeEt,
++        Stage3LseParent,
+         Routing,
+-        Diagnostics,
++        RequiredIntegrity,
++        TerminalSetup,
++        TerminalCustody,
++        TerminalProjection,
++        TerminalCarrier,
++        CarrierPhysicalSetup,
++        CarrierPhysicalEvidence,
++        CarrierPhysicalCompletion,
++        CarrierCompletionConstruction,
++        CarrierCustody,
++        CarrierOrchestration,
++        SnowFreeParentRemainder,
++        DayFinalization,
++        ImportedFrozenExecute,
++        ImportedFrozenRuntime,
++        ImportedEnvelopeConstruction,
++        ImportedAcceptedCandidate,
++        ImportedPublicationInstall,
++        OtherNamed,
+         PreparationBase,
+         InactiveLeafProbe,
+         OtherProbe,
+@@ -520,15 +539,34 @@
+         Trial,
+         SolverRemaining,
+     }
+-    const BUCKETS: usize = 13;
++    const BUCKETS: usize = 32;
+     #[cfg(any(test, feature = "test-support"))]
+     const LABELS: [Bucket; BUCKETS] = [
+-        Bucket::RunnerUnassigned,
+-        Bucket::OtherPhysical,
+-        Bucket::Orchestration,
+-        Bucket::Custody,
++        Bucket::OutsideNamed,
++        Bucket::RunnerSetup,
++        Bucket::RunnerPublication,
++        Bucket::NativeEt,
++        Bucket::Stage3LseParent,
+         Bucket::Routing,
+-        Bucket::Diagnostics,
++        Bucket::RequiredIntegrity,
++        Bucket::TerminalSetup,
++        Bucket::TerminalCustody,
++        Bucket::TerminalProjection,
++        Bucket::TerminalCarrier,
++        Bucket::CarrierPhysicalSetup,
++        Bucket::CarrierPhysicalEvidence,
++        Bucket::CarrierPhysicalCompletion,
++        Bucket::CarrierCompletionConstruction,
++        Bucket::CarrierCustody,
++        Bucket::CarrierOrchestration,
++        Bucket::SnowFreeParentRemainder,
++        Bucket::DayFinalization,
++        Bucket::ImportedFrozenExecute,
++        Bucket::ImportedFrozenRuntime,
++        Bucket::ImportedEnvelopeConstruction,
++        Bucket::ImportedAcceptedCandidate,
++        Bucket::ImportedPublicationInstall,
++        Bucket::OtherNamed,
+         Bucket::PreparationBase,
+         Bucket::InactiveLeafProbe,
+         Bucket::OtherProbe,
+@@ -645,7 +683,7 @@
+                 generation,
+                 last: None,
+                 start: None,
+-                bucket: Bucket::RunnerUnassigned,
++                bucket: Bucket::OutsideNamed,
+                 depth: 0,
+                 invalid: false,
+                 family: None,
+@@ -725,7 +763,7 @@
+     pub fn scope(bucket: Bucket) -> Guard {
+         let mut guard = Guard {
+             generation: None,
+-            previous: Bucket::RunnerUnassigned,
++            previous: Bucket::OutsideNamed,
+             previous_family: None,
+             depth: 0,
+             solve: false,
+@@ -876,7 +914,7 @@
+             let start = Instant::now();
+             session.start_at(start).unwrap();
+             {
+-                let _outer = scope(Bucket::OtherPhysical);
++                let _outer = scope(Bucket::NativeEt);
+                 {
+                     let _inner = scope(Bucket::Linear);
+                 }
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs
+@@ -347,10 +347,10 @@
+ ) -> ReleaseQualificationProfileScopeV1 {
+     use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
+     let compact = compact_cost::scope(match bucket {
+-        ReleaseQualificationProfileBucketV1::NativeVegetationEt => Bucket::OtherPhysical,
++        ReleaseQualificationProfileBucketV1::NativeVegetationEt => Bucket::NativeEt,
+         ReleaseQualificationProfileBucketV1::LaneD => Bucket::Routing,
+-        ReleaseQualificationProfileBucketV1::Stage3LseSoil
+-        | ReleaseQualificationProfileBucketV1::RemainingRunner => Bucket::RunnerUnassigned,
++        ReleaseQualificationProfileBucketV1::Stage3LseSoil => Bucket::Stage3LseParent,
++        ReleaseQualificationProfileBucketV1::RemainingRunner => Bucket::OutsideNamed,
+     });
+     let active = RELEASE_QUALIFICATION_TELEMETRY.with(|state| {
+         let mut state = state.borrow_mut();
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+@@ -387,10 +387,13 @@
+     fn begin(phase: &'static str) -> Self {
+         use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
+         let bucket = match phase {
+-            "terminal candidate setup" => Bucket::Orchestration,
+-            "terminal provider custody" | "terminal provider retention" => Bucket::Custody,
+-            "terminal provider carrier" => Bucket::OtherPhysical,
+-            _ => Bucket::RunnerUnassigned,
++            "terminal candidate setup" => Bucket::TerminalSetup,
++            "terminal provider custody" | "terminal provider retention" => {
++                Bucket::TerminalCustody
++            }
++            "terminal provider projection" => Bucket::TerminalProjection,
++            "terminal provider carrier" => Bucket::TerminalCarrier,
++            _ => Bucket::OtherNamed,
+         };
+         Self {
+             phase,
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
+@@ -1187,20 +1187,21 @@
+ impl CarrierProfileScopeV1 {
+     fn begin(phase: &'static str) -> Self {
+         use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
+-        // Physical setup/completion contain actual snow/soil evaluation, not
+-        // merely construction. Unresolved envelopes remain explicitly mixed.
+         let bucket = match phase {
+-            "carrier physical setup"
+-            | "carrier physical evidence"
+-            | "carrier physical completion" => Bucket::OtherPhysical,
++            "carrier physical setup" => Bucket::CarrierPhysicalSetup,
++            "carrier physical evidence" => Bucket::CarrierPhysicalEvidence,
++            "carrier physical completion" => Bucket::CarrierPhysicalCompletion,
++            "carrier complete envelope"
++            | "carrier complete adoption"
++            | "carrier complete projection"
++            | "carrier complete owner" => Bucket::CarrierCompletionConstruction,
+             "carrier owner soil custody"
+             | "carrier owner candidate bytes"
+-            | "carrier complete owner"
+             | "carrier owner vegetation validation"
+             | "carrier owner joint map"
+-            | "carrier owner joint seal" => Bucket::Custody,
+-            "carrier owner ephemeral assembly" => Bucket::Orchestration,
+-            _ => Bucket::RunnerUnassigned,
++            | "carrier owner joint seal" => Bucket::CarrierCustody,
++            "carrier owner ephemeral assembly" => Bucket::CarrierOrchestration,
++            _ => Bucket::OtherNamed,
+         };
+         Self {
+             phase,
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+@@ -766,22 +766,19 @@
+     fn begin(phase: &'static str) -> Self {
+         use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
+         let bucket = match phase {
+-            "imported physical candidate"
+-            | "imported frozen evaluation"
+-            | "imported frozen execute accept"
+-            | "imported frozen runtime" => Bucket::OtherPhysical,
++            "imported frozen execute accept" => Bucket::ImportedFrozenExecute,
++            "imported frozen runtime" => Bucket::ImportedFrozenRuntime,
++            "imported envelope construction" => Bucket::ImportedEnvelopeConstruction,
++            "imported accepted candidate" => Bucket::ImportedAcceptedCandidate,
+             "imported entry validation"
+             | "imported envelope validation"
+-            | "imported owner publication"
+-            | "imported install"
+             | "imported reuse validation"
+             | "imported reuse reseal"
+-            | "imported reuse install"
+-            | "imported frozen acceptance" => Bucket::Custody,
+-            "imported physical setup" => Bucket::Orchestration,
+-            // An envelope constructor can execute the physical solver on some
+-            // branches. Do not label its uninspected remainder as bookkeeping.
+-            _ => Bucket::RunnerUnassigned,
++            | "imported frozen acceptance" => Bucket::RequiredIntegrity,
++            "imported owner publication" | "imported install" | "imported reuse install" => {
++                Bucket::ImportedPublicationInstall
++            }
++            _ => Bucket::OtherNamed,
+         };
+         Self {
+             phase,
+--- a/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs
++++ b/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs
+@@ -2163,7 +2163,7 @@
+     runtime_policy: HillslopeRuntimeSelectionPolicy,
+ ) -> Result<HillslopeRunReport, HillslopeCliError> {
+     use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
+-    let compact_setup = compact_cost::scope(Bucket::Orchestration);
++    let compact_setup = compact_cost::scope(Bucket::RunnerSetup);
+     reject_retired_laned_runtime_envs()?;
+ 
+     if !request.run_dir.is_dir() {
+@@ -2218,7 +2218,7 @@
+         &streaming_targets,
+         output_transaction.stage3_evidence_private_path(),
+     )?;
+-    let _compact_publication = compact_cost::scope(Bucket::Custody);
++    let _compact_publication = compact_cost::scope(Bucket::RunnerPublication);
+     let retained_publication = execution.retained_direct_publication.as_ref().ok_or(
+         HillslopeCliError::RuntimeSurfaceFailure {
+             surface: "stage3_v11_archive_spool",
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs
+@@ -938,6 +938,10 @@
+                     ending_snow_enthalpy_material_owner_chronology,
+                 )
+             } else {
++                let _snow_free_parent_cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeParentRemainder,
++                    );
+                 let beginning_pending_terminal_parcels = candidate.terminal_parcels.clone();
+                 let (parent, consumer, clock, finalized, accepted_support) = execute_real_v11_parent(
+                     &self.static_context,
+@@ -1015,6 +1019,10 @@
+             )?;
+             support_index += 1;
+         }
++        let _day_finalization_cost =
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::DayFinalization,
++            );
+         candidate
+             .real_consumer
+             .commit_prepared_provider_day(prepared.clone().into_provider_day())?;

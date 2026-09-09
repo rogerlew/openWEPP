@@ -1,0 +1,5 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openwepp-attribution-Q-3r3eP8-a0d08c9a4ce0
+  scratch: /tmp/openwepp-roger-openwepp-attribution-Q-3r3eP8-a0d08c9a4ce0
+  cache:   /workdir/.cache/openwepp

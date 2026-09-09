@@ -1,0 +1,24 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openwepp-attribution-Q-3r3eP8-a0d08c9a4ce0
+  scratch: /tmp/openwepp-roger-openwepp-attribution-Q-3r3eP8-a0d08c9a4ce0
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-attribution-Q-3r3eP8/crates/openwepp-hillslope-orchestrator)
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling openwepp-persisted-restart-v1 v0.1.0 (/tmp/openwepp-attribution-Q-3r3eP8/crates/openwepp-persisted-restart-v1)
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+   Compiling openwepp-runner v0.1.0 (/tmp/openwepp-attribution-Q-3r3eP8/crates/openwepp-runner)
+    Finished `release` profile [optimized] target(s) in 5m 59s
+  Executable unittests src/lib.rs (/workdir/.cache/openwepp/targets/openwepp-attribution-Q-3r3eP8-a0d08c9a4ce0/release/deps/openwepp_land_surface_energy-29dc6221b95c33c1)
+  Executable unittests src/lib.rs (/workdir/.cache/openwepp/targets/openwepp-attribution-Q-3r3eP8-a0d08c9a4ce0/release/deps/openwepp_runner-682944f41aa5eb67)

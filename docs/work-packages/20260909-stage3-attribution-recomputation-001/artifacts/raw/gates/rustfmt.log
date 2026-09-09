@@ -1,0 +1,84 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+Diff in /workdir/openWEPP/crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs:3:
+ //! audit observes Newton bases, not every line-search trial or LU factorization.
+ use super::{column, fixture, rust_failure_fixture};
+ use crate::{
+[31m-    rejected_numerical_diagnostics, solve_covered_column, CoveredColumnAuthority,
+[m[31m-    CoveredColumnInputs, CoveredColumnSolveOutcome, DiagnosticFailureKind, NormalizedResidual,
+[m[31m-    NumericalDiagnostics, NumericalFailure, NumericalFailureKind, OfeId, RuntimeTileIdentity,
+[m[31m-    Sha256Digest, SolveIdentity, SolvePass, SourceId, StepNorms, SurfaceClass, SurfaceId,
+[m[31m-    WaterSourceType,
+[m[32m+    CoveredColumnAuthority, CoveredColumnInputs, CoveredColumnSolveOutcome, DiagnosticFailureKind,
+[m[32m+    NormalizedResidual, NumericalDiagnostics, NumericalFailure, NumericalFailureKind, OfeId,
+[m[32m+    RuntimeTileIdentity, Sha256Digest, SolveIdentity, SolvePass, SourceId, StepNorms, SurfaceClass,
+[m[32m+    SurfaceId, WaterSourceType, rejected_numerical_diagnostics, solve_covered_column,
+[m };
+ use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
+[31m-use serde_json::{json, Value};
+[m[32m+use serde_json::{Value, json};
+[m 
+ fn vector_bits(values: &[f64]) -> Vec<u64> {
+     values.iter().map(|value| value.to_bits()).collect()
+Diff in /workdir/openWEPP/crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs:85:
+     // Full Serialize retains every discrete field, Option tag, identity and
+     // owner receipt. Replace only the declared float-bearing fields with bits.
+     let mut record = serde_json::to_value(value).expect("complete diagnostic serialization");
+[31m-    record["ordered_residuals"] = json!(value
+[m[31m-        .ordered_residuals
+[m[31m-        .iter()
+[m[31m-        .map(residual_bits)
+[m[31m-        .collect::<Vec<_>>());
+[m[32m+    record["ordered_residuals"] = json!(
+[m[32m+        value
+[m[32m+            .ordered_residuals
+[m[32m+            .iter()
+[m[32m+            .map(residual_bits)
+[m[32m+            .collect::<Vec<_>>()
+[m[32m+    );
+[m     record["step_norms"] = step_bits(&value.step_norms);
+[31m-    record["bracket"] = json!(value
+[m[31m-        .bracket
+[m[31m-        .map(|v| [v.lower.to_bits(), v.upper.to_bits()]));
+[m[32m+    record["bracket"] = json!(
+[m[32m+        value
+[m[32m+            .bracket
+[m[32m+            .map(|v| [v.lower.to_bits(), v.upper.to_bits()])
+[m[32m+    );
+[m     record["pivot_magnitude"] = json!(value.pivot_magnitude.map(f64::to_bits));
+     record["matrix_infinity_norm"] = json!(value.matrix_infinity_norm.map(f64::to_bits));
+     record
+Diff in /workdir/openWEPP/crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs:403:
+         Some(DiagnosticFailureKind::IterationLimit)
+     );
+     assert_eq!(identity, identity_before);
+[31m-    assert!(diagnostics
+[m[31m-        .owner_rollback_hashes
+[m[31m-        .iter()
+[m[31m-        .all(|r| r.before_sha256 == r.after_sha256));
+[m[32m+    assert!(
+[m[32m+        diagnostics
+[m[32m+            .owner_rollback_hashes
+[m[32m+            .iter()
+[m[32m+            .all(|r| r.before_sha256 == r.after_sha256)
+[m[32m+    );
+[m     let serialized = serde_json::to_string(&diagnostics).expect("entire DTO JSON");
+     let roundtrip: NumericalDiagnostics =
+         serde_json::from_str(&serialized).expect("DTO JSON parse");
+Diff in /workdir/openWEPP/tests/integration/advisory_linter_authority_contract.rs:351:
+         .expect("completed catalog entry body");
+     assert!(completed_entry.contains("COMPLETE / HISTORICAL UNDER ADR-0043"));
+ 
+[31m-    assert!(!root()
+[m[31m-        .join("tests/integration/testgate_ci_executor_contract.rs")
+[m[31m-        .exists());
+[m[32m+    assert!(
+[m[32m+        !root()
+[m[32m+            .join("tests/integration/testgate_ci_executor_contract.rs")
+[m[32m+            .exists()
+[m[32m+    );
+[m }
+ 
