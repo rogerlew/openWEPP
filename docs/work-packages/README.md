@@ -5955,6 +5955,8 @@ override the current guide. Scientific acceptance and user-frozen boundaries bin
 
 ## Recent CQR Defect Closures
 
+- [20260909 Stage 3 parent-cost targeted investigation](20260909-stage3-parent-cost-investigation-001/package.md): COMPLETE supported negative; the measured 16% parent-exclusive residual is required 48-support capability sealing/provider binding rather than solver time, safe bounded candidates are immaterial, and production remains HOLD.
+
 - `20260724-cqr37-testgate-relocated-audit-001/` — ACTIVE; closes the sole
   actionable row retained by TESTGATE run `30053439151` by directly covering
   the public relocated-audit verifier before any further heavy qualification.

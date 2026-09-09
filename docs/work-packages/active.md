@@ -7,6 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
+| Stage 3 parent-cost targeted investigation (complete negative) | [record](20260909-stage3-parent-cost-investigation-001/package.md) | The 16% parent residual is required 48-support capability sealing/provider binding; safe measured candidates are immaterial, no implementation warranted, production HOLD. |
 | Lightweight governance replacement | [record](20260909-lightweight-governance-001/package.md) | Owner-authorized structural replacement; one record per package, consequence-based review and preserved scientific correctness. |
 | Stage 3 attribution and recomputation experiment (executed HOLD) | [disposition](20260909-stage3-attribution-recomputation-001/artifacts/final-disposition.md) | Study complete; no distinct reusable operation passed the >=5% gate, no prototype was built, and frozen Clippy remains failed; production HOLD. |
 | Stage 3 compact cost breakdown (complete characterization) | [handoff](20260909-stage3-compact-cost-breakdown-001/artifacts/worker-handoff.md) | Observation-only one-OFE additive profiling and next-architecture ranking; no optimization; production HOLD. |

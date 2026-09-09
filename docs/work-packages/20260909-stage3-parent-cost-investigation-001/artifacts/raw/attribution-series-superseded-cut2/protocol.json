@@ -1,0 +1,36 @@
+{
+  "argv": [
+    "taskset",
+    "-c",
+    "0",
+    "/workdir/.cache/openwepp/targets/openwepp-stage3-parent-investigation-Sha6SG-7f6cc7f8831d/release/deps/openwepp_runner-56da2a98e6c80433",
+    "hillslope::tests::stage3_controlled_mechanism_experiment",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "binary_sha256": "836196ff8b86a501f30784406d6790801910956208adcbcb9aa7a63665058e0b",
+  "collector_sha256": "58924ece830fc32ec1b4fc0f9aa734fdd6004a6916f98831cca8f279437c2557",
+  "common_collector_sha256": "f1ea797124f4a4e1cb4e02da049a403ac6db6d8780f839b0b334197b4f348052",
+  "cpu": 0,
+  "cwd": "/tmp/openwepp-stage3-parent-investigation-Sha6SG",
+  "environment_sha256": "463cd045d5413611e2785f80d12f58803f36e1db5ac39533cb7af03011074a84",
+  "identity_sha256": "11b1cbe5904bc2bee25958afef458181cd8671a7900decbf2162eb9a808907b0",
+  "no_retry": true,
+  "pair_order": [
+    "off/on",
+    "on/off",
+    "off/on",
+    "on/off",
+    "off/on",
+    "on/off"
+  ],
+  "timeout_s": 180,
+  "warmup_order": [
+    "off",
+    "on",
+    "on",
+    "off"
+  ]
+}
