@@ -6,6 +6,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
+| Integrated hot-path Jacobian prototype (executing) | [handoff](20260908-stage3-hotpath-jacobian-reference-and-prototype-001/artifacts/worker-handoff.md) | Owner-authorized reference correction, isolated derivative implementation and actual consumer evaluation; production HOLD. |
 | Stage 3 residual/Jacobian prototype (complete) | [handoff](20260908-stage3-residual-jacobian-prototype-001/artifacts/worker-handoff.md) | Frozen Phase-A oracle admitted 0/16 active-stem columns; INCONCLUSIVE_WITH_BOUND, no J/performance claim, production HOLD. |
 | LSE context adoption correction (complete) | [handoff](20260907-lse-context-adoption-correction-001/artifacts/worker-handoff.md) | v32 selective reading adopted and independently verified; no remaining implementation or push authorization. |
 | Directory checker and LSE adoption (executed HOLD) | [handoff](20260907-directory-contract-checker-lse-adoption-001/artifacts/worker-handoff.md) | Checker, meaning-preserving LSE pilot and independent adoption gates; no production changes or push. |

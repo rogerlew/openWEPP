@@ -1,0 +1,1107 @@
+--- a/crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs
+@@ -11,7 +11,7 @@
+ use serde::{Deserialize, Serialize};
+ use std::{cell::RefCell, marker::PhantomData, rc::Rc};
+ 
+-pub const SCHEMA: &str = "openwepp.covered-residual-corpus.v1";
++pub const SCHEMA: &str = "openwepp.covered-residual-corpus.v2";
+ const MAX_EDGE_RECORDS_PER_PASS: usize = 64;
+ 
+ #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+@@ -21,8 +21,25 @@
+     FixedFinal,
+ }
+ 
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
++pub enum Family {
++    Covered,
++    GenericV3,
++}
++
++#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
++pub struct V3Capture {
++    pub context: crate::V3LitterResidualContext,
++    pub evaluation: crate::V3PhaseFreeCoveredEvaluation,
++    pub scaled_x_bits: Vec<u64>,
++    pub coordinate_scale_bits: Vec<u64>,
++    pub scaled_unit_bits: Vec<u64>,
++}
++
+ #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+ pub struct Snapshot {
++    pub family: Family,
++    pub v3: Option<V3Capture>,
+     pub lifecycle: LifecycleIdentity,
+     pub pass: Pass,
+     pub inputs: CoveredColumnInputs,
+@@ -37,6 +54,29 @@
+     pub schema: String,
+     pub first: Vec<Snapshot>,
+     pub last: Vec<Snapshot>,
++    pub participation: Vec<Participation>,
++}
++
++#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
++pub struct Counts {
++    pub started: u64,
++    pub completed: u64,
++    pub failed: u64,
++}
++
++#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
++pub struct Participation {
++    pub family: Family,
++    pub pass: Pass,
++    /// solve, sweep, or a canonical component group (sun/shade/wet/stem/other).
++    pub group: String,
++    /// Positive/zero executed component area, or not_applicable for other coordinates.
++    pub area: String,
++    /// lifecycle, finite_difference, or identity_anchor.
++    pub method: String,
++    pub counts: Counts,
++    pub expected_columns: u64,
++    pub completed_sweep_columns: u64,
+ }
+ 
+ #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
+@@ -45,6 +85,8 @@
+     AlreadyActive,
+     #[error("residual corpus capture is not active")]
+     NotActive,
++    #[error("residual corpus capture has live observation scopes")]
++    LiveScopes,
+     #[error("residual corpus capture bound is outside 1..=64")]
+     InvalidBound,
+     #[error("residual corpus capture counter overflow")]
+@@ -82,8 +124,98 @@
+         if self.first.is_empty() && self.last.is_empty() {
+             return Err(CaptureError::InvalidSnapshot("empty corpus"));
+         }
++        if self.first.len() > 4 * MAX_EDGE_RECORDS_PER_PASS
++            || self.last.len() > 4 * MAX_EDGE_RECORDS_PER_PASS
++        {
++            return Err(CaptureError::InvalidSnapshot("snapshot bound"));
++        }
+         for snapshot in self.first.iter().chain(&self.last) {
+             snapshot.validate()?;
++            if !self.participation.iter().any(|row| {
++                row.family == snapshot.family && row.pass == snapshot.pass && row.group == "sweep"
++            }) {
++                return Err(CaptureError::InvalidSnapshot(
++                    "snapshot without participation",
++                ));
++            }
++        }
++        self.validate_participation()?;
++        Ok(())
++    }
++
++    fn validate_participation(&self) -> Result<(), CaptureError> {
++        // Two passes: Covered has 2 lifecycle + 9 area groups * 2 methods;
++        // GenericV3 has 2 lifecycle + 9 area groups * 1 method.
++        if self.participation.len() > 62 {
++            return Err(CaptureError::InvalidSnapshot("participation bound"));
++        }
++        for (index, row) in self.participation.iter().enumerate() {
++            let lifecycle = matches!(row.group.as_str(), "solve" | "sweep");
++            let component = matches!(row.group.as_str(), "sun" | "shade" | "wet" | "stem");
++            let valid = if lifecycle {
++                row.area == "not_applicable" && row.method == "lifecycle"
++            } else {
++                ((component && matches!(row.area.as_str(), "positive" | "zero"))
++                    || (row.group == "other" && row.area == "not_applicable"))
++                    && (row.method == "finite_difference"
++                        || (row.family == Family::Covered && row.method == "identity_anchor"))
++            };
++            if !valid
++                || row.counts.started == 0
++                || row.counts.completed.checked_add(row.counts.failed) != Some(row.counts.started)
++                || (row.group != "sweep"
++                    && (row.expected_columns != 0 || row.completed_sweep_columns != 0))
++                || row.completed_sweep_columns > row.expected_columns
++                || self.participation[..index].iter().any(|other| {
++                    other.family == row.family
++                        && other.pass == row.pass
++                        && other.group == row.group
++                        && other.area == row.area
++                        && other.method == row.method
++                })
++            {
++                return Err(CaptureError::InvalidSnapshot("participation bucket/counts"));
++            }
++        }
++        for family in [Family::Covered, Family::GenericV3] {
++            for pass in [Pass::Potential, Pass::FixedFinal] {
++                let rows: Vec<_> = self
++                    .participation
++                    .iter()
++                    .filter(|row| row.family == family && row.pass == pass)
++                    .collect();
++                let sum = |completed: bool| {
++                    rows.iter()
++                        .filter(|row| row.method != "lifecycle")
++                        .try_fold(0_u64, |total, row| {
++                            total.checked_add(if completed {
++                                row.counts.completed
++                            } else {
++                                row.counts.started
++                            })
++                        })
++                        .ok_or(CaptureError::Overflow)
++                };
++                let columns = sum(false)?;
++                let completed = sum(true)?;
++                let sweep = rows.iter().find(|row| row.group == "sweep");
++                if let Some(sweep) = sweep {
++                    if columns > sweep.expected_columns
++                        || completed < sweep.completed_sweep_columns
++                        || (sweep.counts.failed == 0
++                            && (columns != sweep.expected_columns
++                                || completed != columns
++                                || sweep.completed_sweep_columns != sweep.expected_columns))
++                        || !rows.iter().any(|row| row.group == "solve")
++                    {
++                        return Err(CaptureError::InvalidSnapshot(
++                            "sweep dimension/column reconciliation",
++                        ));
++                    }
++                } else if columns != 0 {
++                    return Err(CaptureError::InvalidSnapshot("columns without sweeps"));
++                }
++            }
+         }
+         Ok(())
+     }
+@@ -155,6 +287,40 @@
+ 
+ impl Snapshot {
+     pub fn validate(&self) -> Result<(), CaptureError> {
++        if (self.family == Family::GenericV3) != self.v3.is_some() {
++            return Err(CaptureError::InvalidSnapshot("family/context mismatch"));
++        }
++        if let Some(v3) = &self.v3 {
++            if (self.pass == Pass::FixedFinal) != v3.context.finalized_vapor.is_some()
++                || v3.evaluation.predecessor != self.base_evaluation
++            {
++                return Err(CaptureError::InvalidSnapshot(
++                    "V3 context/evaluation mismatch",
++                ));
++            }
++        }
++        if let Some(v3) = &self.v3 {
++            if v3.scaled_x_bits.len() != self.x_bits.len()
++                || v3.coordinate_scale_bits.len() != self.x_bits.len()
++                || v3.scaled_unit_bits.len() != self.x_bits.len()
++            {
++                return Err(CaptureError::InvalidSnapshot("V3 coordinate cardinality"));
++            }
++            for index in 0..self.x_bits.len() {
++                let scaled = f64::from_bits(v3.scaled_x_bits[index]);
++                let scale = f64::from_bits(v3.coordinate_scale_bits[index]);
++                let unit = f64::from_bits(v3.scaled_unit_bits[index]);
++                if !scaled.is_finite()
++                    || !scale.is_finite()
++                    || scale <= 0.0
++                    || !unit.is_finite()
++                    || unit <= 0.0
++                    || (scaled * scale).to_bits() != self.x_bits[index]
++                {
++                    return Err(CaptureError::InvalidSnapshot("V3 coordinate conversion"));
++                }
++            }
++        }
+         let occupancy_count = self.inputs.occupancies.len();
+         let soil_count = self.inputs.ground.soil_nodes.len();
+         let expected = occupancy_count
+@@ -212,19 +378,69 @@
+         }
+         Ok(())
+     }
++
++    /// Re-evaluate the captured family with its original complete frozen context.
++    pub fn replay(&self) -> Result<(), CaptureError> {
++        self.validate()?;
++        let x: Vec<f64> = self
++            .x_bits
++            .iter()
++            .map(|bits| f64::from_bits(*bits))
++            .collect();
++        let (actual, expected) = if let Some(v3) = &self.v3 {
++            let actual = crate::evaluate_v3_phase_free_covered_column(
++                &self.inputs,
++                &x,
++                self.caps.as_ref(),
++                Some(&self.frozen),
++                v3.context,
++            )
++            .map_err(|error| CaptureError::MalformedWire(error.to_string()))?;
++            (
++                serde_json::to_value(actual),
++                serde_json::to_value(&v3.evaluation),
++            )
++        } else {
++            let actual = crate::evaluate_covered_column(
++                &self.inputs,
++                &x,
++                self.caps.as_ref(),
++                Some(&self.frozen),
++            )
++            .map_err(|error| CaptureError::MalformedWire(error.to_string()))?;
++            (
++                serde_json::to_value(actual),
++                serde_json::to_value(&self.base_evaluation),
++            )
++        };
++        let mut actual = actual.map_err(|error| CaptureError::MalformedWire(error.to_string()))?;
++        let mut expected =
++            expected.map_err(|error| CaptureError::MalformedWire(error.to_string()))?;
++        encode_float_bits(&mut actual)?;
++        encode_float_bits(&mut expected)?;
++        if actual != expected {
++            return Err(CaptureError::InvalidSnapshot("base replay bits"));
++        }
++        Ok(())
++    }
+ }
+ 
+ struct State {
++    generation: Rc<()>,
++    live: u64,
+     edge: usize,
+-    first: [Vec<Snapshot>; 2],
+-    last: [Vec<Snapshot>; 2],
+-    seen: [u64; 2],
++    first: [Vec<Snapshot>; 4],
++    last: [Vec<Snapshot>; 4],
++    seen: [u64; 4],
++    participation: Vec<Participation>,
++    current: Option<(Family, Pass, Vec<[f64; 4]>, usize)>,
+     overflow: bool,
+ }
+ 
+ thread_local! { static ACTIVE: RefCell<Option<State>> = const { RefCell::new(None) }; }
+ 
+ pub struct Session {
++    generation: Rc<()>,
+     _thread: PhantomData<Rc<()>>,
+ }
+ 
+@@ -237,14 +453,20 @@
+         if active.is_some() {
+             return Err(CaptureError::AlreadyActive);
+         }
++        let generation = Rc::new(());
+         *active = Some(State {
++            generation: Rc::clone(&generation),
++            live: 0,
+             edge: edge_records_per_pass,
+-            first: [Vec::new(), Vec::new()],
+-            last: [Vec::new(), Vec::new()],
+-            seen: [0, 0],
++            first: std::array::from_fn(|_| Vec::new()),
++            last: std::array::from_fn(|_| Vec::new()),
++            seen: [0; 4],
++            participation: Vec::new(),
++            current: None,
+             overflow: false,
+         });
+         Ok(Session {
++            generation,
+             _thread: PhantomData,
+         })
+     })
+@@ -254,7 +476,19 @@
+     ACTIVE.with(|active| {
+         let mut active = active.borrow_mut();
+         let Some(state) = active.as_mut() else { return };
+-        let index = usize::from(snapshot.pass == Pass::FixedFinal);
++        let index = usize::from(snapshot.pass == Pass::FixedFinal)
++            + 2 * usize::from(snapshot.family == Family::GenericV3);
++        state.current = Some((
++            snapshot.family,
++            snapshot.pass,
++            snapshot
++                .base_evaluation
++                .occupancies
++                .iter()
++                .map(|o| o.component_areas_m2_m2_tile)
++                .collect(),
++            snapshot.x_bits.len(),
++        ));
+         let Some(seen) = state.seen[index].checked_add(1) else {
+             state.overflow = true;
+             return;
+@@ -275,10 +509,212 @@
+     ACTIVE.with(|active| active.borrow().is_some())
+ }
+ 
++/// Drop records an incomplete/error lifecycle; success is explicit at the real boundary.
++pub(crate) struct Observation {
++    index: Option<usize>,
++    clear_sweep: bool,
++    generation: Option<Rc<()>>,
++    dimension: u64,
++}
++
++fn increment(value: &mut u64, overflow: &mut bool) {
++    if let Some(next) = value.checked_add(1) {
++        *value = next;
++    } else {
++        *overflow = true;
++    }
++}
++
++fn start(family: Family, pass: Pass, group: &str, area: &str, method: &str) -> Observation {
++    let mut generation = None;
++    let mut dimension = 0;
++    let index = ACTIVE.with(|active| {
++        let mut active = active.borrow_mut();
++        let state = active.as_mut()?;
++        let index = state
++            .participation
++            .iter()
++            .position(|row| {
++                row.family == family
++                    && row.pass == pass
++                    && row.group == group
++                    && row.area == area
++                    && row.method == method
++            })
++            .unwrap_or_else(|| {
++                state.participation.push(Participation {
++                    family,
++                    pass,
++                    group: group.into(),
++                    area: area.into(),
++                    method: method.into(),
++                    counts: Counts::default(),
++                    expected_columns: 0,
++                    completed_sweep_columns: 0,
++                });
++                state.participation.len() - 1
++            });
++        increment(
++            &mut state.participation[index].counts.started,
++            &mut state.overflow,
++        );
++        increment(&mut state.live, &mut state.overflow);
++        generation = Some(Rc::clone(&state.generation));
++        if group == "sweep" {
++            dimension = state
++                .current
++                .as_ref()
++                .map_or(0, |(_, _, _, dimension)| *dimension as u64);
++            if let Some(total) = state.participation[index]
++                .expected_columns
++                .checked_add(dimension)
++            {
++                state.participation[index].expected_columns = total;
++            } else {
++                state.overflow = true;
++            }
++        }
++        Some(index)
++    });
++    Observation {
++        index,
++        clear_sweep: group == "sweep",
++        generation,
++        dimension,
++    }
++}
++
++pub(crate) fn solve(family: Family, fixed: bool) -> Observation {
++    start(
++        family,
++        if fixed {
++            Pass::FixedFinal
++        } else {
++            Pass::Potential
++        },
++        "solve",
++        "not_applicable",
++        "lifecycle",
++    )
++}
++
++pub(crate) fn sweep() -> Observation {
++    let identity = ACTIVE.with(|active| {
++        active.borrow().as_ref().and_then(|state| {
++            state
++                .current
++                .as_ref()
++                .map(|(family, pass, _, _)| (*family, *pass))
++        })
++    });
++    identity.map_or(
++        Observation {
++            index: None,
++            clear_sweep: false,
++            generation: None,
++            dimension: 0,
++        },
++        |(family, pass)| start(family, pass, "sweep", "not_applicable", "lifecycle"),
++    )
++}
++
++pub(crate) fn column(index: usize, identity_anchor: bool) -> Observation {
++    let metadata = ACTIVE.with(|active| {
++        let active = active.borrow();
++        let (family, pass, areas, _) = active.as_ref()?.current.as_ref()?;
++        let component = (index < 10 * areas.len() && index % 10 >= 6).then(|| index % 10 - 6);
++        let (group, area) = component.map_or(("other", "not_applicable"), |component| {
++            (
++                ["sun", "shade", "wet", "stem"][component],
++                if areas[index / 10][component] > 0.0 {
++                    "positive"
++                } else {
++                    "zero"
++                },
++            )
++        });
++        Some((*family, *pass, group, area))
++    });
++    metadata.map_or(
++        Observation {
++            index: None,
++            clear_sweep: false,
++            generation: None,
++            dimension: 0,
++        },
++        |(family, pass, group, area)| {
++            start(
++                family,
++                pass,
++                group,
++                area,
++                if identity_anchor {
++                    "identity_anchor"
++                } else {
++                    "finite_difference"
++                },
++            )
++        },
++    )
++}
++
++impl Observation {
++    pub(crate) fn finish(mut self, success: bool) {
++        self.end(success);
++    }
++    fn end(&mut self, success: bool) {
++        let Some(index) = self.index.take() else {
++            return;
++        };
++        ACTIVE.with(|active| {
++            if let Some(state) = active.borrow_mut().as_mut() {
++                if !self
++                    .generation
++                    .as_ref()
++                    .is_some_and(|generation| Rc::ptr_eq(generation, &state.generation))
++                {
++                    return;
++                }
++                state.live -= 1;
++                let counts = &mut state.participation[index].counts;
++                increment(
++                    if success {
++                        &mut counts.completed
++                    } else {
++                        &mut counts.failed
++                    },
++                    &mut state.overflow,
++                );
++                if self.clear_sweep {
++                    if success {
++                        if let Some(total) = state.participation[index]
++                            .completed_sweep_columns
++                            .checked_add(self.dimension)
++                        {
++                            state.participation[index].completed_sweep_columns = total;
++                        } else {
++                            state.overflow = true;
++                        }
++                    }
++                    state.current = None;
++                }
++            }
++        });
++    }
++}
++impl Drop for Observation {
++    fn drop(&mut self) {
++        self.end(false);
++    }
++}
++
+ impl Session {
+     pub fn finish(self) -> Result<Corpus, CaptureError> {
+         ACTIVE.with(|active| {
+             let state = active.borrow_mut().take().ok_or(CaptureError::NotActive)?;
++            if state.live != 0 {
++                return Err(CaptureError::LiveScopes);
++            }
+             if state.overflow {
+                 return Err(CaptureError::Overflow);
+             }
+@@ -286,7 +722,9 @@
+                 schema: SCHEMA.to_owned(),
+                 first: state.first.into_iter().flatten().collect(),
+                 last: state.last.into_iter().flatten().collect(),
++                participation: state.participation,
+             };
++            corpus.validate_participation()?;
+             if !(corpus.first.is_empty() && corpus.last.is_empty()) {
+                 corpus.validate()?;
+             }
+@@ -298,7 +736,13 @@
+ impl Drop for Session {
+     fn drop(&mut self) {
+         ACTIVE.with(|active| {
+-            active.borrow_mut().take();
++            let mut active = active.borrow_mut();
++            if active
++                .as_ref()
++                .is_some_and(|state| Rc::ptr_eq(&state.generation, &self.generation))
++            {
++                active.take();
++            }
+         });
+     }
+ }
+@@ -308,6 +752,163 @@
+     use super::*;
+ 
+     #[test]
++    fn live_finish_and_stale_drops_cannot_poison_a_new_session() {
++        let session = begin(1).expect("old session");
++        let stale = solve(Family::Covered, false);
++        assert_eq!(session.finish(), Err(CaptureError::LiveScopes));
++        let session = begin(1).expect("new session");
++        drop(stale);
++        let current = solve(Family::GenericV3, true);
++        current.finish(true);
++        let corpus = session.finish().expect("unpoisoned new session");
++        assert_eq!(corpus.participation.len(), 1);
++        assert_eq!(
++            corpus.participation[0].counts,
++            Counts {
++                started: 1,
++                completed: 1,
++                failed: 0
++            }
++        );
++
++        let abandoned = begin(1).expect("abandoned session");
++        let stale = solve(Family::Covered, false);
++        drop(abandoned);
++        let replacement = begin(1).expect("replacement");
++        stale.finish(true);
++        assert!(
++            replacement
++                .finish()
++                .expect("no stale writes")
++                .participation
++                .is_empty()
++        );
++    }
++
++    #[test]
++    fn participation_rejects_bad_buckets_counts_and_missing_columns() {
++        let session = begin(1).expect("session");
++        let solve = solve(Family::GenericV3, false);
++        ACTIVE.with(|active| {
++            active.borrow_mut().as_mut().expect("active").current =
++                Some((Family::GenericV3, Pass::Potential, vec![[1.0; 4]; 2], 25))
++        });
++        let sweep = sweep();
++        for index in 0..25 {
++            column(index, false).finish(true);
++        }
++        sweep.finish(true);
++        solve.finish(true);
++        let corpus = session.finish().expect("dimension-complete capture");
++        corpus.validate_participation().expect("valid");
++        let mut corrupt = corpus.clone();
++        corrupt.participation.push(corrupt.participation[0].clone());
++        assert!(corrupt.validate_participation().is_err());
++        for (field, value) in [
++            ("group", "arbitrary"),
++            ("area", "negative"),
++            ("method", "identity_anchor"),
++        ] {
++            let mut corrupt = corpus.clone();
++            let row = corrupt
++                .participation
++                .iter_mut()
++                .find(|row| row.group == "sun")
++                .expect("sun");
++            match field {
++                "group" => row.group = value.into(),
++                "area" => row.area = value.into(),
++                _ => row.method = value.into(),
++            }
++            assert!(corrupt.validate_participation().is_err());
++        }
++        let mut corrupt = corpus.clone();
++        corrupt.participation[0].counts.completed = u64::MAX;
++        corrupt.participation[0].counts.failed = 1;
++        assert!(corrupt.validate_participation().is_err());
++        let mut corrupt = corpus;
++        let row = corrupt
++            .participation
++            .iter_mut()
++            .find(|row| row.group == "sun")
++            .expect("sun");
++        row.counts.started -= 1;
++        row.counts.completed -= 1;
++        assert!(
++            corrupt.validate_participation().is_err(),
++            "balanced but missing column fails dimension reconciliation"
++        );
++    }
++
++    #[test]
++    fn observer_counter_overflow_fails_closed() {
++        let session = begin(1).expect("session");
++        ACTIVE.with(|active| active.borrow_mut().as_mut().expect("active").overflow = true);
++        assert_eq!(session.finish(), Err(CaptureError::Overflow));
++        begin(1)
++            .expect("replacement")
++            .finish()
++            .expect("new generation is clean");
++    }
++
++    #[test]
++    fn actual_column_participation_is_bounded_and_reconciles_failures() {
++        let session = begin(1).expect("begin");
++        let solve = solve(Family::Covered, true);
++        ACTIVE.with(|active| {
++            active.borrow_mut().as_mut().expect("active").current = Some((
++                Family::Covered,
++                Pass::FixedFinal,
++                vec![[1.0, 0.0, 2.0, 0.0]; 30],
++                305,
++            ))
++        });
++        let sweep = sweep();
++        for _ in 0..10 {
++            column(6, false).finish(true);
++            column(17, false).finish(true);
++            column(29, true).finish(true);
++            column(32, false).finish(true);
++        }
++        drop(column(8, false));
++        drop(sweep);
++        solve.finish(false);
++        let corpus = session.finish().expect("finish");
++        assert_eq!(
++            corpus.participation.len(),
++            7,
++            "bounded by families, not visits/topology"
++        );
++        for row in &corpus.participation {
++            assert_eq!(row.counts.started, row.counts.completed + row.counts.failed);
++        }
++        let sun = corpus
++            .participation
++            .iter()
++            .find(|row| row.group == "sun")
++            .expect("sun");
++        assert_eq!(
++            (sun.area.as_str(), sun.method.as_str(), sun.counts.completed),
++            ("positive", "finite_difference", 10)
++        );
++        let shade = corpus
++            .participation
++            .iter()
++            .find(|row| row.group == "shade")
++            .expect("shade");
++        assert_eq!(
++            (shade.area.as_str(), shade.method.as_str()),
++            ("zero", "finite_difference")
++        );
++        let wet = corpus
++            .participation
++            .iter()
++            .find(|row| row.group == "wet")
++            .expect("wet");
++        assert_eq!(wet.counts.failed, 1);
++    }
++
++    #[test]
+     fn bounds_and_session_ownership_fail_closed() {
+         assert!(matches!(begin(0), Err(CaptureError::InvalidBound)));
+         let session = begin(2).expect("begin bounded capture");
+--- a/crates/openwepp-land-surface-energy/src/solver_litter_phase.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_litter_phase.rs
+@@ -18,7 +18,7 @@
+     pub nonlinear_phase_evaluation_count: u8,
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+ pub struct V3LitterResidualContext {
+     pub configuration: LitterPhaseConfiguration,
+     pub beginning: BeginningLitterPhaseState,
+@@ -42,7 +42,7 @@
+     pub reconstructed_energy_residual_w_m2: f64,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+ pub struct V3PhaseFreeCoveredEvaluation {
+     pub predecessor: CoveredColumnEvaluation,
+     pub vapor: LitterVaporReceipt,
+@@ -223,6 +223,13 @@
+         .zip(&coordinate_scales)
+         .map(|(unit, scale)| unit / scale)
+         .collect();
++    let solve_observation =
++        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Solve);
++    #[cfg(any(test, feature = "test-support"))]
++    let capture_solve = crate::solver_residual_corpus_capture::solve(
++        crate::solver_residual_corpus_capture::Family::GenericV3,
++        caps.is_some(),
++    );
+     let result = solve_normalized_system_with_adjustment(
+         |scaled: &[f64], frozen: Option<&CoveredFrozenBranches>| {
+             let physical = physical_trial(scaled, &coordinate_scales);
+@@ -240,19 +247,28 @@
+             crate::solver::covered_trial_is_valid(&physical, column.occupancies.len(), false)
+         },
+         freeze_v3_covered_branches,
+-        |trial, detail, _, jacobian, right_hand_side| {
++        |trial, detail, frozen, sweep| {
++            #[cfg(not(any(test, feature = "test-support")))]
++            let _ = (trial, detail, frozen, sweep);
+             #[cfg(any(test, feature = "test-support"))]
+             if crate::solver_residual_corpus_capture::is_active() {
+-                let solve = crate::solver_mechanism_audit::Scope::new(
+-                    crate::solver_mechanism_audit::Kind::Solve,
+-                );
+-                crate::solver_mechanism_audit::iteration(0);
+-                let sweep = crate::solver_mechanism_audit::Scope::new(
+-                    crate::solver_mechanism_audit::Kind::Sweep,
+-                );
+                 if let Some(lifecycle) = sweep.lifecycle_identity() {
+                     crate::solver_residual_corpus_capture::record(
+                         crate::solver_residual_corpus_capture::Snapshot {
++                            family: crate::solver_residual_corpus_capture::Family::GenericV3,
++                            v3: Some(crate::solver_residual_corpus_capture::V3Capture {
++                                context,
++                                evaluation: detail.clone(),
++                                scaled_x_bits: trial.iter().map(|value| value.to_bits()).collect(),
++                                coordinate_scale_bits: coordinate_scales
++                                    .iter()
++                                    .map(|value| value.to_bits())
++                                    .collect(),
++                                scaled_unit_bits: scaled_units
++                                    .iter()
++                                    .map(|value| value.to_bits())
++                                    .collect(),
++                            }),
+                             lifecycle,
+                             pass: if caps.is_some() {
+                                 crate::solver_residual_corpus_capture::Pass::FixedFinal
+@@ -265,14 +281,14 @@
+                                 .iter()
+                                 .map(|value| value.to_bits())
+                                 .collect(),
+-                            frozen: freeze_v3_covered_branches(detail),
++                            frozen: frozen.clone(),
+                             base_evaluation: detail.predecessor.clone(),
+                         },
+                     );
+                 }
+-                sweep.finish(Ok::<(), LandSurfaceEnergyError>(()))?;
+-                solve.finish(Ok::<(), LandSurfaceEnergyError>(()))?;
+             }
++        },
++        |trial, detail, _, jacobian, right_hand_side| {
+             adjust_v3_inactive_coordinates(
+                 column,
+                 &coordinate_scales,
+@@ -283,7 +299,13 @@
+                 right_hand_side,
+             )
+         },
+-    )?;
++    );
++    #[cfg(any(test, feature = "test-support"))]
++    capture_solve.finish(matches!(
++        &result,
++        Ok(NormalizedSolveOutcome::Accepted { .. })
++    ));
++    let result = solve_observation.finish(result)?;
+     Ok(match result {
+         NormalizedSolveOutcome::Accepted {
+             solution,
+--- a/crates/openwepp-land-surface-energy/src/numerics.rs
++++ b/crates/openwepp-land-surface-energy/src/numerics.rs
+@@ -187,6 +187,8 @@
+         .collect();
+     let mut jacobian = vec![vec![0.0; x.len()]; x.len()];
+     for column in 0..x.len() {
++        #[cfg(any(test, feature = "test-support"))]
++        let capture_column = crate::solver_residual_corpus_capture::column(column, false);
+         let mut minus = x.to_vec();
+         let mut plus = x.to_vec();
+         minus[column] -= perturbations[column];
+@@ -220,6 +222,8 @@
+                 }
+             };
+         }
++        #[cfg(any(test, feature = "test-support"))]
++        capture_column.finish(true);
+     }
+     Ok(jacobian)
+ }
+@@ -298,6 +302,7 @@
+         unit_scales,
+         valid_trial,
+         freeze_branches,
++        |_, _, _, _| {},
+         |_: &[f64],
+          _: &D,
+          _: &[f64],
+@@ -308,12 +313,13 @@
+ }
+ 
+ #[allow(clippy::too_many_lines)]
+-pub(crate) fn solve_normalized_system_with_adjustment<D, B, E, V, F, A>(
++pub(crate) fn solve_normalized_system_with_adjustment<D, B, E, V, F, O, A>(
+     mut evaluator: E,
+     initial: Vec<f64>,
+     unit_scales: &[f64],
+     mut valid_trial: V,
+     mut freeze_branches: F,
++    mut observe_sweep: O,
+     mut adjust_linear_system: A,
+ ) -> Result<NormalizedSolveOutcome<D>, LandSurfaceEnergyError>
+ where
+@@ -321,6 +327,7 @@
+     E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
+     V: FnMut(&[f64]) -> bool,
+     F: FnMut(&D) -> B,
++    O: FnMut(&[f64], &D, &B, &crate::solver_mechanism_audit::Scope),
+     A: FnMut(&[f64], &D, &[f64], &mut [Vec<f64>], &mut [f64]) -> Result<(), LandSurfaceEnergyError>,
+     B: Clone,
+ {
+@@ -332,6 +339,7 @@
+     let mut matrix_norm = None;
+     let mut history = Vec::new();
+     for iteration in 0..=MAX_NEWTON_ITERATIONS {
++        crate::solver_mechanism_audit::iteration(iteration);
+         let (normalized, detail) = evaluator(&x, None)?;
+         if normalized.len() != x.len() || normalized.iter().any(|value| !value.is_finite()) {
+             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+@@ -364,6 +372,11 @@
+             ));
+         }
+         let frozen = freeze_branches(&detail);
++        let mut sweep_observation =
++            crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Sweep);
++        observe_sweep(&x, &detail, &frozen, &sweep_observation);
++        #[cfg(any(test, feature = "test-support"))]
++        let capture_sweep = crate::solver_residual_corpus_capture::sweep();
+         let mut jacobian = bounded_jacobian(
+             &mut evaluator,
+             &mut valid_trial,
+@@ -372,6 +385,10 @@
+             unit_scales,
+             &frozen,
+         )?;
++        #[cfg(any(test, feature = "test-support"))]
++        capture_sweep.finish(true);
++        sweep_observation.complete();
++        drop(sweep_observation);
+         let mut right_hand_side: Vec<f64> = normalized.iter().map(|value| -value).collect();
+         adjust_linear_system(
+             &x,
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+@@ -514,12 +514,23 @@
+ ) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
+     let observation =
+         crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Solve);
+-    observation.finish(solve_covered_column_observed(
++    #[cfg(any(test, feature = "test-support"))]
++    let capture = crate::solver_residual_corpus_capture::solve(
++        crate::solver_residual_corpus_capture::Family::Covered,
++        caps.is_some(),
++    );
++    let result = solve_covered_column_observed(
+         beginning,
+         caps,
+         initial_trial,
+         allow_v10_initial_final_acceptance,
+-    ))
++    );
++    #[cfg(any(test, feature = "test-support"))]
++    capture.finish(matches!(
++        &result,
++        Ok(CoveredColumnSolveOutcome::Accepted(..))
++    ));
++    observation.finish(result)
+ }
+ 
+ fn solve_covered_column_observed(
+@@ -596,6 +607,8 @@
+         if let Some(lifecycle) = sweep_observation.lifecycle_identity() {
+             crate::solver_residual_corpus_capture::record(
+                 crate::solver_residual_corpus_capture::Snapshot {
++                    family: crate::solver_residual_corpus_capture::Family::Covered,
++                    v3: None,
+                     lifecycle,
+                     pass: if jacobian_base.validated.caps.is_some() {
+                         crate::solver_residual_corpus_capture::Pass::FixedFinal
+@@ -614,6 +627,8 @@
+                 },
+             );
+         }
++        #[cfg(any(test, feature = "test-support"))]
++        let capture_sweep = crate::solver_residual_corpus_capture::sweep();
+         let detail = &jacobian_base.evaluation;
+         let units: Vec<f64> = (0..beginning.occupancies.len())
+             .flat_map(|_| [1000.0, 1000.0, 1000.0, 1000.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+@@ -634,6 +649,14 @@
+             ground_uses_liquid_vapor_phase_domain,
+         );
+         for column_index in 0..x.len() {
++            #[cfg(any(test, feature = "test-support"))]
++            let capture_column = crate::solver_residual_corpus_capture::column(
++                column_index,
++                !force_complete_covered_jacobian_probes()
++                    && validated_evaluation_inputs
++                        .stage3_identity_anchor_k(column_index)
++                        .is_some(),
++            );
+             let mut minus = x.clone();
+             let mut plus = x.clone();
+             minus[column_index] -= perturbations[column_index];
+@@ -688,7 +711,11 @@
+                     perturbations[column_index],
+                 )?;
+             }
++            #[cfg(any(test, feature = "test-support"))]
++            capture_column.finish(true);
+         }
++        #[cfg(any(test, feature = "test-support"))]
++        capture_sweep.finish(true);
+         sweep_observation.complete();
+         drop(sweep_observation);
+         let mut rhs: Vec<f64> = detail
+--- a/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
++++ b/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
+@@ -59,6 +59,109 @@
+         )
+         .expect("exact corpus wire reload");
+     assert_eq!(replayed, corpus, "native corpus must replay bit-exactly");
++    assert_eq!(
++        replayed.to_wire_bytes().expect("re-encode native bits"),
++        bytes
++    );
++    for snapshot in replayed.first.iter().chain(&replayed.last) {
++        snapshot
++            .replay()
++            .expect("complete authentic evaluator base replay");
++        if snapshot.v3.is_some() {
++            let mut missing_context = snapshot.clone();
++            missing_context.v3 = None;
++            assert!(missing_context.validate().is_err());
++            let v3 = snapshot.v3.as_ref().expect("V3");
++            for index in 0..snapshot.x_bits.len() {
++                assert_eq!(
++                    (f64::from_bits(v3.scaled_x_bits[index])
++                        * f64::from_bits(v3.coordinate_scale_bits[index]))
++                    .to_bits(),
++                    snapshot.x_bits[index]
++                );
++            }
++            let mut bad_units = snapshot.clone();
++            bad_units.v3.as_mut().expect("V3").scaled_unit_bits[0] = 0;
++            assert!(bad_units.validate().is_err());
++            let mut missing_scaled = snapshot.clone();
++            missing_scaled.v3.as_mut().expect("V3").scaled_x_bits.pop();
++            assert!(missing_scaled.validate().is_err());
++        }
++        let invalid_evaluation = || {
++            if let Some(v3) = &snapshot.v3 {
++                openwepp_land_surface_energy::evaluate_v3_phase_free_covered_column(
++                    &snapshot.inputs,
++                    &[],
++                    snapshot.caps.as_ref(),
++                    Some(&snapshot.frozen),
++                    v3.context,
++                )
++                .map(|_| ())
++            } else {
++                openwepp_land_surface_energy::evaluate_covered_column(
++                    &snapshot.inputs,
++                    &[],
++                    snapshot.caps.as_ref(),
++                    Some(&snapshot.frozen),
++                )
++                .map(|_| ())
++            }
++        };
++        let original_error = invalid_evaluation().expect_err("invalid trial shape");
++        let observer = openwepp_land_surface_energy::solver_residual_corpus_capture::begin(1)
++            .expect("observation on for same-state replay");
++        assert_eq!(
++            invalid_evaluation().expect_err("same invalid trial shape"),
++            original_error,
++            "observation preserves first typed evaluator error"
++        );
++        snapshot
++            .replay()
++            .expect("same-state exact replay with observation active");
++        assert!(
++            observer
++                .finish()
++                .expect("replay has no solves")
++                .participation
++                .is_empty()
++        );
++    }
++    assert!(!corpus.participation.is_empty());
++    for row in &corpus.participation {
++        assert_eq!(
++            row.counts.started,
++            row.counts.completed + row.counts.failed,
++            "every actual lifecycle must end: {row:?}"
++        );
++    }
++    for family in [
++        openwepp_land_surface_energy::solver_residual_corpus_capture::Family::Covered,
++        openwepp_land_surface_energy::solver_residual_corpus_capture::Family::GenericV3,
++    ] {
++        let sweeps: u64 = corpus
++            .participation
++            .iter()
++            .filter(|row| row.family == family && row.group == "sweep")
++            .map(|row| row.counts.started)
++            .sum();
++        let columns: u64 = corpus
++            .participation
++            .iter()
++            .filter(|row| row.family == family && row.method != "lifecycle")
++            .map(|row| row.counts.started)
++            .sum();
++        let expected_columns: u64 = corpus
++            .participation
++            .iter()
++            .filter(|row| row.family == family && row.group == "sweep")
++            .map(|row| row.expected_columns)
++            .sum();
++        assert!(sweeps > 0, "authentic family participation {family:?}");
++        assert_eq!(
++            columns, expected_columns,
++            "all authentic sweep dimensions reconciled {family:?}"
++        );
++    }
+     let authentic = corpus.first.first().expect("first authentic snapshot");
+     let mut wrong_cardinality = authentic.clone();
+     wrong_cardinality.x_bits.pop();

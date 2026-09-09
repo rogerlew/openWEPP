@@ -4,6 +4,12 @@ Current-work locator: [active index](active.md). Start there and at the named
 package handoff; this catalog preserves historical evidence. Prospective rules
 in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
+## 20260908-stage3-hotpath-jacobian-reference-and-prototype-001
+
+EXECUTING: integrated reference correction, isolated hot-path derivative prototype,
+and authentic consumer/cost evaluation. Production HOLD. See
+[package](20260908-stage3-hotpath-jacobian-reference-and-prototype-001/package.md).
+
 ## 20260908-stage3-residual-jacobian-prototype-001
 
 COMPLETE — `INCONCLUSIVE_WITH_BOUND`: the contract-first isolated A-versus-J experiment
