@@ -1,6 +1,6 @@
 # Integrated hot-path Jacobian reference and prototype
 
-Status: executing; production HOLD. Execution date: 2026-09-08 America/Los_Angeles.
+Status: executed-HOLD; production HOLD. Execution date: 2026-09-08 America/Los_Angeles.
 
 ## Objective and authorization
 Execute /tmp/openwepp_hotpath_derivative_execution_authorization.md end-to-end:
@@ -96,6 +96,10 @@ measurements require comparator_suite_runner; serialize all heavy windows.
 
 ## Progress, decisions and recovery
 The authoritative current state, surprises, decisions, exact next action and
-outstanding gates live in artifacts/worker-handoff.md. Outcome is pending.
+outstanding gates live in artifacts/worker-handoff.md. J is implemented and
+evaluated: REJECTED_IMPLEMENTATION under the frozen memory-priority rule.
+This engineering result does not pass the remaining broad correctness gates;
+dual terminal reviews and stable-cut verifications pass for executed-HOLD
+handoff, not full-green completion or production qualification.
 Do not close while safe authorized work remains; exhaust applicable references
 and the named alternative before a numerical-boundary disposition.

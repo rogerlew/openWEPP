@@ -6,8 +6,8 @@ in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
 ## 20260908-stage3-hotpath-jacobian-reference-and-prototype-001
 
-EXECUTING: integrated reference correction, isolated hot-path derivative prototype,
-and authentic consumer/cost evaluation. Production HOLD. See
+EXECUTED HOLD: isolated J implemented and evaluated; 9.44x local acceleration,
+0.423% whole-run savings, rejected by frozen memory bound. Production HOLD. See
 [package](20260908-stage3-hotpath-jacobian-reference-and-prototype-001/package.md).
 
 ## 20260908-stage3-residual-jacobian-prototype-001

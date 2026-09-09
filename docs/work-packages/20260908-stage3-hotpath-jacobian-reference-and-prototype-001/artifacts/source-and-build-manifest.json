@@ -1,9 +1,81 @@
 {
-  "status": "observation cut1 executed; cut2 corrections frozen, tests and re-review NOT RUN",
+  "status": "J cut3 implemented, scientifically admitted15/15 and measured; engineering REJECTED_IMPLEMENTATION for memory-priority FAIL; terminal cut4 formatting-only; package/production HOLD",
+  "cut2": {
+    "corpus": "/tmp/openwepp-hotpath-jacobian-jmvOZh/authentic-corpus-v2-cut2.json",
+    "corpus_sha256": "000e59189d62fdc20a89fcefb80ecf62fdb060b7b3e8c8afa99a37bd92c932ec",
+    "focused_log": "/tmp/openwepp-hotpath-jacobian-jmvOZh/capture-tests-cut2.log",
+    "authentic_log": "/tmp/openwepp-hotpath-jacobian-jmvOZh/authentic-capture-cut2.log",
+    "complete_source_prebundle": "/tmp/openwepp-hotpath-jacobian-jmvOZh/complete-cut2-prebundle",
+    "prebundle_manifest_sha256": "63ccc1689dc464ef3b8dbdad6b431c537626ba350c8f043d7ddf26340f6299cb",
+    "source_members": 10154,
+    "source_archive_sha256": "089aa22e1368eef455dca3245556294fa64cf412378af30b90af9b055ad46bd3",
+    "postbundle": "/tmp/openwepp-hotpath-jacobian-jmvOZh/complete-cut2-postbundle",
+    "postbundle_manifest_sha256": "f9ca5d275867c824d39acd8c6addd54dbb36fdce9c80d59bd029aa0282c077c9",
+    "release_executable_sha256": "b6009629d4e97d2dd26a41a86f056b8b014aefb05dca0d68b7a86e52004cf9d9",
+    "custody_limit": "Resolved explicit source archive plus member index; extract separately. Postbundle retains exact executable/corpus/logs and verified exit0. External toolchain/dependency caches remain external; no bit-reproducible rebuild claim."
+  },
   "cut2_patch": "artifacts/reproduction/observation-cut2.patch",
   "cut2_patch_base": "/tmp/openwepp-residual-jacobian-FC2T1v/J; not repository HEAD",
   "initial_head": "f4c99675166fc620fb2c5d58ab13bf1435dc1a0c",
-  "candidate": "NOT IMPLEMENTED",
+  "candidate": "isolated J IMPLEMENTED and EVALUATED; measured cut3 numerical15/15, exact consumer/audit admission PASS; local9.444662x, one-OFE0.422922% savings; repeated-run memory-priority FAIL",
+  "candidate_source": "/tmp/openwepp-hotpath-jacobian-jmvOZh/J",
+  "candidate_target": "/workdir/.cache/openwepp/targets/J-fd4da896059c",
+  "candidate_patch": {
+    "path": "artifacts/reproduction/j-prototype-cut3.patch",
+    "sha256": "5677b3820ac14906cae9a68238e6b20580fa90aa21a4bb6380b0d32705f7afe6",
+    "base": "frozen A-cut2b archive, NOT repository HEAD",
+    "target": "frozen J-cut3 archive; 15 declared LSE Rust files and runner harness only",
+    "verification": "zero-fuzz application to temporary exact A inputs; all16 outputs bit-identical to J",
+    "file_manifest": "/tmp/openwepp-hotpath-jacobian-jmvOZh/j-prototype-cut3-patch-manifest.json",
+    "limits": "experimental source evidence only; authority/reader/support composition available in full source archive; no production activation"
+  },
+  "candidate_runner": {
+    "status": "rebuilt frozen cut3; release numerical15/15 and actual/audit1/1 each PASS; exact A identity matches",
+    "binary": "/workdir/.cache/openwepp/targets/J-fd4da896059c/release/deps/openwepp_runner-682944f41aa5eb67",
+    "sha256": "8493e547df4829e28a1cd784d93a51660347d98ac7256796b1e6544f55f9a145",
+    "sidecar_sha256": "9fe8c69d7d8aaf37bf242e02bc0bdf574bd9e955fce71a1d0247bf393d24ab71",
+    "build_log": "/tmp/openwepp-hotpath-jacobian-jmvOZh/j-release-cut3-build.log",
+    "flags": "cargo test --release -p openwepp-runner -p openwepp-land-surface-energy --lib --no-run; CARGO_PROFILE_RELEASE_LTO=false; RUST_MIN_STACK=67108864; Nix1.95.0",
+    "metadata_log": "/tmp/openwepp-hotpath-jacobian-jmvOZh/j-cut3-sidecar-refresh.log",
+    "metadata_friction": "First refresh mistakenly targeted CLI; retained as invalid test-runner metadata evidence. Corrected exact test-binary refresh succeeded and did not change executable bytes. Helper CLI build omitted LTO override; helper is metadata-only, not performance executable."
+  },
+  "candidate_source_snapshot": {
+    "directory": "/tmp/openwepp-hotpath-jacobian-jmvOZh/j-source-cut3",
+    "source_manifest": "/tmp/openwepp-hotpath-jacobian-jmvOZh/j-source-cut3/source-manifest.json",
+    "source_manifest_sha256": "9d094574d7dba275e68d929d9c37732dbe3c98574664c9ea5f3cfcdf33a89a3b",
+    "source_members": 37386,
+    "source_identity": "7b5133c93de4c827d54945e265b94235834bffef4eb21ec62942b3c377930d57",
+    "archive_sha256": "a5d278b1f88cb3ee731f1fe4ad88b45a2c26090242329139e74446750a70271f",
+    "archive_bytes": 3360081920,
+    "verification": "all37386 archive members independently verified against exact current-byte index",
+    "composition": "cut2 selection plus six explicit additions (reader/parser and four documents), 15 changed prior members, no deletions; four tracked Python bytecode caches excluded",
+    "limits": "Measured source-cut3 bound to candidate_premeasurement_custody; terminalcut4 differs only in root integration-test wrapping, no performance-source change. External Nix/Cargo registry and J/.venv -> /workdir/openWEPP/.venv Python3.12.14 unbundled. Archive extraction required, no bit-rebuild proof. Earlier source-only stage remains preserved, not current admission status."
+  },
+  "candidate_premeasurement_custody": {
+    "bundle": "/tmp/openwepp-hotpath-jacobian-jmvOZh/j-premeasurement-cut3-bundle",
+    "manifest_sha256": "c46d377da247be92eaeb21f114fc58b6a7e7d3ca8f36182db3a3da80e17bf3a0",
+    "capture_exit": 0,
+    "independent_verification_exit": 0,
+    "source_recheck": "all37386 selected current members match frozen index before staging",
+    "groups": {"source":8,"executable":5,"fixture":2,"protocol":10,"result":45},
+    "lse_test_binary": "/workdir/.cache/openwepp/targets/J-fd4da896059c/release/deps/openwepp_land_surface_energy-29dc6221b95c33c1",
+    "lse_test_sha256": "69b87a51a6c87ca49fe09a81ebe901cfddc38b635a467928f66c6bcad9a1a093",
+    "limits": "preserves full2 FAIL/INTERRUPTED and pending retry; later format/runner lint logs supplemental; no full qualification or bit-rebuild claim"
+  },
+  "baseline_cut2b": {
+    "bundle": "/tmp/openwepp-hotpath-jacobian-jmvOZh/complete-cut2b-bundle",
+    "manifest_sha256": "ef8dd7289dcff42d43d9e9f53546d312c5dec745cb53ee815d9dac4c897ebf64",
+    "source_member_index_sha256": "0d9e28eb3087a1944a5ff7969eb3120f6269d934509c67c25106292af5edfc84",
+    "release_executable_sha256": "6282f2cb0c7ebfc14f75e860c1cb416fde7db19cda222299617169f61e81bd67",
+    "focused_tests": "8 passed",
+    "observer_equivalence": "1 passed; four family/pass successes and post-entry failures",
+    "review": "independent capture re-review PASS",
+    "sidecar": "canonically refreshed after CLI build, SHA256 9989abbf02b7e1072718a08745c991e40938670dab34e4fbae692a3057f3d4bd; old invalid sidecar retained in historical bundle",
+    "actual_admission": "/tmp/openwepp-hotpath-jacobian-jmvOZh/a-actual-admission.log",
+    "admission_identity": "/tmp/openwepp-hotpath-jacobian-jmvOZh/a-admission-identity.json",
+    "source_manifest": "artifacts/reproduction/source-a-cut2b.json",
+    "current_source_recheck": "all10154 retained members checked, zero mismatches"
+  },
   "builds": [{
     "arm": "A observation cut1",
     "source": "/tmp/openwepp-hotpath-jacobian-jmvOZh/A",
@@ -22,7 +94,27 @@
     "bundle_verification_exit":0,
     "custody_limit": "Five observation source files, debug/release test binaries, protocol, legacy/current corpus and logs; remaining baseline/toolchain external. Not complete candidate rebuild evidence."
   }],
-  "measurements": [],
+  "terminal_formatting_cut4": {
+    "status": "frozen; not measured; terminal custody captured and independently verified; dual package verification PASS for executed-HOLD",
+    "terminal_bundle": "/tmp/openwepp-hotpath-jacobian-jmvOZh/j-terminal-bundle",
+    "terminal_bundle_manifest_sha256": "17fbc3a85c9c53088734975f19999890e61d9cf52ba7cebe280e512f46f04764",
+    "source_identity": "0c582dd73d12434faf2d0394f320c5247633f1966538b347844dbe78bb9df70a",
+    "capture_exit": 0,
+    "independent_bundle_verification_exit": 0,
+    "restore": "Safe measured-cut3 archive extraction plus exact single-file formatting overlay, followed by full cut4 index verification; not a measured cut4 or bit-rebuild claim",
+    "terminal_execution": "Collectors completed; no pending heavy run. Matched A triage completed with five exact matching inherited typed failures; remaining broad failures unattributed. READ-A01 independently CLOSED after late parent reading; dual stable-cut package verification PASS for rejected/executed-HOLD, not complete.",
+    "changed_path": "tests/integration/land_surface_energy_balance_authority_contract.rs",
+    "sha256": "ddce942406d6f84477fdab66cb7f958822d00118bc8e6ab03f452bc4e4865acf",
+    "change": "wrapping only at three locations; seven assertions and strings unchanged; primary/J match",
+    "validation": "j-terminal-format.log: exact27-file rustfmt and primary/J diff checks PASS;16/16 performance Rust hashes unchanged"
+  },
+  "measurements": [
+    {"series":"local", "log":"/tmp/openwepp-hotpath-jacobian-jmvOZh/j-cut3-local-cost.log", "log_sha256":"0ef2ca8e4ff75dc3103b46e1607feefed11bda479d385b1ed71d27110a6a2793", "analysis":"/tmp/openwepp-hotpath-jacobian-jmvOZh/j-cut3-local-cost-analysis.json", "pairs":30, "warmups_per_arm":2, "repetitions":4096, "valid_attempt":0, "status":"PASS"},
+    {"series":"one-ofe", "results":"/tmp/openwepp-hotpath-jacobian-jmvOZh/j-cut3-one-ofe-series/results.jsonl", "analysis":"/tmp/openwepp-hotpath-jacobian-jmvOZh/j-cut3-one-ofe-analysis.json", "pairs":12, "warmup_processes":4, "valid_processes":28, "status":"PASS; small measured benefit, not full qualification"},
+    {"series":"memory", "results":"/tmp/openwepp-hotpath-jacobian-jmvOZh/j-cut3-memory-series/results.jsonl", "analysis":"/tmp/openwepp-hotpath-jacobian-jmvOZh/j-cut3-memory-analysis.json", "pairs":6, "valid_processes":12, "status":"PASS bounded matched peaks; outer collector exit UNOBSERVED"},
+    {"series":"teardown", "results":"/tmp/openwepp-hotpath-jacobian-jmvOZh/j-cut3-teardown-series/results.jsonl", "analysis":"/tmp/openwepp-hotpath-jacobian-jmvOZh/j-cut3-teardown-analysis.json", "pairs":3, "valid_processes":6, "runs_per_process":10, "status":"valid60 runs; memory-priority FAIL; outer collector exit UNOBSERVED after agent service limit"},
+    {"series":"ten-ofe-admission", "baseline":"/tmp/openwepp-hotpath-jacobian-jmvOZh/a-cut3-ten-ofe-admission.log", "candidate":"/tmp/openwepp-hotpath-jacobian-jmvOZh/j-cut3-ten-ofe-admission.log", "status":"bothPASS/exact identity/J2924columns; NOT scale timing qualification"}
+  ],
   "exact_initial_write_set": [
     "docs/work-packages/20260908-stage3-hotpath-jacobian-reference-and-prototype-001/package.md",
     "docs/work-packages/20260908-stage3-hotpath-jacobian-reference-and-prototype-001/prompts/active/kickoff.md",

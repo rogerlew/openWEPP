@@ -31,11 +31,19 @@ reread INV-021..026 after truncation). Binding-index read completely, including
 separately reread schema/kernel mapping gap. Audit-details purpose/scope/sources
 and complete numerical-presentation-reference read. Science-contract-spec,
 unit-governance and correctness-authority-model read completely.
-SC-SNOWENERGY-001 read through line 1355, with lines 600-665 separately
-reread after truncation. A later 1356-1550 exposure was truncated and is NOT
-claimed complete; resume at 1356 in smaller chunks if physical closure scope
-requires it. SC-WATBAL-001 remains unread. These conditional readings remain pending
-and will be expanded when their corresponding claims are made.
+SC-SNOWENERGY-001 parent reading is now complete through line 3559 (EOF).
+Terminal review READ-A01 correctly identified that represented-snow boundary
+admission triggered the whole contract. The remaining 1356-3559 was read at
+terminal review, not before implementation. Truncated exposures were completed
+with smaller reads, including explicit rereads of INV-062/063, the mirrored
+INV-059/060 rows, and change-log versions 53-49. No earlier complete-reading
+claim is made. The tail preserves independent ledgers, same-map custody and
+the active ADR-0044 solver; historical numerical dispatch is not current
+authority. No new physics or prototype correction follows from this read.
+SC-WATBAL-001 remains unread and UNTRIGGERED: Lane-D evidence claims unchanged
+common output/control/operand identity, not independent WB14 ingress partition
+or full cross-owner water qualification. Any such expanded claim must first
+read that authority and execute its obligations.
 
 Numerical primary sources opened: SciML FiniteDiff Step Size Selection and SciPy
 differentiate.derivative official documentation. These support method-dependent

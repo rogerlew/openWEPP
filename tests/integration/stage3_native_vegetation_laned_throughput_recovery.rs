@@ -1256,7 +1256,7 @@ fn snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable() {
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
-            "contract_version: 32",
+            "contract_version: 34",
             "INV-LANDSURFACEENERGY-160",
             "OBL-LANDSURFACEENERGY-C-015",
         ),
@@ -1351,7 +1351,7 @@ fn canonical_covered_pending_adjudication_is_contract_bound() {
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
-            "contract_version: 32",
+            "contract_version: 34",
             "INV-LANDSURFACEENERGY-161",
             "OBL-LANDSURFACEENERGY-C-016",
             "LSE-V27-PENDING-ADJUDICATION",

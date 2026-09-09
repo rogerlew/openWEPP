@@ -43,18 +43,60 @@ fn version_thirty_three_binds_experimental_residual_jacobian_policy() {
         assert!(method.contains(required), "v33 method missing {required}");
     }
 
-    assert!(row(&contract, "INV-LANDSURFACEENERGY-165")
-        .contains("actual normalized canonical residual"));
-    assert!(row(&contract, "OBL-LANDSURFACEENERGY-C-021")
-        .contains("Isolated v33 residual/Jacobian prototype only"));
+    assert!(
+        row(&contract, "INV-LANDSURFACEENERGY-165")
+            .contains("actual normalized canonical residual")
+    );
+    assert!(
+        row(&contract, "OBL-LANDSURFACEENERGY-C-021")
+            .contains("Isolated v33 residual/Jacobian prototype only")
+    );
     let exposure = row(&contract, "LSE-V33-EXPERIMENTAL-RESIDUAL-JACOBIAN");
     assert!(exposure.contains("INV-LANDSURFACEENERGY-165, OBL-LANDSURFACEENERGY-C-021"));
     assert!(exposure.contains("| `maps-to-existing-INV` |"));
-    assert!(contract.contains("| `INV-LANDSURFACEENERGY-165` | numerical-methods.md#INV-LANDSURFACEENERGY-165 |"));
-    assert!(contract.contains("| `OBL-LANDSURFACEENERGY-C-021` | numerical-methods.md#OBL-LANDSURFACEENERGY-C-021 |"));
-    assert!(contract.contains("contract_version: 33"));
+    assert!(contract.contains(
+        "| `INV-LANDSURFACEENERGY-165` | numerical-methods.md#INV-LANDSURFACEENERGY-165 |"
+    ));
+    assert!(contract.contains(
+        "| `OBL-LANDSURFACEENERGY-C-021` | numerical-methods.md#OBL-LANDSURFACEENERGY-C-021 |"
+    ));
+    assert!(contract.contains("2026-09-08 v33:"));
     assert!(contract.contains("It does not activate a production algorithm"));
-    assert!(read(INDEX).contains("v33 prospectively authorizes only the isolated active dry-stem"));
+    assert!(read(INDEX).contains("`SC-LANDSURFACEENERGY-001`"));
+}
+
+#[test]
+fn version_thirty_four_binds_inactive_affine_column_authority() {
+    let contract = read(CONTRACT);
+    assert!(contract.contains("contract_version: 34"));
+    for required in [
+        "# Version 34 experimental inactive-leaf Jacobian",
+        "INV-LANDSURFACEENERGY-166",
+        "OBL-LANDSURFACEENERGY-C-022",
+        "D=10*N+3+S",
+        "j=10*o+6 (sun) or j=10*o+7 (shade)",
+        "successful ordinary same-state evaluation",
+        "positive zero",
+        "GenericV3 replacement vapor/surface/soil rows",
+        "J_y[:,j]=J_x[:,j]*D_scale[j]",
+        "then retain existing inactive-row",
+        "There is no FD retry after derivative entry or failure",
+        "abs(J_ij-reference_ij)+U_ij <= E_ij",
+        "No nonzero second-order remainder or convergence-ratio prerequisite applies",
+        "observation on/off equivalence through actual solvers",
+        "Covered\nPotential and GenericV3 Potential/FixedFinal solves",
+        "Count opportunity is not a runtime fraction",
+        "No production activation",
+        "CALIBRATION_NOT_APPLICABLE",
+    ] {
+        assert!(contract.contains(required), "v34 missing {required}");
+    }
+    assert!(
+        row(&contract, "LSE-V34-INACTIVE-LEAF-JACOBIAN")
+            .contains("INV-LANDSURFACEENERGY-166, OBL-LANDSURFACEENERGY-C-022")
+    );
+    assert!(row(&contract, "INV-LANDSURFACEENERGY-166").contains("coordinate-aware assembly"));
+    assert!(row(&contract, "OBL-LANDSURFACEENERGY-C-022").contains("Isolated v34 package only"));
 }
 
 #[test]
@@ -615,7 +657,7 @@ fn assert_lse_registry_lifecycle(index: &str) {
             "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
         )
     );
-    assert!(lifecycle.contains("| `2026-09-07` |"));
+    assert!(lifecycle.contains("| `2026-09-08` |"));
 }
 
 #[test]
@@ -683,7 +725,7 @@ fn contract_preserves_adjacent_owners_and_rejects_terminal_payload() {
 fn current_version_releases_named_authority_without_production_claims() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 32",
+        "contract_version: 34",
         "status: approved",
         "maturity: active",
         "OPENWEPP_SNOW_FREE_LSE_V1",
@@ -787,7 +829,7 @@ fn version_twenty_four_binds_private_validated_handoffs_and_full_boundary_valida
 fn version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 32",
+        "contract_version: 34",
         "## Carrier Parent-Static and Same-Map Validation-Once Amendment",
         "extends the already admitted private validation-once custody of\n`INV-LANDSURFACEENERGY-159`; it creates no new invariant",
         "private non-Clone, non-wire,\ngeneration-bound structural plan",
@@ -887,7 +929,7 @@ fn version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_i
 fn version_thirty_one_binds_component_temperature_dependency_replay() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 32",
+        "contract_version: 34",
         "## Component-Temperature Jacobian Dependency-Replay Amendment",
         "INV-LANDSURFACEENERGY-164",
         "OBL-LANDSURFACEENERGY-C-020",

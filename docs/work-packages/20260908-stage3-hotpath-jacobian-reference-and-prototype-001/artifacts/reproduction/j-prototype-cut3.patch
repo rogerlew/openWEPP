@@ -1,0 +1,4083 @@
+--- a/crates/openwepp-land-surface-energy/src/error.rs
++++ b/crates/openwepp-land-surface-energy/src/error.rs
+@@ -58,6 +58,8 @@
+     SupportReceipt(&'static str),
+     #[error("constitutive domain violation: {0}")]
+     ConstitutiveDomain(&'static str),
++    #[error("covered Jacobian derivative integrity violation: {0}")]
++    CoveredJacobianDerivativeIntegrity(&'static str),
+     #[error("water identity or bound violation: {detail}")]
+     WaterIdentityOrBound {
+         class: WaterErrorClass,
+@@ -172,6 +174,7 @@
+                 TopologyErrorClass::Cardinality => LandSurfaceEnergyErrorClass::Cardinality,
+             },
+             Self::NonFinite(_)
++            | Self::CoveredJacobianDerivativeIntegrity(_)
+             | Self::ConstitutiveDomain(_)
+             | Self::NumericalSingular { .. }
+             | Self::NumericalBacktrackingLimit { .. }
+--- a/crates/openwepp-land-surface-energy/src/lib.rs
++++ b/crates/openwepp-land-surface-energy/src/lib.rs
+@@ -20,6 +20,8 @@
+ pub mod owner_envelope;
+ pub mod physics;
+ pub mod solver;
++#[cfg(any(test, feature = "test-support"))]
++pub mod solver_accepted_operand_audit;
+ pub mod solver_litter_phase;
+ pub mod solver_mechanism_audit;
+ #[cfg(any(test, feature = "test-support"))]
+--- a/crates/openwepp-land-surface-energy/src/numerics.rs
++++ b/crates/openwepp-land-surface-energy/src/numerics.rs
+@@ -163,6 +163,52 @@
+     None
+ }
+ 
++pub(crate) trait ColumnAssembly {
++    fn assemble(
++        &mut self,
++        column: usize,
++        matrix: &mut [Vec<f64>],
++    ) -> Result<bool, LandSurfaceEnergyError>;
++}
++
++/// Private extension of this solver's one canonical sweep, not a second solver.
++pub(crate) trait JacobianColumns<D, B> {
++    type Sweep<'a>: ColumnAssembly
++    where
++        Self: 'a,
++        D: 'a,
++        B: 'a;
++    fn sweep<'a>(
++        &'a self,
++        trial: &'a [f64],
++        detail: &'a D,
++        frozen: &'a B,
++    ) -> Result<Self::Sweep<'a>, LandSurfaceEnergyError>;
++}
++
++struct FiniteDifferenceColumns;
++impl ColumnAssembly for FiniteDifferenceColumns {
++    fn assemble(&mut self, _: usize, _: &mut [Vec<f64>]) -> Result<bool, LandSurfaceEnergyError> {
++        Ok(false)
++    }
++}
++impl<D, B> JacobianColumns<D, B> for FiniteDifferenceColumns {
++    type Sweep<'a>
++        = Self
++    where
++        D: 'a,
++        B: 'a;
++    fn sweep<'a>(
++        &'a self,
++        _: &'a [f64],
++        _: &'a D,
++        _: &'a B,
++    ) -> Result<Self::Sweep<'a>, LandSurfaceEnergyError> {
++        Ok(Self)
++    }
++}
++
++#[allow(clippy::too_many_arguments)]
+ fn bounded_jacobian<D, B, E, V>(
+     evaluator: &mut E,
+     valid_trial: &mut V,
+@@ -170,6 +216,7 @@
+     current_residual: &[f64],
+     unit_scales: &[f64],
+     frozen: &B,
++    columns: &mut impl ColumnAssembly,
+ ) -> Result<Vec<Vec<f64>>, LandSurfaceEnergyError>
+ where
+     E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
+@@ -187,6 +234,9 @@
+         .collect();
+     let mut jacobian = vec![vec![0.0; x.len()]; x.len()];
+     for column in 0..x.len() {
++        if columns.assemble(column, &mut jacobian)? {
++            continue;
++        }
+         #[cfg(any(test, feature = "test-support"))]
+         let capture_column = crate::solver_residual_corpus_capture::column(column, false);
+         let mut minus = x.to_vec();
+@@ -314,6 +364,35 @@
+ 
+ #[allow(clippy::too_many_lines)]
+ pub(crate) fn solve_normalized_system_with_adjustment<D, B, E, V, F, O, A>(
++    evaluator: E,
++    initial: Vec<f64>,
++    unit_scales: &[f64],
++    valid_trial: V,
++    freeze_branches: F,
++    observe_sweep: O,
++    adjust_linear_system: A,
++) -> Result<NormalizedSolveOutcome<D>, LandSurfaceEnergyError>
++where
++    E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
++    V: FnMut(&[f64]) -> bool,
++    F: FnMut(&D) -> B,
++    O: FnMut(&[f64], &D, &B, &crate::solver_mechanism_audit::Scope),
++    A: FnMut(&[f64], &D, &[f64], &mut [Vec<f64>], &mut [f64]) -> Result<(), LandSurfaceEnergyError>,
++{
++    solve_normalized_system_with_columns(
++        evaluator,
++        initial,
++        unit_scales,
++        valid_trial,
++        freeze_branches,
++        observe_sweep,
++        adjust_linear_system,
++        &FiniteDifferenceColumns,
++    )
++}
++
++#[allow(clippy::too_many_lines, clippy::too_many_arguments)]
++pub(crate) fn solve_normalized_system_with_columns<D, B, E, V, F, O, A, C>(
+     mut evaluator: E,
+     initial: Vec<f64>,
+     unit_scales: &[f64],
+@@ -321,15 +400,15 @@
+     mut freeze_branches: F,
+     mut observe_sweep: O,
+     mut adjust_linear_system: A,
++    column_provider: &C,
+ ) -> Result<NormalizedSolveOutcome<D>, LandSurfaceEnergyError>
+ where
+-    D: Clone,
+     E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
+     V: FnMut(&[f64]) -> bool,
+     F: FnMut(&D) -> B,
+     O: FnMut(&[f64], &D, &B, &crate::solver_mechanism_audit::Scope),
+     A: FnMut(&[f64], &D, &[f64], &mut [Vec<f64>], &mut [f64]) -> Result<(), LandSurfaceEnergyError>,
+-    B: Clone,
++    C: JacobianColumns<D, B>,
+ {
+     validate_solver_shape(&initial, unit_scales)?;
+     let mut x = initial;
+@@ -377,6 +456,7 @@
+         observe_sweep(&x, &detail, &frozen, &sweep_observation);
+         #[cfg(any(test, feature = "test-support"))]
+         let capture_sweep = crate::solver_residual_corpus_capture::sweep();
++        let mut columns = column_provider.sweep(&x, &detail, &frozen)?;
+         let mut jacobian = bounded_jacobian(
+             &mut evaluator,
+             &mut valid_trial,
+@@ -384,7 +464,9 @@
+             &normalized,
+             unit_scales,
+             &frozen,
++            &mut columns,
+         )?;
++        drop(columns);
+         #[cfg(any(test, feature = "test-support"))]
+         capture_sweep.finish(true);
+         sweep_observation.complete();
+--- a/crates/openwepp-land-surface-energy/src/solver.rs
++++ b/crates/openwepp-land-surface-energy/src/solver.rs
+@@ -785,3 +785,18 @@
+ #[cfg(test)]
+ #[path = "solver_tests.rs"]
+ mod tests;
++
++#[cfg(test)]
++#[path = "solver_inactive_jacobian_tests.rs"]
++mod inactive_jacobian_tests;
++
++#[path = "solver_inactive_jacobian.rs"]
++pub(crate) mod inactive_jacobian;
++
++#[cfg(test)]
++#[path = "solver_inactive_jacobian_oracle.rs"]
++pub(crate) mod inactive_jacobian_oracle;
++
++#[cfg(test)]
++#[path = "solver_inactive_jacobian_cost.rs"]
++mod inactive_jacobian_cost;
+--- /dev/null
++++ b/crates/openwepp-land-surface-energy/src/solver_accepted_operand_audit.rs
+@@ -0,0 +1,809 @@
++//! Untimed observation of existing accepted-operand validator invocations.
++//! Candidate construction is not final publication or full soil conservation.
++#![allow(clippy::missing_errors_doc)]
++
++use crate::{
++    CoveredColumnEnergyOperands, CoveredTileEnergyOperandSet, LandSurfaceEnergyError,
++    LitterPhaseReceipt, RuntimeTileIdentity, V3CoveredTileEnergyOperandSet,
++};
++use serde::Serialize;
++use serde_json::{Value, json};
++use std::{cell::RefCell, rc::Rc};
++
++#[derive(Clone, Copy, Debug, Serialize)]
++pub enum Family {
++    Covered,
++    #[serde(rename = "V3CanopyEnergyOnly")]
++    V3Energy,
++    Litter,
++}
++
++#[derive(Clone, Debug, PartialEq)]
++enum Raw {
++    Covered(Box<CoveredTileEnergyOperandSet>),
++    V3(Box<V3CoveredTileEnergyOperandSet>),
++    Litter(Box<LitterPhaseReceipt>),
++}
++
++impl Raw {
++    fn family(&self) -> Family {
++        match self {
++            Self::Covered(_) => Family::Covered,
++            Self::V3(_) => Family::V3Energy,
++            Self::Litter(_) => Family::Litter,
++        }
++    }
++    fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
++        self.finite_arithmetic()?;
++        match self {
++            Self::Covered(value) => {
++                value.validate()?;
++                canonical_shared_limits(
++                    &value.column.occupancies,
++                    value.column.canopy_air,
++                    matches!(
++                        &value.lower_boundary,
++                        crate::CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(_)
++                    ),
++                )
++            }
++            // Copy only the supplied canopy operands into the existing validator
++            // interface. No V1 ground payload replaces V3's litter ledger.
++            Self::V3(value) => {
++                CoveredColumnEnergyOperands {
++                    occupancies: value.occupancies.clone(),
++                    canopy_air: value.canopy_air,
++                    shortwave: value.shortwave.clone(),
++                    longwave: value.longwave.clone(),
++                    stage3_lower_boundary_energy_w_m2_tile: 0.0,
++                    optical_receipt_sha256: None,
++                    reciprocal_longwave_receipt_sha256: None,
++                    final_canopy_boundary_receipt_sha256: None,
++                }
++                .validate()?;
++                canonical_shared_limits(&value.occupancies, value.canopy_air, false)
++            }
++            Self::Litter(value) => crate::validate_litter_phase_receipt(value),
++        }
++    }
++    #[expect(
++        clippy::too_many_lines,
++        reason = "Keep the reviewed branch-specific overflow proof and its single aggregate bound together"
++    )]
++    fn finite_arithmetic(&self) -> Result<(), LandSurfaceEnergyError> {
++        // Arithmetic guard only, never a physical acceptance threshold. Include
++        // every serialized raw numeric operand in the absolute addition bound.
++        let mut bound = numeric_bound(&self.value());
++        let canopy = match self {
++            Self::Covered(v) => Some((&v.column.occupancies, v.column.canopy_air)),
++            Self::V3(v) => Some((&v.occupancies, v.canopy_air)),
++            Self::Litter(_) => None,
++        };
++        if let Some((occupancies, air)) = canopy {
++            let area: f64 = occupancies
++                .iter()
++                .flat_map(surfaces)
++                .map(|s| s.emissive_area_m2_m2_tile)
++                .sum();
++            finite(area)?;
++            for s in occupancies.iter().flat_map(surfaces) {
++                if s.emissive_area_m2_m2_tile > 0.0
++                    && !(0.0..=1.0).contains(&(s.emissive_area_m2_m2_tile / area))
++                {
++                    return Err(LandSurfaceEnergyError::ControlVolumeClosure(
++                        "audit emissive weight",
++                    ));
++                }
++                for v in [
++                    s.latent_heat_j_kg * s.signed_vapor_to_canopy_air_kg_m2_tile_s,
++                    air.rho_air_kg_m3
++                        * air.cp_air_j_kg_k
++                        * s.heat_conductance_m_s_tile
++                        * (s.surface_temperature_k - air.canopy_air_temperature_k),
++                    air.rho_air_kg_m3
++                        * s.vapor_conductance_m_s_tile
++                        * (s.surface_specific_humidity_kg_kg
++                            - air.canopy_air_specific_humidity_kg_kg),
++                    s.surface_temperature_k.powi(4),
++                ] {
++                    finite(v)?;
++                    bound += v.abs();
++                }
++            }
++        }
++        match self {
++            Self::Covered(v) => match &v.lower_boundary {
++                crate::CoveredLowerBoundaryEnergyOperands::SnowFree(g) => {
++                    let export = crate::physics::vapor_export_w_m2(
++                        g.latent.signed_vapor_kg_m2_s,
++                        g.latent.surface_temperature_k,
++                    )?;
++                    for value in [
++                        export,
++                        export * g.latent.interval_s,
++                        g.latent.signed_vapor_kg_m2_s * g.latent.interval_s,
++                        crate::physics::vapor_export_w_m2(
++                            g.surface.signed_vapor_kg_m2_s,
++                            g.surface.surface_temperature_k,
++                        )?,
++                    ] {
++                        finite(value)?;
++                        bound += value.abs();
++                    }
++                }
++                crate::CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(s) => {
++                    let latent = s.vapor_to_canopy_air_kg_m2_tile_s * s.latent_heat_j_kg;
++                    finite(latent)?;
++                    finite(latent * s.interval_s)?;
++                    bound += latent.abs() + (latent * s.interval_s).abs();
++                }
++            },
++            Self::Litter(v) => {
++                let dt = f64::from_bits(v.identity.support_duration_seconds_bits);
++                for value in [
++                    v.transfer.warm_energy_mass_bound_kg_m2,
++                    v.transfer.cold_energy_mass_bound_kg_m2,
++                    v.transfer.melt_kg_m2,
++                    v.transfer.freeze_kg_m2,
++                    v.transfer.signed_phase_kg_m2,
++                    v.transfer.fusion_energy_j_m2,
++                ] {
++                    finite(value)?;
++                }
++                for (liquid, ice, temperature) in [
++                    (
++                        v.beginning.liquid_kg_m2_tile,
++                        v.beginning.ice_kg_m2_tile,
++                        v.beginning.temperature_k,
++                    ),
++                    (
++                        v.post_vapor.liquid_kg_m2_tile,
++                        v.post_vapor.ice_kg_m2_tile,
++                        v.post_vapor.temperature_k,
++                    ),
++                    (
++                        v.ending.liquid_kg_m2_tile,
++                        v.ending.ice_kg_m2_tile,
++                        v.ending.temperature_k,
++                    ),
++                ] {
++                    let liquid_capacity = liquid * crate::WATER_HEAT_CAPACITY_J_KG_K;
++                    let ice_capacity = ice * crate::LITTER_ICE_HEAT_CAPACITY_J_KG_K;
++                    let capacity =
++                        v.configuration.dry_heat_capacity_j_m2_k + liquid_capacity + ice_capacity;
++                    for value in [
++                        liquid_capacity,
++                        ice_capacity,
++                        capacity,
++                        capacity * (temperature - crate::REFERENCE_TEMPERATURE_K),
++                        crate::LITTER_FUSION_ENTHALPY_J_KG * ice,
++                    ] {
++                        finite(value)?;
++                        bound += value.abs();
++                    }
++                }
++                for value in [
++                    crate::LITTER_FUSION_ENTHALPY_J_KG
++                        * (v.transfer.freeze_kg_m2 - v.transfer.melt_kg_m2),
++                    v.phase_free_surface_energy.liquid_vapor_energy_w_m2 * dt,
++                    v.phase_free_surface_energy.ice_vapor_energy_w_m2 * dt,
++                    v.vapor.liquid_signed_mass_kg_m2 * v.vapor.liquid_specific_enthalpy_j_kg,
++                    v.vapor.ice_signed_mass_kg_m2 * v.vapor.ice_specific_enthalpy_j_kg,
++                    v.vapor.finalized.liquid_signed_rate_kg_m2_s * dt,
++                    v.vapor.finalized.ice_signed_rate_kg_m2_s * dt,
++                    (v.post_vapor.sensible_energy_j_m2_tile
++                        - v.beginning.sensible_energy_j_m2_tile)
++                        / dt,
++                ] {
++                    finite(value)?;
++                    bound += value.abs();
++                }
++            }
++            Self::V3(_) => (),
++        }
++        finite(16.0 * bound)
++    }
++    fn poison(&self) -> Self {
++        let mut poisoned = self.clone();
++        match &mut poisoned {
++            Self::Covered(value) => {
++                value
++                    .column
++                    .canopy_air
++                    .ground_sensible_to_canopy_air_w_m2_tile += 1.0;
++            }
++            Self::V3(value) => value.canopy_air.ground_sensible_to_canopy_air_w_m2_tile += 1.0,
++            Self::Litter(value) => value.phase_free_surface_energy.absorbed_shortwave_w_m2 += 1.0,
++        }
++        poisoned
++    }
++    fn value(&self) -> Value {
++        match self {
++            Self::Covered(value) => {
++                let lower = match &value.lower_boundary {
++                    crate::CoveredLowerBoundaryEnergyOperands::SnowFree(ground) => {
++                        let crate::SurfaceEnergyOperands {
++                            absorbed_shortwave_w_m2,
++                            net_longwave_w_m2,
++                            sensible_w_m2,
++                            signed_vapor_kg_m2_s,
++                            surface_temperature_k,
++                            ground_heat_w_m2,
++                            storage_w_m2,
++                        } = ground.surface;
++                        let crate::LatentJoinOperands {
++                            signed_vapor_kg_m2_s: latent_vapor,
++                            interval_s,
++                            surface_temperature_k: latent_temperature,
++                            signed_water_amount_kg_m2,
++                            vapor_energy_j_m2,
++                        } = ground.latent;
++                        json!({"family":"snow_free", "surface": {
++                            "absorbed_shortwave_w_m2":absorbed_shortwave_w_m2,"net_longwave_w_m2":net_longwave_w_m2,
++                            "sensible_w_m2":sensible_w_m2,"signed_vapor_kg_m2_s":signed_vapor_kg_m2_s,
++                            "surface_temperature_k":surface_temperature_k,"ground_heat_w_m2":ground_heat_w_m2,"storage_w_m2":storage_w_m2},
++                            "latent":{"signed_vapor_kg_m2_s":latent_vapor,"interval_s":interval_s,
++                            "surface_temperature_k":latent_temperature,"signed_water_amount_kg_m2":signed_water_amount_kg_m2,"vapor_energy_j_m2":vapor_energy_j_m2},
++                            "ground_heat":ground.ground_heat.iter().map(|join| json!({"surface_debit_j_m2":join.surface_debit_j_m2,"soil_credit_j_m2":join.soil_credit_j_m2})).collect::<Vec<_>>()})
++                    }
++                    crate::CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(snow) => json!({
++                        "family":"stage3_snow", "optical":snow.optical,"snow_temperature_k":snow.snow_temperature_k,
++                        "vapor_to_canopy_air_kg_m2_tile_s":snow.vapor_to_canopy_air_kg_m2_tile_s,"interval_s":snow.interval_s,
++                        "latent_heat_j_kg":snow.latent_heat_j_kg,"latent_energy_to_canopy_air_j_m2_tile":snow.latent_energy_to_canopy_air_j_m2_tile,
++                        "sensible_to_canopy_air_w_m2_tile":snow.sensible_to_canopy_air_w_m2_tile,"net_longwave_w_m2_tile":snow.net_longwave_w_m2_tile,
++                        "precipitation_advection_w_m2_tile":snow.precipitation_advection_w_m2_tile,"boundary_energy_w_m2_tile":snow.boundary_energy_w_m2_tile,
++                        "carrier_receipt_id":snow.carrier_receipt_id,"optical_receipt_sha256":snow.optical_receipt_sha256,
++                        "reciprocal_longwave_receipt_sha256":snow.reciprocal_longwave_receipt_sha256,"final_canopy_boundary_receipt_sha256":snow.final_canopy_boundary_receipt_sha256}),
++                };
++                json!({"authority":value.authority,"column":value.column,"lower_boundary":lower})
++            }
++            Self::V3(value) => json!({"authority":value.authority,"occupancies":value.occupancies,
++                "canopy_air":value.canopy_air,"shortwave":value.shortwave,"longwave":value.longwave,
++                "litter_surface":value.litter_surface}),
++            Self::Litter(value) => json!(value),
++        }
++    }
++}
++
++fn finite(value: f64) -> Result<(), LandSurfaceEnergyError> {
++    if value.is_finite() {
++        Ok(())
++    } else {
++        Err(LandSurfaceEnergyError::NonFinite(
++            "accepted audit intermediate",
++        ))
++    }
++}
++fn numeric_bound(value: &Value) -> f64 {
++    match value {
++        Value::Number(n) => n.as_f64().map_or(f64::INFINITY, f64::abs),
++        Value::Array(v) => v.iter().map(numeric_bound).sum(),
++        Value::Object(v) => v.values().map(numeric_bound).sum(),
++        _ => 0.0,
++    }
++}
++
++// Audit-only threshold reconstruction. Snow carriers enter the residual but
++// canonical represented-snow normalization uses exact-zero ground scale terms.
++fn canonical_shared_limits(
++    occupancies: &[crate::CoveredOccupancyEnergyOperands],
++    air: crate::CoveredCanopyAirEnergyOperands,
++    represented_snow: bool,
++) -> Result<(), LandSurfaceEnergyError> {
++    let sensible: f64 = occupancies
++        .iter()
++        .map(|o| {
++            surfaces(o)
++                .iter()
++                .map(|s| s.sensible_to_canopy_air_w_m2_tile)
++                .sum::<f64>()
++        })
++        .sum();
++    let vapor: f64 = occupancies
++        .iter()
++        .map(|o| {
++            surfaces(o)
++                .iter()
++                .map(|s| s.signed_vapor_to_canopy_air_kg_m2_tile_s)
++                .sum::<f64>()
++        })
++        .sum();
++    let ground_heat_scale = if represented_snow {
++        0.0
++    } else {
++        air.ground_sensible_to_canopy_air_w_m2_tile
++    };
++    let ground_vapor_scale = if represented_snow {
++        0.0
++    } else {
++        air.ground_vapor_to_canopy_air_kg_m2_tile_s
++    };
++    let heat_scale =
++        (sensible.abs() + ground_heat_scale.abs() + air.sensible_to_reference_air_w_m2_tile.abs())
++            .max(1.0);
++    let vapor_scale = vapor
++        .abs()
++        .max(ground_vapor_scale.abs())
++        .max(air.vapor_to_reference_air_kg_m2_tile_s.abs());
++    let heat_limit = crate::energy_tolerance(heat_scale);
++    let vapor_limit = crate::water_tolerance(vapor_scale);
++    let heat_residual = sensible + air.ground_sensible_to_canopy_air_w_m2_tile
++        - air.sensible_to_reference_air_w_m2_tile;
++    let vapor_residual = vapor + air.ground_vapor_to_canopy_air_kg_m2_tile_s
++        - air.vapor_to_reference_air_kg_m2_tile_s;
++    if [
++        sensible,
++        vapor,
++        heat_scale,
++        vapor_scale,
++        heat_limit,
++        vapor_limit,
++        heat_residual,
++        vapor_residual,
++    ]
++    .iter()
++    .any(|v| !v.is_finite())
++        || heat_residual.abs() > heat_limit
++        || vapor_residual.abs() > vapor_limit
++        || air.shared_heat_tolerance_w_m2_tile.to_bits() != heat_limit.to_bits()
++        || air.shared_vapor_tolerance_kg_m2_tile_s.to_bits() != vapor_limit.to_bits()
++    {
++        return Err(LandSurfaceEnergyError::ControlVolumeClosure(
++            "audit canonical shared heat/vapor limits",
++        ));
++    }
++    Ok(())
++}
++
++fn surfaces(
++    occupancy: &crate::CoveredOccupancyEnergyOperands,
++) -> [crate::CoveredSurfaceEnergyOperands; 4] {
++    [
++        occupancy.sun_leaf,
++        occupancy.shade_leaf,
++        occupancy.wet_surface,
++        occupancy.dry_stem,
++    ]
++}
++
++fn exact_bits(value: &mut Value) {
++    match value {
++        Value::Number(number) if number.is_f64() => {
++            if let Some(float) = number.as_f64() {
++                *value = json!({"f64_bits":float.to_bits()});
++            }
++        }
++        Value::Array(values) => values.iter_mut().for_each(exact_bits),
++        Value::Object(values) => values.values_mut().for_each(exact_bits),
++        _ => (),
++    }
++}
++
++#[derive(Clone, Debug, Serialize)]
++pub struct Record {
++    pub identity: Value,
++    pub primitive_bits: Value,
++    #[serde(skip)]
++    raw: Raw,
++}
++
++#[derive(Clone, Debug, Serialize)]
++pub struct FamilyReport {
++    pub family: Family,
++    pub checked: u64,
++    pub failed: u64,
++    pub first: Option<Record>,
++    pub last: Option<Record>,
++}
++
++#[derive(Clone, Debug, Serialize)]
++pub struct Report {
++    pub scope: &'static str,
++    pub families: [FamilyReport; 3],
++    pub first_error: Option<String>,
++    pub overflow: bool,
++}
++
++#[derive(Debug, thiserror::Error)]
++pub enum AuditError {
++    #[error("accepted operand observation already active")]
++    AlreadyActive,
++    #[error("accepted operand observation session missing")]
++    NotActive,
++    #[error("accepted operand evidence invalid: {0}")]
++    Invalid(String),
++}
++
++struct State {
++    generation: Rc<()>,
++    report: Report,
++}
++thread_local! { static ACTIVE: RefCell<Option<State>> = const { RefCell::new(None) }; }
++pub struct Session {
++    generation: Rc<()>,
++}
++
++pub fn begin() -> Result<Session, AuditError> {
++    ACTIVE.with(|active| {
++        let mut active = active.borrow_mut();
++        if active.is_some() { return Err(AuditError::AlreadyActive); }
++        let generation = Rc::new(());
++        *active = Some(State { generation: Rc::clone(&generation), report: Report {
++            scope:"existing validators on actual accepted physical candidate construction; not full scientific adjudication, final publication or soil-interior closure",
++            families: [Family::Covered,Family::V3Energy,Family::Litter].map(|family| FamilyReport {
++                family, checked:0,failed:0,first:None,last:None }), first_error:None,overflow:false,
++        }});
++        Ok(Session { generation })
++    })
++}
++
++impl Session {
++    pub fn finish(self) -> Result<Report, AuditError> {
++        ACTIVE.with(|active| {
++            let state = active.borrow_mut().take().ok_or(AuditError::NotActive)?;
++            let report = state.report;
++            if report.overflow
++                || report
++                    .families
++                    .iter()
++                    .any(|family| family.checked == 0 || family.failed != 0)
++            {
++                return Err(AuditError::Invalid(format!(
++                    "overflow={}, counts={:?}, first_error={:?}",
++                    report.overflow,
++                    report
++                        .families
++                        .iter()
++                        .map(|family| (family.checked, family.failed))
++                        .collect::<Vec<_>>(),
++                    report.first_error
++                )));
++            }
++            Ok(report)
++        })
++    }
++}
++impl Drop for Session {
++    fn drop(&mut self) {
++        ACTIVE.with(|active| {
++            let mut active = active.borrow_mut();
++            if active
++                .as_ref()
++                .is_some_and(|state| Rc::ptr_eq(&self.generation, &state.generation))
++            {
++                active.take();
++            }
++        });
++    }
++}
++
++fn runtime_identity(identity: &RuntimeTileIdentity) -> Value {
++    json!({"transaction_id":identity.transaction_id,"soil_thermal_transaction_id":identity.soil_thermal_transaction_id,
++        "ofe_id":identity.ofe_id,"tile_id":identity.tile_id,"surface_id":identity.surface_id,
++        "tile_fraction_bits":identity.tile_fraction.to_bits(),"interval_s_bits":identity.interval_s.to_bits(),
++        "configuration_sha256":identity.configuration_sha256,"beginning_lse_state_sha256":identity.beginning_lse_state_sha256,
++        "beginning_hydrology_snapshot_sha256":identity.beginning_hydrology_snapshot_sha256,
++        "beginning_soil_thermal_state_sha256":identity.beginning_soil_thermal_state_sha256,
++        "beginning_vegetation_state_sha256":identity.beginning_vegetation_state_sha256,
++        "beginning_biogeochemistry_state_sha256":identity.beginning_biogeochemistry_state_sha256,
++        "lse_owner_id":identity.lse_owner_id,"hydrology_owner_id":identity.hydrology_owner_id,
++        "soil_thermal_owner_id":identity.soil_thermal_owner_id,"vegetation_owner_id":identity.vegetation_owner_id,
++        "biogeochemistry_owner_id":identity.biogeochemistry_owner_id})
++}
++
++#[must_use]
++pub fn is_active() -> bool {
++    ACTIVE.with(|active| active.borrow().is_some())
++}
++
++fn record(identity: Value, raw: Raw) {
++    ACTIVE.with(|active| {
++        let mut active = active.borrow_mut();
++        let Some(state) = active.as_mut() else { return };
++        let index = match raw.family() {
++            Family::Covered => 0,
++            Family::V3Energy => 1,
++            Family::Litter => 2,
++        };
++        let result = raw.validate();
++        let family = &mut state.report.families[index];
++        if let Some(next) = family.checked.checked_add(1) {
++            family.checked = next;
++        } else {
++            state.report.overflow = true;
++        }
++        if let Err(error) = result {
++            if let Some(next) = family.failed.checked_add(1) {
++                family.failed = next;
++            } else {
++                state.report.overflow = true;
++            }
++            if state.report.first_error.is_none() {
++                state.report.first_error = Some(error.to_string());
++            }
++        }
++        // Retain only two edge operands per family; check all intervening records.
++        let mut primitive_bits = raw.value();
++        exact_bits(&mut primitive_bits);
++        let record = Record {
++            identity,
++            primitive_bits,
++            raw,
++        };
++        if family.first.is_none() {
++            family.first = Some(record);
++        } else {
++            family.last = Some(record);
++        }
++    });
++}
++
++pub(crate) fn record_covered(
++    identity: &RuntimeTileIdentity,
++    operands: &CoveredTileEnergyOperandSet,
++) {
++    if is_active() {
++        record(
++            runtime_identity(identity),
++            Raw::Covered(Box::new(operands.clone())),
++        );
++    }
++}
++pub(crate) fn record_v3_energy(
++    identity: &RuntimeTileIdentity,
++    operands: &V3CoveredTileEnergyOperandSet,
++) {
++    if is_active() {
++        record(
++            runtime_identity(identity),
++            Raw::V3(Box::new(operands.clone())),
++        );
++    }
++}
++pub(crate) fn record_litter(receipt: &LitterPhaseReceipt) {
++    if is_active() {
++        record(
++            json!(receipt.identity),
++            Raw::Litter(Box::new(receipt.clone())),
++        );
++    }
++}
++
++impl Report {
++    /// Reuse actual edge records for side-channel success/error neutrality and
++    /// independent validator poisons. Does not claim rejected transaction replay.
++    #[expect(
++        clippy::too_many_lines,
++        reason = "Keep the bounded actual-edge poison and ordered observer-session protocol together for review"
++    )]
++    pub fn verify_observer_and_poison_vectors(&self) -> Result<(), AuditError> {
++        let records: Vec<_> = self
++            .families
++            .iter()
++            .flat_map(|family| family.first.iter().chain(&family.last))
++            .collect();
++        if is_active() {
++            return Err(AuditError::AlreadyActive);
++        }
++        for saved in &records {
++            for vapor_poison in [false, true] {
++                let mut laundered = saved.raw.clone();
++                let operands = match &mut laundered {
++                    Raw::Covered(v) => Some((&v.column.occupancies, &mut v.column.canopy_air)),
++                    Raw::V3(v) => Some((&v.occupancies, &mut v.canopy_air)),
++                    Raw::Litter(_) => None,
++                };
++                if let Some((occupancies, air)) = operands {
++                    let sensible: f64 = occupancies
++                        .iter()
++                        .map(|o| {
++                            surfaces(o)
++                                .iter()
++                                .map(|s| s.sensible_to_canopy_air_w_m2_tile)
++                                .sum::<f64>()
++                        })
++                        .sum();
++                    air.sensible_to_reference_air_w_m2_tile += 1.0;
++                    air.shared_heat_residual_w_m2_tile = sensible
++                        + air.ground_sensible_to_canopy_air_w_m2_tile
++                        - air.sensible_to_reference_air_w_m2_tile;
++                    air.shared_heat_tolerance_w_m2_tile =
++                        air.shared_heat_residual_w_m2_tile.abs() + 1.0;
++                    if vapor_poison {
++                        // Start this independent vapor poison from the unmodified air.
++                        *air = match &saved.raw {
++                            Raw::Covered(v) => v.column.canopy_air,
++                            Raw::V3(v) => v.canopy_air,
++                            Raw::Litter(_) => unreachable!(),
++                        };
++                        let vapor: f64 = occupancies
++                            .iter()
++                            .map(|o| {
++                                surfaces(o)
++                                    .iter()
++                                    .map(|s| s.signed_vapor_to_canopy_air_kg_m2_tile_s)
++                                    .sum::<f64>()
++                            })
++                            .sum();
++                        air.vapor_to_reference_air_kg_m2_tile_s += 1.0;
++                        air.shared_vapor_residual_kg_m2_tile_s = vapor
++                            + air.ground_vapor_to_canopy_air_kg_m2_tile_s
++                            - air.vapor_to_reference_air_kg_m2_tile_s;
++                        air.shared_vapor_tolerance_kg_m2_tile_s =
++                            air.shared_vapor_residual_kg_m2_tile_s.abs() + 1.0;
++                    }
++                    let old_result = match &laundered {
++                        Raw::Covered(v) => v.validate(),
++                        Raw::V3(v) => CoveredColumnEnergyOperands {
++                            occupancies: v.occupancies.clone(),
++                            canopy_air: v.canopy_air,
++                            shortwave: v.shortwave.clone(),
++                            longwave: v.longwave.clone(),
++                            stage3_lower_boundary_energy_w_m2_tile: 0.0,
++                            optical_receipt_sha256: None,
++                            reciprocal_longwave_receipt_sha256: None,
++                            final_canopy_boundary_receipt_sha256: None,
++                        }
++                        .validate(),
++                        Raw::Litter(_) => unreachable!(),
++                    };
++                    if old_result.is_err() || laundered.validate().is_ok() {
++                        return Err(AuditError::Invalid(
++                            "inflated canonical tolerance poison binding".into(),
++                        ));
++                    }
++                }
++            }
++            let mut overflow = saved.raw.clone();
++            match &mut overflow {
++                Raw::Covered(v) => {
++                    if let Some(o) = v.column.occupancies.first_mut() {
++                        o.sun_leaf.latent_heat_j_kg = 1e308;
++                        o.sun_leaf.signed_vapor_to_canopy_air_kg_m2_tile_s = 1e308;
++                    }
++                }
++                Raw::V3(v) => {
++                    if let Some(o) = v.occupancies.first_mut() {
++                        o.sun_leaf.latent_heat_j_kg = 1e308;
++                        o.sun_leaf.signed_vapor_to_canopy_air_kg_m2_tile_s = 1e308;
++                    }
++                }
++                Raw::Litter(v) => v.transfer.warm_energy_mass_bound_kg_m2 = f64::INFINITY,
++            }
++            if !matches!(
++                overflow.validate(),
++                Err(LandSurfaceEnergyError::NonFinite(
++                    "accepted audit intermediate"
++                ))
++            ) {
++                return Err(AuditError::Invalid(
++                    "actual raw overflow poison binding".into(),
++                ));
++            }
++            let before = saved.raw.clone();
++            let off = before.validate();
++            record(saved.identity.clone(), before.clone());
++            if off.is_err() || before != saved.raw {
++                return Err(AuditError::Invalid("valid observer-off vector".into()));
++            }
++            if let Raw::Litter(receipt) = &saved.raw {
++                let id = &receipt.identity;
++                let mut input = crate::LitterPhaseTransactionInput {
++                    identity: crate::LitterPhaseTransactionIdentity {
++                        lse_configuration_sha256: id.lse_configuration_sha256.clone(),
++                        transaction_id: id.transaction_id,
++                        ofe_id: id.ofe_id.clone(),
++                        tile_id: id.tile_id.clone(),
++                        surface_owner_id: id.surface_owner_id.clone(),
++                        beginning_surface_owner_sha256: id.beginning_surface_owner_sha256.clone(),
++                        candidate_surface_owner_sha256: id.candidate_surface_owner_sha256.clone(),
++                        support_start_ns: id.support_start_ns,
++                        support_end_ns: id.support_end_ns,
++                    },
++                    configuration: receipt.configuration,
++                    beginning: receipt.beginning,
++                    vapor_environment: receipt.vapor.raw.environment,
++                    finalized_vapor: receipt.vapor.finalized,
++                    phase_free_surface_energy: receipt.phase_free_surface_energy,
++                };
++                let dt = f64::from_bits(id.support_duration_seconds_bits);
++                input.finalized_vapor.liquid_signed_rate_kg_m2_s =
++                    (input.beginning.liquid_kg_m2_tile + 1.0) / dt;
++                let before = input.clone();
++                let off = crate::execute_litter_phase_v3(&input);
++                let session = begin()?;
++                let on = crate::execute_litter_phase_v3(&input);
++                let no_hooks = ACTIVE.with(|active| {
++                    active
++                        .borrow()
++                        .as_ref()
++                        .is_some_and(|state| state.report.families.iter().all(|f| f.checked == 0))
++                });
++                if !matches!(&off, Err(LandSurfaceEnergyError::FrozenLitterVapor(_)))
++                    || off != on
++                    || input != before
++                    || !no_hooks
++                {
++                    return Err(AuditError::Invalid(
++                        "real litter transaction pre-hook first-error neutrality".into(),
++                    ));
++                }
++                if session.finish().is_ok() {
++                    return Err(AuditError::Invalid(
++                        "failed transaction missing hooks admitted".into(),
++                    ));
++                }
++            }
++        }
++        let session = begin()?;
++        for saved in &records {
++            record(saved.identity.clone(), saved.raw.clone());
++        }
++        let repeated = session.finish()?;
++        for (original, observed) in self.families.iter().zip(&repeated.families) {
++            if original.first.as_ref().map(|record| &record.primitive_bits)
++                != observed.first.as_ref().map(|record| &record.primitive_bits)
++            {
++                return Err(AuditError::Invalid("observer-on input bit mutation".into()));
++            }
++        }
++        let session = begin()?;
++        for saved in &records {
++            let poisoned = saved.raw.poison();
++            let before = poisoned.clone();
++            let off_error = poisoned.validate();
++            record(saved.identity.clone(), poisoned.clone());
++            let on_error = poisoned.validate();
++            if off_error.is_ok() || off_error != on_error || poisoned != before {
++                return Err(AuditError::Invalid(
++                    "poison first-error or immutable operand mismatch".into(),
++                ));
++            }
++        }
++        if session.finish().is_ok() {
++            return Err(AuditError::Invalid("poison evidence accepted".into()));
++        }
++        Ok(())
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn finite_input_latent_overflow_is_not_a_closure_pass() {
++        let surface = crate::CoveredSurfaceEnergyOperands {
++            surface_area_m2_m2_tile: 1.0,
++            emissive_area_m2_m2_tile: 1.0,
++            heat_conductance_m_s_tile: 0.0,
++            vapor_conductance_m_s_tile: 0.0,
++            vapor_authorization_kg_m2_tile_s: None,
++            surface_specific_humidity_kg_kg: 0.0,
++            absorbed_shortwave_w_m2_tile: 0.0,
++            net_longwave_w_m2_tile: 0.0,
++            sensible_to_canopy_air_w_m2_tile: 0.0,
++            signed_vapor_to_canopy_air_kg_m2_tile_s: 1e308,
++            surface_temperature_k: 300.0,
++            latent_heat_j_kg: 1e308,
++        };
++        assert!(
++            surface.validate().is_ok(),
++            "bind preexisting validator overflow hole"
++        );
++        assert!(
++            finite(surface.latent_heat_j_kg * surface.signed_vapor_to_canopy_air_kg_m2_tile_s)
++                .is_err()
++        );
++    }
++    #[test]
++    fn ownership_missing_hooks_and_overflow_fail_closed() {
++        let session = begin().expect("begin");
++        assert!(matches!(begin(), Err(AuditError::AlreadyActive)));
++        assert!(session.finish().is_err(), "missing hooks");
++        let session = begin().expect("replacement");
++        ACTIVE.with(|active| active.borrow_mut().as_mut().expect("state").report.overflow = true);
++        assert!(session.finish().is_err(), "overflow");
++        drop(begin().expect("canceled session"));
++        assert!(begin().is_ok(), "drop releases thread session");
++    }
++}
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+@@ -226,27 +226,29 @@
+     false
+ }
+ 
+-struct ValidatedCoveredIterationMap<'a> {
++struct ValidatedCoveredIterationMap<'a, 'trial> {
+     validated: &'a ValidatedCoveredEvaluationInputs<'a>,
++    trial: &'trial [f64],
+     evaluation: CoveredColumnEvaluation,
+ }
+ 
+-impl<'a> ValidatedCoveredIterationMap<'a> {
++impl<'a, 'trial> ValidatedCoveredIterationMap<'a, 'trial> {
+     fn evaluate(
+         validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+-        trial: &[f64],
++        trial: &'trial [f64],
+     ) -> Result<Self, LandSurfaceEnergyError> {
+         Ok(Self {
+             validated,
++            trial,
+             evaluation: evaluate_covered_column_validated(validated, trial, None, None)?,
+         })
+     }
+ 
+-    fn into_jacobian_base(self, trial: &[f64]) -> ValidatedCoveredJacobianBase<'a> {
++    fn into_jacobian_base(self) -> ValidatedCoveredJacobianBase<'a> {
+         let frozen = freeze_covered_branches(&self.evaluation);
+         ValidatedCoveredJacobianBase {
+             validated: self.validated,
+-            trial: trial.to_vec(),
++            trial: self.trial.to_vec(),
+             evaluation: self.evaluation,
+             frozen,
+         }
+@@ -266,7 +268,7 @@
+         validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+         trial: &[f64],
+     ) -> Result<Self, LandSurfaceEnergyError> {
+-        Ok(ValidatedCoveredIterationMap::evaluate(validated, trial)?.into_jacobian_base(trial))
++        Ok(ValidatedCoveredIterationMap::evaluate(validated, trial)?.into_jacobian_base())
+     }
+ }
+ 
+@@ -575,10 +577,11 @@
+         if norm <= 1.0
+             && (last_steps.is_some_and(CoveredStepNorms::accepted) || v10_initial_final_acceptance)
+         {
++            let ValidatedCoveredIterationMap { evaluation, .. } = iteration_map;
+             return accept_covered_candidate(
+                 beginning,
+                 x,
+-                iteration_map.evaluation,
++                evaluation,
+                 iteration,
+                 backtracking_count,
+                 last_steps.unwrap_or_default(),
+@@ -600,7 +603,7 @@
+                 matrix_norm,
+             }));
+         }
+-        let jacobian_base = iteration_map.into_jacobian_base(&x);
++        let jacobian_base = iteration_map.into_jacobian_base();
+         let mut sweep_observation =
+             crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Sweep);
+         #[cfg(any(test, feature = "test-support"))]
+@@ -648,7 +651,15 @@
+             validated_evaluation_inputs.stage3_boundary.is_some(),
+             ground_uses_liquid_vapor_phase_domain,
+         );
++        let mut direct_columns = inactive_jacobian::InactiveColumnSweep::covered(&jacobian_base)?;
+         for column_index in 0..x.len() {
++            if crate::numerics::ColumnAssembly::assemble(
++                &mut direct_columns,
++                column_index,
++                &mut jacobian,
++            )? {
++                continue;
++            }
+             #[cfg(any(test, feature = "test-support"))]
+             let capture_column = crate::solver_residual_corpus_capture::column(
+                 column_index,
+--- /dev/null
++++ b/crates/openwepp-land-surface-energy/src/solver_inactive_jacobian.rs
+@@ -0,0 +1,479 @@
++//! Private v34 affine columns. Only successful same-state evaluations mint a
++//! sweep; the sweep borrows its base and consumes canonical column order once.
++use crate::numerics::{ColumnAssembly, JacobianColumns};
++use crate::{
++    CoveredColumnEvaluation, CoveredColumnInputs, CoveredFrozenBranches, CoveredWaterCaps,
++    LandSurfaceEnergyError, V3LitterResidualContext, V3PhaseFreeCoveredEvaluation,
++};
++
++fn integrity(reason: &'static str) -> LandSurfaceEnergyError {
++    LandSurfaceEnergyError::CoveredJacobianDerivativeIntegrity(reason)
++}
++
++fn eligible_areas(input_area: f64, component_area: f64) -> bool {
++    input_area.to_bits() == 0.0_f64.to_bits() && component_area.to_bits() == 0.0_f64.to_bits()
++}
++
++pub(super) fn assemble_affine_column(
++    matrix: &mut [Vec<f64>],
++    column: usize,
++    coordinate_scale: f64,
++    normalizer: f64,
++) -> Result<(), LandSurfaceEnergyError> {
++    let dimension = matrix.len();
++    if dimension == 0 || column >= dimension || matrix.iter().any(|row| row.len() != dimension) {
++        return Err(integrity("column matrix shape"));
++    }
++    if !coordinate_scale.is_finite()
++        || coordinate_scale <= 0.0
++        || !normalizer.is_finite()
++        || normalizer <= 0.0
++    {
++        return Err(integrity("coordinate scale or normalizer"));
++    }
++    let diagonal = coordinate_scale / normalizer;
++    if !diagonal.is_finite() || diagonal <= 0.0 {
++        return Err(integrity("nonfinite or unrepresentable tangent"));
++    }
++    // All checks precede the first write. A failed column is never published.
++    for (row, entries) in matrix.iter_mut().enumerate() {
++        entries[column] = if row == column { diagonal } else { 0.0 };
++    }
++    Ok(())
++}
++
++/// There is no constructor accepting an independently supplied evaluation.
++/// The physical trial allocation was already necessary for scaled evaluation.
++pub(crate) struct V3DerivativeBase<'a> {
++    column: &'a CoveredColumnInputs,
++    // Retained immutable custody even when instrumentation is compiled out.
++    #[cfg_attr(
++        not(any(test, feature = "test-support")),
++        expect(
++            dead_code,
++            reason = "the successful base retains exact immutable cap custody; only evidence reads its pass"
++        )
++    )]
++    caps: Option<&'a CoveredWaterCaps>,
++    _context: V3LitterResidualContext,
++    physical: Vec<f64>,
++    evaluation: V3PhaseFreeCoveredEvaluation,
++    unfrozen: bool,
++}
++
++impl<'a> V3DerivativeBase<'a> {
++    pub(crate) fn evaluate(
++        column: &'a CoveredColumnInputs,
++        caps: Option<&'a CoveredWaterCaps>,
++        physical: Vec<f64>,
++        frozen: Option<&CoveredFrozenBranches>,
++        context: V3LitterResidualContext,
++    ) -> Result<Self, LandSurfaceEnergyError> {
++        let evaluation = crate::solver_litter_phase::evaluate_v3_phase_free_covered_column(
++            column, &physical, caps, frozen, context,
++        )?;
++        Ok(Self {
++            column,
++            caps,
++            _context: context,
++            physical,
++            evaluation,
++            unfrozen: frozen.is_none(),
++        })
++    }
++
++    pub(crate) fn evaluation(&self) -> &V3PhaseFreeCoveredEvaluation {
++        &self.evaluation
++    }
++    pub(crate) fn into_evaluation(self) -> V3PhaseFreeCoveredEvaluation {
++        self.evaluation
++    }
++}
++
++pub(crate) struct V3ColumnProvider<'a> {
++    pub(crate) coordinate_scales: &'a [f64],
++}
++
++enum Base<'a> {
++    Covered(&'a super::ValidatedCoveredJacobianBase<'a>),
++    V3(&'a V3DerivativeBase<'a>),
++}
++
++pub(crate) struct InactiveColumnSweep<'a> {
++    base: Base<'a>,
++    // These immutable borrows bind actual solver coordinates and branch state,
++    // not perturbation unit scales or serialized corpus identities.
++    trial: &'a [f64],
++    scales: Option<&'a [f64]>,
++    _frozen: &'a CoveredFrozenBranches,
++    next_column: usize,
++}
++
++impl<'a> InactiveColumnSweep<'a> {
++    pub(super) fn covered(
++        base: &'a super::ValidatedCoveredJacobianBase<'a>,
++    ) -> Result<Self, LandSurfaceEnergyError> {
++        let sweep = Self {
++            base: Base::Covered(base),
++            trial: &base.trial,
++            scales: None,
++            _frozen: &base.frozen,
++            next_column: 0,
++        };
++        sweep.validate_shape()?;
++        Ok(sweep)
++    }
++
++    fn operands(&self) -> (&CoveredColumnInputs, &[f64], &CoveredColumnEvaluation) {
++        match &self.base {
++            Base::Covered(base) => (base.validated.column, &base.trial, &base.evaluation),
++            Base::V3(base) => (base.column, &base.physical, &base.evaluation.predecessor),
++        }
++    }
++
++    fn validate_shape(&self) -> Result<(), LandSurfaceEnergyError> {
++        let (column, physical, detail) = self.operands();
++        let dimension = 10 * column.occupancies.len() + 3 + column.ground.soil_nodes.len();
++        if self.trial.len() != dimension
++            || physical.len() != dimension
++            || detail.normalized_residuals.len() != dimension
++            || detail.raw_residuals.len() != dimension
++            || detail.tolerances.len() != dimension
++            || detail.occupancies.len() != column.occupancies.len()
++            || self.scales.is_some_and(|scales| scales.len() != dimension)
++        {
++            return Err(integrity("successful base topology or residual order"));
++        }
++        if let Some(scales) = self.scales {
++            for ((scaled, scale), physical) in self.trial.iter().zip(scales).zip(physical) {
++                if !scale.is_finite()
++                    || *scale <= 0.0
++                    || (scaled * scale).to_bits() != physical.to_bits()
++                {
++                    return Err(integrity("successful base coordinate mapping"));
++                }
++            }
++        }
++        Ok(())
++    }
++}
++
++impl<'input> JacobianColumns<V3DerivativeBase<'input>, CoveredFrozenBranches>
++    for V3ColumnProvider<'_>
++{
++    type Sweep<'a>
++        = InactiveColumnSweep<'a>
++    where
++        Self: 'a,
++        V3DerivativeBase<'input>: 'a;
++
++    fn sweep<'a>(
++        &'a self,
++        trial: &'a [f64],
++        detail: &'a V3DerivativeBase<'input>,
++        frozen: &'a CoveredFrozenBranches,
++    ) -> Result<Self::Sweep<'a>, LandSurfaceEnergyError> {
++        if !detail.unfrozen
++            || crate::solver_litter_phase::freeze_v3_covered_branches(&detail.evaluation) != *frozen
++        {
++            return Err(integrity("successful base frozen branch binding"));
++        }
++        let sweep = InactiveColumnSweep {
++            base: Base::V3(detail),
++            trial,
++            scales: Some(self.coordinate_scales),
++            _frozen: frozen,
++            next_column: 0,
++        };
++        sweep.validate_shape()?;
++        Ok(sweep)
++    }
++}
++
++impl ColumnAssembly for InactiveColumnSweep<'_> {
++    fn assemble(
++        &mut self,
++        column_index: usize,
++        matrix: &mut [Vec<f64>],
++    ) -> Result<bool, LandSurfaceEnergyError> {
++        if column_index != self.next_column || column_index >= self.trial.len() {
++            self.next_column = usize::MAX;
++            return Err(integrity("column order or second use"));
++        }
++        // A refusal poisons this sweep, including failures before the write.
++        self.next_column = usize::MAX;
++        if matrix.len() != self.trial.len()
++            || matrix.iter().any(|row| row.len() != self.trial.len())
++        {
++            return Err(integrity("column matrix shape"));
++        }
++        let (column, physical, detail) = self.operands();
++        let occupancy_index = column_index / 10;
++        let component = column_index % 10;
++        let eligible = if occupancy_index < column.occupancies.len()
++            && (component == 6 || component == 7)
++            && column.authority.admits_nonpositive_assimilation()
++        {
++            let input = &column.occupancies[occupancy_index];
++            let area = if component == 6 {
++                input.sun.leaf_area_m2_m2_tile
++            } else {
++                input.shade.leaf_area_m2_m2_tile
++            };
++            eligible_areas(
++                area,
++                detail.occupancies[occupancy_index].component_areas_m2_m2_tile[component - 6],
++            )
++        } else {
++            false
++        };
++        if eligible {
++            let normalizer = detail.tolerances[column_index];
++            let anchor = super::inactive_component_temperature_anchor_k(
++                component - 6,
++                physical[10 * column.occupancies.len()],
++            );
++            if normalizer.to_bits() != super::energy_tolerance(1.0).to_bits()
++                || detail.raw_residuals[column_index].to_bits()
++                    != (physical[column_index] - anchor).to_bits()
++                || detail.normalized_residuals[column_index].to_bits()
++                    != ((physical[column_index] - anchor) / normalizer).to_bits()
++            {
++                return Err(integrity(
++                    "successful affine residual or normalizer binding",
++                ));
++            }
++            let scale = self.scales.map_or(1.0, |scales| scales[column_index]);
++            assemble_affine_column(matrix, column_index, scale, normalizer)?;
++            #[cfg(any(test, feature = "test-support"))]
++            {
++                use crate::solver_residual_corpus_capture::{Family, completed_direct_column};
++                let (family, fixed) = match &self.base {
++                    Base::Covered(base) => (Family::Covered, base.validated.caps.is_some()),
++                    Base::V3(base) => (Family::GenericV3, base.caps.is_some()),
++                };
++                completed_direct_column(family, fixed, column_index);
++            }
++        }
++        self.next_column = column_index + 1;
++        Ok(eligible)
++    }
++}
++
++#[cfg(any(test, feature = "test-support"))]
++pub(crate) fn snapshot_columns(
++    snapshot: &crate::solver_residual_corpus_capture::Snapshot,
++) -> Result<Vec<Option<Vec<f64>>>, LandSurfaceEnergyError> {
++    let physical: Vec<_> = snapshot
++        .x_bits
++        .iter()
++        .map(|bits| f64::from_bits(*bits))
++        .collect();
++    if let Some(v3) = &snapshot.v3 {
++        let base = V3DerivativeBase::evaluate(
++            &snapshot.inputs,
++            snapshot.caps.as_ref(),
++            physical,
++            None,
++            v3.context,
++        )?;
++        let trial: Vec<_> = v3
++            .scaled_x_bits
++            .iter()
++            .map(|bits| f64::from_bits(*bits))
++            .collect();
++        let scales: Vec<_> = v3
++            .coordinate_scale_bits
++            .iter()
++            .map(|bits| f64::from_bits(*bits))
++            .collect();
++        let provider = V3ColumnProvider {
++            coordinate_scales: &scales,
++        };
++        let frozen = crate::solver_litter_phase::freeze_v3_covered_branches(base.evaluation());
++        collect_columns(provider.sweep(&trial, &base, &frozen)?, trial.len())
++    } else {
++        let validated = super::ValidatedCoveredEvaluationInputs::try_new(
++            &snapshot.inputs,
++            snapshot.caps.as_ref(),
++        )?;
++        let base = super::ValidatedCoveredIterationMap::evaluate(&validated, &physical)?
++            .into_jacobian_base();
++        collect_columns(InactiveColumnSweep::covered(&base)?, physical.len())
++    }
++}
++
++#[cfg(any(test, feature = "test-support"))]
++fn collect_columns(
++    mut sweep: InactiveColumnSweep<'_>,
++    dimension: usize,
++) -> Result<Vec<Option<Vec<f64>>>, LandSurfaceEnergyError> {
++    let mut matrix = vec![vec![0.0; dimension]; dimension];
++    let mut columns = Vec::with_capacity(dimension);
++    for index in 0..dimension {
++        columns.push(if sweep.assemble(index, &mut matrix)? {
++            Some(matrix.iter().map(|row| row[index]).collect())
++        } else {
++            None
++        });
++    }
++    Ok(columns)
++}
++
++#[cfg(test)]
++fn verify_refusal(
++    mut sweep: InactiveColumnSweep<'_>,
++    case: usize,
++) -> Result<(), LandSurfaceEnergyError> {
++    let dimension = sweep.trial.len();
++    let mut matrix = vec![vec![71.0; dimension]; dimension];
++    let index = match case {
++        0 => 1, // wrong initial order
++        1 => {
++            sweep.assemble(0, &mut matrix)?;
++            0
++        } // second use
++        2 => dimension,
++        3 => {
++            matrix.pop();
++            0
++        }
++        4 => {
++            matrix[0].pop();
++            0
++        }
++        5 => {
++            matrix[0].push(0.0);
++            0
++        }
++        6 => {
++            matrix.clear();
++            0
++        }
++        _ => {
++            // Complete a sweep, then refuse reuse even at its first column.
++            for column in 0..dimension {
++                sweep.assemble(column, &mut matrix)?;
++            }
++            0
++        }
++    };
++    let before = matrix.clone();
++    if !matches!(
++        sweep.assemble(index, &mut matrix),
++        Err(LandSurfaceEnergyError::CoveredJacobianDerivativeIntegrity(
++            _
++        ))
++    ) || matrix != before
++    {
++        return Err(integrity("guard evidence did not refuse atomically"));
++    }
++    // A failure is terminal, never a request to try canonical FD or reuse.
++    if !matches!(
++        sweep.assemble(0, &mut matrix),
++        Err(LandSurfaceEnergyError::CoveredJacobianDerivativeIntegrity(
++            _
++        ))
++    ) || matrix != before
++    {
++        return Err(integrity("failed sweep remained usable"));
++    }
++    Ok(())
++}
++
++#[cfg(test)]
++pub(crate) fn snapshot_lifecycle_guards(
++    snapshot: &crate::solver_residual_corpus_capture::Snapshot,
++) -> Result<usize, LandSurfaceEnergyError> {
++    let mut refusals = 8;
++    let physical: Vec<_> = snapshot
++        .x_bits
++        .iter()
++        .map(|bits| f64::from_bits(*bits))
++        .collect();
++    if let Some(v3) = &snapshot.v3 {
++        let base = V3DerivativeBase::evaluate(
++            &snapshot.inputs,
++            snapshot.caps.as_ref(),
++            physical,
++            None,
++            v3.context,
++        )?;
++        let trial: Vec<_> = v3
++            .scaled_x_bits
++            .iter()
++            .map(|bits| f64::from_bits(*bits))
++            .collect();
++        let scales: Vec<_> = v3
++            .coordinate_scale_bits
++            .iter()
++            .map(|bits| f64::from_bits(*bits))
++            .collect();
++        let provider = V3ColumnProvider {
++            coordinate_scales: &scales,
++        };
++        let frozen = crate::solver_litter_phase::freeze_v3_covered_branches(base.evaluation());
++        for case in 0..8 {
++            verify_refusal(provider.sweep(&trial, &base, &frozen)?, case)?;
++        }
++        for scale in [0.0, -0.0, -1.0, f64::NAN, f64::INFINITY, 8.0] {
++            let mut wrong_scales = scales.clone();
++            wrong_scales[6] = scale;
++            let wrong_provider = V3ColumnProvider {
++                coordinate_scales: &wrong_scales,
++            };
++            if !matches!(
++                wrong_provider.sweep(&trial, &base, &frozen),
++                Err(LandSurfaceEnergyError::CoveredJacobianDerivativeIntegrity(
++                    _
++                ))
++            ) {
++                return Err(integrity("scaled-coordinate poison admitted"));
++            }
++            refusals += 1;
++        }
++        let mut wrong_trial = trial.clone();
++        wrong_trial[6] += 1.0;
++        if !matches!(
++            provider.sweep(&wrong_trial, &base, &frozen),
++            Err(LandSurfaceEnergyError::CoveredJacobianDerivativeIntegrity(
++                _
++            ))
++        ) {
++            return Err(integrity("foreign scaled trial admitted"));
++        }
++        refusals += 1;
++        let mut wrong_frozen = frozen.clone();
++        wrong_frozen.ground = None;
++        if !matches!(
++            provider.sweep(&trial, &base, &wrong_frozen),
++            Err(LandSurfaceEnergyError::CoveredJacobianDerivativeIntegrity(
++                _
++            ))
++        ) {
++            return Err(integrity("foreign frozen state admitted"));
++        }
++        refusals += 1;
++    } else {
++        let validated = super::ValidatedCoveredEvaluationInputs::try_new(
++            &snapshot.inputs,
++            snapshot.caps.as_ref(),
++        )?;
++        let base = super::ValidatedCoveredIterationMap::evaluate(&validated, &physical)?
++            .into_jacobian_base();
++        for case in 0..8 {
++            verify_refusal(InactiveColumnSweep::covered(&base)?, case)?;
++        }
++    }
++    Ok(refusals)
++}
++
++#[cfg(test)]
++pub(crate) fn structural_fd_guard_cases() -> Result<usize, LandSurfaceEnergyError> {
++    for (input_area, component_area) in [(1.0, 1.0), (1.0, 0.0), (-0.0, 0.0)] {
++        if eligible_areas(input_area, component_area) {
++            return Err(integrity("structural finite-difference exclusion"));
++        }
++    }
++    Ok(3)
++}
+--- /dev/null
++++ b/crates/openwepp-land-surface-energy/src/solver_inactive_jacobian_cost.rs
+@@ -0,0 +1,654 @@
++//! Bounded v34 local experiment, never a solver selector or full-sweep benchmark.
++//! Unselected matrix columns remain zero. Common classification/JSON decoding is
++//! untimed; each repetition pays a fresh ordinary base. Column spans include
++//! matrix allocation, complete selected columns, and the common row adjustment.
++#![allow(clippy::too_many_lines)]
++
++use crate::{
++    CoveredColumnEvaluation, LandSurfaceEnergyError,
++    numerics::{ColumnAssembly, JacobianColumns},
++    solver_residual_corpus_capture::{Corpus, Family, Pass, Snapshot},
++};
++use std::{
++    hint::black_box,
++    time::{Duration, Instant},
++};
++
++const MINIMUM_BATCH: Duration = Duration::from_millis(100);
++const PAIRS: usize = 30;
++
++struct Case<'a> {
++    snapshot: &'a Snapshot,
++    physical: Vec<f64>,
++    trial: Vec<f64>,
++    scales: Vec<f64>,
++    units: Vec<f64>,
++    physical_units: Vec<f64>,
++    selected: Vec<bool>,
++}
++
++impl<'a> Case<'a> {
++    fn new(snapshot: &'a Snapshot) -> Self {
++        snapshot
++            .replay()
++            .expect("admitted same-family exact base replay");
++        let physical: Vec<_> = snapshot
++            .x_bits
++            .iter()
++            .copied()
++            .map(f64::from_bits)
++            .collect();
++        let physical_units: Vec<_> = (0..snapshot.inputs.occupancies.len())
++            .flat_map(|_| [1000.0, 1000.0, 1000.0, 1000.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
++            .chain([1.0, 0.001, 1.0])
++            .chain(std::iter::repeat_n(
++                1.0,
++                snapshot.inputs.ground.soil_nodes.len(),
++            ))
++            .collect();
++        let decode = |bits: &[u64]| bits.iter().copied().map(f64::from_bits).collect::<Vec<_>>();
++        let (trial, scales, units) = snapshot.v3.as_ref().map_or_else(
++            || {
++                (
++                    physical.clone(),
++                    vec![1.0; physical.len()],
++                    physical_units.clone(),
++                )
++            },
++            |v3| {
++                (
++                    decode(&v3.scaled_x_bits),
++                    decode(&v3.coordinate_scale_bits),
++                    decode(&v3.scaled_unit_bits),
++                )
++            },
++        );
++        // Independent common classification; no candidate helper runs on A.
++        let mut selected = vec![false; physical.len()];
++        for (o, input) in snapshot.inputs.occupancies.iter().enumerate() {
++            for (component, area) in [
++                input.sun.leaf_area_m2_m2_tile,
++                input.shade.leaf_area_m2_m2_tile,
++            ]
++            .into_iter()
++            .enumerate()
++            {
++                selected[10 * o + 6 + component] =
++                    snapshot.inputs.authority.admits_nonpositive_assimilation()
++                        && area.to_bits() == 0
++                        && snapshot.base_evaluation.occupancies[o].component_areas_m2_m2_tile
++                            [component]
++                            .to_bits()
++                            == 0;
++            }
++        }
++        assert!(
++            selected.iter().any(|v| *v),
++            "every retained cost case participates"
++        );
++        Self {
++            snapshot,
++            physical,
++            trial,
++            scales,
++            units,
++            physical_units,
++            selected,
++        }
++    }
++}
++
++#[derive(Clone, Copy)]
++enum Arm {
++    A,
++    J,
++}
++impl Arm {
++    fn name(self) -> &'static str {
++        match self {
++            Self::A => "A",
++            Self::J => "J",
++        }
++    }
++}
++
++#[derive(Default)]
++struct Observation {
++    inclusive: Duration,
++    columns: Duration,
++    complete_probe_calls: u64,
++    direct_columns: u64,
++    fd_columns: u64,
++    canonical_checksum: u64,
++    consumed_checksum: u64,
++    inclusive_leaf_calls: u64,
++    observed_direct: crate::solver_residual_corpus_capture::DirectColumnCounts,
++}
++
++fn checksum(matrix: &[Vec<f64>], rhs: &[f64]) -> u64 {
++    matrix
++        .iter()
++        .flatten()
++        .chain(rhs)
++        .fold(0xcbf2_9ce4_8422_2325_u64, |state, value| {
++            assert!(value.is_finite(), "nonfinite benchmark assembly");
++            state.wrapping_mul(0x0100_0000_01b3) ^ black_box(value.to_bits())
++        })
++}
++
++/// Common source-order copy of retained adjustment, independently reviewed.
++/// Current coordinates are the explicit shared initial hydraulic anchors; this
++/// is a column obligation, not reconstruction of original solve-initial state.
++fn adjust(case: &Case<'_>, base: &CoveredColumnEvaluation, matrix: &mut [Vec<f64>]) -> Vec<f64> {
++    let snapshot = case.snapshot;
++    let v3 = snapshot.family == Family::GenericV3;
++    let mut rhs: Vec<_> = base.normalized_residuals.iter().map(|r| -r).collect();
++    for (o, input) in snapshot.inputs.occupancies.iter().enumerate() {
++        let inactive = snapshot.inputs.authority.admits_nonpositive_assimilation()
++            && [
++                input.sun.leaf_area_m2_m2_tile,
++                input.shade.leaf_area_m2_m2_tile,
++                input.stem_area_m2_m2_tile,
++                input.lai,
++                input.sai,
++            ]
++            .iter()
++            .all(|v| v.to_bits() == 0);
++        if inactive {
++            for local in 0..6 {
++                let j = 10 * o + local;
++                matrix[j].fill(0.0);
++                let unit = if v3 { 1.0 } else { case.physical_units[j] };
++                matrix[j][j] = 1.0 / unit;
++                let target = if local < 4 {
++                    case.trial[j]
++                } else if v3 {
++                    1.0 / case.scales[j]
++                } else {
++                    1.0
++                };
++                rhs[j] = (target - case.trial[j]) / unit;
++            }
++        }
++    }
++    let canopy = case.physical[10 * snapshot.inputs.occupancies.len()];
++    for (o, occupancy) in base.occupancies.iter().enumerate() {
++        for (component, area) in occupancy.component_areas_m2_m2_tile.iter().enumerate() {
++            if area.to_bits() != 0 {
++                continue;
++            }
++            let j = 10 * o + 6 + component;
++            let unit = if v3 { 1.0 } else { case.physical_units[j] };
++            let anchor = super::inactive_component_temperature_anchor_k(component, canopy);
++            matrix[j].fill(0.0);
++            matrix[j][j] = 1.0 / unit;
++            rhs[j] = (anchor / case.scales[j] - case.trial[j]) / unit;
++        }
++    }
++    if !v3 && snapshot.caps.is_none() && super::v10_nonpositive_assimilation_active(base) {
++        for row in matrix {
++            for (entry, unit) in row.iter_mut().zip(&case.physical_units) {
++                *entry *= unit;
++            }
++        }
++    }
++    rhs
++}
++
++fn fd_columns(
++    case: &Case<'_>,
++    base: &CoveredColumnEvaluation,
++    matrix: &mut [Vec<f64>],
++    mut evaluator: impl FnMut(&[f64], usize) -> Result<Vec<f64>, LandSurfaceEnergyError>,
++) -> Result<(u64, u64), LandSurfaceEnergyError> {
++    let snapshot = case.snapshot;
++    let v3 = snapshot.family == Family::GenericV3;
++    let liquid_ground =
++        !v3 && super::covered_ground_uses_liquid_vapor_phase_domain(&snapshot.inputs);
++    let valid = |trial: &[f64]| {
++        if v3 {
++            let physical: Vec<_> = trial.iter().zip(&case.scales).map(|(x, s)| x * s).collect();
++            super::covered_trial_is_valid(&physical, snapshot.inputs.occupancies.len(), false)
++        } else {
++            super::covered_trial_is_valid(trial, snapshot.inputs.occupancies.len(), liquid_ground)
++        }
++    };
++    assert!(valid(&case.trial), "valid captured base");
++    let mut probes = 0;
++    let mut columns = 0;
++    for (j, selected) in case.selected.iter().enumerate() {
++        if !selected {
++            continue;
++        }
++        let h = f64::EPSILON.sqrt() * case.trial[j].abs().max(case.units[j]);
++        let mut minus = case.trial.clone();
++        let mut plus = case.trial.clone();
++        minus[j] -= h;
++        plus[j] += h;
++        let lo = valid(&minus);
++        let hi = valid(&plus);
++        let rm = if lo {
++            probes += 1;
++            Some(evaluator(&minus, j)?)
++        } else {
++            None
++        };
++        let rp = if hi {
++            probes += 1;
++            Some(evaluator(&plus, j)?)
++        } else {
++            None
++        };
++        for row in 0..matrix.len() {
++            // Exactly the existing production denominator, not reference abscissae.
++            matrix[row][j] = match (&rm, &rp) {
++                (Some(a), Some(b)) => (b[row] - a[row]) / (2.0 * h),
++                (Some(a), None) => (base.normalized_residuals[row] - a[row]) / h,
++                (None, Some(b)) => (b[row] - base.normalized_residuals[row]) / h,
++                (None, None) => {
++                    return Err(LandSurfaceEnergyError::ConstitutiveDomain(
++                        "normalized_jacobian_bound",
++                    ));
++                }
++            };
++        }
++        columns += 1;
++    }
++    Ok((probes, columns))
++}
++
++fn direct_columns(
++    case: &Case<'_>,
++    mut sweep: impl ColumnAssembly,
++    matrix: &mut [Vec<f64>],
++) -> Result<u64, LandSurfaceEnergyError> {
++    let mut count = 0;
++    for (j, expected) in case.selected.iter().enumerate() {
++        let direct = sweep.assemble(j, matrix)?;
++        assert_eq!(
++            direct, *expected,
++            "candidate eligibility differs from common frozen classification"
++        );
++        count += u64::from(direct);
++    }
++    Ok(count)
++}
++
++fn repetition(case: &Case<'_>, arm: Arm) -> Result<Observation, LandSurfaceEnergyError> {
++    repetition_with_output(case, arm, |_, _| {})
++}
++
++fn repetition_with_output(
++    case: &Case<'_>,
++    arm: Arm,
++    consume: impl FnOnce(&[Vec<f64>], &[f64]),
++) -> Result<Observation, LandSurfaceEnergyError> {
++    let inclusive = Instant::now();
++    let mut result = Observation::default();
++    let snapshot = case.snapshot;
++    if let Some(v3) = &snapshot.v3 {
++        // Both arms pay exactly this successful same-family base construction.
++        let base = super::inactive_jacobian::V3DerivativeBase::evaluate(
++            &snapshot.inputs,
++            snapshot.caps.as_ref(),
++            case.physical.clone(),
++            None,
++            v3.context,
++        )?;
++        let frozen = crate::solver_litter_phase::freeze_v3_covered_branches(base.evaluation());
++        let start = Instant::now();
++        let mut matrix = vec![vec![0.0; case.trial.len()]; case.trial.len()];
++        match arm {
++            Arm::A => {
++                let counts = fd_columns(
++                    case,
++                    &base.evaluation().predecessor,
++                    &mut matrix,
++                    |trial, _| {
++                        let physical: Vec<_> =
++                            trial.iter().zip(&case.scales).map(|(x, s)| x * s).collect();
++                        crate::evaluate_v3_phase_free_covered_column(
++                            &snapshot.inputs,
++                            &physical,
++                            snapshot.caps.as_ref(),
++                            Some(&frozen),
++                            v3.context,
++                        )
++                        .map(|e| e.predecessor.normalized_residuals)
++                    },
++                )?;
++                result.complete_probe_calls = counts.0;
++                result.fd_columns = counts.1;
++            }
++            Arm::J => {
++                let provider = super::inactive_jacobian::V3ColumnProvider {
++                    coordinate_scales: &case.scales,
++                };
++                result.direct_columns = direct_columns(
++                    case,
++                    provider.sweep(&case.trial, &base, &frozen)?,
++                    &mut matrix,
++                )?;
++            }
++        }
++        result.canonical_checksum = checksum(black_box(&matrix), &[]);
++        let rhs = adjust(case, &base.evaluation().predecessor, &mut matrix);
++        result.consumed_checksum = checksum(black_box(&matrix), black_box(&rhs));
++        consume(&matrix, &rhs);
++        black_box(&matrix);
++        black_box(&rhs);
++        drop(matrix);
++        drop(rhs);
++        result.columns = start.elapsed();
++    } else {
++        let validated = super::ValidatedCoveredEvaluationInputs::try_new(
++            &snapshot.inputs,
++            snapshot.caps.as_ref(),
++        )?;
++        let base = super::ValidatedCoveredIterationMap::evaluate(&validated, &case.physical)?
++            .into_jacobian_base();
++        let start = Instant::now();
++        let mut matrix = vec![vec![0.0; case.trial.len()]; case.trial.len()];
++        match arm {
++            Arm::A => {
++                let counts = fd_columns(case, &base.evaluation, &mut matrix, |trial, j| {
++                    super::covered_jacobian_probe_residuals(&base, trial, j)
++                })?;
++                result.complete_probe_calls = counts.0;
++                result.fd_columns = counts.1;
++            }
++            Arm::J => {
++                result.direct_columns = direct_columns(
++                    case,
++                    super::inactive_jacobian::InactiveColumnSweep::covered(&base)?,
++                    &mut matrix,
++                )?;
++            }
++        }
++        result.canonical_checksum = checksum(black_box(&matrix), &[]);
++        let rhs = adjust(case, &base.evaluation, &mut matrix);
++        result.consumed_checksum = checksum(black_box(&matrix), black_box(&rhs));
++        consume(&matrix, &rhs);
++        black_box(&matrix);
++        black_box(&rhs);
++        drop(matrix);
++        drop(rhs);
++        result.columns = start.elapsed();
++    }
++    result.inclusive = inclusive.elapsed();
++    Ok(result)
++}
++
++/// Evidence equality never relies on a finite checksum. This comparison covers
++/// shape, every matrix entry and every RHS entry, including signed zero.
++fn exact_output(left: &(Vec<Vec<f64>>, Vec<f64>), right: &(Vec<Vec<f64>>, Vec<f64>)) -> bool {
++    left.0.len() == right.0.len()
++        && left.1.len() == right.1.len()
++        && left.0.iter().zip(&right.0).all(|(a, b)| {
++            a.len() == b.len() && a.iter().zip(b).all(|(x, y)| x.to_bits() == y.to_bits())
++        })
++        && left
++            .1
++            .iter()
++            .zip(&right.1)
++            .all(|(x, y)| x.to_bits() == y.to_bits())
++}
++
++fn preflight(cases: &[Case<'_>]) {
++    for case in cases {
++        let mut baseline = (Vec::new(), Vec::new());
++        let mut candidate = (Vec::new(), Vec::new());
++        repetition_with_output(case, Arm::A, |matrix, rhs| {
++            baseline = (matrix.to_vec(), rhs.to_vec());
++        })
++        .expect("untimed complete A obligation");
++        repetition_with_output(case, Arm::J, |matrix, rhs| {
++            candidate = (matrix.to_vec(), rhs.to_vec());
++        })
++        .expect("untimed complete J obligation");
++        assert!(
++            exact_output(&baseline, &candidate),
++            "untimed exact consumed matrix/RHS mismatch: {:?} {:?} {:?}",
++            case.snapshot.family,
++            case.snapshot.pass,
++            case.snapshot.lifecycle
++        );
++    }
++}
++
++/// Sequence-bound work checksum. This avoids the rotate/XOR cancellation of
++/// repeated records; it is an optimization barrier, not a parity certificate.
++fn accumulate(state: u64, repetition: u64, record: usize, value: u64) -> u64 {
++    [
++        repetition,
++        u64::try_from(record).expect("record index fits u64"),
++        value,
++    ]
++    .into_iter()
++    .flat_map(u64::to_le_bytes)
++    .fold(state, |hash, byte| {
++        (hash ^ u64::from(byte)).wrapping_mul(0x0100_0000_01b3)
++    })
++}
++
++#[test]
++fn inactive_jacobian_cost_output_integrity() {
++    let original = (vec![vec![1.0, 0.0], vec![0.0, 1.0]], vec![0.0, 0.5]);
++    assert!(exact_output(&original, &original));
++    for poison in 0..5 {
++        let mut changed = original.clone();
++        match poison {
++            0 => changed.0[0][1] = 1.0e-12,
++            1 => changed.1[1] += 1.0e-12,
++            2 => changed.0[0][1] = -0.0,
++            3 => {
++                changed.0[1].pop();
++            }
++            _ => {
++                changed.1.pop();
++            }
++        }
++        assert!(
++            !exact_output(&original, &changed),
++            "mutation {poison} hidden"
++        );
++    }
++    let fold = |value: u64| {
++        let mut hash = 0xcbf2_9ce4_8422_2325;
++        for repetition in 0..32 {
++            for record in 0..12 {
++                hash = accumulate(hash, repetition, record, value);
++            }
++        }
++        hash
++    };
++    assert_ne!(fold(7), fold(11), "repeated-record cancellation regressed");
++    assert_ne!(
++        accumulate(7, 0, 1, 5),
++        accumulate(7, 1, 0, 5),
++        "sequence binding"
++    );
++}
++
++fn batch(cases: &[Case<'_>], arm: Arm, repetitions: u64) -> Observation {
++    let direct_session = crate::solver_residual_corpus_capture::start_direct_column_counting()
++        .expect("matched compact direct counter");
++    let mechanism_session = crate::solver_mechanism_audit::begin_mechanism_audit(false, 0)
++        .expect("matched compact mechanism posture; no detailed trace");
++    let mut total = Observation {
++        canonical_checksum: 0xcbf2_9ce4_8422_2325,
++        consumed_checksum: 0xcbf2_9ce4_8422_2325,
++        ..Observation::default()
++    };
++    for iteration in 0..repetitions {
++        for (record, case) in cases.iter().enumerate() {
++            let row =
++                repetition(black_box(case), arm).expect("cost case must remain numerically valid");
++            total.inclusive += row.inclusive;
++            total.columns += row.columns;
++            total.complete_probe_calls += row.complete_probe_calls;
++            total.direct_columns += row.direct_columns;
++            total.fd_columns += row.fd_columns;
++            total.canonical_checksum = accumulate(
++                total.canonical_checksum,
++                iteration,
++                record,
++                row.canonical_checksum,
++            );
++            total.consumed_checksum = accumulate(
++                total.consumed_checksum,
++                iteration,
++                record,
++                row.consumed_checksum,
++            );
++        }
++    }
++    total.observed_direct = direct_session
++        .finish()
++        .expect("completed actual direct counts");
++    let observed = total.observed_direct;
++    assert_eq!(
++        observed.covered_potential
++            + observed.covered_fixed_final
++            + observed.generic_v3_potential
++            + observed.generic_v3_fixed_final,
++        total.direct_columns,
++        "actual completed candidate counts"
++    );
++    let audit = mechanism_session
++        .finish()
++        .expect("complete compact mechanism counts");
++    assert_eq!(audit.dropped_events, 0);
++    total.inclusive_leaf_calls = audit.leaf_calls;
++    total
++}
++
++fn emit(phase: &str, attempt: u64, pair: usize, arm: Arm, repetitions: u64, row: &Observation) {
++    println!(
++        "INACTIVE_JACOBIAN_COST {}",
++        serde_json::json!({
++            "phase":phase,"attempt":attempt,"pair":pair,"arm":arm.name(),"repetitions":repetitions,
++            "base_plus_columns_ns":row.inclusive.as_nanos(),"disjoint_columns_ns":row.columns.as_nanos(),
++            "complete_probe_calls":row.complete_probe_calls,"direct_columns":row.direct_columns,"fd_columns":row.fd_columns,
++            "canonical_checksum":row.canonical_checksum,"consumed_checksum":row.consumed_checksum,
++            "inclusive_leaf_calls":row.inclusive_leaf_calls,"actual_direct_counts":row.observed_direct,
++            "minimum_column_duration_met":row.columns>=MINIMUM_BATCH,
++        })
++    );
++}
++
++#[test]
++#[ignore = "controlled release cost experiment; numerical and authentic consumer admission required first"]
++#[expect(
++    clippy::assertions_on_constants,
++    reason = "release-only measurement entry"
++)]
++fn inactive_jacobian_local_cost() {
++    assert!(!cfg!(debug_assertions), "release build required");
++    assert_eq!(
++        std::env::var("OPENWEPP_INACTIVE_JACOBIAN_COST_ADMITTED").as_deref(),
++        Ok("1"),
++        "executor must complete numerical and real consumer admission before timing"
++    );
++    let path =
++        std::env::var_os("OPENWEPP_INACTIVE_JACOBIAN_CORPUS").expect("explicit frozen corpus");
++    let bytes = std::fs::read(path).expect("corpus bytes");
++    let corpus = Corpus::from_wire_bytes(&bytes).expect("lossless corpus");
++    let cases: Vec<_> = corpus
++        .first
++        .iter()
++        .chain(&corpus.last)
++        .map(Case::new)
++        .collect();
++    assert!(!cases.is_empty());
++    preflight(&cases);
++    for (family, pass) in [
++        (Family::Covered, Pass::Potential),
++        (Family::GenericV3, Pass::Potential),
++        (Family::GenericV3, Pass::FixedFinal),
++    ] {
++        for edge in [&corpus.first, &corpus.last] {
++            assert!(
++                edge.iter().any(|s| s.family == family && s.pass == pass),
++                "first and last required for each participating consumer"
++            );
++        }
++    }
++    println!(
++        "INACTIVE_JACOBIAN_COST_PROTOCOL {}",
++        serde_json::json!({
++            "cases":cases.iter().map(|c|serde_json::json!({"family":c.snapshot.family,"pass":c.snapshot.pass,"lifecycle":c.snapshot.lifecycle,"dimension":c.trial.len(),"selected_columns":c.selected.iter().enumerate().filter_map(|(j,v)|v.then_some(j)).collect::<Vec<_>>()})).collect::<Vec<_>>(),
++            "obligation":"complete selected columns; unselected workspace columns zero; not full sweep",
++            "column_span":"allocation + complete selected construction + full-matrix checksums + common row adjustment + deallocation",
++            "base_span":"fresh ordinary same-state base including frozen branches; disjoint from column span",
++            "weighting":"equal frozen records, no claimed runtime fraction; leaf counts include fresh bases and probes",
++            "observers":"matched compact direct and mechanism sessions; detailed capture disabled",
++            "pairs":PAIRS,"warmups_per_arm":2,"minimum_column_batch_ns":MINIMUM_BATCH.as_nanos(),
++        })
++    );
++    let mut repetitions = 1_u64;
++    let mut attempt = 0_u64;
++    loop {
++        // Calibration observes both arms before freezing one shared repetition
++        // count; estimates are never silently capped or accepted when too short.
++        loop {
++            let a = batch(&cases, Arm::A, repetitions);
++            let j = batch(&cases, Arm::J, repetitions);
++            emit("calibration", attempt, 0, Arm::A, repetitions, &a);
++            emit("calibration", attempt, 0, Arm::J, repetitions, &j);
++            assert_eq!(
++                a.consumed_checksum, j.consumed_checksum,
++                "postadjusted same obligation must agree"
++            );
++            if a.columns >= MINIMUM_BATCH && j.columns >= MINIMUM_BATCH {
++                break;
++            }
++            repetitions = repetitions
++                .checked_mul(2)
++                .expect("calibration repetition overflow: no short-batch admission");
++        }
++        for warmup in 0..2 {
++            for arm in [Arm::A, Arm::J] {
++                emit(
++                    "warmup",
++                    attempt,
++                    warmup,
++                    arm,
++                    repetitions,
++                    &batch(&cases, arm, repetitions),
++                );
++            }
++        }
++        let mut valid = true;
++        for pair in 0..PAIRS {
++            let order = if pair % 2 == 0 {
++                [Arm::A, Arm::J]
++            } else {
++                [Arm::J, Arm::A]
++            };
++            let first = batch(&cases, order[0], repetitions);
++            emit("measured", attempt, pair, order[0], repetitions, &first);
++            let second = batch(&cases, order[1], repetitions);
++            emit("measured", attempt, pair, order[1], repetitions, &second);
++            assert_eq!(
++                first.consumed_checksum, second.consumed_checksum,
++                "consumed matrix/RHS parity"
++            );
++            if first.columns < MINIMUM_BATCH || second.columns < MINIMUM_BATCH {
++                valid = false;
++                break;
++            }
++        }
++        println!(
++            "INACTIVE_JACOBIAN_COST_ATTEMPT {}",
++            serde_json::json!({"attempt":attempt,"valid":valid,"repetitions":repetitions})
++        );
++        if valid {
++            break;
++        }
++        attempt = attempt.checked_add(1).expect("attempt counter overflow");
++        repetitions = repetitions
++            .checked_mul(2)
++            .expect("repetition overflow after retained short attempt");
++    }
++}
+--- /dev/null
++++ b/crates/openwepp-land-surface-energy/src/solver_inactive_jacobian_oracle.rs
+@@ -0,0 +1,803 @@
++//! Independent v34 reference: canonical primal probes, never candidate tangents.
++//! Frozen policy: SC-LANDSURFACEENERGY-001/inactive-jacobian.md.
++#![allow(clippy::float_cmp, clippy::cast_precision_loss, clippy::too_many_lines)]
++
++use crate::{
++    CoveredColumnEvaluation, LandSurfaceEnergyError,
++    solver_residual_corpus_capture::{self as capture, Corpus, Family, Pass, Snapshot},
++};
++
++const STEPS_K: [f64; 4] = [0.5, 0.25, 0.125, 0.0625];
++const EPS: f64 = f64::EPSILON;
++
++/// Independent paired assembly, not a reconstruction of the historical RHS:
++/// snapshots do not retain original solve-initial hydraulic anchors. Both arms
++/// use the captured current coordinates as one explicit common anchor vector.
++/// Equality for any other common anchor follows because J changes no RHS path.
++pub(crate) fn postadjustment_parity(
++    snapshot: &Snapshot,
++    direct: &[Option<Vec<f64>>],
++) -> Result<(bool, bool), String> {
++    snapshot.validate().map_err(|error| error.to_string())?;
++    let physical: Vec<_> = snapshot
++        .x_bits
++        .iter()
++        .copied()
++        .map(f64::from_bits)
++        .collect();
++    let base = evaluate(snapshot, &physical).map_err(|error| error.to_string())?;
++    let n = physical.len();
++    if direct.len() != n || direct.iter().flatten().any(|column| column.len() != n) {
++        return Err("independent assembly column cardinality".into());
++    }
++    let occupancy_count = snapshot.inputs.occupancies.len();
++    let physical_units: Vec<_> = (0..occupancy_count)
++        .flat_map(|_| [1000.0, 1000.0, 1000.0, 1000.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
++        .chain([1.0, 0.001, 1.0])
++        .chain(std::iter::repeat_n(
++            1.0,
++            snapshot.inputs.ground.soil_nodes.len(),
++        ))
++        .collect();
++    let (x, scales, units) = if let Some(v3) = &snapshot.v3 {
++        (
++            v3.scaled_x_bits
++                .iter()
++                .copied()
++                .map(f64::from_bits)
++                .collect::<Vec<_>>(),
++            v3.coordinate_scale_bits
++                .iter()
++                .copied()
++                .map(f64::from_bits)
++                .collect::<Vec<_>>(),
++            v3.scaled_unit_bits
++                .iter()
++                .copied()
++                .map(f64::from_bits)
++                .collect::<Vec<_>>(),
++        )
++    } else {
++        (physical.clone(), vec![1.0; n], physical_units.clone())
++    };
++    let mut fd = vec![vec![0.0; n]; n];
++    for column in 0..n {
++        let h = EPS.sqrt() * x[column].abs().max(units[column]);
++        let mut endpoints = [None, None];
++        for (side, sign) in [-1.0, 1.0].into_iter().enumerate() {
++            let mut trial = x.clone();
++            trial[column] += sign * h;
++            let physical_trial: Vec<_> = trial.iter().zip(&scales).map(|(v, s)| v * s).collect();
++            if !lawful(snapshot, &physical_trial) {
++                continue;
++            }
++            let identity = snapshot.family == Family::Covered
++                && snapshot.inputs.authority == super::CoveredColumnAuthority::V11SnowCovered
++                && column >= 10 * occupancy_count + 2;
++            let residual = if identity {
++                let ground_index = 10 * occupancy_count + 2;
++                let anchor = if column == ground_index {
++                    snapshot
++                        .inputs
++                        .stage3_lower_boundary
++                        .as_ref()
++                        .ok_or("missing represented-snow boundary")?
++                        .snow_temperature_k
++                } else {
++                    snapshot.inputs.ground.soil_nodes[column - ground_index - 1]
++                        .beginning_temperature_k
++                };
++                let mut residual = base.normalized_residuals.clone();
++                residual[column] = (physical_trial[column] - anchor) / 1.0e-9;
++                residual
++            } else {
++                evaluate(snapshot, &physical_trial)
++                    .map_err(|error| error.to_string())?
++                    .normalized_residuals
++            };
++            endpoints[side] = Some(residual);
++        }
++        for row in 0..n {
++            fd[row][column] = match (&endpoints[0], &endpoints[1]) {
++                (Some(a), Some(b)) => (b[row] - a[row]) / (2.0 * h),
++                (Some(a), None) => (base.normalized_residuals[row] - a[row]) / h,
++                (None, Some(b)) => (b[row] - base.normalized_residuals[row]) / h,
++                (None, None) => return Err("canonical assembly has no valid probe".into()),
++            };
++        }
++    }
++    let mut candidate = fd.clone();
++    for (column, values) in direct.iter().enumerate() {
++        if let Some(values) = values {
++            for (row, &value) in values.iter().enumerate() {
++                candidate[row][column] = value;
++            }
++        }
++    }
++    let common_initial = x.clone();
++    let adjustment = |matrix: &mut [Vec<f64>]| {
++        let mut rhs: Vec<_> = base.normalized_residuals.iter().map(|r| -r).collect();
++        for (o, input) in snapshot.inputs.occupancies.iter().enumerate() {
++            let all_inactive = snapshot.inputs.authority.admits_nonpositive_assimilation()
++                && [
++                    input.sun.leaf_area_m2_m2_tile,
++                    input.shade.leaf_area_m2_m2_tile,
++                    input.stem_area_m2_m2_tile,
++                    input.lai,
++                    input.sai,
++                ]
++                .iter()
++                .all(|v| v.to_bits() == 0);
++            if all_inactive {
++                for local in 0..6 {
++                    let j = 10 * o + local;
++                    matrix[j].fill(0.0);
++                    if snapshot.family == Family::GenericV3 {
++                        matrix[j][j] = 1.0;
++                        rhs[j] = if local < 4 {
++                            common_initial[j] - x[j]
++                        } else {
++                            1.0 / scales[j] - x[j]
++                        };
++                    } else {
++                        matrix[j][j] = 1.0 / physical_units[j];
++                        rhs[j] = if local < 4 {
++                            (common_initial[j] - x[j]) / physical_units[j]
++                        } else {
++                            (1.0 - x[j]) / physical_units[j]
++                        };
++                    }
++                }
++            }
++        }
++        let canopy_temperature = x[10 * occupancy_count] * scales[10 * occupancy_count];
++        for (o, occupancy) in base.occupancies.iter().enumerate() {
++            for (component, area) in occupancy.component_areas_m2_m2_tile.iter().enumerate() {
++                if area.to_bits() != 0 {
++                    continue;
++                }
++                let j = 10 * o + 6 + component;
++                let anchor = if component < 3 {
++                    canopy_temperature.max(273.15)
++                } else {
++                    canopy_temperature
++                };
++                matrix[j].fill(0.0);
++                if snapshot.family == Family::GenericV3 {
++                    matrix[j][j] = 1.0;
++                    rhs[j] = anchor / scales[j] - x[j];
++                } else {
++                    matrix[j][j] = 1.0 / physical_units[j];
++                    rhs[j] = (anchor - x[j]) / physical_units[j];
++                }
++            }
++        }
++        let nonpositive = base.occupancies.iter().any(|o| {
++            o.gas_branches.iter().any(|b| {
++                matches!(
++                    b,
++                    crate::V10LeafGasBranch::Inactive
++                        | crate::V10LeafGasBranch::ExactZeroPar
++                        | crate::V10LeafGasBranch::RespirationDominated
++                )
++            })
++        });
++        if snapshot.family == Family::Covered
++            && snapshot.caps.is_none()
++            && snapshot.inputs.authority.admits_nonpositive_assimilation()
++            && nonpositive
++        {
++            for row in matrix {
++                for (value, unit) in row.iter_mut().zip(&physical_units) {
++                    *value *= unit;
++                }
++            }
++        }
++        rhs
++    };
++    let fd_rhs = adjustment(&mut fd);
++    let candidate_rhs = adjustment(&mut candidate);
++    Ok((
++        fd.iter()
++            .flatten()
++            .zip(candidate.iter().flatten())
++            .all(|(a, b)| a.to_bits() == b.to_bits()),
++        fd_rhs
++            .iter()
++            .zip(&candidate_rhs)
++            .all(|(a, b)| a.to_bits() == b.to_bits()),
++    ))
++}
++
++#[derive(Clone, Copy, Debug)]
++struct Estimate {
++    value: f64,
++    uncertainty: f64,
++}
++
++fn admits(candidate: f64, reference: Estimate, allowed: f64) -> bool {
++    candidate.is_finite()
++        && reference.value.is_finite()
++        && reference.uncertainty.is_finite()
++        && reference.uncertainty >= 0.0
++        && allowed.is_finite()
++        && allowed > 0.0
++        && (candidate - reference.value).abs() + reference.uncertainty <= allowed
++}
++
++// Exact integer long division of 1 / supplied binary64 s, rounded once.
++// This deliberately does not use floating-point reciprocal or the J helper.
++fn reciprocal(s: f64) -> Estimate {
++    assert!(s.is_normal() && s > 0.0);
++    let bits = s.to_bits();
++    let exponent = i32::try_from((bits >> 52) & 0x7ff).unwrap() - 1023;
++    let significand = u128::from((bits & ((1_u64 << 52) - 1)) | (1_u64 << 52));
++    let out_exponent = -exponent - i32::from(significand != (1_u128 << 52));
++    assert!((-1022..=1023).contains(&out_exponent));
++    let shift = u32::try_from(104 - exponent - out_exponent).unwrap();
++    let numerator = 1_u128 << shift;
++    let mut quotient = numerator / significand;
++    let remainder = numerator % significand;
++    if 2 * remainder > significand || (2 * remainder == significand && quotient & 1 == 1) {
++        quotient += 1;
++    }
++    let encoded = (u64::try_from(out_exponent + 1023).unwrap() << 52)
++        + u64::try_from(quotient - (1_u128 << 52)).unwrap();
++    let value = f64::from_bits(encoded);
++    assert!(value.is_normal());
++    Estimate {
++        value,
++        uncertainty: EPS * value.abs() / (1.0 - EPS),
++    }
++}
++
++fn evaluation_allowance(t: f64, anchor: f64, s: f64, r: f64) -> f64 {
++    assert!(t.is_normal() && anchor.is_normal() && s.is_normal() && s > 0.0);
++    assert!(r == 0.0 || r.is_normal());
++    let error = 8.0 * EPS * (t.abs() + anchor.abs()) / s + 8.0 * EPS * r.abs().max(1.0);
++    assert!(error.is_normal());
++    error
++}
++
++fn secant(x0: f64, x1: f64, f0: f64, f1: f64, e0: f64, e1: f64) -> Estimate {
++    let displacement = x1 - x0;
++    assert!(displacement.is_normal() && displacement > 0.0);
++    let value = (f1 - f0) / displacement;
++    let uncertainty = (e0 + e1) / displacement + 8.0 * EPS * value.abs().max(1.0);
++    assert!(value.is_finite() && uncertainty.is_finite());
++    Estimate { value, uncertainty }
++}
++
++fn evaluate(
++    snapshot: &Snapshot,
++    x: &[f64],
++) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
++    match &snapshot.v3 {
++        Some(v3) => crate::evaluate_v3_phase_free_covered_column(
++            &snapshot.inputs,
++            x,
++            snapshot.caps.as_ref(),
++            Some(&snapshot.frozen),
++            v3.context,
++        )
++        .map(|value| value.predecessor),
++        None => crate::evaluate_covered_column(
++            &snapshot.inputs,
++            x,
++            snapshot.caps.as_ref(),
++            Some(&snapshot.frozen),
++        ),
++    }
++}
++
++fn branches_equal(base: &CoveredColumnEvaluation, probe: &CoveredColumnEvaluation) -> bool {
++    base.ground_water.branch == probe.ground_water.branch
++        && base.occupancies.len() == probe.occupancies.len()
++        && base
++            .occupancies
++            .iter()
++            .zip(&probe.occupancies)
++            .all(|(a, b)| {
++                a.gas_branches == b.gas_branches
++                    && a.wet_branch == b.wet_branch
++                    && a.source_water.len() == b.source_water.len()
++                    && a.source_water
++                        .iter()
++                        .zip(&b.source_water)
++                        .all(|(x, y)| x.branch == y.branch)
++            })
++}
++
++fn supported(snapshot: &Snapshot, base: &CoveredColumnEvaluation) -> Vec<usize> {
++    if !snapshot.inputs.authority.admits_nonpositive_assimilation() {
++        return vec![];
++    }
++    snapshot
++        .inputs
++        .occupancies
++        .iter()
++        .enumerate()
++        .flat_map(|(o, inputs)| {
++            [
++                inputs.sun.leaf_area_m2_m2_tile,
++                inputs.shade.leaf_area_m2_m2_tile,
++            ]
++            .into_iter()
++            .enumerate()
++            .filter_map(move |(leaf, area)| {
++                (area.to_bits() == 0
++                    && base.occupancies[o].component_areas_m2_m2_tile[leaf].to_bits() == 0)
++                    .then_some(10 * o + 6 + leaf)
++            })
++        })
++        .collect()
++}
++
++fn lawful(snapshot: &Snapshot, x: &[f64]) -> bool {
++    super::covered_trial_is_valid(
++        x,
++        snapshot.inputs.occupancies.len(),
++        snapshot.family == Family::Covered
++            && super::covered_ground_uses_liquid_vapor_phase_domain(&snapshot.inputs),
++    )
++}
++
++fn assert_mask(base: &CoveredColumnEvaluation, probe: &CoveredColumnEvaluation, varying: &[usize]) {
++    assert!(branches_equal(base, probe), "reference branch change");
++    assert_eq!(
++        base.normalized_residuals.len(),
++        probe.normalized_residuals.len()
++    );
++    for row in 0..base.normalized_residuals.len() {
++        assert_eq!(
++            base.tolerances[row].to_bits(),
++            probe.tolerances[row].to_bits(),
++            "normalizer {row}"
++        );
++        if !varying.contains(&row) {
++            assert_eq!(
++                base.raw_residuals[row].to_bits(),
++                probe.raw_residuals[row].to_bits(),
++                "raw zero-mask row {row}"
++            );
++            assert_eq!(
++                base.normalized_residuals[row].to_bits(),
++                probe.normalized_residuals[row].to_bits(),
++                "normalized zero-mask row {row}"
++            );
++        }
++    }
++}
++
++fn first_difference(a: &serde_json::Value, b: &serde_json::Value, path: &str) -> Option<String> {
++    match (a, b) {
++        (serde_json::Value::Number(a), serde_json::Value::Number(b))
++            if a.is_f64() && b.is_f64() =>
++        {
++            let actual_bits = a.as_f64().unwrap().to_bits();
++            let captured_bits = b.as_f64().unwrap().to_bits();
++            (actual_bits != captured_bits).then(|| format!(
++                "{path}: actual={a} bits={actual_bits:016x}, captured={b} bits={captured_bits:016x}"
++            ))
++        }
++        (serde_json::Value::Object(a), serde_json::Value::Object(b)) => {
++            a.iter().find_map(|(key, value)| {
++                first_difference(
++                    value,
++                    b.get(key).unwrap_or(&serde_json::Value::Null),
++                    &format!("{path}/{key}"),
++                )
++            })
++        }
++        (serde_json::Value::Array(a), serde_json::Value::Array(b)) if a.len() == b.len() => a
++            .iter()
++            .zip(b)
++            .enumerate()
++            .find_map(|(i, (a, b))| first_difference(a, b, &format!("{path}/{i}"))),
++        _ if a != b => Some(format!("{path}: actual={a}, captured={b}")),
++        _ => None,
++    }
++}
++
++fn audit(snapshot: &Snapshot) -> serde_json::Value {
++    if let Err(error) = snapshot.replay() {
++        let x: Vec<_> = snapshot
++            .x_bits
++            .iter()
++            .copied()
++            .map(f64::from_bits)
++            .collect();
++        let actual = if let Some(v3) = &snapshot.v3 {
++            serde_json::to_value(
++                crate::evaluate_v3_phase_free_covered_column(
++                    &snapshot.inputs,
++                    &x,
++                    snapshot.caps.as_ref(),
++                    Some(&snapshot.frozen),
++                    v3.context,
++                )
++                .expect("diagnostic same-family evaluation"),
++            )
++            .unwrap()
++        } else {
++            serde_json::to_value(evaluate(snapshot, &x).expect("diagnostic covered evaluation"))
++                .unwrap()
++        };
++        let expected = if let Some(v3) = &snapshot.v3 {
++            serde_json::to_value(&v3.evaluation).unwrap()
++        } else {
++            serde_json::to_value(&snapshot.base_evaluation).unwrap()
++        };
++        panic!(
++            "lossless same-family base replay {error:?}, family={:?}, pass={:?}, first_difference={:?}",
++            snapshot.family,
++            snapshot.pass,
++            first_difference(&actual, &expected, "")
++        );
++    }
++    let x: Vec<f64> = snapshot
++        .x_bits
++        .iter()
++        .copied()
++        .map(f64::from_bits)
++        .collect();
++    let base = evaluate(snapshot, &x).expect("ordinary successful base");
++    let columns = supported(snapshot, &base);
++    assert!(
++        !columns.is_empty(),
++        "required corpus class has no target columns"
++    );
++    let allowed = 1.0e-3 / columns.len().max(1) as f64;
++    let anchor = x[10 * snapshot.inputs.occupancies.len()].max(273.15);
++    let mut references = Vec::new();
++    let mut records = Vec::new();
++    // Baseline-only route construction finishes before any candidate API call.
++    for &column in &columns {
++        let s = base.tolerances[column];
++        assert_eq!(s.to_bits(), (1.0e-6_f64 + 1.0e-10_f64).to_bits());
++        let elementary = reciprocal(s);
++        assert_eq!(
++            base.normalized_residuals[column].to_bits(),
++            ((x[column] - anchor) / s).to_bits()
++        );
++        let mut selected: Option<Estimate> = None;
++        let mut samples = Vec::new();
++        for h in STEPS_K {
++            let mut minus = x.clone();
++            let mut plus = x.clone();
++            minus[column] -= h;
++            plus[column] += h;
++            let left_result = lawful(snapshot, &minus).then(|| evaluate(snapshot, &minus));
++            let right_result = lawful(snapshot, &plus).then(|| evaluate(snapshot, &plus));
++            let left = left_result.as_ref().and_then(|result| result.as_ref().ok());
++            let right = right_result
++                .as_ref()
++                .and_then(|result| result.as_ref().ok());
++            // A constitutive probe failure is recorded, never converted into a
++            // one-sided stencil unless the outer domain excludes that endpoint.
++            if (lawful(snapshot, &minus) && left.is_none())
++                || (lawful(snapshot, &plus) && right.is_none())
++            {
++                samples.push(serde_json::json!({"h_k":h,"status":"UNRESOLVED_PROBE_ERROR",
++                    "minus_error":left_result.as_ref().and_then(|r|r.as_ref().err()).map(ToString::to_string),
++                    "plus_error":right_result.as_ref().and_then(|r|r.as_ref().err()).map(ToString::to_string)}));
++                continue;
++            }
++            let (t0, d0, t1, d1, mode) = match (left, right) {
++                (Some(a), Some(b)) => (minus[column], a, plus[column], b, "centered"),
++                (None, Some(b)) => (x[column], &base, plus[column], b, "inward_plus"),
++                (Some(a), None) => (minus[column], a, x[column], &base, "inward_minus"),
++                (None, None) => panic!("no lawful reference endpoint"),
++            };
++            assert_mask(&base, d0, &[column]);
++            assert_mask(&base, d1, &[column]);
++            let r0 = d0.normalized_residuals[column];
++            let r1 = d1.normalized_residuals[column];
++            let e0 = evaluation_allowance(t0, anchor, s, r0);
++            let e1 = evaluation_allowance(t1, anchor, s, r1);
++            assert_eq!(r0.to_bits(), ((t0 - anchor) / s).to_bits());
++            assert_eq!(r1.to_bits(), ((t1 - anchor) / s).to_bits());
++            let estimate = secant(t0, t1, r0, r1, e0, e1);
++            assert!(
++                (estimate.value - elementary.value).abs()
++                    <= estimate.uncertainty + elementary.uncertainty
++            );
++            if selected.is_none_or(|prior| estimate.uncertainty < prior.uncertainty) {
++                selected = Some(estimate);
++            }
++            samples.push(
++                serde_json::json!({"h_k":h,"mode":mode,"abscissae_k":[t0,t1],
++                "displacements_k":[t0-x[column],t1-x[column]],"estimate":estimate.value,
++                "uncertainty":estimate.uncertainty,"truncation":0.0,"inner_solve":0.0}),
++            );
++        }
++        let fd = selected.expect("UNRESOLVED: no lawful same-family affine corroboration");
++        assert!(fd.uncertainty <= allowed, "UNRESOLVED: FD resolution");
++        assert!(
++            elementary.uncertainty <= allowed,
++            "UNRESOLVED: elementary resolution"
++        );
++        references.push((column, elementary, fd));
++        let row_entries: Vec<_> = (0..x.len())
++            .map(|row| {
++                let own = row == column;
++                serde_json::json!({"row":row,"estimate":if own {elementary.value} else {0.0},
++                "uncertainty":if own {elementary.uncertainty} else {0.0},"units":"K^-1",
++                "route":if own {"elementary_reciprocal"} else {"structural_zero_and_probe_bits"},
++                "branch":"unchanged","allowed":allowed})
++            })
++            .collect();
++        records.push(
++            serde_json::json!({"column":column,"row":column,"units":"K^-1",
++            "route2":"exact_integer_reciprocal_rounded_once","estimate":elementary.value,
++            "uncertainty":elementary.uncertainty,"allowed":allowed,"route1":samples,"rows":row_entries,
++            "other_rows":"structural_zero_with_exact_probe_bit_invariance","branch":"unchanged"}),
++        );
++    }
++    let candidate =
++        capture::inactive_jacobian_columns(snapshot).expect("candidate canonical assembly");
++    assert_eq!(candidate.len(), x.len());
++    for (j, value) in candidate.iter().enumerate() {
++        assert_eq!(
++            value.is_some(),
++            columns.contains(&j),
++            "independent eligibility {j}"
++        );
++    }
++    for &(column, elementary, fd) in &references {
++        let actual = candidate[column].as_ref().unwrap();
++        assert_eq!(actual.len(), x.len());
++        let scale = snapshot
++            .v3
++            .as_ref()
++            .map_or(1.0, |v3| f64::from_bits(v3.coordinate_scale_bits[column]));
++        for (row, &value) in actual.iter().enumerate() {
++            let reference = if row == column {
++                elementary
++            } else {
++                Estimate {
++                    value: 0.0,
++                    uncertainty: 0.0,
++                }
++            };
++            assert!(
++                admits(
++                    value,
++                    Estimate {
++                        value: reference.value * scale,
++                        uncertainty: reference.uncertainty * scale
++                    },
++                    allowed * scale
++                ),
++                "candidate column {column} row {row}"
++            );
++            if row == column {
++                assert!(admits(
++                    value,
++                    Estimate {
++                        value: fd.value * scale,
++                        uncertainty: fd.uncertainty * scale
++                    },
++                    allowed * scale
++                ));
++            }
++        }
++    }
++    let mut directional_count = 0;
++    let mut directions = Vec::new();
++    for mode in 0..3 {
++        for h in STEPS_K {
++            let mut trial = x.clone();
++            for (position, &column) in columns.iter().enumerate() {
++                let sign = if mode == 1 || (mode == 2 && position % 2 == 1) {
++                    -1.0
++                } else {
++                    1.0
++                };
++                trial[column] += sign * h;
++            }
++            if !lawful(snapshot, &trial) {
++                directions
++                    .push(serde_json::json!({"mode":mode,"h_k":h,"status":"DOMAIN_INAPPLICABLE"}));
++                continue;
++            }
++            let probe = evaluate(snapshot, &trial).expect("lawful directional evaluator");
++            assert_mask(&base, &probe, &columns);
++            let mut row_checks = Vec::new();
++            for &(column, reference, _) in &references {
++                let displacement = trial[column] - x[column];
++                let observed =
++                    probe.normalized_residuals[column] - base.normalized_residuals[column];
++                let predicted = reference.value * displacement;
++                let bound = evaluation_allowance(
++                    trial[column],
++                    anchor,
++                    base.tolerances[column],
++                    probe.normalized_residuals[column],
++                ) + evaluation_allowance(
++                    x[column],
++                    anchor,
++                    base.tolerances[column],
++                    base.normalized_residuals[column],
++                ) + allowed * displacement.abs();
++                assert!(
++                    (observed - predicted).abs() <= bound,
++                    "direction {mode} row {column}"
++                );
++                // Check the actual complete candidate matrix-vector product,
++                // including every off-diagonal and actual coordinate scaling.
++                let candidate_prediction: f64 = columns
++                    .iter()
++                    .map(|&j| {
++                        let scale = snapshot
++                            .v3
++                            .as_ref()
++                            .map_or(1.0, |v3| f64::from_bits(v3.coordinate_scale_bits[j]));
++                        candidate[j].as_ref().unwrap()[column] * ((trial[j] - x[j]) / scale)
++                    })
++                    .sum();
++                let aggregate_allowance = allowed
++                    * columns
++                        .iter()
++                        .map(|&j| (trial[j] - x[j]).abs())
++                        .sum::<f64>();
++                let candidate_bound = bound - allowed * displacement.abs() + aggregate_allowance;
++                assert!((observed - candidate_prediction).abs() <= candidate_bound);
++                row_checks.push(serde_json::json!({"row":column,"displacement_k":displacement,
++                    "reference_remainder":(observed-predicted).abs(),"reference_bound":bound,
++                    "candidate_remainder":(observed-candidate_prediction).abs(),"candidate_bound":candidate_bound}));
++            }
++            directional_count += 1;
++            directions
++                .push(serde_json::json!({"mode":mode,"h_k":h,"status":"PASS","rows":row_checks}));
++        }
++    }
++    assert!(directional_count > 0);
++    serde_json::json!({"family":snapshot.family,"pass":snapshot.pass,"lifecycle":snapshot.lifecycle,
++        "dimension":x.len(),"supported":columns.len(),"entries":records,"directional_checks":directional_count,"directions":directions})
++}
++
++#[test]
++#[ignore = "requires explicit frozen authentic corpus; execute outside measurement windows"]
++fn inactive_jacobian_authentic_reference() {
++    let path = std::env::var_os("OPENWEPP_INACTIVE_JACOBIAN_CORPUS").expect("explicit corpus path");
++    let corpus = Corpus::from_wire_bytes(&std::fs::read(path).unwrap()).unwrap();
++    let mut classes = [false; 3];
++    let reports: Vec<_> = corpus
++        .first
++        .iter()
++        .chain(&corpus.last)
++        .map(|snapshot| {
++            match (snapshot.family, snapshot.pass) {
++                (Family::Covered, Pass::Potential) => classes[0] = true,
++                (Family::GenericV3, Pass::Potential) => classes[1] = true,
++                (Family::GenericV3, Pass::FixedFinal) => classes[2] = true,
++                _ => {}
++            }
++            audit(snapshot)
++        })
++        .collect();
++    assert_eq!(
++        classes, [true; 3],
++        "all three authentic family/pass classes required"
++    );
++    println!(
++        "INACTIVE_JACOBIAN_REFERENCE {}",
++        serde_json::to_string(&reports).unwrap()
++    );
++}
++
++// Three-point polynomial interpolation only for the mandatory elementary
++// reference-limit tests. Actual abscissae and Taylor's independently supplied
++// third-derivative bound give truncation, not observed J agreement.
++fn three_point(x: [f64; 3], f: [f64; 3], errors: [f64; 3], third_bound: f64) -> Estimate {
++    let a = x[1] - x[0];
++    let b = x[2] - x[0];
++    assert!(a != 0.0 && b != 0.0 && a != b);
++    let weights = [-(a + b) / (a * b), -b / (a * (a - b)), -a / (b * (b - a))];
++    let terms = std::array::from_fn::<_, 3, _>(|i| weights[i] * f[i]);
++    let value = terms.iter().sum();
++    let truncation = third_bound
++        * (weights[1].abs() * a.abs().powi(3) + weights[2].abs() * b.abs().powi(3))
++        / 6.0;
++    let uncertainty = weights
++        .iter()
++        .zip(errors)
++        .map(|(w, e)| w.abs() * e)
++        .sum::<f64>()
++        + 32.0 * EPS * terms.iter().map(|v| v.abs()).sum::<f64>()
++        + truncation;
++    Estimate { value, uncertainty }
++}
++
++#[test]
++fn inactive_reference_elementary_and_nonlinear_limits() {
++    let nodes = [2.0, 1.875, 2.25];
++    for (kind, derivative, third) in [(0, 0.0, 0.0), (1, 3.0, 0.0), (2, 4.0, 0.0), (3, 12.0, 6.0)] {
++        let f = nodes.map(|x: f64| match kind {
++            0 => 7.0,
++            1 => 3.0 * x + 9.0,
++            2 => x * x,
++            _ => x * x * x,
++        });
++        let e = f.map(|v| 8.0 * EPS * v.abs().max(1.0));
++        let r = three_point(nodes, f, e, third);
++        assert!((r.value - derivative).abs() <= r.uncertainty);
++    }
++    let nodes = [0.0, 0.125, 0.25];
++    let r = three_point(nodes, nodes.map(|x| x * x), [0.0; 3], 0.0);
++    assert!(r.value.abs() <= r.uncertainty);
++    let small = three_point(nodes, nodes.map(|x| 1.0e-12 * x), [0.0; 3], 0.0);
++    assert!((small.value - 1.0e-12).abs() <= small.uncertainty);
++    let cancelled = three_point(
++        nodes,
++        nodes.map(|x| 1.0e20 + x),
++        [8.0 * EPS * 1.0e20; 3],
++        0.0,
++    );
++    assert!(
++        !admits(1.0, cancelled, 1.0e-3),
++        "flat cancellation is unresolved"
++    );
++    let nodes = [1.0, 0.999, 1.001];
++    let q = three_point(
++        nodes,
++        nodes.map(|x| x / (1.0 + x)),
++        [8.0 * EPS; 3],
++        6.0 / (1.999_f64.powi(4)),
++    );
++    assert!(admits(0.25, q, 1.0e-3));
++    assert!(!admits(0.5, q, 1.0e-3), "omitted normalizer derivative");
++}
++
++#[test]
++fn inactive_reference_implicit_branch_and_wrong_entry_tests() {
++    // z^2=x: finite root residual bounds z error by |F|/(2*z_lower).
++    let nodes = [4.0, 3.999, 4.001];
++    let roots = nodes.map(f64::sqrt);
++    let implicit_error = |residual: f64, evaluation_error: f64, denominator_lower: f64| {
++        (denominator_lower.is_finite() && denominator_lower > 0.0)
++            .then(|| (residual.abs() + evaluation_error) / denominator_lower)
++    };
++    let errors = std::array::from_fn(|i| {
++        implicit_error(
++            roots[i] * roots[i] - nodes[i],
++            8.0 * EPS * nodes[i],
++            2.0 * 1.99,
++        )
++        .unwrap()
++    });
++    let reference = three_point(nodes, roots, errors, 3.0 / (8.0 * 3.999_f64.powf(2.5)));
++    assert!(admits(0.25, reference, 1.0e-3));
++    // A singular implicit denominator is not replaced by a floor.
++    assert!(implicit_error(0.0, EPS, 0.0).is_none());
++    let same_branch = |x: [f64; 3]| x.iter().all(|v| *v > 0.0) || x.iter().all(|v| *v < 0.0);
++    assert!(!same_branch([0.0, -0.1, 0.1]), "kink/tie unsupported");
++    assert!(
++        !same_branch([0.01, -0.1, 0.1]),
++        "branch crossing unsupported"
++    );
++    let reference = reciprocal(1.0e-6 + 1.0e-10);
++    assert!(admits(reference.value, reference, 1.0e-3));
++    assert!(!admits(reference.value + 0.01, reference, 1.0e-3));
++    assert!(!admits(
++        0.01,
++        Estimate {
++            value: 0.0,
++            uncertainty: 0.0
++        },
++        1.0e-3
++    ));
++    assert!(!admits(
++        0.0,
++        Estimate {
++            value: 0.0,
++            uncertainty: 1.0
++        },
++        1.0e-3
++    ));
++    for s in [0.5, 1.0, 2.0, 3.0, 1.0e-6 + 1.0e-10] {
++        let exact = reciprocal(s);
++        assert!((exact.value * s - 1.0).abs() <= 4.0 * EPS);
++    }
++}
+--- /dev/null
++++ b/crates/openwepp-land-surface-energy/src/solver_inactive_jacobian_tests.rs
+@@ -0,0 +1,261 @@
++//! Contract-first v34 tests: complete affine columns, coordinate mapping and
++//! fail-closed assembly. These do not use candidate code as an oracle.
++#![allow(clippy::float_cmp)]
++
++use super::inactive_jacobian::assemble_affine_column;
++use crate::LandSurfaceEnergyError;
++
++fn integrity(result: &Result<(), LandSurfaceEnergyError>) {
++    assert!(matches!(
++        result,
++        Err(LandSurfaceEnergyError::CoveredJacobianDerivativeIntegrity(
++            _
++        ))
++    ));
++}
++
++#[test]
++fn inactive_jacobian_complete_column_and_nonunit_coordinate_mapping() {
++    // Independent supplied-normalizer identity, not a finite-difference
++    // perturbation unit. Distinct sentinels expose partial column writes.
++    let normalizer = 1.0e-6_f64 + 1.0e-10_f64;
++    for dimension in [14, 25, 29, 38] {
++        for column in (0..dimension).filter(|index| index % 10 == 6 || index % 10 == 7) {
++            for coordinate_scale in [0.25, 1.0, 8.0] {
++                let mut matrix = vec![vec![17.0_f64; dimension]; dimension];
++                assemble_affine_column(&mut matrix, column, coordinate_scale, normalizer)
++                    .expect("valid complete affine column");
++                for (row, entries) in matrix.iter().enumerate() {
++                    for (index, &actual) in entries.iter().enumerate() {
++                        if index != column {
++                            assert_eq!(actual.to_bits(), 17.0_f64.to_bits());
++                        } else if row != column {
++                            assert_eq!(actual.to_bits(), 0.0_f64.to_bits());
++                        } else {
++                            // The residual's supplied scale is authoritative;
++                            // this independent relation catches a missing D.
++                            assert!(
++                                (actual * normalizer - coordinate_scale).abs()
++                                    <= 4.0 * f64::EPSILON * coordinate_scale
++                            );
++                        }
++                    }
++                }
++            }
++        }
++    }
++}
++
++#[test]
++fn inactive_jacobian_invalid_scale_normalizer_and_tangent_are_atomic_errors() {
++    let valid_normalizer = 1.0e-6 + 1.0e-10;
++    for (scale, normalizer) in [
++        (0.0, valid_normalizer),
++        (-0.0, valid_normalizer),
++        (-1.0, valid_normalizer),
++        (f64::NAN, valid_normalizer),
++        (f64::INFINITY, valid_normalizer),
++        (1.0, 0.0),
++        (1.0, -0.0),
++        (1.0, -1.0),
++        (1.0, f64::NAN),
++        (1.0, f64::INFINITY),
++        (f64::MAX, f64::MIN_POSITIVE),
++    ] {
++        let mut matrix = vec![vec![19.0; 14]; 14];
++        let before = matrix.clone();
++        integrity(&assemble_affine_column(&mut matrix, 6, scale, normalizer));
++        assert_eq!(
++            matrix, before,
++            "invalid derivative must not partially write"
++        );
++    }
++}
++
++#[test]
++fn inactive_jacobian_malformed_matrix_and_column_are_atomic_errors() {
++    for mut matrix in [vec![], vec![vec![23.0; 13]; 14], vec![vec![23.0; 15]; 14]] {
++        let before = matrix.clone();
++        integrity(&assemble_affine_column(&mut matrix, 6, 1.0, 1.0e-6));
++        assert_eq!(matrix, before);
++    }
++    let mut matrix = vec![vec![23.0; 14]; 14];
++    let before = matrix.clone();
++    integrity(&assemble_affine_column(&mut matrix, 14, 1.0, 1.0e-6));
++    assert_eq!(matrix, before);
++}
++
++#[test]
++#[ignore = "requires explicit frozen authentic corpus; not a synthetic admission"]
++fn inactive_jacobian_authentic_same_family_columns_are_complete() {
++    use crate::solver_residual_corpus_capture::{Corpus, Family, inactive_jacobian_columns};
++
++    let path = std::env::var("OPENWEPP_INACTIVE_JACOBIAN_CORPUS")
++        .expect("explicit frozen authentic corpus path");
++    let bytes = std::fs::read(path).expect("retained corpus");
++    let corpus = Corpus::from_wire_bytes(&bytes).expect("valid frozen corpus");
++    let mut families = [false; 3];
++    for snapshot in corpus.first.iter().chain(&corpus.last) {
++        let columns = inactive_jacobian_columns(snapshot).expect("fresh same-family capability");
++        assert_eq!(columns.len(), snapshot.x_bits.len());
++        let mut supported = 0;
++        for (column, values) in columns.iter().enumerate() {
++            if let Some(values) = values {
++                supported += 1;
++                assert!(column % 10 == 6 || column % 10 == 7);
++                assert!(column < 10 * snapshot.inputs.occupancies.len());
++                assert_eq!(values.len(), columns.len());
++                let scale = match &snapshot.v3 {
++                    Some(v3) => f64::from_bits(v3.coordinate_scale_bits[column]),
++                    None => 1.0,
++                };
++                for (row, actual) in values.iter().enumerate() {
++                    if row == column {
++                        assert!(
++                            (actual * (1.0e-6 + 1.0e-10) - scale).abs()
++                                <= 4.0 * f64::EPSILON * scale
++                        );
++                    } else {
++                        assert_eq!(actual.to_bits(), 0.0_f64.to_bits());
++                    }
++                }
++            }
++        }
++        assert!(supported > 0, "authentic capture must exercise J");
++        let family = match (snapshot.family, snapshot.caps.is_some()) {
++            (Family::Covered, _) => 0,
++            (Family::GenericV3, false) => 1,
++            (Family::GenericV3, true) => 2,
++        };
++        families[family] = true;
++    }
++    assert_eq!(families, [true; 3]);
++}
++
++#[test]
++#[ignore = "requires explicit frozen authentic corpus and fresh source-real guards"]
++fn inactive_jacobian_authentic_capability_guards_and_adjustment() {
++    use crate::solver_residual_corpus_capture::{Corpus, Family, verify_inactive_jacobian_guards};
++
++    let path = std::env::var("OPENWEPP_INACTIVE_JACOBIAN_CORPUS")
++        .expect("explicit frozen authentic corpus path");
++    let corpus = Corpus::from_wire_bytes(&std::fs::read(path).expect("retained corpus"))
++        .expect("valid frozen corpus");
++    let mut families = [false; 3];
++    for snapshot in corpus.first.iter().chain(&corpus.last) {
++        // Each check performs fresh ordinary same-family base evaluation.
++        // Capability poisons: foreign input/base/trial, changed caps/context,
++        // frozen-branch mismatch, wrong topology/order and second use.
++        // The helper must verify typed refusal, no partial publication and
++        // no entry into finite differences after a derivative failure.
++        let evidence = verify_inactive_jacobian_guards(snapshot)
++            .expect("same-state capability and source-error fidelity");
++        assert!(evidence.lifecycle_refusals >= 8);
++        // Zero-area does not suppress fallible peaked/Arrhenius/saturation/
++        // conductance preprocessing. Match the canonical typed errors.
++        assert!(evidence.source_error_matches >= 4);
++        // Positive input area, wet-only effective inactivity and negative
++        // zero never supply the direct sun/shade capability.
++        assert!(evidence.structural_fd_cases >= 3);
++        // Test the specific hypothesis that existing inactive-row adjustment
++        // erases the own-diagonal FD/reciprocal rounding difference. Compare
++        // every matrix and RHS bit against independently constructed FD.
++        assert!(evidence.postadjusted_matrix_bit_equal);
++        assert!(evidence.postadjusted_rhs_bit_equal);
++        let family = match (snapshot.family, snapshot.caps.is_some()) {
++            (Family::Covered, _) => 0,
++            (Family::GenericV3, false) => 1,
++            (Family::GenericV3, true) => 2,
++        };
++        families[family] = true;
++    }
++    assert_eq!(families, [true; 3]);
++}
++
++#[test]
++#[ignore = "requires source-real frozen GenericV3 base; changed coordinates are test-local"]
++fn inactive_jacobian_authentic_nonunit_provider_mapping() {
++    use crate::solver_residual_corpus_capture::{Corpus, inactive_jacobian_columns};
++    let path = std::env::var("OPENWEPP_INACTIVE_JACOBIAN_CORPUS")
++        .expect("explicit frozen authentic corpus path");
++    let corpus = Corpus::from_wire_bytes(&std::fs::read(path).expect("retained corpus"))
++        .expect("valid frozen corpus");
++    let mut passes = [false; 2];
++    for snapshot in corpus
++        .first
++        .iter()
++        .chain(&corpus.last)
++        .filter(|snapshot| snapshot.v3.is_some())
++    {
++        let original = inactive_jacobian_columns(snapshot).expect("ordinary same-state capability");
++        let column = original
++            .iter()
++            .position(Option::is_some)
++            .expect("supported coordinate");
++        let mut scaled = snapshot.clone();
++        let physical = f64::from_bits(scaled.x_bits[column]);
++        let v3 = scaled.v3.as_mut().expect("GenericV3");
++        v3.coordinate_scale_bits[column] = 8.0_f64.to_bits();
++        v3.scaled_x_bits[column] = (physical / 8.0).to_bits();
++        // FD unit scale is deliberately not used as the coordinate scale.
++        let candidate =
++            inactive_jacobian_columns(&scaled).expect("fresh nonunit coordinate capability");
++        for (index, values) in candidate.iter().enumerate() {
++            if index == column {
++                let values = values.as_ref().expect("same supported coordinate");
++                for (row, value) in values.iter().enumerate() {
++                    if row == column {
++                        assert!((value * (1.0e-6 + 1.0e-10) - 8.0).abs() <= 32.0 * f64::EPSILON);
++                    } else {
++                        assert_eq!(value.to_bits(), 0.0_f64.to_bits());
++                    }
++                }
++            } else {
++                assert_eq!(values, &original[index]);
++            }
++        }
++        passes[usize::from(snapshot.caps.is_some())] = true;
++    }
++    assert_eq!(passes, [true; 2]);
++}
++
++#[test]
++#[ignore = "requires authentic bases; variants prove actual FD retention, not accepted physiology"]
++fn inactive_jacobian_authentic_provider_exclusions_use_fd() {
++    use crate::solver_residual_corpus_capture::{
++        Corpus, Family, verify_inactive_provider_exclusions,
++    };
++    let path = std::env::var("OPENWEPP_INACTIVE_JACOBIAN_CORPUS")
++        .expect("explicit frozen authentic corpus path");
++    let corpus = Corpus::from_wire_bytes(&std::fs::read(path).expect("retained corpus"))
++        .expect("valid frozen corpus");
++    let mut families = [false; 3];
++    for snapshot in corpus.first.iter().chain(&corpus.last) {
++        let family = match (snapshot.family, snapshot.caps.is_some()) {
++            (Family::Covered, _) => 0,
++            (Family::GenericV3, false) => 1,
++            (Family::GenericV3, true) => 2,
++        };
++        if families[family] {
++            continue;
++        }
++        let evidence = verify_inactive_provider_exclusions(snapshot)
++            .expect("successful source-real bases must retain actual canonical FD");
++        assert_eq!(evidence.len(), 3);
++        for case in evidence {
++            assert!(case.completed_finite_difference_columns > 0);
++            assert_eq!(case.completed_direct_columns, 0);
++            eprintln!(
++                "provider_exclusion family={:?} pass={:?} case={} fd_columns={} direct_columns={} accepted_solve={}",
++                snapshot.family,
++                snapshot.pass,
++                case.case,
++                case.completed_finite_difference_columns,
++                case.completed_direct_columns,
++                case.accepted_solve
++            );
++        }
++        families[family] = true;
++    }
++    assert_eq!(families, [true; 3]);
++}
+--- a/crates/openwepp-land-surface-energy/src/solver_litter_phase.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_litter_phase.rs
+@@ -2,7 +2,8 @@
+ 
+ #![allow(clippy::missing_errors_doc)]
+ 
+-use crate::numerics::solve_normalized_system_with_adjustment;
++use crate::numerics::solve_normalized_system_with_columns;
++use crate::solver::inactive_jacobian::{V3ColumnProvider, V3DerivativeBase};
+ use crate::{
+     BeginningLitterPhaseState, CoveredColumnEvaluation, CoveredColumnInputs, CoveredFrozenBranches,
+     CoveredWaterCaps, FinalizedLitterVapor, LandSurfaceEnergyError, LitterPhaseConfiguration,
+@@ -78,7 +79,9 @@
+     crate::solver::evaluate_covered_column_v3(column, trial, caps, frozen, context)
+ }
+ 
+-fn freeze_v3_covered_branches(evaluation: &V3PhaseFreeCoveredEvaluation) -> CoveredFrozenBranches {
++pub(crate) fn freeze_v3_covered_branches(
++    evaluation: &V3PhaseFreeCoveredEvaluation,
++) -> CoveredFrozenBranches {
+     let detail = &evaluation.predecessor;
+     let mut frozen = CoveredFrozenBranches {
+         ground: Some(detail.ground_water.branch),
+@@ -230,13 +233,16 @@
+         crate::solver_residual_corpus_capture::Family::GenericV3,
+         caps.is_some(),
+     );
+-    let result = solve_normalized_system_with_adjustment(
++    let result = solve_normalized_system_with_columns(
+         |scaled: &[f64], frozen: Option<&CoveredFrozenBranches>| {
+             let physical = physical_trial(scaled, &coordinate_scales);
+-            let evaluation =
+-                evaluate_v3_phase_free_covered_column(column, &physical, caps, frozen, context)?;
++            let evaluation = V3DerivativeBase::evaluate(column, caps, physical, frozen, context)?;
+             Ok((
+-                evaluation.predecessor.normalized_residuals.clone(),
++                evaluation
++                    .evaluation()
++                    .predecessor
++                    .normalized_residuals
++                    .clone(),
+                 evaluation,
+             ))
+         },
+@@ -246,8 +252,9 @@
+             let physical = physical_trial(scaled, &coordinate_scales);
+             crate::solver::covered_trial_is_valid(&physical, column.occupancies.len(), false)
+         },
+-        freeze_v3_covered_branches,
++        |detail| freeze_v3_covered_branches(detail.evaluation()),
+         |trial, detail, frozen, sweep| {
++            let detail = detail.evaluation();
+             #[cfg(not(any(test, feature = "test-support")))]
+             let _ = (trial, detail, frozen, sweep);
+             #[cfg(any(test, feature = "test-support"))]
+@@ -294,11 +301,14 @@
+                 &coordinate_scales,
+                 &scaled_inactive_anchors,
+                 trial,
+-                detail,
++                detail.evaluation(),
+                 jacobian,
+                 right_hand_side,
+             )
+         },
++        &V3ColumnProvider {
++            coordinate_scales: &coordinate_scales,
++        },
+     );
+     #[cfg(any(test, feature = "test-support"))]
+     capture_solve.finish(matches!(
+@@ -318,7 +328,7 @@
+             matrix_norm,
+         } => NormalizedSolveOutcome::Accepted {
+             solution: physical_trial(&solution, &coordinate_scales),
+-            detail,
++            detail: detail.into_evaluation(),
+             iterations,
+             residual_norm_history,
+             backtracking_count,
+--- a/crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs
+@@ -49,6 +49,277 @@
+     pub base_evaluation: CoveredColumnEvaluation,
+ }
+ 
++/// Fresh same-family base evaluation followed by canonical-coordinate direct
++/// columns. Recorded evaluation bytes are never capability authority.
++pub fn inactive_jacobian_columns(
++    snapshot: &Snapshot,
++) -> Result<Vec<Option<Vec<f64>>>, crate::LandSurfaceEnergyError> {
++    crate::solver::inactive_jacobian::snapshot_columns(snapshot)
++}
++
++#[cfg(test)]
++pub struct InactiveJacobianGuardEvidence {
++    pub lifecycle_refusals: usize,
++    pub source_error_matches: usize,
++    pub structural_fd_cases: usize,
++    pub postadjusted_matrix_bit_equal: bool,
++    pub postadjusted_rhs_bit_equal: bool,
++}
++
++#[cfg(test)]
++pub struct InactiveProviderExclusionEvidence {
++    pub case: &'static str,
++    pub completed_finite_difference_columns: u64,
++    pub completed_direct_columns: u64,
++    pub accepted_solve: bool,
++}
++
++/// Test-local input variants exercise the real provider and real solver loop.
++/// Solver acceptance is reported separately: FD retention is not a physiology
++/// or convergence claim for a modified fixture.
++#[cfg(test)]
++#[expect(
++    clippy::too_many_lines,
++    reason = "keep the three source-real exclusion variants and their shared actual-solver assertions together"
++)]
++pub fn verify_inactive_provider_exclusions(
++    snapshot: &Snapshot,
++) -> Result<Vec<InactiveProviderExclusionEvidence>, crate::LandSurfaceEnergyError> {
++    use crate::LandSurfaceEnergyError;
++    let fail = |reason| LandSurfaceEnergyError::CoveredJacobianDerivativeIntegrity(reason);
++    let mut evidence = Vec::new();
++    for case in [
++        "positive_input_area",
++        "wet_only_inactivity",
++        "negative_zero_input_area",
++    ] {
++        eprintln!(
++            "provider_exclusion_begin family={:?} pass={:?} case={case}",
++            snapshot.family, snapshot.pass
++        );
++        let mut variant = snapshot.clone();
++        if case != "negative_zero_input_area" {
++            variant.inputs.top_rain_kg_m2_tile = 0.0;
++        }
++        for occupancy in &mut variant.inputs.occupancies {
++            occupancy.sun.leaf_area_m2_m2_tile = if case == "negative_zero_input_area" {
++                -0.0
++            } else {
++                0.25
++            };
++            if case != "negative_zero_input_area" {
++                // The captured physically absent leaf has zero respiration.
++                // Once its area is positive, the canonical exact-zero-PAR
++                // branch requires ca < ci < pressure. Supply explicit lawful
++                // test-local respiration and positive residual conductance;
++                // do not weaken that source guard for the variant.
++                occupancy.sun.rd25 = 1.0;
++                occupancy.g0_umol_m2_s = 25_000.0;
++                occupancy.lai = 0.25 + occupancy.shade.leaf_area_m2_m2_tile;
++                occupancy.beginning_canopy_liquid_kg_m2_tile = 0.0;
++                if case == "wet_only_inactivity" {
++                    occupancy.liquid_capacity_kg_m2_plant = 1.0;
++                    occupancy.beginning_canopy_liquid_kg_m2_tile = occupancy.lai + occupancy.sai;
++                }
++            }
++        }
++        let trial: Vec<_> = variant
++            .x_bits
++            .iter()
++            .map(|bits| f64::from_bits(*bits))
++            .collect();
++        // This entry performs ordinary fresh same-family validation. An invalid
++        // base cannot satisfy a structural-inapplicability assertion.
++        let columns = inactive_jacobian_columns(&variant)?;
++        if (0..variant.inputs.occupancies.len())
++            .any(|occupancy| columns[10 * occupancy + 6].is_some())
++        {
++            return Err(fail("source-real excluded input supplied direct column"));
++        }
++        let ordinary = if let Some(v3) = &variant.v3 {
++            crate::evaluate_v3_phase_free_covered_column(
++                &variant.inputs,
++                &trial,
++                variant.caps.as_ref(),
++                None,
++                v3.context,
++            )?
++            .predecessor
++        } else {
++            crate::solver::evaluate_covered_column(
++                &variant.inputs,
++                &trial,
++                variant.caps.as_ref(),
++                None,
++            )?
++        };
++        if case == "wet_only_inactivity"
++            && ordinary.occupancies.iter().any(|occupancy| {
++                occupancy.component_areas_m2_m2_tile[0].to_bits() != 0.0_f64.to_bits()
++            })
++        {
++            return Err(fail(
++                "wet-only variant did not attain exact inactive dry area",
++            ));
++        }
++        if case == "positive_input_area"
++            && ordinary
++                .occupancies
++                .iter()
++                .any(|occupancy| occupancy.component_areas_m2_m2_tile[0] <= 0.0)
++        {
++            return Err(fail("positive-area variant did not retain active dry area"));
++        }
++        let audit = crate::solver_mechanism_audit::begin_mechanism_audit(false, 0)
++            .map_err(|_| fail("provider evidence audit lifecycle"))?;
++        let capture = begin(1).map_err(|_| fail("provider evidence capture lifecycle"))?;
++        let result = observer_solve(&variant, &trial, variant.caps.as_ref());
++        let corpus = capture
++            .finish()
++            .map_err(|_| fail("provider evidence capture reconciliation"))?;
++        audit
++            .finish()
++            .map_err(|_| fail("provider evidence audit reconciliation"))?;
++        let completed = |method| {
++            corpus
++                .participation
++                .iter()
++                .filter(|row| row.group == "sun" && row.method == method)
++                .map(|row| row.counts.completed)
++                .sum::<u64>()
++        };
++        let fd = completed("finite_difference");
++        let direct = completed("direct_column");
++        if fd == 0 || direct != 0 {
++            return Err(fail(
++                "actual excluded sun columns did not retain canonical FD",
++            ));
++        }
++        evidence.push(InactiveProviderExclusionEvidence {
++            case,
++            completed_finite_difference_columns: fd,
++            completed_direct_columns: direct,
++            accepted_solve: result.accepted(),
++        });
++    }
++    // Historical authority is not manufactured into the successor gas domain.
++    // Require exact first-error fidelity if the canonical historical base refuses;
++    // a successful historical base must have no direct leaf columns at all.
++    let mut historical = snapshot.clone();
++    historical.inputs.authority = crate::CoveredColumnAuthority::HistoricalV8;
++    let trial: Vec<_> = historical
++        .x_bits
++        .iter()
++        .map(|bits| f64::from_bits(*bits))
++        .collect();
++    let canonical = if let Some(v3) = &historical.v3 {
++        crate::evaluate_v3_phase_free_covered_column(
++            &historical.inputs,
++            &trial,
++            historical.caps.as_ref(),
++            None,
++            v3.context,
++        )
++        .map(|_| ())
++    } else {
++        crate::solver::evaluate_covered_column(
++            &historical.inputs,
++            &trial,
++            historical.caps.as_ref(),
++            None,
++        )
++        .map(|_| ())
++    };
++    match (canonical, inactive_jacobian_columns(&historical)) {
++        (Err(expected), Err(actual)) if expected == actual => {}
++        (Ok(()), Ok(columns)) if columns.iter().all(Option::is_none) => {}
++        _ => {
++            return Err(fail(
++                "unsupported authority changed canonical failure or supplied direct column",
++            ));
++        }
++    }
++    Ok(evidence)
++}
++
++/// Source-real executable guards. Foreign input/caps/context pairing is absent
++/// from the production mint API; the numerical matrix/order guards are runtime
++/// refusals, not a claim that Rust permits stale borrowed base state.
++#[cfg(test)]
++pub fn verify_inactive_jacobian_guards(
++    snapshot: &Snapshot,
++) -> Result<InactiveJacobianGuardEvidence, crate::LandSurfaceEnergyError> {
++    use crate::LandSurfaceEnergyError;
++    let fail = |reason| LandSurfaceEnergyError::CoveredJacobianDerivativeIntegrity(reason);
++    let direct = inactive_jacobian_columns(snapshot)?;
++    let selected = direct
++        .iter()
++        .position(Option::is_some)
++        .ok_or_else(|| fail("guard fixture has no direct coordinate"))?;
++    let mut source_error_matches = 0;
++    for case in 0..6 {
++        let mut poison = snapshot.clone();
++        match case {
++            0 => {
++                poison.inputs.occupancies[selected / 10]
++                    .biochemical
++                    .ha_vcmax_j_mol = 0.0;
++            }
++            1 => {
++                poison.inputs.occupancies[selected / 10]
++                    .biochemical
++                    .ha_kc_j_mol = 0.0;
++            }
++            2 => poison.inputs.occupancies[selected / 10].g0_umol_m2_s = 0.0,
++            3 => poison.x_bits[selected] = 273.0_f64.to_bits(),
++            4 => {
++                poison.inputs.occupancies[selected / 10]
++                    .sun
++                    .leaf_area_m2_m2_tile = f64::NAN;
++            }
++            _ => poison.inputs.pressure_pa = f64::NAN,
++        }
++        let trial: Vec<_> = poison
++            .x_bits
++            .iter()
++            .map(|bits| f64::from_bits(*bits))
++            .collect();
++        let canonical = if let Some(v3) = &poison.v3 {
++            crate::evaluate_v3_phase_free_covered_column(
++                &poison.inputs,
++                &trial,
++                poison.caps.as_ref(),
++                None,
++                v3.context,
++            )
++            .map(|_| ())
++        } else {
++            crate::solver::evaluate_covered_column(
++                &poison.inputs,
++                &trial,
++                poison.caps.as_ref(),
++                None,
++            )
++            .map(|_| ())
++        };
++        let candidate = inactive_jacobian_columns(&poison).map(|_| ());
++        if canonical.is_ok() || canonical != candidate {
++            return Err(fail("ordinary first typed error changed"));
++        }
++        source_error_matches += 1;
++    }
++    let (postadjusted_matrix_bit_equal, postadjusted_rhs_bit_equal) =
++        crate::solver::inactive_jacobian_oracle::postadjustment_parity(snapshot, &direct)
++            .map_err(|_| fail("independent postadjustment reconstruction"))?;
++    Ok(InactiveJacobianGuardEvidence {
++        lifecycle_refusals: crate::solver::inactive_jacobian::snapshot_lifecycle_guards(snapshot)?,
++        source_error_matches,
++        structural_fd_cases: crate::solver::inactive_jacobian::structural_fd_guard_cases()?,
++        postadjusted_matrix_bit_equal,
++        postadjusted_rhs_bit_equal,
++    })
++}
++
+ #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+ pub struct Corpus {
+     pub schema: String,
+@@ -70,9 +341,9 @@
+     pub pass: Pass,
+     /// solve, sweep, or a canonical component group (sun/shade/wet/stem/other).
+     pub group: String,
+-    /// Positive/zero executed component area, or not_applicable for other coordinates.
++    /// Positive/zero executed component area, or `not_applicable` for other coordinates.
+     pub area: String,
+-    /// lifecycle, finite_difference, or identity_anchor.
++    /// `lifecycle`, `finite_difference`, `identity_anchor`, or `direct_column`.
+     pub method: String,
+     pub counts: Counts,
+     pub expected_columns: u64,
+@@ -158,6 +429,9 @@
+                 ((component && matches!(row.area.as_str(), "positive" | "zero"))
+                     || (row.group == "other" && row.area == "not_applicable"))
+                     && (row.method == "finite_difference"
++                        || (row.method == "direct_column"
++                            && row.area == "zero"
++                            && matches!(row.group.as_str(), "sun" | "shade"))
+                         || (row.family == Family::Covered && row.method == "identity_anchor"))
+             };
+             if !valid
+@@ -425,7 +699,7 @@
+     }
+ }
+ 
+-/// Bounded test-support evidence; the full-supply Covered FixedFinal vector is
++/// Bounded test-support evidence; the full-supply Covered `FixedFinal` vector is
+ /// constructed solely for observer equivalence, never authentic performance.
+ #[derive(Clone, Debug, Serialize)]
+ pub struct SolverObserverEvidence {
+@@ -437,6 +711,10 @@
+ }
+ 
+ #[derive(Debug, PartialEq)]
++#[expect(
++    clippy::large_enum_variant,
++    reason = "bounded observation-only comparison retains exact outcomes on the stack without introducing allocation into the compared solves"
++)]
+ enum ObserverSolveResult {
+     Covered(Result<crate::CoveredColumnSolveOutcome, crate::LandSurfaceEnergyError>),
+     V3(
+@@ -910,6 +1188,17 @@
+ }
+ 
+ pub(crate) fn column(index: usize, identity_anchor: bool) -> Observation {
++    column_method(
++        index,
++        if identity_anchor {
++            "identity_anchor"
++        } else {
++            "finite_difference"
++        },
++    )
++}
++
++fn column_method(index: usize, method: &str) -> Observation {
+     let metadata = ACTIVE.with(|active| {
+         let active = active.borrow();
+         let (family, pass, areas, _) = active.as_ref()?.current.as_ref()?;
+@@ -933,22 +1222,95 @@
+             generation: None,
+             dimension: 0,
+         },
+-        |(family, pass, group, area)| {
+-            start(
+-                family,
+-                pass,
+-                group,
+-                area,
+-                if identity_anchor {
+-                    "identity_anchor"
+-                } else {
+-                    "finite_difference"
+-                },
+-            )
+-        },
++        |(family, pass, group, area)| start(family, pass, group, area, method),
+     )
+ }
+ 
++/// Completed direct columns only. These bounded scalar counters are independent
++/// of detailed corpus capture and their increments are charged inside timing.
++#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
++pub struct DirectColumnCounts {
++    pub covered_potential: u64,
++    pub covered_fixed_final: u64,
++    pub generic_v3_potential: u64,
++    pub generic_v3_fixed_final: u64,
++}
++
++thread_local! {
++    static DIRECT_COUNTS: RefCell<Option<(Rc<()>, DirectColumnCounts, bool)>> = const { RefCell::new(None) };
++}
++
++pub struct DirectColumnCountSession {
++    generation: Rc<()>,
++    _thread: PhantomData<Rc<()>>,
++}
++
++pub fn start_direct_column_counting() -> Result<DirectColumnCountSession, String> {
++    DIRECT_COUNTS.with(|slot| {
++        let mut slot = slot.borrow_mut();
++        if slot.is_some() {
++            return Err("direct column counting already active".into());
++        }
++        let generation = Rc::new(());
++        *slot = Some((Rc::clone(&generation), DirectColumnCounts::default(), false));
++        Ok(DirectColumnCountSession {
++            generation,
++            _thread: PhantomData,
++        })
++    })
++}
++
++impl DirectColumnCountSession {
++    pub fn finish(self) -> Result<DirectColumnCounts, String> {
++        DIRECT_COUNTS.with(|slot| {
++            let mut slot = slot.borrow_mut();
++            if !slot
++                .as_ref()
++                .is_some_and(|(generation, _, _)| Rc::ptr_eq(generation, &self.generation))
++            {
++                return Err("direct column session mismatch".into());
++            }
++            let Some((_, counts, overflow)) = slot.take() else {
++                return Err("direct column counting inactive".into());
++            };
++            if overflow {
++                Err("direct column count overflow".into())
++            } else {
++                Ok(counts)
++            }
++        })
++    }
++}
++
++impl Drop for DirectColumnCountSession {
++    fn drop(&mut self) {
++        DIRECT_COUNTS.with(|slot| {
++            let mut slot = slot.borrow_mut();
++            if slot
++                .as_ref()
++                .is_some_and(|(generation, _, _)| Rc::ptr_eq(generation, &self.generation))
++            {
++                slot.take();
++            }
++        });
++    }
++}
++
++pub(crate) fn completed_direct_column(family: Family, fixed: bool, index: usize) {
++    column_method(index, "direct_column").finish(true);
++    DIRECT_COUNTS.with(|slot| {
++        if let Some((_, counts, overflow)) = slot.borrow_mut().as_mut() {
++            let counter = match (family, fixed) {
++                (Family::Covered, false) => &mut counts.covered_potential,
++                (Family::Covered, true) => &mut counts.covered_fixed_final,
++                (Family::GenericV3, false) => &mut counts.generic_v3_potential,
++                (Family::GenericV3, true) => &mut counts.generic_v3_fixed_final,
++            };
++            increment(counter, overflow);
++        }
++    });
++}
++
+ impl Observation {
+     pub(crate) fn finish(mut self, success: bool) {
+         self.end(success);
+@@ -1043,6 +1405,56 @@
+     use super::*;
+ 
+     #[test]
++    fn inactive_jacobian_compact_counts_do_not_require_corpus_capture() {
++        assert!(!is_active());
++        let session = start_direct_column_counting().expect("compact session");
++        assert!(start_direct_column_counting().is_err());
++        for family in [Family::Covered, Family::GenericV3] {
++            for fixed in [false, true] {
++                completed_direct_column(family, fixed, 6);
++            }
++        }
++        assert_eq!(
++            session.finish().expect("four successful constructions"),
++            DirectColumnCounts {
++                covered_potential: 1,
++                covered_fixed_final: 1,
++                generic_v3_potential: 1,
++                generic_v3_fixed_final: 1
++            }
++        );
++        drop(start_direct_column_counting().expect("cancelled compact session"));
++        assert_eq!(
++            start_direct_column_counting()
++                .expect("fresh session")
++                .finish()
++                .expect("empty counts"),
++            DirectColumnCounts::default()
++        );
++    }
++
++    #[test]
++    fn inactive_jacobian_compact_count_overflow_is_not_a_success_count() {
++        let session = start_direct_column_counting().expect("compact session");
++        DIRECT_COUNTS.with(|slot| {
++            slot.borrow_mut()
++                .as_mut()
++                .expect("active state")
++                .1
++                .covered_potential = u64::MAX;
++        });
++        completed_direct_column(Family::Covered, false, 6);
++        assert!(session.finish().is_err());
++        assert_eq!(
++            start_direct_column_counting()
++                .expect("fresh after overflow")
++                .finish()
++                .expect("empty counts"),
++            DirectColumnCounts::default()
++        );
++    }
++
++    #[test]
+     fn live_finish_and_stale_drops_cannot_poison_a_new_session() {
+         let session = begin(1).expect("old session");
+         let stale = solve(Family::Covered, false);
+@@ -1082,7 +1494,7 @@
+         let solve = solve(Family::GenericV3, false);
+         ACTIVE.with(|active| {
+             active.borrow_mut().as_mut().expect("active").current =
+-                Some((Family::GenericV3, Pass::Potential, vec![[1.0; 4]; 2], 25))
++                Some((Family::GenericV3, Pass::Potential, vec![[1.0; 4]; 2], 25));
+         });
+         let sweep = sweep();
+         for index in 0..25 {
+@@ -1152,7 +1564,7 @@
+                 Pass::FixedFinal,
+                 vec![[1.0, 0.0, 2.0, 0.0]; 30],
+                 305,
+-            ))
++            ));
+         });
+         let sweep = sweep();
+         for _ in 0..10 {
+--- a/crates/openwepp-land-surface-energy/src/transaction.rs
++++ b/crates/openwepp-land-surface-energy/src/transaction.rs
+@@ -2097,6 +2097,8 @@
+         },
+     };
+     operands.validate()?;
++    #[cfg(any(test, feature = "test-support"))]
++    crate::solver_accepted_operand_audit::record_covered(&phase.identity, &operands);
+     Ok(operands)
+ }
+ 
+--- a/crates/openwepp-land-surface-energy/src/transaction_v3.rs
++++ b/crates/openwepp-land-surface-energy/src/transaction_v3.rs
+@@ -182,6 +182,8 @@
+     };
+     receipt.receipt_sha256 = canonical_litter_phase_receipt_sha256(&receipt)?;
+     validate_litter_phase_receipt(&receipt)?;
++    #[cfg(any(test, feature = "test-support"))]
++    crate::solver_accepted_operand_audit::record_litter(&receipt);
+     let retained_ending = retained_litter_phase_ending_v1(input.configuration, ending)?;
+     let capacity_spill = litter_phase_capacity_spill_v1(&receipt)?;
+     Ok(AcceptedLitterPhaseCandidate {
+--- a/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs
++++ b/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs
+@@ -215,6 +215,8 @@
+         },
+         litter_surface: accepted.evaluation.surface_energy,
+     };
++    #[cfg(any(test, feature = "test-support"))]
++    crate::solver_accepted_operand_audit::record_v3_energy(phase.identity(), &energy_operands);
+     let soil_thermal = build_covered_soil_candidate(&synthetic, &final_physical, soil)?;
+     Ok(V3CompleteCoveredTileCandidate {
+         transaction_id: phase.identity().transaction_id,
+--- a/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
++++ b/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
+@@ -7,6 +7,10 @@
+ )]
+ fn stage3_controlled_mechanism_experiment() {
+     assert!(!cfg!(debug_assertions), "release build required");
++    assert!(
++        !openwepp_land_surface_energy::solver_accepted_operand_audit::is_active(),
++        "accepted operand reconstruction is excluded from measured series"
++    );
+     let ofes: usize = std::env::var("OPENWEPP_EXPERIMENT_OFES")
+         .unwrap_or_else(|_| "1".to_owned())
+         .parse()
+@@ -30,8 +34,59 @@
+     }
+ }
+ 
++/// Separate untimed actual-consumer observation. Records accepted physical
++/// candidate construction, not proof every candidate became final publication.
++#[test]
++#[ignore = "untimed accepted operand validation and observer neutrality; release required"]
++fn stage3_untimed_accepted_operand_audit() {
++    assert!(!std::env::var("OPENWEPP_EXPERIMENT_MEMORY").is_ok_and(|v| v == "1"));
++    let off = controlled_mechanism_run(1, 0, false);
++    let session = openwepp_land_surface_energy::solver_accepted_operand_audit::begin()
++        .expect("begin separate untimed accepted operand observation");
++    let on = controlled_mechanism_run(1, 1, false);
++    let report = session
++        .finish()
++        .expect("every family nonempty and every existing validator passes");
++    assert_eq!(
++        off["input_sha256"], on["input_sha256"],
++        "identical authentic inputs"
++    );
++    assert_eq!(
++        off["output_files"], on["output_files"],
++        "observer-neutral public payload bytes"
++    );
++    assert_eq!(
++        off["closure_operands"], on["closure_operands"],
++        "observer-neutral Lane-D operands"
++    );
++    assert_eq!(
++        off["direct_columns"], on["direct_columns"],
++        "observer-neutral direct column participation"
++    );
++    for family in [
++        "covered_potential",
++        "generic_v3_potential",
++        "generic_v3_fixed_final",
++    ] {
++        assert!(
++            on["direct_columns"][family]
++                .as_u64()
++                .is_some_and(|count| count > 0),
++            "real runner completed direct columns in {family}"
++        );
++    }
++    report
++        .verify_observer_and_poison_vectors()
++        .expect("existing-validator poisons and hook side-channel neutrality");
++    println!(
++        "STAGE3_ACCEPTED_OPERAND_AUDIT {}",
++        serde_json::to_string(&report).expect("bounded audit JSON")
++    );
++    println!("STAGE3_ACCEPTED_OPERAND_RUN {on}");
++}
++
+ /// Bounded solver-neutrality regression over a retained corpus. The Covered
+-/// FixedFinal full-supply vector is test-local, not authentic timing evidence.
++/// `FixedFinal` full-supply vector is test-local, not authentic timing evidence.
+ #[test]
+ #[ignore = "retained corpus and explicit path required; untimed observer equivalence"]
+ fn stage3_residual_capture_solver_observation_equivalence() {
+@@ -62,6 +117,10 @@
+     clippy::assertions_on_constants,
+     reason = "ignored authentic capture must reject debug execution"
+ )]
++#[expect(
++    clippy::too_many_lines,
++    reason = "Keep the authentic capture roundtrip, context poisons and complete participation reconciliation in one untimed evidence entry"
++)]
+ fn stage3_untimed_residual_corpus_capture() {
+     assert!(!cfg!(debug_assertions), "release build required");
+     let session = openwepp_land_surface_energy::solver_residual_corpus_capture::begin(2)
+@@ -91,11 +150,10 @@
+         snapshot
+             .replay()
+             .expect("complete authentic evaluator base replay");
+-        if snapshot.v3.is_some() {
++        if let Some(v3) = &snapshot.v3 {
+             let mut missing_context = snapshot.clone();
+             missing_context.v3 = None;
+             assert!(missing_context.validate().is_err());
+-            let v3 = snapshot.v3.as_ref().expect("V3");
+             for index in 0..snapshot.x_bits.len() {
+                 assert_eq!(
+                     (f64::from_bits(v3.scaled_x_bits[index])
+@@ -394,7 +452,7 @@
+         std::time::Duration::from_secs(3_600),
+     )
+     .expect("enable bounded Stage-3 owner-evaluation telemetry");
+-    let qualification_telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_release_qualification_telemetry_v1()
++    let _qualification_telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_release_qualification_telemetry_v1()
+         .expect("enable one-OFE release attribution telemetry");
+     let (input_sha256, input_files) = release_scale_tree_hashes(&run_dir);
+     let clock_hz = release_scale_clock_tick_hz().expect("Linux CLK_TCK");
+@@ -414,6 +472,10 @@
+         1_000_000,
+     )
+     .expect("begin LSE observation");
++    let direct_session =
++        openwepp_land_surface_energy::solver_residual_corpus_capture::start_direct_column_counting(
++        )
++        .expect("begin compact completed direct-column counts");
+     controlled_mechanism_phase("pre_run", iteration, memory);
+     let cpu_before = release_scale_process_cpu_ticks().expect("pre-run CPU ticks");
+     let run_start_monotonic_ns = controlled_mechanism_monotonic_ns();
+@@ -431,6 +493,9 @@
+     let run_end_monotonic_ns = controlled_mechanism_monotonic_ns();
+     let cpu_after = release_scale_process_cpu_ticks().expect("end-run CPU ticks");
+     controlled_mechanism_phase("end_run", iteration, memory);
++    let direct_columns = direct_session
++        .finish()
++        .expect("complete direct-column counters without overflow");
+     let mut carrier_audit = carrier_session
+         .finish()
+         .expect("finish carrier observation");
+@@ -457,7 +522,7 @@
+     lse_audit.events.clear();
+     let qualification_telemetry = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_release_qualification_telemetry_v1()
+         .expect("take one-OFE release attribution telemetry");
+-    drop(qualification_telemetry_guard);
++    // `take` closes this telemetry session; its marker-only guard has no Drop.
+ 
+     let validation_started = std::time::Instant::now();
+     let stage3_audit = crate::hillslope::snow_stage3_v11_qualification_audit::take();
+@@ -638,6 +703,7 @@
+         "experiment": "EXP-STAGE3-20260906",
+         "carrier_counts": carrier_audit,
+         "lse_counts": lse_audit,
++        "direct_columns":direct_columns,
+         "ofe_count": ofe_count,
+         "iteration": iteration,
+         "cpu_ticks": cpu_after.checked_sub(cpu_before).expect("monotonic CPU"),

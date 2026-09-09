@@ -4,7 +4,7 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 33
+contract_version: 34
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -48,6 +48,7 @@ chapter's Dependencies and introduction. Uncertainty expands reading.
 |SC-LANDSURFACEENERGY-001/binding-index.md|normative|binding index|audit|
 |SC-LANDSURFACEENERGY-001/history.md|historical|history|audit|
 |SC-LANDSURFACEENERGY-001/numerical-methods.md|normative|methods|selected|
+|SC-LANDSURFACEENERGY-001/inactive-jacobian.md|normative|isolated v34 affine-column experiment|selected|
 |SC-LANDSURFACEENERGY-001/replay-evidence.md|normative|replay|selected|
 
 ## Reading routes
@@ -61,6 +62,11 @@ chapter's Dependencies and introduction. Uncertainty expands reading.
 
 <a id="change-log"></a>
 ## Change Log
+2026-09-08 v34: isolated owner-approved zero-input-area sun/shade affine-column
+experiment with complete dependency proof, coordinate-aware assembly and
+candidate-independent resolution routes. See inactive-jacobian.md. Production
+HOLD; v33 stem policy/results remain historical and unchanged.
+
 2026-09-08 v33: prospective experimental residual/Jacobian representation for
 active dry-stem temperature columns, with derivative-through-normalization,
 smooth-branch admission, independent multistep FD/Taylor authority, hybrid

@@ -1,0 +1,16 @@
+{
+  "arm": "A",
+  "checkout": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+  "cwd": "/tmp/openwepp-hotpath-jacobian-jmvOZh/A",
+  "source_identity": "0d9e28eb3087a1944a5ff7969eb3120f6269d934509c67c25106292af5edfc84",
+  "identity_definition": "SHA256 of sorted resolved source-member index, not detached HEAD alone",
+  "source_member_count": 10154,
+  "source_member_index": "/tmp/openwepp-hotpath-jacobian-jmvOZh/complete-cut2b-bundle/blobs/0d9e28eb3087a1944a5ff7969eb3120f6269d934509c67c25106292af5edfc84",
+  "source_archive_sha256": "0771cc78b8eb81bac0ddaf03c98889d891b3376e72c8ae1ffffb2cd4ce9471fb",
+  "bundle_manifest_sha256": "ef8dd7289dcff42d43d9e9f53546d312c5dec745cb53ee815d9dac4c897ebf64",
+  "binary": "/workdir/.cache/openwepp/targets/A-b67d5833dd54/release/deps/openwepp_runner-682944f41aa5eb67",
+  "binary_sha256": "6282f2cb0c7ebfc14f75e860c1cb416fde7db19cda222299617169f61e81bd67",
+  "refreshed_sidecar_sha256": "9989abbf02b7e1072718a08745c991e40938670dab34e4fbae692a3057f3d4bd",
+  "build_posture": "repository Nix rustc1.95.0, release, CARGO_PROFILE_RELEASE_LTO=false; exact prior build logs retained",
+  "limits": "Archive extraction required; this A selection retains compiled crates/src/tests/tools but not every repository document. Broader unchanged authority/runtime documentation requires the retained pinned repository composition. External toolchain/dependency caches not vendored; no standalone full-regression rebuild proof. Refreshed sidecar supersedes invalid old sidecar retained in bundle."
+}

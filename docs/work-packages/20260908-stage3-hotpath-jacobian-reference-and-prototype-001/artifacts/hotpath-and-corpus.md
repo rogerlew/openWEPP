@@ -1,4 +1,7 @@
-Static + Ran: baseline reconciliation and capture development; target NOT FROZEN.
+Static + Ran: corrected cut2/cut2b capture accepted; target implemented and
+measured. Sections Baseline reconciliation and Target investigation below retain
+the initial historical investigation, not current admission/custody status.
+See worker-handoff.md for final counts, recoverable cuts and measured rejection.
 
 ## Baseline reconciliation
 Read-only investigation checked all 10,147 A-source-05 manifest rows against
@@ -39,7 +42,7 @@ but requires complete reciprocal radiation, shared heat/vapor, phase-specific
 vapor limits, storage/conduction and normalizer derivatives. Not selected or
 implemented. Authentic participation remains to be established.
 
-## Authentic cut1 execution (capture corrections pending)
+## Authentic cut1 execution (historical)
 Release harness passed, including all 12 saved same-family base replays and
 exact-bit wire roundtrip. Corpus SHA256
 5c9a9203f021c5cf6372f0ab169e04fbbca77f3ca9db4406a55dd99c594d6df8.
