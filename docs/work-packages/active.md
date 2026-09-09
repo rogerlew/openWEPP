@@ -6,6 +6,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
+| Stage 3 attribution and recomputation experiment (executing) | [handoff](20260909-stage3-attribution-recomputation-001/artifacts/worker-handoff.md) | Refine dominant attribution, then prove/measure actual recomputation; typed single-pass work is conditional on a frozen >=5% gate; production HOLD. |
 | Stage 3 compact cost breakdown (complete characterization) | [handoff](20260909-stage3-compact-cost-breakdown-001/artifacts/worker-handoff.md) | Observation-only one-OFE additive profiling and next-architecture ranking; no optimization; production HOLD. |
 | Integrated hot-path Jacobian prototype (executed HOLD) | [handoff](20260908-stage3-hotpath-jacobian-reference-and-prototype-001/artifacts/worker-handoff.md) | J implemented and measured; REJECTED_IMPLEMENTATION under frozen memory bound, broad gates non-green; production HOLD. |
 | Stage 3 residual/Jacobian prototype (complete) | [handoff](20260908-stage3-residual-jacobian-prototype-001/artifacts/worker-handoff.md) | Frozen Phase-A oracle admitted 0/16 active-stem columns; INCONCLUSIVE_WITH_BOUND, no J/performance claim, production HOLD. |

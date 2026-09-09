@@ -1,5 +1,7 @@
 # Work Packages
 
+- [20260909 Stage 3 bounded attribution and recomputation](20260909-stage3-attribution-recomputation-001/package.md): executing observation-only successor to split dominant compact-cost regions and test actual recomputation before any conditional single-pass prototype; production HOLD.
+
 Current-work locator: [active index](active.md). Start there and at the named
 package handoff; this catalog preserves historical evidence. Prospective rules
 in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
