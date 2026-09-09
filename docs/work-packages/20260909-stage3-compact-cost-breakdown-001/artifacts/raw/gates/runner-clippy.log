@@ -1,0 +1,123 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openwepp-compact-cost-P-vKI6gb-33928270b790
+  scratch: /tmp/openwepp-roger-openwepp-compact-cost-P-vKI6gb-33928270b790
+  cache:   /workdir/.cache/openwepp
+    Checking libm v0.2.16
+    Checking hashbrown v0.17.1
+    Checking equivalent v1.0.2
+    Checking ryu v1.0.23
+    Checking openwepp-sim-contract v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-sim-contract)
+    Checking bytes v1.11.1
+    Checking zerocopy v0.8.48
+    Checking libc v0.2.186
+    Checking openwepp-unit-boundary v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-unit-boundary)
+    Checking lexical-util v1.0.7
+    Checking serde v1.0.228
+    Checking iana-time-zone v0.1.65
+    Checking once_cell v1.21.4
+    Checking arrow-schema v54.3.1
+    Checking unsafe-libyaml v0.2.11
+    Checking base64 v0.22.1
+    Checking adler2 v2.0.1
+    Checking simd-adler32 v0.3.9
+    Checking crc32fast v1.5.0
+    Checking hashbrown v0.15.5
+    Checking bitflags v1.3.2
+    Checking byteorder v1.5.0
+    Checking flatbuffers v24.12.23
+    Checking static_assertions v1.1.0
+    Checking miniz_oxide v0.8.9
+    Checking integer-encoding v3.0.4
+    Checking twox-hash v1.6.3
+    Checking snap v1.1.1
+    Checking lexical-write-integer v1.0.6
+    Checking lexical-parse-integer v1.0.6
+    Checking openwepp-topology v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-topology)
+    Checking openwepp-meteorology v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-meteorology)
+    Checking winnow v0.7.15
+    Checking openwepp-kernel-contract v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-kernel-contract)
+    Checking toml_datetime v0.6.11
+    Checking indexmap v2.14.0
+    Checking lexical-parse-float v1.0.6
+    Checking serde_spanned v0.6.9
+    Checking toml_write v0.1.2
+    Checking lexical-write-float v1.0.6
+    Checking openwepp-plant-phenology v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-plant-phenology)
+    Checking powerfmt v0.2.0
+    Checking num-conv v0.2.2
+    Checking time-core v0.1.8
+    Checking openwepp-comparator-metadata v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-comparator-metadata)
+    Checking openwepp-legacy-bridge v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-legacy-bridge)
+    Checking openwepp-summary-accumulator v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-summary-accumulator)
+    Checking deranged v0.5.8
+    Checking flate2 v1.1.9
+    Checking getrandom v0.3.4
+    Checking lexical-core v1.0.6
+    Checking num-traits v0.2.19
+    Checking serde_yaml v0.9.34+deprecated
+    Checking openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-land-surface-energy)
+    Checking openwepp-biogeochemistry v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-biogeochemistry)
+    Checking num-integer v0.1.46
+    Checking num-complex v0.4.6
+    Checking chrono v0.4.44
+    Checking ordered-float v2.10.1
+    Checking atoi v2.0.0
+    Checking thrift v0.17.0
+    Checking num-bigint v0.4.6
+    Checking num-iter v0.1.45
+    Checking time v0.3.47
+    Checking openwepp-management-schema v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-management-schema)
+    Checking num-rational v0.4.2
+    Checking openwepp-coupled-time v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-coupled-time)
+    Checking toml_edit v0.22.27
+    Checking num v0.4.3
+    Checking half v2.7.1
+    Checking ahash v0.8.12
+    Checking openwepp-input-contract v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-input-contract)
+    Checking arrow-buffer v54.3.1
+    Checking openwepp-vegetation v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-vegetation)
+    Checking arrow-data v54.3.1
+    Checking toml v0.8.23
+    Checking arrow-array v54.3.1
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-watershed-orchestrator v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-watershed-orchestrator)
+    Checking arrow-select v54.3.1
+    Checking arrow-ipc v54.3.1
+    Checking arrow-cast v54.3.1
+    Checking parquet v54.3.1
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-hillslope-output v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-hillslope-output)
+    Checking openwepp-watershed-output v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-watershed-output)
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+    Checking openwepp-persisted-restart-v1 v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-persisted-restart-v1)
+    Checking openwepp-runner v0.1.0 (/tmp/openwepp-compact-cost-P-vKI6gb/crates/openwepp-runner)
+error: this function has too many lines (106/100)
+   --> crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs:112:1
+    |
+112 | / fn execute_hillslope_direct_production_days(
+113 | |     run_name: &str,
+114 | |     output_hillslope_id: u32,
+115 | |     inputs: &ParsedHillslopeRunInputs,
+...   |
+120 | |     stage3_evidence_private_path: &Path,
+121 | | ) -> Result<HillslopeClimateExecution, HillslopeCliError> {
+    | |_________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: could not compile `openwepp-runner` (lib) due to 1 previous error

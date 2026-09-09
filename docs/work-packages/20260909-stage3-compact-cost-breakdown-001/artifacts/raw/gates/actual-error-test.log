@@ -1,0 +1,11 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openwepp-compact-cost-P-vKI6gb-33928270b790
+  scratch: /tmp/openwepp-roger-openwepp-compact-cost-P-vKI6gb-33928270b790
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test solver_mechanism_audit::tests::compact_counts_and_errors_without_events ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 158 filtered out; finished in 0.00s
+

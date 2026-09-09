@@ -1,0 +1,921 @@
+--- a/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
+@@ -497,6 +497,437 @@
+     });
+ }
+ 
++/// Package-local compact wall-cost observation. No operand/event allocation.
++pub mod compact_cost {
++    use super::{AuditError, PhantomData, Rc, RefCell};
++    use serde::Serialize;
++    use std::time::Instant;
++
++    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++    #[repr(usize)]
++    pub enum Bucket {
++        RunnerUnassigned,
++        OtherPhysical,
++        Orchestration,
++        Custody,
++        Routing,
++        Diagnostics,
++        PreparationBase,
++        InactiveLeafProbe,
++        OtherProbe,
++        Assembly,
++        Linear,
++        Trial,
++        SolverRemaining,
++    }
++    const BUCKETS: usize = 13;
++    #[cfg(any(test, feature = "test-support"))]
++    const LABELS: [Bucket; BUCKETS] = [
++        Bucket::RunnerUnassigned,
++        Bucket::OtherPhysical,
++        Bucket::Orchestration,
++        Bucket::Custody,
++        Bucket::Routing,
++        Bucket::Diagnostics,
++        Bucket::PreparationBase,
++        Bucket::InactiveLeafProbe,
++        Bucket::OtherProbe,
++        Bucket::Assembly,
++        Bucket::Linear,
++        Bucket::Trial,
++        Bucket::SolverRemaining,
++    ];
++    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++    #[repr(usize)]
++    pub enum Family {
++        CoveredPotential,
++        CoveredFixedFinal,
++        V3Potential,
++        V3FixedFinal,
++    }
++    #[derive(Clone, Copy, Debug, Default, Serialize)]
++    pub struct Population {
++        pub family: Option<Family>,
++        pub dimension: usize,
++        pub inactive_input_leaf_coordinates: usize,
++        pub solves: u64,
++        pub sweeps: u64,
++        pub fd_columns: u64,
++        pub identity_columns: u64,
++        pub inactive_input_leaf_fd_columns: u64,
++    }
++    #[derive(Clone, Debug, Serialize)]
++    pub struct Report {
++        pub bucket_order: [Bucket; BUCKETS],
++        pub exclusive_ns: [u64; BUCKETS],
++        pub entries: [u64; BUCKETS],
++        pub family_exclusive_ns: [[u64; BUCKETS]; 4],
++        pub populations: [Population; 32],
++        pub runner_ns: u64,
++        pub accounting_difference_ns: i128,
++    }
++    struct State {
++        report: Report,
++        generation: u64,
++        last: Option<Instant>,
++        start: Option<Instant>,
++        bucket: Bucket,
++        depth: u64,
++        invalid: bool,
++        family: Option<Family>,
++        population: Option<usize>,
++        inactive: [bool; 256],
++    }
++    impl State {
++        fn charge(&mut self, now: Instant) {
++            if let Some(last) = self.last {
++                if let Some(dt) = now
++                    .checked_duration_since(last)
++                    .and_then(|d| u64::try_from(d.as_nanos()).ok())
++                {
++                    add(
++                        &mut self.report.exclusive_ns[self.bucket as usize],
++                        dt,
++                        &mut self.invalid,
++                    );
++                    if let Some(f) = self.family {
++                        add(
++                            &mut self.report.family_exclusive_ns[f as usize][self.bucket as usize],
++                            dt,
++                            &mut self.invalid,
++                        );
++                    }
++                } else {
++                    self.invalid = true;
++                }
++            }
++            self.last = Some(now);
++        }
++    }
++    fn add(value: &mut u64, amount: u64, invalid: &mut bool) {
++        if let Some(next) = value.checked_add(amount) {
++            *value = next;
++        } else {
++            *invalid = true;
++        }
++    }
++    thread_local! { static COST:RefCell<Option<State>>=const {RefCell::new(None)}; }
++    #[cfg(any(test, feature = "test-support"))]
++    static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
++    pub struct Session {
++        generation: u64,
++        _thread: PhantomData<Rc<()>>,
++    }
++    #[cfg(any(test, feature = "test-support"))]
++    pub fn begin() -> Result<Session, AuditError> {
++        COST.with(|cell| {
++            let mut cell = cell.borrow_mut();
++            if cell.is_some() {
++                return Err(AuditError::AlreadyActive);
++            }
++            let generation = NEXT
++                .fetch_update(
++                    std::sync::atomic::Ordering::Relaxed,
++                    std::sync::atomic::Ordering::Relaxed,
++                    |n| n.checked_add(1),
++                )
++                .map_err(|_| AuditError::Overflow)?;
++            *cell = Some(State {
++                report: Report {
++                    bucket_order: LABELS,
++                    exclusive_ns: [0; BUCKETS],
++                    entries: [0; BUCKETS],
++                    family_exclusive_ns: [[0; BUCKETS]; 4],
++                    populations: [Population::default(); 32],
++                    runner_ns: 0,
++                    accounting_difference_ns: 0,
++                },
++                generation,
++                last: None,
++                start: None,
++                bucket: Bucket::RunnerUnassigned,
++                depth: 0,
++                invalid: false,
++                family: None,
++                population: None,
++                inactive: [false; 256],
++            });
++            Ok(Session {
++                generation,
++                _thread: PhantomData,
++            })
++        })
++    }
++    impl Session {
++        pub fn start_at(&self, start: Instant) -> Result<(), AuditError> {
++            COST.with(|cell| {
++                let mut cell = cell.borrow_mut();
++                let s = cell.as_mut().ok_or(AuditError::NotActive)?;
++                if s.generation != self.generation || s.start.is_some() || s.depth != 0 {
++                    return Err(AuditError::LiveScopes);
++                }
++                s.start = Some(start);
++                s.last = Some(start);
++                Ok(())
++            })
++        }
++        pub fn finish_at(self, end: Instant) -> Result<Report, AuditError> {
++            COST.with(|cell| {
++                let mut cell = cell.borrow_mut();
++                if cell
++                    .as_ref()
++                    .is_none_or(|s| s.generation != self.generation)
++                {
++                    return Err(AuditError::NotActive);
++                }
++                let mut s = cell.take().ok_or(AuditError::NotActive)?;
++                if s.depth != 0 || s.family.is_some() {
++                    return Err(AuditError::LiveScopes);
++                }
++                s.charge(end);
++                s.report.runner_ns = end
++                    .checked_duration_since(s.start.ok_or(AuditError::NotActive)?)
++                    .and_then(|d| u64::try_from(d.as_nanos()).ok())
++                    .ok_or(AuditError::Overflow)?;
++                let sum = s
++                    .report
++                    .exclusive_ns
++                    .iter()
++                    .map(|n| i128::from(*n))
++                    .sum::<i128>();
++                s.report.accounting_difference_ns = i128::from(s.report.runner_ns) - sum;
++                if s.invalid || s.report.accounting_difference_ns != 0 {
++                    return Err(AuditError::Overflow);
++                }
++                Ok(s.report)
++            })
++        }
++    }
++    impl Drop for Session {
++        fn drop(&mut self) {
++            COST.with(|cell| {
++                let mut c = cell.borrow_mut();
++                if c.as_ref().is_some_and(|s| s.generation == self.generation) {
++                    c.take();
++                }
++            });
++        }
++    }
++    pub struct Guard {
++        generation: Option<u64>,
++        previous: Bucket,
++        previous_family: Option<Family>,
++        depth: u64,
++        solve: bool,
++        _thread: PhantomData<Rc<()>>,
++    }
++    #[must_use]
++    pub fn scope(bucket: Bucket) -> Guard {
++        let mut guard = Guard {
++            generation: None,
++            previous: Bucket::RunnerUnassigned,
++            previous_family: None,
++            depth: 0,
++            solve: false,
++            _thread: PhantomData,
++        };
++        COST.with(|cell| {
++            if let Some(s) = cell.borrow_mut().as_mut().filter(|s| s.start.is_some()) {
++                s.charge(Instant::now());
++                guard.generation = Some(s.generation);
++                guard.previous = s.bucket;
++                guard.previous_family = s.family;
++                if (bucket as usize) < (Bucket::PreparationBase as usize) {
++                    s.family = None;
++                }
++                add(&mut s.depth, 1, &mut s.invalid);
++                guard.depth = s.depth;
++                s.bucket = bucket;
++                add(&mut s.report.entries[bucket as usize], 1, &mut s.invalid);
++            }
++        });
++        guard
++    }
++    impl Drop for Guard {
++        fn drop(&mut self) {
++            let Some(generation) = self.generation else {
++                return;
++            };
++            COST.with(|cell| {
++                if let Some(s) = cell
++                    .borrow_mut()
++                    .as_mut()
++                    .filter(|s| s.generation == generation)
++                {
++                    s.charge(Instant::now());
++                    if s.depth != self.depth || s.depth == 0 {
++                        s.invalid = true;
++                    } else {
++                        s.depth -= 1;
++                    }
++                    s.bucket = self.previous;
++                    s.family = self.previous_family;
++                    if self.solve {
++                        s.family = None;
++                        s.population = None;
++                        s.inactive.fill(false);
++                    }
++                }
++            });
++        }
++    }
++    pub(crate) fn solve(
++        family: Family,
++        dimension: usize,
++        column: &crate::CoveredColumnInputs,
++    ) -> Guard {
++        let mut guard = scope(Bucket::PreparationBase);
++        if guard.generation.is_none() {
++            return guard;
++        }
++        COST.with(|cell| {
++            if let Some(s) = cell.borrow_mut().as_mut() {
++                if s.family.is_some() || dimension > 256 {
++                    s.invalid = true;
++                    return;
++                }
++                let mut inactive = 0;
++                for (i, o) in column.occupancies.iter().enumerate() {
++                    for (offset, area) in [
++                        (6, o.sun.leaf_area_m2_m2_tile),
++                        (7, o.shade.leaf_area_m2_m2_tile),
++                    ] {
++                        let Some(slot) = s.inactive.get_mut(10 * i + offset) else {
++                            s.invalid = true;
++                            return;
++                        };
++                        *slot = area.to_bits() == 0.0_f64.to_bits();
++                        inactive += usize::from(*slot);
++                    }
++                }
++                let row = s
++                    .report
++                    .populations
++                    .iter()
++                    .position(|p| {
++                        p.family == Some(family)
++                            && p.dimension == dimension
++                            && p.inactive_input_leaf_coordinates == inactive
++                    })
++                    .or_else(|| s.report.populations.iter().position(|p| p.family.is_none()));
++                if let Some(row) = row {
++                    let p = &mut s.report.populations[row];
++                    p.family = Some(family);
++                    p.dimension = dimension;
++                    p.inactive_input_leaf_coordinates = inactive;
++                    add(&mut p.solves, 1, &mut s.invalid);
++                    s.population = Some(row);
++                    s.family = Some(family);
++                    guard.solve = true;
++                } else {
++                    s.invalid = true;
++                }
++            }
++        });
++        guard
++    }
++    pub(crate) fn sweep() {
++        COST.with(|cell| {
++            if let Some(s) = cell.borrow_mut().as_mut() {
++                if let Some(row) = s.population {
++                    add(&mut s.report.populations[row].sweeps, 1, &mut s.invalid);
++                }
++            }
++        });
++    }
++    pub(crate) fn column(index: usize, identity: bool) {
++        COST.with(|cell| {
++            if let Some(s) = cell.borrow_mut().as_mut() {
++                if let Some(row) = s.population {
++                    let p = &mut s.report.populations[row];
++                    if identity {
++                        add(&mut p.identity_columns, 1, &mut s.invalid);
++                    } else {
++                        add(&mut p.fd_columns, 1, &mut s.invalid);
++                        if s.inactive.get(index) == Some(&true) {
++                            add(&mut p.inactive_input_leaf_fd_columns, 1, &mut s.invalid);
++                        }
++                    }
++                }
++            }
++        });
++    }
++    pub(crate) fn probe(index: usize) -> Guard {
++        let bucket = COST.with(|cell| {
++            cell.borrow()
++                .as_ref()
++                .filter(|s| s.inactive.get(index) == Some(&true))
++                .map_or(Bucket::OtherProbe, |_| Bucket::InactiveLeafProbe)
++        });
++        scope(bucket)
++    }
++    #[cfg(test)]
++    mod tests {
++        use super::*;
++        #[test]
++        fn compact_cost_accounting_and_off_neutrality() {
++            drop(scope(Bucket::Linear));
++            let session = begin().unwrap();
++            let start = Instant::now();
++            session.start_at(start).unwrap();
++            {
++                let _outer = scope(Bucket::OtherPhysical);
++                {
++                    let _inner = scope(Bucket::Linear);
++                }
++            }
++            let report = session.finish_at(Instant::now()).unwrap();
++            assert_eq!(report.runner_ns, report.exclusive_ns.iter().sum::<u64>());
++            assert_eq!(report.accounting_difference_ns, 0);
++            assert_eq!(report.entries[Bucket::Linear as usize], 1);
++        }
++        #[test]
++        fn compact_cost_live_stale_order_and_overflow() {
++            let s = begin().unwrap();
++            s.start_at(Instant::now()).unwrap();
++            let old = scope(Bucket::Linear);
++            assert!(matches!(
++                s.finish_at(Instant::now()),
++                Err(AuditError::LiveScopes)
++            ));
++            let s = begin().unwrap();
++            s.start_at(Instant::now()).unwrap();
++            drop(old);
++            let a = scope(Bucket::Linear);
++            let b = scope(Bucket::Trial);
++            drop(a);
++            drop(b);
++            assert!(s.finish_at(Instant::now()).is_err());
++            let s = begin().unwrap();
++            s.start_at(Instant::now()).unwrap();
++            COST.with(|c| c.borrow_mut().as_mut().unwrap().report.exclusive_ns[0] = u64::MAX);
++            assert!(s.finish_at(Instant::now()).is_err());
++        }
++        #[test]
++        fn compact_cost_rejects_clock_reversal_and_preserves_errors() {
++            let off = Err::<(), _>("first typed error");
++            let session = begin().unwrap();
++            let start = Instant::now();
++            session.start_at(start).unwrap();
++            let on = {
++                let _scope = scope(Bucket::PreparationBase);
++                Err::<(), _>("first typed error")
++            };
++            assert_eq!(off, on);
++            COST.with(|cell| {
++                cell.borrow_mut().as_mut().unwrap().last =
++                    Some(start + std::time::Duration::from_secs(1))
++            });
++            assert!(session.finish_at(start).is_err());
++        }
++    }
++}
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+--- a/crates/openwepp-land-surface-energy/src/numerics.rs
++++ b/crates/openwepp-land-surface-energy/src/numerics.rs
+@@ -143,6 +143,9 @@
+     E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
+     V: FnMut(&[f64]) -> bool,
+ {
++    let _cost = crate::solver_mechanism_audit::compact_cost::scope(
++        crate::solver_mechanism_audit::compact_cost::Bucket::Trial,
++    );
+     for exponent in 0..=MAX_BACKTRACKING_HALVINGS {
+         let factor = 0.5_f64.powf(f64::from(exponent));
+         let trial: Vec<f64> = x
+@@ -187,6 +190,7 @@
+         .collect();
+     let mut jacobian = vec![vec![0.0; x.len()]; x.len()];
+     for column in 0..x.len() {
++        crate::solver_mechanism_audit::compact_cost::column(column, false);
+         #[cfg(any(test, feature = "test-support"))]
+         let capture_column = crate::solver_residual_corpus_capture::column(column, false);
+         let mut minus = x.to_vec();
+@@ -196,11 +200,17 @@
+         let minus_valid = valid_trial(&minus);
+         let plus_valid = valid_trial(&plus);
+         let minus_residual = minus_valid
+-            .then(|| evaluator(&minus, Some(frozen)))
++            .then(|| {
++                let _cost = crate::solver_mechanism_audit::compact_cost::probe(column);
++                evaluator(&minus, Some(frozen))
++            })
+             .transpose()?
+             .map(|value| value.0);
+         let plus_residual = plus_valid
+-            .then(|| evaluator(&plus, Some(frozen)))
++            .then(|| {
++                let _cost = crate::solver_mechanism_audit::compact_cost::probe(column);
++                evaluator(&plus, Some(frozen))
++            })
+             .transpose()?
+             .map(|value| value.0);
+         if !minus_valid && !plus_valid {
+@@ -332,6 +342,9 @@
+     B: Clone,
+ {
+     validate_solver_shape(&initial, unit_scales)?;
++    let _cost_remaining = crate::solver_mechanism_audit::compact_cost::scope(
++        crate::solver_mechanism_audit::compact_cost::Bucket::SolverRemaining,
++    );
+     let mut x = initial;
+     let mut last_step = None;
+     let mut backtracking_count = 0;
+@@ -340,7 +353,12 @@
+     let mut history = Vec::new();
+     for iteration in 0..=MAX_NEWTON_ITERATIONS {
+         crate::solver_mechanism_audit::iteration(iteration);
+-        let (normalized, detail) = evaluator(&x, None)?;
++        let (normalized, detail) = {
++            let _cost = crate::solver_mechanism_audit::compact_cost::scope(
++                crate::solver_mechanism_audit::compact_cost::Bucket::PreparationBase,
++            );
++            evaluator(&x, None)?
++        };
+         if normalized.len() != x.len() || normalized.iter().any(|value| !value.is_finite()) {
+             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                 "normalized_residual_shape_or_domain",
+@@ -372,6 +390,10 @@
+             ));
+         }
+         let frozen = freeze_branches(&detail);
++        crate::solver_mechanism_audit::compact_cost::sweep();
++        let cost_assembly = crate::solver_mechanism_audit::compact_cost::scope(
++            crate::solver_mechanism_audit::compact_cost::Bucket::Assembly,
++        );
+         let mut sweep_observation =
+             crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Sweep);
+         observe_sweep(&x, &detail, &frozen, &sweep_observation);
+@@ -397,21 +419,27 @@
+             &mut jacobian,
+             &mut right_hand_side,
+         )?;
+-        let (delta, current_pivot, current_matrix_norm) =
+-            match solve_linear(&jacobian, &right_hand_side) {
+-                Ok(value) => value,
+-                Err(evidence) => {
+-                    return Ok(rejected(
+-                        NumericalFailureKind::SingularPivot,
+-                        iteration,
+-                        normalized,
+-                        backtracking_count,
+-                        last_step,
+-                        (Some(evidence.pivot), Some(evidence.matrix_norm)),
+-                        x,
+-                    ));
+-                }
+-            };
++        drop(cost_assembly);
++        let linear_result = {
++            let _cost = crate::solver_mechanism_audit::compact_cost::scope(
++                crate::solver_mechanism_audit::compact_cost::Bucket::Linear,
++            );
++            solve_linear(&jacobian, &right_hand_side)
++        };
++        let (delta, current_pivot, current_matrix_norm) = match linear_result {
++            Ok(value) => value,
++            Err(evidence) => {
++                return Ok(rejected(
++                    NumericalFailureKind::SingularPivot,
++                    iteration,
++                    normalized,
++                    backtracking_count,
++                    last_step,
++                    (Some(evidence.pivot), Some(evidence.matrix_norm)),
++                    x,
++                ));
++            }
++        };
+         pivot = Some(current_pivot);
+         matrix_norm = Some(current_matrix_norm);
+         let prospective_step = delta.iter().map(|value| value.abs()).fold(0.0, f64::max);
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+@@ -293,6 +293,18 @@
+     probe: &[f64],
+     column_index: usize,
+ ) -> Result<Vec<f64>, LandSurfaceEnergyError> {
++    let _cost = if !force_complete_covered_jacobian_probes()
++        && base
++            .validated
++            .stage3_identity_anchor_k(column_index)
++            .is_some()
++    {
++        crate::solver_mechanism_audit::compact_cost::scope(
++            crate::solver_mechanism_audit::compact_cost::Bucket::Assembly,
++        )
++    } else {
++        crate::solver_mechanism_audit::compact_cost::probe(column_index)
++    };
+     let mut observation =
+         crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Probe);
+     let result =
+@@ -539,6 +551,15 @@
+     initial_trial: Vec<f64>,
+     allow_v10_initial_final_acceptance: bool,
+ ) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
++    let _cost_solve = crate::solver_mechanism_audit::compact_cost::solve(
++        if caps.is_some() {
++            crate::solver_mechanism_audit::compact_cost::Family::CoveredFixedFinal
++        } else {
++            crate::solver_mechanism_audit::compact_cost::Family::CoveredPotential
++        },
++        initial_trial.len(),
++        beginning,
++    );
+     validate_covered_caps(beginning, caps)?;
+     let ground_uses_liquid_vapor_phase_domain =
+         covered_ground_uses_liquid_vapor_phase_domain(beginning);
+@@ -559,10 +580,17 @@
+     let mut backtracking_count = 0;
+     let mut pivot = None;
+     let mut matrix_norm = None;
++    let _cost_remaining = crate::solver_mechanism_audit::compact_cost::scope(
++        crate::solver_mechanism_audit::compact_cost::Bucket::SolverRemaining,
++    );
+     for iteration in 0..=MAX_NEWTON_ITERATIONS {
+         crate::solver_mechanism_audit::iteration(iteration);
+-        let iteration_map =
+-            ValidatedCoveredIterationMap::evaluate(&validated_evaluation_inputs, &x)?;
++        let iteration_map = {
++            let _cost = crate::solver_mechanism_audit::compact_cost::scope(
++                crate::solver_mechanism_audit::compact_cost::Bucket::PreparationBase,
++            );
++            ValidatedCoveredIterationMap::evaluate(&validated_evaluation_inputs, &x)?
++        };
+         let detail = &iteration_map.evaluation;
+         let norm = normalized_infinity_norm(&detail.normalized_residuals);
+         let v10_nonpositive_assimilation = beginning.authority.admits_nonpositive_assimilation()
+@@ -601,6 +629,10 @@
+             }));
+         }
+         let jacobian_base = iteration_map.into_jacobian_base(&x);
++        crate::solver_mechanism_audit::compact_cost::sweep();
++        let cost_assembly = crate::solver_mechanism_audit::compact_cost::scope(
++            crate::solver_mechanism_audit::compact_cost::Bucket::Assembly,
++        );
+         let mut sweep_observation =
+             crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Sweep);
+         #[cfg(any(test, feature = "test-support"))]
+@@ -649,6 +681,13 @@
+             ground_uses_liquid_vapor_phase_domain,
+         );
+         for column_index in 0..x.len() {
++            crate::solver_mechanism_audit::compact_cost::column(
++                column_index,
++                !force_complete_covered_jacobian_probes()
++                    && validated_evaluation_inputs
++                        .stage3_identity_anchor_k(column_index)
++                        .is_some(),
++            );
+             #[cfg(any(test, feature = "test-support"))]
+             let capture_column = crate::solver_residual_corpus_capture::column(
+                 column_index,
+@@ -776,7 +815,14 @@
+                 }
+             }
+         }
+-        let (mut delta, current_pivot, current_matrix_norm) = match solve_linear(&jacobian, &rhs) {
++        drop(cost_assembly);
++        let linear_result = {
++            let _cost = crate::solver_mechanism_audit::compact_cost::scope(
++                crate::solver_mechanism_audit::compact_cost::Bucket::Linear,
++            );
++            solve_linear(&jacobian, &rhs)
++        };
++        let (mut delta, current_pivot, current_matrix_norm) = match linear_result {
+             Ok(value) => value,
+             Err(evidence) => {
+                 let (occupancy_id, active_bounds) = covered_failure_metadata(beginning, detail, &x);
+@@ -803,6 +849,9 @@
+         }
+         pivot = Some(current_pivot);
+         matrix_norm = Some(current_matrix_norm);
++        let _cost_trial = crate::solver_mechanism_audit::compact_cost::scope(
++            crate::solver_mechanism_audit::compact_cost::Bucket::Trial,
++        );
+         let prospective: Vec<f64> = x
+             .iter()
+             .zip(delta.iter())
+--- a/crates/openwepp-land-surface-energy/src/solver_litter_phase.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_litter_phase.rs
+@@ -204,6 +204,15 @@
+     initial_trial: &[f64],
+     context: V3LitterResidualContext,
+ ) -> Result<NormalizedSolveOutcome<V3PhaseFreeCoveredEvaluation>, LandSurfaceEnergyError> {
++    let _cost_solve = crate::solver_mechanism_audit::compact_cost::solve(
++        if caps.is_some() {
++            crate::solver_mechanism_audit::compact_cost::Family::V3FixedFinal
++        } else {
++            crate::solver_mechanism_audit::compact_cost::Family::V3Potential
++        },
++        initial_trial.len(),
++        column,
++    );
+     let coordinate_scales =
+         v3_step_coordinate_scales(column.occupancies.len(), column.ground.soil_nodes.len());
+     if initial_trial.len() != coordinate_scales.len() {
+--- a/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
++++ b/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
+@@ -414,10 +414,24 @@
+         1_000_000,
+     )
+     .expect("begin LSE observation");
++    let cost_posture = std::env::var("OPENWEPP_COMPACT_COST").unwrap_or_else(|_| "off".into());
++    assert!(
++        matches!(cost_posture.as_str(), "off" | "on"),
++        "explicit compact cost posture"
++    );
++    let cost_session = (cost_posture == "on").then(|| {
++        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::begin()
++            .expect("begin compact cost")
++    });
+     controlled_mechanism_phase("pre_run", iteration, memory);
+     let cpu_before = release_scale_process_cpu_ticks().expect("pre-run CPU ticks");
+     let run_start_monotonic_ns = controlled_mechanism_monotonic_ns();
+     let run_started = std::time::Instant::now();
++    if let Some(session) = &cost_session {
++        session
++            .start_at(run_started)
++            .expect("start compact runner boundary");
++    }
+     let report = execute_hillslope_run_with_runtime_policy(
+         &request,
+         &["openwepp-cli-hill".to_string()],
+@@ -427,10 +441,16 @@
+         ),
+     )
+     .expect("one-OFE positive Stage-3 -> Lane-D release probe");
+-    let run_wall_us = release_probe_elapsed_us(run_started.elapsed());
++    let run_elapsed = run_started.elapsed();
++    let run_wall_us = release_probe_elapsed_us(run_elapsed);
+     let run_end_monotonic_ns = controlled_mechanism_monotonic_ns();
+     let cpu_after = release_scale_process_cpu_ticks().expect("end-run CPU ticks");
+     controlled_mechanism_phase("end_run", iteration, memory);
++    let compact_cost = cost_session.map(|session| {
++        session
++            .finish_at(run_started + run_elapsed)
++            .expect("complete additive compact accounting")
++    });
+     let mut carrier_audit = carrier_session
+         .finish()
+         .expect("finish carrier observation");
+@@ -638,6 +658,8 @@
+         "experiment": "EXP-STAGE3-20260906",
+         "carrier_counts": carrier_audit,
+         "lse_counts": lse_audit,
++        "compact_cost": compact_cost,
++        "compact_cost_posture":cost_posture,
+         "ofe_count": ofe_count,
+         "iteration": iteration,
+         "cpu_ticks": cpu_after.checked_sub(cpu_before).expect("monotonic CPU"),
+--- a/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs
++++ b/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs
+@@ -2162,6 +2162,8 @@
+     argv: &[String],
+     runtime_policy: HillslopeRuntimeSelectionPolicy,
+ ) -> Result<HillslopeRunReport, HillslopeCliError> {
++    use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
++    let compact_setup = compact_cost::scope(Bucket::Orchestration);
+     reject_retired_laned_runtime_envs()?;
+ 
+     if !request.run_dir.is_dir() {
+@@ -2204,6 +2206,7 @@
+         adapter_boundary,
+         execution_state,
+     } = runtime_setup;
++    drop(compact_setup);
+     let mut execution = execute_selected_hillslope_days(
+         &inputs.runfile.run_name,
+         targets.output_hillslope_id,
+@@ -2215,6 +2218,7 @@
+         &streaming_targets,
+         output_transaction.stage3_evidence_private_path(),
+     )?;
++    let _compact_publication = compact_cost::scope(Bucket::Custody);
+     let retained_publication = execution.retained_direct_publication.as_ref().ok_or(
+         HillslopeCliError::RuntimeSurfaceFailure {
+             surface: "stage3_v11_archive_spool",
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs
+@@ -208,6 +208,7 @@
+ pub struct ReleaseQualificationProfileScopeV1 {
+     bucket: ReleaseQualificationProfileBucketV1,
+     active: bool,
++    _compact: openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Guard,
+     _not_send: std::marker::PhantomData<Rc<()>>,
+ }
+ 
+@@ -344,6 +345,13 @@
+ fn enter_release_qualification_profile_scope_v1(
+     bucket: ReleaseQualificationProfileBucketV1,
+ ) -> ReleaseQualificationProfileScopeV1 {
++    use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
++    let compact = compact_cost::scope(match bucket {
++        ReleaseQualificationProfileBucketV1::NativeVegetationEt => Bucket::OtherPhysical,
++        ReleaseQualificationProfileBucketV1::LaneD => Bucket::Routing,
++        ReleaseQualificationProfileBucketV1::Stage3LseSoil
++        | ReleaseQualificationProfileBucketV1::RemainingRunner => Bucket::RunnerUnassigned,
++    });
+     let active = RELEASE_QUALIFICATION_TELEMETRY.with(|state| {
+         let mut state = state.borrow_mut();
+         let Some(state) = state.as_mut() else {
+@@ -375,6 +383,7 @@
+     ReleaseQualificationProfileScopeV1 {
+         bucket,
+         active,
++        _compact: compact,
+         _not_send: std::marker::PhantomData,
+     }
+ }
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+@@ -380,12 +380,21 @@
+ struct TerminalCandidateProfileScopeV1 {
+     phase: &'static str,
+     started: Option<std::time::Instant>,
++    _compact: openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Guard,
+ }
+ 
+ impl TerminalCandidateProfileScopeV1 {
+     fn begin(phase: &'static str) -> Self {
++        use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
++        let bucket = match phase {
++            "terminal candidate setup" => Bucket::Orchestration,
++            "terminal provider custody" | "terminal provider retention" => Bucket::Custody,
++            "terminal provider carrier" => Bucket::OtherPhysical,
++            _ => Bucket::RunnerUnassigned,
++        };
+         Self {
+             phase,
++            _compact: compact_cost::scope(bucket),
+             started: crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1(
+             ),
+         }
+@@ -431,7 +440,11 @@
+     let mut mechanism_outer = crate::stage3_mechanism_experiment_audit::Scope::begin(
+         crate::stage3_mechanism_experiment_audit::Kind::Outer,
+         || {
+-            format!("day={day_index};interval={interval_index};child={current_child_ordinal};lane={lane_id};mode={mode:?};support={:?};upper_bits={}", prepared.support, selected_upper_bound_s.to_bits())
++            format!(
++                "day={day_index};interval={interval_index};child={current_child_ordinal};lane={lane_id};mode={mode:?};support={:?};upper_bits={}",
++                prepared.support,
++                selected_upper_bound_s.to_bits()
++            )
+         },
+     );
+     let setup_profile = TerminalCandidateProfileScopeV1::begin("terminal candidate setup");
+@@ -517,7 +530,16 @@
+         let mut mechanism_provider = crate::stage3_mechanism_experiment_audit::Scope::begin(
+             crate::stage3_mechanism_experiment_audit::Kind::Provider,
+             || {
+-                format!("lane={};support={:?};role={:?};attempt={};coupling={};beginning={:?};request_sha256={}", request.lane_id, request.support, request.role, request.attempt_ordinal, request.coupling_iteration, request.beginning_joint.receipt_sha256(), crate::stage3_mechanism_experiment_audit::fingerprint(&request))
++                format!(
++                    "lane={};support={:?};role={:?};attempt={};coupling={};beginning={:?};request_sha256={}",
++                    request.lane_id,
++                    request.support,
++                    request.role,
++                    request.attempt_ordinal,
++                    request.coupling_iteration,
++                    request.beginning_joint.receipt_sha256(),
++                    crate::stage3_mechanism_experiment_audit::fingerprint(&request)
++                )
+             },
+         );
+         let custody_profile = TerminalCandidateProfileScopeV1::begin("terminal provider custody");
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
+@@ -1181,12 +1181,30 @@
+ struct CarrierProfileScopeV1 {
+     phase: &'static str,
+     started: Option<std::time::Instant>,
++    _compact: openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Guard,
+ }
+ 
+ impl CarrierProfileScopeV1 {
+     fn begin(phase: &'static str) -> Self {
++        use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
++        // Physical setup/completion contain actual snow/soil evaluation, not
++        // merely construction. Unresolved envelopes remain explicitly mixed.
++        let bucket = match phase {
++            "carrier physical setup"
++            | "carrier physical evidence"
++            | "carrier physical completion" => Bucket::OtherPhysical,
++            "carrier owner soil custody"
++            | "carrier owner candidate bytes"
++            | "carrier complete owner"
++            | "carrier owner vegetation validation"
++            | "carrier owner joint map"
++            | "carrier owner joint seal" => Bucket::Custody,
++            "carrier owner ephemeral assembly" => Bucket::Orchestration,
++            _ => Bucket::RunnerUnassigned,
++        };
+         Self {
+             phase,
++            _compact: compact_cost::scope(bucket),
+             started: crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1(
+             ),
+         }
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+@@ -759,12 +759,33 @@
+ struct ImportedStackProfileScopeV1 {
+     phase: &'static str,
+     started: Option<std::time::Instant>,
++    _compact: openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Guard,
+ }
+ 
+ impl ImportedStackProfileScopeV1 {
+     fn begin(phase: &'static str) -> Self {
++        use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
++        let bucket = match phase {
++            "imported physical candidate"
++            | "imported frozen evaluation"
++            | "imported frozen execute accept"
++            | "imported frozen runtime" => Bucket::OtherPhysical,
++            "imported entry validation"
++            | "imported envelope validation"
++            | "imported owner publication"
++            | "imported install"
++            | "imported reuse validation"
++            | "imported reuse reseal"
++            | "imported reuse install"
++            | "imported frozen acceptance" => Bucket::Custody,
++            "imported physical setup" => Bucket::Orchestration,
++            // An envelope constructor can execute the physical solver on some
++            // branches. Do not label its uninspected remainder as bookkeeping.
++            _ => Bucket::RunnerUnassigned,
++        };
+         Self {
+             phase,
++            _compact: compact_cost::scope(bucket),
+             started: profile_start(),
+         }
+     }

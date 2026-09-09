@@ -1,0 +1,6 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openwepp-compact-cost-P-vKI6gb-33928270b790
+  scratch: /tmp/openwepp-roger-openwepp-compact-cost-P-vKI6gb-33928270b790
+  cache:   /workdir/.cache/openwepp
+    Finished `release` profile [optimized] target(s) in 0.08s

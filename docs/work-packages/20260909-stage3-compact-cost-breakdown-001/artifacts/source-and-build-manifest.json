@@ -1,0 +1,55 @@
+{
+  "schema": "openwepp-compact-cost-source-build-v1",
+  "status": "measured",
+  "baseline": {
+    "name": "A common cut2b",
+    "root": "/tmp/openwepp-hotpath-jacobian-jmvOZh/A",
+    "detached_head_not_source_identity": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+    "source_index_sha256": "0d9e28eb3087a1944a5ff7969eb3120f6269d934509c67c25106292af5edfc84",
+    "source_archive_sha256": "0771cc78b8eb81bac0ddaf03c98889d891b3376e72c8ae1ffffb2cd4ce9471fb",
+    "bundle_manifest_sha256": "ef8dd7289dcff42d43d9e9f53546d312c5dec745cb53ee815d9dac4c897ebf64",
+    "runner_sha256": "6282f2cb0c7ebfc14f75e860c1cb416fde7db19cda222299617169f61e81bd67"
+  },
+  "candidate": {
+    "name": "P = A plus observation-only instrumentation",
+    "root": "/tmp/openwepp-compact-cost-P-vKI6gb",
+    "runner": "/workdir/.cache/openwepp/targets/compact-cost-P/release/deps/openwepp_runner-682944f41aa5eb67",
+    "runner_sha256": "c2276fa901e5c0c77a574f390f1c399915122b6c6c87085c18e138b3d0d0c858",
+    "runner_sidecar_sha256": "2809763a9256105233179d8f7b979af0dfb3615a2c5fa52298bc00976fa2a9a1",
+    "lse_test_binary_sha256": "f57e0205b3722f1c1b05fc97b1975ccae22ea154b02b3bb5eaacb6336adfe724",
+    "patch": "combined-instrumentation.patch",
+    "patch_sha256": "d9d3203b635f352ddb8a3f3ed39c0e8c5b13ba7b58ad8606473d78d01ee1f720"
+  },
+  "source_files": {
+    "crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs": "f0fbf02b761c897743ac60c8792757f559f1356ccaf603b1a031dbe0ecc13868",
+    "crates/openwepp-land-surface-energy/src/numerics.rs": "d45beaf76ab47e52b9dc9ef52abd6ab1b8fed14d14295a5e5e8bd09d947ee0a9",
+    "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs": "14919fff93af1d29d017def1dec7edfb18619ca0e443f26733efa4ca8a80178a",
+    "crates/openwepp-land-surface-energy/src/solver_litter_phase.rs": "92b0f3fbdd25940fbebc2d32bd854bba08e2166418b6c2cb43c829e9c0286275",
+    "crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs": "a03783df437f5ac5d64856d946935ae0978f1a0a49be16099c22186249bd799e",
+    "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs": "23ac9cc84095091a43e0e9bf4d061c0d8e22d6036449459cfd0dd6d6d4dca7c5",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs": "2f90653e7d42b4fda271c1ceba5902e50bc4b3e7c0d2d7ea3f1d09b60acd2161",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs": "919ee4d15f0c2e7a6468d80c9f5c79a0d05ae86e0bc57430c0ebd3cd3d5182a0",
+    "crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs": "39c2a77e1bd717393e2c97d68550f1d6a76d45bd2e6a8061dde400942a106127",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs": "3e866cba2ee382c59e32ad5c10dafa0bbd7fd02cdff2544217cc424d775b927a"
+  },
+  "build": {
+    "environment": "Nix offline; CARGO_TARGET_DIR=/workdir/.cache/openwepp/targets/compact-cost-P; CARGO_PROFILE_RELEASE_LTO=false; RUST_MIN_STACK=67108864",
+    "command": "cargo test --release -p openwepp-runner -p openwepp-land-surface-energy --lib --no-run",
+    "external_limitation": "Nix/Cargo/Rust toolchain and registry cache are external; detached Git HEAD does not identify P bytes."
+  },
+  "measurement": {
+    "command": "reproduction/run_series.py --binary <exact runner> --environment <retained runtime environment> --identity <P admission identity> --out <new directory> --cwd <P root>",
+    "collector_sha256": "58924ece830fc32ec1b4fc0f9aa734fdd6004a6916f98831cca8f279437c2557",
+    "analyzer_sha256": "06d86fe2b987f8c452d04adccabcb2395851bbc858357c1fe4ea9a70ec0ceb8c",
+    "analysis_sha256": "7df4bfd8a29a2e5ebd847a93b2e6c0bcfdbe4dda07015d9167aa99a1513461d8",
+    "cpu": 0,
+    "series": "raw/series-03"
+  },
+  "custody": {
+    "bundle": "/tmp/openwepp-compact-cost-P-vKI6gb/final-custody-bundle",
+    "manifest_sha256": "66a927d58d8c00a9edc4ed817d9b529f0176b77ca5314d1adf286b8d46afd4ba",
+    "verification": "PASS",
+    "scope": "ten changed P source files, exact runner and sidecar, admission/environment, protocol/patch/scripts, compact result summary",
+    "limitation": "Full A source and toolchain remain external and explicitly bound to the predecessor kit."
+  }
+}

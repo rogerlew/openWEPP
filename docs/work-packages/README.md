@@ -4,6 +4,12 @@ Current-work locator: [active index](active.md). Start there and at the named
 package handoff; this catalog preserves historical evidence. Prospective rules
 in [the common guide](AGENTS.md) supersede duplicated process tutorials below.
 
+## 20260909-stage3-compact-cost-breakdown-001
+
+COMPLETE CHARACTERIZATION: observation-only authenticated one-OFE cost attribution
+and ranked next-architecture recommendation. No optimization; production HOLD. See
+[package](20260909-stage3-compact-cost-breakdown-001/package.md).
+
 ## 20260908-stage3-hotpath-jacobian-reference-and-prototype-001
 
 EXECUTED HOLD: isolated J implemented and evaluated; 9.44x local acceleration,
