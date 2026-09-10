@@ -1,0 +1,67 @@
+{
+  "schema": "openwepp-stage3-support-capability-exploration-v1",
+  "source": {
+    "base_commit": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+    "worktree": "/tmp/openwepp-stage3-support-representation-Q0so8k",
+    "final_binary": "/workdir/.cache/openwepp/targets/stage3-support-repr-profile1/release/deps/openwepp_runner-682944f41aa5eb67",
+    "final_binary_sha256": "f158c110a7406f5b71aa35e6e25ceab6b9f02c711ac5f5b535e1d3f32f989d32",
+    "runtime_environment_sha256": "463cd045d5413611e2785f80d12f58803f36e1db5ac39533cb7af03011074a84"
+  },
+  "protocol": {
+    "exploratory_complete_profiles": 3,
+    "cpu": 0,
+    "fresh_process": true,
+    "observer_posture": "on",
+    "timeout_s": 180,
+    "compiler_profile": "release",
+    "lto": false,
+    "ofes": 1,
+    "repeats": 1
+  },
+  "profile_1_ns": {
+    "runner": 5040308616,
+    "stage3_outer_residual": 795031826,
+    "support_draft_construction_48": 13990,
+    "support_capability_assembly_48": 135610,
+    "provider_receipt_validation_1": 18165,
+    "provider_atmosphere_binding_and_surface_validation_48": 365492,
+    "provider_destination_join_48": 44292,
+    "provider_dual_regime_validation_1": 15364,
+    "provider_remaining_1": 89642,
+    "accounting_difference": 0
+  },
+  "profile_2_ns": {
+    "runner": 5040897718,
+    "stage3_outer_residual": 795537514,
+    "rollback_snapshot_clone_1": 672,
+    "rollback_snapshot_drop_1": 73,
+    "accounting_difference": 0
+  },
+  "profile_3_ns": {
+    "runner": 4999301321,
+    "stage3_outer_residual_after_split": 51149,
+    "support_builder_remaining_48": 124166,
+    "support_draft_construction_48": 13879,
+    "support_capability_assembly_48": 113764,
+    "provider_binding_outer_exclusive_1": 498,
+    "provider_atmosphere_binding_and_surface_validation_48": 403732,
+    "provider_destination_join_48": 50207,
+    "provider_dual_regime_validation_1": 13575,
+    "prepared_day_real_consumer_execution_1": 793671012,
+    "prepared_day_capability_drop_1": 87131,
+    "rss_kib": 70408,
+    "accounting_difference": 0
+  },
+  "protected_output_identity": {
+    "stage3_evidence_archive_sha256": "4d05c9dd9ff1e2ab6feaf5314c2a82063ed621f5e1a53669c8d54aacfadd0db5",
+    "all_reported_output_hashes_equal_predecessor": true,
+    "all_reported_physical_control_and_work_counts_equal_predecessor": true,
+    "evidence_limitation": "Values were transcribed from direct command output; raw stdout and per-run receipts were not retained, so the booleans are executor assertions rather than independently replayable primary evidence."
+  },
+  "measured_named_representation_envelope": {
+    "independent_reconstruction_ms_including_day_validation_and_initial_clone": 1.553,
+    "reported_rounded_ms": 1.6,
+    "reported_rounded_runner_fraction_percent": 0.032,
+    "not_a_complete_ceiling": "48 live prepared-support clones and two canonical forcing SHA-256 reseals per support remain unscoped inside prepared_day_real_consumer_execution"
+  }
+}

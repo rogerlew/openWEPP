@@ -1,0 +1,153 @@
+diff --git a/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs b/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
+--- a/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs
+@@ -545,2 +545,14 @@ pub mod compact_cost {
+         Stage3InitialCandidateClone,
++        SupportDraftConstruction,
++        SupportCapabilityAssembly,
++        ProviderReceiptValidation,
++        ProviderAtmosphereBinding,
++        ProviderDestinationJoin,
++        ProviderDualRegimeValidation,
++        ProviderRemaining,
++        RejectedDayRollbackSnapshotClone,
++        RejectedDayRollbackSnapshotDrop,
++        FullProviderDayBinding,
++        PreparedDayConsumerExecution,
++        PreparedDayCapabilityDrop,
+         ImportedFrozenExecute,
+@@ -559,1 +571,1 @@ pub mod compact_cost {
+-    const BUCKETS: usize = 52;
++    const BUCKETS: usize = 64;
+@@ -601,2 +613,14 @@ pub mod compact_cost {
+         Bucket::Stage3InitialCandidateClone,
++        Bucket::SupportDraftConstruction,
++        Bucket::SupportCapabilityAssembly,
++        Bucket::ProviderReceiptValidation,
++        Bucket::ProviderAtmosphereBinding,
++        Bucket::ProviderDestinationJoin,
++        Bucket::ProviderDualRegimeValidation,
++        Bucket::ProviderRemaining,
++        Bucket::RejectedDayRollbackSnapshotClone,
++        Bucket::RejectedDayRollbackSnapshotDrop,
++        Bucket::FullProviderDayBinding,
++        Bucket::PreparedDayConsumerExecution,
++        Bucket::PreparedDayCapabilityDrop,
+         Bucket::ImportedFrozenExecute,
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
+@@ -995,8 +995,16 @@ impl DirectSnowStage3V11PreparedSupport {
+-        let mut prepared = Self::try_new(
+-            support,
+-            inputs.snow_inputs_by_lane,
+-            inputs.support_forcing_by_lane,
+-            inputs.snow_free_v11_interval,
+-            inputs.support_identity_by_lane,
+-        )?
+-        .with_covered_v11_interval(inputs.snow_surface_v11_interval);
++        let mut prepared = {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SupportDraftConstruction,
++            );
++            Self::try_new(
++            support,
++            inputs.snow_inputs_by_lane,
++            inputs.support_forcing_by_lane,
++            inputs.snow_free_v11_interval,
++            inputs.support_identity_by_lane,
++            )?
++        };
++        let _assembly = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SupportCapabilityAssembly,
++        );
++        prepared = prepared.with_covered_v11_interval(inputs.snow_surface_v11_interval);
+@@ -2275,1 +2283,4 @@ impl PreparedStage3V11DayV1 {
+         let prepared = Self::bind_provider_day(provider, day_index, supports)?;
++        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderDualRegimeValidation,
++        );
+@@ -2290,1 +2301,4 @@ impl PreparedStage3V11DayV1 {
++        let _remaining = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderRemaining,
++        );
+         if supports.len() != STAGE3_V11_PARENT_SUPPORT_COUNT {
+@@ -2330,1 +2349,6 @@ impl PreparedStage3V11DayV1 {
+-        provider.gsi_receipt().validate()?;
++        {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderReceiptValidation,
++            );
++            provider.gsi_receipt().validate()?;
++        }
+@@ -2330,3 +2349,11 @@ impl PreparedStage3V11DayV1 {
+-            support.bind_provider_atmosphere(&provider_destinations)?;
+-            support.validate_explicit_snow_surface_set()?;
++            {
++                let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderAtmosphereBinding,
++                );
++                support.bind_provider_atmosphere(&provider_destinations)?;
++                support.validate_explicit_snow_surface_set()?;
++            }
++            let _join = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderDestinationJoin,
++            );
+             let mut support_destinations = BTreeSet::new();
+diff --git a/crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs b/crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs
+--- a/crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs
+@@ -290,3 +290,15 @@ impl DirectRunFrame {
+-        attachment
+-            .stage_prepared_day(&prepared)
+-            .map_err(attachment_runtime_error("prepare"))
++        let result = {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::PreparedDayConsumerExecution,
++            );
++            attachment
++                .stage_prepared_day(&prepared)
++                .map_err(attachment_runtime_error("prepare"))
++        };
++        {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::PreparedDayCapabilityDrop,
++            );
++            drop(prepared);
++        }
++        result
+@@ -305,3 +317,7 @@ impl DirectRunFrame {
+-        let prepared =
++        let prepared = {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::FullProviderDayBinding,
++            );
+             PreparedStage3V11DayV1::bind_production_provider_day(provider, day_index, supports)
+-                .map_err(attachment_runtime_error("bind_provider"))?;
++                .map_err(attachment_runtime_error("bind_provider"))?
++        };
+diff --git a/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs b/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs
+--- a/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs
++++ b/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs
+@@ -414,1 +414,6 @@ fn execute_direct_publication_stream(
+-                let rollback_beginning = stage3_rejected_day_rollback_beginning(frame);
++                let rollback_beginning = {
++                    let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::RejectedDayRollbackSnapshotClone,
++                    );
++                    stage3_rejected_day_rollback_beginning(frame)
++                };
+@@ -440,3 +445,11 @@ fn execute_direct_publication_stream(
+-                if let Err(error) = &result {
+-                    record_stage3_rejected_day_rollback(frame, rollback_beginning, error);
++                match &result {
++                    Err(error) => {
++                        record_stage3_rejected_day_rollback(frame, rollback_beginning, error);
++                    }
++                    Ok(()) => {
++                        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::RejectedDayRollbackSnapshotDrop,
++                        );
++                        drop(rollback_beginning);
++                    }
+                 }
