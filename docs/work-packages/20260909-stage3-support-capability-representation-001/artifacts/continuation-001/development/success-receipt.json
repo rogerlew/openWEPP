@@ -1,0 +1,10 @@
+{
+  "status": "started",
+  "kind": "development-collector-success",
+  "argv": ["taskset", "-c", "0", "/workdir/.cache/openwepp/targets/stage3-support-continuation-001/release/deps/openwepp_runner-682944f41aa5eb67", "hillslope::tests::stage3_controlled_mechanism_experiment", "--ignored", "--exact", "--nocapture", "--test-threads=1"],
+  "cwd": "/workdir/openWEPP/docs/work-packages/20260909-stage3-support-capability-representation-001/artifacts/continuation-001/development/cwd-success",
+  "environment_allowlist": {"OPENWEPP_COMPACT_COST": "on", "OPENWEPP_EXPERIMENT_OFES": "1", "OPENWEPP_EXPERIMENT_REPEATS": "1", "OPENWEPP_EXPERIMENT_MEMORY": "0", "RUST_MIN_STACK": "67108864"},
+  "binary_sha256": "205e9e31c369d64633f428accb95336944c905cd3c2c66b7dbc69f4521468b79",
+  "stdout": "success.stdout",
+  "stderr": "success.stderr"
+}

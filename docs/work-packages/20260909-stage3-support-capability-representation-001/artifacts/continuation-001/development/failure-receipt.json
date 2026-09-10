@@ -1,0 +1,8 @@
+{
+  "status": "expected-invalid",
+  "kind": "controlled-collector-failure",
+  "input": "failure-input.log",
+  "expected_record_count": 1,
+  "observed_record_count": 0,
+  "decision": "rejected before admission"
+}

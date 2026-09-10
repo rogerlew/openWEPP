@@ -1,7 +1,6 @@
 # Stage 3 support-capability representation experiment
 
-Status: EXECUTED HOLD / INCONCLUSIVE WITH CONCRETE BOUNDARY LIMITATION;
-production HOLD. Source base:
+Status: COMPLETE NEGATIVE IMPLEMENTATION DECISION; production HOLD. Source base:
 `1e9b9a5232b65a985d0cf7abe0bc6d8dd599b83a` (clean at authorization).
 
 ## Objective and scope
@@ -27,6 +26,102 @@ surfaces are the private support/day types and production scheduler path in the
 isolated candidate, focused tests for their trust boundary, observer buckets in
 the isolated profiling source, this record, and `docs/work-packages/active.md`.
 The exact terminal diff will be reconciled before disposition.
+
+## Owner-authorized continuation — 2026-09-09 America/Los_Angeles
+
+The owner authorized a fresh prospective measurement series in
+`/tmp/openwepp_attribution_and_representation_continuation_authorization.md`.
+This continuation preserves the earlier three-profile attempt and its
+`EXECUTED HOLD / INCONCLUSIVE` evidence limitations as history. Its missing raw
+stdout and per-run receipts remain missing and are not recovered evidence.
+
+Current next action is the specifically authorized source-real boundary:
+separately time the 48 prepared-support clones, live transaction lookup/binding,
+the actual snow-free and optional covered canonical encoding/hash calls, adjacent
+state clones only where necessary, and temporary live-support destruction. If
+that boundary is small, make one bounded subdivision of the largest remaining
+named consumer/physical phase. Retain raw records and finalized receipts before
+admission analysis. The frozen admission rule is a conservative measured upper
+bound plus a source-supported removable design capable of a plausible 5% complete
+runner improvement. No implementation is admitted merely because a surrounding
+consumer envelope is large.
+
+Continuation implementation intent: observation-only instrumentation in the
+recoverable detached experimental tree, a retained collector and immutable run
+directories under this package's artifacts, this maintained record, and the
+active locator. Up to two complete development runs may establish coverage and
+collector validity; after independent observation-design review, freeze one
+source/executable and execute two warmups per posture plus six balanced fresh-
+process off/on pairs. One targeted correction/replacement series is reserved
+only for a concrete validity defect. Production source, authority, physical
+behavior, schemas, and mandatory runtime validation remain unchanged unless the
+admission review accepts exactly one authorized prototype.
+
+### Continuation measurement and admission result
+
+Ran: the corrected observation cut built in release mode, then one finalized
+development run established 48 entries for every live-support boundary bucket,
+400 entries for the bounded physical-value subdivision, and zero accounting
+difference. The independent design reviewer rejected the earlier unfinalized
+development receipt and normal-path-only drop scope; both attempts remain
+retained. Reviewer-owned fix verification accepted the `Drop` wrapper's all-exit
+scope, finalized collector receipt, subdivision, raw-stream hashes, and source
+patch identity before freeze.
+
+Ran: the frozen source/executable then completed two warmups per posture and six
+balanced fresh-process off/on pairs on CPU0. All 16 processes exited zero and
+passed exact protected input/output/control/closure identity, work counts,
+executable identity, raw-record completeness, and additive accounting. Raw
+receipts/streams and the analysis are retained under
+[`artifacts/continuation-001/frozen-series/`](artifacts/continuation-001/frozen-series/).
+The exact source delta is
+[`artifacts/continuation-001/instrumentation.patch`](artifacts/continuation-001/instrumentation.patch)
+(SHA-256 `5f9847bf...a9af870`); the exact binary SHA-256 is
+`0575775e...17d39c4`.
+
+The off runner median was 4.9710715 s (4.968850–4.993983 s) and on median was
+4.9819265 s (4.961512–4.995581 s). Paired observer perturbation median was
++0.2096% wall (−0.5126% to +0.4974%) and +0.0806% process CPU (−0.5012% to
++0.3839%); no overhead was subtracted from bucket costs. Ordinary RSS was
+58,736–71,456 KiB across measured processes and is observational only.
+
+| Measured exclusive operation | Count | Median seconds / runner share | Evidence quality | Avoidable subset / decision |
+| --- | ---: | ---: | --- | --- |
+| Prepared-support owned-value clone | 48 | 0.0011226 / 0.02254% | Six valid on arms; all-exit drop separated | Immutable payload copying is conceptually avoidable, but even perfect removal is immaterial. |
+| Live transaction lookup | 48 | 0.0000030 / 0.000061% | Six valid on arms | Required chronology/ownership input; retain. |
+| Binding remainder (transaction mutation and control) | 48 | 0.0000068 / 0.000137% | Six valid on arms; seal children exclusive | Required live overlay work; retain. |
+| Snow-free canonical encoding/SHA-256 | 48 | 0.0004903 / 0.00983% | Actual canonical call, six valid on arms | Complete changed-transaction commitment is required; unchanged-fragment reuse cannot create a meaningful runner gain. |
+| Covered canonical encoding/SHA-256 | 48 | 0.0002483 / 0.00499% | Optional branch executed 48 times in this fixture | Same required complete commitment; retain or only refactor with identical bytes. |
+| Temporary live-support destruction | 48 | 0.0001292 / 0.00259% | `Drop` wrapper covers success and unwind | Handle/payload sharing could reduce destruction, but its ceiling is immaterial. |
+| **Disjoint live clone/bind/seal/drop total** | **48** | **0.0019954 / 0.04005%** | Direct sum per each of six valid on arms | Perfect-elimination `Teligible/Trunner` ceiling is 0.04097% max, far below 5%; **do not prototype**. At 2x/5x the modeled complete-run saving is only 0.0200%/0.0320% median. |
+| Covered physical-value builder | 400 | 0.6778982 / 13.6137% | One bounded child subdivision; six valid on arms | Substantive physical computation, not representation and not shown redundant/interchangeable; no removal claim. |
+| Physical-evidence remainder excluding builder child | 400 | 0.0360083 / 0.72270% | Exclusive parent remainder | Mixed result/evidence construction remains source-modeling territory; not an admitted opportunity. |
+
+Operation model: `stage_prepared_day` supplies the complete prepared support,
+current committed consumer/transaction sequence, support index/topology, forcing,
+beginning states/owners and regime choice. The clone produces an invocation-local
+owned support; binding mutates both forcing transaction IDs and returns identical
+complete canonical commitments for the actual consumer. Destruction ends that
+temporary lifetime. The operations have no lawful relation to F: F is the
+already-established one-OFE feed-forward provider-call mechanism, while these
+operations neither repeat an interchangeable physical solve nor extend F.
+
+Admission decision: **NO PROTOTYPE**. `Teligible` is conservatively the entire
+disjoint measured 1.995 ms live boundary, despite transaction lookup, mutation,
+both complete canonical seals, and some lifetime work being mandatory. Against
+the matched on-run denominator this is 0.04005% median and 0.04097% maximum.
+Because the upper bound is already two orders of magnitude below the owner 5%
+priority threshold, replacement overhead and required residual work can only
+reduce the opportunity. No representation or physical-result handoff was
+implemented; production Rust and authority remain unchanged.
+
+Next architecture action: make a source-level dependency/result/side-effect map
+of `build_covered_carrier_physical_value_with_soil_beginning_v1` and its 400
+actual consumers, separating the canonical physical solve from the 0.036 s
+post-builder evidence remainder and existing experimental audits. Only a
+demonstrated same-evaluation duplicate physical result with complete typed inputs
+could justify a future physical-result handoff; the 13.61% envelope alone does
+not.
 
 ## Authority, frozen acceptance, and validation plan
 
@@ -112,7 +207,11 @@ chronology in `SC-PLANT-001` `INV-PLANT-032`. Existing authority would permit a
 sound private proof-carrying representation, but the remaining representation-
 sensitive cost was not fully isolated. No amendment was made.
 
-## Current state and evidence
+## Historical predecessor state and evidence
+
+The remainder of this section through the original disposition preserves the
+completed capped attempt as history. Its HOLD and missing evidence are not
+rewritten by the continuation above.
 
 Static: authorization checkpoint equals current HEAD and the entry worktree was
 clean. No equivalent package existed. The predecessor record and its retained
@@ -262,8 +361,46 @@ withdrawal, explicit UNMET receipts/parity, incomplete-envelope wording, exact
 live clone/reseal blocker, actual-diff validation reconciliation and HOLD. No new
 blocker exists beyond the acknowledged evidence and boundary defects.
 
-## Disposition
+## Historical disposition
 
-Executed HOLD pending reviewer fix verification. Missing primary per-run receipts
+Executed HOLD. Missing primary per-run receipts
 and the unisolated live clone/reseal work prevent both a fully executed supported
 negative and an evaluated representation. Production remains HOLD.
+
+## Continuation independent review and final disposition
+
+Independent observation-design and admission review by
+`/root/observation_design_review`: initial **BLOCK** correctly identified the
+unfinalized development receipt and normal-path-only destruction scope. Accepted
+fixes were the finalized collector receipt, separate raw stdout/stderr, immutable
+source/executable/fixture identities, and a `Drop` wrapper that owns and times
+actual contained-support destruction on success and unwind. Reviewer-owned fix
+verification parsed and rehashed the retained evidence, confirmed 48 destruction
+entries, 400 physical-builder entries, zero accounting difference, and accepted
+the design before freeze.
+
+Final independent admission review: **PASS / ACCEPT NO PROTOTYPE**. The reviewer
+parsed all 16 frozen receipts, recomputed their hashes, verified balanced order,
+protected parity, identities, successful exits, and independently reconstructed
+the 1.947–2.039 ms / 0.03917–0.04097% live-boundary range. The reviewer confirmed
+the operation model and F distinction, that the physical builder is not labeled
+removable, and that no twelve-pair extension could change the priority decision.
+The record-completeness finding was fixed and reviewer-verified; no finding
+remains in the assigned scope.
+
+Final disposition: **COMPLETE NEGATIVE IMPLEMENTATION DECISION**. New raw
+evidence is complete for this authenticated one-OFE/day/host experiment. No
+candidate passed admission, so no prototype, authority change, or production
+source change was made. Required observation checks are complete; broader
+candidate correctness and comparative A/B gates did not trigger. Production
+remains **HOLD / NOT QUALIFIED**.
+
+Closure checks: isolated `cargo fmt --all -- --check` passed; reverse application
+of the retained instrumentation patch against the exact terminal isolated tree
+passed; every retained JSON file parsed; package artifact links resolved; and the
+maintained Markdown diff passed `git diff --check`. Whole staged `git diff
+--check` reports only byte-faithful runner stdout terminal blank lines and one
+pre-existing whitespace-bearing context line inside each identical retained
+source patch; these measured artifacts were not rewritten after their hashes
+bound the receipts. Exact retained diff contains only this package record,
+locator, collector/analyzer, observation patch, identities, and raw evidence.

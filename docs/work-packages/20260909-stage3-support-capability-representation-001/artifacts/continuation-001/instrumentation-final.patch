@@ -1,0 +1,426 @@
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
+index 271cc6db9..b4bf5beef 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
+@@ -966,24 +966,38 @@ impl DirectSnowStage3V11PreparedSupport {
+         &mut self,
+         transaction_id: openwepp_kernel_contract::TransactionId,
+     ) -> Result<(), DirectSnowStage3V11AttachmentError> {
++        let _binding =
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::LiveBindingRemainder,
++            );
+         self.v11_interval.lse_forcing.transaction_id = transaction_id;
+-        self.v11_interval.lse_forcing.forcing_sha256 = self
+-            .v11_interval
+-            .lse_forcing
+-            .canonical_sha256()
+-            .map_err(|_| {
+-                DirectSnowStage3V11AttachmentError::Identity(
+-                    "live snow-free forcing transaction digest",
+-                )
+-            })?;
++        self.v11_interval.lse_forcing.forcing_sha256 = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::LiveSnowFreeCanonicalSeal,
++                );
++            self.v11_interval
++                .lse_forcing
++                .canonical_sha256()
++                .map_err(|_| {
++                    DirectSnowStage3V11AttachmentError::Identity(
++                        "live snow-free forcing transaction digest",
++                    )
++                })?
++        };
+         if let Some(covered) = &mut self.covered_v11_interval {
+             covered.lse_forcing.transaction_id = transaction_id;
+-            covered.lse_forcing.forcing_sha256 =
++            covered.lse_forcing.forcing_sha256 = {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::LiveCoveredCanonicalSeal,
++                    );
+                 covered.lse_forcing.canonical_sha256().map_err(|_| {
+                     DirectSnowStage3V11AttachmentError::Identity(
+                         "live covered forcing transaction digest",
+                     )
+-                })?;
++                })?
++            };
+         }
+         Ok(())
+     }
+@@ -995,14 +1009,22 @@ impl DirectSnowStage3V11PreparedSupport {
+         support: TimeSupport,
+         inputs: DirectSnowStage3V11DualRegimeSupportInputsV1,
+     ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
+-        let mut prepared = Self::try_new(
+-            support,
+-            inputs.snow_inputs_by_lane,
+-            inputs.support_forcing_by_lane,
+-            inputs.snow_free_v11_interval,
+-            inputs.support_identity_by_lane,
+-        )?
+-        .with_covered_v11_interval(inputs.snow_surface_v11_interval);
++        let mut prepared = {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SupportDraftConstruction,
++            );
++            Self::try_new(
++                support,
++                inputs.snow_inputs_by_lane,
++                inputs.support_forcing_by_lane,
++                inputs.snow_free_v11_interval,
++                inputs.support_identity_by_lane,
++            )?
++        };
++        let _assembly = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SupportCapabilityAssembly,
++        );
++        prepared = prepared.with_covered_v11_interval(inputs.snow_surface_v11_interval);
+         for (destination, capability) in inputs.destination_capabilities {
+             prepared = match capability {
+                 DirectSnowStage3V11DestinationCapabilityV1::OpenProviderProjection => {
+@@ -2275,6 +2297,9 @@ impl PreparedStage3V11DayV1 {
+         supports: Vec<DirectSnowStage3V11PreparedSupport>,
+     ) -> Result<ValidatedPreparedStage3V11DayV1, DirectSnowStage3V11AttachmentError> {
+         let prepared = Self::bind_provider_day(provider, day_index, supports)?;
++        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderDualRegimeValidation,
++        );
+         for support in &prepared.inner.supports {
+             support.validate_dual_regime_capability()?;
+         }
+@@ -2290,12 +2315,20 @@ impl PreparedStage3V11DayV1 {
+         day_index: usize,
+         mut supports: Vec<DirectSnowStage3V11PreparedSupport>,
+     ) -> Result<ValidatedPreparedStage3V11DayV1, DirectSnowStage3V11AttachmentError> {
++        let _remaining = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderRemaining,
++        );
+         if supports.len() != STAGE3_V11_PARENT_SUPPORT_COUNT {
+             return Err(DirectSnowStage3V11AttachmentError::Support(
+                 "provider binding requires exactly 48 supports",
+             ));
+         }
+-        provider.gsi_receipt().validate()?;
++        {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderReceiptValidation,
++            );
++            provider.gsi_receipt().validate()?;
++        }
+         if provider.gsi_receipt().day_index
+             != u64::try_from(day_index).map_err(|_| {
+                 DirectSnowStage3V11AttachmentError::Support("provider day index width")
+@@ -2330,8 +2363,16 @@ impl PreparedStage3V11DayV1 {
+                     "provider day destination set",
+                 ));
+             }
+-            support.bind_provider_atmosphere(&provider_destinations)?;
+-            support.validate_explicit_snow_surface_set()?;
++            {
++                let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderAtmosphereBinding,
++                );
++                support.bind_provider_atmosphere(&provider_destinations)?;
++                support.validate_explicit_snow_surface_set()?;
++            }
++            let _join = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderDestinationJoin,
++            );
+             let mut support_destinations = BTreeSet::new();
+             for identity in support
+                 .support_identity_by_lane
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs
+index 0cead2511..f7a373b57 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs
+@@ -3,6 +3,43 @@ fn stage3_boxed_execution_v1<T, E>(execute: impl FnOnce() -> Result<T, E>) -> Re
+     execute().map(Box::new)
+ }
+ 
++struct CostedLivePreparedSupportDrop(Option<DirectSnowStage3V11PreparedSupport>);
++
++impl CostedLivePreparedSupportDrop {
++    fn new(support: DirectSnowStage3V11PreparedSupport) -> Self {
++        Self(Some(support))
++    }
++}
++
++impl std::ops::Deref for CostedLivePreparedSupportDrop {
++    type Target = DirectSnowStage3V11PreparedSupport;
++
++    fn deref(&self) -> &Self::Target {
++        match &self.0 {
++            Some(support) => support,
++            None => unreachable!(),
++        }
++    }
++}
++
++impl std::ops::DerefMut for CostedLivePreparedSupportDrop {
++    fn deref_mut(&mut self) -> &mut Self::Target {
++        match &mut self.0 {
++            Some(support) => support,
++            None => unreachable!(),
++        }
++    }
++}
++
++impl Drop for CostedLivePreparedSupportDrop {
++    fn drop(&mut self) {
++        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::LivePreparedSupportDrop,
++        );
++        drop(self.0.take());
++    }
++}
++
+ impl DirectSnowStage3V11ShadowAttachment {
+     pub fn restart_authority_snow_enthalpy_material_residents_v1(
+         &self,
+@@ -130,6 +167,9 @@ impl DirectSnowStage3V11ShadowAttachment {
+         climate: &HillslopeClimateRuntimeRequest,
+         day_index: usize,
+     ) -> Result<PreparedSnowFreeGsiDayV1, DirectSnowStage3V11AttachmentError> {
++        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3ProviderDay,
++        );
+         let consumer = &self.committed.real_consumer;
+         Ok(climate.prepare_snow_free_gsi_day_from_repository(
+             day_index,
+@@ -151,6 +191,9 @@ impl DirectSnowStage3V11ShadowAttachment {
+         )>,
+         DirectSnowStage3V11AttachmentError,
+     > {
++        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3IntervalPreparation,
++        );
+         self.committed
+             .real_consumer
+             .prepare_v11_intervals_from_repository(provider, template)
+@@ -625,8 +668,14 @@ impl DirectSnowStage3V11ShadowAttachment {
+         restart: Option<Box<DirectSnowStage3V11InProgressExecutionV2>>,
+         interrupt_at: Option<DirectSnowStage3V11InterruptionPostureV2>,
+     ) -> Result<PreparedDayExecutionOutcomeV2, DirectSnowStage3V11AttachmentError> {
+-        prepared.validate(&self.static_context, day_start_ns(prepared.day_index())?)?;
+-        validate_prepared_day_against_committed_provider(&self.committed, prepared)?;
++        {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3PreparedDayValidation,
++                );
++            prepared.validate(&self.static_context, day_start_ns(prepared.day_index())?)?;
++            validate_prepared_day_against_committed_provider(&self.committed, prepared)?;
++        }
+         let mut restart = restart;
+         if let Some(checkpoint) = restart.as_ref() {
+             checkpoint.validate(&self.static_context, &self.committed)?;
+@@ -641,7 +690,12 @@ impl DirectSnowStage3V11ShadowAttachment {
+             mut adaptive_support_receipts,
+             mut snow_free_successor_receipts,
+             mut support_index,
+-        ) = restart.as_ref().map_or_else(
++        ) = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3InitialCandidateClone,
++                );
++            restart.as_ref().map_or_else(
+             || {
+                 (
+                     self.committed.clone(),
+@@ -666,19 +720,42 @@ impl DirectSnowStage3V11ShadowAttachment {
+                     checkpoint.support_index,
+                 )
+             },
+-        );
++            )
++        };
+         while support_index < prepared.supports().len() {
+-            let mut live_support = prepared.supports()[support_index].clone();
+-            live_support
+-                .bind_live_owner_transaction(candidate.real_consumer.next_transaction_id()?)?;
++            let mut live_support = CostedLivePreparedSupportDrop::new({
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::PreparedSupportClone,
++                    );
++                prepared.supports()[support_index].clone()
++            });
++            let live_transaction_id = {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::LiveTransactionLookup,
++                    );
++                candidate.real_consumer.next_transaction_id()?
++            };
++            live_support.bind_live_owner_transaction(live_transaction_id)?;
+             let support = &live_support;
+-            let beginning_stage3 = candidate.stage3_by_lane.clone();
++            let beginning_stage3 = {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3SupportStateClone,
++                    );
++                candidate.stage3_by_lane.clone()
++            };
+             let active_snow_lanes = support.state_derived_active_snow_lanes(
+                 &beginning_stage3,
+                 &candidate.terminal_parcels,
+             )?;
+             let covered_support = !active_snow_lanes.is_empty();
+             if !covered_support {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3SnowFreeLaneAdvance,
++                    );
+                 for lane_id in &self.static_context.lane_ids {
+                     let inputs = support.snow_inputs_by_lane.get(lane_id).ok_or(
+                         DirectSnowStage3V11AttachmentError::Support("missing lane support input"),
+@@ -938,16 +1015,16 @@ impl DirectSnowStage3V11ShadowAttachment {
+                     ending_snow_enthalpy_material_owner_chronology,
+                 )
+             } else {
++                let _snow_free_parent_cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeParentRemainder,
++                    );
+                 let beginning_pending_terminal_parcels = candidate.terminal_parcels.clone();
+-                let (parent, consumer, clock, finalized, accepted_support) = execute_real_v11_parent(
+-                    &self.static_context,
+-                    &beginning_parent,
+-                    &candidate.real_consumer,
+-                    &beginning_clock,
+-                    support,
+-                    prepared.day_index(),
+-                    support_index,
+-                    forcing_receipt,
++                let ending_snow_owner_bytes = {
++                    let _cost =
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeOwnerEncoding,
++                        );
+                     if candidate.terminal_parcels.is_empty() {
+                         canonical_stage3_snow_owner_bytes_with_pending(
+                             &candidate.stage3_by_lane,
+@@ -964,7 +1041,18 @@ impl DirectSnowStage3V11ShadowAttachment {
+                             ))?
+                             .state_bytes()
+                             .to_vec()
+-                    },
++                    }
++                };
++                let (parent, consumer, clock, finalized, accepted_support) = execute_real_v11_parent(
++                    &self.static_context,
++                    &beginning_parent,
++                    &candidate.real_consumer,
++                    &beginning_clock,
++                    support,
++                    prepared.day_index(),
++                    support_index,
++                    forcing_receipt,
++                    ending_snow_owner_bytes,
+                     None,
+                     None,
+                     true,
+@@ -974,17 +1062,23 @@ impl DirectSnowStage3V11ShadowAttachment {
+                         "snow-free V11 parent missing endpoint finalization",
+                     ),
+                 )?;
+-                snow_free_successor_receipts.push(Stage3SnowFreeSuccessorReceiptV1::seal(
+-                    support,
+-                    prepared.day_index(),
+-                    support_index,
+-                    beginning_parent.parent_transaction_id(),
+-                    0,
+-                    forcing_receipt,
+-                    &beginning_pending_terminal_parcels,
+-                    &candidate.terminal_parcels,
+-                    accepted_support,
+-                )?);
++                {
++                    let _cost =
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeSuccessorSeal,
++                        );
++                    snow_free_successor_receipts.push(Stage3SnowFreeSuccessorReceiptV1::seal(
++                        support,
++                        prepared.day_index(),
++                        support_index,
++                        beginning_parent.parent_transaction_id(),
++                        0,
++                        forcing_receipt,
++                        &beginning_pending_terminal_parcels,
++                        &candidate.terminal_parcels,
++                        accepted_support,
++                    )?);
++                }
+                 (
+                     parent,
+                     consumer,
+@@ -995,6 +1089,10 @@ impl DirectSnowStage3V11ShadowAttachment {
+                     candidate.snow_enthalpy_material_owner_chronology.clone(),
+                 )
+             };
++            let _post_parent_cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3PostParentInstall,
++                );
+             candidate.v11_parent_state = parent;
+             candidate.real_consumer = consumer;
+             candidate.coupled_clock = clock;
+@@ -1015,6 +1113,10 @@ impl DirectSnowStage3V11ShadowAttachment {
+             )?;
+             support_index += 1;
+         }
++        let _day_finalization_cost =
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::DayFinalization,
++            );
+         candidate
+             .real_consumer
+             .commit_prepared_provider_day(prepared.clone().into_provider_day())?;
+diff --git a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs
+index e549d49d3..e4ba14a71 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs
+@@ -641,12 +641,18 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+                 surface_custody,
+             }
+         } else {
+-            let physical = self.build_covered_carrier_physical_value_with_soil_beginning_v1(
+-                prepared,
+-                inputs,
+-                unpublished_soil_candidate,
+-                unpublished_soil_continuation,
+-            )?;
++            let physical = {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::CarrierPhysicalValue,
++                    );
++                self.build_covered_carrier_physical_value_with_soil_beginning_v1(
++                    prepared,
++                    inputs,
++                    unpublished_soil_candidate,
++                    unpublished_soil_continuation,
++                )?
++            };
+             let precipitation_sets =
+                 self.precipitation_parcel_sets_from_physical(support, &physical)?;
+             let (corrected_boundaries, _, _) =
+@@ -707,6 +713,10 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+         };
+         #[cfg(test)]
+         if covered_provisional_physical_audit_enabled_v1() {
++            let _experiment_audit_cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::CarrierExperimentAudit,
++                );
+             let opaque_physical_projection = evidence
+             .physical
+             .canonical_private_projection_v1()

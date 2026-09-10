@@ -7,7 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
-| Stage 3 support-capability representation experiment (executed HOLD) | [record](20260909-stage3-support-capability-representation-001/package.md) | The predecessor's 16% attribution conflated consumer execution; 48 live clones/dual reseals remain unisolated after the three-profile cap, raw receipt retention is incomplete, and production remains HOLD. |
+| Stage 3 support-capability representation experiment (complete negative continuation) | [record](20260909-stage3-support-capability-representation-001/package.md) | Fresh retained evidence bounds 48 live clone/bind/dual-seal/drop operations at 0.0401% median runner share, so no prototype was admitted; production remains HOLD. |
 | Stage 3 parent-cost targeted investigation (complete negative; attribution superseded) | [record](20260909-stage3-parent-cost-investigation-001/package.md) | Its 16% support-seal/provider-bind attribution was corrected by the successor representation experiment: the region conflated consumer execution; historical disposition and production HOLD remain unchanged. |
 | Lightweight governance replacement | [record](20260909-lightweight-governance-001/package.md) | Owner-authorized structural replacement; one record per package, consequence-based review and preserved scientific correctness. |
 | Stage 3 attribution and recomputation experiment (executed HOLD) | [disposition](20260909-stage3-attribution-recomputation-001/artifacts/final-disposition.md) | Study complete; no distinct reusable operation passed the >=5% gate, no prototype was built, and frozen Clippy remains failed; production HOLD. |

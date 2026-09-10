@@ -1,0 +1,37 @@
+{
+  "argv": [
+    "taskset",
+    "-c",
+    "0",
+    "/workdir/.cache/openwepp/targets/stage3-support-continuation-001/release/deps/openwepp_runner-682944f41aa5eb67",
+    "hillslope::tests::stage3_controlled_mechanism_experiment",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "binary_sha256": "0575775ef57438d874da74c1435fb439774a1b528627a42f20ba38f7177d39c4",
+  "collector_sha256": "d77fd48fc09986aeaff253f9061ea2697b4c1f8915396b4e619a4deb2bf0f5fa",
+  "common_collector_sha256": "f1ea797124f4a4e1cb4e02da049a403ac6db6d8780f839b0b334197b4f348052",
+  "cpu": 0,
+  "cwd": "/workdir/openWEPP/docs/work-packages/20260909-stage3-support-capability-representation-001/artifacts/continuation-001/development/series-02-cwds",
+  "environment_sha256": "463cd045d5413611e2785f80d12f58803f36e1db5ac39533cb7af03011074a84",
+  "identity_sha256": "5464b320cc68219df9fac880ca9e54305717b37ea890a9b4f3ac0b42218412e7",
+  "no_retry": true,
+  "pair_order": [
+    "off/on",
+    "on/off",
+    "off/on",
+    "on/off",
+    "off/on",
+    "on/off"
+  ],
+  "source_patch_sha256": "5f9847bf9bac7b7630979d7bf62633fcb1d324191a4c18872f2ab4572a9af870",
+  "timeout_s": 180,
+  "warmup_order": [
+    "off",
+    "on",
+    "on",
+    "off"
+  ]
+}
