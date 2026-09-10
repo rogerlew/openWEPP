@@ -1,0 +1,144 @@
+{
+  "protocol_sha256": "d868b845d9710699cd00d194a5dcf92fe5495a7ed633537755622667e7004458",
+  "sample_count": 30,
+  "failure_count": 0,
+  "warmup_failure_count": 0,
+  "candidates": {
+    "C600": {
+      "pairs": [
+        {
+          "pair": 0,
+          "valid": true,
+          "reference_s": 12.782255196,
+          "candidate_s": 12.454974818,
+          "difference_s": -0.3272803779999993,
+          "ratio_reference_over_candidate": 1.0262770806671573
+        },
+        {
+          "pair": 1,
+          "valid": true,
+          "reference_s": 15.402693597,
+          "candidate_s": 15.032282719,
+          "difference_s": -0.3704108780000013,
+          "ratio_reference_over_candidate": 1.0246410265775419
+        },
+        {
+          "pair": 2,
+          "valid": true,
+          "reference_s": 15.308664413,
+          "candidate_s": 15.003350103,
+          "difference_s": -0.30531431,
+          "ratio_reference_over_candidate": 1.0203497424177919
+        },
+        {
+          "pair": 3,
+          "valid": true,
+          "reference_s": 12.850028247000001,
+          "candidate_s": 13.940467019,
+          "difference_s": 1.0904387719999988,
+          "ratio_reference_over_candidate": 0.9217788923058462
+        },
+        {
+          "pair": 4,
+          "valid": true,
+          "reference_s": 12.803831224,
+          "candidate_s": 12.489809502,
+          "difference_s": -0.31402172199999967,
+          "ratio_reference_over_candidate": 1.0251422347114034
+        },
+        {
+          "pair": 5,
+          "valid": true,
+          "reference_s": 12.785467153,
+          "candidate_s": 12.499686347,
+          "difference_s": -0.285780806,
+          "ratio_reference_over_candidate": 1.0228630381648407
+        }
+      ],
+      "all_pairs_valid": true,
+      "geometric_mean_ratio": 1.006087222737023,
+      "descriptive_paired_log_t95_interval": [
+        0.9617737509074995,
+        1.0524424260899252
+      ],
+      "ratio_range": [
+        0.9217788923058462,
+        1.0262770806671573
+      ],
+      "mean_difference_s": -0.08539488700000024,
+      "difference_range_s": [
+        -0.3704108780000013,
+        1.0904387719999988
+      ],
+      "uncertainty": "descriptive paired t interval, n=6; not a distribution-free guarantee"
+    },
+    "B01": {
+      "pairs": [
+        {
+          "pair": 0,
+          "valid": true,
+          "reference_s": 12.84524914,
+          "candidate_s": 12.223672204,
+          "difference_s": -0.6215769360000003,
+          "ratio_reference_over_candidate": 1.0508502621492581
+        },
+        {
+          "pair": 1,
+          "valid": true,
+          "reference_s": 12.799101461,
+          "candidate_s": 12.224336207,
+          "difference_s": -0.574765253999999,
+          "ratio_reference_over_candidate": 1.0470181156888398
+        },
+        {
+          "pair": 2,
+          "valid": true,
+          "reference_s": 12.818009734,
+          "candidate_s": 12.217616902,
+          "difference_s": -0.6003928320000007,
+          "ratio_reference_over_candidate": 1.0491415663804058
+        },
+        {
+          "pair": 3,
+          "valid": true,
+          "reference_s": 12.812608349,
+          "candidate_s": 12.226795936,
+          "difference_s": -0.5858124129999993,
+          "ratio_reference_over_candidate": 1.0479121771612432
+        },
+        {
+          "pair": 4,
+          "valid": true,
+          "reference_s": 12.787860242,
+          "candidate_s": 12.219414897,
+          "difference_s": -0.5684453450000007,
+          "ratio_reference_over_candidate": 1.046519849746616
+        },
+        {
+          "pair": 5,
+          "valid": true,
+          "reference_s": 12.807770724000001,
+          "candidate_s": 12.251630704,
+          "difference_s": -0.5561400200000008,
+          "ratio_reference_over_candidate": 1.0453931426302645
+        }
+      ],
+      "all_pairs_valid": true,
+      "geometric_mean_ratio": 1.047804329225826,
+      "descriptive_paired_log_t95_interval": [
+        1.0457527633472183,
+        1.0498599198822793
+      ],
+      "ratio_range": [
+        1.0453931426302645,
+        1.0508502621492581
+      ],
+      "mean_difference_s": -0.5845221333333335,
+      "difference_range_s": [
+        -0.6215769360000003,
+        -0.5561400200000008
+      ],
+      "uncertainty": "descriptive paired t interval, n=6; not a distribution-free guarantee"
+    }
+  }
+}

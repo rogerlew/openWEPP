@@ -1,0 +1,69 @@
+{
+  "base": "R0 retained composition",
+  "changed_files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs",
+      "sha256": "34e71260186165c067c86212e0e6ec21a8ab4e866a55bc00d2600c08e4f92c40"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/terminal_event.rs",
+      "sha256": "9df30a9501f77a5d49fbdb6db5ce4e77df881fb4e44b07b6fd850890bb6f815a"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs",
+      "sha256": "0c11988f462488442231dee00946be610d570a8071bedcc0ac9beffd00dad669"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/lib.rs",
+      "sha256": "fdf9295f0fc9f9201f5f15fcca441c0ccc054802d760c381c5f5b4ce217125f0"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_accuracy_observer.rs",
+      "sha256": "0a5ce34e8cd8c839b52f0898f87a2e67f651e95c5cd230266ea2aa44d3df3b24"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs",
+      "sha256": "0f2828ad8c4b95db392230111321785dd28f15f5cc53fcf3abb6a6aeb3a9ae01"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs",
+      "sha256": "43669c7a19fd15d51aec4bd1f1cd8fd35a3c35c194c5caee21e034c17e1cd7dc"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs",
+      "sha256": "dd70c5a7c2473282599ee6d2dc0b8a5fbcacfebbbf66953e6cad316158035cee"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs",
+      "sha256": "58032f03b316cef662f0ae84b8c6a47bd251ca75ce11711bc957b9174179b550"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+      "sha256": "5d471520483d0523fd4c7e0e99ef38018cc03d13cf2347c2cc8d8d47500cd745"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/snow_accuracy_policy.rs",
+      "sha256": "e4e03b7758e488d243ec5971427e501e5d1803dedfc3d6f2bbcad22a02eed35d"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/snow_accuracy_policy_tests.rs",
+      "sha256": "7b8e775831480254043c385ac32661833df1bba16e9165278e1d72578361ef7b"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs",
+      "sha256": "9d8b2810da03bf60440a267fd048cd58b541990a2d68c22e509d01ee1cb0a327"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/03_tests.rs",
+      "sha256": "a4dbee9353a2905cbf069d9f3c7182b2654717c1114d5d528dd8a81a2d332b2e"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs",
+      "sha256": "9ac8b6b030afd0350695d571b1f1e549e20285a16c1759b2ce8c6477c3284f9f"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs",
+      "sha256": "2537b65d04747ca9513115eda93a6d072543b827741b6cf6f2bf68fde5719d9b"
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "status": "FROZEN_BEFORE_COMPARATIVE_SCREENING",
+  "bands_tight_coarse_abs_relative": {
+    "swe_mm": [
+      [
+        0.1,
+        0.001
+      ],
+      [
+        1,
+        0.01
+      ]
+    ],
+    "daily_melt_delivered_mm": [
+      [
+        0.1,
+        0.005
+      ],
+      [
+        0.5,
+        0.02
+      ]
+    ],
+    "daily_runoff_mm": [
+      [
+        0.1,
+        0.005
+      ],
+      [
+        0.5,
+        0.02
+      ]
+    ],
+    "cumulative_melt_mm": [
+      [
+        1,
+        0.005
+      ],
+      [
+        5,
+        0.02
+      ]
+    ],
+    "cumulative_runoff_mm": [
+      [
+        1,
+        0.005
+      ],
+      [
+        5,
+        0.02
+      ]
+    ],
+    "cumulative_sublimation_mm": [
+      [
+        0.1,
+        0.01
+      ],
+      [
+        0.5,
+        0.05
+      ]
+    ],
+    "cumulative_deposition_mm": [
+      [
+        0.1,
+        0.01
+      ],
+      [
+        0.5,
+        0.05
+      ]
+    ],
+    "peak_runoff_mm_h": [
+      [
+        0.1,
+        0.02
+      ],
+      [
+        0.5,
+        0.05
+      ]
+    ],
+    "event_timing_seconds": [
+      [
+        900,
+        0
+      ],
+      [
+        3600,
+        0
+      ]
+    ],
+    "soil_temperature_K": [
+      [
+        0.1,
+        0
+      ],
+      [
+        0.5,
+        0
+      ]
+    ],
+    "root_total_mm": [
+      [
+        0.1,
+        0.005
+      ],
+      [
+        1,
+        0.02
+      ]
+    ],
+    "frost_depth_m": [
+      [
+        0.01,
+        0
+      ],
+      [
+        0.05,
+        0
+      ]
+    ]
+  },
+  "allowance": "absolute + relative*abs(reference); never candidate denominator",
+  "root_zone": {
+    "depth_m": 0.4,
+    "definition": "sum fixed-overlap*(theta_m + residual_theta*max(depth_m-frozen_depth_m,0) + frozen_water_m)*1000",
+    "parts": "report liquid and frozen separately",
+    "depths": "actual configured thermal node centers, exact node identity"
+  },
+  "meltout": {
+    "retained_swe_mm": 0.1,
+    "persistence_seconds": 1800,
+    "mathematical_zero": "separate metric"
+  },
+  "runoff_event": {
+    "threshold_mm_h": 0.1,
+    "persistence_seconds": 600,
+    "grid_seconds": 300,
+    "source": "WAT5 is runoff generation, not routed outlet"
+  },
+  "matching": "chronological pairs; no time warp or peak alignment; unmatched significant events fail",
+  "brackets": "retain [last above, first below] crossing intervals; persistence needs bounded evidence; any gap preventing proof stays unresolved; compare possible time differences over full brackets, pass only if entire range within allowance, fail if entire range outside, otherwise unresolved",
+  "peak_ties": "earliest reporting bin containing maximum; preserve full bin uncertainty",
+  "projection": "common physical outputs; exact day/OFE/support coverage; no surrogate for missing melt fraction or outlet hydrograph",
+  "audits": "independent fsum from primitive beginning/ending water/enthalpy and actual transfer operands, unique accepted support-to-ledger hashes, no producer residual use; missing whole-system energy evidence unresolved",
+  "qualification": "all required metrics must be available and pass; incomplete metrics never pass; conservation is independent hard requirement"
+}

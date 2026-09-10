@@ -3557,3 +3557,253 @@ no equation, domain, tolerance, stopping criterion, Jacobian arithmetic,
 adaptive cadence, event localization, physical process, ownership, restart,
 publication, exact-one transfer, or fail-closed guard change.
 `CALIBRATION_NOT_APPLICABLE`: no dimensional parameter or calibration claim.
+
+## Isolated accuracy–runtime precision experiment (2026-09-10)
+
+`EXP-SNOW-ACCURACY-20260910-P` is a prospective, non-production amendment
+authorized by the owner on 2026-09-10. Its scope is the isolated executable in
+`docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/package.md`.
+R0 retains the identified strict source policy. P1/P2 deliberately change
+numerical convergence and trajectories; they do not establish physical accuracy.
+Historical experiments, conformance and production defaults remain unchanged.
+
+For P1/P2 define respectively `(r,aM,aE,aT)` as
+`(1e-4,1e-4 kg m^-2,0.1 J m^-2,0.001 K)` and
+`(1e-3,0.01 kg m^-2,1 J m^-2,0.01 K)`. For each applicable numerical
+comparison use the maximum of its existing and proposed absolute/relative
+coefficients. The formula is `abs(x-y)<=a+r*max(abs(x),abs(y))` unless the
+existing numerical comparison is a normalized error norm with acceptance at one.
+Temperature retains its baseline relative coefficient; no Celsius-relative
+term is added. These are exploratory numerical settings, not calibration.
+
+The finite, immutable startup policy governs these explicit surfaces:
+
+* Terminal local error: ice/liquid use aM and energy uses aE, with r. Its
+  direct-endpoint branch remains a distinct path with no embedded LTE claim.
+* Terminal hint coupling: ice/liquid use aM+r*max_abs, cold content uses
+  aE+r*max_abs, temperature uses aT. Live convergence and bounded typed failure
+  remain mandatory; no fixed-count unconditional acceptance.
+* TOL-SNOWENERGY-007 canonical covered iteration: snow/top-soil temperature
+  use aT; snow water uses aM/r; energy uses aE/r; heat and vapor flux use
+  aE/dt and aM/dt with r, where dt is the actual positive support in seconds.
+  The same coefficients scale multisecant coordinates, deliberately changing
+  the numerical trajectory. Density, geometric thickness, specific humidity,
+  exact constitutive branches and layer envelopes retain their R0 tests.
+* Complete-owner temporal comparison: snow mass and energy use aM/aE;
+  actual SWE and retained-liquid depth use aM/(1000 kg m^-3). Geometric
+  thickness is not water depth and is unchanged. LSE/soil integrated energy
+  absolute floors use aE. Existing looser relative coefficients (including
+  snow 5e-3 and soil energy 1.5e-2) and temperature absolute 0.01 K survive.
+  Vegetation/BGC mass, concentrations and unrelated intensive controls do not
+  acquire snow mass tolerances.
+
+These overrides do not govern accounting. Split any shared integration/closure
+constant before use: terminal component-energy accounting retains
+`max(1e-6 J m^-2,1e-12*sum_abs_components)`. All existing independent water,
+energy, latent linkage, inventory domain, exact high/carry, custody, chronology,
+receipt reconstruction, rollback and restart checks remain binding. Consumed
+snow–soil equal/opposite energy and installed-state/receipt consistency are not
+iteration tolerances. No failure dispatches R0 or publishes partial state.
+
+Required experimental vectors cover dimension conversion, baseline-looser
+coefficients, finite/nonfinite comparisons, independent closure poisons and
+unchanged R0 behavior. The experiment records evaluated/pass/fail comparison
+counts by component, direct/LTE path participation, actual supports, unchanged
+vetoes and downstream evaluations. A changed unused control is not a treatment.
+Modeling review accepts this plan with the canonical covered loop included;
+implementation and evidence review remain required before qualification.
+
+Change log: 2026-09-10, isolated owner-authorized P1/P2 precision amendment;
+production authority/defaults and physical ledger tolerances unchanged.
+
+
+## Isolated bulk trace-snow experiment (2026-09-10)
+
+`EXP-SNOW-ACCURACY-20260910-B` prospectively authorizes only the isolated
+experiment package. This is an owner-authorized model approximation, not a
+baseline physics migration or a production amendment. `B01`, `B1`, and `B5`
+use entry total retained ice plus liquid W <= 0.1, 1, and 5 kg m^-2
+(respectively the same numerical mm water equivalent). Exit occurs when W
+exceeds 1.2 times entry. A resolved state enters only at or below entry; a
+bulk state retains its representation inside the hysteresis band. Classification
+uses immutable accepted retained inventories, including precipitation already
+admitted as an event, exactly once. The active representation
+and its policy must be persisted; unsupported state fails typed with rollback.
+Deep snow otherwise retains R0 equations. B5 is a stress profile.
+
+State is total water W, ice-reference enthalpy H = -C + Lf*L, and total
+geometric depth D. I,L are ice and liquid kg m^-2; C,H are J m^-2;
+D is metres. Lf=333600 J/kg, ci=2100 J/(kg K), and cw=4218 J/(kg K)
+retain the current terminal phase and liquid-receiver reference constants.
+Layer conversion sums complete high/carry water and enthalpy and D. The bulk
+is isothermal: H<0 gives I=W,L=0,C=-H; 0<=H<=Lf*W gives L=H/Lf,I=W-L,C=0;
+H>Lf*W gives all liquid and sensible excess H-Lf*W. Conversion back produces
+one represented layer with these inventories and retained geometric volume;
+lost stratification is intentional. Zero-ice disappearance delivers all liquid
+and sensible excess exactly once through the existing receiver. It cannot
+leave positive energy in a zero-mass residual store. Snow-layer evolution and
+compaction inside this representation are omitted. For unadmitted support
+snowfall S, D*=D0+S/rho_new using the existing fresh-snow density. Reconstruct
+accepted density as I/D* after phase/drainage, never persist an independently
+stale density; reset D to zero at complete release. Positive-ice boundary
+construction requires W>0,I>0,D>0. Zero snow bypasses it; an all-liquid beginning
+is delivered as a distinct accounted transition. Beginning conductivity uses
+beginning density/temperature; albedo/roughness use existing snow parameters.
+After each phase projection drain all liquid immediately, deliberately omitting
+internal liquid retention: remove L and Lf*L plus any sensible excess from the
+snow inventory and deliver the one parcel. No threshold deletes water or heat.
+
+Each approximate interval retains actual forcing discontinuities and exact
+chronology. A single real canopy/surface evaluation uses the beginning bulk
+surface boundary; it is a lagged boundary approximation and does not claim the
+old snow/canopy fixed point. Surface radiation, sensible/vapor exchange and
+precipitation use the actual area-weighted outputs of that evaluation. S and R
+below include only support ingress not already in immutable W,H. Reuse
+existing sign conversion once. With V positive deposition and negative
+sublimation, R liquid rain, S solid snowfall, and Q the sum of actual radiative,
+sensible, latent and precipitation-sensible energies, W*=W+S+R+V and
+H*=H+Q+Lf*R+V*ci*(Tlag-Tfreeze). The last term is the sensible
+material enthalpy of vapor expressed on the ice reference at the lagged snow
+surface temperature, for both deposition and sublimation. It is distinct from
+latent heat Ls(Tlag)*V and is recorded as an atmospheric material enthalpy
+transfer with the opposite sign in the external energy budget. The combined
+vapor enthalpy is V*[Ls(Tlag)+ci*(Tlag-Tfreeze)], booked once. No separate cold
+export is added again. The atmospheric recipient is the forcing reservoir,
+not an invented soil or residual store. No second precipitation-sensible term
+is permitted. V and its
+latent energy must be the same accepted transfer in both participants; vapor
+exhaustion cannot be capped in snow alone. Unsupported exhaustion subdivides
+the same scheme, or returns a typed failure at the declared floor.
+
+The first soil node and bulk exchange one energy q, positive to soil. Holding
+beginning resistance g^-1 = D/(2*k_snow)+dz_soil/(2*k_soil), solve
+q=dt*g*(Tbulk(H*-q,W*)-[Tsoil0+q/Csoil]). Its piecewise linear enthalpy
+branches give an analytic implicit solution without dividing by vanishing W.
+For a cold branch A=ci*W*, h=H*; for warm liquid A=cw*W*, h=H*-Lf*W*:
+q=dt*g*(A*(Tfreeze-Tsoil0)+h)/(A+dt*g*(1+A/Csoil)).
+For the phase plateau q=dt*g*(Tfreeze-Tsoil0)/(1+dt*g/Csoil).
+Select only the branch containing H*-q; overlapping boundary formulas must
+agree to arithmetic error. Invalid coefficients or no valid branch fail typed.
+Install precisely -q in snow and +q in the existing soil consumer; retain
+actual deeper-soil and other physical transfers and audit them separately.
+A predicted temperature used by this reduced exchange law is not relabeled
+as the actual complete soil ending temperature.
+
+Minimum supported positive interval is 60 seconds, capped by the parent and
+forcing boundaries. Phase instability or unresolved within-interval exhaustion
+subdivides the same method; reaching the floor fails honestly. No R0 rescue.
+All retained-liquid routing and accepted sensible-energy release use one actual
+surface/WB14 transfer; B does not authorize runoff/plant/soil constitutive changes.
+An explicit method-specific receipt binds beginning state, lagged boundary,
+actual integrated transfers, ending state, policy, support and receiver identities.
+It replaces only assertions of old iteration roles and endpoint constitutive
+agreement, never accounting, area, identity, finite/nonnegative state or atomicity.
+
+B advances exactly one model step per published positive support. The outer
+adaptive controller may retry subdivisions of this same method to the 60-second
+floor. Each accepted support drains through the existing positive-support snow
+liquid output and zero-duration surface/LSE receiver before subsequent positive
+time evolves. An actual disappearance alone uses terminal-event custody. Bulk
+retained-ice drainage is not a disappearance event and never changes the active
+snow mask. Publication and receiver support/source/area bindings remain mandatory.
+
+The legacy cumulative diagnostics remain explicit component sums: complete energy
+is radiation+sensible+latent+precipitation-sensible+snow-side soil heat, excluding
+vapor sensible material Mv. The cold-energy-change increment is C0-C1-Mv-Lf*Rfreeze,
+where Rfreeze includes any conservative layer-to-bulk phase conversion. Generated
+melt and refreeze are separately accounted. The old terminal-unallocated counter
+records only actual delivered sensible energy under B, including nonterminal
+releases; it is never an unexplained remainder. Full physical H accounting still
+reconstructs Mv separately and verifies actual receiving credits. Method metadata
+must identify these B semantics and cannot borrow C's cadence identity.
+
+Required tests independently reconstruct constant-energy melt/refreeze,
+precipitation and finite vapor, phase endpoints, conservative conversions,
+chatter/exit, no snow, forcing boundaries, rejected updates and same-policy
+restart. Scientific comparisons retain the owner's frozen bands; component
+accounting remains max(1e-6 J m^-2,1e-12 sum_abs) and water accounting retains
+its existing roundoff-scale checks. R0 and P remain bound to their own equations.
+Evidence: [INFERENCE][Static], explicit exploratory approximation authorized by
+the owner; no calibration or observational accuracy claim. Modeling and QA
+review of implementation and all unmet integration obligations remain required.
+
+
+## Isolated terminal exchange schedule (2026-09-10)
+
+`EXP-SNOW-ACCURACY-20260910-C` authorizes isolated C600/C1800, selected once
+at startup. It retains R0 process representation, physical residual convergence,
+actual two-provider coupling and all physical exchanges. Only the existing
+thin-terminal domain receives a different temporal integration strategy:
+single full-support endpoint integration on intervals of at most 600/1800 s.
+Ordinary resolved snow and snow-free processes retain their existing method;
+nonparticipation must be reported. This is not the historical F one-call method.
+
+Choose dt as the smaller of target, remaining parent/forcing support and any
+already prescribed event boundary, in existing integer 60-second quanta. At
+each interval call the actual converged carrier once as one endpoint integration
+request (its internal coupling evaluations remain real and counted), apply the
+existing conservative enthalpy transition, and advance all returned owners on
+that exact support. Continue from that accepted endpoint when snow survives.
+This removes discovery step doubling and pre-LTE Half1 disappearance refinement;
+it does not pretend to satisfy their error estimate. The actual carrier may
+update endpoint hints, so this is not described as frozen-beginning quadrature.
+WB14 retains its source-boundary infiltration integration and rainfall/runoff
+constitutive laws; no unrelated process is coarsened by a global timestep edit.
+
+On disappearance, retain the bracket [start,end] of its approximate interval,
+report the modeled event at end, and deliver actual liquid plus sensible excess
+once through existing surface custody. There is no exact-zero localization claim.
+A full endpoint reached by this scheme is exact chronology for the approximate
+model, not an exactly localized R0 event. Stored terminal results have explicit
+experimental method/target identity and nullable LTE quantities (unavailable);
+finite zero placeholders cannot be presented as measured LTE. Method identity
+is bound in event digests and validated against the startup policy. R0's
+serialization and old numerical semantics remain unchanged.
+
+All component accounting, nonnegative/finite state, paired vapor/latent capacity,
+actual end-state and receiver joins, rollback, and forcing integrals remain
+mandatory. Unsupported or unstable physical trials retain the canonical typed
+failure/adaptive response, never R0 temporal rescue. The approximate schedule
+requires no lag history beyond accepted owners/cursor, but policy and method
+identity remain mandatory on restart. Chronological intervals cannot overlap or
+leave gaps. These schedules do not guarantee the owner's timing bands: compare
+accumulated event times and unmatched events with R0, with bracket uncertainty.
+
+Before qualification run constant-forcing phase/energy, event bracket and null
+LTE, actual interval cap, forcing discontinuities, rejected state and same-policy
+restart tests, and actual-consumer liquid/energy closure. Existing old-role/LTE/
+localization vectors remain R0 vectors. [INFERENCE][Static]: explicit exploratory
+numerical method authorized by owner, not calibration or production activation.
+
+#### Precision-family causal ablation (2026-09-10)
+
+`P1_STEP` is an isolated numerical ablation under the same owner authorization:
+only the covered LSE temperature-step criterion becomes 1e-3 K; snow, terminal,
+outer and residual controls remain R0. See the companion nonlinear-solve
+amendment. Freeze this distinction before its first comparative execution;
+retain unique startup/restart identity 8 and all physical/custody obligations.
+
+B bulk-to-layer geometry projection clarification (before corrected execution):
+store `swe=W/1000`, `rho=W/D`, and `thickness=(swe*1000)/rho` in that canonical
+operation order, preserving INV-043 exactly in the public layer representation.
+The bulk reference depth `D` and projected thickness may differ only by ordinary
+floating-point representation error: require positive finite operands and
+`abs(thickness-D) <= 8*f64::EPSILON*D` metres; otherwise reject typed. The bound
+covers the three rounded multiplication/division operations, with a conservative
+eight-epsilon margin; no absolute depth floor or near-zero repair is introduced.
+Water and enthalpy conversion retain the existing independent accounting bounds.
+This producer projection corrects the draft's incompatible redundant geometry;
+it does not relax the shared derived-cache validator or permit alternate R0 order.
+
+B joint-batch implementation clarification (prospective repair after build015):
+apply the same W/H/D equilibrium surface projection to each participating B
+lane before the single shared batch physical phase. Consume that phase's sealed
+per-lane bulk/soil receipts; do not request another carrier evaluation per lane.
+Use the common persistent-state finisher and retain the existing all-lane joint
+join. Install the selected endpoint for participating B lanes even when no lane
+disappears; non-event method records do not create a terminal event group.
+Preserve non-B lane behavior, immutable beginning-state classification, exact
+support/lane/receipt bindings, and all transfer and inventory checks. Equations,
+thresholds, case selection and comparative bands are unchanged. Re-execution
+after inspected held-out build015 evidence is an exploratory implementation
+revision, not confirmation of an unchanged held-out candidate.

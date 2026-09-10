@@ -1,0 +1,2656 @@
+{
+  "status": "IN_PROGRESS",
+  "qualified_frontier": [],
+  "diagnostic_points": [
+    {
+      "policy": "R0",
+      "case": "continuity",
+      "ofes": 1,
+      "reference_execution_valid": true,
+      "candidate_execution_valid": true,
+      "runner_wall_s": 5.014935763,
+      "process_user_s": 5.015411,
+      "process_system_s": 0.031592,
+      "peak_rss_kib": 81316,
+      "qualified": false,
+      "disposition": "PARTIAL_COMPARISON_NO_ADMISSION",
+      "metrics": [
+        {
+          "metric": "swe_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "swe_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 1.0
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "snow_liquid_allocated_mm",
+          "reference": 1.6666907631830032,
+          "candidate": 1.6666907631830032,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "generated_melt_mm",
+          "reference": 2.4128458992911384e-05,
+          "candidate": 2.4128458992911384e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_generated_melt_mm",
+          "reference": 2.4128458992911384e-05,
+          "candidate": 2.4128458992911384e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_melt_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.000000120642295,
+            "coarse": 5.00000048256918
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "sublimation_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_sublimation_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "cumulative_sublimation_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "deposition_mm",
+          "reference": 2.317017929849386e-05,
+          "candidate": 2.317017929849386e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_deposition_mm",
+          "reference": 2.317017929849386e-05,
+          "candidate": 2.317017929849386e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_deposition_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.100000231701793,
+            "coarse": 0.5000011585089649
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_liquid_mm",
+          "reference": 124.89049402762191,
+          "candidate": 124.89049402762191,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_frozen_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_total_mm",
+          "reference": 124.89049402762191,
+          "candidate": 124.89049402762191,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "root_total_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.7244524701381095,
+            "coarse": 3.4978098805524382
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.100000m",
+          "reference": 277.1254556949582,
+          "candidate": 277.1254556949582,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.300000m",
+          "reference": 276.2094640797714,
+          "candidate": 276.2094640797714,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.500000m",
+          "reference": 275.17418254160657,
+          "candidate": 275.17418254160657,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.700000m",
+          "reference": 274.31713572749817,
+          "candidate": 274.31713572749817,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.900000m",
+          "reference": 273.7730453237381,
+          "candidate": 273.7730453237381,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_1.100000m",
+          "reference": 273.5222428383703,
+          "candidate": 273.5222428383703,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "daily_generated_runoff_mm",
+          "reference": 8.488061229561458,
+          "candidate": 8.488061229561458,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "daily_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.14244030614780728,
+            "coarse": 0.6697612245912292
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "daily_routed_outlet_runoff_mm",
+          "reference": 8.471105124736578,
+          "candidate": 8.471105124736578,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "daily_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1423555256236829,
+            "coarse": 0.6694221024947316
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "cumulative_generated_runoff_mm",
+          "reference": 8.488061229561458,
+          "candidate": 8.488061229561458,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.0424403061478074,
+            "coarse": 5.169761224591229
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "cumulative_routed_outlet_runoff_mm",
+          "reference": 8.471105124736578,
+          "candidate": 8.471105124736578,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.042355525623683,
+            "coarse": 5.169422102494732
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "daily_routed_outlet_hourly_maximum_mm_h",
+          "reference": 8.093341370313553,
+          "candidate": 8.093341370313553,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "frost_depth_m",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "frost_depth_m",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.01,
+            "coarse": 0.05
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "published_swe_mm",
+          "reference": -0.0,
+          "candidate": -0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "swe_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 1.0
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "profile_soil_water_mm",
+          "reference": 255.9049180844477,
+          "candidate": 255.9049180844477,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        }
+      ],
+      "unresolved": [
+        "melt-derived delivery",
+        "routed outlet event timing",
+        "complete-system independent energy/receiver proof",
+        "common-time full physical trajectories",
+        "balanced runtime uncertainty",
+        "restart/integration/full correctness gates"
+      ],
+      "diagnostic_wall_ratio": 1.0,
+      "timing_scope": "one diagnostic execution, not paired speedup estimate",
+      "carrier_evaluations": {
+        "reference": 400,
+        "candidate": 400
+      },
+      "carrier_evaluation_reduction_fraction": 0.0,
+      "policy_counts": {
+        "coupling_energy": 400,
+        "coupling_ice": 400,
+        "coupling_liquid": 400,
+        "coupling_temperature": 400,
+        "terminal_floor_acceptance": 72,
+        "terminal_half1_disappearance_refinement": 64,
+        "terminal_solver_entry": 72
+      },
+      "partial_snow_balance": "PARTIAL_PHYSICAL_AUDIT",
+      "available_value_bands": {
+        "tight": true,
+        "coarse": true
+      }
+    },
+    {
+      "policy": "P1",
+      "case": "continuity",
+      "ofes": 1,
+      "reference_execution_valid": true,
+      "candidate_execution_valid": true,
+      "runner_wall_s": 4.998663936,
+      "process_user_s": 4.998273,
+      "process_system_s": 0.025988999999999998,
+      "peak_rss_kib": 81408,
+      "qualified": false,
+      "disposition": "PARTIAL_COMPARISON_NO_ADMISSION",
+      "metrics": [
+        {
+          "metric": "swe_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "swe_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 1.0
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "snow_liquid_allocated_mm",
+          "reference": 1.6666907631830032,
+          "candidate": 1.6666907631830032,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "generated_melt_mm",
+          "reference": 2.4128458992911384e-05,
+          "candidate": 2.4128458992911384e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_generated_melt_mm",
+          "reference": 2.4128458992911384e-05,
+          "candidate": 2.4128458992911384e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_melt_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.000000120642295,
+            "coarse": 5.00000048256918
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "sublimation_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_sublimation_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "cumulative_sublimation_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "deposition_mm",
+          "reference": 2.317017929849386e-05,
+          "candidate": 2.317017929849386e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_deposition_mm",
+          "reference": 2.317017929849386e-05,
+          "candidate": 2.317017929849386e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_deposition_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.100000231701793,
+            "coarse": 0.5000011585089649
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_liquid_mm",
+          "reference": 124.89049402762191,
+          "candidate": 124.89049402762296,
+          "signed_difference": 1.0516032489249483e-12,
+          "absolute_difference": 1.0516032489249483e-12,
+          "relative_difference": 8.420202491090845e-15,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_frozen_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_total_mm",
+          "reference": 124.89049402762191,
+          "candidate": 124.89049402762296,
+          "signed_difference": 1.0516032489249483e-12,
+          "absolute_difference": 1.0516032489249483e-12,
+          "relative_difference": 8.420202491090845e-15,
+          "band_metric": "root_total_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.7244524701381095,
+            "coarse": 3.4978098805524382
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.100000m",
+          "reference": 277.1254556949582,
+          "candidate": 277.12545569476373,
+          "signed_difference": -1.9446133592282422e-10,
+          "absolute_difference": 1.9446133592282422e-10,
+          "relative_difference": -7.017086735506345e-13,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.300000m",
+          "reference": 276.2094640797714,
+          "candidate": 276.209464079641,
+          "signed_difference": -1.3039880286669359e-10,
+          "absolute_difference": 1.3039880286669359e-10,
+          "relative_difference": -4.721011399849551e-13,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.500000m",
+          "reference": 275.17418254160657,
+          "candidate": 275.1741825415234,
+          "signed_difference": -8.316192179336213e-11,
+          "absolute_difference": 8.316192179336213e-11,
+          "relative_difference": -3.0221556770060716e-13,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.700000m",
+          "reference": 274.31713572749817,
+          "candidate": 274.3171357274496,
+          "signed_difference": -4.8544279707130045e-11,
+          "absolute_difference": 4.8544279707130045e-11,
+          "relative_difference": -1.7696408056459543e-13,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.900000m",
+          "reference": 273.7730453237381,
+          "candidate": 273.7730453237114,
+          "signed_difference": -2.665956344571896e-11,
+          "absolute_difference": 2.665956344571896e-11,
+          "relative_difference": -9.737833545371088e-14,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_1.100000m",
+          "reference": 273.5222428383703,
+          "candidate": 273.522242838354,
+          "signed_difference": -1.63140612130519e-11,
+          "absolute_difference": 1.63140612130519e-11,
+          "relative_difference": -5.96443676527331e-14,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "daily_generated_runoff_mm",
+          "reference": 8.488061229561458,
+          "candidate": 8.488061229562364,
+          "signed_difference": 9.059419880941277e-13,
+          "absolute_difference": 9.059419880941277e-13,
+          "relative_difference": 1.0673132103936695e-13,
+          "band_metric": "daily_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.14244030614780728,
+            "coarse": 0.6697612245912292
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "daily_routed_outlet_runoff_mm",
+          "reference": 8.471105124736578,
+          "candidate": 8.47358855596202,
+          "signed_difference": 0.0024834312254427005,
+          "absolute_difference": 0.0024834312254427005,
+          "relative_difference": 0.00029316496358790337,
+          "band_metric": "daily_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1423555256236829,
+            "coarse": 0.6694221024947316
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "cumulative_generated_runoff_mm",
+          "reference": 8.488061229561458,
+          "candidate": 8.488061229562364,
+          "signed_difference": 9.059419880941277e-13,
+          "absolute_difference": 9.059419880941277e-13,
+          "relative_difference": 1.0673132103936695e-13,
+          "band_metric": "cumulative_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.0424403061478074,
+            "coarse": 5.169761224591229
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "cumulative_routed_outlet_runoff_mm",
+          "reference": 8.471105124736578,
+          "candidate": 8.47358855596202,
+          "signed_difference": 0.0024834312254427005,
+          "absolute_difference": 0.0024834312254427005,
+          "relative_difference": 0.00029316496358790337,
+          "band_metric": "cumulative_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.042355525623683,
+            "coarse": 5.169422102494732
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "daily_routed_outlet_hourly_maximum_mm_h",
+          "reference": 8.093341370313553,
+          "candidate": 8.093341370314413,
+          "signed_difference": 8.597567102697212e-13,
+          "absolute_difference": 8.597567102697212e-13,
+          "relative_difference": 1.0623013053957126e-13,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "frost_depth_m",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "frost_depth_m",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.01,
+            "coarse": 0.05
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "published_swe_mm",
+          "reference": -0.0,
+          "candidate": -0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "swe_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 1.0
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "profile_soil_water_mm",
+          "reference": 255.9049180844477,
+          "candidate": 255.90491808444875,
+          "signed_difference": 1.0516032489249483e-12,
+          "absolute_difference": 1.0516032489249483e-12,
+          "relative_difference": 4.109351460677763e-15,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        }
+      ],
+      "unresolved": [
+        "melt-derived delivery",
+        "routed outlet event timing",
+        "complete-system independent energy/receiver proof",
+        "common-time full physical trajectories",
+        "balanced runtime uncertainty",
+        "restart/integration/full correctness gates"
+      ],
+      "diagnostic_wall_ratio": 1.0032552352405235,
+      "timing_scope": "one diagnostic execution, not paired speedup estimate",
+      "carrier_evaluations": {
+        "reference": 400,
+        "candidate": 400
+      },
+      "carrier_evaluation_reduction_fraction": 0.0,
+      "policy_counts": {
+        "coupling_energy": 400,
+        "coupling_ice": 400,
+        "coupling_liquid": 400,
+        "coupling_temperature": 400,
+        "terminal_floor_acceptance": 72,
+        "terminal_half1_disappearance_refinement": 64,
+        "terminal_solver_entry": 72
+      },
+      "partial_snow_balance": "PARTIAL_PHYSICAL_AUDIT",
+      "available_value_bands": {
+        "tight": true,
+        "coarse": true
+      }
+    },
+    {
+      "policy": "P2",
+      "case": "continuity",
+      "ofes": 1,
+      "reference_execution_valid": true,
+      "candidate_execution_valid": true,
+      "runner_wall_s": 4.971520309,
+      "process_user_s": 4.964363,
+      "process_system_s": 0.034413,
+      "peak_rss_kib": 81108,
+      "qualified": false,
+      "disposition": "PARTIAL_COMPARISON_NO_ADMISSION",
+      "metrics": [
+        {
+          "metric": "swe_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "swe_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 1.0
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "snow_liquid_allocated_mm",
+          "reference": 1.6666907631830032,
+          "candidate": 1.6666907631830032,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "generated_melt_mm",
+          "reference": 2.4128458992911384e-05,
+          "candidate": 2.4128458992911384e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_generated_melt_mm",
+          "reference": 2.4128458992911384e-05,
+          "candidate": 2.4128458992911384e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_melt_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.000000120642295,
+            "coarse": 5.00000048256918
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "sublimation_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_sublimation_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "cumulative_sublimation_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "deposition_mm",
+          "reference": 2.317017929849386e-05,
+          "candidate": 2.317017929849386e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_deposition_mm",
+          "reference": 2.317017929849386e-05,
+          "candidate": 2.317017929849386e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_deposition_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.100000231701793,
+            "coarse": 0.5000011585089649
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_liquid_mm",
+          "reference": 124.89049402762191,
+          "candidate": 124.89049402762296,
+          "signed_difference": 1.0516032489249483e-12,
+          "absolute_difference": 1.0516032489249483e-12,
+          "relative_difference": 8.420202491090845e-15,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_frozen_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_total_mm",
+          "reference": 124.89049402762191,
+          "candidate": 124.89049402762296,
+          "signed_difference": 1.0516032489249483e-12,
+          "absolute_difference": 1.0516032489249483e-12,
+          "relative_difference": 8.420202491090845e-15,
+          "band_metric": "root_total_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.7244524701381095,
+            "coarse": 3.4978098805524382
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.100000m",
+          "reference": 277.1254556949582,
+          "candidate": 277.12545569476373,
+          "signed_difference": -1.9446133592282422e-10,
+          "absolute_difference": 1.9446133592282422e-10,
+          "relative_difference": -7.017086735506345e-13,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.300000m",
+          "reference": 276.2094640797714,
+          "candidate": 276.209464079641,
+          "signed_difference": -1.3039880286669359e-10,
+          "absolute_difference": 1.3039880286669359e-10,
+          "relative_difference": -4.721011399849551e-13,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.500000m",
+          "reference": 275.17418254160657,
+          "candidate": 275.1741825415234,
+          "signed_difference": -8.316192179336213e-11,
+          "absolute_difference": 8.316192179336213e-11,
+          "relative_difference": -3.0221556770060716e-13,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.700000m",
+          "reference": 274.31713572749817,
+          "candidate": 274.3171357274496,
+          "signed_difference": -4.8544279707130045e-11,
+          "absolute_difference": 4.8544279707130045e-11,
+          "relative_difference": -1.7696408056459543e-13,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.900000m",
+          "reference": 273.7730453237381,
+          "candidate": 273.7730453237114,
+          "signed_difference": -2.665956344571896e-11,
+          "absolute_difference": 2.665956344571896e-11,
+          "relative_difference": -9.737833545371088e-14,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_1.100000m",
+          "reference": 273.5222428383703,
+          "candidate": 273.522242838354,
+          "signed_difference": -1.63140612130519e-11,
+          "absolute_difference": 1.63140612130519e-11,
+          "relative_difference": -5.96443676527331e-14,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "daily_generated_runoff_mm",
+          "reference": 8.488061229561458,
+          "candidate": 8.488061229562364,
+          "signed_difference": 9.059419880941277e-13,
+          "absolute_difference": 9.059419880941277e-13,
+          "relative_difference": 1.0673132103936695e-13,
+          "band_metric": "daily_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.14244030614780728,
+            "coarse": 0.6697612245912292
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "daily_routed_outlet_runoff_mm",
+          "reference": 8.471105124736578,
+          "candidate": 8.47358855596202,
+          "signed_difference": 0.0024834312254427005,
+          "absolute_difference": 0.0024834312254427005,
+          "relative_difference": 0.00029316496358790337,
+          "band_metric": "daily_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1423555256236829,
+            "coarse": 0.6694221024947316
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "cumulative_generated_runoff_mm",
+          "reference": 8.488061229561458,
+          "candidate": 8.488061229562364,
+          "signed_difference": 9.059419880941277e-13,
+          "absolute_difference": 9.059419880941277e-13,
+          "relative_difference": 1.0673132103936695e-13,
+          "band_metric": "cumulative_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.0424403061478074,
+            "coarse": 5.169761224591229
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "cumulative_routed_outlet_runoff_mm",
+          "reference": 8.471105124736578,
+          "candidate": 8.47358855596202,
+          "signed_difference": 0.0024834312254427005,
+          "absolute_difference": 0.0024834312254427005,
+          "relative_difference": 0.00029316496358790337,
+          "band_metric": "cumulative_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.042355525623683,
+            "coarse": 5.169422102494732
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "daily_routed_outlet_hourly_maximum_mm_h",
+          "reference": 8.093341370313553,
+          "candidate": 8.093341370314413,
+          "signed_difference": 8.597567102697212e-13,
+          "absolute_difference": 8.597567102697212e-13,
+          "relative_difference": 1.0623013053957126e-13,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "frost_depth_m",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "frost_depth_m",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.01,
+            "coarse": 0.05
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "published_swe_mm",
+          "reference": -0.0,
+          "candidate": -0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "swe_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 1.0
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "profile_soil_water_mm",
+          "reference": 255.9049180844477,
+          "candidate": 255.90491808444875,
+          "signed_difference": 1.0516032489249483e-12,
+          "absolute_difference": 1.0516032489249483e-12,
+          "relative_difference": 4.109351460677763e-15,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        }
+      ],
+      "unresolved": [
+        "melt-derived delivery",
+        "routed outlet event timing",
+        "complete-system independent energy/receiver proof",
+        "common-time full physical trajectories",
+        "balanced runtime uncertainty",
+        "restart/integration/full correctness gates"
+      ],
+      "diagnostic_wall_ratio": 1.0087328324740834,
+      "timing_scope": "one diagnostic execution, not paired speedup estimate",
+      "carrier_evaluations": {
+        "reference": 400,
+        "candidate": 400
+      },
+      "carrier_evaluation_reduction_fraction": 0.0,
+      "policy_counts": {
+        "coupling_energy": 400,
+        "coupling_ice": 400,
+        "coupling_liquid": 400,
+        "coupling_temperature": 400,
+        "terminal_floor_acceptance": 72,
+        "terminal_half1_disappearance_refinement": 64,
+        "terminal_solver_entry": 72
+      },
+      "partial_snow_balance": "PARTIAL_PHYSICAL_AUDIT",
+      "available_value_bands": {
+        "tight": true,
+        "coarse": true
+      }
+    },
+    {
+      "policy": "C600",
+      "case": "continuity",
+      "ofes": 1,
+      "reference_execution_valid": true,
+      "candidate_execution_valid": true,
+      "runner_wall_s": 3.613718522,
+      "process_user_s": 3.609684,
+      "process_system_s": 0.024429,
+      "peak_rss_kib": 81728,
+      "qualified": false,
+      "disposition": "PARTIAL_COMPARISON_NO_ADMISSION",
+      "metrics": [
+        {
+          "metric": "swe_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "swe_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 1.0
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "snow_liquid_allocated_mm",
+          "reference": 1.6666907631830032,
+          "candidate": 1.6666907631830032,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "generated_melt_mm",
+          "reference": 2.4128458992911384e-05,
+          "candidate": 2.4128458992911384e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_generated_melt_mm",
+          "reference": 2.4128458992911384e-05,
+          "candidate": 2.4128458992911384e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_melt_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.000000120642295,
+            "coarse": 5.00000048256918
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "sublimation_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_sublimation_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "cumulative_sublimation_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "deposition_mm",
+          "reference": 2.317017929849386e-05,
+          "candidate": 2.317017929849386e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_deposition_mm",
+          "reference": 2.317017929849386e-05,
+          "candidate": 2.317017929849386e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_deposition_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.100000231701793,
+            "coarse": 0.5000011585089649
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_liquid_mm",
+          "reference": 124.89049402762191,
+          "candidate": 124.89049402762191,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_frozen_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_total_mm",
+          "reference": 124.89049402762191,
+          "candidate": 124.89049402762191,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "root_total_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.7244524701381095,
+            "coarse": 3.4978098805524382
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.100000m",
+          "reference": 277.1254556949582,
+          "candidate": 277.1254556949582,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.300000m",
+          "reference": 276.2094640797714,
+          "candidate": 276.2094640797714,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.500000m",
+          "reference": 275.17418254160657,
+          "candidate": 275.17418254160657,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.700000m",
+          "reference": 274.31713572749817,
+          "candidate": 274.31713572749817,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.900000m",
+          "reference": 273.7730453237381,
+          "candidate": 273.7730453237381,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_1.100000m",
+          "reference": 273.5222428383703,
+          "candidate": 273.5222428383703,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "daily_generated_runoff_mm",
+          "reference": 8.488061229561458,
+          "candidate": 8.488061229561458,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "daily_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.14244030614780728,
+            "coarse": 0.6697612245912292
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "daily_routed_outlet_runoff_mm",
+          "reference": 8.471105124736578,
+          "candidate": 8.471105124736578,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "daily_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1423555256236829,
+            "coarse": 0.6694221024947316
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "cumulative_generated_runoff_mm",
+          "reference": 8.488061229561458,
+          "candidate": 8.488061229561458,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.0424403061478074,
+            "coarse": 5.169761224591229
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "cumulative_routed_outlet_runoff_mm",
+          "reference": 8.471105124736578,
+          "candidate": 8.471105124736578,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.042355525623683,
+            "coarse": 5.169422102494732
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "daily_routed_outlet_hourly_maximum_mm_h",
+          "reference": 8.093341370313553,
+          "candidate": 8.093341370313553,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "frost_depth_m",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "frost_depth_m",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.01,
+            "coarse": 0.05
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "published_swe_mm",
+          "reference": -0.0,
+          "candidate": -0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "swe_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 1.0
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "profile_soil_water_mm",
+          "reference": 255.9049180844477,
+          "candidate": 255.9049180844477,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        }
+      ],
+      "unresolved": [
+        "melt-derived delivery",
+        "routed outlet event timing",
+        "complete-system independent energy/receiver proof",
+        "common-time full physical trajectories",
+        "balanced runtime uncertainty",
+        "restart/integration/full correctness gates"
+      ],
+      "diagnostic_wall_ratio": 1.3877494144797147,
+      "timing_scope": "one diagnostic execution, not paired speedup estimate",
+      "carrier_evaluations": {
+        "reference": 400,
+        "candidate": 144
+      },
+      "carrier_evaluation_reduction_fraction": 0.64,
+      "policy_counts": {
+        "cadence_endpoint_integrations": 72,
+        "cadence_target_interval": 24,
+        "coupling_energy": 144,
+        "coupling_ice": 144,
+        "coupling_liquid": 144,
+        "coupling_temperature": 144,
+        "terminal_solver_entry": 72
+      },
+      "partial_snow_balance": "PARTIAL_PHYSICAL_AUDIT",
+      "available_value_bands": {
+        "tight": true,
+        "coarse": true
+      }
+    },
+    {
+      "policy": "C1800",
+      "case": "continuity",
+      "ofes": 1,
+      "reference_execution_valid": true,
+      "candidate_execution_valid": true,
+      "runner_wall_s": 3.6285017120000003,
+      "process_user_s": 3.616894,
+      "process_system_s": 0.035823,
+      "peak_rss_kib": 80988,
+      "qualified": false,
+      "disposition": "PARTIAL_COMPARISON_NO_ADMISSION",
+      "metrics": [
+        {
+          "metric": "swe_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "swe_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 1.0
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "snow_liquid_allocated_mm",
+          "reference": 1.6666907631830032,
+          "candidate": 1.6666907631830032,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "generated_melt_mm",
+          "reference": 2.4128458992911384e-05,
+          "candidate": 2.4128458992911384e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_generated_melt_mm",
+          "reference": 2.4128458992911384e-05,
+          "candidate": 2.4128458992911384e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_melt_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.000000120642295,
+            "coarse": 5.00000048256918
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "sublimation_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_sublimation_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "cumulative_sublimation_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "deposition_mm",
+          "reference": 2.317017929849386e-05,
+          "candidate": 2.317017929849386e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "cumulative_deposition_mm",
+          "reference": 2.317017929849386e-05,
+          "candidate": 2.317017929849386e-05,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_deposition_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.100000231701793,
+            "coarse": 0.5000011585089649
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_liquid_mm",
+          "reference": 124.89049402762191,
+          "candidate": 124.89049402762191,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_frozen_mm",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "root_total_mm",
+          "reference": 124.89049402762191,
+          "candidate": 124.89049402762191,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "root_total_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.7244524701381095,
+            "coarse": 3.4978098805524382
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.100000m",
+          "reference": 277.1254556949582,
+          "candidate": 277.1254556949582,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.300000m",
+          "reference": 276.2094640797714,
+          "candidate": 276.2094640797714,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.500000m",
+          "reference": 275.17418254160657,
+          "candidate": 275.17418254160657,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.700000m",
+          "reference": 274.31713572749817,
+          "candidate": 274.31713572749817,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_0.900000m",
+          "reference": 273.7730453237381,
+          "candidate": 273.7730453237381,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "soil_temperature_K_at_1.100000m",
+          "reference": 273.5222428383703,
+          "candidate": 273.5222428383703,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "soil_temperature_K",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 0.5
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            1
+          ]
+        },
+        {
+          "metric": "daily_generated_runoff_mm",
+          "reference": 8.488061229561458,
+          "candidate": 8.488061229561458,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "daily_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.14244030614780728,
+            "coarse": 0.6697612245912292
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "daily_routed_outlet_runoff_mm",
+          "reference": 8.471105124736578,
+          "candidate": 8.471105124736578,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "daily_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1423555256236829,
+            "coarse": 0.6694221024947316
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "cumulative_generated_runoff_mm",
+          "reference": 8.488061229561458,
+          "candidate": 8.488061229561458,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.0424403061478074,
+            "coarse": 5.169761224591229
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "cumulative_routed_outlet_runoff_mm",
+          "reference": 8.471105124736578,
+          "candidate": 8.471105124736578,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": "cumulative_runoff_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 1.042355525623683,
+            "coarse": 5.169422102494732
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "daily_routed_outlet_hourly_maximum_mm_h",
+          "reference": 8.093341370313553,
+          "candidate": 8.093341370313553,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "frost_depth_m",
+          "reference": 0.0,
+          "candidate": 0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "frost_depth_m",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.01,
+            "coarse": 0.05
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "published_swe_mm",
+          "reference": -0.0,
+          "candidate": -0.0,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": null,
+          "band_metric": "swe_mm",
+          "band_status": "VALUE_COMPARISON_ONLY",
+          "allowances": {
+            "tight": 0.1,
+            "coarse": 1.0
+          },
+          "passes_available_value": {
+            "tight": true,
+            "coarse": true
+          },
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        },
+        {
+          "metric": "profile_soil_water_mm",
+          "reference": 255.9049180844477,
+          "candidate": 255.9049180844477,
+          "signed_difference": 0.0,
+          "absolute_difference": 0.0,
+          "relative_difference": 0.0,
+          "band_metric": null,
+          "band_status": "UNBANDED_DIAGNOSTIC",
+          "identity": [
+            0,
+            "hillslope"
+          ]
+        }
+      ],
+      "unresolved": [
+        "melt-derived delivery",
+        "routed outlet event timing",
+        "complete-system independent energy/receiver proof",
+        "common-time full physical trajectories",
+        "balanced runtime uncertainty",
+        "restart/integration/full correctness gates"
+      ],
+      "diagnostic_wall_ratio": 1.382095465578769,
+      "timing_scope": "one diagnostic execution, not paired speedup estimate",
+      "carrier_evaluations": {
+        "reference": 400,
+        "candidate": 144
+      },
+      "carrier_evaluation_reduction_fraction": 0.64,
+      "policy_counts": {
+        "cadence_endpoint_integrations": 72,
+        "cadence_target_interval": 8,
+        "coupling_energy": 144,
+        "coupling_ice": 144,
+        "coupling_liquid": 144,
+        "coupling_temperature": 144,
+        "terminal_solver_entry": 72
+      },
+      "partial_snow_balance": "PARTIAL_PHYSICAL_AUDIT",
+      "available_value_bands": {
+        "tight": true,
+        "coarse": true
+      }
+    }
+  ]
+}

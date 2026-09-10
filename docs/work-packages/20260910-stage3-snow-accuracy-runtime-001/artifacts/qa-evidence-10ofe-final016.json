@@ -1,0 +1,44 @@
+{
+  "evidence": "Ran independent raw hash/order/statistics/reproducibility audit",
+  "processes": 30,
+  "invalid": 0,
+  "topology": 10,
+  "statistics": {
+    "C600": {
+      "geomean": 1.006087222737023,
+      "interval": [
+        0.9617737509074995,
+        1.0524424260899252
+      ]
+    },
+    "B01": {
+      "geomean": 1.047804329225826,
+      "interval": [
+        1.0457527633472183,
+        1.0498599198822793
+      ]
+    }
+  },
+  "identity": [
+    {
+      "policy": "R0",
+      "same_policy_reproducible_runs_including_full_extension": 15
+    },
+    {
+      "policy": "C600",
+      "same_policy_reproducible_runs_including_full_extension": 9
+    },
+    {
+      "policy": "B01",
+      "same_policy_reproducible_runs_including_full_extension": 9
+    }
+  ],
+  "slow_C600_pair3_retained": {
+    "pair": 3,
+    "valid": true,
+    "reference_s": 12.850028247000001,
+    "candidate_s": 13.940467019,
+    "difference_s": 1.0904387719999988,
+    "ratio_reference_over_candidate": 0.9217788923058462
+  }
+}

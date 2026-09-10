@@ -1,0 +1,3456 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs
+@@ -657,6 +657,24 @@
+                 ADAPTIVE_INTENSIVE_RELATIVE_TOLERANCE,
+             ),
+         };
++    use openwepp_land_surface_energy::snow_accuracy_policy::{Policy, Quantity};
++    let experimental_quantity = match (owner_id, dimension) {
++        ("snow", AdaptiveOwnerDimensionV1::AreaMassKgM2) => Some(Quantity::Mass),
++        (
++            "snow" | "soil_thermal" | "land_surface_energy",
++            AdaptiveOwnerDimensionV1::AreaEnergyJM2,
++        ) => Some(Quantity::Energy),
++        ("snow", AdaptiveOwnerDimensionV1::WaterDepthM)
++            if matches!(field.as_str(), "mass_swe_m" | "liquid_water_m") =>
++        {
++            Some(Quantity::WaterDepth)
++        }
++        _ => None,
++    };
++    let (absolute_tolerance, relative_tolerance) =
++        experimental_quantity.map_or((absolute_tolerance, relative_tolerance), |quantity| {
++            Policy::current().coefficients(quantity, absolute_tolerance, relative_tolerance, 1.0)
++        });
+     Some((
+         AdaptiveToleranceAuthorityV1 {
+             contract_id,
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs
+@@ -334,6 +334,9 @@
+ #[serde(deny_unknown_fields)]
+ pub struct DirectSnowStage3PersistentState {
+     pub schema_version: u16,
++    /// Isolated experiment identity and accepted bulk hysteresis posture.
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub experimental_accuracy: Option<(u8, bool)>,
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub terminal_event_model: Option<DirectSnowTerminalEventModel>,
+     pub fingerprint: u64,
+@@ -455,6 +458,11 @@
+ 
+ #[derive(Debug, Clone, Copy, PartialEq, serde::Deserialize, serde::Serialize)]
+ pub struct DirectSnowTerminalEventResult {
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub experimental_bulk_policy: Option<u8>,
++    /// Isolated endpoint schedule; absent preserves the strict reference wire.
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub experimental_endpoint_interval_seconds: Option<u32>,
+     pub model: DirectSnowTerminalEventModel,
+     pub event_occurred: bool,
+     pub hour_index: usize,
+@@ -494,19 +502,19 @@
+     pub event_bracket_upper_seconds: f64,
+     pub event_bracket_lower_solid_kg_m2: f64,
+     pub event_bracket_upper_solid_kg_m2: f64,
+-    pub lte_coarse_ice_kg_m2: f64,
+-    pub lte_fine_ice_kg_m2: f64,
+-    pub lte_coarse_liquid_kg_m2: f64,
+-    pub lte_fine_liquid_kg_m2: f64,
+-    pub lte_coarse_cold_content_j_m2: f64,
+-    pub lte_fine_cold_content_j_m2: f64,
+-    pub lte_coarse_complete_energy_j_m2: f64,
+-    pub lte_fine_complete_energy_j_m2: f64,
+-    pub lte_coarse_unallocated_energy_j_m2: f64,
+-    pub lte_fine_unallocated_energy_j_m2: f64,
++    pub lte_coarse_ice_kg_m2: Option<f64>,
++    pub lte_fine_ice_kg_m2: Option<f64>,
++    pub lte_coarse_liquid_kg_m2: Option<f64>,
++    pub lte_fine_liquid_kg_m2: Option<f64>,
++    pub lte_coarse_cold_content_j_m2: Option<f64>,
++    pub lte_fine_cold_content_j_m2: Option<f64>,
++    pub lte_coarse_complete_energy_j_m2: Option<f64>,
++    pub lte_fine_complete_energy_j_m2: Option<f64>,
++    pub lte_coarse_unallocated_energy_j_m2: Option<f64>,
++    pub lte_fine_unallocated_energy_j_m2: Option<f64>,
+     pub accepted_trials: u32,
+     pub rejected_trials: u32,
+-    pub maximum_scaled_error: f64,
++    pub maximum_scaled_error: Option<f64>,
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+@@ -1545,11 +1553,10 @@
+     CoveredProbeChildIdentityV1, CoveredTerminalBatchCarrierCandidatesV2,
+     CoveredTerminalBatchTrialRequestV2, CoveredTerminalBatchTrialResultV2,
+     CoveredTerminalExecutionMode, CoveredTerminalJointTrialStateV1,
+-    CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRoleV1,
+-    CoveredTerminalTrialTransitionV1, CoveredTerminalTrialRequestV1, JointTrialAuthorityV1,
+-    NoEvidence, ProbeChildAuthorityV1,
++    CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1,
++    CoveredTerminalTrialTransitionV1, JointTrialAuthorityV1, NoEvidence, ProbeChildAuthorityV1,
+     STAGE3_DEFAULT_SNOW_ALBEDO, STAGE3_LATENT_HEAT_FUSION_J_KG, TerminalEvidenceMode,
+-    stage3_has_represented_ice, stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
++    stage3_has_represented_ice, stage3_is_bulk_experiment_domain, stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
+     stage3_total_represented_ice_swe_m,
+ };
+ pub use support_helpers_mod::{
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/mod.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/mod.rs
+@@ -18,11 +18,10 @@
+     CoveredProbeChildIdentityV1, CoveredTerminalBatchCarrierCandidatesV2,
+     CoveredTerminalBatchTrialRequestV2, CoveredTerminalBatchTrialResultV2,
+     CoveredTerminalExecutionMode, CoveredTerminalJointTrialStateV1,
+-    CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRoleV1,
+-    CoveredTerminalTrialTransitionV1, CoveredTerminalTrialRequestV1, JointTrialAuthorityV1,
+-    NoEvidence, ProbeChildAuthorityV1,
++    CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1,
++    CoveredTerminalTrialTransitionV1, JointTrialAuthorityV1, NoEvidence, ProbeChildAuthorityV1,
+     STAGE3_DEFAULT_SNOW_ALBEDO, STAGE3_LATENT_HEAT_FUSION_J_KG, TerminalEvidenceMode,
+-    stage3_has_represented_ice, stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
++    stage3_has_represented_ice, stage3_is_bulk_experiment_domain, stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
+     stage3_total_represented_ice_swe_m,
+ };
+ pub(crate) use snow_mass_transition::DirectSnowStage3Resolution;
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_evaluation_validation_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_evaluation_validation_tests.rs
+@@ -585,7 +585,10 @@
+ 
+     assert_eq!(active_layer_count, 1);
+     assert_eq!(layers.len(), 1);
+-    assert_eq!(layers[0].settle_day_count.to_bits(), settle_day_count.to_bits());
++    assert_eq!(
++        layers[0].settle_day_count.to_bits(),
++        settle_day_count.to_bits()
++    );
+ }
+ 
+ #[test]
+@@ -627,7 +630,10 @@
+ 
+     assert_eq!(active_layer_count, 2);
+     assert_eq!(layers.len(), 2);
+-    assert_eq!(layers[0].settle_day_count.to_bits(), settle_day_count.to_bits());
++    assert_eq!(
++        layers[0].settle_day_count.to_bits(),
++        settle_day_count.to_bits()
++    );
+     assert_eq!(
+         layers[1].settle_day_count.to_bits(),
+         adjacent_settle_day_count.to_bits()
+--- /dev/null
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/bulk.rs
+@@ -0,0 +1,262 @@
++//! One EXP-B step per real published support; outer refinement retains this model.
++use super::terminal_event::{
++    TerminalAcceptedMicrostep, TerminalLedger, TerminalState, TerminalTrial,
++};
++use super::*;
++
++impl Wb11HydrologyKernel {
++    pub(super) fn evaluate_bulk_summary(
++        inputs: &DirectActiveSnowPartitionInputs,
++        supports: &[DirectSnowStage3SupportInput],
++        state: &DirectSnowStage3PersistentState,
++        support: TimeSupport,
++        joint: CoveredTerminalJointTrialStateV1,
++        provider: &mut CoveredTerminalTrialProviderV1<'_>,
++    ) -> Result<Stage3ShadowSummary, DirectSnowStage3EvaluationError> {
++        let fail = || {
++            DirectSnowStage3EvaluationError::TerminalCustody("bulk support or real carrier custody")
++        };
++        if supports.len() != 1
++            || !stage3_is_bulk_experiment_domain(state)
++            || support.duration_ns() < 60_000_000_000
++            || support.duration_ns() % 60_000_000_000 != 0
++            || supports[0].duration_seconds.to_bits() != support.duration_s_bits()
++        {
++            return Err(fail());
++        }
++        let ice = 1000.0 * state.layers.iter().map(|l| l.mass_swe_m).sum::<f64>();
++        let liquid = 1000.0 * state.layers.iter().map(|l| l.liquid_water_m).sum::<f64>()
++            + state.detached_retained_liquid_kg_m2;
++        let cold = state
++            .layers
++            .iter()
++            .map(|l| l.cold_content_j_m2)
++            .sum::<f64>();
++        let depth = state.layers.iter().map(|l| l.thickness_m).sum::<f64>();
++        let h = 333600.0 * liquid - cold;
++        let lag = if h < 0.0 {
++            h / (2100.0 * (ice + liquid))
++        } else {
++            0.0
++        };
++        if ice <= 0.0 || depth <= 0.0 || !lag.is_finite() || lag <= -273.15 {
++            return Err(fail());
++        }
++        let phase_liquid = if h < 0.0 {
++            0.0
++        } else {
++            (h / 333600.0).min(ice + liquid)
++        };
++        let phase_ice = ice + liquid - phase_liquid;
++        if phase_ice <= 0.0 {
++            return Err(fail());
++        }
++        crate::snow_accuracy_observer::count("bulk_real_carrier_requests");
++        let receipt = provider(CoveredTerminalTrialRequestV1 {
++            lane_id: state.lane_id,
++            support,
++            role: CoveredTerminalTrialRoleV1::Root,
++            attempt_ordinal: 0,
++            coupling_iteration: 0,
++            ice_kg_m2: phase_ice,
++            liquid_kg_m2: phase_liquid,
++            cold_content_j_m2: (-h).max(0.0),
++            surface_temperature_c: lag,
++            snow_depth_m: depth,
++            snow_density_kg_m3: phase_ice / depth,
++            beginning_stage3_state: Box::new(state.clone()),
++            ending_snow_hint: None,
++            beginning_joint: joint.clone(),
++        })?;
++        if receipt.beginning_joint != joint
++            || receipt.boundary.support != support
++            || receipt.probe_child_identity.trial_support != support
++        {
++            return Err(fail());
++        }
++        let bulk = receipt.experimental_bulk.ok_or_else(fail)?;
++        bulk.canonical_bytes().map_err(|_| fail())?;
++        let f = bulk.forcing;
++        let o = bulk.outcome;
++        if bulk.beginning.water != (ice + liquid)
++            || bulk.beginning.enthalpy != h
++            || bulk.beginning.depth != depth
++            || o.snow_heat.to_bits() != receipt.boundary.snow_soil_heat_j_m2.to_bits()
++        {
++            return Err(fail());
++        }
++        let initial_phase_liquid = if h < 0.0 {
++            0.0
++        } else {
++            (h / 333600.0).min(ice + liquid)
++        };
++        let conversion_refreeze = liquid - initial_phase_liquid;
++        if conversion_refreeze < 0.0 {
++            return Err(fail());
++        }
++        let refreeze = o.refreeze + conversion_refreeze;
++        let mut summary = Stage3ShadowSummary::new(Stage3EvaluationTag::new(
++            SnowStage3EvaluationOperator::PersistentAccumulationShadowV1,
++        ));
++        let cold_layers = state
++            .layers
++            .iter()
++            .map(|l| l.cold_content_j_m2)
++            .collect::<Vec<_>>();
++        Self::stage3_shadow_fingerprints(inputs, &state.layers, &cold_layers, &mut summary);
++        summary.complete_arm_non_formulation_fingerprint = summary.non_formulation_fingerprint;
++        summary.experimental_bulk_material = Some((f.solid, f.rain));
++        summary.requested_seconds = f.seconds;
++        summary.evaluated_seconds = f.seconds;
++        summary.hourly[0].requested_seconds = f.seconds;
++        summary.hourly[0].evaluated_seconds = f.seconds;
++        summary.complete_shortwave_j_m2 = f.shortwave;
++        summary.complete_longwave_j_m2 = f.longwave;
++        summary.complete_sensible_j_m2 = f.sensible;
++        summary.complete_latent_j_m2 = f.latent;
++        summary.complete_advected_j_m2 = f.precipitation_sensible;
++        summary.complete_snow_soil_heat_j_m2 = o.snow_heat;
++        summary.complete_energy_j_m2 = f.shortwave
++            + f.longwave
++            + f.sensible
++            + f.latent
++            + f.precipitation_sensible
++            + o.snow_heat;
++        summary.complete_vapor_mass_exchange_kg_m2 = f.vapor;
++        summary.cold_content_export_j_m2 = o.vapor_material;
++        summary.available_ice_kg_m2 = ice + f.solid + f.vapor.max(0.0) + refreeze;
++        summary.cold_energy_change_j_m2 =
++            cold + o.ending.enthalpy - o.vapor_material - 333600.0 * refreeze;
++        summary.sublimation_kg_m2 = (-f.vapor).max(0.0);
++        summary.melt_kg_m2 = o.melt;
++        summary.terminal_deposition_kg_m2 = f.vapor.max(0.0);
++        summary.terminal_refrozen_kg_m2 = refreeze;
++        summary.unallocated_after_exhaustion_j_m2 = o.sensible_released;
++        let hour = &mut summary.hourly[0];
++        hour.complete_carrier_evaluated = true;
++        hour.complete_energy_j_m2 = summary.complete_energy_j_m2;
++        hour.shortwave_energy_j_m2 = f.shortwave;
++        hour.longwave_energy_j_m2 = f.longwave;
++        hour.sensible_flux_w_m2 = f.sensible / f.seconds;
++        hour.latent_flux_w_m2 = f.latent / f.seconds;
++        hour.advected_flux_w_m2 = f.precipitation_sensible / f.seconds;
++        hour.cold_required_j_m2 = cold;
++        hour.cold_energy_change_j_m2 = summary.cold_energy_change_j_m2;
++        hour.sublimation_kg_m2 = summary.sublimation_kg_m2;
++        hour.melt_kg_m2 = o.melt;
++        hour.unallocated_after_exhaustion_j_m2 = o.sensible_released;
++        summary.reconciliation.hourly_status[0] = DirectSnowStage3ReconciliationHourStatus {
++            evaluated: true,
++            reason: "EXP-SNOW-ACCURACY-20260910-B",
++        };
++        summary.final_layers = if o.ending.water > 0.0 {
++            vec![DirectSnowLayerState {
++                mass_swe_m: o.ending.water / 1000.0,
++                liquid_water_m: 0.0,
++                thickness_m: o.ending.depth,
++                density_kg_m3: o.ending.water / o.ending.depth,
++                settle_day_count: state.layers.first().map_or(0.0, |l| l.settle_day_count),
++                temperature_c: o.ending.enthalpy / (2100.0 * o.ending.water),
++                cold_content_j_m2: -o.ending.enthalpy,
++                refrozen_liquid_m: state
++                    .layers
++                    .iter()
++                    .map(|l| l.refrozen_liquid_m)
++                    .sum::<f64>()
++                    + refreeze / 1000.0,
++            }]
++        } else {
++            Vec::new()
++        };
++        let carrier_joint = Some(receipt.ending_joint.clone());
++        let ending_joint = Some(receipt.ending_joint.with_terminal_hydrology_state(
++            state.lane_id,
++            o.ending.water,
++            if o.ending.water == 0.0 {
++                o.liquid_released
++            } else {
++                0.0
++            },
++            -o.ending.enthalpy,
++        )?);
++        summary.terminal_ending_joint = ending_joint.clone();
++        {
++            let start = TerminalState {
++                ice_kg_m2: ice + f.solid,
++                liquid_kg_m2: liquid,
++                cold_content_j_m2: cold,
++            };
++            let end = TerminalState {
++                ice_kg_m2: o.ending.water,
++                liquid_kg_m2: o.liquid_released,
++                cold_content_j_m2: -o.ending.enthalpy,
++            };
++            let ledger = TerminalLedger {
++                complete_energy_j_m2: summary.complete_energy_j_m2,
++                cold_energy_change_j_m2: cold + o.ending.enthalpy - o.vapor_material,
++                refrozen_kg_m2: refreeze,
++                deposition_kg_m2: f.vapor.max(0.0),
++                sublimation_kg_m2: (-f.vapor).max(0.0),
++                melt_kg_m2: o.melt,
++                unallocated_energy_j_m2: o.sensible_released,
++                shortwave_energy_j_m2: f.shortwave,
++                longwave_energy_j_m2: f.longwave,
++                sensible_energy_j_m2: f.sensible,
++                latent_energy_j_m2: f.latent,
++                advected_energy_j_m2: f.precipitation_sensible,
++                snow_soil_heat_energy_j_m2: o.snow_heat,
++                external_liquid_kg_m2: f.rain,
++            };
++            let trial = TerminalTrial { state: end, ledger };
++            let mut event = Self::terminal_result_from_trial(
++                0,
++                0.0,
++                f.seconds,
++                start,
++                end,
++                ledger,
++                support.duration_ns(),
++                support.duration_ns(),
++                0,
++                support.duration_ns(),
++                ice + f.solid,
++                o.ending.water,
++                trial,
++                trial,
++                1,
++                0,
++                0.0,
++            )?;
++            event.experimental_bulk_policy = Some(bulk.policy);
++            event.maximum_scaled_error = None;
++            event.lte_coarse_ice_kg_m2 = None;
++            event.lte_fine_ice_kg_m2 = None;
++            event.lte_coarse_liquid_kg_m2 = None;
++            event.lte_fine_liquid_kg_m2 = None;
++            event.lte_coarse_cold_content_j_m2 = None;
++            event.lte_fine_cold_content_j_m2 = None;
++            event.lte_coarse_complete_energy_j_m2 = None;
++            event.lte_fine_complete_energy_j_m2 = None;
++            event.lte_coarse_unallocated_energy_j_m2 = None;
++            event.lte_fine_unallocated_energy_j_m2 = None;
++            event.entry_solid_precipitation_kg_m2 = f.solid;
++            summary.terminal_event = Some(event);
++            summary.terminal_intervals.push(event);
++            summary
++                .terminal_accepted_microsteps
++                .push(TerminalAcceptedMicrostep {
++                    relative_start_ns: 0,
++                    duration_ns: support.duration_ns(),
++                    relative_start_s: 0.0,
++                    duration_s: f.seconds,
++                    beginning: start,
++                    ending: end,
++                    ledger,
++                    carrier_ending_joint: carrier_joint,
++                    hydrology_ending_joint: ending_joint,
++                });
++        }
++        crate::snow_accuracy_observer::count("bulk_steps_produced");
++        Ok(summary)
++    }
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
+@@ -353,7 +353,11 @@
+                                     crate::stage3_mechanism_experiment_audit::Scope::begin(
+                                         crate::stage3_mechanism_experiment_audit::Kind::Evaluator,
+                                         || {
+-                                            format!("role={role:?};attempt={attempt_ordinal};start_bits={};duration_bits={}", relative_start_seconds.to_bits(), duration_seconds.to_bits())
++                                            format!(
++                                                "role={role:?};attempt={attempt_ordinal};start_bits={};duration_bits={}",
++                                                relative_start_seconds.to_bits(),
++                                                duration_seconds.to_bits()
++                                            )
+                                         },
+                                     );
+                                 let surface_temperature_c =
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/persistent_state.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/persistent_state.rs
+@@ -327,6 +327,10 @@
+             + detached_retained_liquid_kg_m2;
+         let mut state = DirectSnowStage3PersistentState {
+             schema_version: 2,
++            experimental_accuracy:
++                openwepp_land_surface_energy::snow_accuracy_policy::Policy::current()
++                    .identity()
++                    .map(|id| (id, false)),
+             terminal_event_model: Some(DirectSnowTerminalEventModel::EnthalpyEventV1),
+             fingerprint: 0,
+             lane_id,
+@@ -403,3 +407,42 @@
+         Self::restore_stage3_persistent_state(state, lane_id, next_interval_index)
+     }
+ }
++
++#[cfg(test)]
++#[test]
++#[ignore = "explicit fresh-process experiment policy"]
++fn snow_accuracy_policy_restart_and_foreign_state_rejection() {
++    use openwepp_land_surface_energy::snow_accuracy_policy::Policy;
++    let policy = Policy::parse(&std::env::var("OPENWEPP_ACCURACY_POLICY").expect("policy"))
++        .expect("declared");
++    policy.install().expect("immutable startup");
++    let state = Wb11HydrologyKernel::initialize_stage3_persistent_state_with_retained_liquid(
++        1,
++        vec![DirectSnowLayerState::new(0.00005, 0.0005, 100.0, 0.0)],
++        0.0,
++    )
++    .expect("lawful state");
++    let bytes = Wb11HydrologyKernel::serialize_stage3_persistent_state(&state).expect("serialize");
++    let restored: DirectSnowStage3PersistentState =
++        serde_json::from_slice(&bytes).expect("same-policy decode");
++    assert_eq!(
++        Wb11HydrologyKernel::restore_stage3_persistent_state(restored, 1, 0).expect("restore"),
++        state
++    );
++    let mut foreign = state.clone();
++    foreign.experimental_accuracy = Some((255, false));
++    foreign.fingerprint = Wb11HydrologyKernel::stage3_persistent_state_fingerprint(&foreign);
++    assert!(Wb11HydrologyKernel::restore_stage3_persistent_state(foreign, 1, 0).is_err());
++    let mut active = state.clone();
++    active.experimental_accuracy = policy.identity().map(|id| (id, true));
++    active.fingerprint = Wb11HydrologyKernel::stage3_persistent_state_fingerprint(&active);
++    if policy.bulk_threshold().is_some() {
++        let restored = Wb11HydrologyKernel::restore_stage3_persistent_state(active.clone(), 1, 0)
++            .expect("bulk hysteresis restore");
++        assert_eq!(restored, active);
++        assert!(stage3_is_bulk_experiment_domain(&restored));
++    } else if policy != Policy::R0 {
++        assert!(Wb11HydrologyKernel::restore_stage3_persistent_state(active, 1, 0).is_err());
++    }
++    assert_eq!(state.next_interval_index, 0);
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
+@@ -744,6 +744,7 @@
+         }
+         bytes.extend_from_slice(ending_soil_candidate_sha256.as_bytes());
+         let receipt = crate::v9_real_consumer_shadow::TerminalSnowSoilTrialReceiptV1 {
++            experimental_bulk: None,
+             support,
+             lane_id,
+             ofe_id,
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/terminal_event.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/terminal_event.rs
+@@ -4,6 +4,7 @@
+ pub(crate) const RELATIVE_ERROR_TOLERANCE: f64 = 1.0e-8;
+ pub(crate) const MASS_ABSOLUTE_TOLERANCE_KG_M2: f64 = 1.0e-9;
+ pub(crate) const ENERGY_ABSOLUTE_TOLERANCE_J_M2: f64 = 1.0e-6;
++const COMPONENT_ENERGY_ACCOUNTING_TOLERANCE_J_M2: f64 = 1.0e-6;
+ const MAXIMUM_REJECTIONS: u32 = 64;
+ const NANOSECONDS_PER_SECOND_F64: f64 = 1_000_000_000.0;
+ const MINIMUM_COVERED_CARRIER_NS: u128 = 60_000_000_000;
+@@ -219,7 +220,7 @@
+ #[derive(Clone, Copy)]
+ pub(super) struct TerminalTrial {
+     pub(super) state: TerminalState,
+-    ledger: TerminalLedger,
++    pub(super) ledger: TerminalLedger,
+ }
+ 
+ #[derive(Clone, Debug, PartialEq)]
+@@ -239,7 +240,7 @@
+ 
+ impl Wb11HydrologyKernel {
+     #[allow(clippy::too_many_arguments)]
+-    fn terminal_result_from_trial(
++    pub(super) fn terminal_result_from_trial(
+         hour_index: usize,
+         hour_offset_seconds: f64,
+         requested_seconds: f64,
+@@ -308,7 +309,17 @@
+                 SnowTerminalNumericsFailure::Closure,
+             ));
+         }
++        let experimental_endpoint_interval_seconds =
++            openwepp_land_surface_energy::snow_accuracy_policy::Policy::current()
++                .endpoint_interval_seconds();
++        let lte = |value| {
++            experimental_endpoint_interval_seconds
++                .is_none()
++                .then_some(value)
++        };
+         Ok(DirectSnowTerminalEventResult {
++            experimental_bulk_policy: None,
++            experimental_endpoint_interval_seconds,
+             model: DirectSnowTerminalEventModel::EnthalpyEventV1,
+             event_occurred,
+             hour_index,
+@@ -346,19 +357,19 @@
+             event_bracket_upper_seconds,
+             event_bracket_lower_solid_kg_m2,
+             event_bracket_upper_solid_kg_m2,
+-            lte_coarse_ice_kg_m2: lte_coarse.state.ice_kg_m2,
+-            lte_fine_ice_kg_m2: lte_fine.state.ice_kg_m2,
+-            lte_coarse_liquid_kg_m2: lte_coarse.state.liquid_kg_m2,
+-            lte_fine_liquid_kg_m2: lte_fine.state.liquid_kg_m2,
+-            lte_coarse_cold_content_j_m2: lte_coarse.state.cold_content_j_m2,
+-            lte_fine_cold_content_j_m2: lte_fine.state.cold_content_j_m2,
+-            lte_coarse_complete_energy_j_m2: lte_coarse.ledger.complete_energy_j_m2,
+-            lte_fine_complete_energy_j_m2: lte_fine.ledger.complete_energy_j_m2,
+-            lte_coarse_unallocated_energy_j_m2: lte_coarse.ledger.unallocated_energy_j_m2,
+-            lte_fine_unallocated_energy_j_m2: lte_fine.ledger.unallocated_energy_j_m2,
++            lte_coarse_ice_kg_m2: lte(lte_coarse.state.ice_kg_m2),
++            lte_fine_ice_kg_m2: lte(lte_fine.state.ice_kg_m2),
++            lte_coarse_liquid_kg_m2: lte(lte_coarse.state.liquid_kg_m2),
++            lte_fine_liquid_kg_m2: lte(lte_fine.state.liquid_kg_m2),
++            lte_coarse_cold_content_j_m2: lte(lte_coarse.state.cold_content_j_m2),
++            lte_fine_cold_content_j_m2: lte(lte_fine.state.cold_content_j_m2),
++            lte_coarse_complete_energy_j_m2: lte(lte_coarse.ledger.complete_energy_j_m2),
++            lte_fine_complete_energy_j_m2: lte(lte_fine.ledger.complete_energy_j_m2),
++            lte_coarse_unallocated_energy_j_m2: lte(lte_coarse.ledger.unallocated_energy_j_m2),
++            lte_fine_unallocated_energy_j_m2: lte(lte_fine.ledger.unallocated_energy_j_m2),
+             accepted_trials,
+             rejected_trials,
+-            maximum_scaled_error,
++            maximum_scaled_error: lte(maximum_scaled_error),
+         })
+     }
+ 
+@@ -467,7 +478,7 @@
+             + flux.advected_energy_j_m2.abs()
+             + flux.snow_soil_heat_energy_j_m2.abs();
+         if (complete_energy_j_m2 - component_energy_j_m2).abs()
+-            > ENERGY_ABSOLUTE_TOLERANCE_J_M2.max(1.0e-12 * component_energy_scale)
++            > COMPONENT_ENERGY_ACCOUNTING_TOLERANCE_J_M2.max(1.0e-12 * component_energy_scale)
+         {
+             return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
+                 SnowTerminalNumericsFailure::Closure,
+@@ -590,6 +601,7 @@
+     }
+ 
+     fn terminal_scaled_error(full: TerminalTrial, refined: TerminalTrial) -> f64 {
++        crate::snow_accuracy_observer::count("terminal_lte_norm");
+         let components = Self::terminal_error_components(full, refined);
+         components[1..]
+             .iter()
+@@ -602,9 +614,12 @@
+         full: TerminalTrial,
+         refined: TerminalTrial,
+     ) -> [(f64, f64, f64, f64, f64); 5] {
+-        let component = |coarse: f64, fine: f64, absolute: f64| {
++        use openwepp_land_surface_energy::snow_accuracy_policy::{Policy, Quantity};
++        let component = |coarse: f64, fine: f64, absolute: f64, quantity: Quantity| {
+             let delta = fine - coarse;
+-            let denominator = absolute + RELATIVE_ERROR_TOLERANCE * coarse.abs().max(fine.abs());
++            let (absolute, relative) =
++                Policy::current().coefficients(quantity, absolute, RELATIVE_ERROR_TOLERANCE, 1.0);
++            let denominator = absolute + relative * coarse.abs().max(fine.abs());
+             (coarse, fine, delta, denominator, delta.abs() / denominator)
+         };
+         [
+@@ -612,26 +627,31 @@
+                 full.state.ice_kg_m2,
+                 refined.state.ice_kg_m2,
+                 MASS_ABSOLUTE_TOLERANCE_KG_M2,
++                Quantity::Mass,
+             ),
+             component(
+                 full.state.liquid_kg_m2,
+                 refined.state.liquid_kg_m2,
+                 MASS_ABSOLUTE_TOLERANCE_KG_M2,
++                Quantity::Mass,
+             ),
+             component(
+                 full.state.cold_content_j_m2,
+                 refined.state.cold_content_j_m2,
+                 ENERGY_ABSOLUTE_TOLERANCE_J_M2,
++                Quantity::Energy,
+             ),
+             component(
+                 full.ledger.complete_energy_j_m2,
+                 refined.ledger.complete_energy_j_m2,
+                 ENERGY_ABSOLUTE_TOLERANCE_J_M2,
++                Quantity::Energy,
+             ),
+             component(
+                 full.ledger.unallocated_energy_j_m2,
+                 refined.ledger.unallocated_energy_j_m2,
+                 ENERGY_ABSOLUTE_TOLERANCE_J_M2,
++                Quantity::Energy,
+             ),
+         ]
+     }
+@@ -730,10 +750,106 @@
+                 SnowTerminalNumericsFailure::DomainOrNonFinite,
+             ));
+         }
++        crate::snow_accuracy_observer::count("terminal_solver_entry");
+         let requested_ns = exact_grid_nanoseconds(requested_seconds, false)?;
+         let requested_duration_seconds = seconds_from_nanoseconds(requested_ns);
++        if let Some(target) = openwepp_land_surface_energy::snow_accuracy_policy::Policy::current()
++            .endpoint_interval_seconds()
++        {
++            let target_ns = u128::from(target) * 1_000_000_000;
++            let mut elapsed_ns = 0_u128;
++            let mut state = start;
++            let mut ledger = TerminalLedger::default();
++            let mut joint = initial_joint;
++            let mut steps = Vec::new();
++            let mut last = TerminalTrial {
++                state: start,
++                ledger: TerminalLedger::default(),
++            };
++            let mut last_beginning = start;
++            let mut last_start_ns = 0;
++            while elapsed_ns < requested_ns {
++                let dt_ns = target_ns.min(requested_ns - elapsed_ns);
++                if dt_ns == 0 || dt_ns % MINIMUM_COVERED_CARRIER_NS != 0 {
++                    return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
++                        SnowTerminalNumericsFailure::BelowCarrierDomain,
++                    ));
++                }
++                let dt = seconds_from_nanoseconds(dt_ns);
++                let at = seconds_from_nanoseconds(elapsed_ns);
++                let ordinal = u32::try_from(steps.len()).map_err(|_| {
++                    DirectSnowStage3EvaluationError::TerminalNumerics(
++                        SnowTerminalNumericsFailure::DomainOrNonFinite,
++                    )
++                })?;
++                crate::snow_accuracy_observer::count("cadence_endpoint_integrations");
++                if dt_ns == target_ns {
++                    crate::snow_accuracy_observer::count("cadence_target_interval");
++                }
++                let (flux, carrier_joint) = flux_integral(
++                    state,
++                    ledger,
++                    steps.len(),
++                    &joint,
++                    at,
++                    dt,
++                    CoveredTerminalTrialRoleV1::Root,
++                    ordinal,
++                )?;
++                let trial = Self::terminal_transition(state, flux)?;
++                let ending_joint = join_hydrology_ending(trial.state, carrier_joint.clone())?;
++                steps.push(TerminalAcceptedMicrostep {
++                    relative_start_ns: elapsed_ns,
++                    duration_ns: dt_ns,
++                    relative_start_s: at,
++                    duration_s: dt,
++                    beginning: state,
++                    ending: trial.state,
++                    ledger: trial.ledger,
++                    carrier_ending_joint: carrier_joint,
++                    hydrology_ending_joint: ending_joint.clone(),
++                });
++                last_beginning = state;
++                last_start_ns = elapsed_ns;
++                last = trial;
++                state = trial.state;
++                ledger = ledger.add(trial.ledger);
++                joint = ending_joint;
++                elapsed_ns += dt_ns;
++                if state.ice_kg_m2 == 0.0 {
++                    break;
++                }
++            }
++            let accepted = u32::try_from(steps.len()).map_err(|_| {
++                DirectSnowStage3EvaluationError::TerminalNumerics(
++                    SnowTerminalNumericsFailure::DomainOrNonFinite,
++                )
++            })?;
++            let result = Self::terminal_result_from_trial(
++                hour_index,
++                hour_offset_seconds,
++                requested_seconds,
++                start,
++                state,
++                ledger,
++                requested_ns,
++                elapsed_ns,
++                last_start_ns,
++                elapsed_ns,
++                last_beginning.ice_kg_m2,
++                state.ice_kg_m2,
++                last,
++                last,
++                accepted,
++                0,
++                0.0,
++            )?;
++            return Ok((result, joint, steps));
++        }
++
+         let total_quanta = requested_ns / MINIMUM_COVERED_CARRIER_NS;
+         if discrete_complete_endpoint {
++            crate::snow_accuracy_observer::count("terminal_direct_endpoint");
+             let (flux, carrier_joint) = flux_integral(
+                 start,
+                 TerminalLedger::default(),
+@@ -873,6 +989,7 @@
+                 }
+             }
+             if candidate_quanta == 1 {
++                crate::snow_accuracy_observer::count("terminal_floor_acceptance");
+                 let calls = M::provider_call_count(evidence);
+                 M::admission(
+                     evidence,
+@@ -969,6 +1086,7 @@
+                 );
+             }
+             if first.state.ice_kg_m2 <= 0.0 {
++                crate::snow_accuracy_observer::count("terminal_half1_disappearance_refinement");
+                 rejected_trials = next_attempt(rejected_trials)?;
+                 consecutive_rejections = next_attempt(consecutive_rejections)?;
+                 trial_quanta = first_quanta;
+@@ -1564,11 +1682,23 @@
+         assert_eq!(microsteps[0].duration_ns, 60_000_000_000);
+         assert_eq!(microsteps[1].relative_start_ns, 60_000_000_000);
+         assert_eq!(microsteps[1].duration_ns, 120_000_000_000);
+-        assert_eq!(microsteps[0].beginning.ice_kg_m2.to_bits(), 0.6_f64.to_bits());
+-        assert_eq!(microsteps[0].beginning.liquid_kg_m2.to_bits(), 0.0_f64.to_bits());
+-        assert_eq!(microsteps[0].beginning.cold_content_j_m2.to_bits(), 0.0_f64.to_bits());
++        assert_eq!(
++            microsteps[0].beginning.ice_kg_m2.to_bits(),
++            0.6_f64.to_bits()
++        );
++        assert_eq!(
++            microsteps[0].beginning.liquid_kg_m2.to_bits(),
++            0.0_f64.to_bits()
++        );
++        assert_eq!(
++            microsteps[0].beginning.cold_content_j_m2.to_bits(),
++            0.0_f64.to_bits()
++        );
+         assert_eq!(microsteps[0].ending, microsteps[1].beginning);
+-        assert_eq!(microsteps[1].ending.ice_kg_m2.to_bits(), result.end_ice_kg_m2.to_bits());
++        assert_eq!(
++            microsteps[1].ending.ice_kg_m2.to_bits(),
++            result.end_ice_kg_m2.to_bits()
++        );
+         assert_eq!(
+             microsteps[1].ending.liquid_kg_m2.to_bits(),
+             result.terminal_liquid_kg_m2.to_bits()
+@@ -2063,3 +2193,187 @@
+         assert!(medium_error / fine_error > 1.7);
+     }
+ }
++
++#[cfg(test)]
++#[test]
++#[ignore = "isolated P policy requires a fresh process"]
++fn snow_accuracy_actual_terminal_conservation_poison() {
++    use openwepp_land_surface_energy::snow_accuracy_policy::Policy;
++    let name = std::env::var("OPENWEPP_ACCURACY_POLICY").expect("explicit P policy");
++    Policy::parse(&name)
++        .expect("known policy")
++        .install()
++        .expect("immutable policy");
++    let state = TerminalState {
++        ice_kg_m2: 1.0,
++        liquid_kg_m2: 0.0,
++        cold_content_j_m2: 0.0,
++    };
++    let good = TerminalFluxIntegral {
++        complete_energy_j_m2: 0.1,
++        vapor_mass_exchange_kg_m2: 0.0,
++        shortwave_energy_j_m2: 0.1,
++        longwave_energy_j_m2: 0.0,
++        sensible_energy_j_m2: 0.0,
++        latent_energy_j_m2: 0.0,
++        advected_energy_j_m2: 0.0,
++        snow_soil_heat_energy_j_m2: 0.0,
++        external_liquid_kg_m2: 0.0,
++    };
++    let trial = Wb11HydrologyKernel::terminal_transition(state, good).expect("balanced input");
++    assert!((trial.state.liquid_kg_m2 * STAGE3_LATENT_HEAT_FUSION_J_KG - 0.1).abs() < 1e-12);
++    let poison = TerminalFluxIntegral {
++        complete_energy_j_m2: 0.11,
++        ..good
++    };
++    assert!(matches!(
++        Wb11HydrologyKernel::terminal_transition(state, poison),
++        Err(DirectSnowStage3EvaluationError::TerminalNumerics(
++            SnowTerminalNumericsFailure::Closure
++        ))
++    ));
++    let nonfinite = TerminalFluxIntegral {
++        complete_energy_j_m2: f64::NAN,
++        ..good
++    };
++    assert!(Wb11HydrologyKernel::terminal_transition(state, nonfinite).is_err());
++    let mut evidence = <NoEvidence as TerminalEvidenceMode<()>>::new_state();
++    let (mut event, _, _) =
++        Wb11HydrologyKernel::solve_terminal_enthalpy_event_with_evidence::<_, _, _, NoEvidence>(
++            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
++            0,
++            0.0,
++            60.0,
++            state,
++            (),
++            |_, _, _, _, _, _, _, _| Ok((good, ())),
++            |_, joint| Ok(joint),
++            false,
++            false,
++            &mut evidence,
++        )
++        .expect("one exact floor support");
++    assert!(
++        crate::snow_stage3_v11_attachment::canonical_terminal_event_result_digest(&event).is_ok()
++    );
++    event.maximum_scaled_error = None;
++    assert!(
++        crate::snow_stage3_v11_attachment::canonical_terminal_event_result_digest(&event).is_err()
++    );
++
++    assert_eq!(
++        state.ice_kg_m2, 1.0,
++        "failed immutable trial has no inventory mutation"
++    );
++}
++
++#[cfg(test)]
++#[test]
++#[ignore = "isolated C policy requires a fresh process"]
++fn snow_accuracy_cadence_actual_chronology_phase_and_null_lte() {
++    use openwepp_land_surface_energy::snow_accuracy_policy::Policy;
++    let policy =
++        Policy::parse(&std::env::var("OPENWEPP_ACCURACY_POLICY").expect("explicit C policy"))
++            .expect("known C policy");
++    policy.install().expect("immutable C policy");
++    let target = f64::from(policy.endpoint_interval_seconds().expect("C profile"));
++    let start = TerminalState {
++        ice_kg_m2: 0.5,
++        liquid_kg_m2: 0.0,
++        cold_content_j_m2: 0.0,
++    };
++    let flux = |energy| TerminalFluxIntegral {
++        complete_energy_j_m2: energy,
++        shortwave_energy_j_m2: energy,
++        longwave_energy_j_m2: 0.0,
++        sensible_energy_j_m2: 0.0,
++        latent_energy_j_m2: 0.0,
++        vapor_mass_exchange_kg_m2: 0.0,
++        advected_energy_j_m2: 0.0,
++        snow_soil_heat_energy_j_m2: 0.0,
++        external_liquid_kg_m2: 0.0,
++    };
++    let mut calls = Vec::new();
++    let mut evidence = <NoEvidence as TerminalEvidenceMode<()>>::new_state();
++    let (result, _, steps) =
++        Wb11HydrologyKernel::solve_terminal_enthalpy_event_with_evidence::<_, _, _, NoEvidence>(
++            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
++            0,
++            0.0,
++            1800.0,
++            start,
++            (),
++            |_, _, _, _, at, dt, role, _| {
++                calls.push((at, dt));
++                assert_eq!(role, CoveredTerminalTrialRoleV1::Root);
++                Ok((flux(0.0), ()))
++            },
++            |_, joint| Ok(joint),
++            false,
++            false,
++            &mut evidence,
++        )
++        .expect("constant state");
++    assert_eq!(calls.len(), if target == 600.0 { 3 } else { 1 });
++    let mut cursor = 0.0;
++    for (at, dt) in calls {
++        assert_eq!(at, cursor);
++        assert!(dt <= target);
++        cursor += dt;
++    }
++    assert_eq!(cursor, 1800.0);
++    assert_eq!(steps.len(), result.accepted_trials as usize);
++    assert_eq!(result.end_ice_kg_m2, 0.5);
++    assert_eq!(result.maximum_scaled_error, None);
++    assert_eq!(result.lte_coarse_ice_kg_m2, None);
++    let (event, _, _) =
++        Wb11HydrologyKernel::solve_terminal_enthalpy_event_with_evidence::<_, _, _, NoEvidence>(
++            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
++            0,
++            0.0,
++            1800.0,
++            start,
++            (),
++            |_, _, _, _, _, dt, _, _| Ok((flux(0.5 * 333_600.0 * dt / target), ())),
++            |_, joint| Ok(joint),
++            false,
++            false,
++            &mut evidence,
++        )
++        .expect("constant-energy melt");
++    assert!(event.event_occurred);
++    assert_eq!(event.evaluated_seconds, target);
++    assert_eq!(event.event_bracket_lower_seconds, 0.0);
++    assert_eq!(event.event_bracket_upper_seconds, target);
++    assert_eq!(event.event_bracket_width_seconds, target);
++    assert!((event.terminal_liquid_kg_m2 - 0.5).abs() < 1e-12);
++    assert!(event.energy_closure_residual_j_m2.abs() < 1e-6);
++    let digest = crate::snow_stage3_v11_attachment::canonical_terminal_event_result_digest;
++    assert!(digest(&event).is_ok());
++    let mut poison = event;
++    poison.event_bracket_width_seconds = 0.0;
++    assert!(digest(&poison).is_err());
++    poison = event;
++    poison.experimental_endpoint_interval_seconds = None;
++    assert!(digest(&poison).is_err());
++    poison = event;
++    poison.maximum_scaled_error = Some(0.0);
++    assert!(digest(&poison).is_err());
++
++    let invalid =
++        Wb11HydrologyKernel::solve_terminal_enthalpy_event_with_evidence::<_, _, _, NoEvidence>(
++            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
++            0,
++            0.0,
++            1800.0,
++            start,
++            (),
++            |_, _, _, _, _, _, _, _| Ok((flux(f64::NAN), ())),
++            |_, joint| Ok(joint),
++            false,
++            false,
++            &mut evidence,
++        );
++    assert!(invalid.is_err());
++    assert_eq!(start.ice_kg_m2, 0.5);
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs
+@@ -1,6 +1,7 @@
+ #[allow(clippy::wildcard_imports)]
+ use super::*;
+ 
++mod bulk;
+ mod evaluation;
+ mod liquid_routing;
+ mod persistent_state;
+@@ -285,33 +286,48 @@
+         let terminal_trace_support = terminal_trial_context
+             .as_ref()
+             .map(|(support, _, _, _)| *support);
+-        let summary = Self::evaluate_stage3_sequential_melt_shadow_with_evidence::<M>(
+-            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+-            tag,
+-            inputs,
+-            supports,
+-            state.layers.clone(),
+-            cold_content,
+-            terminal_request,
+-            state.detached_retained_liquid_kg_m2,
+-            boundary,
+-            terminal_trial_context.map(|(support, mode, joint, provider)| {
+-                (lane_id, support, mode, joint, state, provider)
+-            }),
+-            evidence,
+-        )?;
++        let bulk_selected = stage3_is_bulk_experiment_domain(state);
++        let summary = if bulk_selected {
++            let (support, _, joint, provider) =
++                terminal_trial_context.ok_or(DirectSnowStage3EvaluationError::TerminalCustody(
++                    "bulk missing real carrier context",
++                ))?;
++            Self::evaluate_bulk_summary(inputs, supports, state, support, joint, provider)?
++        } else {
++            Self::evaluate_stage3_sequential_melt_shadow_with_evidence::<M>(
++                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
++                tag,
++                inputs,
++                supports,
++                state.layers.clone(),
++                cold_content,
++                terminal_request,
++                state.detached_retained_liquid_kg_m2,
++                boundary,
++                terminal_trial_context.map(|(support, mode, joint, provider)| {
++                    (lane_id, support, mode, joint, state, provider)
++                }),
++                evidence,
++            )?
++        };
+         Self::validate_stage3_shadow_summary(
+             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+             &summary,
+         )?;
+-        let snowfall_kg_m2 = supports
+-            .iter()
+-            .map(|support| support.forcing.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3)
+-            .sum::<f64>();
+-        let external_liquid_kg_m2 = supports
+-            .iter()
+-            .map(|support| support.forcing.rain_m * STAGE3_RHO_WATER_KG_M3)
+-            .sum::<f64>();
++        let (snowfall_kg_m2, external_liquid_kg_m2) =
++            if let Some(material) = summary.experimental_bulk_material {
++                material
++            } else {
++                let snowfall_kg_m2 = supports
++                    .iter()
++                    .map(|support| support.forcing.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3)
++                    .sum::<f64>();
++                let external_liquid_kg_m2 = supports
++                    .iter()
++                    .map(|support| support.forcing.rain_m * STAGE3_RHO_WATER_KG_M3)
++                    .sum::<f64>();
++                (snowfall_kg_m2, external_liquid_kg_m2)
++            };
+         let deposition_kg_m2 = summary
+             .reconciliation
+             .tuples
+@@ -484,7 +500,7 @@
+                 );
+                 trace_state.cumulative_unresolved_liquid_kg_m2 = Self::terminal_cumulative_quantity(
+                     state.cumulative_unresolved_liquid_kg_m2,
+-                    if step.ending.ice_kg_m2 == 0.0 {
++                    if bulk_selected || step.ending.ice_kg_m2 == 0.0 {
+                         step.ending.liquid_kg_m2
+                     } else {
+                         0.0
+@@ -504,6 +520,16 @@
+                         state.cumulative_terminal_unallocated_energy_j_m2,
+                         trace_prefix.unallocated_energy_j_m2,
+                     );
++                if bulk_selected {
++                    trace_state.cumulative_snowfall_kg_m2 =
++                        state.cumulative_snowfall_kg_m2 + snowfall_kg_m2;
++                    trace_state.layers.clone_from(&summary.final_layers);
++                    trace_state.detached_retained_liquid_kg_m2 = 0.0;
++                }
++                if let Some((id, _)) = trace_state.experimental_accuracy {
++                    trace_state.experimental_accuracy =
++                        Some((id, bulk_selected && !trace_state.layers.is_empty()));
++                }
+                 trace_state.fingerprint = Self::stage3_persistent_state_fingerprint(&trace_state);
+                 Self::validate_stage3_persistent_state(&trace_state)?;
+                 covered_terminal_accepted_microsteps.push(CoveredTerminalAcceptedMicrostepV1 {
+@@ -553,6 +579,9 @@
+             )
+         })?;
+         next.layers.clone_from(&summary.final_layers);
++        if let Some((id, _)) = next.experimental_accuracy {
++            next.experimental_accuracy = Some((id, bulk_selected && !next.layers.is_empty()));
++        }
+         next.detached_retained_liquid_kg_m2 = 0.0;
+         next.cumulative_snowfall_kg_m2 += snowfall_kg_m2;
+         next.cumulative_external_liquid_kg_m2 += external_liquid_kg_m2;
+@@ -680,6 +709,15 @@
+             )
+             .into());
+         }
++        let policy = openwepp_land_surface_energy::snow_accuracy_policy::Policy::current();
++        if state.experimental_accuracy.map(|value| value.0) != policy.identity()
++            || (state.experimental_accuracy.is_some_and(|value| value.1)
++                && policy.bulk_threshold().is_none())
++        {
++            return Err(DirectSnowStage3EvaluationError::TerminalCustody(
++                "foreign experimental snow policy",
++            ));
++        }
+         if state.fingerprint != Self::stage3_persistent_state_fingerprint(state) {
+             return Err(Self::stage3_domain_error(
+                 phase,
+@@ -845,6 +883,11 @@
+                     DirectSnowTerminalEventModel::EnthalpyEventV1 => 1,
+                 },
+             );
++        }
++        if let Some((policy, bulk_active)) = state.experimental_accuracy {
++            fingerprint = Self::stage3_fnv1a_u64(fingerprint, 0x42554c4b504f4c31);
++            fingerprint = Self::stage3_fnv1a_u64(fingerprint, u64::from(policy));
++            fingerprint = Self::stage3_fnv1a_u64(fingerprint, u64::from(bulk_active));
+         }
+         for value in [
+             state.cumulative_snowfall_kg_m2,
+@@ -2058,7 +2101,17 @@
+         }
+         for hour_index in 0..24 {
+             let status = reconciliation.hourly_status[hour_index];
+-            let terminal_status = summary.terminal_event.is_some_and(|event| {
++            let bulk_status = summary.terminal_event.is_some_and(|event| {
++                event.experimental_bulk_policy.is_some()
++                    && event.experimental_bulk_policy == openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().identity()
++                    && summary.experimental_bulk_material.is_some()
++                    && hour_index == event.hour_index
++                    && status.evaluated
++                    && status.reason == "EXP-SNOW-ACCURACY-20260910-B"
++                    && summary.terminal_accepted_microsteps.len() == 1
++                    && count_by_hour[hour_index] == 0
++            });
++            let terminal_status = bulk_status || summary.terminal_event.is_some_and(|event| {
+                 (hour_index == event.hour_index
+                     && status.evaluated
+                     && status.reason == "terminal_enthalpy_event_v1")
+@@ -2434,11 +2487,7 @@
+         cold_content_by_layer: &mut Vec<f64>,
+         active_layer_count: usize,
+     ) -> usize {
+-        Self::coalesce_stage3_thermal_fragments(
+-            layers,
+-            cold_content_by_layer,
+-            active_layer_count,
+-        )
++        Self::coalesce_stage3_thermal_fragments(layers, cold_content_by_layer, active_layer_count)
+     }
+ 
+     fn stage3_control_volume_state(
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs
+@@ -48,15 +48,25 @@
+         .any(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m))
+ }
+ 
++pub(crate) fn stage3_is_bulk_experiment_domain(state: &DirectSnowStage3PersistentState) -> bool {
++    let policy=openwepp_land_surface_energy::snow_accuracy_policy::Policy::current();
++    let Some(threshold)=policy.bulk_threshold() else {return false};
++    let water=state.layers.iter().map(|l|1000.0*(l.mass_swe_m+l.liquid_water_m)).sum::<f64>()+state.detached_retained_liquid_kg_m2;
++    let active=state.experimental_accuracy.is_some_and(|(id,active)|Some(id)==policy.identity() && active);
++    state.experimental_accuracy.map(|x|x.0)==policy.identity()
++      && water.is_finite() && water>0.0 && water<=threshold*if active {1.2}else{1.0}
++      && stage3_has_represented_ice(state)
++}
++
+ pub(crate) fn stage3_is_resolved_thermal_domain(state: &DirectSnowStage3PersistentState) -> bool {
+-    stage3_total_represented_ice_swe_m(state) > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
++    !stage3_is_bulk_experiment_domain(state) && stage3_total_represented_ice_swe_m(state) > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
+ }
+ 
+ pub(crate) fn stage3_is_terminal_event_domain(state: &DirectSnowStage3PersistentState) -> bool {
+     state.schema_version == 2
+         && state.terminal_event_model == Some(DirectSnowTerminalEventModel::EnthalpyEventV1)
+         && stage3_has_represented_ice(state)
+-        && stage3_total_represented_ice_swe_m(state) <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
++        && (stage3_is_bulk_experiment_domain(state) || stage3_total_represented_ice_swe_m(state) <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M)
+ }
+ const STAGE3_MEDIUM_TIMESTEP_SECONDS: f64 = 900.0;
+ const STAGE3_SMALL_TIMESTEP_SECONDS: f64 = 60.0;
+@@ -792,12 +802,7 @@
+             }
+             let zero = iteration.hook.request.coupling_iteration == 0;
+             if zero != iteration.hook.comparisons.is_none()
+-                || zero
+-                    != iteration
+-                        .hook
+-                        .request
+-                        .ending_snow_hint
+-                        .is_none()
++                || zero != iteration.hook.request.ending_snow_hint.is_none()
+             {
+                 return Err("iteration zero optionality");
+             }
+@@ -832,9 +837,7 @@
+         let mut group_start = 0;
+         while group_start < self.coupling_iterations.len() {
+             let first = &self.coupling_iterations[group_start].hook;
+-            if first.request.coupling_iteration != 0
+-                || first.request.ending_snow_hint.is_some()
+-            {
++            if first.request.coupling_iteration != 0 || first.request.ending_snow_hint.is_some() {
+                 return Err("coupling group start");
+             }
+             let mut group_end = group_start + 1;
+@@ -1189,18 +1192,47 @@
+     previous: CoveredTerminalEndingSnowHintV1,
+     next: CoveredTerminalEndingSnowHintV1,
+ ) -> [(f64, f64, f64, f64, bool); 4] {
+-    let comparison = |left: f64, right: f64, tolerance: f64| {
+-        let difference = (left - right).abs();
+-        (left, right, difference, tolerance, difference <= tolerance)
+-    };
++    use openwepp_land_surface_energy::snow_accuracy_policy::{Policy, Quantity, within};
++    let comparison =
++        |left: f64, right: f64, baseline: f64, quantity: Quantity, key: &'static str| {
++            let (absolute, relative) = Policy::current().coefficients(quantity, baseline, 0.0, 1.0);
++            let tolerance = absolute + relative * left.abs().max(right.abs());
++            let difference = (left - right).abs();
++            let accepted = within(left, right, absolute, relative);
++            crate::snow_accuracy_observer::count(key);
++            if accepted && difference > baseline {
++                crate::snow_accuracy_observer::count("terminal_coupling_relaxed_only");
++            }
++            (left, right, difference, tolerance, accepted)
++        };
+     [
+-        comparison(previous.ice_kg_m2, next.ice_kg_m2, 1.0e-9),
+-        comparison(previous.liquid_kg_m2, next.liquid_kg_m2, 1.0e-9),
+-        comparison(previous.cold_content_j_m2, next.cold_content_j_m2, 1.0e-6),
++        comparison(
++            previous.ice_kg_m2,
++            next.ice_kg_m2,
++            1e-9,
++            Quantity::Mass,
++            "coupling_ice",
++        ),
++        comparison(
++            previous.liquid_kg_m2,
++            next.liquid_kg_m2,
++            1e-9,
++            Quantity::Mass,
++            "coupling_liquid",
++        ),
++        comparison(
++            previous.cold_content_j_m2,
++            next.cold_content_j_m2,
++            1e-6,
++            Quantity::Energy,
++            "coupling_energy",
++        ),
+         comparison(
+             previous.surface_temperature_c,
+             next.surface_temperature_c,
+-            1.0e-9,
++            1e-9,
++            Quantity::Temperature,
++            "coupling_temperature",
+         ),
+     ]
+ }
+@@ -1607,6 +1639,7 @@
+ 
+ #[derive(Clone, Debug)]
+ pub(crate) struct CoveredTerminalTrialTransitionV1 {
++    pub experimental_bulk: Option<crate::snow_accuracy_bulk::Receipt>,
+     pub boundary: Stage3SnowSurfaceBoundaryReceiptV1,
+     pub beginning_joint: CoveredTerminalJointTrialStateV1,
+     pub ending_joint: CoveredTerminalJointTrialStateV1,
+@@ -1818,6 +1851,7 @@
+ 
+ #[derive(Clone, Debug)]
+ struct Stage3ShadowSummary {
++    experimental_bulk_material: Option<(f64,f64)>,
+     tag: Stage3EvaluationTag,
+     source_fingerprint: u64,
+     forcing_fingerprint: u64,
+@@ -1864,6 +1898,7 @@
+ impl Stage3ShadowSummary {
+     const fn new(tag: Stage3EvaluationTag) -> Self {
+         Self {
++            experimental_bulk_material: None,
+             tag,
+             source_fingerprint: 0,
+             forcing_fingerprint: 0,
+--- a/crates/openwepp-hillslope-orchestrator/src/lib.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/lib.rs
+@@ -308,3 +308,6 @@
+     DirectWinterFrostOutcome, DirectWinterPublicationOutcome, DirectWinterSnowOutcome,
+     DirectWinterStorageOutcome,
+ };
++
++pub mod snow_accuracy_observer;
++pub mod snow_accuracy_bulk;
+--- /dev/null
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_accuracy_bulk.rs
+@@ -0,0 +1,316 @@
++//! Isolated EXP-SNOW-ACCURACY-20260910-B mathematics, real-carrier trial mathematics.
++//! Units: kg/m², J/m², metres, Kelvin, seconds; positive heat enters its owner.
++pub const FUSION: f64 = 333_600.0;
++pub const ICE_CAPACITY: f64 = 2_100.0;
++// Same liquid-reference heat capacity as terminal_liquid_thermodynamics_v1.
++pub const WATER_CAPACITY: f64 = 4_218.0;
++pub const FREEZE: f64 = 273.15;
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum Error {
++    Domain,
++    NoRepresentedIce,
++    VaporCapacity,
++    Phase,
++    Conservation,
++}
++#[derive(Clone, Copy, Debug, PartialEq)]
++pub struct State {
++    pub water: f64,
++    pub enthalpy: f64,
++    pub depth: f64,
++}
++#[derive(Clone, Copy, Debug)]
++pub struct Layer {
++    pub ice: f64,
++    pub liquid: f64,
++    pub cold: f64,
++    pub depth: f64,
++}
++#[derive(Clone, Copy, Debug, PartialEq)]
++pub struct Forcing {
++    pub seconds: f64,
++    pub solid: f64,
++    pub rain: f64,
++    pub vapor: f64,
++    pub shortwave: f64,
++    pub longwave: f64,
++    pub sensible: f64,
++    pub latent: f64,
++    pub precipitation_sensible: f64,
++    pub fresh_density: f64,
++    pub conductance: f64,
++    pub soil_temperature: f64,
++    pub soil_capacity: f64,
++}
++#[derive(Clone, Copy, Debug, PartialEq)]
++pub struct Outcome {
++    pub ending: State,
++    pub liquid_released: f64,
++    pub sensible_released: f64,
++    pub soil_heat: f64,
++    pub snow_heat: f64,
++    pub vapor_material: f64,
++    pub melt: f64,
++    pub refreeze: f64,
++}
++
++fn finite(values: &[f64]) -> bool {
++    values.iter().all(|x| x.is_finite())
++}
++fn close(error: f64, scale: f64, absolute: f64) -> bool {
++    error.is_finite() && scale.is_finite() && error.abs() <= absolute.max(1e-12 * scale)
++}
++
++pub fn select_bulk(active: bool, water: f64, threshold: f64) -> Result<bool, Error> {
++    if !finite(&[water, threshold]) || water < 0.0 || ![0.1, 1.0, 5.0].contains(&threshold) {
++        return Err(Error::Domain);
++    }
++    Ok(water > 0.0 && water <= threshold * if active { 1.2 } else { 1.0 })
++}
++
++pub fn from_layers(layers: &[Layer]) -> Result<State, Error> {
++    let mut s = State {
++        water: 0.0,
++        enthalpy: 0.0,
++        depth: 0.0,
++    };
++    for l in layers {
++        if !finite(&[l.ice, l.liquid, l.cold, l.depth])
++            || [l.ice, l.liquid, l.cold, l.depth].iter().any(|x| *x < 0.0)
++        {
++            return Err(Error::Domain);
++        }
++        s.water += l.ice + l.liquid;
++        s.enthalpy += FUSION * l.liquid - l.cold;
++        s.depth += l.depth;
++    }
++    if !finite(&[s.water, s.enthalpy, s.depth]) {
++        return Err(Error::Domain);
++    }
++    Ok(s)
++}
++
++// Complete equilibrium phase partition; positive sensible excess belongs to water.
++fn phase(water: f64, enthalpy: f64) -> Result<(f64, f64, f64, f64), Error> {
++    if !finite(&[water, enthalpy]) || water < 0.0 {
++        return Err(Error::Domain);
++    }
++    if water == 0.0 {
++        return if enthalpy == 0.0 {
++            Ok((0.0, 0.0, 0.0, 0.0))
++        } else {
++            Err(Error::Phase)
++        };
++    }
++    let fusion = FUSION * water;
++    if !fusion.is_finite() {
++        return Err(Error::Domain);
++    }
++    if enthalpy < 0.0 {
++        Ok((water, 0.0, -enthalpy, 0.0))
++    } else if enthalpy <= fusion {
++        let liquid = enthalpy / FUSION;
++        Ok((water - liquid, liquid, 0.0, 0.0))
++    } else {
++        Ok((0.0, water, 0.0, enthalpy - fusion))
++    }
++}
++
++/// One analytic piecewise implicit exchange. These are branches of one law,
++/// not iterative solvers or a nonconvergence fallback chain.
++fn paired_heat(w: f64, h: f64, f: Forcing) -> Result<f64, Error> {
++    let dg = f.seconds * f.conductance;
++    let delta = FREEZE - f.soil_temperature;
++    let threshold = FUSION * w;
++    let cold_a = ICE_CAPACITY * w;
++    let warm_a = WATER_CAPACITY * w;
++    let cold = dg * (cold_a * delta + h) / (cold_a + dg * (1.0 + cold_a / f.soil_capacity));
++    let plateau = dg * delta / (1.0 + dg / f.soil_capacity);
++    let warm =
++        dg * (warm_a * delta + h - threshold) / (warm_a + dg * (1.0 + warm_a / f.soil_capacity));
++    if !finite(&[cold, plateau, warm, threshold]) {
++        return Err(Error::Domain);
++    }
++    let q = if h - cold < 0.0 {
++        cold
++    } else if h - plateau >= 0.0 && h - plateau <= threshold {
++        plateau
++    } else if h - warm > threshold {
++        warm
++    } else {
++        return Err(Error::Phase);
++    };
++    let ending_temperature = f.soil_temperature + q / f.soil_capacity;
++    if !ending_temperature.is_finite() || ending_temperature <= 0.0 {
++        return Err(Error::Domain);
++    }
++    Ok(q)
++}
++
++pub fn advance(s: State, f: Forcing) -> Result<Outcome, Error> {
++    if !finite(&[
++        s.water,
++        s.enthalpy,
++        s.depth,
++        f.seconds,
++        f.solid,
++        f.rain,
++        f.vapor,
++        f.shortwave,
++        f.longwave,
++        f.sensible,
++        f.latent,
++        f.precipitation_sensible,
++        f.fresh_density,
++        f.conductance,
++        f.soil_temperature,
++        f.soil_capacity,
++    ]) || s.water < 0.0
++        || s.depth < 0.0
++        || f.seconds <= 0.0
++        || f.solid < 0.0
++        || f.rain < 0.0
++        || f.fresh_density <= 0.0
++        || f.conductance <= 0.0
++        || f.soil_temperature <= 0.0
++        || f.soil_capacity <= 0.0
++    {
++        return Err(Error::Domain);
++    }
++    let (initial_ice, initial_liquid, _, _) = phase(s.water, s.enthalpy)?;
++    if initial_ice == 0.0 || s.depth == 0.0 {
++        return Err(Error::NoRepresentedIce);
++    }
++    if f.vapor < -(initial_ice + f.solid) {
++        return Err(Error::VaporCapacity);
++    }
++    if (f.vapor == 0.0 && f.latent != 0.0)
++        || (f.vapor != 0.0 && (!((f.latent / f.vapor).is_finite()) || f.latent / f.vapor <= 0.0))
++    {
++        return Err(Error::Domain);
++    }
++    // No nonlinear temperature convergence: the bounded physical beginning
++    // inventory determines one lagged boundary temperature.
++    let lag = if s.enthalpy < 0.0 {
++        FREEZE + s.enthalpy / (ICE_CAPACITY * s.water)
++    } else {
++        FREEZE
++    };
++    if !lag.is_finite() || lag <= 0.0 {
++        return Err(Error::Domain);
++    }
++    let material = f.vapor * ICE_CAPACITY * (lag - FREEZE);
++    let water = s.water + f.solid + f.rain + f.vapor;
++    let external =
++        f.shortwave + f.longwave + f.sensible + f.latent + f.precipitation_sensible + material;
++    let h = s.enthalpy + external + FUSION * f.rain;
++    if water <= 0.0 {
++        return Err(Error::Phase);
++    }
++    let q = paired_heat(water, h, f)?;
++    let (ice, liquid, cold, sensible) = phase(water, h - q)?;
++    // A finite energy balance alone does not establish a physical state.
++    // Reject impossible cold inventories without clamping their enthalpy.
++    if ice > 0.0 && cold >= ICE_CAPACITY * ice * FREEZE {
++        return Err(Error::Domain);
++    }
++    let depth = if ice == 0.0 {
++        0.0
++    } else {
++        s.depth + f.solid / f.fresh_density
++    };
++    let ending = State {
++        water: ice,
++        enthalpy: -cold,
++        depth,
++    };
++    let m_error = ending.water + liquid - s.water - f.solid - f.rain - f.vapor;
++    let e_error =
++        ending.enthalpy + FUSION * liquid + sensible + q - s.enthalpy - external - FUSION * f.rain;
++    let m_scale = s.water + f.solid + f.rain + f.vapor.abs() + ending.water + liquid;
++    let e_scale = ending.enthalpy.abs()
++        + FUSION * liquid
++        + sensible
++        + q.abs()
++        + s.enthalpy.abs()
++        + external.abs()
++        + FUSION * f.rain;
++    if !finite(&[
++        ending.water,
++        ending.enthalpy,
++        ending.depth,
++        liquid,
++        sensible,
++        material,
++    ]) || !close(m_error, m_scale, 1e-12)
++        || !close(e_error, e_scale, 1e-6)
++    {
++        return Err(Error::Conservation);
++    }
++    Ok(Outcome {
++        ending,
++        liquid_released: liquid,
++        sensible_released: sensible,
++        soil_heat: q,
++        snow_heat: -q,
++        vapor_material: material,
++        melt: (liquid - initial_liquid - f.rain).max(0.0),
++        refreeze: (initial_liquid + f.rain - liquid).max(0.0),
++    })
++}
++
++#[derive(Clone, Copy, Debug, PartialEq)]
++pub struct Receipt {
++    pub policy: u8,
++    pub beginning: State,
++    pub forcing: Forcing,
++    pub outcome: Outcome,
++}
++impl Receipt {
++    pub fn canonical_bytes(&self) -> Result<Vec<u8>, Error> {
++        let policy = openwepp_land_surface_energy::snow_accuracy_policy::Policy::current();
++        if policy.bulk_threshold().is_none()
++            || policy.identity() != Some(self.policy)
++            || advance(self.beginning, self.forcing)? != self.outcome
++        {
++            return Err(Error::Conservation);
++        }
++        let mut bytes = b"EXP-SNOW-ACCURACY-20260910-B".to_vec();
++        bytes.push(self.policy);
++        let s = self.beginning;
++        let f = self.forcing;
++        let o = self.outcome;
++        for v in [
++            s.water,
++            s.enthalpy,
++            s.depth,
++            f.seconds,
++            f.solid,
++            f.rain,
++            f.vapor,
++            f.shortwave,
++            f.longwave,
++            f.sensible,
++            f.latent,
++            f.precipitation_sensible,
++            f.fresh_density,
++            f.conductance,
++            f.soil_temperature,
++            f.soil_capacity,
++            o.ending.water,
++            o.ending.enthalpy,
++            o.ending.depth,
++            o.liquid_released,
++            o.sensible_released,
++            o.soil_heat,
++            o.snow_heat,
++            o.vapor_material,
++            o.melt,
++            o.refreeze,
++        ] {
++            bytes.extend_from_slice(&v.to_bits().to_be_bytes());
++        }
++        Ok(bytes)
++    }
++}
+--- /dev/null
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_accuracy_observer.rs
+@@ -0,0 +1,87 @@
++//! Isolated experiment observation; never installed in primary runtime source.
++use serde_json::Value;
++use std::cell::RefCell;
++use std::collections::BTreeMap;
++use std::sync::Mutex;
++use std::sync::atomic::{AtomicBool, Ordering};
++static PHYSICAL: AtomicBool = AtomicBool::new(false);
++static LEDGER_OVERFLOW: AtomicBool = AtomicBool::new(false);
++static LEDGERS: Mutex<BTreeMap<String, Value>> = Mutex::new(BTreeMap::new());
++static POISONED: AtomicBool = AtomicBool::new(false);
++static COUNTS: Mutex<Option<BTreeMap<&'static str, u64>>> = Mutex::new(None);
++
++#[derive(Default)]
++struct Capture {
++    physical: bool,
++    rows: Vec<Value>,
++    overflow: bool,
++}
++thread_local! { static CAPTURE: RefCell<Capture> = RefCell::new(Capture::default()); }
++
++pub fn begin(physical: bool) {
++    POISONED.store(false, Ordering::Relaxed);
++    PHYSICAL.store(physical, Ordering::Relaxed);
++    LEDGER_OVERFLOW.store(false, Ordering::Relaxed);
++    if let Ok(mut ledgers) = LEDGERS.lock() {
++        ledgers.clear();
++    } else {
++        POISONED.store(true, Ordering::Relaxed);
++    }
++    if let Ok(mut counts) = COUNTS.lock() {
++        *counts = Some(BTreeMap::new());
++    } else {
++        POISONED.store(true, Ordering::Relaxed);
++    }
++    CAPTURE.with(|c| {
++        *c.borrow_mut() = Capture {
++            physical,
++            ..Capture::default()
++        }
++    });
++}
++pub fn physical_enabled() -> bool {
++    CAPTURE.with(|c| c.borrow().physical)
++}
++pub fn count(key: &'static str) {
++    if let Ok(mut slot) = COUNTS.lock() {
++        if let Some(counts) = slot.as_mut() {
++            *counts.entry(key).or_default() += 1;
++        }
++    } else {
++        POISONED.store(true, Ordering::Relaxed);
++    }
++}
++pub fn physical_global_enabled() -> bool {
++    PHYSICAL.load(Ordering::Relaxed)
++}
++pub fn ledger(key: String, row: Value) {
++    if let Ok(mut ledgers) = LEDGERS.lock() {
++        if let Some(existing) = ledgers.get(&key) {
++            if existing != &row {
++                POISONED.store(true, Ordering::Relaxed);
++            }
++        } else if ledgers.len() < 20_000 {
++            ledgers.insert(key, row);
++        } else {
++            LEDGER_OVERFLOW.store(true, Ordering::Relaxed);
++        }
++    } else {
++        POISONED.store(true, Ordering::Relaxed);
++    }
++}
++pub fn record(row: Value) {
++    CAPTURE.with(|c| {
++        let mut c = c.borrow_mut();
++        if c.rows.len() < 20_000 {
++            c.rows.push(row);
++        } else {
++            c.overflow = true;
++        }
++    });
++}
++pub fn finish() -> Value {
++    CAPTURE.with(|c| {
++        let c = std::mem::take(&mut *c.borrow_mut());
++        serde_json::json!({"schema":"snow_accuracy_observation_v2", "physical_enabled":c.physical, "counts": COUNTS.lock().ok().and_then(|mut slot|slot.take()), "physical": c.rows, "overflow": c.overflow || LEDGER_OVERFLOW.load(Ordering::Relaxed), "physical_ledgers": LEDGERS.lock().ok().map(|mut rows|std::mem::take(&mut *rows)), "counts_poisoned": POISONED.load(Ordering::Relaxed)})
++    })
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_owner_v4.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_owner_v4.rs
+@@ -289,6 +289,7 @@
+     fn state(lane_id: u32) -> DirectSnowStage3PersistentState {
+         let mut state = DirectSnowStage3PersistentState {
+             schema_version: 1,
++            experimental_accuracy: None,
+             terminal_event_model: None,
+             fingerprint: 0,
+             lane_id,
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs
+@@ -4,6 +4,31 @@
+     kind: crate::v9_real_consumer_shadow::AdaptiveDiscreteSurfaceKindV1,
+ ) -> bool {
+     kind != crate::v9_real_consumer_shadow::AdaptiveDiscreteSurfaceKindV1::ReceiptLineage
++}
++
++fn observe_accuracy_state(
++    time: ModelTimeNs,
++    consumer: &DirectV10RealConsumerShadow,
++    stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
++) -> Result<(), DirectSnowStage3V11AttachmentError> {
++    if crate::snow_accuracy_observer::physical_enabled() {
++        let comparison = consumer
++            .adaptive_complete_owner_comparison_v1(canonical_stage3_snow_owner_bytes(stage3)?)?;
++        let scalars = comparison
++            .scalars
++            .iter()
++            .map(|s| {
++                serde_json::json!({
++                    "owner": s.owner_id, "path": s.path, "value": s.value,
++                    "dimension": format!("{:?}", s.tolerance_authority.dimension)
++                })
++            })
++            .collect::<Vec<_>>();
++        crate::snow_accuracy_observer::record(
++            serde_json::json!({"time_ns": time.get().to_string(), "scalars": scalars}),
++        );
++    }
++    Ok(())
+ }
+ 
+ fn adaptive_complete_owner_error_v1(
+@@ -1981,6 +2006,7 @@
+             };
+         }
+         while clock.accepted_until() < prepared.support.end_ns() {
++            observe_accuracy_state(clock.accepted_until(), &consumer, &stage3)?;
+             let active_lanes = stage3
+                 .iter()
+                 .filter_map(|(lane, state)| {
+@@ -2523,6 +2549,7 @@
+                 );
+             }
+         }
++        observe_accuracy_state(clock.accepted_until(), &consumer, &stage3)?;
+         Ok(AdaptiveParentLoopOutcomeV1::Complete(Box::new(
+             AdaptiveParentExecutionStateV1 {
+                 prepared,
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs
+@@ -549,6 +549,7 @@
+     fn snow_free_state() -> DirectSnowStage3PersistentState {
+         let mut state = DirectSnowStage3PersistentState {
+             schema_version: 1,
++            experimental_accuracy: None,
+             terminal_event_model: None,
+             fingerprint: 0,
+             lane_id: 1,
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_tests.rs
+@@ -491,6 +491,7 @@
+         });
+         DirectSnowStage3PersistentState {
+             schema_version: 1,
++            experimental_accuracy: None,
+             terminal_event_model: None,
+             fingerprint: 0,
+             lane_id: 1,
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs
+@@ -1181,6 +1181,44 @@
+             .real_consumer
+             .accepted_publication_supports_for_day(day_index)?;
+         let publication_day = self.committed_publication_day(day_index)?;
++        if crate::snow_accuracy_observer::physical_enabled() {
++            let owners = receipt
++                .complete_owner_bytes
++                .iter()
++                .map(|(name, bytes)| {
++                    let value: serde_json::Value = serde_json::from_slice(bytes)
++                        .map_err(|_| qualification_error("accuracy daily owner JSON"))?;
++                    Ok((name.clone(), value))
++                })
++                .collect::<Result<BTreeMap<_, _>, DirectSnowStage3V11AttachmentError>>()?;
++            let snow: serde_json::Value = serde_json::from_slice(
++                &canonical_stage3_snow_owner_bytes(&self.committed.stage3_by_lane)?,
++            )
++            .map_err(|_| qualification_error("accuracy daily snow JSON"))?;
++            let transfers = supports
++                .iter()
++                .map(|support| {
++                    serde_json::json!({
++                        "support":support.support(), "receipt":support.receipt_sha256(),
++                        "beginning_owner":support.beginning_complete_owner_set_sha256(),
++                        "ending_owner":support.ending_complete_owner_set_sha256(),
++                        "snow_liquid_outputs":support.accepted_snow_liquid_outputs(),
++                        "ingress_receipts":support.ingress_receipts(),
++                        "ingress_ledgers":support.ingress_ledgers(),
++                        "surface_beginning":support.surface_beginning_state(),
++                        "surface_ending":support.surface_ending_state(),
++                        "water_uses":support.finalized_water_uses()
++                    })
++                })
++                .collect::<Vec<_>>();
++            crate::snow_accuracy_observer::record(serde_json::json!({
++                "kind":"accepted_day", "day_index":day_index,
++                "owners":owners,"snow":snow,"transfers":transfers,
++                "support_custody":receipt.coupled_subslabs.iter().filter_map(|r| r.support_liquid_custody_v2()).collect::<Vec<_>>(),
++                "terminal_receipts":receipt.terminal_events
++            }));
++        }
++
+         let events = self
+             .committed
+             .real_consumer
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_snow_enthalpy_carry.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_snow_enthalpy_carry.rs
+@@ -780,6 +780,7 @@
+     fn state(lane_id: u32, cold: f64, temperature_c: f64) -> DirectSnowStage3PersistentState {
+         DirectSnowStage3PersistentState {
+             schema_version: 2,
++            experimental_accuracy: None,
+             terminal_event_model: None,
+             fingerprint: u64::from(lane_id) + 1,
+             lane_id,
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_chronology.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_chronology.rs
+@@ -21,25 +21,155 @@
+     let mut bytes = b"OPENWEPP_STAGE3_TERMINAL_EVENT_RESULT_V1\0".to_vec();
+     bytes.push(0); // EnthalpyEventV1
+     bytes.push(u8::from(event.event_occurred));
+-    bytes.extend_from_slice(&u64::try_from(event.hour_index).map_err(|_| DirectSnowStage3V11AttachmentError::Identity("terminal event hour width"))?.to_be_bytes());
++    bytes.extend_from_slice(
++        &u64::try_from(event.hour_index)
++            .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("terminal event hour width"))?
++            .to_be_bytes(),
++    );
+     macro_rules! floats { ($($field:ident),+ $(,)?) => { $(bytes.extend_from_slice(&event.$field.to_bits().to_be_bytes());)+ }; }
+-    floats!(terminal_entry_offset_seconds, requested_seconds, entry_solid_precipitation_kg_m2,
+-        hour_offset_seconds, evaluated_seconds, unevaluated_seconds, start_ice_kg_m2,
+-        start_liquid_kg_m2, start_cold_content_j_m2, end_ice_kg_m2, terminal_liquid_kg_m2,
+-        end_cold_content_j_m2, complete_energy_j_m2, shortwave_energy_j_m2, longwave_energy_j_m2,
+-        sensible_energy_j_m2, latent_energy_j_m2, advected_energy_j_m2, snow_soil_heat_energy_j_m2,
+-        external_liquid_kg_m2, cold_energy_change_j_m2, refrozen_kg_m2, deposition_kg_m2,
+-        sublimation_kg_m2, melt_kg_m2, terminal_unallocated_energy_j_m2,
+-        solid_mass_closure_residual_kg_m2, liquid_mass_closure_residual_kg_m2,
+-        energy_closure_residual_j_m2, event_bracket_width_seconds, event_bracket_lower_seconds,
+-        event_bracket_upper_seconds, event_bracket_lower_solid_kg_m2, event_bracket_upper_solid_kg_m2,
+-        lte_coarse_ice_kg_m2, lte_fine_ice_kg_m2, lte_coarse_liquid_kg_m2,
+-        lte_fine_liquid_kg_m2, lte_coarse_cold_content_j_m2, lte_fine_cold_content_j_m2,
+-        lte_coarse_complete_energy_j_m2, lte_fine_complete_energy_j_m2,
+-        lte_coarse_unallocated_energy_j_m2, lte_fine_unallocated_energy_j_m2);
++    floats!(
++        terminal_entry_offset_seconds,
++        requested_seconds,
++        entry_solid_precipitation_kg_m2,
++        hour_offset_seconds,
++        evaluated_seconds,
++        unevaluated_seconds,
++        start_ice_kg_m2,
++        start_liquid_kg_m2,
++        start_cold_content_j_m2,
++        end_ice_kg_m2,
++        terminal_liquid_kg_m2,
++        end_cold_content_j_m2,
++        complete_energy_j_m2,
++        shortwave_energy_j_m2,
++        longwave_energy_j_m2,
++        sensible_energy_j_m2,
++        latent_energy_j_m2,
++        advected_energy_j_m2,
++        snow_soil_heat_energy_j_m2,
++        external_liquid_kg_m2,
++        cold_energy_change_j_m2,
++        refrozen_kg_m2,
++        deposition_kg_m2,
++        sublimation_kg_m2,
++        melt_kg_m2,
++        terminal_unallocated_energy_j_m2,
++        solid_mass_closure_residual_kg_m2,
++        liquid_mass_closure_residual_kg_m2,
++        energy_closure_residual_j_m2,
++        event_bracket_width_seconds,
++        event_bracket_lower_seconds,
++        event_bracket_upper_seconds,
++        event_bracket_lower_solid_kg_m2,
++        event_bracket_upper_solid_kg_m2
++    );
++    let method = event.experimental_endpoint_interval_seconds;
++    if method
++        != openwepp_land_surface_energy::snow_accuracy_policy::Policy::current()
++            .endpoint_interval_seconds()
++    {
++        return Err(DirectSnowStage3V11AttachmentError::Identity(
++            "experimental terminal method/policy mismatch",
++        ));
++    }
++    let bulk = event.experimental_bulk_policy;
++    if bulk.is_some_and(|id| {
++        Some(id) != openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().identity()
++    }) || (bulk.is_some()
++        && (method.is_some()
++            || openwepp_land_surface_energy::snow_accuracy_policy::Policy::current()
++                .bulk_threshold()
++                .is_none()))
++    {
++        return Err(DirectSnowStage3V11AttachmentError::Identity(
++            "bulk terminal policy",
++        ));
++    }
++    let approximate = method.is_some() || bulk.is_some();
++    if approximate {
++        let bound = method.map(f64::from).unwrap_or(event.requested_seconds);
++        let lower = event.event_bracket_lower_seconds;
++        let upper = event.event_bracket_upper_seconds;
++        let width = event.event_bracket_width_seconds;
++        if ![
++            lower,
++            upper,
++            width,
++            event.evaluated_seconds,
++            event.hour_offset_seconds,
++            event.terminal_entry_offset_seconds,
++        ]
++        .iter()
++        .all(|v| v.is_finite())
++            || lower < 0.0
++            || upper < lower
++            || width != (upper - lower)
++            || upper != event.evaluated_seconds
++            || width > bound
++            || event.hour_offset_seconds
++                != event.terminal_entry_offset_seconds + event.evaluated_seconds
++            || (event.event_occurred
++                && (width <= 0.0
++                    || event.event_bracket_lower_solid_kg_m2 <= 0.0
++                    || event.event_bracket_upper_solid_kg_m2 != 0.0))
++        {
++            return Err(DirectSnowStage3V11AttachmentError::Identity(
++                "approximate terminal interval bracket",
++            ));
++        }
++    } else if event.maximum_scaled_error.is_none() {
++        return Err(DirectSnowStage3V11AttachmentError::Identity(
++            "strict terminal maximum LTE absent",
++        ));
++    }
++    let lte_values = [
++        event.lte_coarse_ice_kg_m2,
++        event.lte_fine_ice_kg_m2,
++        event.lte_coarse_liquid_kg_m2,
++        event.lte_fine_liquid_kg_m2,
++        event.lte_coarse_cold_content_j_m2,
++        event.lte_fine_cold_content_j_m2,
++        event.lte_coarse_complete_energy_j_m2,
++        event.lte_fine_complete_energy_j_m2,
++        event.lte_coarse_unallocated_energy_j_m2,
++        event.lte_fine_unallocated_energy_j_m2,
++    ];
++    if approximate {
++        if lte_values.iter().any(Option::is_some) || event.maximum_scaled_error.is_some() {
++            return Err(DirectSnowStage3V11AttachmentError::Identity(
++                "approximate endpoint cannot claim embedded LTE",
++            ));
++        }
++        if let Some(id) = bulk {
++            bytes.extend_from_slice(b"EXP-SNOW-ACCURACY-20260910-B");
++            bytes.push(id);
++        } else if let Some(target) = method {
++            bytes.extend_from_slice(b"EXP-SNOW-ACCURACY-20260910-C");
++            bytes.extend_from_slice(&target.to_be_bytes());
++        }
++    } else {
++        for value in lte_values {
++            let value = value.ok_or(DirectSnowStage3V11AttachmentError::Identity(
++                "strict terminal LTE field absent",
++            ))?;
++            if !value.is_finite() {
++                return Err(DirectSnowStage3V11AttachmentError::Identity(
++                    "terminal LTE nonfinite",
++                ));
++            }
++            bytes.extend_from_slice(&value.to_bits().to_be_bytes());
++        }
++    }
+     bytes.extend_from_slice(&event.accepted_trials.to_be_bytes());
+     bytes.extend_from_slice(&event.rejected_trials.to_be_bytes());
+-    bytes.extend_from_slice(&event.maximum_scaled_error.to_bits().to_be_bytes());
++    if let Some(error) = event.maximum_scaled_error {
++        if !error.is_finite() || error < 0.0 {
++            return Err(DirectSnowStage3V11AttachmentError::Identity(
++                "terminal LTE nonfinite/negative",
++            ));
++        }
++        bytes.extend_from_slice(&error.to_bits().to_be_bytes());
++    }
+     Ok(digest_bytes(&bytes))
+ }
+ 
+@@ -188,18 +318,54 @@
+         Ok(framed_sha256(
+             "stage3-v11-terminal-physical-ledger-v1",
+             &[
+-                FramedField { tag: "support_start", value: &self.support.start_ns().get().to_be_bytes() },
+-                FramedField { tag: "support_end", value: &self.support.end_ns().get().to_be_bytes() },
+-                FramedField { tag: "event_results", value: self.event_result_set_sha256.as_bytes() },
+-                FramedField { tag: "proposal_core", value: self.proposal_core_sha256.as_bytes() },
+-                FramedField { tag: "accepted_event", value: self.accepted_event_receipt_sha256.as_bytes() },
+-                FramedField { tag: "accepted_event_ledger", value: self.accepted_event_ledger_sha256.as_bytes() },
+-                FramedField { tag: "parcel_set", value: self.produced_unconsumed_parcel_set_sha256.as_bytes() },
+-                FramedField { tag: "begin_owner_set", value: self.beginning_owner_set_sha256.as_bytes() },
+-                FramedField { tag: "end_owner_set", value: self.ending_owner_set_sha256.as_bytes() },
+-                FramedField { tag: "ending_snow_owner", value: self.ending_snow_owner_sha256.as_bytes() },
+-                FramedField { tag: "evaluated_seconds", value: &self.evaluated_seconds.to_bits().to_be_bytes() },
+-                FramedField { tag: "snow_soil_heat", value: &self.snow_soil_heat_j_m2.to_bits().to_be_bytes() },
++                FramedField {
++                    tag: "support_start",
++                    value: &self.support.start_ns().get().to_be_bytes(),
++                },
++                FramedField {
++                    tag: "support_end",
++                    value: &self.support.end_ns().get().to_be_bytes(),
++                },
++                FramedField {
++                    tag: "event_results",
++                    value: self.event_result_set_sha256.as_bytes(),
++                },
++                FramedField {
++                    tag: "proposal_core",
++                    value: self.proposal_core_sha256.as_bytes(),
++                },
++                FramedField {
++                    tag: "accepted_event",
++                    value: self.accepted_event_receipt_sha256.as_bytes(),
++                },
++                FramedField {
++                    tag: "accepted_event_ledger",
++                    value: self.accepted_event_ledger_sha256.as_bytes(),
++                },
++                FramedField {
++                    tag: "parcel_set",
++                    value: self.produced_unconsumed_parcel_set_sha256.as_bytes(),
++                },
++                FramedField {
++                    tag: "begin_owner_set",
++                    value: self.beginning_owner_set_sha256.as_bytes(),
++                },
++                FramedField {
++                    tag: "end_owner_set",
++                    value: self.ending_owner_set_sha256.as_bytes(),
++                },
++                FramedField {
++                    tag: "ending_snow_owner",
++                    value: self.ending_snow_owner_sha256.as_bytes(),
++                },
++                FramedField {
++                    tag: "evaluated_seconds",
++                    value: &self.evaluated_seconds.to_bits().to_be_bytes(),
++                },
++                FramedField {
++                    tag: "snow_soil_heat",
++                    value: &self.snow_soil_heat_j_m2.to_bits().to_be_bytes(),
++                },
+             ],
+         )?)
+     }
+@@ -229,7 +395,10 @@
+             value: candidate.event_result_digest.as_bytes(),
+         })
+         .collect::<Vec<_>>();
+-    Ok(framed_sha256("stage3-v11-terminal-event-result-set", &fields)?)
++    Ok(framed_sha256(
++        "stage3-v11-terminal-event-result-set",
++        &fields,
++    )?)
+ }
+ 
+ pub(crate) fn accepted_terminal_group_digest(
+@@ -250,8 +419,7 @@
+         || accepted.beginning_owner_set_digest() != ledger.beginning_owner_set_sha256
+         || accepted.ending_owner_set_digest() != ledger.ending_owner_set_sha256
+         || group.proposal_core_sha256 != Some(ledger.proposal_core_sha256)
+-        || terminal_event_result_set_digest(&group.candidates)?
+-            != ledger.event_result_set_sha256
++        || terminal_event_result_set_digest(&group.candidates)? != ledger.event_result_set_sha256
+     {
+         return Err(DirectSnowStage3V11AttachmentError::Identity(
+             "terminal accepted group cross-join",
+@@ -260,16 +428,46 @@
+     Ok(framed_sha256(
+         "stage3-v11-terminal-group-accepted-v2",
+         &[
+-            FramedField { tag: "preaccept", value: group.receipt_sha256.as_bytes() },
+-            FramedField { tag: "proposal", value: ledger.proposal_core_sha256.as_bytes() },
+-            FramedField { tag: "accepted_event", value: accepted.id().digest().as_bytes() },
+-            FramedField { tag: "accepted_event_ledger", value: accepted.ledger_digest().as_bytes() },
+-            FramedField { tag: "event_results", value: ledger.event_result_set_sha256.as_bytes() },
+-            FramedField { tag: "parcels", value: ledger.produced_unconsumed_parcel_set_sha256.as_bytes() },
+-            FramedField { tag: "begin_owner_set", value: ledger.beginning_owner_set_sha256.as_bytes() },
+-            FramedField { tag: "end_owner_set", value: ledger.ending_owner_set_sha256.as_bytes() },
+-            FramedField { tag: "ending_snow_owner", value: ledger.ending_snow_owner_sha256.as_bytes() },
+-            FramedField { tag: "terminal_physical_ledger", value: ledger.receipt_sha256.as_bytes() },
++            FramedField {
++                tag: "preaccept",
++                value: group.receipt_sha256.as_bytes(),
++            },
++            FramedField {
++                tag: "proposal",
++                value: ledger.proposal_core_sha256.as_bytes(),
++            },
++            FramedField {
++                tag: "accepted_event",
++                value: accepted.id().digest().as_bytes(),
++            },
++            FramedField {
++                tag: "accepted_event_ledger",
++                value: accepted.ledger_digest().as_bytes(),
++            },
++            FramedField {
++                tag: "event_results",
++                value: ledger.event_result_set_sha256.as_bytes(),
++            },
++            FramedField {
++                tag: "parcels",
++                value: ledger.produced_unconsumed_parcel_set_sha256.as_bytes(),
++            },
++            FramedField {
++                tag: "begin_owner_set",
++                value: ledger.beginning_owner_set_sha256.as_bytes(),
++            },
++            FramedField {
++                tag: "end_owner_set",
++                value: ledger.ending_owner_set_sha256.as_bytes(),
++            },
++            FramedField {
++                tag: "ending_snow_owner",
++                value: ledger.ending_snow_owner_sha256.as_bytes(),
++            },
++            FramedField {
++                tag: "terminal_physical_ledger",
++                value: ledger.receipt_sha256.as_bytes(),
++            },
+         ],
+     )?)
+ }
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+@@ -388,9 +388,7 @@
+         use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
+         let bucket = match phase {
+             "terminal candidate setup" => Bucket::TerminalSetup,
+-            "terminal provider custody" | "terminal provider retention" => {
+-                Bucket::TerminalCustody
+-            }
++            "terminal provider custody" | "terminal provider retention" => Bucket::TerminalCustody,
+             "terminal provider projection" => Bucket::TerminalProjection,
+             "terminal provider carrier" => Bucket::TerminalCarrier,
+             _ => Bucket::OtherNamed,
+@@ -1199,7 +1197,14 @@
+             "adaptive preterminal V2 accepted snow-owner digest",
+         ),
+     ];
++    let receiver_bridge = experimental_bulk_receiver_owner_bridge_v1(endpoint, receipt)?;
+     for (owner_id, expected_digest, mismatch) in expected_owner_digests {
++        let expected_digest = if let Some((before, after)) = receiver_bridge.get(owner_id) {
++            if digest_bytes(before) != expected_digest {
++                return Err(DirectSnowStage3V11AttachmentError::Identity("bulk V2 receiver predecessor owner"));
++            }
++            digest_bytes(after)
++        } else { expected_digest };
+         let envelope = installed_owner_envelopes.get(owner_id).ok_or(
+             DirectSnowStage3V11AttachmentError::Identity(
+                 "adaptive preterminal V2 installed owner topology",
+@@ -1564,12 +1569,19 @@
+                             == crate::snow_stage3_v11_attachment::Stage3PrecipitationSourceV1::AtmosphericGroundSnow
+                         && parcel.mass_kg_m2_tile_ground > 0.0
+                 });
+-                replay &= replay_preterminal_microsteps_before_terminal_localization_v1(
+-                    event.event_occurred,
+-                    result.covered_terminal_accepted_microsteps.len(),
+-                    forcing_snowfall_m,
+-                    sealed_positive_solid_parcel,
+-                )?;
++                if event.experimental_bulk_policy.is_some() {
++                    replay &= !event.event_occurred
++                        && result.covered_terminal_accepted_microsteps.len() == 1
++                        && step.support.start_ns() == prepared.support.start_ns()
++                        && step.support.duration_s_bits() == event.evaluated_seconds.to_bits();
++                } else {
++                    replay &= replay_preterminal_microsteps_before_terminal_localization_v1(
++                        event.event_occurred,
++                        result.covered_terminal_accepted_microsteps.len(),
++                        forcing_snowfall_m,
++                        sealed_positive_solid_parcel,
++                    )?;
++                }
+             }
+             replay
+         };
+@@ -1607,13 +1619,19 @@
+         if !event.event_occurred {
+             continue;
+         }
+-        let candidate_offsets = localized_terminal_candidate_offsets_v1(
+-            event.terminal_entry_offset_seconds,
+-            event.evaluated_seconds,
+-            event.hour_offset_seconds,
+-            event.event_bracket_lower_seconds,
+-            event.event_bracket_upper_seconds,
+-        )
++        let candidate_offsets = if event.experimental_endpoint_interval_seconds.is_some()
++            || event.experimental_bulk_policy.is_some()
++        {
++            Some([event.hour_offset_seconds; 3])
++        } else {
++            localized_terminal_candidate_offsets_v1(
++                event.terminal_entry_offset_seconds,
++                event.evaluated_seconds,
++                event.hour_offset_seconds,
++                event.event_bracket_lower_seconds,
++                event.event_bracket_upper_seconds,
++            )
++        }
+         .ok_or(DirectSnowStage3V11AttachmentError::Terminal(
+             "terminal discovery relative chronology",
+         ))?;
+@@ -2805,7 +2823,11 @@
+         .is_some();
+     let mut parent_after_segment = parent;
+     let terminal_lanes = terminal_events.keys().copied().collect::<BTreeSet<_>>();
+-    let post_support_liquid_receiver = if stage3_covered_native_inactive {
++    let post_support_liquid_receiver = if stage3_covered_native_inactive
++        && openwepp_land_surface_energy::snow_accuracy_policy::Policy::current()
++            .bulk_threshold()
++            .is_none()
++    {
+         None
+     } else {
+         consume_positive_support_snow_liquid_v1(
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_preterminal_replay.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_preterminal_replay.rs
+@@ -317,10 +317,14 @@
+             crate::v9_real_consumer_shadow::DirectSoilThermalReadView::V1(_),
+             crate::v9_real_consumer_shadow::DirectSoilThermalReadView::V1(_),
+         ) => {
+-            // The historical V1 endpoint is itself the accepted-owner
+-            // authority. Preserve its exact whole-map comparison unchanged.
+-            if endpoint.ending.shadow().canonical_owner_state_bytes()?
+-                != next_consumer.canonical_owner_state_bytes()?
++            let mut expected = endpoint.ending.shadow().canonical_owner_state_bytes()?;
++            for (owner, (before, after)) in experimental_bulk_receiver_owner_bridge_v1(&endpoint, &receipt)? {
++                if expected.get(owner) != Some(&before) {
++                    return Err(DirectSnowStage3V11AttachmentError::Identity("bulk receiver predecessor owner"));
++                }
++                expected.insert(owner.to_owned(), after);
++            }
++            if expected != next_consumer.canonical_owner_state_bytes()?
+             {
+                 return Err(DirectSnowStage3V11AttachmentError::Terminal(
+                     "adaptive preterminal carrier-owner installation divergence",
+@@ -376,3 +380,33 @@
+         Ok(PreterminalReplayStepOutcomeV1::Continue(state))
+     }
+ }
++
++// A positive-support bulk drainage event changes exactly two physical owners.
++// Validate the complete typed transfer before replacing their pre-event bytes.
++fn experimental_bulk_receiver_owner_bridge_v1(
++    endpoint: &ExactCoveredTerminalEndpointV1,
++    receipt: &Stage3CoupledSubslabReceiptV1,
++) -> Result<BTreeMap<&'static str, (Vec<u8>, Vec<u8>)>, DirectSnowStage3V11AttachmentError> {
++    let mut result = BTreeMap::new();
++    if openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().bulk_threshold().is_none() {
++        return Ok(result);
++    }
++    receipt.validate_support_liquid_custody_v2()?;
++    let Some(custody) = receipt.support_liquid_custody_v2() else { return Ok(result); };
++    let configuration = endpoint.ending.shadow().surface_configuration();
++    let surface_before = custody.surface_beginning_state.canonical_bytes(configuration)
++        .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("bulk receiver surface beginning bytes"))?;
++    let surface_after = custody.surface_ending_state.canonical_bytes(configuration)
++        .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("bulk receiver surface ending bytes"))?;
++    let lse_before = serde_json::to_vec(&custody.lse_beginning_state)
++        .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("bulk receiver LSE beginning bytes"))?;
++    let lse_after = serde_json::to_vec(&custody.lse_ending_state)
++        .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("bulk receiver LSE ending bytes"))?;
++    if digest_bytes(&surface_before) != receipt.owner_join.surface_liquid_owner_sha256
++        || digest_bytes(&lse_before) != receipt.owner_join.land_surface_energy_owner_sha256 {
++        return Err(DirectSnowStage3V11AttachmentError::Identity("bulk receiver pre-event owner digest"));
++    }
++    result.insert("surface_liquid", (surface_before, surface_after));
++    result.insert("land_surface_energy", (lse_before, lse_after));
++    Ok(result)
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs
+@@ -44,8 +44,8 @@
+         Self::SpecificHumidity,
+     ];
+ 
+-    const fn tolerance(self) -> (f64, f64) {
+-        match self {
++    fn tolerance(self) -> (f64, f64) {
++        let baseline = match self {
+             Self::SnowTemperature => (1.0e-5, 1.0e-9),
+             Self::TopSoilTemperature => (1.0e-8, 0.0),
+             Self::HeatFlux => (1.0e-5, 1.0e-8),
+@@ -55,7 +55,19 @@
+             Self::Density => (1.0e-6, 0.0),
+             Self::Thickness => (1.0e-9, 1.0e-9),
+             Self::SpecificHumidity => (1.0e-12, 1.0e-8),
+-        }
++        };
++        use openwepp_land_surface_energy::snow_accuracy_policy::{
++            Policy, Quantity, support_seconds,
++        };
++        let quantity = match self {
++            Self::SnowTemperature | Self::TopSoilTemperature => Quantity::Temperature,
++            Self::SnowWater => Quantity::Mass,
++            Self::Energy => Quantity::Energy,
++            Self::HeatFlux => Quantity::HeatFlux,
++            Self::VaporFlux => Quantity::VaporFlux,
++            Self::Density | Self::Thickness | Self::SpecificHumidity => return baseline,
++        };
++        Policy::current().coefficients(quantity, baseline.0, baseline.1, support_seconds())
+     }
+ }
+ 
+@@ -382,8 +394,24 @@
+         return false;
+     }
+     let (absolute, relative) = class.tolerance();
+-    (candidate - mapped).abs()
+-        <= scale.multiplier() * (absolute + relative * candidate.abs().max(mapped.abs()))
++    let accepted = (candidate - mapped).abs()
++        <= scale.multiplier() * (absolute + relative * candidate.abs().max(mapped.abs()));
++    let key = match class {
++        CanonicalCoveredToleranceClassV1::SnowTemperature => "canonical_snow_temperature_fail",
++        CanonicalCoveredToleranceClassV1::TopSoilTemperature => "canonical_soil_temperature_fail",
++        CanonicalCoveredToleranceClassV1::HeatFlux => "canonical_heat_flux_fail",
++        CanonicalCoveredToleranceClassV1::VaporFlux => "canonical_vapor_flux_fail",
++        CanonicalCoveredToleranceClassV1::SnowWater => "canonical_snow_water_fail",
++        CanonicalCoveredToleranceClassV1::Energy => "canonical_energy_fail",
++        CanonicalCoveredToleranceClassV1::Density => "canonical_density_fail",
++        CanonicalCoveredToleranceClassV1::Thickness => "canonical_thickness_fail",
++        CanonicalCoveredToleranceClassV1::SpecificHumidity => "canonical_specific_humidity_fail",
++    };
++    crate::snow_accuracy_observer::count("canonical_continuous_comparisons");
++    if !accepted {
++        crate::snow_accuracy_observer::count(key);
++    }
++    accepted
+ }
+ 
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+@@ -1392,25 +1420,7 @@
+             let precipitation = phase.precipitation_sets().get(lane_id).ok_or(
+                 DirectV11RealConsumerError::Identity("canonical covered precipitation lane"),
+             )?;
+-            let mut liquid = 0.0;
+-            let mut solid = 0.0;
+-            for parcel in &precipitation.parcels {
+-                let fraction = precipitation
+-                    .destinations
+-                    .get(parcel.destination_topology_index as usize)
+-                    .ok_or(DirectV11RealConsumerError::Identity(
+-                        "canonical covered precipitation destination",
+-                    ))?
+-                    .fraction_of_ofe;
+-                match parcel.phase {
+-                    Stage3PrecipitationPhaseV1::Solid => {
+-                        solid += fraction * parcel.mass_kg_m2_tile_ground;
+-                    }
+-                    Stage3PrecipitationPhaseV1::Liquid => {
+-                        liquid += fraction * parcel.mass_kg_m2_tile_ground;
+-                    }
+-                }
+-            }
++            let (liquid, solid) = precipitation_phase_masses_v1(precipitation)?;
+             let (rain_m, snowfall_m, active_precipitation_m) =
+                 reconstruct_stage3_phase_forcing_v1(liquid, solid)?;
+             forcing.forcing.rain_m = rain_m;
+@@ -1894,6 +1904,11 @@
+     ) -> Result<V11ImportedV10SegmentOutput, DirectV11RealConsumerError> {
+         #[cfg(test)]
+         let _solve_termination = begin_canonical_covered_solve_termination_guard_v1();
++        #[allow(clippy::cast_precision_loss)]
++        let seconds = input.support.duration_ns() as f64 / 1_000_000_000.0;
++        let _accuracy_support =
++            openwepp_land_surface_energy::snow_accuracy_policy::SupportScope::new(seconds)
++                .map_err(DirectV11RealConsumerError::Identity)?;
+         let tolerance_scale = take_canonical_covered_tolerance_scale_v1();
+         let immutable_stack = self.clone();
+         let initial_candidates = immutable_stack.canonical_covered_initial_candidates_v1(input)?;
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
+@@ -1515,6 +1515,27 @@
+                 DirectV11RealConsumerError::from_stage3_physical_custody(&error)
+             })?;
+         }
++        let destination_receipts = carrier_receipts
++            .iter()
++            .map(|(key, value)| (key.clone(), value.diagnostic_sha256))
++            .chain(open_diagnostics)
++            .collect::<BTreeMap<_, _>>();
++        let mut corrected = evidence.corrected_boundaries;
++        for (destination, boundary) in open_boundaries {
++            corrected.insert(destination, boundary);
++        }
++        #[cfg(test)]
++        if canonical_covered_parity_poison_selected_for_current_map_v1(
++            CanonicalCoveredPhysicalParityPoisonV1::LowerBoundary,
++        ) || canonical_covered_parity_poison_selected_for_current_map_v1(
++            CanonicalCoveredPhysicalParityPoisonV1::LowerBoundaryAndV8Persistent,
++        ) {
++            for boundary in corrected.values_mut() {
++                boundary.latent_heat_j_kg = f64::NAN;
++            }
++        }
++        let terms =
++            self.lane_stage3_terms_from_boundaries(&destination_receipts, &corrected, interval_s)?;
+         let lane_states = snow_boundary_state.lane_states(request);
+         if lane_states.is_empty() {
+             return Err(DirectV11RealConsumerError::Identity(
+@@ -1556,31 +1577,116 @@
+             let stage3_inputs = self.stage3_inputs_by_lane.get(lane_id).ok_or(
+                 DirectV11RealConsumerError::Identity("covered physical Stage-3 inputs"),
+             )?;
+-            let trial = physical_outcome_ledger::evaluate_terminal_snow_bottom_soil_trial_v1(
+-                &physical_outcome_ledger::TerminalSnowBottomSoilTrialInputsV1 {
+-                    support: request.support,
+-                    lane_id: *lane_id,
+-                    ofe_id: &ofe_id,
+-                    canonical_source_sha256: child.receipt_sha256,
+-                    ice_kg_m2: lane.ice_kg_m2,
+-                    liquid_kg_m2: lane.liquid_kg_m2,
+-                    cold_content_j_m2: lane.cold_content_j_m2,
+-                    depth_m: lane.snow_depth_m,
+-                    density_kg_m3: lane.snow_density_kg_m3,
+-                    temperature_k: lane.surface_temperature_c + 273.15,
+-                    atmospheric_pressure_pa: stage3_inputs
+-                        .surface_energy_options
+-                        .atmospheric_pressure_pa,
+-                    first_soil_configuration: configured_top,
+-                    beginning_soil_owner_id: beginning_soil.owner_id,
+-                    beginning_soil_state_sha256: beginning_soil.state_sha256,
+-                    transaction_id: evidence.transaction_id,
+-                    beginning_first_soil: beginning_soil_top,
+-                },
+-            )
+-            .map_err(|_| {
+-                DirectV11RealConsumerError::Identity("covered physical terminal snow-soil trial")
+-            })?;
++            let bulk_forcing = if beginning
++                .stage3_by_lane
++                .get(lane_id)
++                .is_some_and(crate::hydrology::stage3_is_bulk_experiment_domain)
++            {
++                let lane_terms = terms
++                    .get(lane_id)
++                    .ok_or(DirectV11RealConsumerError::Identity("bulk carrier terms"))?;
++                let precipitation = evidence
++                    .precipitation_sets
++                    .get(lane_id)
++                    .ok_or(DirectV11RealConsumerError::Identity("bulk precipitation"))?;
++                let (_, advection) =
++                    reconstruct_precipitation_mass_and_advected_heat(precipitation).map_err(
++                        |error| DirectV11RealConsumerError::from_stage3_physical_custody(&error),
++                    )?;
++                let (liquid, solid) = precipitation_phase_masses_v1(precipitation)?;
++                let (sensible, vapor, latent) = outward_snow_fluxes_to_stage3(
++                    lane_terms.sensible_to_canopy_air_w_m2,
++                    lane_terms.vapor_to_canopy_air_kg_m2_s,
++                    lane_terms.latent_energy_to_canopy_air_j_m2,
++                    interval_s,
++                );
++                Some((
++                    crate::snow_accuracy_bulk::Forcing {
++                        seconds: interval_s,
++                        solid,
++                        rain: liquid,
++                        vapor,
++                        shortwave: lane_terms.snow_absorbed_shortwave_w_m2 * interval_s,
++                        longwave: lane_terms.snow_net_longwave_w_m2 * interval_s,
++                        sensible,
++                        latent,
++                        precipitation_sensible: advection,
++                        fresh_density: stage3_inputs.newsnw_kg_m3,
++                        conductance: 1.0,
++                        soil_temperature: beginning_soil_top.temperature_k(),
++                        soil_capacity: configured_top.areal_heat_capacity_j_m2_k,
++                    },
++                    {
++                        let source = beginning
++                            .stage3_by_lane
++                            .get(lane_id)
++                            .ok_or(DirectV11RealConsumerError::Identity("bulk original snow"))?;
++                        let ice = 1000.0 * source.layers.iter().map(|l| l.mass_swe_m).sum::<f64>();
++                        let liquid = 1000.0
++                            * source.layers.iter().map(|l| l.liquid_water_m).sum::<f64>()
++                            + source.detached_retained_liquid_kg_m2;
++                        let cold = source
++                            .layers
++                            .iter()
++                            .map(|l| l.cold_content_j_m2)
++                            .sum::<f64>();
++                        crate::snow_accuracy_bulk::State {
++                            water: ice + liquid,
++                            enthalpy: 333600.0 * liquid - cold,
++                            depth: source.layers.iter().map(|l| l.thickness_m).sum::<f64>(),
++                        }
++                    },
++                ))
++            } else {
++                None
++            };
++            let trial =
++                physical_outcome_ledger::evaluate_terminal_snow_bottom_soil_trial_with_bulk_v1(
++                    &physical_outcome_ledger::TerminalSnowBottomSoilTrialInputsV1 {
++                        support: request.support,
++                        lane_id: *lane_id,
++                        ofe_id: &ofe_id,
++                        canonical_source_sha256: child.receipt_sha256,
++                        ice_kg_m2: lane.ice_kg_m2,
++                        liquid_kg_m2: lane.liquid_kg_m2,
++                        cold_content_j_m2: lane.cold_content_j_m2,
++                        depth_m: lane.snow_depth_m,
++                        density_kg_m3: lane.snow_density_kg_m3,
++                        temperature_k: lane.surface_temperature_c + 273.15,
++                        atmospheric_pressure_pa: stage3_inputs
++                            .surface_energy_options
++                            .atmospheric_pressure_pa,
++                        first_soil_configuration: configured_top,
++                        beginning_soil_owner_id: beginning_soil.owner_id,
++                        beginning_soil_state_sha256: beginning_soil.state_sha256,
++                        transaction_id: evidence.transaction_id,
++                        beginning_first_soil: beginning_soil_top,
++                    },
++                    bulk_forcing,
++                )
++                .map_err(|error| match error {
++                    physical_outcome_ledger::Stage3PhysicalOutcomeLedgerError::Bulk(reason) => {
++                        let detail = match reason {
++                            crate::snow_accuracy_bulk::Error::Domain => "bulk domain subdivision",
++                            crate::snow_accuracy_bulk::Error::VaporCapacity => {
++                                "bulk vapor exhaustion subdivision"
++                            }
++                            crate::snow_accuracy_bulk::Error::Phase => "bulk phase subdivision",
++                            crate::snow_accuracy_bulk::Error::NoRepresentedIce => {
++                                "bulk missing ice subdivision"
++                            }
++                            crate::snow_accuracy_bulk::Error::Conservation => {
++                                return DirectV11RealConsumerError::Identity(
++                                    "bulk accounting failure",
++                                );
++                            }
++                        };
++                        DirectV11RealConsumerError::AdaptiveRefinement(detail)
++                    }
++                    _ => DirectV11RealConsumerError::Identity(
++                        "covered physical terminal snow-soil trial",
++                    ),
++                })?;
+             #[cfg(test)]
+             let mut trial = trial;
+             #[cfg(test)]
+@@ -1699,27 +1805,6 @@
+                 soil_candidate,
+                 soil_continuation,
+             );
+-        let destination_receipts = carrier_receipts
+-            .iter()
+-            .map(|(key, value)| (key.clone(), value.diagnostic_sha256))
+-            .chain(open_diagnostics)
+-            .collect::<BTreeMap<_, _>>();
+-        let mut corrected = evidence.corrected_boundaries;
+-        for (destination, boundary) in open_boundaries {
+-            corrected.insert(destination, boundary);
+-        }
+-        #[cfg(test)]
+-        if canonical_covered_parity_poison_selected_for_current_map_v1(
+-            CanonicalCoveredPhysicalParityPoisonV1::LowerBoundary,
+-        ) || canonical_covered_parity_poison_selected_for_current_map_v1(
+-            CanonicalCoveredPhysicalParityPoisonV1::LowerBoundaryAndV8Persistent,
+-        ) {
+-            for boundary in corrected.values_mut() {
+-                boundary.latent_heat_j_kg = f64::NAN;
+-            }
+-        }
+-        let terms =
+-            self.lane_stage3_terms_from_boundaries(&destination_receipts, &corrected, interval_s)?;
+         let mut boundaries_by_lane = BTreeMap::new();
+         for lane_id in lane_states.keys() {
+             let lane_terms = terms
+@@ -2182,6 +2267,7 @@
+         ending_candidates.terminal_snow_soil_trial_receipt =
+             Some(terminal_soil_trial.receipt.clone());
+         let transition = Box::new(CoveredTerminalTrialTransitionV1 {
++            experimental_bulk: terminal_soil_trial.experimental_bulk,
+             boundary: *boundary,
+             beginning_joint: beginning.joint.clone(),
+             ending_joint: ending_candidates.joint.clone(),
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs
+@@ -1232,3 +1232,20 @@
+         Ok(output)
+     }
+ }
++
++// Shared canonical parcel order and area weighting for ordinary and bulk paths.
++fn precipitation_phase_masses_v1(
++    precipitation: &Stage3PrecipitationPhaseParcelSetV1,
++) -> Result<(f64, f64), DirectV11RealConsumerError> {
++    let mut liquid = 0.0;
++    let mut solid = 0.0;
++    for parcel in &precipitation.parcels {
++        let fraction = precipitation.destinations.get(parcel.destination_topology_index as usize)
++            .ok_or(DirectV11RealConsumerError::Identity("canonical covered precipitation destination"))?.fraction_of_ofe;
++        match parcel.phase {
++            Stage3PrecipitationPhaseV1::Solid => solid += fraction * parcel.mass_kg_m2_tile_ground,
++            Stage3PrecipitationPhaseV1::Liquid => liquid += fraction * parcel.mass_kg_m2_tile_ground,
++        }
++    }
++    Ok((liquid, solid))
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/physical_outcome_ledger.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/physical_outcome_ledger.rs
+@@ -107,6 +107,7 @@
+ 
+ #[derive(Clone, Debug, PartialEq)]
+ pub(crate) struct TerminalSnowBottomSoilTrialResultV1 {
++    pub experimental_bulk: Option<crate::snow_accuracy_bulk::Receipt>,
+     pub ending_first_soil: TerminalSoilLayerTrialCandidateV2,
+     pub ending_snow_temperature_k: f64,
+     pub snow_heat_j_m2: f64,
+@@ -119,6 +120,7 @@
+ /// evidence and cannot claim an accepted terminal owner transition.
+ #[derive(Clone, Debug, PartialEq)]
+ pub(crate) struct TerminalSnowSoilTrialReceiptV1 {
++    pub experimental_bulk: Option<crate::snow_accuracy_bulk::Receipt>,
+     pub support: TimeSupport,
+     pub lane_id: u32,
+     pub ofe_id: OfeId,
+@@ -171,6 +173,20 @@
+             bytes.extend_from_slice(&value.to_bits().to_be_bytes());
+         }
+         bytes.extend_from_slice(self.ending_soil_candidate_sha256.as_bytes());
++        if let Some(bulk) = self.experimental_bulk {
++            if bulk.outcome.soil_heat.to_bits() != self.soil_heat_j_m2.to_bits()
++                || bulk.outcome.snow_heat.to_bits() != self.snow_heat_j_m2.to_bits()
++            {
++                return Err(Stage3PhysicalOutcomeLedgerError::Closure(
++                    "bulk soil receipt exchange",
++                ));
++            }
++            bytes.extend_from_slice(
++                &bulk.canonical_bytes().map_err(|_| {
++                    Stage3PhysicalOutcomeLedgerError::Identity("bulk method receipt")
++                })?,
++            );
++        }
+         self.receipt_sha256 = digest_bytes(&bytes);
+         Ok(self)
+     }
+@@ -196,6 +212,16 @@
+ /// candidates and applies identical-bit opposite custody to snow and soil.
+ pub(crate) fn evaluate_terminal_snow_bottom_soil_trial_v1(
+     inputs: &TerminalSnowBottomSoilTrialInputsV1<'_>,
++) -> Result<TerminalSnowBottomSoilTrialResultV1, Stage3PhysicalOutcomeLedgerError> {
++    evaluate_terminal_snow_bottom_soil_trial_with_bulk_v1(inputs, None)
++}
++
++pub(crate) fn evaluate_terminal_snow_bottom_soil_trial_with_bulk_v1(
++    inputs: &TerminalSnowBottomSoilTrialInputsV1<'_>,
++    bulk_forcing: Option<(
++        crate::snow_accuracy_bulk::Forcing,
++        crate::snow_accuracy_bulk::State,
++    )>,
+ ) -> Result<TerminalSnowBottomSoilTrialResultV1, Stage3PhysicalOutcomeLedgerError> {
+     let beginning_soil_temperature_k = inputs.beginning_first_soil.temperature_k();
+     let beginning_soil_enthalpy_high_j_m2_ofe_ground =
+@@ -269,24 +295,56 @@
+     let snow_capacity_j_m2_k = inputs.ice_kg_m2 * 2_100.0;
+     let soil_capacity_j_m2_k = inputs.first_soil_configuration.areal_heat_capacity_j_m2_k;
+     let beginning_delta_k = inputs.temperature_k - beginning_soil_temperature_k;
+-    let cn_denominator = 1.0
+-        + 0.5
+-            * duration_s
+-            * conductance_w_m2_k
+-            * (1.0 / snow_capacity_j_m2_k + 1.0 / soil_capacity_j_m2_k);
+-    if !cn_denominator.is_finite() || cn_denominator <= 0.0 {
+-        return Err(Stage3PhysicalOutcomeLedgerError::Numeric(
+-            "terminal snow-soil Crank-Nicolson denominator",
+-        ));
+-    }
+-    let soil_heat_j_m2 = duration_s * conductance_w_m2_k * beginning_delta_k / cn_denominator;
++    let experimental_bulk = if let Some((mut forcing, beginning)) = bulk_forcing {
++        forcing.conductance = conductance_w_m2_k;
++        forcing.soil_temperature = beginning_soil_temperature_k;
++        forcing.soil_capacity = soil_capacity_j_m2_k;
++        let outcome = crate::snow_accuracy_bulk::advance(beginning, forcing)
++            .map_err(Stage3PhysicalOutcomeLedgerError::Bulk)?;
++        let policy = openwepp_land_surface_energy::snow_accuracy_policy::Policy::current()
++            .identity()
++            .ok_or(Stage3PhysicalOutcomeLedgerError::Identity(
++                "bulk method identity",
++            ))?;
++        Some(crate::snow_accuracy_bulk::Receipt {
++            policy,
++            beginning,
++            forcing,
++            outcome,
++        })
++    } else {
++        None
++    };
++    let soil_heat_j_m2 = if let Some(bulk) = experimental_bulk {
++        bulk.outcome.soil_heat
++    } else {
++        let cn_denominator = 1.0
++            + 0.5
++                * duration_s
++                * conductance_w_m2_k
++                * (1.0 / snow_capacity_j_m2_k + 1.0 / soil_capacity_j_m2_k);
++        if !cn_denominator.is_finite() || cn_denominator <= 0.0 {
++            return Err(Stage3PhysicalOutcomeLedgerError::Numeric(
++                "terminal snow-soil Crank-Nicolson denominator",
++            ));
++        }
++        duration_s * conductance_w_m2_k * beginning_delta_k / cn_denominator
++    };
+     let snow_heat_j_m2 = -soil_heat_j_m2;
+     if !soil_heat_j_m2.is_finite() || snow_heat_j_m2.to_bits() != (-soil_heat_j_m2).to_bits() {
+         return Err(Stage3PhysicalOutcomeLedgerError::Closure(
+             "terminal snow-soil equal and opposite heat",
+         ));
+     }
+-    let ending_snow_temperature = inputs.temperature_k - soil_heat_j_m2 / snow_capacity_j_m2_k;
++    let ending_snow_temperature = if let Some(bulk) = experimental_bulk {
++        if bulk.outcome.ending.water > 0.0 {
++            273.15 + bulk.outcome.ending.enthalpy / (2100.0 * bulk.outcome.ending.water)
++        } else {
++            273.15
++        }
++    } else {
++        inputs.temperature_k - soil_heat_j_m2 / snow_capacity_j_m2_k
++    };
+     let v1_ending_temperature = beginning_soil_temperature_k
+         + soil_heat_j_m2 / inputs.first_soil_configuration.areal_heat_capacity_j_m2_k;
+     if !ending_snow_temperature.is_finite()
+@@ -377,6 +435,7 @@
+         ),
+     };
+     let receipt = TerminalSnowSoilTrialReceiptV1 {
++        experimental_bulk,
+         support: inputs.support,
+         lane_id: inputs.lane_id,
+         ofe_id: inputs.ofe_id.clone(),
+@@ -392,6 +451,7 @@
+     }
+     .seal()?;
+     Ok(TerminalSnowBottomSoilTrialResultV1 {
++        experimental_bulk,
+         ending_first_soil,
+         ending_snow_temperature_k: ending_snow_temperature,
+         snow_heat_j_m2,
+@@ -633,6 +693,8 @@
+ 
+ #[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
+ pub(crate) enum Stage3PhysicalOutcomeLedgerError {
++    #[error("bulk step failure: {0:?}")]
++    Bulk(crate::snow_accuracy_bulk::Error),
+     #[error("physical outcome identity mismatch: {0}")]
+     Identity(&'static str),
+     #[error("physical outcome numeric domain failure: {0}")]
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs
+@@ -337,6 +337,51 @@
+     fn seal(
+         ledger: &v11_covered::physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1,
+     ) -> Result<Self, DirectV11RealConsumerError> {
++        if crate::snow_accuracy_observer::physical_global_enabled() {
++            crate::snow_accuracy_observer::ledger(
++                ledger
++                    .receipt_sha256
++                    .as_bytes()
++                    .iter()
++                    .map(|byte| format!("{byte:02x}"))
++                    .collect(),
++                serde_json::json!({
++                    "beginning_ice_kg_m2": ledger.beginning_ice_kg_m2,
++                    "beginning_liquid_kg_m2": ledger.beginning_liquid_kg_m2,
++                    "beginning_cold_content_j_m2": ledger.beginning_cold_content_j_m2,
++                    "ending_ice_kg_m2": ledger.ending_ice_kg_m2,
++                    "ending_liquid_kg_m2": ledger.ending_liquid_kg_m2,
++                    "ending_cold_content_j_m2": ledger.ending_cold_content_j_m2,
++                    "solid_precipitation_kg_m2": ledger.solid_precipitation_kg_m2,
++                    "liquid_precipitation_kg_m2": ledger.liquid_precipitation_kg_m2,
++                    "precipitation_advection_j_m2": ledger.precipitation_advection_j_m2,
++                    "deposition_kg_m2": ledger.deposition_kg_m2,
++                    "sublimation_kg_m2": ledger.sublimation_kg_m2,
++                    "vapor_transfer_kg_m2": ledger.vapor_transfer_kg_m2,
++                    "latent_heat_j_kg": ledger.latent_heat_j_kg,
++                    "snow_surface_temperature_k": ledger.snow_surface_temperature_k,
++                    "vapor_material_enthalpy_j_m2": ledger.vapor_material_enthalpy_j_m2,
++                    "melt_kg_m2": ledger.melt_kg_m2,
++                    "refreeze_kg_m2": ledger.refreeze_kg_m2,
++                    "terminal_liquid_kg_m2": ledger.terminal_liquid_kg_m2,
++                    "terminal_liquid_sensible_enthalpy_j_m2": ledger.terminal_liquid_sensible_enthalpy_j_m2,
++                    "shortwave_j_m2": ledger.shortwave_j_m2,
++                    "longwave_j_m2": ledger.longwave_j_m2,
++                    "sensible_j_m2": ledger.sensible_j_m2,
++                    "latent_j_m2": ledger.latent_j_m2,
++                    "soil_heat_j_m2": ledger.soil_heat_j_m2,
++                    "interlayer_active_conduction_j_m2": ledger.interlayer_active_conduction_j_m2,
++                    "interlayer_lower_conduction_j_m2": ledger.interlayer_lower_conduction_j_m2,
++                    "receipt_sha256": ledger.receipt_sha256,
++                    "support": ledger.support,
++                    "ofe_id": ledger.ofe_id,
++                    "lane_id": ledger.lane_id,
++                    "beginning_snow_owner_sha256": ledger.beginning_snow_owner_sha256,
++                    "ending_snow_owner_sha256": ledger.ending_snow_owner_sha256,
++                    "source_receipts_sha256": ledger.source_receipts_sha256
++                }),
++            );
++        }
+         let mut value = Self {
+             support: ledger.support,
+             lane_id: ledger.lane_id,
+--- a/crates/openwepp-land-surface-energy/src/lib.rs
++++ b/crates/openwepp-land-surface-energy/src/lib.rs
+@@ -343,3 +343,5 @@
+         ));
+     }
+ }
++
++pub mod snow_accuracy_policy;
+--- /dev/null
++++ b/crates/openwepp-land-surface-energy/src/snow_accuracy_policy.rs
+@@ -0,0 +1,142 @@
++//! Owner-authorized isolated P experiment. No primary-production selector.
++use std::cell::Cell;
++use std::sync::OnceLock;
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum Policy {
++    R0,
++    P1,
++    P2,
++    C600,
++    C1800,
++    B01,
++    B1,
++    B5,
++}
++#[derive(Clone, Copy, Debug)]
++pub enum Quantity {
++    Mass,
++    WaterDepth,
++    Energy,
++    Temperature,
++    HeatFlux,
++    VaporFlux,
++}
++static POLICY: OnceLock<Policy> = OnceLock::new();
++thread_local! { static SUPPORT_SECONDS: Cell<f64> = const { Cell::new(f64::NAN) }; }
++
++impl Policy {
++    pub fn parse(name: &str) -> Result<Self, &'static str> {
++        match name {
++            "R0" => Ok(Self::R0),
++            "P1" => Ok(Self::P1),
++            "P2" => Ok(Self::P2),
++            "C600" => Ok(Self::C600),
++            "C1800" => Ok(Self::C1800),
++            "B01" => Ok(Self::B01),
++            "B1" => Ok(Self::B1),
++            "B5" => Ok(Self::B5),
++            _ => Err("unknown snow accuracy policy"),
++        }
++    }
++    pub fn install(self) -> Result<(), &'static str> {
++        POLICY.set(self).map_err(|_| "policy already installed")
++    }
++    pub fn current() -> Self {
++        POLICY.get().copied().unwrap_or(Self::R0)
++    }
++    pub fn coefficients(
++        self,
++        quantity: Quantity,
++        absolute: f64,
++        relative: f64,
++        seconds: f64,
++    ) -> (f64, f64) {
++        let (mass, energy, temperature, requested_relative) = match self {
++            Self::R0 | Self::C600 | Self::C1800 | Self::B01 | Self::B1 | Self::B5 => {
++                return (absolute, relative);
++            }
++            Self::P1 => (1e-4_f64, 0.1_f64, 0.001_f64, 1e-4_f64),
++            Self::P2 => (0.01_f64, 1.0_f64, 0.01_f64, 0.001_f64),
++        };
++        let requested = match quantity {
++            Quantity::Mass => mass,
++            Quantity::WaterDepth => mass / 1000.0,
++            Quantity::Energy => energy,
++            Quantity::Temperature => temperature,
++            Quantity::HeatFlux => energy / seconds,
++            Quantity::VaporFlux => mass / seconds,
++        };
++        let rel = if matches!(quantity, Quantity::Temperature) {
++            relative
++        } else {
++            relative.max(requested_relative)
++        };
++        if !requested.is_finite() || requested < 0.0 {
++            return (f64::NAN, f64::NAN);
++        }
++        (absolute.max(requested), rel)
++    }
++    pub fn endpoint_interval_seconds(self) -> Option<u32> {
++        match self {
++            Self::C600 => Some(600),
++            Self::C1800 => Some(1800),
++            _ => None,
++        }
++    }
++    pub fn identity(self) -> Option<u8> {
++        match self {
++            Self::R0 => None,
++            Self::P1 => Some(1),
++            Self::P2 => Some(2),
++            Self::C600 => Some(3),
++            Self::C1800 => Some(4),
++            Self::B01 => Some(5),
++            Self::B1 => Some(6),
++            Self::B5 => Some(7),
++        }
++    }
++    pub fn bulk_threshold(self) -> Option<f64> {
++        match self {
++            Self::B01 => Some(0.1),
++            Self::B1 => Some(1.0),
++            Self::B5 => Some(5.0),
++            _ => None,
++        }
++    }
++    pub fn temperature_step(self) -> f64 {
++        self.coefficients(Quantity::Temperature, 1e-8, 0.0, 1.0).0
++    }
++}
++
++pub fn within(left: f64, right: f64, absolute: f64, relative: f64) -> bool {
++    let allowance = absolute + relative * left.abs().max(right.abs());
++    left.is_finite()
++        && right.is_finite()
++        && absolute.is_finite()
++        && relative.is_finite()
++        && absolute >= 0.0
++        && relative >= 0.0
++        && allowance.is_finite()
++        && (left - right).abs() <= allowance
++}
++pub fn support_seconds() -> f64 {
++    SUPPORT_SECONDS.with(Cell::get)
++}
++pub struct SupportScope(f64);
++impl SupportScope {
++    pub fn new(seconds: f64) -> Result<Self, &'static str> {
++        if !seconds.is_finite() || seconds <= 0.0 {
++            return Err("invalid experimental support seconds");
++        }
++        Ok(Self(SUPPORT_SECONDS.with(|s| s.replace(seconds))))
++    }
++}
++impl Drop for SupportScope {
++    fn drop(&mut self) {
++        SUPPORT_SECONDS.with(|s| s.set(self.0));
++    }
++}
++#[cfg(test)]
++#[path = "snow_accuracy_policy_tests.rs"]
++mod tests;
+--- /dev/null
++++ b/crates/openwepp-land-surface-energy/src/snow_accuracy_policy_tests.rs
+@@ -0,0 +1,52 @@
++use super::*;
++#[test]
++fn dimensional_policy_and_no_tightening() {
++    assert_eq!(Policy::parse("P1"), Ok(Policy::P1));
++    assert!(Policy::parse("unknown").is_err());
++    assert_eq!(
++        Policy::P1.coefficients(Quantity::Mass, 1e-9, 1e-8, 600.0),
++        (1e-4, 1e-4)
++    );
++    assert_eq!(
++        Policy::P2.coefficients(Quantity::WaterDepth, 1e-9, 5e-3, 600.0),
++        (1e-5, 5e-3)
++    );
++    assert_eq!(
++        Policy::P1.coefficients(Quantity::Temperature, 0.01, 1e-8, 600.0),
++        (0.01, 1e-8)
++    );
++    assert_eq!(
++        Policy::R0.coefficients(Quantity::Energy, 1e-6, 1e-8, 600.0),
++        (1e-6, 1e-8)
++    );
++    assert_eq!(
++        Policy::P1.coefficients(Quantity::HeatFlux, 1e-5, 1e-8, 100.0),
++        (0.001, 1e-4)
++    );
++    assert_eq!(
++        Policy::P2.coefficients(Quantity::VaporFlux, 1e-10, 1e-6, 100.0),
++        (0.0001, 0.001)
++    );
++}
++#[test]
++fn accounting_is_independent_and_invalid_never_passes() {
++    assert!(within(0.0, 0.00005, 0.0001, 0.0001));
++    assert!(!within(0.0, 0.00005, 1e-9, 0.0));
++    assert!(!within(f64::NAN, 0.0, 1.0, 0.001));
++    assert!(!within(f64::INFINITY, f64::INFINITY, 1.0, 0.001));
++    assert!(!within(0.0, 1.0, f64::INFINITY, 0.001));
++    assert!(!within(0.0, 0.01, 1e-6, 0.0));
++}
++#[test]
++fn support_scope_restores_and_rejects_invalid() {
++    assert!(SupportScope::new(0.0).is_err());
++    assert!(SupportScope::new(f64::NAN).is_err());
++    let outer = SupportScope::new(600.0).expect("valid support");
++    {
++        let _inner = SupportScope::new(60.0).expect("nested support");
++        assert_eq!(support_seconds(), 60.0);
++    }
++    assert_eq!(support_seconds(), 600.0);
++    drop(outer);
++    assert!(support_seconds().is_nan());
++}
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+@@ -11,7 +11,8 @@
+     fn accepted(self) -> bool {
+         self.hydraulic_mm <= 1.0e-7
+             && self.beta <= 1.0e-10
+-            && self.temperature_k <= 1.0e-8
++            && self.temperature_k
++                <= crate::snow_accuracy_policy::Policy::current().temperature_step()
+             && self.humidity_kg_kg <= 1.0e-12
+     }
+ 
+@@ -36,7 +37,8 @@
+         .all(|step| step.is_finite())
+             && (self.hydraulic_mm > 1.0e-7
+                 || self.beta > 1.0e-10
+-                || self.temperature_k > 1.0e-8
++                || self.temperature_k
++                    > crate::snow_accuracy_policy::Policy::current().temperature_step()
+                 || self.humidity_kg_kg > 1.0e-12)
+     }
+ }
+@@ -1519,3 +1521,57 @@
+         }
+     }
+ }
++
++#[cfg(test)]
++#[test]
++#[ignore = "isolated P policy requires a fresh process"]
++fn snow_accuracy_covered_policy_boundary_and_residual_poison() {
++    use crate::snow_accuracy_policy::Policy;
++    let name = std::env::var("OPENWEPP_ACCURACY_POLICY").expect("explicit P policy");
++    let policy = Policy::parse(&name).expect("known policy");
++    policy.install().expect("first policy install");
++    assert!(
++        policy.install().is_err(),
++        "startup policy cannot be replaced"
++    );
++    let threshold = policy.temperature_step();
++    let at = CoveredStepNorms {
++        temperature_k: threshold,
++        ..CoveredStepNorms::default()
++    };
++    assert!(at.accepted());
++    assert!(!at.governed_threshold_exceeded());
++    let above = CoveredStepNorms {
++        temperature_k: threshold * (1.0 + 1e-12),
++        ..at
++    };
++    assert!(!above.accepted());
++    assert!(above.governed_threshold_exceeded());
++    assert!(!covered_complete_residuals_pass(&[f64::NAN]));
++    assert!(!covered_complete_residuals_pass(&[1.0001]));
++    assert!(!covered_complete_residuals_pass(&[]));
++    assert!(covered_halved_no_update_witness(
++        &[0.5],
++        Some(CoveredFullTrialNoUpdateRefusal::DomainInvalid),
++        true,
++        at
++    ));
++    assert!(!covered_halved_no_update_witness(
++        &[2.0],
++        Some(CoveredFullTrialNoUpdateRefusal::DomainInvalid),
++        true,
++        at
++    ));
++    assert!(!covered_halved_no_update_witness(
++        &[0.5],
++        Some(CoveredFullTrialNoUpdateRefusal::DomainInvalid),
++        false,
++        at
++    ));
++    assert!(!covered_halved_no_update_witness(
++        &[0.5],
++        Some(CoveredFullTrialNoUpdateRefusal::DomainInvalid),
++        true,
++        above
++    ));
++}
+--- a/crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_tests.rs
++++ b/crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_tests.rs
+@@ -270,6 +270,7 @@
+ fn snow_free_state(lane_id: u32) -> DirectSnowStage3PersistentState {
+     DirectSnowStage3PersistentState {
+         schema_version: 1,
++        experimental_accuracy: None,
+         terminal_event_model: None,
+         fingerprint: 0,
+         lane_id,
+--- a/crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v5_snow_enthalpy.rs
++++ b/crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v5_snow_enthalpy.rs
+@@ -594,6 +594,7 @@
+             1,
+             DirectSnowStage3PersistentState {
+                 schema_version: 2,
++                experimental_accuracy: None,
+                 terminal_event_model: None,
+                 fingerprint: 2,
+                 lane_id: 1,
+--- a/crates/openwepp-runner/src/hillslope/03_tests.rs
++++ b/crates/openwepp-runner/src/hillslope/03_tests.rs
+@@ -46,6 +46,7 @@
+     include!("tests03/stage3_evaluation_publication_parity.rs");
+     include!("tests03/stage3_runner_qualification.rs");
+     include!("tests03/controlled_mechanism_experiments.rs");
++    include!("tests03/snow_accuracy_experiment.rs");
+     include!("tests03/stage3_long_run_output_evidence.rs");
+     include!("tests03/stage3_long_run_qualification.rs");
+     include!("tests03/wat5_output_transaction.rs");
+--- a/crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00f_snow_accumulation_melt_trace.rs
++++ b/crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00f_snow_accumulation_melt_trace.rs
+@@ -69,9 +69,11 @@
+ fn direct_snow_trace_persistent_state(
+     state: &openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState,
+ ) -> String {
+-    let terminal_model = state.terminal_event_model.map_or_else(String::new, |model| {
+-        format!(",\"terminal_event_model\":\"{}\"", model.id())
+-    });
++    let terminal_model = state
++        .terminal_event_model
++        .map_or_else(String::new, |model| {
++            format!(",\"terminal_event_model\":\"{}\"", model.id())
++        });
+     let layers = state.layers.iter().map(|layer| format!(
+         "{{\"mass_swe_m\":{},\"thickness_m\":{},\"density_kg_m3\":{},\"settle_day_count\":{},\"temperature_c\":{},\"liquid_water_m\":{},\"cold_content_j_m2\":{},\"refrozen_liquid_m\":{}}}",
+         direct_production_trace_number(layer.mass_swe_m),
+@@ -85,7 +87,12 @@
+     )).collect::<Vec<_>>().join(",");
+     format!(
+         "{{\"schema_version\":{}{},\"fingerprint\":\"{:016x}\",\"lane_id\":{},\"next_interval_index\":{},\"layers\":[{}],\"detached_retained_liquid_kg_m2\":{},\"initial_ice_kg_m2\":{},\"initial_retained_liquid_kg_m2\":{},\"cumulative_snowfall_kg_m2\":{},\"cumulative_external_liquid_kg_m2\":{},\"cumulative_deposition_kg_m2\":{},\"cumulative_sublimation_kg_m2\":{},\"cumulative_melt_kg_m2\":{},\"cumulative_unresolved_liquid_kg_m2\":{},\"cumulative_complete_energy_j_m2\":{},\"cumulative_cold_energy_change_j_m2\":{},\"cumulative_terminal_unallocated_energy_j_m2\":{}}}",
+-        state.schema_version, terminal_model, state.fingerprint, state.lane_id, state.next_interval_index, layers,
++        state.schema_version,
++        terminal_model,
++        state.fingerprint,
++        state.lane_id,
++        state.next_interval_index,
++        layers,
+         direct_production_trace_number(state.detached_retained_liquid_kg_m2),
+         direct_production_trace_number(state.initial_ice_kg_m2),
+         direct_production_trace_number(state.initial_retained_liquid_kg_m2),
+@@ -136,7 +143,7 @@
+             direct_production_trace_number(event.energy_closure_residual_j_m2),
+             direct_production_trace_number(event.event_bracket_width_seconds),
+             event.accepted_trials, event.rejected_trials,
+-            direct_production_trace_number(event.maximum_scaled_error),
++            event.maximum_scaled_error.map_or_else(|| "unavailable".to_owned(), direct_production_trace_number),
+         ),
+     );
+     value.terminal_event.map_or(fields.clone(), |event| {
+@@ -183,9 +190,7 @@
+     reconciliation: Option<
+         &openwepp_hillslope_orchestrator::DirectSnowStage3OperatorReconciliation,
+     >,
+-    persistent: Option<
+-        &openwepp_hillslope_orchestrator::DirectSnowStage3PersistentDayResult,
+-    >,
++    persistent: Option<&openwepp_hillslope_orchestrator::DirectSnowStage3PersistentDayResult>,
+ ) -> String {
+     let base = format!(
+         "{},{},{},{}",
+--- a/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
++++ b/crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs
+@@ -6,6 +6,11 @@
+     reason = "ignored comparison must reject debug execution"
+ )]
+ fn stage3_controlled_mechanism_experiment() {
++    let policy_name = std::env::var("OPENWEPP_ACCURACY_POLICY").unwrap_or_else(|_| "R0".to_owned());
++    let policy = openwepp_land_surface_energy::snow_accuracy_policy::Policy::parse(&policy_name)
++        .expect("known policy");
++    policy.install().expect("single startup policy");
++    println!("ACCURACY_POLICY {policy_name}");
+     assert!(!cfg!(debug_assertions), "release build required");
+     let ofes: usize = std::env::var("OPENWEPP_EXPERIMENT_OFES")
+         .unwrap_or_else(|_| "1".to_owned())
+@@ -397,6 +402,11 @@
+     let qualification_telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_release_qualification_telemetry_v1()
+         .expect("enable one-OFE release attribution telemetry");
+     let (input_sha256, input_files) = release_scale_tree_hashes(&run_dir);
++    let physical_observation = std::env::var("OPENWEPP_ACCURACY_PHYSICAL").is_ok_and(|v| v == "1");
++    openwepp_hillslope_orchestrator::snow_accuracy_observer::begin(physical_observation);
++    if physical_observation {
++        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_comparison_test_audit();
++    }
+     let clock_hz = release_scale_clock_tick_hz().expect("Linux CLK_TCK");
+     let trace_dir = std::env::var_os("OPENWEPP_EXPERIMENT_TRACE_DIR").map(PathBuf::from);
+     let carrier_mode = if trace_dir.is_some() {
+@@ -719,6 +729,32 @@
+         .expect("experiment object")
+         .extend(original_record.as_object().expect("probe object").clone());
+     drop(original_record);
++    let observations = openwepp_hillslope_orchestrator::snow_accuracy_observer::finish();
++    if let Some(destination) = std::env::var_os("OPENWEPP_ACCURACY_OUTPUT") {
++        let destination = PathBuf::from(destination);
++        std::fs::create_dir_all(&destination).expect("accuracy evidence directory");
++        std::fs::write(
++            destination.join("observations.json"),
++            serde_json::to_vec(&observations).expect("observations JSON"),
++        )
++        .expect("retain observations");
++        std::fs::write(
++            destination.join("snapshot.json"),
++            serde_json::to_vec(snapshot).expect("snapshot JSON"),
++        )
++        .expect("retain snapshot");
++        let comparisons = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_comparison_test_audit();
++        std::fs::write(
++            destination.join("comparisons.txt"),
++            format!("{comparisons:#?}"),
++        )
++        .expect("retain actual stopping diagnostics");
++        std::fs::write(
++            destination.join("fixture-path.txt"),
++            run_dir.display().to_string(),
++        )
++        .expect("retain fixture path");
++    }
+     controlled_mechanism_phase("post_validation", iteration, memory);
+     // These explicit drops precede cleanup observation; unlinking files is not heap teardown.
+     drop(report);
+@@ -731,6 +767,8 @@
+     drop(hbp_bytes);
+     drop(hbp);
+     drop(evidence);
+-    std::fs::remove_dir_all(run_dir).expect("remove experiment-owned fixture after validation");
++    if std::env::var_os("OPENWEPP_ACCURACY_OUTPUT").is_none() {
++        std::fs::remove_dir_all(run_dir).expect("remove experiment-owned fixture after validation");
++    }
+     record
+ }
+--- /dev/null
++++ b/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs
+@@ -0,0 +1,177 @@
++// Isolated owner-authorized continuous forcing experiment. Test-only fixture construction.
++#[test]
++#[ignore = "explicit frozen cases, release binary and fresh process required"]
++fn stage3_snow_accuracy_case() {
++    assert!(!cfg!(debug_assertions), "release workflow required");
++    let case_path =
++        PathBuf::from(std::env::var_os("OPENWEPP_ACCURACY_CASES").expect("case inventory"));
++    let case_name = std::env::var("OPENWEPP_ACCURACY_CASE").expect("case id");
++    let policy_name = std::env::var("OPENWEPP_ACCURACY_POLICY").expect("policy id");
++    let policy = openwepp_land_surface_energy::snow_accuracy_policy::Policy::parse(&policy_name)
++        .expect("declared policy");
++    policy.install().expect("immutable startup policy");
++    let cases: serde_json::Value =
++        serde_json::from_slice(&std::fs::read(&case_path).expect("case bytes")).expect("case JSON");
++    for (key, expected) in [
++        ("storm_duration_hours", 2.0),
++        ("relative_peak_time", 0.25),
++        ("peak_intensity_ratio", 25.0),
++        ("wind_m_s", 3.0),
++        ("wind_direction_degrees", 180.0),
++    ] {
++        assert_eq!(
++            cases[key].as_f64(),
++            Some(expected),
++            "supported forcing configuration {key}"
++        );
++    }
++    let case = &cases["cases"][&case_name];
++    let days = case["forcing"].as_array().expect("declared case forcing");
++    assert!(!days.is_empty() && days.len() <= 31);
++    let ofes: usize = std::env::var("OPENWEPP_EXPERIMENT_OFES")
++        .expect("OFE count")
++        .parse()
++        .expect("integer OFEs");
++    assert!([1, 10, 19].contains(&ofes));
++    let destination =
++        PathBuf::from(std::env::var_os("OPENWEPP_ACCURACY_OUTPUT").expect("output evidence"));
++    std::fs::create_dir_all(&destination).expect("evidence directory");
++    let _execution_guard = runner_execution_lock()
++        .lock()
++        .unwrap_or_else(std::sync::PoisonError::into_inner);
++    let areas = (1..=ofes)
++        .map(|i| 100.0 * release_scale_usize_f64(i))
++        .collect::<Vec<_>>();
++    let run_dir = prepare_native_stage3_lane_d_scale_fixture("snow_accuracy_continuous", &areas);
++    let template = positive_stage3_lane_d_climate_source();
++    let (header, _) = template
++        .split_once("DAILY UNITS\n")
++        .expect("forcing header");
++    let mut climate = format!("{header}DAILY UNITS\n");
++    for (i, row) in days.iter().enumerate() {
++        let row = row.as_array().expect("forcing tuple");
++        assert_eq!(row.len(), 5);
++        let v = row
++            .iter()
++            .map(|x| x.as_f64().expect("finite forcing"))
++            .collect::<Vec<_>>();
++        climate.push_str(&format!(
++            "{} 1 2001 {:.6} 2.000 0.250 25.000 {:.6} {:.6} {:.6} 3.0 180.0 {:.6}\n",
++            i + 1,
++            v[0],
++            v[1],
++            v[2],
++            v[3],
++            v[4]
++        ));
++    }
++    std::fs::write(run_dir.join("p102.cli"), climate).expect("complete forcing before seed");
++    let request = HillslopeRunRequest {
++        run_dir: run_dir.clone(),
++        run_file: PathBuf::from("case.run"),
++        output_dir: run_dir.join("output"),
++        sidecar_policy: SidecarPolicy::Compat,
++        legacy_sidecar_discovery: false,
++        manifest_path: None,
++    };
++    let seed_profile = match case["canopy"].as_str().expect("canopy posture") {
++        "positive" => crate::hillslope::test_fixture_authority::Stage3TestFixtureSeedProfile::CompleteOwner,
++        "inactive" => crate::hillslope::test_fixture_authority::Stage3TestFixtureSeedProfile::AdaptiveNoStrataOwner,
++        _ => panic!("unsupported canopy posture"),
++    };
++    let seed = crate::hillslope::test_fixture_authority::author_stage3_v11_owner_seed_fixture(
++        &request,
++        seed_profile,
++        crate::hillslope::test_fixture_authority::Stage3TestFixtureSeedBinding::ExplicitRunfile,
++    )
++    .expect("lawful constructor seed");
++    if case["canopy"] == "positive" {
++        assert_authored_stage3_owner_cardinality(&request, &seed, ofes);
++    }
++    let loaded_seed = crate::hillslope::snow_stage3_v11_production_seed::DirectSnowStage3V11ProductionSeedV1::load_required(Some(&seed)).expect("read authenticated seed");
++    let (vegetation_configuration, lse_configuration) =
++        loaded_seed.test_fixture_vegetation_authorities();
++    assert_eq!(lse_configuration.ofes.len(), ofes);
++    assert_eq!(
++        vegetation_configuration.expected_occupancies().is_empty(),
++        case["canopy"] == "inactive"
++    );
++    for (i, ofe) in lse_configuration.ofes.iter().enumerate() {
++        assert_eq!(ofe.ofe_id.as_str(), format!("ofe-{}", i + 1));
++    }
++    std::fs::write(
++        destination.join("configuration.json"),
++        serde_json::to_vec(
++            &serde_json::json!({"vegetation":vegetation_configuration,"lse":lse_configuration}),
++        )
++        .expect("configuration JSON"),
++    )
++    .expect("physical topology evidence");
++    let (input_hash, input_files) = release_scale_tree_hashes(&run_dir);
++    std::fs::write(
++        destination.join("fixture-path.txt"),
++        run_dir.display().to_string(),
++    )
++    .expect("retain fixture location");
++    std::fs::write(destination.join("inputs.json"), serde_json::to_vec(&serde_json::json!({"hash": input_hash, "files": input_files, "case": case, "policy": policy_name})).expect("input JSON")).expect("input identity");
++    let physical = std::env::var("OPENWEPP_ACCURACY_PHYSICAL").is_ok_and(|v| v == "1");
++    openwepp_hillslope_orchestrator::snow_accuracy_observer::begin(physical);
++    if physical {
++        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_comparison_test_audit();
++    }
++    crate::hillslope::snow_stage3_v11_qualification_audit::begin();
++    let telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_parent_telemetry_v1(48*ofes*days.len(),std::time::Duration::from_secs(3600)).expect("bounded parent telemetry");
++    let carrier = openwepp_hillslope_orchestrator::stage3_mechanism_experiment_audit::begin(
++        openwepp_hillslope_orchestrator::stage3_mechanism_experiment_audit::Mode::Compact,
++    )
++    .expect("carrier metrics");
++    let lse = openwepp_land_surface_energy::solver_mechanism_audit::begin_mechanism_audit(
++        false, 1_000_000,
++    )
++    .expect("LSE metrics");
++    let clock_hz = release_scale_clock_tick_hz().expect("clock ticks");
++    let cpu0 = release_scale_process_cpu_ticks().expect("cpu start");
++    let started = std::time::Instant::now();
++    let result = execute_hillslope_run_with_runtime_policy(
++        &request,
++        &["openwepp-cli-hill".to_owned()],
++        HillslopeRuntimeSelectionPolicy::new(
++            HillslopeRuntimeSelection::DirectProductionExecutor,
++            HillslopeDefaultRuntimeActivation::default(),
++        ),
++    );
++    let elapsed = started.elapsed();
++    let cpu1 = release_scale_process_cpu_ticks().expect("cpu end");
++    let carrier = carrier.finish().expect("carrier counters");
++    let lse = lse.finish().expect("LSE counters");
++    let observations = openwepp_hillslope_orchestrator::snow_accuracy_observer::finish();
++    let comparisons = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_comparison_test_audit();
++    let audit = crate::hillslope::snow_stage3_v11_qualification_audit::take();
++    let telemetry = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_parent_telemetry_v1();
++    drop(telemetry_guard);
++    let parents = telemetry.iter().map(|r|serde_json::json!({"fixed_point_evaluations":r.fixed_point_evaluation_count,"direct_trials":r.direct_trial_count,"split_child_trials":r.split_child_trial_count,"accepted_microsteps":r.accepted_microstep_count,"parent_seconds":r.parent_elapsed.as_secs_f64()})).collect::<Vec<_>>();
++    let record = serde_json::json!({"schema":"snow_accuracy_run_v1","case":case_name,"policy":policy_name,"ofes":ofes,"days_requested":days.len(),"execution":if result.is_ok(){"PASS"}else{"FAIL"},"error":result.as_ref().err().map(|e|format!("{e:?}")),"runner_wall_s":elapsed.as_secs_f64(),"cpu_ticks_start":cpu0,"cpu_ticks_end":cpu1,"clock_hz":clock_hz,"rss_kib":release_probe_rss_kib(),"carrier":carrier,"lse":lse,"parents":parents,"snapshot":audit.committed_snapshot});
++    std::fs::write(
++        destination.join("run.json"),
++        serde_json::to_vec_pretty(&record).expect("run JSON"),
++    )
++    .expect("run receipt");
++    std::fs::write(
++        destination.join("observations.json"),
++        serde_json::to_vec(&observations).expect("observation JSON"),
++    )
++    .expect("physical observations");
++    std::fs::write(
++        destination.join("comparisons.txt"),
++        format!("{comparisons:#?}"),
++    )
++    .expect("comparison diagnostics");
++    println!("SNOW_ACCURACY_RUN {record}");
++    let report = result.expect("complete runner success; failures retained above");
++    assert_eq!(
++        record["snapshot"]["committed_day_count"].as_u64(),
++        Some(u64::try_from(days.len()).expect("days width"))
++    );
++    let (files, manifest) = controlled_mechanism_output_evidence(&request.output_dir);
++    std::fs::write(destination.join("outputs.json"),serde_json::to_vec(&serde_json::json!({"files":files,"manifest":manifest,"manifest_path":report.manifest_path})).expect("outputs JSON")).expect("retain complete outputs identity");
++}

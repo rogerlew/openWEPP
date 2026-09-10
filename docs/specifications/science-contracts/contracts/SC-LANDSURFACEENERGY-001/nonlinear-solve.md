@@ -99,3 +99,36 @@ accept current state with unchanged closure and no trial installation. Existing 
 limit and genuine strict-decrease vectors retain their dispositions. Cold-canopy
 zero-area phase-domain and unchanged active-component closure/rejection vectors remain.
 Reading these requirements is not execution of those vectors or qualification of a run.
+
+## Isolated snow accuracy–runtime precision experiment
+
+For `EXP-SNOW-ACCURACY-20260910-P` only, the isolated executable's immutable
+P1/P2 policy raises the covered prospective temperature-step threshold from
+1e-8 K to 0.001/0.01 K. Both `accepted` and the complementary
+`governed_threshold_exceeded` predicate use that same threshold. The normalized
+complete residual test remains finite and at most one; hydraulic, beta, humidity
+and diagnostic ci norms, domain guards, accepted-current-iterate semantics,
+strict-decrease updates, budgets and typed errors remain unchanged. Thus this
+is a temperature-step/coupling precision experiment with unchanged algebraic
+residual accuracy, not evidence about relaxed LSE residual tolerances.
+
+Covered equations pinning externally owned snow/soil coordinates remain at
+their existing identity tolerances. Exact shared energy debit/credit and
+independent conservation remain unchanged. Numerical policy applies also to
+snow-free covered solves; the no-snow case measures that effect and overhead.
+R0 retains its old predicates, and its tests remain bound to R0. Experimental
+counterparts test threshold boundaries, nonfinite residuals, first-valid-trial
+ordering, no trial installation on no-update acceptance and failure rollback.
+See the [snow precision amendment](../SC-SNOWENERGY-001.md#isolated-accuracyruntime-precision-experiment-2026-09-10)
+for units, other coupled controls, measurement and independent-review duties.
+
+Change log: 2026-09-10, narrowly isolated owner-authorized numerical experiment;
+no production activation or physical ledger relaxation.
+
+Prospective causal ablation `P1_STEP` (same isolated experiment): change only
+`Policy::temperature_step` from 1e-8 K to 1e-3 K in the live covered solver.
+All dimensioned coefficient requests, terminal coupling, complete-owner error
+control and residual stopping remain R0. Immutable persisted policy identity is
+8. This tests the observed P1/P2 reduction of 300 covered sweeps on development
+continuity; it does not change bands, forcing, or held-out selection. It is an
+additional numerical treatment, not a combination or production default.

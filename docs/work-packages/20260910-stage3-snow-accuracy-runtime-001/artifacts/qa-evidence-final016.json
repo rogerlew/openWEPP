@@ -1,0 +1,123 @@
+{
+  "evidence": "Ran independent raw receipt/hash/order/arithmetic/state-work reproducibility audit",
+  "groups": [
+    {
+      "group": "development-final016",
+      "processes": 57,
+      "valid": 9,
+      "invalid": 48
+    },
+    {
+      "group": "extension-final016",
+      "processes": 12,
+      "valid": 6,
+      "invalid": 6
+    },
+    {
+      "group": "observer-final016",
+      "processes": 6,
+      "valid": 6,
+      "invalid": 0
+    },
+    {
+      "group": "balanced-final016",
+      "processes": 30,
+      "valid": 30,
+      "invalid": 0
+    }
+  ],
+  "balanced_statistics": {
+    "C600": {
+      "geomean": 1.3865103019227822,
+      "interval": [
+        1.380309001917523,
+        1.3927394624445648
+      ],
+      "mean_delta_s": -1.3972204975000002
+    },
+    "B01": {
+      "geomean": 1.5758149403831987,
+      "interval": [
+        1.5198683697532733,
+        1.6338209122267682
+      ],
+      "mean_delta_s": -1.9108979961666666
+    }
+  },
+  "reproducibility": [
+    {
+      "policy": "R0",
+      "reproducible_completed_runs": 17
+    },
+    {
+      "policy": "C600",
+      "reproducible_completed_runs": 11
+    },
+    {
+      "policy": "B01",
+      "reproducible_completed_runs": 11
+    }
+  ],
+  "slow_B_pair2_retained": true,
+  "counter_interpretation_correction": {
+    "withdrawn": "Earlier QA prose inferred scalar Carrier=0 meant native physical-builder coverage absent. This inference was unsupported and is withdrawn.",
+    "source_proof": "Scalar Carrier scope wraps execute_covered_carrier_phase_v1 only. BatchProvider wraps batch provider; execute_covered_carrier_batch_phase_v2 invokes the same execute_shared_covered_carrier_physical_phase_v1 and complete_covered_carrier_physical_result_v1. Shared phase calls build_provisional_covered_iteration_evidence_v1, including physical/native dispatch.",
+    "conclusion": "Batch physical work executes. Scalar counter is not a cross-topology complete-physical-work metric. Exact native dispatch participation needs its own evidence; absence is not established.",
+    "raw_counts": [
+      {
+        "ofes": 10,
+        "policy": "R0",
+        "scalar_Carrier": 0,
+        "BatchProvider": 64,
+        "LSE_solves": 232,
+        "LSE_evaluations": 36897,
+        "LSE_sweeps": 8637
+      },
+      {
+        "ofes": 10,
+        "policy": "C600",
+        "scalar_Carrier": 0,
+        "BatchProvider": 48,
+        "LSE_solves": 200,
+        "LSE_evaluations": 34073,
+        "LSE_sweeps": 8569
+      },
+      {
+        "ofes": 10,
+        "policy": "B01",
+        "scalar_Carrier": 0,
+        "BatchProvider": 36,
+        "LSE_solves": 176,
+        "LSE_evaluations": 31955,
+        "LSE_sweeps": 8527
+      },
+      {
+        "ofes": 19,
+        "policy": "R0",
+        "scalar_Carrier": 0,
+        "BatchProvider": 64,
+        "LSE_solves": 232,
+        "LSE_evaluations": 36897,
+        "LSE_sweeps": 16116
+      },
+      {
+        "ofes": 19,
+        "policy": "C600",
+        "scalar_Carrier": 0,
+        "BatchProvider": 48,
+        "LSE_solves": 200,
+        "LSE_evaluations": 34073,
+        "LSE_sweeps": 16048
+      },
+      {
+        "ofes": 19,
+        "policy": "B01",
+        "scalar_Carrier": 0,
+        "BatchProvider": 36,
+        "LSE_solves": 176,
+        "LSE_evaluations": 31955,
+        "LSE_sweeps": 16015
+      }
+    ]
+  }
+}

@@ -217,3 +217,17 @@ soil-thermal, transaction, and receipt owners byte-identical.
 | Obligation ID | Statement | Applicability | Authority | Enforcement/failure | Test bindings |
 |---|---|---|---|---|---|
 | <a id="OBL-LANDSURFACEENERGY-C-003"></a> `OBL-LANDSURFACEENERGY-C-003` | soil/frost consumes exactly `-G` once and is sole subsurface conduction/phase-state mutator. | Soil/frost consumers of the surface ground-heat transfer | v31:L330-L331 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
+
+
+## Isolated bulk trace boundary (2026-09-10)
+
+Only `EXP-SNOW-ACCURACY-20260910-B` replaces the old iterative snow boundary
+and snow/top-soil Crank--Nicolson constitutive comparison with its explicitly
+lagged atmospheric boundary and piecewise implicit bulk exchange. Its canonical
+method is specified in SC-SNOWENERGY-001. The same q is debited/credited once;
+actual soil candidate ownership, exact high/carry conservation, deeper transfers,
+OFE-ground basis and rollback remain binding. The reduced law's predicted top
+soil temperature is distinct from the complete soil candidate's ending state.
+New method-specific receipts must bind both, without asserting R0 endpoint
+constitutive agreement. Existing R0/P receipts and physical-ledger tolerances
+are unchanged. This is isolated experimental authority, not production activation.

@@ -1106,3 +1106,18 @@ byte-identical rollback vector, followed by successful freshly validated use.
 | test vector | `OBL-COUPLEDTIME-015`: validation-once hot success, snow-free reseal, stale/foreign/replay/restart/rotation poisons, exhaustive tail-field matrix, untrusted restore, non-wire/source guards, exact counters and byte-identical rollback. |
 | binding exposure | `CT-VALIDATED-PUBLICATION-SUPPORT-APPEND`, active, `new-INV`, IDs `032/015`, dual review/verification. |
 | change log | 2026-09-03, contract 17: private same-live-revision validated-support append; no wire, archive, restart, publication, chronology, or physics change. |
+
+
+## Isolated approximate terminal schedules (2026-09-10)
+
+Only `EXP-SNOW-ACCURACY-20260910-C` admits modeled terminal disappearance at
+the end of its bounded 600/1800-second interval, with the complete interval as
+uncertainty bracket and unavailable embedded LTE. The existing SC-SNOWENERGY-001
+experimental section owns the method. Its receipt/digest binds method, target,
+actual support, beginning/ending owners, real transferred water/energy and startup
+policy. Event replay and publication use that model's endpoint exactly once;
+no receipt asserts exact R0 localization. No source tick is shifted to hide an
+unmodeled interval, and forcing discontinuities remain real boundaries.
+Rejected candidates never leak. Restart preserves/validates the same method and
+policy and continues from the accepted cursor. Historical/R0 schemas and scientific
+obligations remain bound to their original semantics; no production activation.

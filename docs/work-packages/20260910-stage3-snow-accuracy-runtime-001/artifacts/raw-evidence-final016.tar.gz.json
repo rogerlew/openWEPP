@@ -1,0 +1,9 @@
+{
+  "archive": "docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/raw-evidence-final016.tar.gz",
+  "archive_sha256": "9ab77154a777887084d339ef2728d85ac76766d3bc70d7982a2973c46e10f222",
+  "archive_bytes": 31678445,
+  "index_sha256": "d5549d58c6a3eaf9ca377881254b94ce586814468bff2a5c35d6a6a2e527fb93",
+  "file_count": 7608,
+  "unique_object_count": 2349,
+  "fixture_count": 270
+}
