@@ -7,6 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
+| Stage 3 native physical-pipeline experiment (complete negative) | [record](20260909-stage3-native-physical-pipeline-001/package.md) | Frozen six-pair profiling reproduced the 13.7% inclusive builder and found no permitted treatment with a plausible 5% complete-run gain; no B was admitted and production remains HOLD. |
 | Stage 3 support-capability representation experiment (complete negative continuation) | [record](20260909-stage3-support-capability-representation-001/package.md) | Fresh retained evidence bounds 48 live clone/bind/dual-seal/drop operations at 0.0401% median runner share, so no prototype was admitted; production remains HOLD. |
 | Stage 3 parent-cost targeted investigation (complete negative; attribution superseded) | [record](20260909-stage3-parent-cost-investigation-001/package.md) | Its 16% support-seal/provider-bind attribution was corrected by the successor representation experiment: the region conflated consumer execution; historical disposition and production HOLD remain unchanged. |
 | Lightweight governance replacement | [record](20260909-lightweight-governance-001/package.md) | Owner-authorized structural replacement; one record per package, consequence-based review and preserved scientific correctness. |

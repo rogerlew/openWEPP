@@ -1,0 +1,3264 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 995d40739..6ae49c86c 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1241,6 +1241,7 @@ dependencies = [
+  "openwepp-watershed-orchestrator",
+  "openwepp-watershed-output",
+  "parquet",
++ "rustix",
+  "serde",
+  "serde_json",
+  "sha2",
+diff --git a/crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs b/crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs
+index b59f356d3..441bc452f 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs
+@@ -290,9 +290,21 @@ impl DirectRunFrame {
+                 detail: "constitutive attachment is not installed".into(),
+             },
+         )?;
+-        attachment
+-            .stage_prepared_day(&prepared)
+-            .map_err(attachment_runtime_error("prepare"))
++        let result = {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::PreparedDayConsumerExecution,
++            );
++            attachment
++                .stage_prepared_day(&prepared)
++                .map_err(attachment_runtime_error("prepare"))
++        };
++        {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::PreparedDayCapabilityDrop,
++            );
++            drop(prepared);
++        }
++        result
+     }
+ 
+     /// Bind the runner's already validated GSI/provider day to the 48
+@@ -305,9 +317,13 @@ impl DirectRunFrame {
+         day_index: usize,
+         supports: Vec<crate::snow_stage3_v11_attachment::DirectSnowStage3V11PreparedSupport>,
+     ) -> Result<(), DirectRuntimeError> {
+-        let prepared =
++        let prepared = {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::FullProviderDayBinding,
++            );
+             PreparedStage3V11DayV1::bind_production_provider_day(provider, day_index, supports)
+-                .map_err(attachment_runtime_error("bind_provider"))?;
++                .map_err(attachment_runtime_error("bind_provider"))?
++        };
+         self.prepare_snow_stage3_v11_day(prepared)
+     }
+ 
+diff --git a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
+index 88e8e9d34..e5246b167 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs
+@@ -349,6 +349,13 @@ impl Wb11HydrologyKernel {
+                              duration_seconds,
+                              role,
+                              attempt_ordinal| {
++                                let mut mechanism_evaluator =
++                                    crate::stage3_mechanism_experiment_audit::Scope::begin(
++                                        crate::stage3_mechanism_experiment_audit::Kind::Evaluator,
++                                        || {
++                                            format!("role={role:?};attempt={attempt_ordinal};start_bits={};duration_bits={}", relative_start_seconds.to_bits(), duration_seconds.to_bits())
++                                        },
++                                    );
+                                 let surface_temperature_c =
+                                     Self::stage3_temperature_from_cold_content_values(
+                                         trial_state.ice_kg_m2 / STAGE3_RHO_WATER_KG_M3,
+@@ -632,6 +639,7 @@ impl Wb11HydrologyKernel {
+                                         require_terminal_coupling_live_convergence(
+                                             selected_live_converged,
+                                         )?;
++                                        mechanism_evaluator.complete(true, || crate::stage3_mechanism_experiment_audit::transition_fingerprint(&receipt));
+                                         return Ok((flux, Some(receipt.ending_joint)));
+                                     } else {
+                                         None
+@@ -690,6 +698,7 @@ impl Wb11HydrologyKernel {
+                                     || beginning_joint.clone(),
+                                     |value| Some(value.ending_joint),
+                                 );
++                                mechanism_evaluator.complete(true, String::new);
+                                 Ok((flux, ending_joint))
+                             },
+                             |state, joint| {
+@@ -838,6 +847,17 @@ impl Wb11HydrologyKernel {
+                     active_state.mass_swe_m,
+                     active_state.cold_content_j_m2,
+                 );
++                let mut mechanism_resolved_evaluator = terminal_trial_context.as_ref().map(|_| {
++                    crate::stage3_mechanism_experiment_audit::Scope::begin(
++                        crate::stage3_mechanism_experiment_audit::Kind::Evaluator,
++                        || {
++                            format!(
++                                "resolved;elapsed_bits={};substep={substep_index}",
++                                elapsed_seconds.to_bits()
++                            )
++                        },
++                    )
++                });
+                 let covered_substep_boundary = if let Some((
+                     lane_id,
+                     base_support,
+@@ -1178,6 +1198,9 @@ impl Wb11HydrologyKernel {
+                     .max(closure_residual_j_m2.abs());
+                 elapsed_seconds += substep_seconds;
+                 substep_index += 1;
++                if let Some(observer) = &mut mechanism_resolved_evaluator {
++                    observer.complete(true, String::new);
++                }
+             }
+             if substep_index == 0 {
+                 summary.reconciliation.hourly_status[hour_index] =
+diff --git a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
+index 4e8c94184..c2f88b5b9 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs
+@@ -95,7 +95,19 @@ impl Wb11HydrologyKernel {
+                 "covered terminal batch lane topology",
+             ));
+         }
+-        let candidates = provider(request)?;
++        let mut mechanism_batch = crate::stage3_mechanism_experiment_audit::Scope::begin(
++            crate::stage3_mechanism_experiment_audit::Kind::BatchProvider,
++            || crate::stage3_mechanism_experiment_audit::fingerprint(request),
++        );
++        let candidates = provider(request);
++        mechanism_batch.complete(candidates.is_ok(), || match &candidates {
++            Ok(value) => {
++                crate::stage3_mechanism_experiment_audit::fingerprint(&value.carrier_joint)
++            }
++            Err(error) => format!("{error:?}"),
++        });
++        drop(mechanism_batch);
++        let candidates = candidates?;
+         if candidates.support != request.support
+             || candidates.beginning_joint_sha256 != request.beginning_joint.receipt_sha256()
+             || candidates.carrier_joint.authority() != request.beginning_joint.authority()
+diff --git a/crates/openwepp-hillslope-orchestrator/src/lib.rs b/crates/openwepp-hillslope-orchestrator/src/lib.rs
+index 05d0113fe..170231c65 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/lib.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/lib.rs
+@@ -11,6 +11,7 @@ pub mod snow_stage3_open_boundary;
+ pub mod snow_stage3_terminal_handoff;
+ pub mod snow_stage3_v11_attachment;
+ pub mod snow_stage3_v11_snow_enthalpy_carry;
++pub mod stage3_mechanism_experiment_audit;
+ pub mod v11_vegetation_consumer;
+ pub mod v9_real_consumer_shadow;
+ pub mod vegetation_diagnostic;
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
+index 271cc6db9..b4bf5beef 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
+@@ -966,24 +966,38 @@ impl DirectSnowStage3V11PreparedSupport {
+         &mut self,
+         transaction_id: openwepp_kernel_contract::TransactionId,
+     ) -> Result<(), DirectSnowStage3V11AttachmentError> {
++        let _binding =
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::LiveBindingRemainder,
++            );
+         self.v11_interval.lse_forcing.transaction_id = transaction_id;
+-        self.v11_interval.lse_forcing.forcing_sha256 = self
+-            .v11_interval
+-            .lse_forcing
+-            .canonical_sha256()
+-            .map_err(|_| {
+-                DirectSnowStage3V11AttachmentError::Identity(
+-                    "live snow-free forcing transaction digest",
+-                )
+-            })?;
++        self.v11_interval.lse_forcing.forcing_sha256 = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::LiveSnowFreeCanonicalSeal,
++                );
++            self.v11_interval
++                .lse_forcing
++                .canonical_sha256()
++                .map_err(|_| {
++                    DirectSnowStage3V11AttachmentError::Identity(
++                        "live snow-free forcing transaction digest",
++                    )
++                })?
++        };
+         if let Some(covered) = &mut self.covered_v11_interval {
+             covered.lse_forcing.transaction_id = transaction_id;
+-            covered.lse_forcing.forcing_sha256 =
++            covered.lse_forcing.forcing_sha256 = {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::LiveCoveredCanonicalSeal,
++                    );
+                 covered.lse_forcing.canonical_sha256().map_err(|_| {
+                     DirectSnowStage3V11AttachmentError::Identity(
+                         "live covered forcing transaction digest",
+                     )
+-                })?;
++                })?
++            };
+         }
+         Ok(())
+     }
+@@ -995,14 +1009,22 @@ impl DirectSnowStage3V11PreparedSupport {
+         support: TimeSupport,
+         inputs: DirectSnowStage3V11DualRegimeSupportInputsV1,
+     ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
+-        let mut prepared = Self::try_new(
+-            support,
+-            inputs.snow_inputs_by_lane,
+-            inputs.support_forcing_by_lane,
+-            inputs.snow_free_v11_interval,
+-            inputs.support_identity_by_lane,
+-        )?
+-        .with_covered_v11_interval(inputs.snow_surface_v11_interval);
++        let mut prepared = {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SupportDraftConstruction,
++            );
++            Self::try_new(
++                support,
++                inputs.snow_inputs_by_lane,
++                inputs.support_forcing_by_lane,
++                inputs.snow_free_v11_interval,
++                inputs.support_identity_by_lane,
++            )?
++        };
++        let _assembly = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SupportCapabilityAssembly,
++        );
++        prepared = prepared.with_covered_v11_interval(inputs.snow_surface_v11_interval);
+         for (destination, capability) in inputs.destination_capabilities {
+             prepared = match capability {
+                 DirectSnowStage3V11DestinationCapabilityV1::OpenProviderProjection => {
+@@ -2275,6 +2297,9 @@ impl PreparedStage3V11DayV1 {
+         supports: Vec<DirectSnowStage3V11PreparedSupport>,
+     ) -> Result<ValidatedPreparedStage3V11DayV1, DirectSnowStage3V11AttachmentError> {
+         let prepared = Self::bind_provider_day(provider, day_index, supports)?;
++        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderDualRegimeValidation,
++        );
+         for support in &prepared.inner.supports {
+             support.validate_dual_regime_capability()?;
+         }
+@@ -2290,12 +2315,20 @@ impl PreparedStage3V11DayV1 {
+         day_index: usize,
+         mut supports: Vec<DirectSnowStage3V11PreparedSupport>,
+     ) -> Result<ValidatedPreparedStage3V11DayV1, DirectSnowStage3V11AttachmentError> {
++        let _remaining = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderRemaining,
++        );
+         if supports.len() != STAGE3_V11_PARENT_SUPPORT_COUNT {
+             return Err(DirectSnowStage3V11AttachmentError::Support(
+                 "provider binding requires exactly 48 supports",
+             ));
+         }
+-        provider.gsi_receipt().validate()?;
++        {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderReceiptValidation,
++            );
++            provider.gsi_receipt().validate()?;
++        }
+         if provider.gsi_receipt().day_index
+             != u64::try_from(day_index).map_err(|_| {
+                 DirectSnowStage3V11AttachmentError::Support("provider day index width")
+@@ -2330,8 +2363,16 @@ impl PreparedStage3V11DayV1 {
+                     "provider day destination set",
+                 ));
+             }
+-            support.bind_provider_atmosphere(&provider_destinations)?;
+-            support.validate_explicit_snow_surface_set()?;
++            {
++                let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderAtmosphereBinding,
++                );
++                support.bind_provider_atmosphere(&provider_destinations)?;
++                support.validate_explicit_snow_surface_set()?;
++            }
++            let _join = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::ProviderDestinationJoin,
++            );
+             let mut support_destinations = BTreeSet::new();
+             for identity in support
+                 .support_identity_by_lane
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs
+index 0cead2511..f7a373b57 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs
+@@ -3,6 +3,43 @@ fn stage3_boxed_execution_v1<T, E>(execute: impl FnOnce() -> Result<T, E>) -> Re
+     execute().map(Box::new)
+ }
+ 
++struct CostedLivePreparedSupportDrop(Option<DirectSnowStage3V11PreparedSupport>);
++
++impl CostedLivePreparedSupportDrop {
++    fn new(support: DirectSnowStage3V11PreparedSupport) -> Self {
++        Self(Some(support))
++    }
++}
++
++impl std::ops::Deref for CostedLivePreparedSupportDrop {
++    type Target = DirectSnowStage3V11PreparedSupport;
++
++    fn deref(&self) -> &Self::Target {
++        match &self.0 {
++            Some(support) => support,
++            None => unreachable!(),
++        }
++    }
++}
++
++impl std::ops::DerefMut for CostedLivePreparedSupportDrop {
++    fn deref_mut(&mut self) -> &mut Self::Target {
++        match &mut self.0 {
++            Some(support) => support,
++            None => unreachable!(),
++        }
++    }
++}
++
++impl Drop for CostedLivePreparedSupportDrop {
++    fn drop(&mut self) {
++        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::LivePreparedSupportDrop,
++        );
++        drop(self.0.take());
++    }
++}
++
+ impl DirectSnowStage3V11ShadowAttachment {
+     pub fn restart_authority_snow_enthalpy_material_residents_v1(
+         &self,
+@@ -130,6 +167,9 @@ impl DirectSnowStage3V11ShadowAttachment {
+         climate: &HillslopeClimateRuntimeRequest,
+         day_index: usize,
+     ) -> Result<PreparedSnowFreeGsiDayV1, DirectSnowStage3V11AttachmentError> {
++        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3ProviderDay,
++        );
+         let consumer = &self.committed.real_consumer;
+         Ok(climate.prepare_snow_free_gsi_day_from_repository(
+             day_index,
+@@ -151,6 +191,9 @@ impl DirectSnowStage3V11ShadowAttachment {
+         )>,
+         DirectSnowStage3V11AttachmentError,
+     > {
++        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3IntervalPreparation,
++        );
+         self.committed
+             .real_consumer
+             .prepare_v11_intervals_from_repository(provider, template)
+@@ -625,8 +668,14 @@ impl DirectSnowStage3V11ShadowAttachment {
+         restart: Option<Box<DirectSnowStage3V11InProgressExecutionV2>>,
+         interrupt_at: Option<DirectSnowStage3V11InterruptionPostureV2>,
+     ) -> Result<PreparedDayExecutionOutcomeV2, DirectSnowStage3V11AttachmentError> {
+-        prepared.validate(&self.static_context, day_start_ns(prepared.day_index())?)?;
+-        validate_prepared_day_against_committed_provider(&self.committed, prepared)?;
++        {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3PreparedDayValidation,
++                );
++            prepared.validate(&self.static_context, day_start_ns(prepared.day_index())?)?;
++            validate_prepared_day_against_committed_provider(&self.committed, prepared)?;
++        }
+         let mut restart = restart;
+         if let Some(checkpoint) = restart.as_ref() {
+             checkpoint.validate(&self.static_context, &self.committed)?;
+@@ -641,7 +690,12 @@ impl DirectSnowStage3V11ShadowAttachment {
+             mut adaptive_support_receipts,
+             mut snow_free_successor_receipts,
+             mut support_index,
+-        ) = restart.as_ref().map_or_else(
++        ) = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3InitialCandidateClone,
++                );
++            restart.as_ref().map_or_else(
+             || {
+                 (
+                     self.committed.clone(),
+@@ -666,19 +720,42 @@ impl DirectSnowStage3V11ShadowAttachment {
+                     checkpoint.support_index,
+                 )
+             },
+-        );
++            )
++        };
+         while support_index < prepared.supports().len() {
+-            let mut live_support = prepared.supports()[support_index].clone();
+-            live_support
+-                .bind_live_owner_transaction(candidate.real_consumer.next_transaction_id()?)?;
++            let mut live_support = CostedLivePreparedSupportDrop::new({
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::PreparedSupportClone,
++                    );
++                prepared.supports()[support_index].clone()
++            });
++            let live_transaction_id = {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::LiveTransactionLookup,
++                    );
++                candidate.real_consumer.next_transaction_id()?
++            };
++            live_support.bind_live_owner_transaction(live_transaction_id)?;
+             let support = &live_support;
+-            let beginning_stage3 = candidate.stage3_by_lane.clone();
++            let beginning_stage3 = {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3SupportStateClone,
++                    );
++                candidate.stage3_by_lane.clone()
++            };
+             let active_snow_lanes = support.state_derived_active_snow_lanes(
+                 &beginning_stage3,
+                 &candidate.terminal_parcels,
+             )?;
+             let covered_support = !active_snow_lanes.is_empty();
+             if !covered_support {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3SnowFreeLaneAdvance,
++                    );
+                 for lane_id in &self.static_context.lane_ids {
+                     let inputs = support.snow_inputs_by_lane.get(lane_id).ok_or(
+                         DirectSnowStage3V11AttachmentError::Support("missing lane support input"),
+@@ -938,16 +1015,16 @@ impl DirectSnowStage3V11ShadowAttachment {
+                     ending_snow_enthalpy_material_owner_chronology,
+                 )
+             } else {
++                let _snow_free_parent_cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeParentRemainder,
++                    );
+                 let beginning_pending_terminal_parcels = candidate.terminal_parcels.clone();
+-                let (parent, consumer, clock, finalized, accepted_support) = execute_real_v11_parent(
+-                    &self.static_context,
+-                    &beginning_parent,
+-                    &candidate.real_consumer,
+-                    &beginning_clock,
+-                    support,
+-                    prepared.day_index(),
+-                    support_index,
+-                    forcing_receipt,
++                let ending_snow_owner_bytes = {
++                    let _cost =
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeOwnerEncoding,
++                        );
+                     if candidate.terminal_parcels.is_empty() {
+                         canonical_stage3_snow_owner_bytes_with_pending(
+                             &candidate.stage3_by_lane,
+@@ -964,7 +1041,18 @@ impl DirectSnowStage3V11ShadowAttachment {
+                             ))?
+                             .state_bytes()
+                             .to_vec()
+-                    },
++                    }
++                };
++                let (parent, consumer, clock, finalized, accepted_support) = execute_real_v11_parent(
++                    &self.static_context,
++                    &beginning_parent,
++                    &candidate.real_consumer,
++                    &beginning_clock,
++                    support,
++                    prepared.day_index(),
++                    support_index,
++                    forcing_receipt,
++                    ending_snow_owner_bytes,
+                     None,
+                     None,
+                     true,
+@@ -974,17 +1062,23 @@ impl DirectSnowStage3V11ShadowAttachment {
+                         "snow-free V11 parent missing endpoint finalization",
+                     ),
+                 )?;
+-                snow_free_successor_receipts.push(Stage3SnowFreeSuccessorReceiptV1::seal(
+-                    support,
+-                    prepared.day_index(),
+-                    support_index,
+-                    beginning_parent.parent_transaction_id(),
+-                    0,
+-                    forcing_receipt,
+-                    &beginning_pending_terminal_parcels,
+-                    &candidate.terminal_parcels,
+-                    accepted_support,
+-                )?);
++                {
++                    let _cost =
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeSuccessorSeal,
++                        );
++                    snow_free_successor_receipts.push(Stage3SnowFreeSuccessorReceiptV1::seal(
++                        support,
++                        prepared.day_index(),
++                        support_index,
++                        beginning_parent.parent_transaction_id(),
++                        0,
++                        forcing_receipt,
++                        &beginning_pending_terminal_parcels,
++                        &candidate.terminal_parcels,
++                        accepted_support,
++                    )?);
++                }
+                 (
+                     parent,
+                     consumer,
+@@ -995,6 +1089,10 @@ impl DirectSnowStage3V11ShadowAttachment {
+                     candidate.snow_enthalpy_material_owner_chronology.clone(),
+                 )
+             };
++            let _post_parent_cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3PostParentInstall,
++                );
+             candidate.v11_parent_state = parent;
+             candidate.real_consumer = consumer;
+             candidate.coupled_clock = clock;
+@@ -1015,6 +1113,10 @@ impl DirectSnowStage3V11ShadowAttachment {
+             )?;
+             support_index += 1;
+         }
++        let _day_finalization_cost =
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::DayFinalization,
++            );
+         candidate
+             .real_consumer
+             .commit_prepared_provider_day(prepared.clone().into_provider_day())?;
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs
+index 31b9abc15..96b2f570e 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs
+@@ -208,6 +208,7 @@ pub struct ReleaseQualificationTelemetryGuardV1 {
+ pub struct ReleaseQualificationProfileScopeV1 {
+     bucket: ReleaseQualificationProfileBucketV1,
+     active: bool,
++    _compact: openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Guard,
+     _not_send: std::marker::PhantomData<Rc<()>>,
+ }
+ 
+@@ -344,6 +345,13 @@ pub fn take_release_qualification_telemetry_v1()
+ fn enter_release_qualification_profile_scope_v1(
+     bucket: ReleaseQualificationProfileBucketV1,
+ ) -> ReleaseQualificationProfileScopeV1 {
++    use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
++    let compact = compact_cost::scope(match bucket {
++        ReleaseQualificationProfileBucketV1::NativeVegetationEt => Bucket::NativeEt,
++        ReleaseQualificationProfileBucketV1::LaneD => Bucket::Routing,
++        ReleaseQualificationProfileBucketV1::Stage3LseSoil => Bucket::Stage3LseParent,
++        ReleaseQualificationProfileBucketV1::RemainingRunner => Bucket::OutsideNamed,
++    });
+     let active = RELEASE_QUALIFICATION_TELEMETRY.with(|state| {
+         let mut state = state.borrow_mut();
+         let Some(state) = state.as_mut() else {
+@@ -375,6 +383,7 @@ fn enter_release_qualification_profile_scope_v1(
+     ReleaseQualificationProfileScopeV1 {
+         bucket,
+         active,
++        _compact: compact,
+         _not_send: std::marker::PhantomData,
+     }
+ }
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs
+index a2f1cd90d..a9344231e 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs
+@@ -28,6 +28,10 @@ fn execute_real_v11_parent(
+     ),
+     DirectSnowStage3V11AttachmentError,
+ > {
++    let setup_cost =
++        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeParentSetup,
++        );
+     if beginning_parent.parent_transaction_id() != beginning_clock.parent_transaction_id()
+         || beginning_clock.accepted_until() != prepared.support.start_ns()
+         || prepared.support.start_ns() < beginning_clock.parent_support().start_ns()
+@@ -88,10 +92,15 @@ fn execute_real_v11_parent(
+         digest_bytes(&ledger_preimage),
+     )?;
+     let segment = beginning_clock.active_segment_id();
++    drop(setup_cost);
+ 
+     // The coupled-time receipt includes the ending owner digest.  Obtain the
+     // actual V11 ending owners with a provisional identity receipt, then rerun
+     // the real V11 stack against the final receipt before accepting anything.
++    let provisional_custody_cost =
++        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeProvisionalCustody,
++        );
+     let provisional_slab = CoupledSlabCandidateV1::new(
+         beginning_clock,
+         segment,
+@@ -102,6 +111,7 @@ fn execute_real_v11_parent(
+     )?;
+     let mut provisional_clock = beginning_clock.clone();
+     let provisional_receipt = accept_slab(&mut provisional_clock, provisional_slab)?;
++    drop(provisional_custody_cost);
+     let provisional_parent = beginning_parent.clone();
+     let provisional_stack = DirectV11RealConsumerStack::new_parent_child_with_ending_snow_owner(
+         beginning_consumer,
+@@ -142,6 +152,10 @@ fn execute_real_v11_parent(
+         &provisional_receipt,
+         &mut provisional_executor,
+     )?;
++    let ending_owner_custody_cost =
++        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeEndingOwnerCustody,
++        );
+     let ending_owners = owner_states_from_envelopes(&provisional_segment.ending_resource_owners)?;
+     let final_slab = CoupledSlabCandidateV1::new(
+         beginning_clock,
+@@ -160,6 +174,7 @@ fn execute_real_v11_parent(
+         beginning_snow_owner_sha256,
+         ending_snow_owner_sha256: stage3_snow_owner_sha256_v1(final_clock.owners())?,
+     };
++    drop(ending_owner_custody_cost);
+     // `prepare_snow_free_physical_reuse` consumes the private
+     // `SnowFreePhysicalReuseSeedV1`; its final executor independently rejects
+     // a `snow-free physical reuse ending owners` mismatch before publication.
+@@ -185,6 +200,10 @@ fn execute_real_v11_parent(
+         &final_receipt,
+         &mut final_executor,
+     )?;
++    let acceptance_publication_cost =
++        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeAcceptancePublication,
++        );
+     if final_segment.ending_resource_owners != provisional_segment.ending_resource_owners {
+         return Err(DirectSnowStage3V11AttachmentError::Identity(
+             "V11 ending owner fixed point",
+@@ -201,7 +220,12 @@ fn execute_real_v11_parent(
+         .stack
+         .commit_selected_publication_and_take_staged_ending()
+         .map_err(DirectSnowStage3V11AttachmentError::Owner)?;
++    drop(acceptance_publication_cost);
+     let finalized = if finalize_parent_at_endpoint {
++        let _finalization_cost =
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::SnowFreeParentFinalization,
++            );
+         if final_clock.accepted_until() != final_clock.parent_support().end_ns() {
+             return Err(DirectSnowStage3V11AttachmentError::Identity(
+                 "snow-free V11 parent finalization before endpoint",
+diff --git a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+index 341cb41bf..914dc514b 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+@@ -114,7 +114,6 @@ impl CoveredTerminalProviderRetentionV1 {
+             Self::Phase(phase) => &phase.ending_candidates,
+         }
+     }
+-
+ }
+ 
+ #[cfg(test)]
+@@ -381,14 +380,26 @@ fn evaluate_covered_terminal_candidate_v1(
+ struct TerminalCandidateProfileScopeV1 {
+     phase: &'static str,
+     started: Option<std::time::Instant>,
++    _compact: openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Guard,
+ }
+ 
+ impl TerminalCandidateProfileScopeV1 {
+     fn begin(phase: &'static str) -> Self {
++        use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
++        let bucket = match phase {
++            "terminal candidate setup" => Bucket::TerminalSetup,
++            "terminal provider custody" | "terminal provider retention" => {
++                Bucket::TerminalCustody
++            }
++            "terminal provider projection" => Bucket::TerminalProjection,
++            "terminal provider carrier" => Bucket::TerminalCarrier,
++            _ => Bucket::OtherNamed,
++        };
+         Self {
+             phase,
+-            started:
+-                crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1(),
++            _compact: compact_cost::scope(bucket),
++            started: crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1(
++            ),
+         }
+     }
+ }
+@@ -429,6 +440,16 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+     ),
+     DirectSnowStage3V11AttachmentError,
+ > {
++    let mut mechanism_outer = crate::stage3_mechanism_experiment_audit::Scope::begin(
++        crate::stage3_mechanism_experiment_audit::Kind::Outer,
++        || {
++            format!(
++                "day={day_index};interval={interval_index};child={current_child_ordinal};lane={lane_id};mode={mode:?};support={:?};upper_bits={}",
++                prepared.support,
++                selected_upper_bound_s.to_bits()
++            )
++        },
++    );
+     let setup_profile = TerminalCandidateProfileScopeV1::begin("terminal candidate setup");
+     let state =
+         beginning_stage3
+@@ -509,6 +530,21 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+     let mut provider_evidence = M::new_provider_state();
+     drop(setup_profile);
+     let mut provider = |request: crate::hydrology::CoveredTerminalTrialRequestV1| {
++        let mut mechanism_provider = crate::stage3_mechanism_experiment_audit::Scope::begin(
++            crate::stage3_mechanism_experiment_audit::Kind::Provider,
++            || {
++                format!(
++                    "lane={};support={:?};role={:?};attempt={};coupling={};beginning={:?};request_sha256={}",
++                    request.lane_id,
++                    request.support,
++                    request.role,
++                    request.attempt_ordinal,
++                    request.coupling_iteration,
++                    request.beginning_joint.receipt_sha256(),
++                    crate::stage3_mechanism_experiment_audit::fingerprint(&request)
++                )
++            },
++        );
+         let custody_profile = TerminalCandidateProfileScopeV1::begin("terminal provider custody");
+         audit_terminal_provider_support(request.support);
+         let carrier = if let Some(exact) = candidates_by_joint
+@@ -671,9 +707,20 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+         })?;
+         drop(projection_profile);
+         let carrier_profile = TerminalCandidateProfileScopeV1::begin("terminal provider carrier");
++        let mut mechanism_carrier = crate::stage3_mechanism_experiment_audit::Scope::begin(
++            crate::stage3_mechanism_experiment_audit::Kind::Carrier,
++            || crate::stage3_mechanism_experiment_audit::fingerprint(&request),
++        );
+         let provider_result = stage3_boxed_execution_v1(|| {
+             stack.execute_covered_carrier_phase_v1(&beginning, &request, child.as_ref().clone())
+         });
++        mechanism_carrier.complete(provider_result.is_ok(), || match &provider_result {
++            Ok(value) => {
++                crate::stage3_mechanism_experiment_audit::transition_fingerprint(&value.transition)
++            }
++            Err(error) => format!("{error:?}"),
++        });
++        drop(mechanism_carrier);
+         drop(carrier_profile);
+         let retention_profile =
+             TerminalCandidateProfileScopeV1::begin("terminal provider retention");
+@@ -725,6 +772,9 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+             .borrow_mut()
+             .insert(ending_joint_sha256, result.clone());
+         drop(retention_profile);
++        mechanism_provider.complete(true, || {
++            crate::stage3_mechanism_experiment_audit::transition_fingerprint(&result.transition)
++        });
+         Ok(result.transition.clone())
+     };
+     let result =
+@@ -743,8 +793,7 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+             evidence,
+         );
+     drop(provider);
+-    let result_profile =
+-        TerminalCandidateProfileScopeV1::begin("terminal result finalization");
++    let result_profile = TerminalCandidateProfileScopeV1::begin("terminal result finalization");
+     M::merge_provider(evidence, provider_evidence);
+     let result = match result {
+         Ok(mut result) => {
+@@ -782,6 +831,7 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<
+         }
+     };
+     drop(result_profile);
++    mechanism_outer.complete(result.is_ok(), String::new);
+     result
+ }
+ 
+diff --git a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs
+index e549d49d3..6d3ec76c1 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs
+@@ -466,24 +466,30 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+                 "physical-only covered endpoint posture",
+             ));
+         }
+-        let expected_open = self
+-            .snow_surface_forcing_by_destination
+-            .iter()
+-            .filter_map(|(destination, forcing)| {
+-                forcing.is_open_snow().then_some(destination.clone())
+-            })
+-            .collect::<BTreeSet<_>>();
+-        let mut complete = complete_stage3_lower_boundaries_v1(
+-            inputs.covered_destinations,
+-            inputs.covered_boundaries,
+-            &expected_open,
+-            inputs.open_boundaries,
+-        )?;
+-        for boundary in complete.values_mut() {
+-            boundary.optical_receipt_sha256 = None;
+-            boundary.reciprocal_longwave_receipt_sha256 = None;
+-            boundary.final_canopy_boundary_receipt_sha256 = None;
+-        }
++        let complete = {
++            let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::CarrierLowerBoundaryCompletion,
++            );
++            let expected_open = self
++                .snow_surface_forcing_by_destination
++                .iter()
++                .filter_map(|(destination, forcing)| {
++                    forcing.is_open_snow().then_some(destination.clone())
++                })
++                .collect::<BTreeSet<_>>();
++            let mut complete = complete_stage3_lower_boundaries_v1(
++                inputs.covered_destinations,
++                inputs.covered_boundaries,
++                &expected_open,
++                inputs.open_boundaries,
++            )?;
++            for boundary in complete.values_mut() {
++                boundary.optical_receipt_sha256 = None;
++                boundary.reciprocal_longwave_receipt_sha256 = None;
++                boundary.final_canopy_boundary_receipt_sha256 = None;
++            }
++            complete
++        };
+         let physical = if let Some(native) = inputs
+             .candidate
+             .evaluate_covered_frozen_litter_v4_physical_v1(
+@@ -641,12 +647,18 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+                 surface_custody,
+             }
+         } else {
+-            let physical = self.build_covered_carrier_physical_value_with_soil_beginning_v1(
+-                prepared,
+-                inputs,
+-                unpublished_soil_candidate,
+-                unpublished_soil_continuation,
+-            )?;
++            let physical = {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::CarrierPhysicalValue,
++                    );
++                self.build_covered_carrier_physical_value_with_soil_beginning_v1(
++                    prepared,
++                    inputs,
++                    unpublished_soil_candidate,
++                    unpublished_soil_continuation,
++                )?
++            };
+             let precipitation_sets =
+                 self.precipitation_parcel_sets_from_physical(support, &physical)?;
+             let (corrected_boundaries, _, _) =
+@@ -707,6 +719,10 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
+         };
+         #[cfg(test)]
+         if covered_provisional_physical_audit_enabled_v1() {
++            let _experiment_audit_cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::CarrierExperimentAudit,
++                );
+             let opaque_physical_projection = evidence
+             .physical
+             .canonical_private_projection_v1()
+diff --git a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
+index f57339c9f..3780f0bac 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs
+@@ -1181,12 +1181,31 @@ fn unpublished_v2_soil_trial(
+ struct CarrierProfileScopeV1 {
+     phase: &'static str,
+     started: Option<std::time::Instant>,
++    _compact: openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Guard,
+ }
+ 
+ impl CarrierProfileScopeV1 {
+     fn begin(phase: &'static str) -> Self {
++        use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
++        let bucket = match phase {
++            "carrier physical setup" => Bucket::CarrierPhysicalSetup,
++            "carrier physical evidence" => Bucket::CarrierPhysicalEvidence,
++            "carrier physical completion" => Bucket::CarrierPhysicalCompletion,
++            "carrier complete envelope"
++            | "carrier complete adoption"
++            | "carrier complete projection"
++            | "carrier complete owner" => Bucket::CarrierCompletionConstruction,
++            "carrier owner soil custody"
++            | "carrier owner candidate bytes"
++            | "carrier owner vegetation validation"
++            | "carrier owner joint map"
++            | "carrier owner joint seal" => Bucket::CarrierCustody,
++            "carrier owner ephemeral assembly" => Bucket::CarrierOrchestration,
++            _ => Bucket::OtherNamed,
++        };
+         Self {
+             phase,
++            _compact: compact_cost::scope(bucket),
+             started: crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1(
+             ),
+         }
+diff --git a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+index d375ffa84..23aefbb18 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+@@ -759,12 +759,30 @@ mod covered_support_receipt_selection_tests {
+ struct ImportedStackProfileScopeV1 {
+     phase: &'static str,
+     started: Option<std::time::Instant>,
++    _compact: openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Guard,
+ }
+ 
+ impl ImportedStackProfileScopeV1 {
+     fn begin(phase: &'static str) -> Self {
++        use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
++        let bucket = match phase {
++            "imported frozen execute accept" => Bucket::ImportedFrozenExecute,
++            "imported frozen runtime" => Bucket::ImportedFrozenRuntime,
++            "imported envelope construction" => Bucket::ImportedEnvelopeConstruction,
++            "imported accepted candidate" => Bucket::ImportedAcceptedCandidate,
++            "imported entry validation"
++            | "imported envelope validation"
++            | "imported reuse validation"
++            | "imported reuse reseal"
++            | "imported frozen acceptance" => Bucket::RequiredIntegrity,
++            "imported owner publication" | "imported install" | "imported reuse install" => {
++                Bucket::ImportedPublicationInstall
++            }
++            _ => Bucket::OtherNamed,
++        };
+         Self {
+             phase,
++            _compact: compact_cost::scope(bucket),
+             started: profile_start(),
+         }
+     }
+diff --git a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_adoption.rs b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_adoption.rs
+index 48f6b6e07..dbdfe351c 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_adoption.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_adoption.rs
+@@ -936,6 +936,12 @@ impl DirectV10RealConsumerShadow {
+         crate::land_surface_energy_shadow::v3_multitile_adoption::V3MultiTileAcceptedFixedFinalCandidate,
+         DirectV10RealConsumerError,
+     >{
++        let observe_covered = complete_lower_boundaries.is_some();
++        let fixed_final_preflight = observe_covered.then(|| {
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeFixedFinalPreflight,
++            )
++        });
+         let resident =
+             self.frozen_litter_v3
+                 .as_ref()
+@@ -996,21 +1002,38 @@ impl DirectV10RealConsumerShadow {
+             .map_err(super::DirectV9RealConsumerError::V9)?;
+             (&owned_projection.0, &owned_projection.1)
+         };
+-        let mut effective_hydrology_frame = self.inner.hydrology_frame.clone();
+-        if let Some(parent) = &self.inner.wb14_parent_working_state {
+-            effective_hydrology_frame.surface_liquid_shadow =
+-                Some(Box::new(parent.candidate_state().clone()));
+-        }
+-        let hydrology = RealHydrologyShadowAdapter::try_from_day_start(
+-            &effective_hydrology_frame,
+-            day_index,
+-            transaction_id,
+-            interval_s,
+-            self.inner.surface_configuration.owner_id.clone(),
+-            &self.inner.layer_maps,
+-        )
+-        .map_err(super::DirectV9RealConsumerError::RealHydrology)?;
++        drop(fixed_final_preflight);
++        let effective_hydrology_frame = {
++            let _cost = observe_covered.then(||
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeEffectiveHydrologyFrameClone,
++                ));
++            let mut frame = self.inner.hydrology_frame.clone();
++            if let Some(parent) = &self.inner.wb14_parent_working_state {
++                frame.surface_liquid_shadow = Some(Box::new(parent.candidate_state().clone()));
++            }
++            frame
++        };
++        let hydrology = {
++            let _cost = observe_covered.then(||
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeEffectiveHydrologyAdapter,
++                ));
++            RealHydrologyShadowAdapter::try_from_day_start(
++                &effective_hydrology_frame,
++                day_index,
++                transaction_id,
++                interval_s,
++                self.inner.surface_configuration.owner_id.clone(),
++                &self.inner.layer_maps,
++            )
++            .map_err(super::DirectV9RealConsumerError::RealHydrology)?
++        };
+         let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
++        let fixed_final_state_projection = observe_covered.then(||
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeFixedFinalStateProjection,
++            ));
+         let unpublished_physical_beginning = match unpublished_soil_candidate {
+             Some(candidate) => {
+                 let beginning = self
+@@ -1067,6 +1090,11 @@ impl DirectV10RealConsumerShadow {
+         )
+         .map_err(super::DirectV9RealConsumerError::LandSurfaceShadow)?;
+         let forcing_sha256 = input.lse_forcing.canonical_sha256()?;
++        drop(fixed_final_state_projection);
++        let fixed_final_vegetation_projection = observe_covered.then(||
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeFixedFinalVegetationProjection,
++            ));
+         let (vegetation_forcing, root_zone_hydraulics) = super::project_live_vegetation_forcing(
+             &input.vegetation_forcing,
+             &hydrology,
+@@ -1082,6 +1110,11 @@ impl DirectV10RealConsumerShadow {
+             day_index,
+             interval_index,
+         )?;
++        drop(fixed_final_vegetation_projection);
++        let fixed_final_canopy_receipt = observe_covered.then(||
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeFixedFinalCanopyReceipt,
++            ));
+         let canopy_forcing = match root_zone_hydraulics {
+             Some(receipts) => V8CanopyForcingReceipt::try_new_with_root_zone(
+                 v8_configuration.configuration_sha256.clone(),
+@@ -1107,6 +1140,11 @@ impl DirectV10RealConsumerShadow {
+             )
+             .map_err(super::DirectV9RealConsumerError::Projection)?,
+         };
++        drop(fixed_final_canopy_receipt);
++        let fixed_final_soil_preparation = observe_covered.then(||
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeFixedFinalSoilPreparation,
++            ));
+         let ordinary_prepared_soil;
+         let physical_soil = if let Some(beginning) = unpublished_physical_beginning {
+             crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning::try_from_v2_unpublished(
+@@ -1123,6 +1161,11 @@ impl DirectV10RealConsumerShadow {
+             )
+             .map_err(super::DirectV9RealConsumerError::Projection)?
+         };
++        drop(fixed_final_soil_preparation);
++        let _fixed_final_physical_call = observe_covered.then(||
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeFixedFinalPhysicalCall,
++            ));
+         execute_frozen_litter_v3_fixed_final_pre_ingress(
+             v8_configuration,
+             v8_beginning,
+diff --git a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs
+index 6a57b313f..9c61adfd9 100644
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs
+@@ -897,7 +897,7 @@ impl DirectV10RealConsumerShadow {
+     /// Evaluate the represented-snow native physical prefix without creating
+     /// any vegetation, biogeochemistry, joint-owner, or restart envelope.
+     /// The installed V3/V4 pair is immutable identity authority only.
+-    #[allow(clippy::too_many_arguments)]
++    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+     pub(crate) fn evaluate_covered_frozen_litter_v4_physical_v1(
+         &self,
+         day_index: usize,
+@@ -927,6 +927,10 @@ impl DirectV10RealConsumerShadow {
+         Option<crate::land_surface_energy_shadow::ProvisionalCoveredV8PhysicalEvaluationV1>,
+         DirectV10RealConsumerError,
+     > {
++        let _native_remainder =
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativePhysicalEvaluationRemainder,
++            );
+         let (Some(physical_resident), Some(_exact_resident)) =
+             (&self.frozen_litter_v3, &self.frozen_litter_v4)
+         else {
+@@ -939,29 +943,41 @@ impl DirectV10RealConsumerShadow {
+             return Ok(None);
+         };
+ 
+-        let mut canopy_soil_forcing = input.lse_forcing.clone();
+-        canopy_soil_forcing.snow_present_at_beginning = false;
+-        canopy_soil_forcing.snow_present_at_end = false;
+-        canopy_soil_forcing.forcing_sha256 = canopy_soil_forcing.canonical_sha256()?;
+-        let physical_input = super::DirectV9ShadowIntervalInput {
+-            lse_forcing: canopy_soil_forcing,
+-            vegetation_forcing: input.vegetation_forcing.clone(),
+-            wb14_parameters: input.wb14_parameters.clone(),
++        let physical_input = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeForcingAdaptation,
++                );
++            let mut canopy_soil_forcing = input.lse_forcing.clone();
++            canopy_soil_forcing.snow_present_at_beginning = false;
++            canopy_soil_forcing.snow_present_at_end = false;
++            canopy_soil_forcing.forcing_sha256 = canopy_soil_forcing.canonical_sha256()?;
++            super::DirectV9ShadowIntervalInput {
++                lse_forcing: canopy_soil_forcing,
++                vegetation_forcing: input.vegetation_forcing.clone(),
++                wb14_parameters: input.wb14_parameters.clone(),
++            }
++        };
++        let fixed = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeFixedFinalPreparation,
++                );
++            self.prepare_covered_frozen_litter_v3_fixed_final_with_projection(
++                day_index,
++                interval_index,
++                &physical_input,
++                duration_s_bits,
++                finalize_wb14_parent_interval,
++                coupled_binding,
++                complete_lower_boundaries,
++                covered_destinations,
++                unpublished_soil_candidate,
++                unpublished_soil_continuation,
++                validated_v8_projection,
++                validated_soil_read,
++            )?
+         };
+-        let fixed = self.prepare_covered_frozen_litter_v3_fixed_final_with_projection(
+-            day_index,
+-            interval_index,
+-            &physical_input,
+-            duration_s_bits,
+-            finalize_wb14_parent_interval,
+-            coupled_binding,
+-            complete_lower_boundaries,
+-            covered_destinations,
+-            unpublished_soil_candidate,
+-            unpublished_soil_continuation,
+-            validated_v8_projection,
+-            validated_soil_read,
+-        )?;
+         if fixed.stage3_covered_native_tiles.is_empty() || !fixed.frozen_litter_tiles.is_empty() {
+             return Err(super::DirectV9RealConsumerError::OwnerClosure(
+                 "represented-snow physical-only native tile posture",
+@@ -973,53 +989,80 @@ impl DirectV10RealConsumerShadow {
+         let _represented_snow_physical_scope = CoveredRepresentedSnowPhysicalScopeV1::enter();
+ 
+         let transaction_id = fixed.water_protocol.transaction_id;
+-        let hydrology = RealHydrologyShadowAdapter::try_from_day_start(
+-            &self.inner.hydrology_frame,
+-            day_index,
+-            transaction_id,
+-            f64::from_bits(duration_s_bits),
+-            self.inner.surface_configuration.owner_id.clone(),
+-            &self.inner.layer_maps,
+-        )
+-        .map_err(super::DirectV9RealConsumerError::RealHydrology)?;
++        let hydrology = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeOriginalHydrologyAdapter,
++                );
++            RealHydrologyShadowAdapter::try_from_day_start(
++                &self.inner.hydrology_frame,
++                day_index,
++                transaction_id,
++                f64::from_bits(duration_s_bits),
++                self.inner.surface_configuration.owner_id.clone(),
++                &self.inner.layer_maps,
++            )
++            .map_err(super::DirectV9RealConsumerError::RealHydrology)?
++        };
+         let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
+-        let native_parent_handoff = physical_resident
+-            .wb14_parent()
+-            .map(|parent| parent.validated_handoff(physical_resident.surface_configuration()))
+-            .transpose()?;
+-        let active_parent = match (
+-            self.inner.wb14_parent_working_state.as_ref(),
+-            native_parent_handoff.as_ref(),
+-        ) {
+-            (Some(inner), Some(native)) => {
+-                if !native.has_same_liquid_arithmetic(inner) {
+-                    return Err(super::DirectV9RealConsumerError::OwnerClosure(
+-                        "represented-snow V1/V2 WB14 parent arithmetic join",
+-                    )
+-                    .into());
++        let native_parent_handoff;
++        let active_parent = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeWb14ParentJoin,
++                );
++            native_parent_handoff = physical_resident
++                .wb14_parent()
++                .map(|parent| parent.validated_handoff(physical_resident.surface_configuration()))
++                .transpose()?;
++            match (
++                self.inner.wb14_parent_working_state.as_ref(),
++                native_parent_handoff.as_ref(),
++            ) {
++                (Some(inner), Some(native)) => {
++                    if !native.has_same_liquid_arithmetic(inner) {
++                        return Err(super::DirectV9RealConsumerError::OwnerClosure(
++                            "represented-snow V1/V2 WB14 parent arithmetic join",
++                        )
++                        .into());
++                    }
++                    Some(inner)
+                 }
+-                Some(inner)
++                (Some(inner), None) => Some(inner),
++                (None, Some(native)) => Some(native.liquid_arithmetic()),
++                (None, None) => None,
+             }
+-            (Some(inner), None) => Some(inner),
+-            (None, Some(native)) => Some(native.liquid_arithmetic()),
+-            (None, None) => None,
+         };
+-        let unified = crate::land_surface_energy_shadow::
+-            construct_stage3_covered_native_unified_hydrology_candidate(
+-                &soil_adapter,
+-                &self.inner.surface_configuration,
+-                &fixed,
+-                physical_resident.lse_state(),
+-                active_parent,
+-                finalize_wb14_parent_interval,
+-                coupled_binding,
+-            )
+-            .map_err(super::DirectV9RealConsumerError::LandSurfaceShadow)?;
+-        let physical = crate::land_surface_energy_shadow::
+-            ProvisionalCoveredV8PhysicalEvaluationV1::try_new_stage3_covered_native(fixed, unified)
+-            .map_err(super::DirectV9RealConsumerError::OwnerEnvelope)?;
++        let unified = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeUnifiedHydrologyCandidate,
++                );
++            crate::land_surface_energy_shadow::construct_stage3_covered_native_unified_hydrology_candidate(
++                    &soil_adapter,
++                    &self.inner.surface_configuration,
++                    &fixed,
++                    physical_resident.lse_state(),
++                    active_parent,
++                    finalize_wb14_parent_interval,
++                    coupled_binding,
++                )
++                .map_err(super::DirectV9RealConsumerError::LandSurfaceShadow)?
++        };
++        let physical = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativePhysicalResultAdmission,
++                );
++            crate::land_surface_energy_shadow::ProvisionalCoveredV8PhysicalEvaluationV1::try_new_stage3_covered_native(fixed, unified)
++                .map_err(super::DirectV9RealConsumerError::OwnerEnvelope)?
++        };
+         #[cfg(test)]
+         let physical = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::NativeExperimentalDiagnostics,
++                );
+             let mut physical = physical;
+             // This is intentionally captured only after the returned physical
+             // endpoint exists. The immutable resident is the native ending
+diff --git a/crates/openwepp-land-surface-energy/src/covered_liquid.rs b/crates/openwepp-land-surface-energy/src/covered_liquid.rs
+index 80055c5d8..a6a2e4cc1 100644
+--- a/crates/openwepp-land-surface-energy/src/covered_liquid.rs
++++ b/crates/openwepp-land-surface-energy/src/covered_liquid.rs
+@@ -16,7 +16,7 @@ fn canonical_liquid_reference_temperature_k(temperature_k: f64) -> f64 {
+ }
+ 
+ /// Numerical pass that produced an E04 liquid candidate.
+-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, serde::Deserialize)]
+ pub enum CoveredLiquidPass {
+     Potential,
+     FixedAuthorizationFinal,
+@@ -25,7 +25,7 @@ pub enum CoveredLiquidPass {
+ /// Accepted E04 operands and releases for one occupancy, all on tile-ground
+ /// interval basis. No residual supplied by the producer is accepted as
+ /// closure evidence; [`Self::validate`] reconstructs it from operands.
+-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
++#[derive(Clone, Copy, Debug, PartialEq, Serialize, serde::Deserialize)]
+ pub struct CoveredOccupancyLiquidLedger {
+     pub pass: CoveredLiquidPass,
+     pub beginning_store_kg_m2_tile: f64,
+diff --git a/crates/openwepp-land-surface-energy/src/covered_oracle_conformance_tests.rs b/crates/openwepp-land-surface-energy/src/covered_oracle_conformance_tests.rs
+index 1acc0e5e4..d21012476 100644
+--- a/crates/openwepp-land-surface-energy/src/covered_oracle_conformance_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/covered_oracle_conformance_tests.rs
+@@ -1,5 +1,8 @@
+ //! Ordinary Rust conformance against the committed covered-column authority vectors.
+ 
++#[path = "covered_natural_limit_diagnostic_parity_tests.rs"]
++mod natural_limit_diagnostic_parity;
++
+ use std::collections::BTreeMap;
+ 
+ use serde_json::Value;
+diff --git a/crates/openwepp-land-surface-energy/src/covered_output.rs b/crates/openwepp-land-surface-energy/src/covered_output.rs
+index a2522b9fc..cc9a0a4b4 100644
+--- a/crates/openwepp-land-surface-energy/src/covered_output.rs
++++ b/crates/openwepp-land-surface-energy/src/covered_output.rs
+@@ -11,7 +11,7 @@ use crate::{
+ 
+ /// Primitive energy terms for one named canopy surface. No producer residual
+ /// is retained; the receiving owner reconstructs it from these terms.
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredSurfaceEnergyOperands {
+     pub surface_area_m2_m2_tile: f64,
+     pub emissive_area_m2_m2_tile: f64,
+@@ -90,7 +90,7 @@ impl CoveredSurfaceEnergyOperands {
+ }
+ 
+ /// Four independently owned energy surfaces for one exact occupancy.
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredOccupancyEnergyOperands {
+     pub occupancy_id: String,
+     pub sun_leaf: CoveredSurfaceEnergyOperands,
+@@ -141,7 +141,7 @@ impl CoveredOccupancyEnergyOperands {
+ /// Exact shortwave handoff retained by band and direction. Canopy absorption
+ /// remains component owned while the ground terminal handoff is partitioned
+ /// independently into absorbed and reflected terms.
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredColumnShortwaveOperands {
+     pub incident_w_m2_tile: BandDirectionalFluxes,
+     pub top_reflected_w_m2_tile: BandDirectionalFluxes,
+@@ -257,7 +257,7 @@ impl CoveredColumnShortwaveOperands {
+ }
+ 
+ /// Primitive reciprocal-longwave boundaries and component ownership.
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredColumnLongwaveOperands {
+     pub atmospheric_downward_w_m2_tile: f64,
+     pub transmissivities: Vec<f64>,
+@@ -405,7 +405,7 @@ impl CoveredColumnLongwaveOperands {
+ 
+ /// Shared zero-storage canopy-air node. Component and ground transfers are
+ /// reconstructed independently against the reference-atmosphere exchange.
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredCanopyAirEnergyOperands {
+     pub rho_air_kg_m3: f64,
+     pub cp_air_j_kg_k: f64,
+@@ -460,7 +460,7 @@ impl CoveredCanopyAirEnergyOperands {
+ 
+ /// Complete covered-column energy receipt supplementing the ground surface,
+ /// latent-water join, and equal/opposite ground-heat receipt.
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredColumnEnergyOperands {
+     pub occupancies: Vec<CoveredOccupancyEnergyOperands>,
+     pub canopy_air: CoveredCanopyAirEnergyOperands,
+@@ -613,7 +613,7 @@ fn band_values(
+ }
+ 
+ /// Per-occupancy hydraulic, energy, carbon, and E04 operands.
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredOccupancyEvaluation {
+     pub residuals: Vec<f64>,
+     pub tolerances: Vec<f64>,
+@@ -646,7 +646,7 @@ pub struct CoveredOccupancyEvaluation {
+ }
+ 
+ /// Complete whole-column residual evaluation and accepted component operands.
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredColumnEvaluation {
+     pub raw_residuals: Vec<f64>,
+     pub normalized_residuals: Vec<f64>,
+diff --git a/crates/openwepp-land-surface-energy/src/lib.rs b/crates/openwepp-land-surface-energy/src/lib.rs
+index a97c04646..40d45a661 100644
+--- a/crates/openwepp-land-surface-energy/src/lib.rs
++++ b/crates/openwepp-land-surface-energy/src/lib.rs
+@@ -21,6 +21,11 @@ pub mod owner_envelope;
+ pub mod physics;
+ pub mod solver;
+ pub mod solver_litter_phase;
++pub mod solver_mechanism_audit;
++#[cfg(any(test, feature = "test-support"))]
++pub mod solver_residual_corpus_capture;
++#[cfg(test)]
++mod solver_stem_jacobian_tests;
+ pub mod state;
+ pub mod support;
+ pub mod transaction;
+diff --git a/crates/openwepp-land-surface-energy/src/numerics.rs b/crates/openwepp-land-surface-energy/src/numerics.rs
+index 10ca43ed9..541a5d871 100644
+--- a/crates/openwepp-land-surface-energy/src/numerics.rs
++++ b/crates/openwepp-land-surface-energy/src/numerics.rs
+@@ -143,6 +143,9 @@ where
+     E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
+     V: FnMut(&[f64]) -> bool,
+ {
++    let _cost = crate::solver_mechanism_audit::compact_cost::scope(
++        crate::solver_mechanism_audit::compact_cost::Bucket::Trial,
++    );
+     for exponent in 0..=MAX_BACKTRACKING_HALVINGS {
+         let factor = 0.5_f64.powf(f64::from(exponent));
+         let trial: Vec<f64> = x
+@@ -187,6 +190,9 @@ where
+         .collect();
+     let mut jacobian = vec![vec![0.0; x.len()]; x.len()];
+     for column in 0..x.len() {
++        crate::solver_mechanism_audit::compact_cost::column(column, false);
++        #[cfg(any(test, feature = "test-support"))]
++        let capture_column = crate::solver_residual_corpus_capture::column(column, false);
+         let mut minus = x.to_vec();
+         let mut plus = x.to_vec();
+         minus[column] -= perturbations[column];
+@@ -194,11 +200,17 @@ where
+         let minus_valid = valid_trial(&minus);
+         let plus_valid = valid_trial(&plus);
+         let minus_residual = minus_valid
+-            .then(|| evaluator(&minus, Some(frozen)))
++            .then(|| {
++                let _cost = crate::solver_mechanism_audit::compact_cost::probe(column);
++                evaluator(&minus, Some(frozen))
++            })
+             .transpose()?
+             .map(|value| value.0);
+         let plus_residual = plus_valid
+-            .then(|| evaluator(&plus, Some(frozen)))
++            .then(|| {
++                let _cost = crate::solver_mechanism_audit::compact_cost::probe(column);
++                evaluator(&plus, Some(frozen))
++            })
+             .transpose()?
+             .map(|value| value.0);
+         if !minus_valid && !plus_valid {
+@@ -220,6 +232,8 @@ where
+                 }
+             };
+         }
++        #[cfg(any(test, feature = "test-support"))]
++        capture_column.finish(true);
+     }
+     Ok(jacobian)
+ }
+@@ -298,6 +312,7 @@ where
+         unit_scales,
+         valid_trial,
+         freeze_branches,
++        |_, _, _, _| {},
+         |_: &[f64],
+          _: &D,
+          _: &[f64],
+@@ -308,12 +323,13 @@ where
+ }
+ 
+ #[allow(clippy::too_many_lines)]
+-pub(crate) fn solve_normalized_system_with_adjustment<D, B, E, V, F, A>(
++pub(crate) fn solve_normalized_system_with_adjustment<D, B, E, V, F, O, A>(
+     mut evaluator: E,
+     initial: Vec<f64>,
+     unit_scales: &[f64],
+     mut valid_trial: V,
+     mut freeze_branches: F,
++    mut observe_sweep: O,
+     mut adjust_linear_system: A,
+ ) -> Result<NormalizedSolveOutcome<D>, LandSurfaceEnergyError>
+ where
+@@ -321,10 +337,14 @@ where
+     E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
+     V: FnMut(&[f64]) -> bool,
+     F: FnMut(&D) -> B,
++    O: FnMut(&[f64], &D, &B, &crate::solver_mechanism_audit::Scope),
+     A: FnMut(&[f64], &D, &[f64], &mut [Vec<f64>], &mut [f64]) -> Result<(), LandSurfaceEnergyError>,
+     B: Clone,
+ {
+     validate_solver_shape(&initial, unit_scales)?;
++    let _cost_remaining = crate::solver_mechanism_audit::compact_cost::scope(
++        crate::solver_mechanism_audit::compact_cost::Bucket::SolverRemaining,
++    );
+     let mut x = initial;
+     let mut last_step = None;
+     let mut backtracking_count = 0;
+@@ -332,7 +352,13 @@ where
+     let mut matrix_norm = None;
+     let mut history = Vec::new();
+     for iteration in 0..=MAX_NEWTON_ITERATIONS {
+-        let (normalized, detail) = evaluator(&x, None)?;
++        crate::solver_mechanism_audit::iteration(iteration);
++        let (normalized, detail) = {
++            let _cost = crate::solver_mechanism_audit::compact_cost::scope(
++                crate::solver_mechanism_audit::compact_cost::Bucket::PreparationBase,
++            );
++            evaluator(&x, None)?
++        };
+         if normalized.len() != x.len() || normalized.iter().any(|value| !value.is_finite()) {
+             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                 "normalized_residual_shape_or_domain",
+@@ -364,6 +390,15 @@ where
+             ));
+         }
+         let frozen = freeze_branches(&detail);
++        crate::solver_mechanism_audit::compact_cost::sweep();
++        let cost_assembly = crate::solver_mechanism_audit::compact_cost::scope(
++            crate::solver_mechanism_audit::compact_cost::Bucket::Assembly,
++        );
++        let mut sweep_observation =
++            crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Sweep);
++        observe_sweep(&x, &detail, &frozen, &sweep_observation);
++        #[cfg(any(test, feature = "test-support"))]
++        let capture_sweep = crate::solver_residual_corpus_capture::sweep();
+         let mut jacobian = bounded_jacobian(
+             &mut evaluator,
+             &mut valid_trial,
+@@ -372,6 +407,10 @@ where
+             unit_scales,
+             &frozen,
+         )?;
++        #[cfg(any(test, feature = "test-support"))]
++        capture_sweep.finish(true);
++        sweep_observation.complete();
++        drop(sweep_observation);
+         let mut right_hand_side: Vec<f64> = normalized.iter().map(|value| -value).collect();
+         adjust_linear_system(
+             &x,
+@@ -380,21 +419,27 @@ where
+             &mut jacobian,
+             &mut right_hand_side,
+         )?;
+-        let (delta, current_pivot, current_matrix_norm) =
+-            match solve_linear(&jacobian, &right_hand_side) {
+-                Ok(value) => value,
+-                Err(evidence) => {
+-                    return Ok(rejected(
+-                        NumericalFailureKind::SingularPivot,
+-                        iteration,
+-                        normalized,
+-                        backtracking_count,
+-                        last_step,
+-                        (Some(evidence.pivot), Some(evidence.matrix_norm)),
+-                        x,
+-                    ));
+-                }
+-            };
++        drop(cost_assembly);
++        let linear_result = {
++            let _cost = crate::solver_mechanism_audit::compact_cost::scope(
++                crate::solver_mechanism_audit::compact_cost::Bucket::Linear,
++            );
++            solve_linear(&jacobian, &right_hand_side)
++        };
++        let (delta, current_pivot, current_matrix_norm) = match linear_result {
++            Ok(value) => value,
++            Err(evidence) => {
++                return Ok(rejected(
++                    NumericalFailureKind::SingularPivot,
++                    iteration,
++                    normalized,
++                    backtracking_count,
++                    last_step,
++                    (Some(evidence.pivot), Some(evidence.matrix_norm)),
++                    x,
++                ));
++            }
++        };
+         pivot = Some(current_pivot);
+         matrix_norm = Some(current_matrix_norm);
+         let prospective_step = delta.iter().map(|value| value.abs()).fold(0.0, f64::max);
+diff --git a/crates/openwepp-land-surface-energy/src/physics.rs b/crates/openwepp-land-surface-energy/src/physics.rs
+index a741a7f75..01555b991 100644
+--- a/crates/openwepp-land-surface-energy/src/physics.rs
++++ b/crates/openwepp-land-surface-energy/src/physics.rs
+@@ -111,7 +111,7 @@ pub fn vapor_export_w_m2(
+     )
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct OpenNeutralGeometry {
+     pub reference_height_m: f64,
+     pub roughness_momentum_m: f64,
+@@ -119,7 +119,7 @@ pub struct OpenNeutralGeometry {
+     pub roughness_vapor_m: f64,
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct NeutralResistances {
+     pub heat_s_m: f64,
+     pub vapor_s_m: f64,
+@@ -160,7 +160,7 @@ pub fn open_neutral_resistances(
+     })
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct UnderCanopyGeometry {
+     pub canopy_height_m: f64,
+     pub canopy_roughness_m: f64,
+@@ -168,7 +168,7 @@ pub struct UnderCanopyGeometry {
+     pub leaf_area_index: f64,
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct UnderCanopyResistance {
+     pub reynolds_number: f64,
+     pub drag_coefficient: f64,
+@@ -231,7 +231,7 @@ pub fn under_canopy_neutral_resistance(
+     })
+ }
+ 
+-#[derive(Clone, Copy, Debug, Default, PartialEq)]
++#[derive(Clone, Copy, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct BandDirectionalFluxes {
+     pub direct_vis: f64,
+     pub diffuse_vis: f64,
+@@ -263,7 +263,7 @@ impl BandDirectionalFluxes {
+     }
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct ShortwavePartition {
+     pub absorbed: BandDirectionalFluxes,
+     pub reflected: BandDirectionalFluxes,
+@@ -298,7 +298,7 @@ pub fn partition_ground_shortwave(
+     })
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CanopyLongwaveLayer {
+     pub clumping_index: f64,
+     pub leaf_area_index: f64,
+@@ -309,7 +309,7 @@ pub struct CanopyLongwaveLayer {
+     pub component_temperatures_k: [f64; 4],
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CanopyLongwaveResult {
+     pub transmissivities: Vec<f64>,
+     pub downward_boundaries_w_m2: Vec<f64>,
+@@ -419,7 +419,7 @@ pub fn reciprocal_longwave_column(
+     })
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct BareSoilVaporOperands {
+     pub top_layer_liquid_kg_m2: f64,
+     pub top_layer_ice_kg_m2: f64,
+@@ -435,7 +435,7 @@ pub struct BareSoilVaporOperands {
+     pub moist_air_density_kg_m3: f64,
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct BareSoilVaporResult {
+     pub signed_flux_kg_m2_s: f64,
+     pub saturation: f64,
+diff --git a/crates/openwepp-land-surface-energy/src/solver.rs b/crates/openwepp-land-surface-energy/src/solver.rs
+index 27208e942..cc805ae2f 100644
+--- a/crates/openwepp-land-surface-energy/src/solver.rs
++++ b/crates/openwepp-land-surface-energy/src/solver.rs
+@@ -43,19 +43,19 @@ use serde::Serialize;
+ use sha2::{Digest, Sha256};
+ use std::collections::{BTreeMap, BTreeSet};
+ 
+-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub enum SurfaceStorageBranch {
+     FiniteCapacity,
+     EquilibriumZero,
+ }
+ 
+-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub enum SurfaceClassKind {
+     BareMineralSoil,
+     ForestLitter,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct SoilThermalNodeOperands {
+     pub layer_id: String,
+     pub depth_m: f64,
+@@ -64,7 +64,7 @@ pub struct SoilThermalNodeOperands {
+     pub beginning_temperature_k: f64,
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct BareSoilParameters {
+     pub top_layer_liquid_kg_m2: f64,
+     pub top_layer_ice_kg_m2: f64,
+@@ -74,7 +74,7 @@ pub struct BareSoilParameters {
+     pub theta_initial: f64,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct OpenSurfaceProblem {
+     pub interval_s: f64,
+     pub tile_fraction: f64,
+@@ -101,14 +101,14 @@ pub struct OpenSurfaceProblem {
+     pub soil_nodes: Vec<SoilThermalNodeOperands>,
+ }
+ 
+-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, serde::Deserialize)]
+ pub enum WaterBranch {
+     ConstitutiveLaw,
+     AuthorizationActiveOrTie,
+     Condensation,
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct GroundWaterFlux {
+     pub law_kg_m2_tile_s: f64,
+     pub final_kg_m2_tile_s: f64,
+@@ -119,7 +119,7 @@ pub struct GroundWaterFlux {
+     pub branch: WaterBranch,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct SoilThermalResidual {
+     pub layer_id: String,
+     pub incoming_cn_w_m2: f64,
+@@ -128,7 +128,7 @@ pub struct SoilThermalResidual {
+     pub residual_w_m2: f64,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct OpenSurfaceEvaluation {
+     pub raw_residuals: Vec<f64>,
+     pub normalized_residuals: Vec<f64>,
+@@ -311,7 +311,7 @@ pub(crate) fn covered_failure_metadata(
+     (occupancy_id, active_bounds)
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct FrozenActiveBranches {
+     pub ground: WaterBranch,
+ }
+@@ -690,14 +690,14 @@ pub fn evaluate_open_surface(
+     })
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct OpenSurfaceCandidate {
+     pub surface_enthalpy_j_m2_tile: f64,
+     pub surface_temperature_warm_start_k: f64,
+     pub soil_temperature_k: Vec<f64>,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct AcceptedOpenSurface {
+     pub solution: Vec<f64>,
+     pub evaluation: OpenSurfaceEvaluation,
+diff --git a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
+index b982a8a46..97c63be22 100644
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
+@@ -1,5 +1,5 @@
+ /// Frozen biochemical constants for one C3 sun or shade class.
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct LeafBiochemicalInputs {
+     pub leaf_area_m2_m2_tile: f64,
+     pub absorbed_shortwave_w_m2_tile: f64,
+@@ -9,7 +9,7 @@ pub struct LeafBiochemicalInputs {
+     pub rd25: f64,
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct BiochemicalConstants {
+     pub ha_vcmax_j_mol: f64,
+     pub hd_vcmax_j_mol: f64,
+@@ -32,7 +32,7 @@ pub struct BiochemicalConstants {
+     pub ag_ap_curvature: f64,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct RootHydraulicLayer {
+     pub layer_id: String,
+     pub accessible: bool,
+@@ -45,28 +45,62 @@ pub struct RootHydraulicLayer {
+     pub ksoil_m2_s: f64,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct SourceWaterCap {
+     pub request_rate_kg_m2_tile_s: f64,
+     pub authorization_rate_kg_m2_tile_s: f64,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredWaterCaps {
+     /// Exact `(occupancy_id, layer_id) -> tile-ground rate` identity.
++    #[serde(with = "tuple_map")]
+     pub root: BTreeMap<(String, String), SourceWaterCap>,
+     /// The one ground-source authorization for this tile.
+     pub ground: SourceWaterCap,
+ }
+ 
+-#[derive(Clone, Debug, Default, PartialEq)]
++#[derive(Clone, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredFrozenBranches {
++    #[serde(with = "tuple_map")]
+     pub root: BTreeMap<(String, String), WaterBranch>,
+     pub wet: BTreeMap<String, WaterBranch>,
+     pub ground: Option<WaterBranch>,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++mod tuple_map {
++    use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error as _};
++    use std::collections::BTreeMap;
++
++    pub(super) fn serialize<S, V>(
++        values: &BTreeMap<(String, String), V>,
++        serializer: S,
++    ) -> Result<S::Ok, S::Error>
++    where
++        S: Serializer,
++        V: Serialize,
++    {
++        values.iter().collect::<Vec<_>>().serialize(serializer)
++    }
++
++    pub(super) fn deserialize<'de, D, V>(
++        deserializer: D,
++    ) -> Result<BTreeMap<(String, String), V>, D::Error>
++    where
++        D: Deserializer<'de>,
++        V: Deserialize<'de>,
++    {
++        let entries = Vec::<((String, String), V)>::deserialize(deserializer)?;
++        let count = entries.len();
++        let values = entries.into_iter().collect::<BTreeMap<_, _>>();
++        if values.len() != count {
++            return Err(D::Error::custom("duplicate tuple-map key"));
++        }
++        Ok(values)
++    }
++}
++
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct SourceWaterFlux {
+     pub occupancy_id: String,
+     pub layer_id: String,
+@@ -156,7 +190,7 @@ pub(crate) fn exact_inactive_source_water(source: &SourceWaterFlux) -> bool {
+         && source.branch == WaterBranch::ConstitutiveLaw
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredOccupancyInputs {
+     pub occupancy_id: String,
+     pub medlyn_g1_kpa_sqrt: f64,
+@@ -192,7 +226,7 @@ pub struct CoveredOccupancyInputs {
+ 
+ /// Bound E01--E03 band/direction absorption owned by one physical canopy
+ /// occupancy before wet/dry surface partitioning.
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredOccupancyShortwaveInputs {
+     pub occupancy_id: String,
+     pub sun_leaf_absorbed_w_m2_tile: BandDirectionalFluxes,
+@@ -202,7 +236,7 @@ pub struct CoveredOccupancyShortwaveInputs {
+ 
+ /// Complete column shortwave boundary receipt from the admitted radiation
+ /// owner. These are primitive E01--E03 results, not inferred all-wave shares.
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredColumnShortwaveInputs {
+     pub incident_w_m2_tile: BandDirectionalFluxes,
+     pub top_reflected_w_m2_tile: BandDirectionalFluxes,
+@@ -213,7 +247,7 @@ pub struct CoveredColumnShortwaveInputs {
+     pub occupancies: Vec<CoveredOccupancyShortwaveInputs>,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct CoveredColumnInputs {
+     /// Validated coupled physiology/numerical authority. Historical variants
+     /// must never infer successor behavior from forcing values alone.
+@@ -243,7 +277,7 @@ pub struct CoveredColumnInputs {
+     pub stage3_optical: Option<Stage3SnowOpticalBoundaryReceiptV1>,
+ }
+ 
+-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub enum CoveredColumnAuthority {
+     HistoricalV8,
+     V10NonpositiveAssimilation,
+@@ -270,7 +304,7 @@ impl CoveredColumnAuthority {
+ /// to close the canopy-air node and to use the released snow temperature in
+ /// reciprocal longwave. It does not own snow mass, surface liquid, or the
+ /// Stage-3 energy ledger.
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct Stage3SnowCoveredLowerBoundary {
+     pub snow_temperature_k: f64,
+     pub latent_heat_j_kg: f64,
+@@ -295,7 +329,7 @@ pub struct Stage3SnowCoveredLowerBoundary {
+ /// The receipt is created from the same two-stream result that supplies the
+ /// canopy absorption and top reflection; it is not a post-hoc scalar energy
+ /// correction.
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct Stage3SnowOpticalBoundaryReceiptV1 {
+     pub ofe_id: OfeId,
+     pub tile_id: TileId,
+@@ -309,7 +343,7 @@ pub struct Stage3SnowOpticalBoundaryReceiptV1 {
+     pub receipt_sha256: Sha256Digest,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub struct Stage3SnowOpticalBoundaryReceiptInputs {
+     pub ofe_id: OfeId,
+     pub tile_id: TileId,
+@@ -463,7 +497,7 @@ impl Stage3SnowCoveredLowerBoundary {
+     }
+ }
+ 
+-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+ pub enum V10LeafGasBranch {
+     Inactive,
+     ExactZeroPar,
+@@ -501,7 +535,7 @@ pub(crate) fn v10_nonpositive_assimilation_active(evaluation: &CoveredColumnEval
+     })
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ struct LeafTrialState {
+     surface_q: f64,
+     rs_s_m: f64,
+@@ -560,7 +594,7 @@ const fn force_exhaustive_covered_leaf_maximum() -> bool {
+     false
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+ struct LeafCarbonState {
+     ag: f64,
+     an: f64,
+@@ -691,6 +725,7 @@ fn leaf_trial_state(
+     medlyn_g1_kpa_sqrt: f64,
+ ) -> Result<LeafTrialState, LandSurfaceEnergyError> {
+     record_covered_leaf_trial_audit();
++    crate::solver_mechanism_audit::leaf_call();
+     let vcmax_factor = peaked(
+         temperature,
+         p.ha_vcmax_j_mol,
+@@ -1878,33 +1913,31 @@ impl<'a> ValidatedCoveredEvaluationInputs<'a> {
+         caps: Option<&'a CoveredWaterCaps>,
+     ) -> Result<Self, LandSurfaceEnergyError> {
+         validate_covered_shortwave_inputs(column)?;
+-        let stage3_boundary =
+-            if column.authority == CoveredColumnAuthority::V11SnowCovered {
+-                let boundary = column.stage3_lower_boundary.as_ref().ok_or(
+-                    LandSurfaceEnergyError::StateLineage(
+-                        "missing Stage-3 covered lower boundary",
+-                    ),
+-                )?;
+-                boundary.validate()?;
+-                let optical = column.stage3_optical.as_ref().ok_or(
+-                    LandSurfaceEnergyError::StateLineage(
++        let stage3_boundary = if column.authority == CoveredColumnAuthority::V11SnowCovered {
++            let boundary = column.stage3_lower_boundary.as_ref().ok_or(
++                LandSurfaceEnergyError::StateLineage("missing Stage-3 covered lower boundary"),
++            )?;
++            boundary.validate()?;
++            let optical =
++                column
++                    .stage3_optical
++                    .as_ref()
++                    .ok_or(LandSurfaceEnergyError::StateLineage(
+                         "missing Stage-3 snow optical boundary",
+-                    ),
+-                )?;
+-                if optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
+-                    || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
+-                    || optical.stage3_albedo_state_sha256
+-                        != boundary.stage3_albedo_state_sha256
+-                    || optical.forcing_receipt_sha256 != boundary.forcing_receipt_sha256
+-                {
+-                    return Err(LandSurfaceEnergyError::StateLineage(
+-                        "Stage-3 snow optical/lower-boundary identity",
+-                    ));
+-                }
+-                Some(boundary)
+-            } else {
+-                None
+-            };
++                    ))?;
++            if optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
++                || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
++                || optical.stage3_albedo_state_sha256 != boundary.stage3_albedo_state_sha256
++                || optical.forcing_receipt_sha256 != boundary.forcing_receipt_sha256
++            {
++                return Err(LandSurfaceEnergyError::StateLineage(
++                    "Stage-3 snow optical/lower-boundary identity",
++                ));
++            }
++            Some(boundary)
++        } else {
++            None
++        };
+         record_covered_evaluation_input_validation_audit();
+         Ok(Self {
+             column,
+@@ -1947,6 +1980,19 @@ fn evaluate_covered_column_validated(
+     trial: &[f64],
+     frozen: Option<&CoveredFrozenBranches>,
+     v3_litter: Option<crate::V3LitterResidualContext>,
++) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
++    let observation =
++        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Evaluation);
++    observation.finish(evaluate_covered_column_observed(
++        validated, trial, frozen, v3_litter,
++    ))
++}
++
++fn evaluate_covered_column_observed(
++    validated: &ValidatedCoveredEvaluationInputs<'_>,
++    trial: &[f64],
++    frozen: Option<&CoveredFrozenBranches>,
++    v3_litter: Option<crate::V3LitterResidualContext>,
+ ) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
+     let column = validated.column;
+     let caps = validated.caps;
+diff --git a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+index c7cbe0347..98ab62213 100644
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+@@ -266,8 +266,7 @@ impl<'a> ValidatedCoveredJacobianBase<'a> {
+         validated: &'a ValidatedCoveredEvaluationInputs<'a>,
+         trial: &[f64],
+     ) -> Result<Self, LandSurfaceEnergyError> {
+-        Ok(ValidatedCoveredIterationMap::evaluate(validated, trial)?
+-            .into_jacobian_base(trial))
++        Ok(ValidatedCoveredIterationMap::evaluate(validated, trial)?.into_jacobian_base(trial))
+     }
+ }
+ 
+@@ -293,11 +292,41 @@ fn covered_jacobian_probe_residuals(
+     base: &ValidatedCoveredJacobianBase<'_>,
+     probe: &[f64],
+     column_index: usize,
++) -> Result<Vec<f64>, LandSurfaceEnergyError> {
++    let _cost = if !force_complete_covered_jacobian_probes()
++        && base
++            .validated
++            .stage3_identity_anchor_k(column_index)
++            .is_some()
++    {
++        crate::solver_mechanism_audit::compact_cost::scope(
++            crate::solver_mechanism_audit::compact_cost::Bucket::Assembly,
++        )
++    } else {
++        crate::solver_mechanism_audit::compact_cost::probe(column_index)
++    };
++    let mut observation =
++        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Probe);
++    let result =
++        covered_jacobian_probe_residuals_observed(base, probe, column_index, &mut observation);
++    observation.finish(result)
++}
++
++fn covered_jacobian_probe_residuals_observed(
++    base: &ValidatedCoveredJacobianBase<'_>,
++    probe: &[f64],
++    column_index: usize,
++    observation: &mut crate::solver_mechanism_audit::Scope,
+ ) -> Result<Vec<f64>, LandSurfaceEnergyError> {
+     let validated = base.validated;
+     let current = &base.evaluation;
+     let frozen = Some(&base.frozen);
+     if probe.len() != base.trial.len() || column_index >= probe.len() {
++        observation.probe(
++            column_index,
++            probe.get(column_index).map(|v| v.to_bits()),
++            crate::solver_mechanism_audit::ProbeClass::Complete,
++        );
+         record_covered_jacobian_full_probe_audit();
+         return Ok(
+             evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals,
+@@ -306,6 +335,11 @@ fn covered_jacobian_probe_residuals(
+     if probe.iter().enumerate().any(|(index, value)| {
+         index != column_index && value.to_bits() != base.trial[index].to_bits()
+     }) {
++        observation.probe(
++            column_index,
++            Some(probe[column_index].to_bits()),
++            crate::solver_mechanism_audit::ProbeClass::Complete,
++        );
+         record_covered_jacobian_full_probe_audit();
+         return Ok(
+             evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals,
+@@ -313,12 +347,22 @@ fn covered_jacobian_probe_residuals(
+     }
+     if !force_complete_covered_jacobian_probes() {
+         if let Some(anchor_k) = validated.stage3_identity_anchor_k(column_index) {
++            observation.probe(
++                column_index,
++                Some(probe[column_index].to_bits()),
++                crate::solver_mechanism_audit::ProbeClass::IdentityAnchor,
++            );
+             let mut residuals = current.normalized_residuals.clone();
+             let raw_residual = probe[column_index] - anchor_k;
+             residuals[column_index] = raw_residual / STAGE3_COVERED_IDENTITY_TOLERANCE_K;
+             return Ok(residuals);
+         }
+     }
++    observation.probe(
++        column_index,
++        Some(probe[column_index].to_bits()),
++        crate::solver_mechanism_audit::ProbeClass::Complete,
++    );
+     record_covered_jacobian_full_probe_audit();
+     Ok(evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals)
+ }
+@@ -480,6 +524,42 @@ fn solve_covered_column_impl(
+     initial_trial: Vec<f64>,
+     allow_v10_initial_final_acceptance: bool,
+ ) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
++    let observation =
++        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Solve);
++    #[cfg(any(test, feature = "test-support"))]
++    let capture = crate::solver_residual_corpus_capture::solve(
++        crate::solver_residual_corpus_capture::Family::Covered,
++        caps.is_some(),
++    );
++    let result = solve_covered_column_observed(
++        beginning,
++        caps,
++        initial_trial,
++        allow_v10_initial_final_acceptance,
++    );
++    #[cfg(any(test, feature = "test-support"))]
++    capture.finish(matches!(
++        &result,
++        Ok(CoveredColumnSolveOutcome::Accepted(..))
++    ));
++    observation.finish(result)
++}
++
++fn solve_covered_column_observed(
++    beginning: &CoveredColumnInputs,
++    caps: Option<&CoveredWaterCaps>,
++    initial_trial: Vec<f64>,
++    allow_v10_initial_final_acceptance: bool,
++) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
++    let _cost_solve = crate::solver_mechanism_audit::compact_cost::solve(
++        if caps.is_some() {
++            crate::solver_mechanism_audit::compact_cost::Family::CoveredFixedFinal
++        } else {
++            crate::solver_mechanism_audit::compact_cost::Family::CoveredPotential
++        },
++        initial_trial.len(),
++        beginning,
++    );
+     validate_covered_caps(beginning, caps)?;
+     let ground_uses_liquid_vapor_phase_domain =
+         covered_ground_uses_liquid_vapor_phase_domain(beginning);
+@@ -500,9 +580,17 @@ fn solve_covered_column_impl(
+     let mut backtracking_count = 0;
+     let mut pivot = None;
+     let mut matrix_norm = None;
++    let _cost_remaining = crate::solver_mechanism_audit::compact_cost::scope(
++        crate::solver_mechanism_audit::compact_cost::Bucket::SolverRemaining,
++    );
+     for iteration in 0..=MAX_NEWTON_ITERATIONS {
+-        let iteration_map =
+-            ValidatedCoveredIterationMap::evaluate(&validated_evaluation_inputs, &x)?;
++        crate::solver_mechanism_audit::iteration(iteration);
++        let iteration_map = {
++            let _cost = crate::solver_mechanism_audit::compact_cost::scope(
++                crate::solver_mechanism_audit::compact_cost::Bucket::PreparationBase,
++            );
++            ValidatedCoveredIterationMap::evaluate(&validated_evaluation_inputs, &x)?
++        };
+         let detail = &iteration_map.evaluation;
+         let norm = normalized_infinity_norm(&detail.normalized_residuals);
+         let v10_nonpositive_assimilation = beginning.authority.admits_nonpositive_assimilation()
+@@ -541,6 +629,38 @@ fn solve_covered_column_impl(
+             }));
+         }
+         let jacobian_base = iteration_map.into_jacobian_base(&x);
++        crate::solver_mechanism_audit::compact_cost::sweep();
++        let cost_assembly = crate::solver_mechanism_audit::compact_cost::scope(
++            crate::solver_mechanism_audit::compact_cost::Bucket::Assembly,
++        );
++        let mut sweep_observation =
++            crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Sweep);
++        #[cfg(any(test, feature = "test-support"))]
++        if let Some(lifecycle) = sweep_observation.lifecycle_identity() {
++            crate::solver_residual_corpus_capture::record(
++                crate::solver_residual_corpus_capture::Snapshot {
++                    family: crate::solver_residual_corpus_capture::Family::Covered,
++                    v3: None,
++                    lifecycle,
++                    pass: if jacobian_base.validated.caps.is_some() {
++                        crate::solver_residual_corpus_capture::Pass::FixedFinal
++                    } else {
++                        crate::solver_residual_corpus_capture::Pass::Potential
++                    },
++                    inputs: jacobian_base.validated.column.clone(),
++                    caps: jacobian_base.validated.caps.cloned(),
++                    x_bits: jacobian_base
++                        .trial
++                        .iter()
++                        .map(|value| value.to_bits())
++                        .collect(),
++                    frozen: jacobian_base.frozen.clone(),
++                    base_evaluation: jacobian_base.evaluation.clone(),
++                },
++            );
++        }
++        #[cfg(any(test, feature = "test-support"))]
++        let capture_sweep = crate::solver_residual_corpus_capture::sweep();
+         let detail = &jacobian_base.evaluation;
+         let units: Vec<f64> = (0..beginning.occupancies.len())
+             .flat_map(|_| [1000.0, 1000.0, 1000.0, 1000.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+@@ -553,7 +673,29 @@ fn solve_covered_column_impl(
+             .map(|(value, unit)| f64::EPSILON.sqrt() * value.abs().max(*unit))
+             .collect();
+         let mut jacobian = vec![vec![0.0; x.len()]; x.len()];
++        sweep_observation.sweep_base(
++            &x,
++            beginning.occupancies.len(),
++            beginning.ground.soil_nodes.len(),
++            validated_evaluation_inputs.stage3_boundary.is_some(),
++            ground_uses_liquid_vapor_phase_domain,
++        );
+         for column_index in 0..x.len() {
++            crate::solver_mechanism_audit::compact_cost::column(
++                column_index,
++                !force_complete_covered_jacobian_probes()
++                    && validated_evaluation_inputs
++                        .stage3_identity_anchor_k(column_index)
++                        .is_some(),
++            );
++            #[cfg(any(test, feature = "test-support"))]
++            let capture_column = crate::solver_residual_corpus_capture::column(
++                column_index,
++                !force_complete_covered_jacobian_probes()
++                    && validated_evaluation_inputs
++                        .stage3_identity_anchor_k(column_index)
++                        .is_some(),
++            );
+             let mut minus = x.clone();
+             let mut plus = x.clone();
+             minus[column_index] -= perturbations[column_index];
+@@ -565,6 +707,24 @@ fn solve_covered_column_impl(
+                 beginning.occupancies.len(),
+                 ground_uses_liquid_vapor_phase_domain,
+             )?;
++            if sweep_observation.detailed() {
++                sweep_observation.stencil(
++                    column_index,
++                    minus[column_index],
++                    plus[column_index],
++                    covered_trial_is_valid(
++                        &minus,
++                        beginning.occupancies.len(),
++                        ground_uses_liquid_vapor_phase_domain,
++                    ),
++                    covered_trial_is_valid(
++                        &plus,
++                        beginning.occupancies.len(),
++                        ground_uses_liquid_vapor_phase_domain,
++                    ),
++                    validated_evaluation_inputs.stage3_identity_anchor_k(column_index),
++                );
++            }
+             // Preserve the canonical minus-then-plus evaluation order while
+             // never evaluating a constitutively inadmissible boundary probe.
+             let minus_residuals = covered_trial_is_valid(
+@@ -572,41 +732,31 @@ fn solve_covered_column_impl(
+                 beginning.occupancies.len(),
+                 ground_uses_liquid_vapor_phase_domain,
+             )
+-            .then(|| {
+-                covered_jacobian_probe_residuals(
+-                    &jacobian_base,
+-                    &minus,
+-                    column_index,
+-                )
+-            })
++            .then(|| covered_jacobian_probe_residuals(&jacobian_base, &minus, column_index))
+             .transpose()?;
+             let plus_residuals = covered_trial_is_valid(
+                 &plus,
+                 beginning.occupancies.len(),
+                 ground_uses_liquid_vapor_phase_domain,
+             )
+-            .then(|| {
+-                covered_jacobian_probe_residuals(
+-                    &jacobian_base,
+-                    &plus,
+-                    column_index,
+-                )
+-            })
++            .then(|| covered_jacobian_probe_residuals(&jacobian_base, &plus, column_index))
+             .transpose()?;
+             for row in 0..x.len() {
+                 jacobian[row][column_index] = covered_finite_difference_value(
+                     stencil,
+                     detail.normalized_residuals[row],
+-                    minus_residuals
+-                        .as_ref()
+-                        .map(|value| value[row]),
+-                    plus_residuals
+-                        .as_ref()
+-                        .map(|value| value[row]),
++                    minus_residuals.as_ref().map(|value| value[row]),
++                    plus_residuals.as_ref().map(|value| value[row]),
+                     perturbations[column_index],
+                 )?;
+             }
++            #[cfg(any(test, feature = "test-support"))]
++            capture_column.finish(true);
+         }
++        #[cfg(any(test, feature = "test-support"))]
++        capture_sweep.finish(true);
++        sweep_observation.complete();
++        drop(sweep_observation);
+         let mut rhs: Vec<f64> = detail
+             .normalized_residuals
+             .iter()
+@@ -665,11 +815,17 @@ fn solve_covered_column_impl(
+                 }
+             }
+         }
+-        let (mut delta, current_pivot, current_matrix_norm) = match solve_linear(&jacobian, &rhs) {
++        drop(cost_assembly);
++        let linear_result = {
++            let _cost = crate::solver_mechanism_audit::compact_cost::scope(
++                crate::solver_mechanism_audit::compact_cost::Bucket::Linear,
++            );
++            solve_linear(&jacobian, &rhs)
++        };
++        let (mut delta, current_pivot, current_matrix_norm) = match linear_result {
+             Ok(value) => value,
+             Err(evidence) => {
+-                let (occupancy_id, active_bounds) =
+-                    covered_failure_metadata(beginning, detail, &x);
++                let (occupancy_id, active_bounds) = covered_failure_metadata(beginning, detail, &x);
+                 return Ok(CoveredColumnSolveOutcome::Rejected(NumericalFailure {
+                     kind: NumericalFailureKind::SingularPivot,
+                     iterations: iteration,
+@@ -693,6 +849,9 @@ fn solve_covered_column_impl(
+         }
+         pivot = Some(current_pivot);
+         matrix_norm = Some(current_matrix_norm);
++        let _cost_trial = crate::solver_mechanism_audit::compact_cost::scope(
++            crate::solver_mechanism_audit::compact_cost::Bucket::Trial,
++        );
+         let prospective: Vec<f64> = x
+             .iter()
+             .zip(delta.iter())
+@@ -795,21 +954,14 @@ fn solve_covered_column_impl(
+             ) {
+                 continue;
+             }
+-            let Ok(trial_detail) = evaluate_covered_column_validated(
+-                &validated_evaluation_inputs,
+-                &trial,
+-                None,
+-                None,
+-            ) else {
++            let Ok(trial_detail) =
++                evaluate_covered_column_validated(&validated_evaluation_inputs, &trial, None, None)
++            else {
+                 continue;
+             };
+             let applied: Vec<f64> = delta.iter().map(|value| factor * value).collect();
+-            let steps = covered_step_norms(
+-                &applied,
+-                beginning.occupancies.len(),
+-                detail,
+-                &trial_detail,
+-            );
++            let steps =
++                covered_step_norms(&applied, beginning.occupancies.len(), detail, &trial_detail);
+             rejected_step_norms = Some(steps);
+             if is_strict_residual_decrease(norm, &trial_detail.normalized_residuals) {
+                 accepted = Some((trial, steps, exponent));
+diff --git a/crates/openwepp-land-surface-energy/src/solver_litter_phase.rs b/crates/openwepp-land-surface-energy/src/solver_litter_phase.rs
+index e28632a64..5050b0528 100644
+--- a/crates/openwepp-land-surface-energy/src/solver_litter_phase.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_litter_phase.rs
+@@ -18,7 +18,7 @@ pub struct PhaseFreeLitterSolveOutput {
+     pub nonlinear_phase_evaluation_count: u8,
+ }
+ 
+-#[derive(Clone, Copy, Debug, PartialEq)]
++#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+ pub struct V3LitterResidualContext {
+     pub configuration: LitterPhaseConfiguration,
+     pub beginning: BeginningLitterPhaseState,
+@@ -42,7 +42,7 @@ pub struct V3PhaseFreeSurfaceEnergyLedger {
+     pub reconstructed_energy_residual_w_m2: f64,
+ }
+ 
+-#[derive(Clone, Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+ pub struct V3PhaseFreeCoveredEvaluation {
+     pub predecessor: CoveredColumnEvaluation,
+     pub vapor: LitterVaporReceipt,
+@@ -197,12 +197,22 @@ fn adjust_v3_inactive_coordinates(
+ /// in every residual and finite-difference evaluation. Coordinate scaling
+ /// preserves the governed covered-column step thresholds: `1e-7 mm`,
+ /// `1e-10` beta, `1e-8 K`, and `1e-12 kg kg-1` humidity.
++#[allow(clippy::too_many_lines)]
+ pub fn solve_v3_phase_free_covered_column(
+     column: &CoveredColumnInputs,
+     caps: Option<&CoveredWaterCaps>,
+     initial_trial: &[f64],
+     context: V3LitterResidualContext,
+ ) -> Result<NormalizedSolveOutcome<V3PhaseFreeCoveredEvaluation>, LandSurfaceEnergyError> {
++    let _cost_solve = crate::solver_mechanism_audit::compact_cost::solve(
++        if caps.is_some() {
++            crate::solver_mechanism_audit::compact_cost::Family::V3FixedFinal
++        } else {
++            crate::solver_mechanism_audit::compact_cost::Family::V3Potential
++        },
++        initial_trial.len(),
++        column,
++    );
+     let coordinate_scales =
+         v3_step_coordinate_scales(column.occupancies.len(), column.ground.soil_nodes.len());
+     if initial_trial.len() != coordinate_scales.len() {
+@@ -222,6 +232,13 @@ pub fn solve_v3_phase_free_covered_column(
+         .zip(&coordinate_scales)
+         .map(|(unit, scale)| unit / scale)
+         .collect();
++    let solve_observation =
++        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Solve);
++    #[cfg(any(test, feature = "test-support"))]
++    let capture_solve = crate::solver_residual_corpus_capture::solve(
++        crate::solver_residual_corpus_capture::Family::GenericV3,
++        caps.is_some(),
++    );
+     let result = solve_normalized_system_with_adjustment(
+         |scaled: &[f64], frozen: Option<&CoveredFrozenBranches>| {
+             let physical = physical_trial(scaled, &coordinate_scales);
+@@ -239,6 +256,47 @@ pub fn solve_v3_phase_free_covered_column(
+             crate::solver::covered_trial_is_valid(&physical, column.occupancies.len(), false)
+         },
+         freeze_v3_covered_branches,
++        |trial, detail, frozen, sweep| {
++            #[cfg(not(any(test, feature = "test-support")))]
++            let _ = (trial, detail, frozen, sweep);
++            #[cfg(any(test, feature = "test-support"))]
++            if crate::solver_residual_corpus_capture::is_active() {
++                if let Some(lifecycle) = sweep.lifecycle_identity() {
++                    crate::solver_residual_corpus_capture::record(
++                        crate::solver_residual_corpus_capture::Snapshot {
++                            family: crate::solver_residual_corpus_capture::Family::GenericV3,
++                            v3: Some(crate::solver_residual_corpus_capture::V3Capture {
++                                context,
++                                evaluation: detail.clone(),
++                                scaled_x_bits: trial.iter().map(|value| value.to_bits()).collect(),
++                                coordinate_scale_bits: coordinate_scales
++                                    .iter()
++                                    .map(|value| value.to_bits())
++                                    .collect(),
++                                scaled_unit_bits: scaled_units
++                                    .iter()
++                                    .map(|value| value.to_bits())
++                                    .collect(),
++                            }),
++                            lifecycle,
++                            pass: if caps.is_some() {
++                                crate::solver_residual_corpus_capture::Pass::FixedFinal
++                            } else {
++                                crate::solver_residual_corpus_capture::Pass::Potential
++                            },
++                            inputs: column.clone(),
++                            caps: caps.cloned(),
++                            x_bits: physical_trial(trial, &coordinate_scales)
++                                .iter()
++                                .map(|value| value.to_bits())
++                                .collect(),
++                            frozen: frozen.clone(),
++                            base_evaluation: detail.predecessor.clone(),
++                        },
++                    );
++                }
++            }
++        },
+         |trial, detail, _, jacobian, right_hand_side| {
+             adjust_v3_inactive_coordinates(
+                 column,
+@@ -250,7 +308,13 @@ pub fn solve_v3_phase_free_covered_column(
+                 right_hand_side,
+             )
+         },
+-    )?;
++    );
++    #[cfg(any(test, feature = "test-support"))]
++    capture_solve.finish(matches!(
++        &result,
++        Ok(NormalizedSolveOutcome::Accepted { .. })
++    ));
++    let result = solve_observation.finish(result)?;
+     Ok(match result {
+         NormalizedSolveOutcome::Accepted {
+             solution,
+diff --git a/crates/openwepp-land-surface-energy/src/solver_tests.rs b/crates/openwepp-land-surface-energy/src/solver_tests.rs
+index 4e8a8cfcc..7786a69d1 100644
+--- a/crates/openwepp-land-surface-energy/src/solver_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_tests.rs
+@@ -1864,6 +1864,13 @@ fn covered_v8_block_matches_frozen_joint_solution() {
+         },
+     };
+     let multirank_capped_trial = multirank_potential_trial.clone();
++    // Capture source-real positive-stem potential/final solver sweeps. The
++    // mechanism observer supplies lifecycle joins; neither observer invokes
++    // the evaluator or manufactures a solver state.
++    let mechanism_session = crate::solver_mechanism_audit::begin_mechanism_audit(false, 0)
++        .expect("begin corpus lifecycle audit");
++    let corpus_session =
++        crate::solver_residual_corpus_capture::begin(2).expect("begin bounded active-stem corpus");
+     let multirank = execute_covered_potential_final(
+         &column,
+         multirank_potential_trial,
+@@ -1871,6 +1878,29 @@ fn covered_v8_block_matches_frozen_joint_solution() {
+         multirank_capped_trial,
+     )
+     .expect("multirank potential/final transaction");
++    let corpus = corpus_session.finish().expect("finish active-stem corpus");
++    let mechanism = mechanism_session
++        .finish()
++        .expect("finish corpus lifecycle audit");
++    assert!(mechanism.solves.completions >= 2);
++    assert!(mechanism.sweeps.completions >= 2);
++    let oracle = crate::solver_stem_jacobian_tests::audit_corpus(&corpus);
++    assert_eq!(oracle.candidates, 16, "frozen corpus cardinality changed");
++    assert_eq!(oracle.supported, 0, "v33 outcome-frozen oracle changed");
++    eprintln!(
++        "baseline v33 dry-stem oracle support: {}/{} columns",
++        oracle.supported, oracle.candidates
++    );
++    if let Some(path) = std::env::var_os("OPENWEPP_RESIDUAL_CORPUS_PATH") {
++        let bytes = corpus.to_wire_bytes().expect("encode active-stem corpus");
++        let decoded = crate::solver_residual_corpus_capture::Corpus::from_wire_bytes(&bytes)
++            .expect("decode active-stem corpus");
++        assert_eq!(
++            decoded, corpus,
++            "wire custody must preserve every native bit"
++        );
++        std::fs::write(path, bytes).expect("write active-stem corpus");
++    }
+     assert_eq!(multirank.final_pass.evaluation.occupancies.len(), 2);
+     assert!(multirank.final_pass.root_water.iter().all(|source| {
+         source.finalized_use_kg_m2_stand_ground
+diff --git a/crates/openwepp-land-surface-energy/src/transaction.rs b/crates/openwepp-land-surface-energy/src/transaction.rs
+index f61b6dd2a..406c02643 100644
+--- a/crates/openwepp-land-surface-energy/src/transaction.rs
++++ b/crates/openwepp-land-surface-energy/src/transaction.rs
+@@ -291,6 +291,7 @@ pub fn solve_open_potential_phase(
+ 
+ #[derive(Clone, Debug, PartialEq)]
+ pub struct CoveredPotentialPhase {
++    mechanism_map: crate::solver_mechanism_audit::MapToken,
+     identity: RuntimeTileIdentity,
+     beginning: CoveredColumnInputs,
+     accepted: Box<CoveredColumnCandidate>,
+@@ -518,6 +519,8 @@ pub fn solve_covered_potential_phase(
+     roots: Vec<RootRuntimeIdentity>,
+     initial_trial: Vec<f64>,
+ ) -> Result<CoveredPotentialPhase, LandSurfaceEnergyError> {
++    let mut mechanism_map =
++        crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Map);
+     identity.validate()?;
+     if identity.tile_fraction.to_bits() != beginning.tile_fraction.to_bits()
+         || identity.interval_s.to_bits() != beginning.interval_s.to_bits()
+@@ -674,6 +677,10 @@ pub fn solve_covered_potential_phase(
+         .map(|occupancy| occupancy.gas_branches)
+         .collect();
+     Ok(CoveredPotentialPhase {
++        mechanism_map: {
++            mechanism_map.complete();
++            mechanism_map.map_token()
++        },
+         identity,
+         beginning: beginning.clone(),
+         accepted,
+@@ -2730,6 +2737,7 @@ pub fn finalize_covered_phase_with_soil_thermal_beginning(
+     final_initial_trial: Vec<f64>,
+     soil: SoilThermalFinalizationBeginning<'_>,
+ ) -> Result<FinalCoveredTileCandidate, LandSurfaceEnergyError> {
++    let _mechanism_map = crate::solver_mechanism_audit::join_map(phase.mechanism_map);
+     if expected_beginning_lse_state_sha256 != &phase.identity.beginning_lse_state_sha256 {
+         return Err(LandSurfaceEnergyError::StateLineage(
+             "stale covered potential beginning state",
+diff --git a/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs b/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs
+index 4c50a7e3b..13d3a8420 100644
+--- a/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs
++++ b/crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs
+@@ -139,6 +139,7 @@ pub(crate) fn build_complete_v3_final_candidate(
+         .map(|occupancy| occupancy.gas_branches)
+         .collect();
+     let synthetic = CoveredPotentialPhase {
++        mechanism_map: crate::solver_mechanism_audit::MapToken::default(),
+         identity: phase.identity().clone(),
+         beginning: phase.beginning().clone(),
+         accepted: potential_physical,
+diff --git a/crates/openwepp-runner/Cargo.toml b/crates/openwepp-runner/Cargo.toml
+index b9fa9a68b..744095fa4 100644
+--- a/crates/openwepp-runner/Cargo.toml
++++ b/crates/openwepp-runner/Cargo.toml
+@@ -61,5 +61,7 @@ name = "openwepp-snowbench"
+ path = "src/bin/openwepp-snowbench.rs"
+ 
+ [dev-dependencies]
++rustix = { version = "=1.1.4", features = ["time"] }
++openwepp-land-surface-energy = { path = "../openwepp-land-surface-energy", version = "0.1.0", features = ["test-support"] }
+ arrow-schema = "54.3.1"
+ openwepp-persisted-restart-v1 = { path = "../openwepp-persisted-restart-v1", version = "0.1.0", features = ["fixtures"] }
+diff --git a/crates/openwepp-runner/src/hillslope/03_tests.rs b/crates/openwepp-runner/src/hillslope/03_tests.rs
+index 749146710..bef4a6c84 100644
+--- a/crates/openwepp-runner/src/hillslope/03_tests.rs
++++ b/crates/openwepp-runner/src/hillslope/03_tests.rs
+@@ -45,6 +45,7 @@ mod tests {
+     include!("tests03/eb04w2b_warm_snow.rs");
+     include!("tests03/stage3_evaluation_publication_parity.rs");
+     include!("tests03/stage3_runner_qualification.rs");
++    include!("tests03/controlled_mechanism_experiments.rs");
+     include!("tests03/stage3_long_run_output_evidence.rs");
+     include!("tests03/stage3_long_run_qualification.rs");
+     include!("tests03/wat5_output_transaction.rs");
+diff --git a/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs b/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs
+index 148746c1e..3e0862c1f 100644
+--- a/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs
++++ b/crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs
+@@ -414,7 +414,12 @@ fn execute_direct_publication_stream(
+             |frame, day_index| {
+                 let _qualification_stage3_scope = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::enter_release_qualification_stage3_scope_v1();
+                 #[cfg(test)]
+-                let rollback_beginning = stage3_rejected_day_rollback_beginning(frame);
++                let rollback_beginning = {
++                    let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::RejectedDayRollbackSnapshotClone,
++                    );
++                    stage3_rejected_day_rollback_beginning(frame)
++                };
+                 let beginning_canopy_cover_by_lane = frame
+                     .lanes
+                     .iter()
+@@ -440,8 +445,16 @@ fn execute_direct_publication_stream(
+                     },
+                 );
+                 #[cfg(test)]
+-                if let Err(error) = &result {
+-                    record_stage3_rejected_day_rollback(frame, rollback_beginning, error);
++                match &result {
++                    Err(error) => {
++                        record_stage3_rejected_day_rollback(frame, rollback_beginning, error);
++                    }
++                    Ok(()) => {
++                        let _cost = openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::RejectedDayRollbackSnapshotDrop,
++                        );
++                        drop(rollback_beginning);
++                    }
+                 }
+                 result
+             },
+@@ -2162,6 +2175,8 @@ pub fn execute_hillslope_run_with_runtime_policy(
+     argv: &[String],
+     runtime_policy: HillslopeRuntimeSelectionPolicy,
+ ) -> Result<HillslopeRunReport, HillslopeCliError> {
++    use openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::{self, Bucket};
++    let compact_setup = compact_cost::scope(Bucket::RunnerSetup);
+     reject_retired_laned_runtime_envs()?;
+ 
+     if !request.run_dir.is_dir() {
+@@ -2204,6 +2219,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
+         adapter_boundary,
+         execution_state,
+     } = runtime_setup;
++    drop(compact_setup);
+     let mut execution = execute_selected_hillslope_days(
+         &inputs.runfile.run_name,
+         targets.output_hillslope_id,
+@@ -2215,6 +2231,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
+         &streaming_targets,
+         output_transaction.stage3_evidence_private_path(),
+     )?;
++    let _compact_publication = compact_cost::scope(Bucket::RunnerPublication);
+     let retained_publication = execution.retained_direct_publication.as_ref().ok_or(
+         HillslopeCliError::RuntimeSurfaceFailure {
+             surface: "stage3_v11_archive_spool",
+diff --git a/crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs b/crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs
+index 011930987..0125041fc 100644
+--- a/crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs
++++ b/crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs
+@@ -272,6 +272,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
+         production_seed: &crate::hillslope::snow_stage3_v11_production_seed::DirectSnowStage3V11ProductionSeedV1,
+     ) -> Result<DirectSnowStage3V11DualRegimeSupportInputsV1, DirectSnowStage3V11AttachmentError>
+     {
++        let _support_build_cost =
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3SupportBuildRemainder,
++            );
+         let static_authority = production_seed.support_static_authority();
+         let destination_days = provider.forcing_receipts().receipts();
+         let first_day =
+@@ -292,7 +296,13 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
+         let (day, simulation_year, daily) = self
+             .climate_day_for_build(provider_interval.day_index)
+             .map_err(|_| DirectSnowStage3V11AttachmentError::Support("runner climate day"))?;
+-        let hourly = stage3_v11_provider_hourly_forcing(first_day)?;
++        let hourly = {
++            let _cost =
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3SupportHourlyProjection,
++                );
++            stage3_v11_provider_hourly_forcing(first_day)?
++        };
+         let lane_ofes = static_authority
+             .interval_template()
+             .wb14_parameters
+@@ -337,16 +347,23 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
+                     "runner lane snow authority",
+                 ))?
+                 .snow_frost;
++            let daily_extraterrestrial_radiation_mj_m2 = {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3SupportRadiationProjection,
++                    );
++                stage3_v11_daily_extraterrestrial_radiation(
++                    self.climate_request,
++                    provider_interval.day_index,
++                    self.winter_hourly_geometry,
++                )?
++            };
+             let surface_energy_options =
+                 openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions {
+                     longwave_model: openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+                     sublimation_model: openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel::NeutralBulkStage3V1,
+                     daily_solar_radiation_mj_m2: first_day.daily_horizontal_energy_mj_m2,
+-                    daily_extraterrestrial_radiation_mj_m2: stage3_v11_daily_extraterrestrial_radiation(
+-                        self.climate_request,
+-                        provider_interval.day_index,
+-                        self.winter_hourly_geometry,
+-                    )?,
++                    daily_extraterrestrial_radiation_mj_m2,
+                     daylight: first_day.daily_horizontal_energy_mj_m2 > 0.0,
+                     atmospheric_pressure_pa: lane_interval.pressure_kpa * 1_000.0,
+                     turbulent_geometry: openwepp_hillslope_orchestrator::DirectSnowTurbulentGeometry::CLIGEN_V1,
+@@ -406,11 +423,16 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
+                 },
+             );
+ 
+-            let identities = destination_days
+-                .iter()
+-                .filter_map(|destination| destination.intervals.get(support_index))
+-                .filter(|interval| interval.ofe_id == *lane_ofe)
+-                .map(|interval| {
++            let identities = {
++                let _cost =
++                    openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                        openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3SupportDestinationMaterialization,
++                    );
++                destination_days
++                    .iter()
++                    .filter_map(|destination| destination.intervals.get(support_index))
++                    .filter(|interval| interval.ofe_id == *lane_ofe)
++                    .map(|interval| {
+                     let key = (
+                         openwepp_land_surface_energy::OfeId::try_new(interval.ofe_id.clone())
+                             .map_err(|_| {
+@@ -455,8 +477,9 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
+                         identity
+                     };
+                     Ok(identity)
+-                })
+-                .collect::<Result<Vec<_>, DirectSnowStage3V11AttachmentError>>()?;
++                    })
++                    .collect::<Result<Vec<_>, DirectSnowStage3V11AttachmentError>>()?
++            };
+             if identities.is_empty() {
+                 return Err(DirectSnowStage3V11AttachmentError::Support(
+                     "runner lane destination set",
+@@ -464,6 +487,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
+             }
+             support_identity_by_lane.insert(lane_id, identities);
+         }
++        let _interval_clone_cost =
++            openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::scope(
++                openwepp_land_surface_energy::solver_mechanism_audit::compact_cost::Bucket::Stage3SupportIntervalClone,
++            );
+         Ok(DirectSnowStage3V11DualRegimeSupportInputsV1 {
+             snow_inputs_by_lane,
+             support_forcing_by_lane,
+diff --git a/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs b/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs
+index a6a3daef2..4cdc65625 100644
+--- a/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs
++++ b/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs
+@@ -835,276 +835,9 @@ fn accepted_stage3_real_runner_routes_lane_d_and_publishes_summary() {
+ #[test]
+ #[ignore = "release-profile comparator probe; run explicitly with --release --ignored --exact"]
+ fn stage3_laned_release_one_ofe_positive_baseline_profile() {
+-    assert!(
+-        !cfg!(debug_assertions),
+-        "this ignored comparator probe must execute under cargo test --release"
+-    );
+-    let _execution_guard = runner_execution_lock()
+-        .lock()
+-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+-
+-    let fixture_started = std::time::Instant::now();
+-    let run_dir = prepare_native_stage3_lane_d_scale_fixture(
+-        "stage3_laned_release_one_ofe_positive_baseline",
+-        &[100.0],
+-    );
+-    let fixture_wall_us = release_probe_elapsed_us(fixture_started.elapsed());
+-    let request = HillslopeRunRequest {
+-        run_dir: run_dir.clone(),
+-        run_file: PathBuf::from("case.run"),
+-        output_dir: run_dir.join("output"),
+-        sidecar_policy: SidecarPolicy::Compat,
+-        legacy_sidecar_discovery: false,
+-        manifest_path: None,
+-    };
+-
+-    let bootstrap_started = std::time::Instant::now();
+-    let seed_path = crate::hillslope::test_fixture_authority::author_stage3_v11_owner_seed_fixture(
+-        &request,
+-        crate::hillslope::test_fixture_authority::Stage3TestFixtureSeedProfile::CompleteOwner,
+-        crate::hillslope::test_fixture_authority::Stage3TestFixtureSeedBinding::ExplicitRunfile,
+-    )
+-    .expect("author exact one-OFE release-probe Stage-3 owner seed");
+-    assert_authored_stage3_owner_cardinality(&request, &seed_path, 1);
+-    let bootstrap_wall_us = release_probe_elapsed_us(bootstrap_started.elapsed());
+-
+-    crate::hillslope::snow_stage3_v11_qualification_audit::begin();
+-    let telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_parent_telemetry_v1(
+-        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::STAGE3_V11_PARENT_SUPPORT_COUNT,
+-        std::time::Duration::from_secs(3_600),
+-    )
+-    .expect("enable bounded Stage-3 owner-evaluation telemetry");
+-    let qualification_telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_release_qualification_telemetry_v1()
+-        .expect("enable one-OFE release attribution telemetry");
+-    let run_started = std::time::Instant::now();
+-    let report = execute_hillslope_run_with_runtime_policy(
+-        &request,
+-        &["openwepp-cli-hill".to_string()],
+-        HillslopeRuntimeSelectionPolicy::new(
+-            HillslopeRuntimeSelection::DirectProductionExecutor,
+-            HillslopeDefaultRuntimeActivation::default(),
+-        ),
+-    )
+-    .expect("one-OFE positive Stage-3 -> Lane-D release probe");
+-    let run_wall_us = release_probe_elapsed_us(run_started.elapsed());
+-    let qualification_telemetry = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_release_qualification_telemetry_v1()
+-        .expect("take one-OFE release attribution telemetry");
+-    drop(qualification_telemetry_guard);
+-
+-    let validation_started = std::time::Instant::now();
+-    let stage3_audit = crate::hillslope::snow_stage3_v11_qualification_audit::take();
+-    let telemetry = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_parent_telemetry_v1();
+-    drop(telemetry_guard);
+-    let snapshot = stage3_audit
+-        .committed_snapshot
+-        .as_ref()
+-        .expect("release probe committed Stage-3 qualification snapshot");
+-    snapshot
+-        .validate()
+-        .expect("release probe committed Stage-3 qualification evidence");
+-    assert_eq!(snapshot.committed_day_count, 1);
+-    assert_eq!(snapshot.lanes.len(), 1);
+-    assert_eq!(
+-        stage3_audit
+-            .support_chronology_by_day
+-            .get(&0)
+-            .expect("release probe day-zero parent supports")
+-            .len(),
+-        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::STAGE3_V11_PARENT_SUPPORT_COUNT,
+-    );
+-
+-    let manifest: serde_json::Value = serde_json::from_str(
+-        &std::fs::read_to_string(&report.manifest_path)
+-            .expect("read release-probe Lane-D manifest"),
+-    )
+-    .expect("parse release-probe Lane-D manifest");
+-    let active = &manifest["execution_provenance"]["laned_active"];
+-    assert_eq!(active["days_seen"].as_u64(), Some(1));
+-    assert_eq!(active["days_routed"].as_u64(), Some(1));
+-
+-    let hbp_bytes = std::fs::read(&report.output_pass).expect("read release-probe routed HBP");
+-    let (hbp, latest_event) = parse_hbp_from_bytes_with_latest_event_payload(
+-        &hbp_bytes,
+-        &report.output_pass,
+-        HbpParseOptions {
+-            expected_hillslope_id: Some(83),
+-        },
+-    )
+-    .expect("release-probe routed HBP must parse");
+-    assert_eq!(hbp.nofe, 1);
+-    let event = latest_event.expect("release probe must publish a positive routed HBP event");
+-    let wat_path = run_dir.join("output/H83.wat.parquet");
+-    let evidence = RealLaneDPublicEvidence {
+-        ofe_count: 1,
+-        areas_m2: read_wat_f64_column(&wat_path, "Area"),
+-        source_depths_mm: read_wat5_hourly_sources(
+-            &run_dir.join("output/H83.wat-subhourly.parquet"),
+-            1,
+-        ),
+-        pass_runvol_m3: read_wat_f64_column(&run_dir.join("output/H83.pass.parquet"), "runvol"),
+-        pass_peakro_m3_s: read_wat_f64_column(&run_dir.join("output/H83.pass.parquet"), "peakro"),
+-        hbp_hourly_outlet_m3: event.hourly_runoff_volume_m3,
+-        hbp_peak_outlet_m3_s: event.peak_runoff_m3_s,
+-        manifest_source_m3: positive_manifest_f64(active, "total_source_m3"),
+-        manifest_outlet_m3: positive_manifest_f64(active, "total_routed_outlet_m3"),
+-        manifest_storage_m3: nonnegative_manifest_f64(active, "total_end_window_storage_m3"),
+-        manifest_clamp_m3: nonnegative_manifest_f64(active, "total_clamp_m3"),
+-    };
+-    assert_real_lane_d_public_closure(&evidence, &[100.0]);
+-    let fixed_point_evaluation_count = telemetry
+-        .iter()
+-        .map(|row| row.fixed_point_evaluation_count)
+-        .sum::<u64>();
+-    let direct_trial_count = telemetry
+-        .iter()
+-        .map(|row| row.direct_trial_count)
+-        .sum::<u64>();
+-    let split_child_trial_count = telemetry
+-        .iter()
+-        .map(|row| row.split_child_trial_count)
+-        .sum::<u64>();
+-    let accepted_microstep_count = telemetry
+-        .iter()
+-        .map(|row| row.accepted_microstep_count)
+-        .sum::<u64>();
+-    let telemetry_elapsed_us = |project: fn(
+-        &openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::AdaptiveParentTelemetryV1,
+-    ) -> std::time::Duration| {
+-        release_probe_elapsed_us(telemetry.iter().map(project).sum())
+-    };
+-    let parent_phase_wall_us = serde_json::json!({
+-        "parent": telemetry_elapsed_us(|row| row.parent_elapsed),
+-        "covered_direct_trial": telemetry_elapsed_us(|row| row.covered_direct_trial_phase_elapsed),
+-        "covered_composed_trial": telemetry_elapsed_us(|row| row.covered_composed_trial_phase_elapsed),
+-        "terminal_direct_trial": telemetry_elapsed_us(|row| row.terminal_direct_trial_phase_elapsed),
+-        "terminal_composed_trial": telemetry_elapsed_us(|row| row.terminal_composed_trial_phase_elapsed),
+-        "provisional_projection": telemetry_elapsed_us(|row| row.provisional_envelope_projection_elapsed),
+-        "provisional_solver_ready": telemetry_elapsed_us(|row| row.provisional_envelope_solver_ready_elapsed),
+-        "provisional_physical": telemetry_elapsed_us(|row| row.provisional_envelope_physical_elapsed),
+-        "provisional_receipts": telemetry_elapsed_us(|row| row.provisional_envelope_receipts_elapsed),
+-        "provisional_owner": telemetry_elapsed_us(|row| row.provisional_envelope_owner_elapsed),
+-        "publication_append": telemetry_elapsed_us(|row| row.publication_append_elapsed),
+-        "publication_full_validation": telemetry_elapsed_us(|row| row.publication_full_validation_elapsed),
+-        "reuse_validation": telemetry_elapsed_us(|row| row.reuse_validation_elapsed),
+-    });
+-    let physical_phase_wall_us = serde_json::json!({
+-        "topology": telemetry_elapsed_us(|row| row.profile_detail.physical_topology_elapsed),
+-        "potential": telemetry_elapsed_us(|row| row.profile_detail.physical_potential_elapsed),
+-        "request": telemetry_elapsed_us(|row| row.profile_detail.physical_request_elapsed),
+-        "unified": telemetry_elapsed_us(|row| row.profile_detail.physical_unified_elapsed),
+-        "final_tile": telemetry_elapsed_us(|row| row.profile_detail.physical_final_tile_elapsed),
+-        "protocol": telemetry_elapsed_us(|row| row.profile_detail.physical_protocol_elapsed),
+-        "ingress": telemetry_elapsed_us(|row| row.profile_detail.physical_ingress_elapsed),
+-        "post": telemetry_elapsed_us(|row| row.profile_detail.physical_post_elapsed),
+-    });
+-    let unified_phase_wall_us = serde_json::json!({
+-        "preflight": telemetry_elapsed_us(|row| row.profile_detail.unified_preflight_elapsed),
+-        "authorization": telemetry_elapsed_us(|row| row.profile_detail.unified_authorization_elapsed),
+-        "entry_validation": telemetry_elapsed_us(|row| row.profile_detail.unified_entry_validation_elapsed),
+-        "protocol_validation": telemetry_elapsed_us(|row| row.profile_detail.unified_protocol_validation_elapsed),
+-        "candidate": telemetry_elapsed_us(|row| row.profile_detail.unified_candidate_elapsed),
+-        "candidate_soil": telemetry_elapsed_us(|row| row.profile_detail.candidate_soil_elapsed),
+-        "candidate_surface_resource": telemetry_elapsed_us(|row| row.profile_detail.candidate_surface_resource_elapsed),
+-        "candidate_surface_ingress": telemetry_elapsed_us(|row| row.profile_detail.candidate_surface_ingress_elapsed),
+-        "candidate_receivers": telemetry_elapsed_us(|row| row.profile_detail.candidate_receivers_elapsed),
+-        "candidate_validation": telemetry_elapsed_us(|row| row.profile_detail.candidate_validation_elapsed),
+-    });
+-    let finalization_phase_wall_us = serde_json::json!({
+-        "candidate": telemetry_elapsed_us(|row| row.profile_detail.finalization_candidate_elapsed),
+-        "sealed_source": telemetry_elapsed_us(|row| row.profile_detail.finalization_sealed_source_elapsed),
+-        "install": telemetry_elapsed_us(|row| row.profile_detail.finalization_install_elapsed),
+-        "identity_replay": telemetry_elapsed_us(|row| row.profile_detail.finalization_identity_replay_elapsed),
+-    });
+-    let imported_stack_phase_wall_us = serde_json::json!({
+-        "entry_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_entry_validation_elapsed),
+-        "physical_candidate": telemetry_elapsed_us(|row| row.profile_detail.imported_physical_candidate_elapsed),
+-        "physical_setup": telemetry_elapsed_us(|row| row.profile_detail.imported_physical_setup_elapsed),
+-        "frozen_evaluation": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_evaluation_elapsed),
+-        "frozen_preparation": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_preparation_elapsed),
+-        "frozen_execute_accept": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_execute_accept_elapsed),
+-        "frozen_execution_setup": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_execution_setup_elapsed),
+-        "frozen_runtime": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_runtime_elapsed),
+-        "frozen_acceptance": telemetry_elapsed_us(|row| row.profile_detail.imported_frozen_acceptance_elapsed),
+-        "envelope_construction": telemetry_elapsed_us(|row| row.profile_detail.imported_envelope_construction_elapsed),
+-        "envelope_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_envelope_validation_elapsed),
+-        "accepted_candidate": telemetry_elapsed_us(|row| row.profile_detail.imported_accepted_candidate_elapsed),
+-        "owner_publication": telemetry_elapsed_us(|row| row.profile_detail.imported_owner_publication_elapsed),
+-        "install": telemetry_elapsed_us(|row| row.profile_detail.imported_install_elapsed),
+-        "reuse_validation": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_validation_elapsed),
+-        "reuse_reseal": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_reseal_elapsed),
+-        "reuse_install": telemetry_elapsed_us(|row| row.profile_detail.imported_reuse_install_elapsed),
+-    });
+-    let terminal_candidate_phase_wall_us = serde_json::json!({
+-        "setup": telemetry_elapsed_us(|row| row.profile_detail.terminal_candidate_setup_elapsed),
+-        "provider_custody": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_custody_elapsed),
+-        "provider_projection": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_projection_elapsed),
+-        "provider_carrier": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_carrier_elapsed),
+-        "provider_retention": telemetry_elapsed_us(|row| row.profile_detail.terminal_provider_retention_elapsed),
+-        "result_finalization": telemetry_elapsed_us(|row| row.profile_detail.terminal_result_finalization_elapsed),
+-        "carrier_physical": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_phase_elapsed),
+-        "carrier_complete": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_phase_elapsed),
+-        "carrier_physical_setup": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_setup_elapsed),
+-        "carrier_physical_evidence": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_evidence_elapsed),
+-        "carrier_physical_completion": telemetry_elapsed_us(|row| row.profile_detail.carrier_physical_completion_elapsed),
+-        "carrier_complete_envelope": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_envelope_elapsed),
+-        "carrier_complete_adoption": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_adoption_elapsed),
+-        "carrier_complete_projection": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_projection_elapsed),
+-        "carrier_complete_owner": telemetry_elapsed_us(|row| row.profile_detail.carrier_complete_owner_elapsed),
+-        "carrier_owner_vegetation_validation": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_vegetation_validation_elapsed),
+-        "carrier_owner_hydrology_projection": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_hydrology_projection_elapsed),
+-        "carrier_owner_surface_canonical": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_surface_canonical_elapsed),
+-        "carrier_owner_vegetation_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_vegetation_encoding_elapsed),
+-        "carrier_owner_surface_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_surface_encoding_elapsed),
+-        "carrier_owner_soil_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_soil_encoding_elapsed),
+-        "carrier_owner_other_encoding": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_other_encoding_elapsed),
+-        "carrier_owner_joint_map": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_joint_map_elapsed),
+-        "carrier_owner_joint_seal": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_joint_seal_elapsed),
+-        "carrier_owner_soil_custody": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_soil_custody_elapsed),
+-        "carrier_owner_candidate_bytes": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_candidate_bytes_elapsed),
+-        "carrier_owner_ephemeral_assembly": telemetry_elapsed_us(|row| row.profile_detail.carrier_owner_ephemeral_assembly_elapsed),
+-    });
+-    let validation_wall_us = release_probe_elapsed_us(validation_started.elapsed());
+-
+-    let record = serde_json::json!({
+-        "record": "stage3_laned_release_one_ofe_positive_baseline_v1",
+-        "fixture_wall_us": fixture_wall_us,
+-        "bootstrap_wall_us": bootstrap_wall_us,
+-        "run_wall_us": run_wall_us,
+-        "validation_wall_us": validation_wall_us,
+-        "rss_kib": release_probe_rss_kib(),
+-        "committed_day_count": snapshot.committed_day_count,
+-        "total_parent_support_count": snapshot.total_parent_support_count,
+-        "covered_parent_support_count": snapshot.adaptive_support_receipt_count,
+-        "snow_free_parent_support_count": snapshot.snow_free_parent_support_count,
+-        "accepted_publication_support_count": snapshot.accepted_publication_support_count,
+-        "fixed_point_evaluation_count": fixed_point_evaluation_count,
+-        "direct_trial_count": direct_trial_count,
+-        "split_child_trial_count": split_child_trial_count,
+-        "accepted_microstep_count": accepted_microstep_count,
+-        "parent_phase_wall_us": parent_phase_wall_us,
+-        "physical_phase_wall_us": physical_phase_wall_us,
+-        "unified_phase_wall_us": unified_phase_wall_us,
+-        "finalization_phase_wall_us": finalization_phase_wall_us,
+-        "imported_stack_phase_wall_us": imported_stack_phase_wall_us,
+-        "terminal_candidate_phase_wall_us": terminal_candidate_phase_wall_us,
+-        "native_vegetation_et_wall_us": release_probe_elapsed_us(qualification_telemetry.native_vegetation_et_elapsed),
+-        "stage3_lse_soil_wall_us": release_probe_elapsed_us(qualification_telemetry.stage3_lse_soil_elapsed),
+-        "lane_d_wall_us": release_probe_elapsed_us(qualification_telemetry.lane_d_elapsed),
+-        "remaining_runner_wall_us": release_probe_elapsed_us(qualification_telemetry.remaining_runner_elapsed),
+-        "qualification_telemetry_total_wall_us": release_probe_elapsed_us(qualification_telemetry.total_elapsed),
+-        "qualification_scopes_balanced": qualification_telemetry.scopes_balanced,
+-        "qualification_counters_complete": qualification_telemetry.counters_complete,
+-        "laned_days_seen": active["days_seen"].as_u64().expect("Lane-D days_seen"),
+-        "laned_days_routed": active["days_routed"].as_u64().expect("Lane-D days_routed"),
+-        "laned_source_m3": evidence.manifest_source_m3,
+-        "laned_outlet_m3": evidence.manifest_outlet_m3,
+-        "laned_end_window_storage_m3": evidence.manifest_storage_m3,
+-        "laned_clamp_m3": evidence.manifest_clamp_m3,
+-    });
++    let record = controlled_mechanism_run(1, 0, false);
+     println!("STAGE3_LANED_RELEASE_PROBE {record}");
+-    let _ = std::fs::remove_dir_all(run_dir);
+ }
+-
+ fn release_probe_elapsed_us(elapsed: std::time::Duration) -> u64 {
+     u64::try_from(elapsed.as_micros()).unwrap_or(u64::MAX)
+ }
+diff --git a/tests/integration/land_surface_energy_balance_authority_contract.rs b/tests/integration/land_surface_energy_balance_authority_contract.rs
+index 5c5a417b1..4a8e17f17 100644
+--- a/tests/integration/land_surface_energy_balance_authority_contract.rs
++++ b/tests/integration/land_surface_energy_balance_authority_contract.rs
+@@ -1,5 +1,57 @@
+ use std::fs;
+ 
++#[test]
++fn prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation() {
++    let contract = read(CONTRACT);
++    let experiment = contract
++        .split("## Prospective Stencil-Aware Dependency-Replay Experiment\n")
++        .nth(1)
++        .expect("separately identified prospective authority")
++        .split("\n## ")
++        .next()
++        .expect("experimental authority body");
++    for required in [
++        "EXP-STAGE3-20260906-R",
++        "INV-LANDSURFACEENERGY-164",
++        "OBL-LANDSURFACEENERGY-C-020",
++        "R = A + one reviewed same-sweep dependency-replay delta",
++        "R is never F + replay",
++        "Historical revision-31 rules and FAIL/HOLD results remain\nunchanged",
++        "old fully-centered existential and 64 MiB retention\ngate",
++        "For this new experiment only",
++        "no production promotion or hidden production\nselector",
++        "one shared canonical\nphysics implementation",
++        "complete direct-edge graph oracle and normative\nfallibility/crossability matrix",
++        "exact forced-complete node/residual/Jacobian/full-solve parity",
++        "post-start errors return directly without fallback",
++        "Independently enumerate expected signed probes from actual coordinate stencils",
++        "independently derived evaluator classification",
++        "two signed probes",
++        "actual one signed probe",
++        "RejectedBeforeProbe contributes no unattempted\nprobe",
++        "Do not copy producer counters or producer bucket labels into expected\nresults",
++        "ordered probe identities, starts, completions and first errors",
++        "logical = anchor + replay + complete",
++        "distinct authentic map/solve/iteration/sweep identities",
++        "missing or unexplained dropped records invalidate coverage evidence",
++        "Require nonzero completed component replay on the real primary workload",
++        "eligibility alone is insufficient",
++        "Neither an all-centered sweep nor a\nhardcoded 54/14/16/24 pattern is required",
++        "Existing lawful\ncentered/interior and boundary tests remain intact",
++        "oracle/audit work runs separately from performance and\nmemory intervals",
++        "matched optional audit posture",
++        "Textual authority tests prove no execution",
++    ] {
++        assert!(
++            experiment.contains(required),
++            "{CONTRACT} missing {required}"
++        );
++    }
++    let exposure = row(&contract, "EXP-STAGE3-20260906-R");
++    assert!(exposure.contains("INV-LANDSURFACEENERGY-164, OBL-LANDSURFACEENERGY-C-020"));
++    assert!(exposure.contains("| `maps-to-existing-INV` |"));
++}
++
+ const CONTRACT: &str =
+     "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md";
+ const INDEX: &str = "docs/specifications/science-contracts/index.md";
+diff --git a/tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs b/tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs
+index 38646dc04..e620b5443 100644
+--- a/tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs
++++ b/tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs
+@@ -1,5 +1,47 @@
+ use std::fs;
+ 
++#[test]
++fn prospective_20260906_feed_forward_binds_science_and_separate_qualification() {
++    let contract = read(ENERGY);
++    let experiment = contract
++        .split("## Prospective Controlled Feed-Forward Experiment\n")
++        .nth(1)
++        .expect("separately identified prospective authority")
++        .split("\n## ")
++        .next()
++        .expect("experimental authority body");
++    for required in [
++        "EXP-STAGE3-20260906-F",
++        "INV-SNOWENERGY-088",
++        "OBL-SNOWENERGY-C-056",
++        "F = A + one reviewed feed-forward carrier",
++        "Historical revision-61 rules and FAIL/HOLD results remain unchanged",
++        "64 MiB retention gate do\nnot decide this prospective comparison",
++        "no production promotion or hidden production selector",
++        "All scientific, typed ownership, guard, error-precedence, rollback, restart",
++        "redundant same-invocation\nsecond carrier execution",
++        "independently join stable invocation keys/multisets",
++        "unchanged returned physical/custody\nresult",
++        "Full/Retry/Half1/Half2/Root, discovery/exact, batch, and canonical-final",
++        "cannot express a preceding ending-snow hint or coupling-iteration ordinal",
++        "forced-two-call complete-result bitwise oracle",
++        "typed ownership/stale/foreign/reuse rejection",
++        "rollback/restart and real-consumer scientific/output parity",
++        "Reconstruct protected closure independently from produced operands",
++        "not a new solver stopping rule",
++        "explicit post-drop state",
++        "missing required scientific/typed\nproof prevents admission",
++    ] {
++        assert!(experiment.contains(required), "{ENERGY} missing {required}");
++    }
++    let exposure = contract
++        .lines()
++        .find(|line| line.starts_with("| `EXP-STAGE3-20260906-F` |"))
++        .expect("prospective binding exposure");
++    assert!(exposure.contains("INV-SNOWENERGY-088, OBL-SNOWENERGY-C-056"));
++    assert!(exposure.contains("| `maps-to-existing-INV` |"));
++}
++
+ const ENERGY: &str = "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md";
+ const FREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
+ const INDEX: &str = "docs/specifications/science-contracts/index.md";
+diff --git a/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs b/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
+index f9d2c1632..9c1fded76 100644
+--- a/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
++++ b/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
+@@ -917,11 +917,33 @@ fn exact_surface_owner_uses_authenticated_topology_rank_for_opaque_ofe_ids() {
+ #[test]
+ fn stage3_lane_d_qualification_reads_canonical_manifest_provenance() {
+     let repository = root();
+-    let qualification = fs::read_to_string(
++    let original_qualification = fs::read_to_string(
+         repository
+             .join("crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs"),
+     )
+     .expect("read Stage-3 Lane-D qualification source");
++    let controlled =
++        fs::read_to_string(repository.join(
++            "crates/openwepp-runner/src/hillslope/tests03/controlled_mechanism_experiments.rs",
++        ))
++        .expect("read extracted real-consumer qualification helper");
++    let test_module =
++        fs::read_to_string(repository.join("crates/openwepp-runner/src/hillslope/03_tests.rs"))
++            .expect("read runner test module");
++    assert!(
++        test_module.contains("include!(\"tests03/controlled_mechanism_experiments.rs\");"),
++        "the extracted helper must remain included in the real runner tests"
++    );
++    let original_baseline = original_qualification
++        .split("fn stage3_laned_release_one_ofe_positive_baseline_profile()")
++        .nth(1)
++        .and_then(|tail| tail.split("\n}").next())
++        .expect("locate original one-OFE qualification entry point");
++    assert!(
++        original_baseline.contains("controlled_mechanism_run(1, 0, false)"),
++        "the original qualification must invoke the same extracted consumer"
++    );
++    let qualification = format!("{original_qualification}\n{controlled}");
+     let wat_schema = fs::read_to_string(
+         repository.join("crates/openwepp-hillslope-output/src/hillslope_wat.rs"),
+     )

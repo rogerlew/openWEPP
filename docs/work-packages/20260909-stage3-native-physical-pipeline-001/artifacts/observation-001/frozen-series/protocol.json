@@ -1,0 +1,37 @@
+{
+  "argv": [
+    "taskset",
+    "-c",
+    "0",
+    "/workdir/.cache/openwepp/targets/openwepp-native-physical-obs-24c8dd3a4e3d/release/deps/openwepp_runner-682944f41aa5eb67",
+    "hillslope::tests::stage3_controlled_mechanism_experiment",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "binary_sha256": "5f7def47decaffd71943f07e3baf25e30bfa3bdefd024d9fa9c6d020af1bbd1d",
+  "collector_sha256": "d77fd48fc09986aeaff253f9061ea2697b4c1f8915396b4e619a4deb2bf0f5fa",
+  "common_collector_sha256": "f1ea797124f4a4e1cb4e02da049a403ac6db6d8780f839b0b334197b4f348052",
+  "cpu": 0,
+  "cwd": "/tmp/openwepp-native-physical-observation-cwds",
+  "environment_sha256": "463cd045d5413611e2785f80d12f58803f36e1db5ac39533cb7af03011074a84",
+  "identity_sha256": "71d4d1129137ef8abb7396b1f871b50fcc908299ee1bf8bda24160908ea071d2",
+  "no_retry": true,
+  "pair_order": [
+    "off/on",
+    "on/off",
+    "off/on",
+    "on/off",
+    "off/on",
+    "on/off"
+  ],
+  "source_patch_sha256": "df1e84a90a485bd270acbe227b08205d196466f2c1e6c4f39bee3a354eb31395",
+  "timeout_s": 180,
+  "warmup_order": [
+    "off",
+    "on",
+    "on",
+    "off"
+  ]
+}
