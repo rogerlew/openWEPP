@@ -42,6 +42,37 @@ production qualification remain separate from artifact delivery and cycle comple
 
 ## Current action and evidence
 
+### WB14 working145 custody-diagnosis admission (2026-09-11)
+
+**Checkpoint scope:** adopted `/tmp/openwepp_b01_wb14_custody_diagnosis_authorization.md`
+authorizes only a source-bound, offline diagnosis of working145's extended-cycle
+WB14 custody failure, one diagnostic artifact, and this record update; it excludes
+Rust/runtime/fixture/contract changes and every model, build, test, restart, or
+warm/cold/extended-cycle execution.
+
+**Outcome: INCOMPLETE/BLOCKED — BUDGET UNESTABLISHED.** The authorization retains
+the same two-unsuccessful-correction-cycle/60-active-minute ceiling and requires
+recovery of its carried ledger before substantive diagnosis. This package records
+the stop point and working145 authentic attempts, but no prior custody-diagnosis
+checkpoint boundary, correction-cycle count, active minutes, excluded waits, or
+remaining allowance. The `145` label and model wall times are not substitutes.
+No correction cycle was attempted in this admission; no authentic run, build, or
+test was executed.
+
+Recorded source/evidence identities remain working145 full-source SHA-256
+`b6fb949e967af911bd3d508c02e023bf0a349b30e3c0697631276b351b50e88f`, frozen
+runner SHA-256 `a175fd68b9ef47b25772cf1f6af7aae2e3406e70365a3a39460eed6a7722b3ff`,
+and expected raw-stop-point145 archive SHA-256
+`5365a6e47b67d23663f668cbe5c1d6c1b063cf599abcd8be0c37115135c38985` (953251918
+bytes). They were recorded, not independently re-verified during this blocked
+admission. The diagnostic artifact is
+[`wb14-working145-custody-diagnosis.md`](artifacts/wb14-working145-custody-diagnosis.md).
+
+**Next owner decision:** supply/set the inherited WB14-diagnosis ledger and
+remaining allowance, or explicitly revise it. Until then, retain package ACTIVE
+and production/integration/release HOLD; do not infer a custody cause or select a
+repair from the uninspected guard/caller operands.
+
 
 **Owner stop point (2026-09-11):** stop further experiments, commit and push the
 current branch for quota-strategy assessment. This supersedes the earlier
