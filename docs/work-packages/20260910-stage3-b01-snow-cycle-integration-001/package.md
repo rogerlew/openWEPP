@@ -42,6 +42,33 @@ production qualification remain separate from artifact delivery and cycle comple
 
 ## Current action and evidence
 
+### WB14 working145 custody diagnosis — v2 supplement (2026-09-11)
+
+The owner granted this same checkpoint one additional 60 active minutes/two
+correction cycles, retaining historical consumption as **UNOBSERVED**. At
+disposition: about 30 active minutes used, zero correction cycles, no recorded
+wait, and about 30 minutes remaining. No authentic execution occurred.
+
+**DIAGNOSIS COMPLETE — REPAIR PROPOSED.** Authentic working145 tail7 evidence
+binds the runner and inspected raw records. At requested day4/interval22,
+the parent-working state holds the authenticated represented-snow inactive prefix
+ending at385920 s and correctly retains zero WB14 physical cursor/ordinal/receipts.
+The reached ingress caller validates the byte-identical persistent beginning
+cursor (day0/interval0) before it validates/uses that parent-local proof, so its
+cadence guard rejects a valid first physical child. This is a guard/caller
+custody-context omission, not proof of a stale cursor, wrong owner join, or
+physical-accounting result. Existing authority requires the prefix to preserve
+zero WB14 work and the first physical child to be ordinal zero.
+
+The narrow later repair must condition parent-local cadence admission on the
+already authenticated parent/inactive-prefix proof; it must not synthesize a
+cursor/receipt, replay the prefix, advance the persistent cursor early, or relax
+ordinary guards. Proposed positive/negative regressions and exact source/evidence
+locations are in
+[`wb14-working145-custody-diagnosis.md`](artifacts/wb14-working145-custody-diagnosis.md).
+Implementation, tests, reviews, and all authentic workflow evidence remain a
+separate owner decision; package/production/integration/release stay HOLD.
+
 ### WB14 working145 custody-diagnosis admission (2026-09-11)
 
 **Checkpoint scope:** adopted `/tmp/openwepp_b01_wb14_custody_diagnosis_authorization.md`
