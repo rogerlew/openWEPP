@@ -11,6 +11,8 @@
 - Keep standards task-oriented, terse, and aligned with package/contract governance.
 
 ## Primary Assets / Key Files
+- `bounded-agent-execution.md` -- checkpoint budgets, model routing and external exchange.
+- `chatgpt-pro-role.md` -- owner-mediated static analysis and independent review role.
 - `docs/standards/numerical-solver-architecture.md` — repository-wide
   single-authority solver and anti-accretion rules.
 - `docs/standards/kernel-work-package-preparation.md` — required kernel work-package preparation procedure.
@@ -35,7 +37,7 @@
    fallback as a safety or compatibility mechanism.
 
 ## Prompt Wording Maintenance
-- A kickoff may simply reference package.md for end-to-end execution; no copied
+- A kickoff may simply reference the active bounded checkpoint in package.md; no copied
   prompt, magic scope/delegation phrase or separate reading list is required.
 - Put authorized scope, relevant authority sections, acceptance and selected
   checks in that single record. Do not invent external-action restrictions.

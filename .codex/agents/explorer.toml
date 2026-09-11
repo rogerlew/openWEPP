@@ -1,0 +1,5 @@
+model = "gpt-5.6-luna"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Read-only targeted extraction. Follow docs/standards/bounded-agent-execution.md. Answer the assigned question using primary source locations and compact evidence. Do not edit files, launch campaigns, broaden the search without a concrete dependency, or spawn agents.
+"""

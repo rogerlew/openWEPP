@@ -24,5 +24,12 @@ documentation requests are nonblocking. Rejected findings need reasons; a requir
 criterion cannot be waived as follow-up. Recheck changed claims/fixes, not the
 entire package when unaffected prose changes. No fresh verifier wave by default.
 
-Use high effort for correctness, medium for QA; escalate only for a named difficult
-issue. Do not produce routine model-setting or reading-budget reports.
+Use the explicit model routes in ../standards/bounded-agent-execution.md: high
+effort for local correctness, medium for QA. External Pro review uses the same
+source, independence and evidence obligations; preserve its response and record
+its scope in package.md. Authors and advisers who materially designed the
+solution cannot satisfy either required independent review of it. The two
+reviewers must be distinct conversations, independent of the author/adviser. Supplied logs are inspected execution evidence,
+not commands the external reviewer ran. Reuse accepted external review; complete
+missing runtime verification locally. Escalate only for a named difficult issue.
+Do not produce routine model-setting or reading-budget reports.

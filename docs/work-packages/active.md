@@ -7,6 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
+| Bounded execution and external Pro review (in progress) | [record](20260911-bounded-execution-external-review-001/package.md) | Owner-authorized model routing, checkpoint bounds and manual exchange tooling; B01 remains paused. |
 | Stage 3 B01 snow-cycle integration (paused by owner) | [record](20260910-stage3-b01-snow-cycle-integration-001/package.md) | Paused for quota assessment; source145 cold checkpoint written but no fresh-process resume; cycle/receiver/budgets/cost incomplete. Production HOLD. |
 | Stage 3 snow accuracy–runtime experiment (executed; qualification HOLD) | [record](20260910-stage3-snow-accuracy-runtime-001/package.md) | Owner-authorized isolated numerical, bulk-trace and coupling-cadence modeling experiment; physical comparison, conservation, continuous and multi-OFE evidence; no production activation. |
 | Stage 3 native physical-pipeline experiment (complete negative) | [record](20260909-stage3-native-physical-pipeline-001/package.md) | Frozen six-pair profiling reproduced the 13.7% inclusive builder and found no permitted treatment with a plausible 5% complete-run gain; no B was admitted and production remains HOLD. |

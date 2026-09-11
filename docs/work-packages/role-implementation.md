@@ -8,7 +8,10 @@ governance or historical package collections at each step.
 Select checks directly under docs/standards/testing-and-gate-strategy.md.
 Validation planning has no prospective executable, planner or receipt.
 State intent/acceptance before edits; execute, correct, validate and reconcile
-the final diff. Record compact commands/results and next action in package.md.
+the final diff within the active checkpoint bounds in
+../standards/bounded-agent-execution.md. Record compact commands/results, consumed
+budget and next action in package.md. Stop at its boundary without waiving
+acceptance or silently starting a successor checkpoint.
 No artifact-presence gate beyond evidence actually required by the claim.
 Record useful tool defects as ordinary debt without creating a repair prerequisite.
 When overriding TMPDIR, use an absolute scratch directory outside the checkout:

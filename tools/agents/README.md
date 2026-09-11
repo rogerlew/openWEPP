@@ -1,5 +1,51 @@
 # Administrative agent tools
 
+## External review packet
+
+Use the owner's existing ChatGPT Pro exchange with
+[the role document](../../docs/standards/chatgpt-pro-role.md) and
+[new-thread kickoff](../../docs/work-packages/templates/chatgpt-pro-kickoff.md).
+After a scoped local commit, export explicitly chosen source and evidence:
+
+```sh
+.venv/bin/python tools/agents/review_packet.py --root /workdir/openWEPP \
+  --base BASE_COMMIT --head REVIEWED_COMMIT \
+  --path path/to/changed-file --context AGENTS.md \
+  --context docs/standards/chatgpt-pro-role.md \
+  --attach /tmp/openwepp_selected_run_result.md \
+  --output /tmp/openwepp_checkpoint_review.md
+```
+
+Repeat `--path` for each selected changed file (both paths of a rename),
+`--context` for needed committed surrounding source/instructions/authority, and
+`--attach` for explicit local text evidence. Review these selections for secrets
+before transfer. The packet includes full selected files at the reviewed commit,
+the selected diff, an inventory of all changed paths, and attachment hashes.
+Other changed bodies and worktree/index/untracked bytes are NOT included unless
+explicitly attached. No dependency discovery, recursive directory export, network
+upload, command execution from inputs, or review/validation verdict occurs.
+LFS pointers are labeled as unavailable payloads; the packet does not fetch them.
+Attachments are supplied evidence, not proof that their asserted commands ran.
+
+For detached experiments, include their actual retained source/patches and
+identities using explicit attachments or existing evidence tooling. A primary
+checkout commit is not the experiment identity. Large/binary source kits belong
+in that existing tooling; the text exporter fails at its default 1 MiB limit
+instead of silently truncating. It refuses directories, symlink files, binary or
+non-UTF-8 text, invalid/missing paths, and existing output files. It reads local
+attachments without an atomic snapshot: use quiescent files. Hashes identify the
+included bytes, not their independent truth or a trusted publisher.
+
+The owner transfers the packet and saves the returned original review response.
+The executor incorporates attributable findings and reviewed source in package.md;
+there is no automated verdict importer. After fixes, use the previously reviewed
+commit as `--base`, the corrected commit as `--head`, and attach the original
+finding IDs plus correction evidence for the same reviewer conversation. Keep
+the package's current checkpoint budget; exporting or opening a thread does not
+renew it. No additional maintained handoff record is required.
+
+Run `.venv/bin/python -m unittest discover -s tools/agents -p 'test_review_packet.py'`.
+
 `find-agents --for <paths>` discovers applicable instruction chains.
 `.venv/bin/python tools/agents/context_report.py selection.json [--revision SHA]`
 reports explicit recursive reading selections. Each selection has `readings`

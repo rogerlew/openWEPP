@@ -17,6 +17,8 @@ An existing external format/schema may still require a specific evidence file.
 ## Reading and scope
 Read root and applicable write-path instructions, this guide and package.md.
 Read only your role procedure and the relevant standard/authority sections.
+Role procedures: role-authoring.md, role-implementation.md, role-review.md;
+role-runner.md and role-verification.md only for assigned execution/verification.
 Combined author/implementer work reads them once. A link is a reference, not an
 unconditional recursive reading assignment. Follow dependencies needed to
 understand the affected obligation; uncertainty expands the affected reading.
@@ -42,8 +44,13 @@ locally with compact output unless delegation has a concrete independent benefit
 elapsed command time alone is not a reason to create another agent.
 
 ## Completion and failures
-Continue the full authorized package through correction, checks and disposition
-while safe in-scope work remains. Every applicable current-scope requirement
+Execute the active checkpoint through correction, checks and disposition within
+the owner's bounds. Follow ../standards/bounded-agent-execution.md: one bounded
+deliverable, normally two failed correction cycles or 60 active minutes. Record
+checkpoint acceptance separately from overall package acceptance. At a spent
+budget or new downstream failure, preserve state and return pending work; do not
+roll into the next checkpoint without owner direction or an explicit bounded
+sequence. A pause does not waive checks or make an incomplete package complete. Every applicable current-scope requirement
 needs direct, current evidence. Record PASS, FAIL, BLOCKED or NOT RUN truthfully;
 an unmet required acceptance criterion prevents completion.
 Campaign-owned requirements may be assigned prospectively to a named later
@@ -51,7 +58,8 @@ boundary with owner, trigger and rationale. Never retrospectively defer a failed
 current requirement. Correctly executed negative experiments can be complete;
 they do not establish production readiness. Inherited lint treatment follows the
 testing strategy, never an ad hoc waiver. Scope-specific failed results stay visible.
-For DC work, an in-envelope correction remains implementation work, not a HOLD.
+For DC work, an in-envelope correction remains implementation work within the
+active checkpoint budget; a budget pause is not a scientific impossibility claim.
 
 ## Independent review and fix verification
 Select the review count by consequence, not diff size or package naming:
@@ -73,9 +81,20 @@ Applicable scientific independent reconstruction remains mandatory regardless of
 review count: independence of the calculation is not just another agent rereading
 the producer's formula.
 
-This guide explicitly requires and authorizes subagent delegation for selected
-independent reviews, subject to actual tool policy; no magic kickoff wording is
-needed. Assign scope and read/write limits. Reviewers write only their named
+Owner-mediated external Pro reviews may satisfy their assigned static scope.
+Record reviewer/conversation identity, independence, reviewed source, primary
+evidence, findings and same-reviewer fix verification in package.md; preserve the
+original response. An author or adviser who materially designed a solution cannot
+satisfy any required independent review of that solution, including QA/evidence.
+Required reviewers are independent of authors/advisers and distinct from each
+other; separate conversations may use the same model family. Static review does not replace required executed
+workflows or independent reconstruction. Do not duplicate accepted external static
+review locally without a named evidence gap. Missing required review remains unmet.
+
+For required scopes not covered externally, this guide authorizes bounded
+subagent reviews, subject to actual tool policy. Model pins, context and
+concurrency follow ../standards/bounded-agent-execution.md; no magic kickoff
+wording is needed. Assign scope and read/write limits. Reviewers write only their named
 section of package.md, or return findings for verbatim attributable incorporation.
 They do not edit source, authority or the other review. Serialize shared-record
 writes. Same reviewers check fixes; unavailable required independence remains unmet.

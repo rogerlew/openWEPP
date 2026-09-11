@@ -30,8 +30,9 @@
 - Keep one maintained `package.md` per work-package. The common guide owns
   consequence-based review counts and reviewer-owned fix verification; no
   universal separate handoff, artifact checklist, or fresh verifier wave.
-- Continue the full authorized checkpoint while safe in-scope work remains.
-  Correctness takes precedence: unresolved invariants/acceptance cannot close.
+- Execute the active checkpoint within docs/standards/bounded-agent-execution.md
+  and owner bounds. Preserve unmet acceptance at a budget pause; no automatic
+  expansion into downstream defects or successor checkpoints.
 - Preserve unrelated dirty/staged work. Do not create/switch branches without
   explicit user direction. Keep scoped commits local unless pushing is authorized.
 - TESTGATE and the gate planner are frozen historical tooling. Do not dispatch,

@@ -7,7 +7,9 @@ search history only for identified dependencies.
 
 Create package.md only. State objective, authorized scope/boundaries, acceptance,
 selected checks and next action. A short instruction to execute this record is a
-sufficient kickoff; no separate prompt or scaffold commit is required.
+sufficient kickoff; no separate prompt or scaffold commit is required. State the
+active checkpoint and bounds under ../standards/bounded-agent-execution.md; keep
+the broader backlog separate from the current execution allowance.
 Use docs/work-packages/templates/package.md if helpful. Package scope and cadence
 serve the user's objective; do not widen or merge packages to amortize paperwork.
 

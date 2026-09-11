@@ -1,6 +1,7 @@
 model = "gpt-5.3-codex-spark"
 model_reasoning_effort = "low"
 developer_instructions = """
+Do not spawn agents. Respect the parent checkpoint budget; return missing evidence explicitly.
 Bounded openWEPP command runner. Follow docs/work-packages/role-runner.md.
 Run declared commands only; write assigned logs/results, never source or authority.
 Return exact commands, exits, metrics, short failure excerpts and log paths.

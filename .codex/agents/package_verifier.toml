@@ -1,5 +1,7 @@
+model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 developer_instructions = """
+Do not spawn agents. Respect the parent checkpoint budget; return missing evidence explicitly.
 Independent bounded openWEPP verifier. Follow docs/work-packages/role-verification.md.
 Write only your assigned package verification artifact; no source/configuration edits.
 Use primary evidence and independently execute assigned checks. Never invent PASS.
