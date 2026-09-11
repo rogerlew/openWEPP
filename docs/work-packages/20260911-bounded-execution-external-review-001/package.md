@@ -1,6 +1,6 @@
 # Bounded execution and external Pro review
 
-Status: IMPLEMENTED; final committed-source export pending. Source base: b0fbfbf7ee769f4cbe6c4937f9f34e184360ccd2.
+Status: COMPLETE (administrative implementation and validation). Source base: b0fbfbf7ee769f4cbe6c4937f9f34e184360ccd2.
 Owner authorization: 2026-09-11, implement the full quota strategy as a work-package.
 
 ## Objective and scope
@@ -101,7 +101,24 @@ or actual model-routing execution observed; quota savings remain UNOBSERVED.
 Owner handoff timing and the 70% premium-token reduction target remain for a future
 owner-selected pilot, not prerequisites to administrative tool delivery.
 
-Next: freeze scoped implementation and exercise exporter on that committed source.
+Ran final export from immutable implementation commit
+`32e5d35f151f28931a4b848c21703ff76faa4eb5` against the source base. Command:
+`.venv/bin/python tools/agents/review_packet.py --root /workdir/openWEPP --base b0fbfbf7ee769f4cbe6c4937f9f34e184360ccd2 --head 32e5d35f151f28931a4b848c21703ff76faa4eb5`,
+with repeated `--path` for all 23 changed files other than the historical catalog
+README and active locator, and
+`--output /tmp/openwepp_strategy_review_20260911.md`. PASS: 156500 bytes,
+SHA256 `304af8fafb9f7b3b4156e75495092c5f59f0d136592823c3e0fd52c5f77eddce`.
+All 25 changed paths appear in its inventory; the two omitted file bodies are
+explicitly outside this export. The packet includes the Pro role, kickoff,
+source/config/tests and review evidence; source identity and expected role text
+were checked. It is reproducible from the commit and tool; /tmp is an exchange
+location, not the sole retained source. The packet reflects the pre-closure
+package state, not later administrative disposition edits.
+
+No next implementation checkpoint is active. To use the workflow, start a fresh
+trusted repo session for Terra execution; use the Pro role and kickoff with this
+packet for external analysis. Future scientific work needs its own owner-selected
+checkpoint and actual source evidence.
 
 ## Review and corrections
 
@@ -144,7 +161,14 @@ reviewer; unchanged exporter behavior reused QA evidence and passed executor tes
 
 ## Disposition
 
-Implementation and independent reviews pass; final own-commit export pending. B01 remains PAUSED BY OWNER at the pushed stop point. Runtime model
+COMPLETE: configuration loading, exporter workflow, focused tests, navigation and
+complementary independent reviews passed. Closure edits affect only this record
+and locator/catalog status; no executable or scientific evidence roots changed.
+B01 remains PAUSED BY OWNER at the pushed stop point. Runtime model
 selection for future sessions and measured savings must be distinguished from
 static configuration delivery. The proposed cold145 pilot is not authorized by
 this administrative package.
+
+Closed at 2026-09-11T11:42:54+00:00; conservative
+active-time accounting remains below 60 minutes with no waits excluded.
+Commits are local; no publication or ChatGPT submission was performed.
