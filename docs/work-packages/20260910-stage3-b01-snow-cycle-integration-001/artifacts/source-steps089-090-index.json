@@ -1,0 +1,26 @@
+{
+  "archive": "source-steps089-090.tar.gz",
+  "sha256": "aa67f036abf1951bf044ebe4f7a78c390d2fb1dbbd2e88d78d384909b982a366",
+  "files": [
+    {
+      "path": "step089.patch",
+      "bytes": 4987,
+      "sha256": "d59216aefea126698037ce6f066217cf9168588abfb259bcf3768164dd71efd5"
+    },
+    {
+      "path": "step089-source.json",
+      "bytes": 130916,
+      "sha256": "5b9f9a1eaddddf8edec77b3291108024b455d346cbe46ab933d80cc1bd7d2155"
+    },
+    {
+      "path": "step090.patch",
+      "bytes": 2084,
+      "sha256": "4abe3215ce7eb10cd22595a920b45cda20d6dd8003f4225653bb8e08f4de6ff7"
+    },
+    {
+      "path": "step090-source.json",
+      "bytes": 130828,
+      "sha256": "8f83f16743d91f8105bd35fd6df5f7a99e52953c863b3c2560f41f3da81f2629"
+    }
+  ]
+}

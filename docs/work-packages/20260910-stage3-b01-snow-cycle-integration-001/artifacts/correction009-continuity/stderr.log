@@ -1,0 +1,4 @@
+
+thread 'hillslope::tests::stage3_snow_accuracy_case' (2213087) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs:2051:17:
+called `Result::unwrap()` on an `Err` value: Error("key must be a string", line: 0, column: 0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

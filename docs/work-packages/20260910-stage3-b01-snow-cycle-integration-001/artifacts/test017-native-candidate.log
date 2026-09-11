@@ -1,0 +1,25 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working017/crates/openwepp-hillslope-orchestrator)
+warning: field `allocation` is never read
+  --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_custody.rs:22:16
+   |
+18 | pub(crate) struct UnpublishedNativeSnowLiquidCandidateV1 {
+   |                   -------------------------------------- field in this struct
+...
+22 |     pub(crate) allocation: PositiveSupportSnowLiquidAllocationV1,
+   |                ^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 00s
+────────────
+ Nextest run ID 6c3ddfc7-542f-4a88-b950-a943ff2b7dd4 with nextest profile: default
+    Starting 1 test across 1 binary (1432 tests skipped)
+        PASS [   0.079s] (1/1) openwepp-hillslope-orchestrator land_surface_energy_shadow::v3_tests::native_snow_liquid_candidate_preserves_ice_and_reprojects_zero_heat_credit
+────────────
+     Summary [   0.081s] 1 test run: 1 passed, 1432 skipped

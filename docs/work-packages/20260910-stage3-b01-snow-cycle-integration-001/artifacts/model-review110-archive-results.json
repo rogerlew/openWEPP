@@ -1,0 +1,130 @@
+{
+  "evidence_class": "Ran: indexed member verification and explicit-parent patch replay only; no scientific workflow",
+  "archives": [
+    {
+      "archive": "source-steps104-109-soil005-009.tar.gz",
+      "bytes": 527258,
+      "indexed_sha256": "79b8404b5aaeae4e72ffda9dd0afdebf9132df5db4b23cc790c4a92ad5a27b64",
+      "actual_sha256": "79b8404b5aaeae4e72ffda9dd0afdebf9132df5db4b23cc790c4a92ad5a27b64",
+      "members": 22,
+      "uncompressed_member_bytes": 1487896,
+      "errors": [],
+      "status": "PASS"
+    },
+    {
+      "archive": "raw-correction102-105-and-selected-soil-drafts.tar.gz",
+      "bytes": 794745497,
+      "indexed_sha256": "ad94b521e8f93a331702ee0e5f5682956efa39c9ec7bd3278adb84ce0fcf31ae",
+      "actual_sha256": "ad94b521e8f93a331702ee0e5f5682956efa39c9ec7bd3278adb84ce0fcf31ae",
+      "members": 97,
+      "uncompressed_member_bytes": 6119294076,
+      "errors": [],
+      "status": "PASS"
+    }
+  ],
+  "edges": [
+    {
+      "cut": "working104",
+      "parent": "working103",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "4074c651b105acf7f6fa5c71965479bc8a4c022893c0d481a4c5d1a27a27149e",
+      "status": "PASS"
+    },
+    {
+      "cut": "working105",
+      "parent": "working104",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "d041eaa9e25291c314b2197fcf14718dac195c994a968f6989aef7291b4b4c26",
+      "status": "PASS"
+    },
+    {
+      "cut": "working106",
+      "parent": "working105",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "112f765f6dd49b11d2c2795fb04866fe611470c5338110866f73b51005233a9d",
+      "status": "PASS"
+    },
+    {
+      "cut": "working107",
+      "parent": "working106",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "c64a570b28381e72c2200569b5d9297d2ed2a851ab7998bad9c1c21e11d3b08a",
+      "status": "PASS"
+    },
+    {
+      "cut": "working108",
+      "parent": "working106",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "4d5501a15d890b72962c3ff08eb5b25285cbdaaacd94580c424eca1813957f68",
+      "status": "PASS"
+    },
+    {
+      "cut": "working109",
+      "parent": "working107",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "4d5501a15d890b72962c3ff08eb5b25285cbdaaacd94580c424eca1813957f68",
+      "status": "PASS"
+    },
+    {
+      "cut": "soil005",
+      "parent": "soil004",
+      "parent_files": 900,
+      "ending_files": 901,
+      "patch_sha256": "35e68884275e6dc8b0921cfb6d322a518bd11bd8a63b4a8ab39d6f22394cbbff",
+      "status": "PASS"
+    },
+    {
+      "cut": "soil006",
+      "parent": "soil005",
+      "parent_files": 901,
+      "ending_files": 901,
+      "patch_sha256": "81fde22132d1ca5a110dbf3784047962b0b06d22736c51309526f5a9f7dd9198",
+      "status": "PASS"
+    },
+    {
+      "cut": "soil007",
+      "parent": "soil006",
+      "parent_files": 901,
+      "ending_files": 901,
+      "patch_sha256": "8a3938aa08bfab72193d5c2958b224459e15ebf5cf5e620e09a599def04f4a71",
+      "status": "PASS"
+    },
+    {
+      "cut": "soil008",
+      "parent": "soil007",
+      "parent_files": 901,
+      "ending_files": 901,
+      "patch_sha256": "4ac24bfa29c6738d4aa6460a76c04e2ac8dd53c0257a588125b75e9cdab75d3d",
+      "status": "PASS"
+    },
+    {
+      "cut": "soil009",
+      "parent": "soil008",
+      "parent_files": 901,
+      "ending_files": 901,
+      "patch_sha256": "138ec92809bacb9395e7a208db675ae537afe7d87be5c8bcb879f533184e8687",
+      "status": "PASS"
+    }
+  ],
+  "live_log_comparison": {
+    "member": "soil009-check.log",
+    "indexed_bytes": 6188,
+    "archive_member_bytes": 6188,
+    "current_bytes": 6188,
+    "indexed_sha256": "2fae8d4177ca0458187bc63ae1bb51f02cec4327305f7d5a8684e10820977b06",
+    "archive_member_sha256": "2fae8d4177ca0458187bc63ae1bb51f02cec4327305f7d5a8684e10820977b06",
+    "current_sha256": "2fae8d4177ca0458187bc63ae1bb51f02cec4327305f7d5a8684e10820977b06",
+    "current_tail": "slope-orchestrator/src/v11_covered/owner_finalization.rs:1856:5\n     |\n1851 | pub(crate) struct NativeSelectedSoilPublicationHandoffV1 {\n     |                   -------------------------------------- field in this struct\n...\n1856 |     continuation: Option<std::sync::Arc<DirectSoilThermalUnpublishedContinuationResultV2>>,\n     |     ^^^^^^^^^^^^\n     |\n     = note: `NativeSelectedSoilPublicationHandoffV1` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis\n\nwarning: method `selected_trial` is never used\n    --> crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:1872:19\n     |\n1861 | impl NativeSelectedSoilPublicationHandoffV1 {\n     | ------------------------------------------- method in this implementation\n...\n1872 |     pub(crate) fn selected_trial(&self) -> &openwepp_land_surface_energy::SoilThermalTrialStateV2 { &self.selected }\n     |                   ^^^^^^^^^^^^^^\n\nwarning: `openwepp-hillslope-orchestrator` (lib test) generated 4 warnings (run `cargo fix --lib -p openwepp-hillslope-orchestrator --tests` to apply 1 suggestion)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 44.71s\n",
+    "archive_matches_index": true,
+    "current_matches_archive": true,
+    "current_sha256_at_end": "2fae8d4177ca0458187bc63ae1bb51f02cec4327305f7d5a8684e10820977b06",
+    "stable_during_verification": true
+  },
+  "status": "PASS"
+}

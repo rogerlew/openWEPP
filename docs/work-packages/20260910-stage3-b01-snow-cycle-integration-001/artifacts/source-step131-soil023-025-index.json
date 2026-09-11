@@ -1,0 +1,46 @@
+{
+  "archive": "source-step131-soil023-025.tar.gz",
+  "sha256": "a6cedc0fec8a03116ef9b3551a266c834c8ffbee831a1581b7f3b3400e32becc",
+  "files": [
+    {
+      "path": "working131.patch",
+      "bytes": 2456,
+      "sha256": "f3da48044c7cdd2b4058966593317cfb6c41d656be43e39692f9452b6e3b992d"
+    },
+    {
+      "path": "working131-source.json",
+      "bytes": 130885,
+      "sha256": "9128192baebbea2b0885b66dc392a5a6737e1820077012e6d831694de0de6d6d"
+    },
+    {
+      "path": "soil023.patch",
+      "bytes": 3067,
+      "sha256": "3f3fb178fe73647637ecad42a8aa8600f2d29675bd2f14e03e8717b6a47647fe"
+    },
+    {
+      "path": "soil023-source.json",
+      "bytes": 131154,
+      "sha256": "22363594f4b33432ff499575e871fcf4812ce227dbb89b30f45f02dcdd164ba8"
+    },
+    {
+      "path": "soil024.patch",
+      "bytes": 12195,
+      "sha256": "59dc1f2e71d9c7a7207b78bab6b7ef132a9429dda8b9210c219b7a479f388d4d"
+    },
+    {
+      "path": "soil024-source.json",
+      "bytes": 131131,
+      "sha256": "9c95f53c19fbb14a2941030ccb96a2fd4cc4d1840f177d7a1608df9c1314c1b6"
+    },
+    {
+      "path": "soil025.patch",
+      "bytes": 2159,
+      "sha256": "26ce8367dbbec9122b73069cd95df0fd801ddb5aec9f359b1f66031b052d7f3d"
+    },
+    {
+      "path": "soil025-source.json",
+      "bytes": 131052,
+      "sha256": "ed7446e52504086ecbf5633218747111e1921d98ff10034425552e998e5d7776"
+    }
+  ]
+}

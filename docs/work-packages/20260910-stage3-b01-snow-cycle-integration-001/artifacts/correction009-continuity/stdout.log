@@ -1,0 +1,11 @@
+
+running 1 test
+test hillslope::tests::stage3_snow_accuracy_case ... FAILED
+
+failures:
+
+failures:
+    hillslope::tests::stage3_snow_accuracy_case
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 241 filtered out; finished in 0.42s
+

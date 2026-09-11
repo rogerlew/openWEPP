@@ -1,0 +1,8 @@
+{
+  "archive": "raw-stop-point145.tar.gz",
+  "sha256": "5365a6e47b67d23663f668cbe5c1d6c1b063cf599abcd8be0c37115135c38985",
+  "bytes": 953251918,
+  "members_verified": 131,
+  "status": "PASS",
+  "scope": "executor byte preservation; not independent scientific verification"
+}

@@ -1,0 +1,9 @@
+ARCHIVE raw-correction087-through094-index.json 216
+ARCHIVE source-steps088-088-index.json 2
+Traceback (most recent call last):
+  File "/tmp/openwepp-b01-cycle-20260910/evidence-review095-archive-verify.py", line 28, in <module>
+    q=subprocess.run(['git','apply','--whitespace=nowarn','-'],cwd=out,input=patch,capture_output=True);assert q.returncode==0,q.stderr.decode()
+                                                                                                               ^^^^^^^^^^^^^^^
+AssertionError: error: tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs: No such file or directory
+error: tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs: No such file or directory
+

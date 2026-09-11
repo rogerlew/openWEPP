@@ -1,0 +1,48 @@
+{
+  "argv": [
+    "/tmp/openwepp-b01-cycle-20260910/correction005-orchestrator",
+    "b01_cycle_endpoint_stabilization_real_maps",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "binary_sha256": "2a9e210b4c11d6e46dffa38e6103bd6f48f893f69d25adf9c91acb15d0ee8cad",
+  "cargo_artifact": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///tmp/openwepp-b01-cycle-20260910/working/crates/openwepp-hillslope-orchestrator#0.1.0",
+    "manifest_path": "/tmp/openwepp-b01-cycle-20260910/working/crates/openwepp-hillslope-orchestrator/Cargo.toml",
+    "target": {
+      "kind": [
+        "lib"
+      ],
+      "crate_types": [
+        "lib"
+      ],
+      "name": "openwepp_hillslope_orchestrator",
+      "src_path": "/tmp/openwepp-b01-cycle-20260910/working/crates/openwepp-hillslope-orchestrator/src/lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "1",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": true
+    },
+    "features": [
+      "default",
+      "persisted-restart-v1",
+      "restart-authority-evidence"
+    ],
+    "filenames": [
+      "/tmp/openwepp-b01-cycle-20260910/target-working/release/deps/openwepp_hillslope_orchestrator-0139bc9dc269598e"
+    ],
+    "executable": "/tmp/openwepp-b01-cycle-20260910/target-working/release/deps/openwepp_hillslope_orchestrator-0139bc9dc269598e",
+    "fresh": false
+  },
+  "exit_code": 0
+}

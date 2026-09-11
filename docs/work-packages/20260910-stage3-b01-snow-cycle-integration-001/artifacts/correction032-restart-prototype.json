@@ -1,0 +1,5 @@
+{
+  "archive_sha256": "58606565c6a1645e983f5bbfa3b8d53ebfba545090fd746cc7ed21d82d31ece6",
+  "base": "working028 policy14 nested-state composite; excludes later030/031 transport changes",
+  "status": "cargo check only; no restart execution"
+}

@@ -1,0 +1,64 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling equivalent v1.0.2
+   Compiling hashbrown v0.17.1
+   Compiling adler2 v2.0.1
+   Compiling ryu v1.0.23
+   Compiling unsafe-libyaml v0.2.11
+   Compiling simd-adler32 v0.3.9
+   Compiling crc32fast v1.5.0
+   Compiling base64 v0.22.1
+   Compiling openwepp-topology v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-topology)
+   Compiling openwepp-plant-phenology v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-plant-phenology)
+   Compiling num-traits v0.2.19
+   Compiling openwepp-biogeochemistry v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-biogeochemistry)
+   Compiling libm v0.2.16
+   Compiling openwepp-meteorology v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-meteorology)
+   Compiling openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-land-surface-energy)
+   Compiling miniz_oxide v0.8.9
+   Compiling indexmap v2.14.0
+   Compiling flate2 v1.1.9
+   Compiling num-integer v0.1.46
+   Compiling num-bigint v0.4.6
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling openwepp-coupled-time v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-coupled-time)
+   Compiling openwepp-management-schema v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-management-schema)
+   Compiling openwepp-vegetation v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-vegetation)
+   Compiling openwepp-input-contract v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-input-contract)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working016/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 14s
+────────────
+ Nextest run ID bec755af-c504-4387-b9dc-9a3e6e9cfe8d with nextest profile: default
+    Starting 5 tests across 1 binary (1427 tests skipped)
+        PASS [   0.007s] (1/5) openwepp-hillslope-orchestrator direct_runtime::surface_liquid_owner::zero_duration_snow_liquid_tests::overflow_routes_with_exact_area_mass_and_enthalpy_custody
+        PASS [   0.008s] (2/5) openwepp-hillslope-orchestrator direct_runtime::surface_liquid_owner::zero_duration_snow_liquid_tests::insufficient_capacity_retains_exactly_and_routes_mass_and_enthalpy_to_outlet
+        PASS [   0.008s] (3/5) openwepp-hillslope-orchestrator direct_runtime::surface_liquid_owner::zero_duration_snow_liquid_tests::all_runoff_surface_delta_is_exact_lineage_only_and_poisons_reject
+        PASS [   0.010s] (4/5) openwepp-hillslope-orchestrator direct_runtime::surface_liquid_owner::zero_duration_snow_liquid_tests::destination_fraction_partition_redistribution_replay_and_tamper_fail_closed
+        FAIL [   0.052s] (5/5) openwepp-hillslope-orchestrator land_surface_energy_shadow::v3_tests::native_litter_phase_order_preserves_payloads_and_rejects_bad_key_sets
+  stdout ───
+
+    running 1 test
+    test land_surface_energy_shadow::v3_tests::native_litter_phase_order_preserves_payloads_and_rejects_bad_key_sets ... FAILED
+
+    failures:
+
+    failures:
+        land_surface_energy_shadow::v3_tests::native_litter_phase_order_preserves_payloads_and_rejects_bad_key_sets
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1431 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'land_surface_energy_shadow::v3_tests::native_litter_phase_order_preserves_payloads_and_rejects_bad_key_sets' (2288577) panicked at crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_tests.rs:668:6:
+    final vapor: FrozenLitterVapor("inbound vapor must credit its named phase exactly")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.054s] 5 tests run: 4 passed, 1 failed, 1427 skipped
+        FAIL [   0.052s] (5/5) openwepp-hillslope-orchestrator land_surface_energy_shadow::v3_tests::native_litter_phase_order_preserves_payloads_and_rejects_bad_key_sets
+error: test run failed

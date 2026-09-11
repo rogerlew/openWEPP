@@ -1,0 +1,106 @@
+{
+  "archive": "source-ordinary001-010.tar.gz",
+  "sha256": "305e33ac94c96bad32e26b4f6b38ebdb39f2555eba0caa962ea3a46e17009f51",
+  "files": [
+    {
+      "path": "step001.patch",
+      "bytes": 936,
+      "sha256": "ef16ce82ad748dd9ee87ceb80af85579ef18fdda249953730148053d84d1d0a3"
+    },
+    {
+      "path": "step001-source.json",
+      "bytes": 130693,
+      "sha256": "c3705ee33a05108ff6e9378b214c180d0ff4f8aa23d7149c0c16d1f3f2d50cb0"
+    },
+    {
+      "path": "step002.patch",
+      "bytes": 1166,
+      "sha256": "c4e7a716f4f3f5440bd2187c2b2bab0b985c19cfb98ef98e7d04a2081b1e9ea0"
+    },
+    {
+      "path": "step002-source.json",
+      "bytes": 130688,
+      "sha256": "c4f71e13e8c17f9564cef8ab7f6c60425180c3b8a9d4a3f1b9a6686c2ad50278"
+    },
+    {
+      "path": "step003.patch",
+      "bytes": 7943,
+      "sha256": "b22352104fe42101e6f3c9529a42b2a3ea34b221e456ff6d720b22ea4f1e641a"
+    },
+    {
+      "path": "step003-source.json",
+      "bytes": 130795,
+      "sha256": "f67ce366df3cba12c1aba0e354d8e87d19060a7270e8d22261bc3fb7e6390b0f"
+    },
+    {
+      "path": "step004.patch",
+      "bytes": 4286,
+      "sha256": "a73b21178e671b57eea4004afca1c10062bf8e6993c1a6f7f87e8ef67f8bfdc0"
+    },
+    {
+      "path": "step004-source.json",
+      "bytes": 130733,
+      "sha256": "91f8851c5fb216323b3096fdb44f9403283e47cfb34fda6d63a6ea2e6073bd00"
+    },
+    {
+      "path": "step005.patch",
+      "bytes": 11601,
+      "sha256": "4594103de60e523504b6b69db3756e325658656d1452d04fee654257d459a080"
+    },
+    {
+      "path": "step005-source.json",
+      "bytes": 130822,
+      "sha256": "3c74f2efbf450ef7ef17c1c27c9b72353cfcaf67a4d84d4695cf830200db14a5"
+    },
+    {
+      "path": "step006.patch",
+      "bytes": 8657,
+      "sha256": "86a7f2ed311c957f7f30997218deeb31f12700d69d4875de300ac9a7951eace4"
+    },
+    {
+      "path": "step006-source.json",
+      "bytes": 130930,
+      "sha256": "1b2a4673638b2923a27db8fb92a9adb85bd668cf7238a729ca9154137002c130"
+    },
+    {
+      "path": "step007.patch",
+      "bytes": 13723,
+      "sha256": "6e5e016fc1ec878dfec351502aa026136242f11565a3698dac5de50c7c7233ea"
+    },
+    {
+      "path": "step007-source.json",
+      "bytes": 131043,
+      "sha256": "97ccafe563648244864d89595cb07009e530a3c93e70f62bd8cd647d29d51357"
+    },
+    {
+      "path": "step008.patch",
+      "bytes": 1863,
+      "sha256": "c5e4c3f1039e8a15f489cab065e2da8ba513ad91d9d91851fa27aabf62ff0636"
+    },
+    {
+      "path": "step008-source.json",
+      "bytes": 130739,
+      "sha256": "33eb09a65554525e865446e216c645b5964b26ce41e5902350b9ed802e01e265"
+    },
+    {
+      "path": "step009.patch",
+      "bytes": 11145,
+      "sha256": "3fb7252ff8f9dac6ce41954a21d0f94647a393914d3646a6a322d17a6e4bf8d4"
+    },
+    {
+      "path": "step009-source.json",
+      "bytes": 130737,
+      "sha256": "6f6fe22038b8901b6af115caf9e17a0f4390df8fd615f7e73a456aa623f2938e"
+    },
+    {
+      "path": "step010.patch",
+      "bytes": 1346,
+      "sha256": "bfcb8582e42cd6f183f7505beec3d6653a2b9c65cebf9119d72c541ea59d7973"
+    },
+    {
+      "path": "step010-source.json",
+      "bytes": 130739,
+      "sha256": "0cdfdba8fca0314e36bbf879da538a511fca1be99f582688c868c680adcfa814"
+    }
+  ]
+}

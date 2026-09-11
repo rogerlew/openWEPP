@@ -1,0 +1,13 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working018/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 04s
+────────────
+ Nextest run ID 1e409d10-5a82-496e-8c21-320a5fe87853 with nextest profile: default
+    Starting 1 test across 1 binary (1434 tests skipped)
+        PASS [   0.145s] (1/1) openwepp-hillslope-orchestrator land_surface_energy_shadow::v3_tests::native_snow_liquid_publication_authenticates_replay_and_rejects_substitution
+────────────
+     Summary [   0.147s] 1 test run: 1 passed, 1434 skipped

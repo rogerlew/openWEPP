@@ -1,0 +1,56 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working019/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 01s
+────────────
+ Nextest run ID c1c3e9af-c262-4c32-b203-4953f990c950 with nextest profile: default
+    Starting 2 tests across 1 binary (1434 tests skipped)
+        FAIL [   0.012s] (1/2) openwepp-hillslope-orchestrator v9_real_consumer_shadow::v3_publication_retention_tests::install_frozen_litter_v3_resident_moves_validated_history_without_roundtrip
+  stdout ───
+
+    running 1 test
+    test v9_real_consumer_shadow::v3_publication_retention_tests::install_frozen_litter_v3_resident_moves_validated_history_without_roundtrip ... FAILED
+
+    failures:
+
+    failures:
+        v9_real_consumer_shadow::v3_publication_retention_tests::install_frozen_litter_v3_resident_moves_validated_history_without_roundtrip
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1435 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'v9_real_consumer_shadow::v3_publication_retention_tests::install_frozen_litter_v3_resident_moves_validated_history_without_roundtrip' (2315667) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:235:13:
+    assertion `left == right` failed
+      left: 13760392397185826858
+     right: 0
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 1 test still running
+        FAIL [   0.238s] (2/2) openwepp-hillslope-orchestrator v9_real_consumer_shadow::v3_publication_retention_tests::native_drain_histories_retain_partial_state_finalize_dry_tail_and_reject_replay
+  stdout ───
+
+    running 1 test
+    test v9_real_consumer_shadow::v3_publication_retention_tests::native_drain_histories_retain_partial_state_finalize_dry_tail_and_reject_replay ... FAILED
+
+    failures:
+
+    failures:
+        v9_real_consumer_shadow::v3_publication_retention_tests::native_drain_histories_retain_partial_state_finalize_dry_tail_and_reject_replay
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1435 filtered out; finished in 0.23s
+
+  stderr ───
+
+    thread 'v9_real_consumer_shadow::v3_publication_retention_tests::native_drain_histories_retain_partial_state_finalize_dry_tail_and_reject_replay' (2315668) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1601:108:
+    called `Result::unwrap()` on an `Err` value: Failure(DirectSurfaceLiquidFailure { code: E008, phase: Restart, context: DirectSurfaceLiquidErrorContext { transaction_id: Some(TransactionId(1)), owner_id: Some(ResourceOwnerId("surface-owner")), ofe_id: Some(OfeId("ofe-z")), tile_id: None, surface_id: None, source_id: None, parcel_id: None }, rollback: DirectSurfaceLiquidRollbackHashes { beginning_owner_sha256: Some("b20a29a10679a05aec4eb1d1b66b0ee05e77cb7beaf72ba4f3ad83897f2d349b"), attempted_owner_sha256: None }, detail: "accepted continuation must have interval 1..=48" })
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.246s] 2 tests run: 0 passed, 2 failed, 1434 skipped
+        FAIL [   0.012s] (1/2) openwepp-hillslope-orchestrator v9_real_consumer_shadow::v3_publication_retention_tests::install_frozen_litter_v3_resident_moves_validated_history_without_roundtrip
+        FAIL [   0.238s] (2/2) openwepp-hillslope-orchestrator v9_real_consumer_shadow::v3_publication_retention_tests::native_drain_histories_retain_partial_state_finalize_dry_tail_and_reject_replay
+error: test run failed

@@ -1,0 +1,1469 @@
+{
+  "commits": {
+    "e89bef": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+    "87f4a8": "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+  },
+  "files": {
+    "tests/integration/adr0017_comparator_distrust_ratification_contract.rs": {
+      "sha256": "26084284996d07b5459019ce755d068e04245486694818c2021d5a905146b5ca",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/advisory_linter_authority_contract.rs": {
+      "sha256": "cbf217313d2dd0b85aa9c27f2ce74da83e9b540e45cce411b976076737d9f119",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+      ]
+    },
+    "tests/integration/arch22_typed_state_surface_contract.rs": {
+      "sha256": "9d10ea9e752242b84d9c5a52112aa684d4b6abaead151aa595e8f0841dcc16b1",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/assurance_dossier_build_contract.rs": {
+      "sha256": "385624f50decef8e7f299b081684b67b97698c15249cd09a562c4598bc38a02b",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/assurance_v2_amendment_contract.rs": {
+      "sha256": "dfecd14bb2835cbdeaad8cdfac7fc49c47f088697d20bb3ede90d40704bcf265",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/assurance_v2_assembly_contract.rs": {
+      "sha256": "ef00ddf9ae6258a8da5c49974483e47fea5f576cdd4d312cb545f96c33d43c72",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/assurance_v2_groundwater_report_contract.rs": {
+      "sha256": "7c6ace8a5df6bf6924b191333620a2ef09d59b8455b4f91af5cb8313a90d2047",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/assurance_v2_normalization_contract.rs": {
+      "sha256": "0c7776f96479c613d3f6651f03304c99cb1e1f84efd3dbac4c0c03869068d8ce",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/assurance_v2_planner_contract.rs": {
+      "sha256": "544f2a1cac75f77be33e3a02f97d4b18e0a0f3b94ed4cb7eea74258b93d032ca",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/assurance_v2_publication_contract.rs": {
+      "sha256": "bd5746821af353c47282ca656f4ca8216fc6ba9a08fa9a7a2cbb79f8ee7fb13c",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/assurance_v2_source_contract.rs": {
+      "sha256": "eaccc59f172487e86ca00f3b9a1a65e67bad9d7d4ac2ed8e3df6c70be01b0f6e",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/auth04_release_gate_authority_stack_contract.rs": {
+      "sha256": "18e997e76f4f73fcdb9859f9449b405411d2a1f427de41ed12bfef8c3dae9899",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs": {
+      "sha256": "3d29d99df90cb74d4062c155b07a34bf5704f13a73ca6b84e468533aec4484ab",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/auth06_fixture_provenance_hash_enforcement_contract.rs": {
+      "sha256": "2d06903eb5aea878f8f55e07ef9aac5a4987f17f40ba91d59e942dce2fceda8f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/auth07_fc_authority_cohort_contract.rs": {
+      "sha256": "59d962a200978eb74e98496f99a77c11b2741ab7f721c6f1ff03ce9c6ed84ef8",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/auth11_required_suite_obligation_guards_contract.rs": {
+      "sha256": "b07c88ab6a31734363c8bf173e6fb5b99586b5652ae09dc2c543a32b3cb5a815",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/c3_vegetation_implementation_contract.rs": {
+      "sha256": "2052de5d037f73bcee6ab1bb4fb4fe5563db767e9399011a5c7ffa0b7510fc0f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/c3_woody_v11_authority_contract.rs": {
+      "sha256": "6716a7e30436d33a789a07ce8b01e9a861da4aa8aa143f160053aacd21542a06",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/cancov_stratified_observations.rs": {
+      "sha256": "41d16532f2967e4281842c21a0375c98ba566900d16f977b19f48740828ef2fa",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/canopy_litter_external_boundary_contract.rs": {
+      "sha256": "8e3c82f1002ed1caf45e757807df33d0737b338bf016c09c7c2fd4cbb5518090",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/cli01_runner_contract_derived_tests.rs": {
+      "sha256": "6fb3beea8b89e2305e462e97bc59d613432e696e73208b55544c7e6ec1b938b9",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/cli01_runner_hillslope_integration.rs": {
+      "sha256": "3ee9c3c68065c8a87b8f413863eb2af3455efe47ec75e236c07de1e671b3cf8b",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/cli03_runner_contract_derived_tests.rs": {
+      "sha256": "58fb6a670b6f01e2510a22b1fb6e4aa0abd19fbfb04ad32469b03bf9c9341728",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs": {
+      "sha256": "3031782927cade141a43b62f560bb719257c49eb539a5acf05b3deb2dbd71fe7",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/common/mod.rs": {
+      "sha256": "3eab444f63f5c90525dca371e1a350b6f968c2f6106c68397f4131c743265c36",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/comparator_tier_routing_metadata.rs": {
+      "sha256": "0172d9a36eeb8112c7674948fc3faed03ec6ce1f6e8dc5861845b84a2aae14a8",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/coupled_time_authority_contract.rs": {
+      "sha256": "c96350b1590a3386d113a74c89ba4779b8ba9645ce34ee73644cf28f40dd414b",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/cqr_quality_evidence_handoff_contract.rs": {
+      "sha256": "4bfc7d87a1cf3e8a2b9ebaf0de12e7c33b47c6ea8e5715108182d7785cf44c51",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/dff_ws1_native_forest_cli.rs": {
+      "sha256": "fd5552ec4436a684050ea16e614290d85795e3a2e9e2f5546f14b27ea482cca3",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/dff_ws2_ksatadj_direct_runtime.rs": {
+      "sha256": "897f95fe3448a7a107efc827721da64ff0ec946d8a491df258f006fd9f261056",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/dff_ws3_directional_burn_validation.rs": {
+      "sha256": "6b14fde5798279f24e4508e3609c4d3ee45b03c64853331de3d6fc14df788796",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/direct_hydrology_persisted_restart_implementation_contract.rs": {
+      "sha256": "a0a3f9259cf8afe322052b9eb5ce9dc02fc8a042529be9bd79f5567fa8de1605",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/direct_hydrology_restart_authority_contract.rs": {
+      "sha256": "38398d0cdd3c0a6d67dd74cbbbb179b2bda425bb93d2523af78f8b974e70c551",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/direct_v10_real_consumer_checkpoint_v1_contract.rs": {
+      "sha256": "0ce5ec51243f0ce82ebb59cadb8fc3a45486b494124e27b722f861633cdfd508",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/erod11_alias_boundary_ownership_contract.rs": {
+      "sha256": "f87dd8d2cae4527061c95b82e7e2a60bf3c599a7f3e971f8cc84bbca2627ab1e",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/erod12_cross_domain_contract_closure_contract.rs": {
+      "sha256": "ecf32bbeba7dcac95e93674c02a823702b8fad7a989b1f20d5ae242c3df1d536",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/erod13_contract_authority_closure_contract.rs": {
+      "sha256": "185da73664bc70402a9a2d42b05cf9e6d8d8b221cdec024f20154f0031d2eaf0",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/erod14_contract_authority_closure_contract.rs": {
+      "sha256": "240b4a5672bf38dc2c091eaf12446f3d41b804bc3c1e1e5e9d77042b717d697a",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/erod15_wave3_contract_authority_closure_contract.rs": {
+      "sha256": "66b55018c9b397d6c5bb2147530576f7232983e3c12b22c5312fdbb5690d1c7f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/erod16_wave1_continuity_fixture_conservation.rs": {
+      "sha256": "e4a08dc6a34b0c19b49f4947fc663b004b314996060937e24d4b0608280d70cf",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/erosion_multi_ofe_p102_chain.rs": {
+      "sha256": "6719915e3eb37d6316586ad60122704108de32783855c1f8433b62425d5e3475",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/erosion_single_ofe_p61_sediment.rs": {
+      "sha256": "7722709013c995e1b094bb02e19e8a3555525bb48cbc6f725d5364c3918d8768",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hbp_subhourly_exclusion_contract.rs": {
+      "sha256": "1a4c908996ab15f2914411a7d0d0c78acf4204d094ac54a131f7ad8d1dd0b869",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hparity01_hillslope_wat_lineage_contract.rs": {
+      "sha256": "a0ca50207e09dc1c287d17150fa3dafa28b4128e63bc4f73f477d42351a1fb76",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0208_fc_threshold_coupled_residual_contract.rs": {
+      "sha256": "e92094fce1b49dcb29b48239adfaf2541effc1f8b5daf4554893973e86f8d05b",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0209_profilewp_adjudication_contract.rs": {
+      "sha256": "4b9efc867150ba4b797c1574971d6f043f07a14acdcf1dcdca0d0f01a63c2b62",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0224_wb19_withdrawal_soilwater_cap_contract.rs": {
+      "sha256": "855941d2476f805853ba236440595ce9420bb049979919f237e5f0b4c4b59ed0",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0225_wb19_layer_pool_withdrawal_cap_contract.rs": {
+      "sha256": "b3cc827032be1c58afcdc64fe8a99858ceaccb558ffebe88d5cceaf7936ee0e0",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0226_wb19_lateral_saturated_thickness_response_contract.rs": {
+      "sha256": "167d14ac9295d2bd66887344accf45e65e253385a87ec8e2781909b3c46d8194",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0227_wb19_fcwp_coca_watyld_authority_contract.rs": {
+      "sha256": "00a0fc0488f521689009555fa979a204876c5442fc1a4ae5e41393b59fac65fb",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0276_raw_unit_conversion_guard_contract.rs": {
+      "sha256": "98a96b7f12d00c2cd1f96669168625c06969f29123e47fe02ed7c640d7b55a3f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0279_sc_unit_compliance_lint_contract.rs": {
+      "sha256": "ceab990c325afd444802aa2ebec404a6642e1566a38b3c721bd5458cfebeba46",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0296_snow_rm_acceptance_authority_contract.rs": {
+      "sha256": "7ed20f9752438e2fd9718c054dc5e42b0ccf1b699068f43dd0f76c90ff391454",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0297_snow_rm_defect_ledger_contract.rs": {
+      "sha256": "55b3aeb98d98f8c91671a93da24c5c596e8af8e06b5e3282114c71b25dd97206",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0298_paired_lineage_partition_contract.rs": {
+      "sha256": "2b04c33f8b96631d2bf230c6061562c1a2d39c5735db2b38c8aaa42ed587ec56",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0300_raw_hourly_melt_post_raw_routing_contract.rs": {
+      "sha256": "7a5d26887e6f289ed444389e44dcbeec1cf0d535b31f673b91cb403e5ad1f9c3",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0301_h39_forcing_melt_term_producer_contract.rs": {
+      "sha256": "92d3ed1670bae206cb9fb39a80c4550956b69b407c6798f8d7a21a84f2088a51",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0302_comparator_surface_audit_contract.rs": {
+      "sha256": "303985109a75a8ab03d045efb46b8c8e9ba1fe9f496eee4b0b99298f2d940871",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0303_adr0016_comparator_ratification_contract.rs": {
+      "sha256": "e6e9a1f32a5b099c6f8fd1b4c1556c13dad5b4fc0e73c4605cf92769360da5d0",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0304_fixed_comparator_semantic_rerun_contract.rs": {
+      "sha256": "ba86560e16086a24a6a37995ec3ea6af5ee6ad8898a38f2634a21c8449e5c422",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0306_baseline_melt_observe_semantics_contract.rs": {
+      "sha256": "e5703c8ca81d5c9a45bdc31a8a23775b31757a7b9fad9bb1734bd3fbe24b777f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0307_melt_call_branch_activation_contract.rs": {
+      "sha256": "553335458a73385f18dbaee64791b595d53ac03ea9ee17c5aa4d52598bafe28b",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0308_snowd_branch_state_ordering_contract.rs": {
+      "sha256": "2f8e2187b2a8b96415c33d6056d407acd9e2225f6e45de5cb0465d4b5570f188",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0309_snow_carry_depletion_lineage_contract.rs": {
+      "sha256": "f42cc3df019c8885a8e6b1e650c802775f183712f998396425ada96e998d8bf3",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0310_prior_day_snow_carry_divergence_contract.rs": {
+      "sha256": "49ce571c3d70adf42b60d1043eec9ef3777ce62085dca48d33160dfff33cfaa1",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0311_snow_carry_source_line_parity_contract.rs": {
+      "sha256": "39b434eeda5c2ff6b05fb321760b95176e5b4f4fe8d282248acb1c133ac358a5",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0312_prior_year_terminal_snowpack_lineage_contract.rs": {
+      "sha256": "b81172f7d01adaf5f4530385008e1376e3a0f4a19e03d56ded11c4199c47db63",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0313_snowpack_settling_carry_recursion_contract.rs": {
+      "sha256": "4a29c3d39ca35ad4e4fbe54772e0d49a7b9230371270eeb98b9995eddb037825",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0314_adr0017_snow_rm_reclassification_contract.rs": {
+      "sha256": "5d46da624f1dfd3ecffde43ffc8d014552ab379b5697eb3a9d5f24563c936f0f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0315_hourly_snowfall_input_lineage_contract.rs": {
+      "sha256": "e9e87d0ece5bb5ba03fe3bda01cf3848c4e2254d8502edcb1ad105df9627d37e",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0316_2013_terminal_carry_recursion_contract.rs": {
+      "sha256": "1517d20aac23548d47aee1695f53b25eeb74156d912469a2da5b90b5ef5adb73",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0317_hourly_snowfall_input_surface_parity_contract.rs": {
+      "sha256": "ae0e0eb1956013db3b431fc5bf9fdd298e7641a406d3a43ef91fe54ad1e54c71",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs": {
+      "sha256": "88563d653e82d8f9d1816f6446ab64358181f0f5f14cdd740cbee02a7c5ed514",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs": {
+      "sha256": "7dd212a96d6419e7cf103283da456e1e547d8ad5a20dad77da353a6310a8ccc1",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_chaninp_parser_contract.rs": {
+      "sha256": "bb7475b308acd1364e7c8037fc4495a321ec1de8d46abb78a0fdf4c62f620c9e",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_climate_parser_contract.rs": {
+      "sha256": "ee10e71c7401ccf064e09c4402ff6e6e4da4bb958a441cf76a2e598a723eebff",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_frost_parser_contract.rs": {
+      "sha256": "d5e1fe64f178d79574ec7b89de9d023058c77bf6b4754a06e3c9bb97972e75b8",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_gwcoeff_parser_contract.rs": {
+      "sha256": "77893636eea16fb62630721cee81f0323de4a33694da6fad98a0140089be28af",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_hbp_parser_contract.rs": {
+      "sha256": "4e518ef8e836242ade8ce94edf6dc47b10e1bc0ac803557be8bf02b17b90da6b",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_irrigation_depletion_parser_contract.rs": {
+      "sha256": "55b89b7befdf621a5ab3a0309b204acda567f2a134fa60e608432e24e9fc64a6",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_irrigation_fixeddate_parser_contract.rs": {
+      "sha256": "473d2ba682562122cf16bbc2ea6f83a43cd2a8352d47c7f72ff1a30167b3d87e",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_lcwb_parser_contract.rs": {
+      "sha256": "e7c8c299276c213fcae1989f6504852610077e3e9552e0ecffc44f5d9d2a7eb3",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_management_parser_contract.rs": {
+      "sha256": "d810639d02f99cfb97642e382fc5267d72c78857a5e083de9ae1e2aeeb6ad32a",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_management_yaml_contract.rs": {
+      "sha256": "61a9c57951e1e6dd98dfdd05a600c889e3a621b16fdf5ddd6a4ebfc8c323a691",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_phosphorus_parser_contract.rs": {
+      "sha256": "35ddeb4cb1b85f2375792450fdb9617ff5181926f5913a85124c88c582be926e",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_pmetpara_parser_contract.rs": {
+      "sha256": "aef720a4d847496eedfc7a9067d057a2cd98596cd93b4ce26401cf5a5d8b660a",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_slope_parser_contract.rs": {
+      "sha256": "d13f968997e10fea7b27c71a65242e1eccfa27cbc174c31aa3265e66478f862f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_snow_parser_contract.rs": {
+      "sha256": "3531462d6ad4bf984b812eff55303b765454f885bbf055d18b794a44831c1d0d",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_soil_parser_contract.rs": {
+      "sha256": "a7326d592380b89129c64e055285888750b109f3195791035dd7738a12c9b4d8",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_tc_parser_contract.rs": {
+      "sha256": "727c45f92926326c395c727d421c3e405ec3c84d6692749076b165ae6c327656",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_tcr_parser_contract.rs": {
+      "sha256": "a12a4e337bb58ef16868068f115fd4f7b9495c1bb972a87b7bf2b906f64cd7b8",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_watershed_channel_parser_contract.rs": {
+      "sha256": "7999f66715eef99117426de1c32e5136f350a547d0f6c7c1e3dfad1fba3226ba",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_watershed_impoundment_parser_contract.rs": {
+      "sha256": "6da37f37c8c86c51d213e07ed8e681336fc6dd7a0292780d0839db795f1775cd",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_watershed_structure_parser_contract.rs": {
+      "sha256": "e210dadb480cfe14779663feb10de6dc59927dafcd7feff2d16e800c164e39b6",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/infile_weppui_parser_contract.rs": {
+      "sha256": "2770871094428824c9ba09a3944a17a71dd774a2f326ce2a213952ca503c9834",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/land_surface_energy_balance_authority_contract.rs": {
+      "sha256": "784ca9311fd6d3678290538fdf12107bde9e346d8bb3863e25ff9622d8153ad7",
+      "matching_git_commits": []
+    },
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs": {
+      "sha256": "5bd1ed07e3712bb1bc023de5eb1a47677806fc0a7d9d197dea420f4d42d4a47e",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/covered_forest_tests.rs": {
+      "sha256": "6c80d8a2b75691c884c42ce26deb284d563f41b0df3da5d8a41721a04af0b444",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/finalization_test_support.rs": {
+      "sha256": "e56808b51a74f2476f2a8a873a221a4aa4d882d5e65046d85aecda37a0c7ed66",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs": {
+      "sha256": "982dac38c5b45b60eeb6db22a9ad839037359ff3fbc38fae11c10b069d434d76",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs": {
+      "sha256": "041c0df1739385995e5cc6c241510523e0e4c74bedfba34bf152c501461e53fd",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/sealed_receiver_context_tests.rs": {
+      "sha256": "80cca7061a4bdee3554ce9b95f4ef3d6407c89c8ee2b69e5b494b65838294c7f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/snow_preflight_tests.rs": {
+      "sha256": "fd9beed5817a08b29292f3e47a2db98884f5b67819e41d297cb539f26dfb9672",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/source_binding_tests.rs": {
+      "sha256": "a8ef32be64016c54fff0039aaa940ffca9a186c0ec8797f77ebada2c4764088a",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs": {
+      "sha256": "7d24fce2c50728c2e5ca21c7f2af199dd15cddfbc4b5b0bcff01249583c92f60",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/land_surface_energy_strict_v8_public_contract.rs": {
+      "sha256": "cdf4946288eb864899f218995bebe2d49e39281e7b37fefb681274c5b3006950",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/landuse_migration_cli_contract.rs": {
+      "sha256": "9e7b0b595d651aa5a639a1d589c3285f24cc36f5a6849ab16fbdca6533205b8f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/laned_shadow_h2637.rs": {
+      "sha256": "79ea4863b31f79ddd45a837f2c18adee8f51a105bbd40c26538575edf53a62a3",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/mofe01_inter_ofe_route_contract.rs": {
+      "sha256": "d5bfb239ff34c80a164a82e878681da42c76a3a852aa3911b84e3923d9ca8ecb",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/mofe04_publication_contract_authority_closure_contract.rs": {
+      "sha256": "3eb71e45f8cca9f04718692606a32c682a86c6d10f5231903f885f77c9de86e8",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/mofe05_watershed_contributor_metadata_contract_authority_closure_contract.rs": {
+      "sha256": "da26a66329f5dae931252e5acabaeaf95e0f088d76928f6d60be5a6fd3b6aafe",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/owcmp_agent_config_contract.rs": {
+      "sha256": "ab2c827b3e6e68203d921e8d829b0974a61b783b82b9e48e4474c445a674eac9",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/owcmp_cli_contract.rs": {
+      "sha256": "d818b0c868c9c823db184e0657f3e1db824a3fbeeaf332b588654885e1280928",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/paradigm2_multilayer_promotion.rs": {
+      "sha256": "b2dcd309b1072a424b537f480db8e81350021783ca80179564f5417b476c3af0",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/paradigm2_stage0_surface_energy_balance_contract.rs": {
+      "sha256": "839518b98315b0915f390bc052e96f1471c58fcef271071f11143342be43f309",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/paradigm2_stage1_layered_snow_density.rs": {
+      "sha256": "0df67375297a416b361ff8251b185802cddab5c44e1a94f2b48b0f5ae73c62f2",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/paradigm2_stage2_snow_frost_insulation_profile.rs": {
+      "sha256": "543e27fa8e0ab32ba509ff41fb06d3bf5f6c8a9283c3e02348b639c29e204776",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/paradigm2_stage3_decouple_water_temperature.rs": {
+      "sha256": "29664f77eeb08acf477df41190b2e96e1398505bde1ce44be2d5cf0c8cdc034e",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs": {
+      "sha256": "0199e9f192ba90985845c214c0b4fb191fdd5fd6d5af8de33d8fac2a8d2fe6a7",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/peak_hourly_authority_contract.rs": {
+      "sha256": "17961d2628784c69e914cf75d16767dcfbcb1bb0dc151b5392aa9bc323c38abd",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/pl14_tier_a_candidate_replay_contract.rs": {
+      "sha256": "bd5ffe3eb4b07acb1dd80db5f64a5b6995cdb521d52d9f96a92b52f77f5174e1",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/pl14r_tier_a_replay_rerun_contract.rs": {
+      "sha256": "5d36a6e51669a4ec51a1acf97e2f44cf805fccd2c9368f91d9963dd898806586",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/pl14s_tier_a_candidate_emission_and_replay_contract.rs": {
+      "sha256": "1d310d3e10feee930f3e4e6c61c5109d0bb048c38ff69fed2c1e729e8db5bb90",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/pl15_tier_a_delta_closeout_contract.rs": {
+      "sha256": "42ae21f194319d22e6b1e19b6e35680322006200d42e5e92708152af9a68aa37",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/pl15r_tier_a_delta_recloseout_contract.rs": {
+      "sha256": "36ebb34f7955456869c90e8a381fb1556748d8e3f05e4942d8f477400c226841",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/quality_observatory_merged_coverage_contract.rs": {
+      "sha256": "b4a39b99bdd6926fc55808e754ff50b11b77b8fc5f2411c99a0d4e744b392255",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/quality_observatory_workflow_contract.rs": {
+      "sha256": "848a6ff2fdb20fbc01ea0328d75a5fea6f598a799261f1ab257aac672683c5df",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/root_zone_hydraulic_authority_contract.rs": {
+      "sha256": "eb6c4006c4dcf5c72df5a964872f0eb31f086e99ff33fc364bca839649ca51a6",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/sim_contract_boundary_unit_registry.rs": {
+      "sha256": "dd57b1a6b72a56af66382faec4c1a0fecfd17298f5bcf9b9c4282aa16a0dff54",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/sim_contract_closure_checks.rs": {
+      "sha256": "908ba9e569031621750b3aec8fced72a856220a232b3226d0c2acc5c2b8ac885",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/sim_contract_status_taxonomy.rs": {
+      "sha256": "5043c50956271cf386370217f8c2501de091cfb113f298eeeb6ebc1650467b0a",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/sim_contract_symbol_alias_registry.rs": {
+      "sha256": "2b25468ffc5c0175703075e40b987f7ec687dab49917049b0d8a43e8e2d25fe5",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_free_half_hour_forcing_adapter_contract.rs": {
+      "sha256": "20df9c7c91c57a0196a4a6ecc2fcae1d51c13b640f9e96ea5dc907529b314e3f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_free_half_hour_forcing_authority_contract.rs": {
+      "sha256": "d7081e175f8011abe0da258fb0cca5cc9a2fba1912c3ffbf03338c99f62614bc",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_mass_transition_ledger_persistence_contract.rs": {
+      "sha256": "0ce6c180e0c20935df4de254ecb1fa815bceaf5d0b6e3723a6b3340fc2299a22",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_adaptive_compositional_contract.rs": {
+      "sha256": "a03a2c93bb33c6dda7698b5085ce8c587a6cb0bf0114ae71378f895cc2157568",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_evaluation_shadow_authority_contract.rs": {
+      "sha256": "b357b712367a7413bd27ec5620dd6d054476cac146f1a9cb011e13c2c43fa53c",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_legacy_predecessor_bridge_contract.rs": {
+      "sha256": "01a2cea68fb062c4bbadfc935bff4efcf85829808f04b7c18e832f76a5e4e0b1",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_persistent_accumulation_shadow_contract.rs": {
+      "sha256": "7b86d186ba4fd563d2b3e512e07fbcc18af365b55de1d9c7999ae35f40357e41",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_shadow_observability_contract.rs": {
+      "sha256": "b655990a17e39e1a07e78fe265aa99a066fc94374dd09e618bd20a9bd776a7a8",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_shared_carrier_authority_contract.rs": {
+      "sha256": "b846eab2526cb30d6e8c84bdac00d489ac75f33ea5d603a82ff6fe3dfa07d77b",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+      ]
+    },
+    "tests/integration/snow_stage3_shared_carrier_terminal_handoff_implementation.rs": {
+      "sha256": "29047d0089ccf83a0345106b23e3b79c8b9db07e7752576bf95d9fff7f3a4e1d",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_terminal_batch_temporal_v20_contract.rs": {
+      "sha256": "f9a4e1789905f2bcc90295271c88769897a5bf6e4edb99e855f4636c5296fec8",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_terminal_batch_temporal_v21_contract.rs": {
+      "sha256": "922c66e26643018b16ee27c2b5f32dda2b0866085b283b94a0fa41ecee8b8696",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_terminal_chronology_v19_contract.rs": {
+      "sha256": "817b6604f494b3ea8e1c7d9f7f75421364984eb99ce83045c26698d65011b374",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_terminal_receiver_authority_contract.rs": {
+      "sha256": "3368d73c7fa64624f1f075a29b54ed74b224230992f5a8e904f5460944dd6428",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+      ]
+    },
+    "tests/integration/snow_stage3_turbulent_operator_reconciliation_contract.rs": {
+      "sha256": "0919ef651ace8b363af28c437a68baa944559732e37441dd9b96aa32dc249b67",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_v11_constitutive_boundary_contract.rs": {
+      "sha256": "1606140bd162c2c4c27967099a2615832634c3fc8f847edcdb85fcfeac06a3ef",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_stage3_wind_source_custody_contract.rs": {
+      "sha256": "b9c4ad4e844cab0dce9af3990e26a64453bd30890147d89a670b3417bb330de4",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_surface_eb03_contract.rs": {
+      "sha256": "d6424ccfb0e7b534c3f09f6afc9e73ec221ad2f3ee20de3d6625a90d56986a25",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_surface_eb03_runtime.rs": {
+      "sha256": "c249cb0572c2015902f227d37ae52ec85dd556375d8d9116af461544b07ff4c3",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_surface_eb04v_density_process_diagnostics_contract.rs": {
+      "sha256": "d0ccf1697f5266f7f7f9f928fabbe471fbcf96c8cde88c1f46942aea1788aadc",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_surface_eb04w_accumulation_melt_diagnostics_contract.rs": {
+      "sha256": "2316914a9c0a90c70970a30e68bbcd2e80db91988290cf93a696fe4631c140ab",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs": {
+      "sha256": "f31b98b1d6bad044db880746be413b488478b2fab3aa4b7e5429f3c3b4a83f87",
+      "matching_git_commits": [
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snow_wet_compaction_operand_authority.rs": {
+      "sha256": "feb7dc24b9a8b3725e77558f5d208f055b2a78b33acbe9207b2291c006d357b6",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity02_contract_adr_guard.rs": {
+      "sha256": "994c8bdd7ef7bafa1ebbca60446522cdfa8db9be4cf4c589f6a87ce3f65c2f02",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity03_physics_bulk_offline_contract.rs": {
+      "sha256": "b8cab1ff279ef781babf877c8d9305ea7087c9349c1887744c0fb1d3dc0d8e21",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity05a_melt_contract_guard.rs": {
+      "sha256": "5738ecb9514c3939a9f541b1d34754c13963af2169b16e3f0bd71831698e459c",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity05b_shortwave_source_contract.rs": {
+      "sha256": "cecf16af5e83de7878bff32503278b2a4687a91c1f31f8d4ffd0531132519b32",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity05c_albedo_state_core.rs": {
+      "sha256": "a23572c84426f1ea951180d1c6efdbc5cc89b9cd4c249f0aea9ad5018dcda28e",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity05d_opt_in_coe_melt.rs": {
+      "sha256": "1504e7b46f993e749ac8476952c4244c66657fc4c16a77ba0891db530d2840ce",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity05e_melt_adjudication.rs": {
+      "sha256": "dbc2c2f904f14fc8cc66f1fbdcb48b453c046a807a58d401ed24c9e9afc4270a",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity05f_melt_closure_handoff.rs": {
+      "sha256": "5e0435d707f26a7442dea56a781dadd6d0144139f36df9114e64d54711ae8493",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity05g_harness_fidelity_rerun.rs": {
+      "sha256": "9153f2a8af5ca6883c06fd697e726ed8467ff02a724fa5bbf9c84b485cec130d",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity06_density_compaction.rs": {
+      "sha256": "6715d24cb408b18d2f59122040b1b2611297ff39a1953d048f700d1f3d391360",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity06b_coe_bound_density_replay.rs": {
+      "sha256": "b14767d8f0ce6b5fa2c27d97eff2596c8a25363f349b78e1a81f870d329ac6ea",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity07_runtime_opt_in.rs": {
+      "sha256": "763bd4ae39c7160e61887f0f28bb8c6aa52729c467db91aba051aa3ffbd5ed94",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity08_gate_rerun.rs": {
+      "sha256": "84e2d9147a5b3574ea27f48add637ab6ebdb73fe6f6fce7289f90d9f2e35b224",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity09_coupled_wat_rerun.rs": {
+      "sha256": "6663ab3132637bc978d74ef281f2beae358fe839d2387c61bcf876029f22127c",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_10_spring_pack_depletion_compaction.rs": {
+      "sha256": "a682be60d4b177cfc3c35f0d79afc714eb6259e18fece879756be4c5de679488",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_11_spring_compaction_densification.rs": {
+      "sha256": "a04ceb4a7e80b12c0d6a2d09e172f6c28609b1f6fc8028a0804ed58c6adc77ad",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_12_bundle_activation_adjudication.rs": {
+      "sha256": "9a9e0feecd5de77d14e49649f18a0141e983ee76ffe4806f29cafdb32ba31925",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_13_residual_policy_b_diagnostic.rs": {
+      "sha256": "c656165e90441f665b6276ca0312fdbe89b764a2e2519adb0cd4fd3cfd41e183",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_14_policy_b_no_regression_cap_authority.rs": {
+      "sha256": "24c1f53da7c114da0982c9bf1d121aa69f227a9af29f96f3f3d8b08f1f3bf916",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_15_default_activation_active_cap.rs": {
+      "sha256": "f00d5c70bff29b29aee2ea982a36a3e23375017c82393e58888b93b5cb6c7a18",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_16_open_surface_ablation_stage_a.rs": {
+      "sha256": "e480a812f5a7f428cf8d78dd46f6ead5963b3b8502c39212765ff4575b3ab8c3",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_17_shallow_pack_compaction_guard.rs": {
+      "sha256": "05bcbb5d3c41f33880528a77b48795c1ae8263fd743ce42d88c51556664f6663",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_18_cross_snotel_mechanism_rubric.rs": {
+      "sha256": "6b3b1796049843cb5c712c4193c743660f255eb80b55dead33997f8598a32d17",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.rs": {
+      "sha256": "a86d11df189a5f0d5f185eb58aa0a7ab43c03ef481dcbb51d571096ae2091ba1",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_1a_per_day_cancov.rs": {
+      "sha256": "d95d2150f7f5d50ebcf40c75418fbb523a7ebec72ea7626b07a2277ddf6c136d",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_20_sublimation_stage_b_unlock.rs": {
+      "sha256": "d9df4f9c9ccabab3f04db0ce80eaf5d5957658f410d698ff42cbd4740bf5963c",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_21_post_partition_residual_decomposition.rs": {
+      "sha256": "2571e73023acf4eb410fa936680880f8a688124364d2d9d123eef71ee90e97c1",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs": {
+      "sha256": "d698f112f6889152248a2966a31854025e53dfb89d7969e904df80d2760b1379",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_3_gradient_melt_adjudication.rs": {
+      "sha256": "e37934330d881bc29c472e23b65678fb5bc4e05c664bae6d22666579e465b994",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_4_maritime_overaccumulation_diagnosis.rs": {
+      "sha256": "be687abcb380462456607c349e8d738adf43342ce1b61a531bf3adcf08af30b4",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_5a_meteorology_crate_contract.rs": {
+      "sha256": "039509a28090f8244b677b129fb940755e4e691c38822ed3ff32a9d4618e30b3",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_5b_hourly_partition_jennings_contract.rs": {
+      "sha256": "de11cb7c5bb0f14f947f3cb99b4bf479bf7642f10994dcfe071c25607676b845",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_5c_phase_partition_snowdepth_impact.rs": {
+      "sha256": "79716d6b4bf99168eadf686b437ed9b2db023f84986cd08aae5dd3cf1498ebc5",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_6_winter_thaw_melt_response.rs": {
+      "sha256": "859aeefc163505da4507bdaf686c69a4b67cead440ba85ff32cdb3f5d52027d0",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_7_winter_thaw_melt_response_correction.rs": {
+      "sha256": "f33d2a306a64a89462faa74dba692406c823d71008d702366eedb2c96b08f1da",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_8_liquid_holding_capacity.rs": {
+      "sha256": "d8164829c3dae6a97583c930dce500b1bd9533e6836f2424eea624e64caefc31",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowdensity10_3_9_march_april_residual_attribution.rs": {
+      "sha256": "ffe84f476cfa4a9eb7490c7a7b58e17ef404cdaba83c8f538ebfbea97c98a6ec",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowfreeze_observed_frost_depth_contract.rs": {
+      "sha256": "9c4dc4ad0a0738ebedeed9a1dcc2f212a9f16b2b56d44e8f4c402ac51322c66b",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowfrost_fidelity_c_diagnostics_contract.rs": {
+      "sha256": "3b45e657ef2c86f0b89d1b8fff3f74973212efb7480fe2513213765a179ed5c4",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/snowfrost_fidelity_g0_pysnobal_bridge_contract.rs": {
+      "sha256": "093ee24b9f4f654c96bb5514e0a35f9f2ec3173dd58f920897ebc80252ec5998",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/soilauth02_soil_producer_reconciliation_contract.rs": {
+      "sha256": "2883810b827b06e586e9dba87ccab423816c8b719fa8c4bfdee2a23b7d382664",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/soilauth03_soil_producer_contract_drift_guards_contract.rs": {
+      "sha256": "cdc85ba9013ef72aceba84fe0eefeaf937b77f14f29ef1a408bcc4bbc738cf70",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/solver_architecture_authority_contract.rs": {
+      "sha256": "c3acbf7929cb9a27265578b9c6e0e98dfbf267ad5d62abe677bde56af3ff24c6",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+      ]
+    },
+    "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs": {
+      "sha256": "0891e5139d06c0aaed3bc8c77a01f27e9e7a271d523ad514526f71c59b2c1bc8",
+      "matching_git_commits": []
+    },
+    "tests/integration/subhourly_generation_contract.rs": {
+      "sha256": "e7492ff6584c4dc1ced4c920ee6d7dfe26b6d9f7ed7f6eaf89538cfe1eac5352",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/subhourly_generation_properties.rs": {
+      "sha256": "7c0cf7bd6a7247543f08a9112f8755018ef8f9a8a2d5b60bf20e9595f2fbe595",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/subhourly_water_output_roundtrip.rs": {
+      "sha256": "c5c5d140b1dd4ae2eebe149bc5a07b511c241f6c9e6be3492ddc7294c55f9b24",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/surface_liquid_hydrology_custody_authority_contract.rs": {
+      "sha256": "2f704c21538ede64f676d9d413b3522308136185465a19c98681382798b3d863",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+      ]
+    },
+    "tests/integration/topology_graph_validation_gate.rs": {
+      "sha256": "866cffd5c4a781ed5ab2d7b9f3c9b3ccd2b55971437b795e305c9a47dd131501",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/v10_nighttime_authority_contract.rs": {
+      "sha256": "69cdb6a68f2e431066054b3b9809ed430d354a5b8ccbc3c0c3144c4ec0a123a8",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/vegetation_boundary_authority_contract.rs": {
+      "sha256": "4e9629b718cef9618396ad562f17aeb8816057b50f431028662cb2081ad7d551",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+      ]
+    },
+    "tests/integration/vegetation_real_hydrology_shadow_contract.rs": {
+      "sha256": "6a4cb9b02785af627b057fe449b013703f7bff3b262a607aca634084671aca6f",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/wb13_daily_water_balance_output_surface_contract.rs": {
+      "sha256": "f044b6a6ed880c99d98fcfadd56a69bf5c56ddb669e19cefdd6e764086bae346",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/workspace_integration_ownership_acceptance.rs": {
+      "sha256": "ee8aacf44ae2cae02b0d2c2885ba583bbaa2aeda79e9f83199470ab8c496e313",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    },
+    "tests/integration/wshedw5_typed_watershed_runtime_contract.rs": {
+      "sha256": "eb236cf2149c9c42bbf1c58f47245b6508f5c0c9b01b28ed226858e03256e425",
+      "matching_git_commits": [
+        "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+        "87f4a8d7e39e640edf3cd22f83841bd282ff31c9"
+      ]
+    }
+  },
+  "unmatched": {
+    "tests/integration/land_surface_energy_balance_authority_contract.rs": "784ca9311fd6d3678290538fdf12107bde9e346d8bb3863e25ff9622d8153ad7",
+    "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs": "0891e5139d06c0aaed3bc8c77a01f27e9e7a271d523ad514526f71c59b2c1bc8"
+  }
+}

@@ -1,0 +1,31 @@
+[
+  {
+    "test": "native_inactive_parent_placement_uses_validated_custody",
+    "argv": [
+      "/tmp/openwepp-b01-cycle-20260910/correction006-hillslope_orchestrator",
+      "native_inactive_parent_placement_uses_validated_custody",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "exit_code": 0,
+    "log": "custody006-test.log",
+    "log_sha256": "e1d1bf002fa84e8542cceeb90e9a408ed1cb81503684d5e670036336b1f4758c",
+    "executable_identity": "correction006-source.json",
+    "note": "Command/result record assembled from executed tool receipt and retained log; no wall-time inference"
+  },
+  {
+    "test": "b01_cycle_endpoint_stabilization_real_maps",
+    "argv": [
+      "/tmp/openwepp-b01-cycle-20260910/correction006-hillslope_orchestrator",
+      "b01_cycle_endpoint_stabilization_real_maps",
+      "--ignored",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "exit_code": 101,
+    "log": "stabilization006-test.log",
+    "log_sha256": "8d862a981133f9c75e52f7baa1ba7bdd33372eee5268c836332fcd19a92c2985",
+    "executable_identity": "correction006-source.json",
+    "note": "Command/result record assembled from executed tool receipt and retained log; no wall-time inference"
+  }
+]

@@ -1,0 +1,9 @@
+
+running 4 tests
+test direct_runtime::surface_liquid_owner::zero_duration_snow_liquid_tests::all_runoff_surface_delta_is_exact_lineage_only_and_poisons_reject ... ok
+test direct_runtime::surface_liquid_owner::zero_duration_snow_liquid_tests::destination_fraction_partition_redistribution_replay_and_tamper_fail_closed ... ok
+test direct_runtime::surface_liquid_owner::zero_duration_snow_liquid_tests::insufficient_capacity_retains_exactly_and_routes_mass_and_enthalpy_to_outlet ... ok
+test direct_runtime::surface_liquid_owner::zero_duration_snow_liquid_tests::overflow_routes_with_exact_area_mass_and_enthalpy_custody ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1427 filtered out; finished in 0.00s
+

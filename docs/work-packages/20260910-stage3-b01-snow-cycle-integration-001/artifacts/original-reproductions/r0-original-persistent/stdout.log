@@ -1,0 +1,12 @@
+
+running 1 test
+test hillslope::tests::stage3_snow_accuracy_case ... SNOW_ACCURACY_RUN {"carrier":{"counts":[{"completed":0,"errors":0,"started":0},{"completed":0,"errors":0,"started":0},{"completed":0,"errors":0,"started":0},{"completed":0,"errors":0,"started":0},{"completed":0,"errors":0,"started":0}],"dropped_records":0,"records":[]},"case":"persistent","clock_hz":100,"cpu_ticks_end":197,"cpu_ticks_start":2,"days_requested":3,"error":"RuntimeSurfaceFailure { surface: \"r7c_direct_production_executor\", detail: \"HS-SIMPIPE-E-001 direct runtime kernel guard failed in snow_stage3_v11: prepare: Stage-3/V11 adaptive covered direct trial failure at 1200000000000..1260000000000 ns (60000000000 ns): VEG-E-123: imported V10 segment execution failed: V11 adaptive candidate requires refinement: canonical covered dependent-output instability\" }","execution":"FAIL","lse":{"complete":{"completions":33830,"errors":0,"starts":33830},"component_replay":{"completions":0,"errors":0,"starts":0},"dropped_events":0,"evaluations":{"completions":36227,"errors":0,"starts":36227},"events":[],"identity_anchor":{"completions":13930,"errors":0,"starts":13930},"iterations":1262,"leaf_calls":144908,"maps":{"completions":267,"errors":0,"starts":267},"overflow":false,"probes":{"completions":47760,"errors":0,"starts":47760},"solves":{"completions":534,"errors":0,"starts":534},"sweeps":{"completions":995,"errors":0,"starts":995}},"ofes":1,"parents":[],"policy":"R0","rss_kib":64232,"runner_wall_s":1.9487750419999998,"schema":"snow_accuracy_run_v1","snapshot":null}
+FAILED
+
+failures:
+
+failures:
+    hillslope::tests::stage3_snow_accuracy_case
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 241 filtered out; finished in 1.99s
+

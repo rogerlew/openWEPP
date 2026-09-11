@@ -1,0 +1,36 @@
+{
+  "schema": "snow_accuracy_process_v1",
+  "argv": [
+    "taskset",
+    "-c",
+    "0",
+    "/tmp/openwepp-b01-cycle-20260910/correction011-runner",
+    "hillslope::tests::stage3_snow_accuracy_case",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/tmp/openwepp-b01-cycle-20260910/correction011-continuity",
+  "binary_sha256": "9562ae8f9fee81db40cb5e2a18ad035bd7f31cbe04e5a34599394aa73de96697",
+  "cases_sha256": "e9aa671e7d881cf8bfee9b014c30730b7780582041ef269b0248e32d68d7b4e7",
+  "collector_sha256": "ed48b94ba2035a0d0eb55395a03222663712cb29dfbb2e97f16d85aedaa8240a",
+  "predecessor_collector_sha256": "f1ea797124f4a4e1cb4e02da049a403ac6db6d8780f839b0b334197b4f348052",
+  "policy": "B01",
+  "case": "continuity",
+  "ofes": 1,
+  "physical": true,
+  "environment": {
+    "RUST_MIN_STACK": "67108864",
+    "OPENWEPP_EXPERIMENT_OFES": "1",
+    "OPENWEPP_EXPERIMENT_REPEATS": "1",
+    "OPENWEPP_COMPACT_COST": "off",
+    "OPENWEPP_ACCURACY_POLICY": "B01",
+    "OPENWEPP_ACCURACY_CASE": "continuity",
+    "OPENWEPP_ACCURACY_CASES": "/workdir/openWEPP/docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/cases.json",
+    "OPENWEPP_ACCURACY_OUTPUT": "/tmp/openwepp-b01-cycle-20260910/correction011-continuity",
+    "OPENWEPP_ACCURACY_PHYSICAL": "1"
+  },
+  "timeout_s": 1800.0,
+  "timeout": false
+}

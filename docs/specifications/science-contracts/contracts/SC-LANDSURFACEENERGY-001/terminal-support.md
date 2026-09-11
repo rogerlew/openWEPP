@@ -242,3 +242,70 @@ transition to one snow-free successor call, poison rejection, and full rollback.
 | Obligation ID | Statement | Applicability | Authority | Enforcement/failure | Test bindings |
 |---|---|---|---|---|---|
 | <a id="OBL-LANDSURFACEENERGY-C-009"></a> `OBL-LANDSURFACEENERGY-C-009` | prove represented-snow classification invokes one standard Stage-3 covered-column map under native identities, retains its exact optical/lower-boundary receipts, invokes no frozen-litter V3/V4 phase, storage, ingress, or WB14 work, constructs no second inner envelope, retains V3/V4 owner bytes, transitions to snow-free V3/V4 only after the exact terminal split, and rolls back every owner on failure. | Represented-snow consumers with inactive litter | v31:L339-L344 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#represented-snow-native-lse-cross-regime-amendment); named fixtures/tests/real consumers |
+
+
+### Isolated B01 native drain custody qualification
+
+Policy12 of the isolated B01 snow-cycle experiment qualifies INV154/OBL-C-009
+only as specified by
+`SC-SURFACELIQUID-001#isolated-b01-positive-origin-native-snow-drainage`.
+The represented-snow map still preserves native litter owners byte-for-byte
+and performs no litter/WB14 work. A separately authenticated post-acceptance
+drain may credit native liquid/sensible enthalpy and exact carry with a tagged
+publication history. It neither invokes the snow-free LSE evaluator nor
+fabricates phase receipts. All ordinary map, transition, exact-arithmetic and
+rollback obligations remain unchanged. Evidence [INFERENCE][Static];
+change log2026-09-10, prospective isolated companion LSE-B01-NATIVE-DRAIN.
+Production/integration/release HOLD remains.
+
+
+Policy13 applies the lineage correction in
+`SC-SURFACELIQUID-001#policy13-custody-lineage-correction`: native drain custody
+retains physical LSE/WB14/exact-record markers, while its own authenticated
+parent/support history and exact receipt chain advance. Ordinary INV154/INV025
+physical evaluation and successor-predecessor joins remain unchanged.
+
+## Isolated B01 policy14 composite LSE custody
+
+Policy14 inherits policy13's native drainage, exact arithmetic and separate
+physical/custody chronology, and supersedes its assumption that the accepted
+covered-clock LSE owner is the inactive native V3/V4 byte string. Authentic
+represented-snow execution instead advances the active covered V1 LSE view
+(including snow-interface warm starts), while retaining the native litter
+V3/V4 view. These views are not interchangeable physical states.
+
+For the isolated B01 continuation, one explicitly tagged policy14 composite
+`land_surface_energy` owner contains both the canonical active covered runtime
+LSE V1 state and canonical native litter LSE V3 plus exact V4 companion. Its
+schema and policy, component roles, configuration/owner identities, and both
+component digests are part of canonical complete-owner identity. The native
+view is never decoded or published as a legacy physical owner. The active
+snow-interface view is never overwritten by retained native litter U/T.
+
+Covered physical work advances its active component and preserves the native
+component under existing inactive-custody authority. Native drainage changes
+only native liquid/U/high/carry/dependent litter temperature and custody history;
+active covered LSE bytes and its V2 projection, canopy/vegetation, soil, and other
+owners remain exactly unchanged by that transfer. Custody-only finalization
+changes only the native exact receipt/history chain. Ordinary snow-free native
+phase work retains its existing physical equations and owner updates. The
+composite encoding adds no energy evaluation, phase work, or physical inventory.
+Accounting assigns each reached physical store once according to the accepted
+regime; an inactive or compatibility projection is not another reservoir.
+
+One canonical composite encoder is used at bootstrap, accepted owner finalization,
+receiver transitions, complete-owner validation, observation and restart. A
+separate native-only encoder remains the authority for inactive-native retention
+checks; those checks must not reject legitimate active covered evolution.
+Native packet validation reconstructs beginning and ending composite bytes with
+the actual authenticated active component, proves its exact retention, and
+validates native state/history separately. Both views are restored into a private
+candidate before complete-clock validation and any live installation.
+
+Required vectors include active-covered change with byte-identical native
+custody; drain with byte-identical active component and accepted native change;
+missing/swapped component, stale active endpoint, wrong policy/schema, either
+single-view downgrade, altered exact carry, and complete-owner predecessor/end
+substitution. Fresh-process continuation must preserve both views and all outer
+workflow state. This prospective amendment is default-off, isolated and subject
+to both independent reviewers; production/integration/release HOLD remains.

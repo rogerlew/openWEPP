@@ -198,3 +198,169 @@ of rebinding/substitution/dual acceptance, and byte-exact rollback.
 | <a id="OBL-LANDSURFACEENERGY-P-005"></a> `OBL-LANDSURFACEENERGY-P-005` | expose every accepted soil-internal, top-boundary, and infiltration energy operand with exact layer/support/source identity; never supply a rounded aggregate, residual, or carry. | Producers delivering accepted soil thermal credits | v31:L319-L321 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#exact-soil); named fixtures/tests/real consumers |
 | <a id="OBL-LANDSURFACEENERGY-C-005"></a> `OBL-LANDSURFACEENERGY-C-005` | soil thermal V2 alone owns the exact high/carry representation, credit receipt, restart/checkpoint state, and atomic commit. | Consumers of exact soil thermal enthalpy credits | v31:L334-L335 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#exact-soil); named fixtures/tests/real consumers |
 | <a id="OBL-LANDSURFACEENERGY-C-010"></a> `OBL-LANDSURFACEENERGY-C-010` | prove an unpublished V2 continuation enters LSE/V3 only as its typed authenticated physical read, emits no owner/restart bytes and performs no intermediate install, rejects support/predecessor/ receipt substitution, and accepts only through one complete original-owner replay and one atomic V2 owner/receipt/restart seal with full rollback. | Candidate-only exact-soil non-owner beginning consumers | v31:L345-L349 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#soil-beginning); named fixtures/tests/real consumers |
+
+
+## Isolated B01 native soil restart admission
+
+The authorized B01 cycle integration experiment may transport the complete
+accepted native V2 soil resident through its explicitly tagged policy-14
+workflow checkpoint. This restores the obligation of INV-LANDSURFACEENERGY-150;
+it introduces no new soil process or numerical approximation. Ordinary V1,
+V3 and V4 public restart entry points must continue to reject native soil
+posture even when policy 14 is selected.
+
+The native scientific envelope contains exactly one soil representation:
+the complete V1 soil payload for a V1 resident, or a separately identified
+native V2 payload for a V2 resident. Both-present and neither-present fail.
+A V2 payload retains the exact owner and its exclusive receipt-free seals or
+latest accepted custody (actual predecessor, credit receipt, complete expected
+source operands and orchestrator seals). It may not synthesize a V1 parent,
+convert the owner to V1, discard a carry, or reseal an accepted owner as
+receipt-free. Legacy V1 serialization remains unchanged when the native field
+is absent. Native admission requires an explicit private admission mode from
+the authenticated policy-14 envelope, not inference from a global policy or
+from attacker-provided optional fields.
+
+Restore reconstructs existing native resident validation, joins the external
+soil owner/configuration and ordered OFE/layer topology, and constructs the
+real consumer with that validated resident before coupled-clock checks. Soil
+support/transaction and predecessor lineage remain native V2 values; they
+are not rewritten to match the enclosing vegetation transaction. Other
+scientific owners retain their existing external identities and lineage
+checks. Every actual resident position is transported independently and the
+complete restored active-owner bytes must match the checkpoint clock exactly.
+All installation occurs on a private candidate before atomic replacement.
+
+Required evidence includes nonzero sub-ULP carry transport; receipt-free and
+accepted custody; resealed carry, source, predecessor, configuration, support,
+and owner poisons; duplicate or missing custody refusal; ordinary-entrypoint
+refusal; exact reprojection and rollback; and fresh-process cycle continuation.
+Serialization-only evidence does not establish restart completion. The
+experiment and production/integration/release remain HOLD pending their
+separate acceptance requirements.
+
+Provenance: the existing version-15 exact-soil authority and the owner's
+2026-09-10 B01 integration authorization, sections 7–8. Evidence class:
+[INFERENCE][Static], a transport extension with unchanged physical equations.
+
+### Native constructor custody across distinct transaction domains (2026-09-10)
+
+Before compatibility lineage normalization, the native restart path must mint
+an opaque, process-local admission proof from the selected authenticated native
+supplement, independently reconstructed owner/configuration/topology context,
+and exactly one soil view in the actual coupled clock. The complete validated
+native resident's canonical active-owner bytes must equal that clock view.
+The proof binds the actual restart position, run, scheduler day, logical
+admission revision, clock owner set and physical soil support. For the reached
+between-days position, soil support ends exactly at the admitted clock time;
+a generic earlier-time inequality does not establish deferred custody.
+
+The native constructor consumes this proof with the exact same resident and
+admission context. It replaces only the comparison of native soil numeric
+transaction IDs with logical vegetation IDs. It preserves every other owner,
+configuration, topology, logical lineage and scheduler check. It neither
+rewrites soil IDs nor installs a persistent bypass flag. Ordinary constructors,
+ordinary checkpoint admission and ordinary execution keep their existing
+complete-owner checks. Any additional native restoration hook reaching those
+checks requires the same explicit position-bound proof, not a global policy
+exception. The private host becomes usable only after exact native installation,
+logical finalization restoration, clock/history joins and full-frame equality.
+
+Native continuation identity also binds the immutable experimental source/build
+and canonical map allowance. Policy 14 alone cannot identify both the earlier
+seven-map method and the reviewed twelve-map method as equivalent continuation
+semantics. Missing or foreign source/method identity refuses admission.
+Required tests include the actual physical soil transaction 1480 with logical
+private revision 87, ordinary refusal of that posture, exact resident bytes,
+missing/duplicate/foreign clock, configuration, support, predecessor, carry,
+credit and proof-reuse poisons, and fresh-process resumed completion. These
+admission tests do not independently establish physical budget closure.
+
+
+The initial receipt-free soil reservation is a separate posture: clock time zero,
+scheduler day zero, support start zero, no latest accepted custody, and exact
+complete resident equality to the independently reconstructed authenticated
+bootstrap owner and receipt-free seals (including the reserved first support
+end). That reserved support may end after the initial clock. This exception
+requires the fresh bootstrap identity; a checkpoint's own bytes cannot supply
+it. It does not admit evolved receipt-free states, arbitrary future supports,
+or accepted owners under an initial marker. Exact selected resident position
+(Committed, PendingCandidate, InProgressDayCandidate, or InProgressSupportCurrent)
+is carried into the proof and checked at consumption.
+
+
+### Isolated B01 selected snow-soil exchange and publication custody (2026-09-10)
+
+Where the canonical covered physical map supplies a sealed snow-bottom/soil
+trial exchange, accepted accounting retains that exact selected trial and its
+actual snow-boundary/soil-credit operands for every participating lane,
+independent of resolved, terminal or experimental bulk classification. This
+changes no equations, thresholds, adaptive response or phase classification.
+Do not replace that exchange with a reconstruction from another endpoint
+method. The actual beginning soil is the authenticated deferred candidate
+when present. Bind the charged support/map/destination, complete participating
+lane key sets, source receipt, primitive heat, selected physical soil and full
+snow outcome; the soil-only trial snow endpoint and full snow-physics endpoint
+remain distinct, explicitly joined states.
+
+Join physical child soil to native publication only through the existing
+validated unpublished-continuation replay, including the original prepared
+owner/support, selected trial, full ordered accumulated operands, accepted
+credit receipt, expected sources and orchestrator seals. Retain a private typed
+handoff from that validation and require the installed resident's complete
+accepted custody to match it. Child and publication transaction IDs remain
+unchanged. No independent marker-ignoring comparison or hash normalization
+establishes this relationship. Ordinary persistent endpoint-CN lanes and strict
+no-continuation joins keep their existing method and validation.
+
+Adjacent selected child exchanges retain their own ordered positive supports,
+physical predecessor/end identities and source digests through final publication
+and restart history. Keep the original prepared outer support; do not relabel
+it as the last child or the currently displayed composed partition. Bind every
+child exchange to the final accepted source set and owner history. Count each
+selected exchange once; discarded maps contribute no accepted exchange.
+Primitive snow and soil heat must be equal and opposite, independently checked
+against the actual donor ledger and recipient high-plus-carry inventory.
+A storage difference is not a source term and may not replace the charged
+primitive. Carry, child exchanges or source operands may not be dropped.
+
+Required evidence includes the authentic mixed deferred57/child58/publication51
+posture, exact primitive and carry closure, two adjacent real children, and
+atomic refusal of foreign/resealed beginning or carry, changed heat/source,
+missing/duplicate lane trial, wrong support/order, swapped OFE/layer, incorrect
+publication identity, altered accepted source set and unrelated replay.
+This repairs accounting/custody for the existing physical calculation; it does
+not independently establish full coupled-cycle budgets or qualification.
+Provenance: existing native continuation replay and snow-soil first-law
+contracts; owner B01 integration authorization sections4/7/8.
+
+
+### Isolated B01 inactive physical interval counter at restart (2026-09-10)
+
+The persistent WB14 accepted-interval count records executed physical parent
+advancements, not elapsed coupled simulation days. At a nonzero coupled clock,
+a native restart may retain count zero only under exact receipt-free physical
+continuation custody: complete independently configured ordered OFE coverage,
+every continuation at day zero and interval zero, no accepted transaction,
+exact positive-zero cumulative supply and infiltration, and no WB14 working
+parent. Nonzero material stores and native drainage history remain intact.
+The independently authenticated native surface/history, its unique selected
+clock view, original persistent surface bytes, scheduler day and selected
+resident position all bind this posture; replay must refuse an evolved history
+reset to apparent initial continuation. Missing, foreign or duplicate owners,
+changed counters, nonzero flux bits and populated WB14 state refuse admission.
+
+A private position-bound restoration proof retains the original zero count and
+exact surface/WB14 custody. The restoring setter obtains the count from that
+proof and checks the same restored soil/logical context, actual surface bytes
+and WB14 absence before mutation. Temporary calendar-derived counts used only
+for legacy constructor admission do not become published physical counters.
+Keep ordinary zero refusal, the existing maximum bound and exact final native
+frame/clock/history validation. This exception neither derives general native
+counts from calendar cursors nor authorizes positive-count lag; it is distinct
+from the initial soil reservation, whose exception still requires clock zero.
+Required evidence: actual cold interior checkpoint, ordinary zero refusal,
+foreign position/counter/surface and reordered/missing OFE, changed continuation
+lineage/flux, populated WB14 and reset-history negatives, atomic refusal, final
+frame equality and fresh-process resumed completion. This custody clarification
+changes no physical equations or execution chronology.

@@ -1,0 +1,17 @@
+{
+  "archive": "evidence-review095-archive-expanded-base-supplement.tar.gz",
+  "sha256": "f370e9bf1ac668afd3964ccfc03625492b7628be163f8175289a34cba2cec2e0",
+  "source": "retained working087, supplemental files absent prior689-file step087 archived manifest and differing from both named git anchors",
+  "files": [
+    {
+      "path": "tests/integration/land_surface_energy_balance_authority_contract.rs",
+      "sha256": "784ca9311fd6d3678290538fdf12107bde9e346d8bb3863e25ff9622d8153ad7",
+      "bytes": 72266
+    },
+    {
+      "path": "tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs",
+      "sha256": "0891e5139d06c0aaed3bc8c77a01f27e9e7a271d523ad514526f71c59b2c1bc8",
+      "bytes": 63958
+    }
+  ]
+}

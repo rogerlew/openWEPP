@@ -1,0 +1,337 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
+@@ -910,10 +910,18 @@
+     bool,
+     crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredMapRoleAuditV1,
+ ) {
++    run_equilibrium_with_canonical_covered_poison_audit(None)
++}
++
++pub(crate) fn run_equilibrium_with_canonical_covered_poison_audit(
++    poison: Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredFinalConvergencePoisonV1>,
++) -> (bool, crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredMapRoleAuditV1) {
+     std::thread::Builder::new()
+         .name("canonical-covered-role-audit".to_owned())
+         .stack_size(64 * 1024 * 1024)
+         .spawn(move || {
++            let _poison = poison.map(crate::v9_real_consumer_shadow::v11_covered::force_canonical_covered_final_convergence_poison_for_test);
++
+             EQUILIBRIUM_FIXTURE_REQUESTED.with(|value| value.set(true));
+             SHORT_SUPPORT_DURATION_NS.with(|value| value.set(MINIMUM_STEP_NS));
+             let _audit = crate::v9_real_consumer_shadow::v11_covered::
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs
+@@ -722,6 +722,32 @@
+     parent_replay_is_present == (support.end_ns() == parent_support.end_ns())
+ }
+ 
++
++// INV-SNOWENERGY-083/087 and INV-SURFACELIQUID-035: a wholly
++// inactive native parent has no physical WB14 parent receipt to finalize.
++// Callers retain full subslab validation, including exact owner/slab joins.
++fn wb14_parent_finalization_custody_is_valid_v1(
++    parent_support: TimeSupport,
++    support: TimeSupport,
++    parent_replay_is_present: bool,
++    parent_digest_is_present: bool,
++    child_bytes: &[u8],
++    topology: &[OfeId],
++) -> Result<bool, DirectSnowStage3V11AttachmentError> {
++    let inactive = crate::direct_runtime::stage3_covered_native_inactive_child_custody_binding(child_bytes, topology)
++        .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("parent WB14 inactive custody"))?;
++    if let Some(binding) = inactive {
++        Ok(!parent_replay_is_present && !parent_digest_is_present
++            && binding.parent_support_start_ns == parent_support.start_ns().get()
++            && binding.parent_support_end_ns == parent_support.end_ns().get()
++            && binding.child_support_start_ns >= support.start_ns().get()
++            && binding.child_support_end_ns == support.end_ns().get())
++    } else {
++        Ok(parent_replay_is_present == parent_digest_is_present
++            && wb14_parent_finalization_placement_is_valid_v1(parent_support, support, parent_replay_is_present))
++    }
++}
++
+ impl DirectSnowStage3V11ParentReceipt {
+     fn validate_adaptive_publication_crossjoin_v1(
+         &self,
+@@ -1040,16 +1066,36 @@
+                 pair[1].owner_join.beginning_complete_owner_set_sha256,
+             )?;
+         }
+-        if self.coupled_subslabs.iter().any(|value| {
+-            !wb14_parent_finalization_placement_is_valid_v1(
++        for value in &self.coupled_subslabs {
++            if !wb14_parent_finalization_custody_is_valid_v1(
+                 value.parent_support,
+                 value.support,
+                 value.wb14_parent_replay_bytes.is_some(),
+-            )
+-        }) {
+-            return Err(DirectSnowStage3V11AttachmentError::Identity(
+-                "parent WB14 finalization placement",
+-            ));
++                value.wb14_parent_receipt_set_sha256.is_some(),
++                &value.wb14_child_replay_bytes,
++                &value.wb14_ofe_topology,
++            )? {
++                return Err(DirectSnowStage3V11AttachmentError::Identity(
++                    "parent WB14 finalization placement",
++                ));
++            }
++            if crate::snow_accuracy_observer::physical_enabled()
++                && !wb14_parent_finalization_placement_is_valid_v1(
++                    value.parent_support, value.support, value.wb14_parent_replay_bytes.is_some(),
++                )
++            {
++                crate::snow_accuracy_observer::record(serde_json::json!({
++                    "kind":"validated_inactive_parent_endpoint",
++                    "parent_support":value.parent_support,
++                    "support":value.support,
++                    "parent_replay_present":value.wb14_parent_replay_bytes.is_some(),
++                    "parent_digest_present":value.wb14_parent_receipt_set_sha256.is_some(),
++                    "child_custody_bytes":value.wb14_child_replay_bytes,
++                    "child_custody_sha256":value.wb14_child_receipt_set_sha256,
++                    "owner_join":value.owner_join,
++                    "topology":value.wb14_ofe_topology
++                }));
++            }
+         }
+         if self.covered_owner_joins
+             != self
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_tests.rs
+@@ -1028,3 +1028,33 @@
+         );
+     }
+ }
++
++#[test]
++fn native_inactive_parent_placement_uses_validated_custody() {
++    let topology = vec![OfeId::try_new("ofe-1").unwrap()];
++    let parent = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000)).unwrap();
++    for end in [60_000_000_000, 1_800_000_000_000] {
++        let support = TimeSupport::new(ModelTimeNs::new(end - 60_000_000_000), ModelTimeNs::new(end)).unwrap();
++        let binding = crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
++            proposed_upper_bound_s_bits: 60.0_f64.to_bits(),
++            coupled_parent_transaction_sha256: [1;32],
++            accepted_slab_sha256: [2;32],
++            parent_beginning_complete_owner_set_sha256: [3;32],
++            parent_support_start_ns: 0,
++            parent_support_end_ns: parent.end_ns().get(),
++            child_support_start_ns: support.start_ns().get(),
++            child_support_end_ns: end,
++        };
++        let bytes = crate::direct_runtime::stage3_covered_native_inactive_child_custody_bytes(binding, &topology).unwrap();
++        assert!(wb14_parent_finalization_custody_is_valid_v1(parent,support,false,false,&bytes,&topology).unwrap());
++        for (replay,digest) in [(true,false),(false,true),(true,true)] {
++            assert!(!wb14_parent_finalization_custody_is_valid_v1(parent,support,replay,digest,&bytes,&topology).unwrap());
++        }
++        let foreign = vec![OfeId::try_new("ofe-2").unwrap()];
++        assert!(wb14_parent_finalization_custody_is_valid_v1(parent,support,false,false,&bytes,&foreign).is_err());
++        assert!(wb14_parent_finalization_custody_is_valid_v1(parent,support,false,false,b"{",&topology).is_err());
++        let wrong_support = TimeSupport::new(ModelTimeNs::new(end),ModelTimeNs::new(end+60_000_000_000)).unwrap();
++        assert!(!wb14_parent_finalization_custody_is_valid_v1(parent,wrong_support,false,false,&bytes,&topology).unwrap());
++    }
++    assert!(!wb14_parent_finalization_custody_is_valid_v1(parent,parent,false,false,b"",&topology).unwrap());
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs
+@@ -76,6 +76,7 @@
+     Initial,
+     FixedPointAdjudication,
+     MultisecantAdjudication(u8),
++    EndpointStabilization(u8),
+ }
+ 
+ #[cfg(test)]
+@@ -90,7 +91,8 @@
+     match role {
+         CanonicalCoveredMapRoleV1::Initial => ordinal == 0,
+         CanonicalCoveredMapRoleV1::FixedPointAdjudication => ordinal == 1,
+-        CanonicalCoveredMapRoleV1::MultisecantAdjudication(trial) => {
++        CanonicalCoveredMapRoleV1::MultisecantAdjudication(trial)
++        | CanonicalCoveredMapRoleV1::EndpointStabilization(trial) => {
+             (1..=5).contains(&trial) && ordinal == u32::from(trial) + 1
+         }
+     }
+@@ -1814,6 +1816,13 @@
+                 )?;
+                 coordinates[1] += 1.0;
+             }
++            Some(CanonicalCoveredFinalConvergencePoisonV1::DependentCoordinate(index)) => {
++                assert!([1, 2, 3, 8].contains(&index));
++                endpoint.lane_coordinates.values_mut().next().expect("test lane")[usize::from(index)] += 1.0;
++            }
++            Some(CanonicalCoveredFinalConvergencePoisonV1::DependentOscillation) => {
++                endpoint.lane_coordinates.values_mut().next().expect("test lane")[1] += if attempt_ordinal % 2 == 0 { -1.0 } else { 1.0 };
++            }
+             None => {}
+         }
+         #[cfg(test)]
+@@ -1984,7 +1993,11 @@
+                 &proposal,
+                 tolerance_scale,
+             )?;
+-            if convergence.outer_coordinates {
++            let stabilization = convergence.outer_coordinates
++                && !convergence.dependent_carriers
++                && openwepp_land_surface_energy::snow_accuracy_policy::Policy::current()
++                    == openwepp_land_surface_energy::snow_accuracy_policy::Policy::B01;
++            if convergence.outer_coordinates && !stabilization {
+                 if !convergence.dependent_carriers {
+                     return Err(
+                         Self::consume_canonical_covered_pending_as_adaptive_rejection_v1(pending),
+@@ -2000,13 +2013,23 @@
+                     "canonical covered evaluation budget",
+                 ));
+             }
+-            let next_proposal = canonical_covered_multisecant_trial_v1(
+-                &previous_proposal,
+-                &previous,
+-                &proposal,
+-                &history,
+-                tolerance_scale,
+-            )?;
++            let next_proposal = if stabilization {
++                crate::snow_accuracy_observer::count("canonical_endpoint_stabilization");
++                history.ending_stage3.iter().map(|(lane_id, state)| {
++                    let density_model = *history.density_model_by_lane.get(lane_id).ok_or(
++                        DirectV11RealConsumerError::Identity("stabilization density-model lane")
++                    )?;
++                    Ok((*lane_id, canonical_covered_lane_trial_v1(*lane_id, state, density_model)?))
++                }).collect::<Result<BTreeMap<_, _>, DirectV11RealConsumerError>>()?
++            } else {
++                canonical_covered_multisecant_trial_v1(
++                    &previous_proposal,
++                    &previous,
++                    &proposal,
++                    &history,
++                    tolerance_scale,
++                )?
++            };
+             previous_proposal = proposal;
+             proposal = next_proposal;
+             previous = history;
+@@ -2015,17 +2038,20 @@
+                     "canonical covered evaluation budget",
+                 )
+             })?;
+-            role = CanonicalCoveredMapRoleV1::MultisecantAdjudication(trial);
++            role = if stabilization {
++                CanonicalCoveredMapRoleV1::EndpointStabilization(trial)
++            } else {
++                CanonicalCoveredMapRoleV1::MultisecantAdjudication(trial)
++            };
+             ordinal = ordinal.saturating_add(1);
+         };
+         if !(2..=7).contains(&roles.len())
+             || roles.first() != Some(&CanonicalCoveredMapRoleV1::Initial)
+             || roles.get(1) != Some(&CanonicalCoveredMapRoleV1::FixedPointAdjudication)
+             || !roles[2..].iter().enumerate().all(|(offset, role)| {
+-                *role
+-                    == CanonicalCoveredMapRoleV1::MultisecantAdjudication(
+-                        u8::try_from(offset + 1).unwrap_or(u8::MAX),
+-                    )
++                u32::try_from(offset + 2).is_ok_and(|ordinal| {
++                    canonical_covered_role_ordinal_valid_v1(*role, ordinal)
++                })
+             })
+         {
+             return Err(DirectV11RealConsumerError::Identity(
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver_test_audit.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver_test_audit.rs
+@@ -4,6 +4,7 @@
+     Initial,
+     FixedPointAdjudication,
+     MultisecantAdjudication(u8),
++    EndpointStabilization(u8),
+     UnchargedSentinel,
+ }
+ 
+@@ -15,6 +16,9 @@
+             CanonicalCoveredMapRoleV1::FixedPointAdjudication => Self::FixedPointAdjudication,
+             CanonicalCoveredMapRoleV1::MultisecantAdjudication(trial) => {
+                 Self::MultisecantAdjudication(trial)
++            }
++            CanonicalCoveredMapRoleV1::EndpointStabilization(trial) => {
++                Self::EndpointStabilization(trial)
+             }
+         }
+     }
+@@ -110,6 +114,8 @@
+ pub(crate) enum CanonicalCoveredFinalConvergencePoisonV1 {
+     OuterNonclosure,
+     DependentNonclosure,
++    DependentCoordinate(u8),
++    DependentOscillation,
+ }
+ 
+ #[cfg(test)]
+@@ -987,7 +993,13 @@
+ #[cfg(test)]
+ fn take_canonical_covered_final_convergence_poison_v1(
+ ) -> Option<CanonicalCoveredFinalConvergencePoisonV1> {
+-    CANONICAL_COVERED_FINAL_CONVERGENCE_POISON_V1.with(|slot| slot.replace(None))
++    CANONICAL_COVERED_FINAL_CONVERGENCE_POISON_V1.with(|slot| {
++        if slot.get() == Some(CanonicalCoveredFinalConvergencePoisonV1::DependentOscillation) {
++            slot.get()
++        } else {
++            slot.replace(None)
++        }
++    })
+ }
+ 
+ #[cfg(test)]
+@@ -1481,3 +1493,41 @@
+         _ => {}
+     }
+ }
++
++#[test]
++#[ignore = "B01 immutable policy requires a fresh explicit process"]
++fn b01_cycle_endpoint_stabilization_real_maps() {
++    use openwepp_land_surface_energy::snow_accuracy_policy::Policy;
++    use CanonicalCoveredFinalConvergencePoisonV1 as Poison;
++    Policy::B01.install().expect("fresh B01 process");
++    for index in [1, 2, 3, 8] {
++        let (panicked, audit) = crate::v9_real_consumer_shadow::tests::adaptive_production_path_coverage::
++            run_equilibrium_with_canonical_covered_poison_audit(Some(Poison::DependentCoordinate(index)));
++        assert!(!panicked, "dependent coordinate {index}");
++        let first = audit.solves.first().expect("authentic solve");
++        assert!(first.completed);
++        assert_eq!(first.charged_map_attempt_count, 4, "fresh displaced map, fresh return and fresh stable witness");
++        assert_eq!(first.history_disposition_count, 2);
++        assert_eq!(first.final_constructor_attempt_count, 1);
++        assert_eq!(first.completed_final_envelope_count, 1);
++        assert_eq!(first.charged_roles[2], (CanonicalCoveredAuditRoleV1::EndpointStabilization(1), 2));
++        assert_eq!(first.charged_roles[3], (CanonicalCoveredAuditRoleV1::EndpointStabilization(2), 3));
++        assert_eq!(audit.map_local_publication_attempt_count, 0);
++        assert!(audit.solves.iter().all(|s| s.charged_map_attempt_count <= 7));
++    }
++    let (audit, rejection) = crate::v9_real_consumer_shadow::tests::adaptive_production_path_coverage::
++        canonical_covered_convergence_poison_fixture_v1(CanonicalCoveredPhysicalParityCaseV1::Ordinary, Poison::DependentOscillation);
++    let (class, _, rollback) = rejection.expect("typed cap rejection");
++    assert_eq!(class, CanonicalCoveredErrorClassV1::AdaptiveRefinement);
++    assert!(rollback, "all real accepted owners, clock and history retain exact bytes");
++    assert!(!audit.solves.is_empty());
++    for solve in &audit.solves {
++        assert_eq!(solve.charged_map_attempt_count, 7);
++        assert_eq!(solve.final_constructor_attempt_count, 0);
++        assert_eq!(solve.completed_final_envelope_count, 0);
++    }
++    assert_eq!(audit.accepted_parent_publication_count, 0);
++    let (panicked, audit) = crate::v9_real_consumer_shadow::tests::adaptive_production_path_coverage::run_equilibrium_with_canonical_covered_role_audit();
++    assert!(!panicked);
++    assert!(audit.solves.iter().all(|s| s.charged_map_attempt_count == 2));
++}
+--- a/crates/openwepp-land-surface-energy/src/snow_accuracy_policy.rs
++++ b/crates/openwepp-land-surface-energy/src/snow_accuracy_policy.rs
+@@ -107,7 +107,7 @@
+             Self::P1Step => Some(8),
+             Self::C600 => Some(3),
+             Self::C1800 => Some(4),
+-            Self::B01 => Some(5),
++            Self::B01 => Some(9),
+             Self::B1 => Some(6),
+             Self::B5 => Some(7),
+         }

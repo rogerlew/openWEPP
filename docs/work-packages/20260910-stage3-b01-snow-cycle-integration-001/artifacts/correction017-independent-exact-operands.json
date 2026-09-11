@@ -1,0 +1,63 @@
+{
+  "evidence": "Ran: independent Fraction reconstruction",
+  "log_sha256": "0f2f404349b0de937fc35eed2e9bc84752fe856bf7a0fd12f040abffa16e2405",
+  "stores": [
+    {
+      "surface_key": {
+        "ofe_id": "z-upstream",
+        "run_id": 83,
+        "source_id": "liquid:0:forest",
+        "source_type": "litter_liquid",
+        "surface_class": "forest_litter",
+        "surface_id": "surface:0:forest",
+        "tile_id": "forest-1"
+      },
+      "primitive_count": 3,
+      "exact_residual_j_m2": "0",
+      "ending_carry_j_m2": "129/1152921504606846976"
+    },
+    {
+      "surface_key": {
+        "ofe_id": "z-upstream",
+        "run_id": 83,
+        "source_id": "liquid:0:open",
+        "source_type": "surface_liquid",
+        "surface_class": "bare_mineral_soil",
+        "surface_id": "surface:0:open",
+        "tile_id": "open-1"
+      },
+      "primitive_count": 3,
+      "exact_residual_j_m2": "0",
+      "ending_carry_j_m2": "129/1152921504606846976"
+    },
+    {
+      "surface_key": {
+        "ofe_id": "a-downstream",
+        "run_id": 83,
+        "source_id": "liquid:1:forest",
+        "source_type": "litter_liquid",
+        "surface_class": "forest_litter",
+        "surface_id": "surface:1:forest",
+        "tile_id": "forest-2"
+      },
+      "primitive_count": 0,
+      "exact_residual_j_m2": "0",
+      "ending_carry_j_m2": "1/1152921504606846976"
+    },
+    {
+      "surface_key": {
+        "ofe_id": "a-downstream",
+        "run_id": 83,
+        "source_id": "liquid:1:open",
+        "source_type": "surface_liquid",
+        "surface_class": "bare_mineral_soil",
+        "surface_id": "surface:1:open",
+        "tile_id": "open-2"
+      },
+      "primitive_count": 0,
+      "exact_residual_j_m2": "0",
+      "ending_carry_j_m2": "1/1152921504606846976"
+    }
+  ],
+  "scope": "isolated native allocation vector, not coupled cycle"
+}

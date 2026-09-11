@@ -1,0 +1,25 @@
+{
+  "support_ns": [
+    1200000000000,
+    1260000000000
+  ],
+  "ordinal": 3,
+  "soil_temperature_K": {
+    "previous": 272.6864023392651,
+    "current": 272.6864024031574,
+    "difference": 6.389228701664251e-08,
+    "allowance": 1e-08
+  },
+  "snow_soil_flux_W_m2": {
+    "previous": 40.138650241496684,
+    "current": 40.13852245691791,
+    "difference": -0.00012778457877260507,
+    "allowance": 1.0401386502414967e-05,
+    "difference_over_support_J_m2": -0.007667074726356304
+  },
+  "outer_cold_energy_J_m2": {
+    "proposal": 35785.642175140274,
+    "mapped": 35785.642170792984
+  },
+  "mutation": "rejected pending map; no accepted physical record past 1200s; full rollback verification still required"
+}

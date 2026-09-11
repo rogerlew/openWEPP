@@ -1,0 +1,4 @@
+
+thread 'hillslope::tests::stage3_snow_accuracy_case' (2140620) panicked at crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs:170:25:
+complete runner success; failures retained above: RuntimeSurfaceFailure { surface: "r7c_direct_production_executor", detail: "HS-SIMPIPE-E-001 direct runtime kernel guard failed in snow_stage3_v11: prepare: VEG-E-123: imported V10 segment execution failed: unsupported production custody: forest litter is missing its configured vegetation occupancy for the native V3 covered solver" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

@@ -1,0 +1,5 @@
+{
+  "crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs": "974c9ea96bb886fde7977ca38b0664e182fc1be23068d0c15690a40621bbf179",
+  "crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver_test_audit.rs": "6f018e574b714a412d0f05c777f319a65d74fc412fbdf7f00b6fc2d8bea933eb",
+  "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs": "f736a3249820cbb8319f9c4f474c76dcdbb9c3fae4f3187aa333504e5bf13bc2"
+}

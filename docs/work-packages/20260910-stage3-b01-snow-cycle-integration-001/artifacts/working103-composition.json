@@ -1,0 +1,26 @@
+{
+  "base": "working102",
+  "delta": "restart009 minus working101",
+  "files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs",
+      "sha256": "84d1d7bd9e791f5787edab97d8422b5952094c149b70efdee19fe65b29e7c399"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs",
+      "sha256": "4710e6013440d6e431d0dcd405d279d2f5d80428482a0bb9cb82c5217e229d3c"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+      "sha256": "07b8810032eade4ccfce28ec0921e826a2ca6f9ffbfea875fe7de4a3da3f6092"
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+      "sha256": "5205e34944b55df91b17ad0602c0dd590a5bd9c294258ff47abf9b4840239acb"
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_native_custody.rs",
+      "sha256": "16bf635a0ce82f06e6eb40de3720b3f401269d1d9db7e285ce0d7e3fad54dff1"
+    }
+  ]
+}

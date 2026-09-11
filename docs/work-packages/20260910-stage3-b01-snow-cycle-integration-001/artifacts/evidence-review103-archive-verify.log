@@ -1,0 +1,18 @@
+archive source-restart001-009-soil001-004-steps101-103 32
+archive raw-correction100-101-and-restart-soil-drafts 108
+edge working100 -> working101 900
+edge working101 -> working102 900
+edge working102 -> working103 900
+edge working098 -> restart001 900
+edge restart001 -> restart002 900
+edge restart002 -> restart003 900
+edge restart003 -> restart004 900
+edge restart004 -> restart005 900
+edge restart005 -> restart006 900
+edge restart006 -> restart007 900
+edge restart007 -> restart008 900
+edge restart008 -> restart009 900
+edge working101 -> soil001 900
+edge soil001 -> soil002 900
+edge soil002 -> soil003 900
+edge soil003 -> soil004 900

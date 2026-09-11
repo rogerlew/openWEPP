@@ -1,0 +1,58 @@
+{
+  "schema": "snow_accuracy_process_v1",
+  "argv": [
+    "taskset",
+    "-c",
+    "0",
+    "/tmp/openwepp-b01-cycle-20260910/correction009-runner",
+    "hillslope::tests::stage3_snow_accuracy_case",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/tmp/openwepp-b01-cycle-20260910/correction009-continuity",
+  "binary_sha256": "79578cf6dcca0b54323690eebd093b7bba8fa810ecc0658ee2094d1a82fc78cf",
+  "cases_sha256": "e9aa671e7d881cf8bfee9b014c30730b7780582041ef269b0248e32d68d7b4e7",
+  "collector_sha256": "ed48b94ba2035a0d0eb55395a03222663712cb29dfbb2e97f16d85aedaa8240a",
+  "predecessor_collector_sha256": "f1ea797124f4a4e1cb4e02da049a403ac6db6d8780f839b0b334197b4f348052",
+  "policy": "B01",
+  "case": "continuity",
+  "ofes": 1,
+  "physical": true,
+  "environment": {
+    "RUST_MIN_STACK": "67108864",
+    "OPENWEPP_EXPERIMENT_OFES": "1",
+    "OPENWEPP_EXPERIMENT_REPEATS": "1",
+    "OPENWEPP_COMPACT_COST": "off",
+    "OPENWEPP_ACCURACY_POLICY": "B01",
+    "OPENWEPP_ACCURACY_CASE": "continuity",
+    "OPENWEPP_ACCURACY_CASES": "/workdir/openWEPP/docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/cases.json",
+    "OPENWEPP_ACCURACY_OUTPUT": "/tmp/openwepp-b01-cycle-20260910/correction009-continuity",
+    "OPENWEPP_ACCURACY_PHYSICAL": "1"
+  },
+  "timeout_s": 300.0,
+  "timeout": false,
+  "execution_valid": false,
+  "scientific_qualification": "NOT_ASSESSED",
+  "exit_code": 101,
+  "process_user_s": 0.41392399999999996,
+  "process_system_s": 0.002091,
+  "lifetime_peak_rss_kib": 60008,
+  "binary_unchanged": true,
+  "runner_receipt_present": false,
+  "observation_complete": false,
+  "days_complete": false,
+  "counter_errors": {
+    "carrier": [],
+    "lse": {}
+  },
+  "counters_complete": false,
+  "files_complete": false,
+  "wall_s": 0.4904313078150153,
+  "artifact_sha256": {
+    "stdout.log": "61da85443d62da40025f89ba6d6a1617994e1844c3f4758f0d0c3fc3838e066d",
+    "stderr.log": "79f7408952ba267794d71d07f8e8b58a3b3b2073ccfebf29698430f94fc9b9ba",
+    "inputs.json": "3d702dce6aea4178fa06394936e8352a44e5bfda5fa1e41fcd9e109df94bfd1b"
+  }
+}

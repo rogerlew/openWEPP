@@ -499,3 +499,58 @@ duplication/foreign/disposition-substitution poisons.
 | `2026-09-02` | `3` | `Codex` | Admit exact accepted snow-terminal, routed-runon, and litter-overflow segments to one piecewise WAT5 replay while preserving distinct rain/additional custody and aggregate-only rejection. |
 | `2026-09-02` | `4` | `Codex` | Admit one bounded, explicit closing-ledger operand on the latest exact positive-source piece when an accepted positive hour has zero raw diagnostic generation; preserve raw replay and hourly ownership unchanged. |
 | `2026-09-02` | `5` | `Codex` | Project Stage-3 WAT5 sources once from the sealed SurfaceLiquid ingress receipts, retain precipitation/non-rain lineage, add condensation-overflow custody, and require the projected source sum to reconstruct accepted ingress before replay. |
+
+
+## Isolated B01 native drainage source projection
+
+For the owner-authorized B01 cycle integration experiment, policy 14's native
+positive-origin snow drainage is an additional accepted WAT5 source class,
+`NativeSnowDrain`. This extends INV-WAT5-010/012 source completeness; it does
+not relax INV-WAT5-011 or create runoff through a closing residual. Production,
+integration and release remain HOLD. Provenance: SC-SURFACELIQUID-001's isolated
+positive-origin native drainage and policy-14 custody amendments, and the
+2026-09-10 owner authorization sections 7 and 11. [INFERENCE][Static].
+
+The source is the actual validated native drain packet and complete allocation
+receipt set attached to the matching accepted coupled support. Bind policy,
+packet identity, donor output set, transaction, positive origin support,
+recipient/OFE basis and allocation receipt identity. Ordinary ingress receipts
+remain separately validated against their ingress ledger. A native allocation
+must not be fabricated as an ordinary ingress/terminal-disappearance receipt,
+counted twice, or fed through another Green-Ampt/WB14 calculation.
+
+Project each actual allocation exactly once into additional supply and its
+retained-surface or routed/outlet-runoff disposition, using its OFE-ground mass
+and the existing kg/m²-to-m conversion. No infiltration is introduced by this
+custody-only native drain. Authenticate forward routing and unequal source/
+recipient areas using the existing allocation validator. A receiving OFE uses
+its actual basis amount, not the first lane's area. Native source totals and
+its disposition partition must close independently of ordinary ingress.
+
+Preserve the existing native daily/hourly origin-support convention: distribute
+the accepted integrated amount by overlap with its actual positive donor
+support. Use that same convention for five-minute bins. This is diagnostic
+attribution of the integrated accepted support; it is not recovered finer
+physical timing. Do not substitute an endpoint or fabricate a zero-duration
+support. No persistent water/energy owner or routed amount changes here.
+An ordinary zero-duration disappearance path retains its separate authority.
+
+Tests must cover an authenticated native-only positive-runoff source with no
+ordinary ingress, retained plus routed allocation, nonuniform-area routing,
+wrong support/packet/output/destination and duplicate receipt refusal, source/
+disposition/hourly reconstruction, and unchanged physical owner bytes. Keep
+pre-projection raw and corrected operands in diagnostic evidence. The real
+continuous workflow must pass its publication boundary after the repair;
+synthetic binning alone does not establish cycle or conservation completion.
+
+A matching accepted policy-14 `ParentFinalization` custody packet is not a
+second drainage source. After the same complete subslab, packet transport,
+accepted history and owner joins, require an empty donor output set, zero
+output-set digest, empty allocation receipts, and finalization support ending
+at its parent end. Such a packet advances authenticated custody only and adds
+no WAT5 supply or disposition. A `Drain` retains every donor/allocation check
+above. Reject malformed finalization, foreign policy/support/owner joins,
+stale seals and duplicate transfer attempts; do not bypass validation by
+silently skipping packets. Regression evidence must include an authentic
+accepted finalization following earlier consequential drainage and demonstrate
+unchanged physical stores. [INFERENCE][Static; isolated experiment only].

@@ -3617,6 +3617,61 @@ Change log: 2026-09-10, isolated owner-authorized P1/P2 precision amendment;
 production authority/defaults and physical ledger tolerances unchanged.
 
 
+## Isolated B01 cycle endpoint stabilization (2026-09-10)
+
+`EXP-SNOW-CYCLE-20260910-STABILIZATION` authorizes the isolated B01-working
+successor in `20260910-stage3-b01-snow-cycle-integration-001` only. Production,
+integration and release remain HOLD. R0-original and B01-original are retained
+historical compositions; this is a named corrected source cut, not a change to
+their identities. Entry/exit SWE thresholds and physical constitutive equations
+are unchanged. B01-working uses experimental persisted policy identity `9`;
+historical B01 identity `5` is foreign to this corrected policy and must reject
+without rewriting the stored owner. The command-line experiment label remains
+B01 and its receipt also binds the corrected source composition.
+
+Within the canonical covered algorithm, after a fresh pending map passes all
+physical and exact discrete custody checks, outer closure with dependent-only
+nonclosure consumes that pending map into private iteration history. If the
+seven-map budget is exhausted it returns typed adaptive refinement with complete
+rollback. Otherwise the next candidate is the canonical lane trial projection
+of this same map's actual ending snow owner, including its complete layers,
+inventories, density and settling chronology. It is not a cumulative update.
+The next fresh charge is explicitly `EndpointStabilization(n)@(n+1)`; it is not
+reported as a multisecant-generated proposal. It shares the existing ordinal
+sequence and total budget with `MultisecantAdjudication`.
+
+Stabilization permits an exactly repeated candidate: an exact outer fixed point
+can require a fresh map to remove dependence on the preceding different candidate.
+The multisecant zero-denominator/repeated-endpoint restrictions do not govern this
+declared endpoint projection. Every fresh map still needs both unchanged outer
+candidate/output closure and unchanged cross-map dependent stability before its
+own physical prefix may construct the sole final envelope. Renewed outer
+nonclosure uses the existing dimensionless multisecant proposal from the current
+and preceding authentic history and its existing typed guards. Persistent
+nonclosure exhausts the same budget; there is no alternate physical solver,
+historical fallback, map replay, earlier-result promotion or weakened tolerance.
+
+For this experiment only, this disposition supersedes dependent-only immediate
+rejection in INV-SNOWENERGY-082/086, the corresponding C-050/C-054 vectors, and
+the prohibition on a later endpoint fixed-point projection. All other custody,
+physical closure, support floor, accounting, rollback and publication obligations
+remain binding. This gives up an immediate rejection rule, not a physical error
+allowance. Cross-map numerical thresholds remain separate from physical water
+and energy accounting bounds; equal/opposite actual transfers must still close.
+
+Required expected-red and corrected evidence: exact outer fixed point with
+initially displaced dependent output requires a fresh stable map; each dependent
+coordinate independently prevents immediate acceptance; renewed outer nonclosure
+cannot publish; persistent dependent oscillation reaches the unchanged cap with
+no final constructor and exact rollback; physical/custody poisons reject before
+history; ordinary and genuine multisecant paths retain their semantics. Execute
+the authentic cold prefix and continued cycle and independently reconstruct heat
+and vapor material transfer before claiming the correction complete.
+
+Evidence: [INFERENCE][Static], owner-authorized bounded numerical correction;
+prospective independent modeling review accepts the algorithm subject to these
+tests. No completed-cycle or model-fidelity claim follows from this amendment.
+
 ## Isolated bulk trace-snow experiment (2026-09-10)
 
 `EXP-SNOW-ACCURACY-20260910-B` prospectively authorizes only the isolated
@@ -3807,3 +3862,232 @@ support/lane/receipt bindings, and all transfer and inventory checks. Equations,
 thresholds, case selection and comparative bands are unchanged. Re-execution
 after inspected held-out build015 evidence is an exploratory implementation
 revision, not confirmation of an unchanged held-out candidate.
+
+## Isolated B01 resolved mixed-phase trial projection (2026-09-10)
+
+`EXP-SNOW-CYCLE-20260910-PHASE-TRIAL` applies only to the isolated B01-working
+cycle successor, persisted policy identity10. It supersedes the cold all-ice
+multisecant trial projection of the ADR-0044 canonical covered amendment for
+this experimental policy. The authentic resolved LayeredThermalLiquid map can
+retain liquid at positive cold content. Projecting that result to `(W,0,C)`
+changes ice depth by retained liquid divided by density and prevents the
+unchanged outer depth predicate from converging. This amendment changes private
+trial assembly, not the accepted physical phase law or its inventories.
+
+For finite proposed total water `W >= 0`, obtain `I_a,L_a` from the current
+charged authentic map, including detached retained liquid exactly once, and
+`W_a=I_a+L_a`. Require finite nonnegative phase inventories and finite total.
+If `W_a>0`, set `I=W*(I_a/W_a)` and `L=W-I`. If `W_a=0`, only `W=0` is admitted,
+with zero phases; positive `W` refuses before charge. All derived values remain
+subject to the existing finite, nonnegative and mass-depth guards. No phase
+fraction is clipped, no invalid proposed total is repaired, and cold content
+alone cannot erase the authentic retained-liquid phase. Pure-ice endpoints
+retain `I=W,L=0`, including solid-snow reappearance with a smaller proposed total.
+
+The existing multisecant total-water, temperature, cold-content, density,
+layer-density and settling rules remain unchanged. Reconstruct depth from this
+selected ice and the existing authentic layer mass distribution/proposed
+densities. Retain all physical-map, exact topology, outer/dependent convergence,
+seven-charge budget, adaptive support, final-envelope, rollback and publication
+guards. Only a fresh authentic physical map can publish; the phase-scaled trial
+is never an accepted owner. R0-original and B01-original retain their identities
+and procedures; production/integration/release remain HOLD.
+
+Required checks include the authentic136800..136860 s mixed-cold prefix,
+independent phase/depth reconstruction, pure-ice reappearance, mixed warm/cold,
+zero total, zero-source positive-target rejection, nonfinite/negative inputs,
+and failure rollback. Continue the original gradual trajectory after correction;
+local projection tests alone do not establish the completed cycle or its budgets.
+
+
+### Isolated policy12 native positive-origin drainage companion
+
+For the isolated B01 snow-cycle experiment, policy12 retains policy11 physics
+and numerical semantics and additionally applies
+`SC-SURFACELIQUID-001#isolated-b01-positive-origin-native-snow-drainage`.
+This explicitly qualifies INV-SNOWENERGY-083 and OBL-SNOWENERGY-C-051: litter
+owners remain byte-identical throughout each charged represented-snow map;
+only the separately accepted donor-bound drainage operation may subsequently
+credit/reseal the native surface and exact-energy owners. Resolved and bulk
+lanes use their own authentic accepted outputs, with exact lane/support/policy
+joins; positive retained-ice drainage is never a terminal disappearance. The
+next positive support begins only after atomic delivery and history retention.
+All actual support/area/accounting/rollback requirements remain binding.
+
+Binding exposure: SNOWENERGY-B01-NATIVE-DRAIN, isolated companion mapping to
+INV083/OBL-C-051. Change log2026-09-10: prospective policy12 transfer integration,
+[INFERENCE][Static], subject to dual review and executed coupled-budget/restart
+evidence. Production/integration/release HOLD remains.
+
+
+Policy13 supersedes policy12's native drainage lineage as specified by
+`SC-SURFACELIQUID-001#policy13-custody-lineage-correction`. It retains policy11
+physics and thresholds while authenticating native delivery in its own custody
+chain. Physical LSE/WB14 markers advance only for their actual physical work.
+No fake WB14 interval or relaxed frozen-owner guard is permitted. Change log
+2026-09-10, isolated prospective companion; broad HOLD unchanged.
+
+### Isolated B01 restoration of the shared-node snow constitutive boundary
+
+For the isolated policy14 experiment authorized by
+`20260910-stage3-b01-snow-cycle-integration-001`, the reached covered carrier
+must implement the existing turbulent carrier equations above at the current
+solved node. A guessed snow flux is not a prescribed physical lower boundary.
+The snow-side charged temperature, saturation specific humidity, sealed
+exposure and heat/vapor conductances, air density and heat capacity must be
+bound to the same trial and evaluated against its current canopy-air T/q in
+the existing covered nonlinear residual. This restores a missing equation;
+it does not introduce a new all-depth model, parameter, outer solver or
+fallback. Atmospheric, canopy and snow material laws remain unchanged.
+
+Positive-into-snow H/V are the negatives of surface-to-node H/V exactly once.
+The initial-guess return and diagnostics must use this convention. Numeric
+zero, including either binary64 signed zero, means zero physical exchange;
+this does not permit changing a stored checkpoint's bits or weakening any
+nonzero sign, mass, energy or receipt join. Finalization must authenticate the
+actual solved snow constitutive H/V and the equal/opposite canopy-node
+exchange, not only compare a supplied flux with a copy of itself. The final
+snow-side law and shared-node balance must both pass the existing dimensional
+constitutive allowances. Snow phase/availability then owns bounded actual
+vapor, its latent/material enthalpy and any returned energy as already required.
+
+Retain accepted final T/q, snow T/qsat, density/cp, gH/gq, sealed exposure,
+actual H/V and source identities for independent reconstruction. Tests cover
+warm/cold reference air, deposition/sublimation, equilibrium, active and
+inactive components, foreign/missing constitutive inputs, real snow/receiver
+updates, rollback and replay. Reexecute the selected continuous cases after
+this repair; prior wrong-sign trajectories remain diagnostic evidence only.
+Production/integration/release HOLD is unchanged.
+
+For this correction the shared node uses the existing LSE density convention
+`rho=P/(287.05*T_ca)` and existing LSE `cp=1004.64 J kg^-1 K^-1` for reference,
+component and snow exchanges together. The old guess's fixed `1.225 kg m^-3`
+and `1004.0 J kg^-1 K^-1` are not retained as a second snow-side air convention.
+Snow saturation humidity is reconstructed at the exact charged snow
+ temperature and sealed pressure after every trial-temperature replacement.
+Its typed constitutive bundle binds support, destination, forcing/exposure,
+pressure and gH/gq; missing or foreign inputs fail under the corrected policy.
+For a retained physical child finalized inside a larger accepted envelope,
+these inputs are the exact immutable inputs of that child's actual producer.
+Retain its positive support, lane/destination configuration binding, prescribed
+forcing, sealed exposure and pressure with the unpublished physical result;
+finalization joins that support to the physical child before the unchanged
+constitutive validation. The enclosing envelope's integrated forcing is not
+that child's forcing. Expected inputs must not be reconstructed from the
+exchange's own digest or rescaled from the enclosing forcing at finalization.
+The same child forcing governs snow reappearance. Missing/foreign child
+context, changed chronology, pressure, exposure or conductance still refuses
+without publication. This clarification changes no equation or tolerance.
+Existing dimensional shared-node tolerance scales use actual evaluated snow
+H/V operands in place of the inactive snow-free ground's forced zeros, with
+unchanged tolerance constants. Unpublished evaluations use evaluated H/V in
+energy operands; final sealed receipt/replay still requires exact physical
+operand custody. Initial H/V perturbations must not change the converged
+solution when the same constitutive inputs and beginning owners are supplied.
+
+
+<a id="isolated-b01-pending-parent-physical-posture"></a>
+### Isolated B01 pending-parent physical posture (2026-09-10)
+
+Prospective experimental clarification of `INV-SNOWENERGY-085` and
+`OBL-SNOWENERGY-C-053`, limited to the authorized B01 cycle. An accepted
+native inactive WB14 parent retains the persistent physical record revision
+P while logical vegetation finalization produces its exact successor T=P+1.
+The pending soil-close authority must select the expected LSE/BGC record
+revision from authenticated physical posture: both P for the sealed inactive
+posture, both T for actual advanced WB14 parent finalization. Observed record
+markers cannot select their own admission rule.
+
+Posture admission validates the last accepted coupled subslab, canonical WB14
+child replay, independent current configuration topology, parent transaction,
+parent/support endpoint, replay trial and beginning identities. Inactive
+custody requires absent physical parent replay and digest; advanced custody
+requires a validated actual parent replay and digest. The accepted publication
+must join that same subslab and its ordered physical-owner/event chain must
+reach the current coupled clock exactly. Missing, substituted, stale, mixed,
+or foreign custody fails before mutation. A missing inactive tag is not
+sufficient proof of active posture.
+
+The private finalization comparison may normalize only BGC transaction lineage
+to its authenticated selected pre-finalization record revision, alongside the
+existing coherent private vegetation lineage comparison. All physical BGC
+fields and all existing full owner, parent checkpoint, clock, soil candidate,
+seal, soil-only event, one-use and post-finalization equality checks remain
+binding. No physical owner is rebased or published by this admission check.
+Tests require both lawful postures, wrong/mixed revisions, skipped successor,
+foreign topology/parent/replay/beginning, missing parent finalization, stale
+support, physical BGC mutation and substituted event-chain refusal, with
+unchanged state on refusal. Actual mixed and continuous execution remain
+required. Provenance: static sealed-posture producer and authentic correction092
+mixed rejection T=41/P=40/LSE=40/BGC=40; no conservation or completion claim.
+Production/integration/release HOLD remains unchanged.
+
+Before minting this posture, compare the actual consumer BGC canonical owner
+bytes and its complete active/native composite LSE canonical owner bytes to
+the unique corresponding live clock owners. A consumer self-comparison is not
+a physical authority join. Missing, duplicate or physically changed components
+refuse without normalization or mutation.
+
+
+For this isolated B01 correction, the versioned complete composite LSE owner
+also retains the actual consumer runtime authority as a closed, explicit mode.
+Capture it from the actual resident, never from snow inventory, effective solver
+role, or a restart default. Mode changes belong to the existing accepted physical
+transition that changes the actual consumer; no synthetic event or replay is
+introduced. The neutral canonical transport must reject missing, unknown,
+mode-less historical, partial and noncanonical encodings. All three physical
+component byte/hash checks and exact accepted owner-chain joins remain binding.
+
+Drainage and parent-finalization publication retain one actual beginning mode in
+their newly versioned, sealed record and use that same mode for both complete
+owner projections. They cannot change runtime mode. Authenticate each record's
+beginning and ending against its surrounding accepted owner/event chain; a record
+self-seal is insufficient. Physical supports between records may change mode.
+Restore each private consumer position from that position's independently
+validated complete clock owner mode, retain all external bootstrap, source,
+configuration, receipt/archive and parent joins, then require exact complete
+owner and frame reprojection before publication. A resealed supplement or packet
+cannot substitute a foreign mode under an unchanged authentic clock/history.
+
+Provenance: correction131 authentic cold-checkpoint full-frame comparison finds
+actual V11SnowCovered restored as V10NonpositiveAssimilation; static producer
+inspection places real mode assignments before existing physical ending-owner
+projection. This amendment changes state custody only, not process equations,
+regime eligibility, accounting bounds or numerical tolerances. Required checks
+include missing/unknown/foreign and mode-only malformed encodings, resealed mode
+swaps against unchanged clock/history, actual covered/snow-free/reappearance
+transitions, drainage/finalization mode preservation, positional restoration and
+fresh-process exact continuation. Production/integration/release HOLD remains.
+
+
+### Isolated B01 canonical iteration allowance (2026-09-10)
+
+For the authorized policy14 B01 cycle only, replace the effective seven-map
+canonical covered iteration allowance with one fixed twelve-map allowance.
+This is a computational budget extension of the same canonical fixed-point,
+multisecant and endpoint-stabilization method. It changes no physical equation,
+representation threshold, tolerance, convergence predicate, material transfer,
+exact receipt requirement or accounting allowance. Historical source cuts remain
+unchanged; non-B01 execution retains its effective seven-map method.
+
+Use the same centralized limit for charge preflight, role/trial ordinal
+admission, termination, accepted chronology and audit bounds. Ordinals are
+zero-based; initial and fixed-point maps occupy 0 and 1, and subsequent canonical
+roles occupy 2 through 11. Finalization consumes the same accepted pending map
+and incurs no hidden thirteenth evaluation or reserved extra physical replay.
+If both outer and dependent predicates do not pass within twelve maps, retain
+the existing typed adaptive refinement and exact rollback, including failure
+at the physical support floor. No automatic additional budget or fallback is
+introduced.
+
+Provenance is the authentic correction095 mixed case at18420..18480s after
+lane2 crossed the unchanged upward bulk exit by deposition. Seven retained
+maps show strong residual decrease but final cold-content discrepancies still
+exceed their numerical thresholds by572 and1331 times; dependent outputs also
+fail. This evidence supports testing additional canonical iterations, not
+accepting the last iterate or widening a tolerance. Twelve maps is a bounded
+prospective diagnostic allowance; its sufficiency and cost are unproven.
+Required checks cover exact last admitted/first refused role and charge at both
+limits, complete chronology and same-map finalization, actual continuous mixed
+execution, unchanged acceptance/transfer predicates and per-regime cost. Full
+physical budgets and qualification remain independent obligations and HOLD.

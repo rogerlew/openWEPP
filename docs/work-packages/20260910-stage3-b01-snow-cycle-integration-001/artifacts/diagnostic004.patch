@@ -1,0 +1,12 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs
+@@ -1986,6 +1986,9 @@
+             )?;
+             if convergence.outer_coordinates {
+                 if !convergence.dependent_carriers {
++                    if std::env::var_os("OPENWEPP_ACCURACY_OUTPUT").is_some() {
++                        eprintln!("B01_CYCLE_DEPENDENT support={:?} ordinal={} previous={:?} current={:?} proposal={:?} scale={:?}", input.support, ordinal, previous.lane_coordinates, pending.lane_coordinates, proposal, tolerance_scale);
++                    }
+                     return Err(
+                         Self::consume_canonical_covered_pending_as_adaptive_rejection_v1(pending),
+                     );

@@ -1,0 +1,150 @@
+{
+  "evidence_class": "Ran: archive index/hash verification and explicit-parent source replay, not modeling evidence",
+  "archives": [
+    {
+      "archive": "source-restart001-009-soil001-004-steps101-103.tar.gz",
+      "bytes": 787765,
+      "sha256": "beb3b359013559aecc6deb44048c0a2b1b88abd697fe6b548f30413bdcadbb4c",
+      "members": 32,
+      "status": "PASS"
+    },
+    {
+      "archive": "raw-correction100-101-and-restart-soil-drafts.tar.gz",
+      "bytes": 580723655,
+      "sha256": "46760a1cdbf07361333fed1b5f3d801fa53afe6c362460c22ef623058d850de1",
+      "members": 108,
+      "status": "PASS"
+    }
+  ],
+  "edges": [
+    {
+      "cut": "working101",
+      "parent": "working100",
+      "parent_files": 899,
+      "ending_files": 900,
+      "patch_sha256": "28c5460014d59a12eb52608569391113014d3160ff8bafa5db8f79471b438c55",
+      "status": "PASS"
+    },
+    {
+      "cut": "working102",
+      "parent": "working101",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "cd5e6fe26caf2382e13b0c4838ef276b3d7ea512284b849346bb28080bafa2d3",
+      "status": "PASS"
+    },
+    {
+      "cut": "working103",
+      "parent": "working102",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "963fa06a597b67ab8d7477fcc7d71afbaa044b1db81f62c2761945c947b23ba8",
+      "status": "PASS"
+    },
+    {
+      "cut": "restart001",
+      "parent": "working098",
+      "parent_files": 899,
+      "ending_files": 900,
+      "patch_sha256": "47c56e08ee310d1abb1c294fdc90b401241ab33f6bd15a5c39655453db1f72ac",
+      "status": "PASS"
+    },
+    {
+      "cut": "restart002",
+      "parent": "restart001",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "74ab85ecb5d4d1e5733aa9ce4158b0c330998339decdb59d4887e3a4dc6a2ecd",
+      "status": "PASS"
+    },
+    {
+      "cut": "restart003",
+      "parent": "restart002",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "e7da5d003f268865127545062d417be498d412453923a3277e7c8f7cb40f94dc",
+      "status": "PASS"
+    },
+    {
+      "cut": "restart004",
+      "parent": "restart003",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "58fd375184e2de74ca25076953a1fd0a42de250e6b2f0ffc72630444fc56c76a",
+      "status": "PASS"
+    },
+    {
+      "cut": "restart005",
+      "parent": "restart004",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "f1675907235cc426bd3c89c6a0ebd64fab4cfed443bd104685556abff0570163",
+      "status": "PASS"
+    },
+    {
+      "cut": "restart006",
+      "parent": "restart005",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "0c834d49852a63cec725d6b98b0725acc5e6b9d0a13f5ee1e8289d8fddfe5ebf",
+      "status": "PASS"
+    },
+    {
+      "cut": "restart007",
+      "parent": "restart006",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "c0a17c5ac006c2d01b26c08c726b76cbe8ec0df1f5464747f753d02d7d4bd9f0",
+      "status": "PASS"
+    },
+    {
+      "cut": "restart008",
+      "parent": "restart007",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "a31f35d32921848137bf026739d734c5074852e8c24f4ef160c1a66412aaae78",
+      "status": "PASS"
+    },
+    {
+      "cut": "restart009",
+      "parent": "restart008",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "f72ef55f90b99a1c116d47006222e538c4d3a76687482d3750d6a8187659f601",
+      "status": "PASS"
+    },
+    {
+      "cut": "soil001",
+      "parent": "working101",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "b871db7067cadebeef9ef78e56f10828964096f82f788eb6e94b65621e307b9f",
+      "status": "PASS"
+    },
+    {
+      "cut": "soil002",
+      "parent": "soil001",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "8c4442c2539ee647112081df8d93c559e274d1f4fd52d545f72f836f12c5e2f6",
+      "status": "PASS"
+    },
+    {
+      "cut": "soil003",
+      "parent": "soil002",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "8ee884051d6dce709343e2e5fa7e5934c2f6be54b8bef3efab99a7bd920fb87a",
+      "status": "PASS"
+    },
+    {
+      "cut": "soil004",
+      "parent": "soil003",
+      "parent_files": 900,
+      "ending_files": 900,
+      "patch_sha256": "66b83002c2ddfb1f82b731661f6a723bce0092e0fc9ad4a6707714a84e598c00",
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS"
+}

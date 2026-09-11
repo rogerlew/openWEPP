@@ -1,0 +1,42 @@
+[
+  {
+    "path": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v3_vectors.json",
+    "sha256": "1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109",
+    "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+  },
+  {
+    "path": "docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_vectors.json",
+    "sha256": "6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d",
+    "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+  },
+  {
+    "path": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_definition.json",
+    "sha256": "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437",
+    "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+  },
+  {
+    "path": "docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_vectors.json",
+    "sha256": "3072226f1d80359c548d87c1fa222be0c20b01627d9117e39163c39d9eb8824d",
+    "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+  },
+  {
+    "path": "docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_vectors.json",
+    "sha256": "2e7005f88d788399e914b2034c0193fc6f08d1657532a349ec797b966432356b",
+    "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+  },
+  {
+    "path": "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_definition.json",
+    "sha256": "a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f",
+    "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+  },
+  {
+    "path": "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_vectors.json",
+    "sha256": "d99288741f3cac16f017ffe5cd11620bfde2055e32f18b82e538eaf6d48ef411",
+    "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+  },
+  {
+    "path": "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_c3_woody_v8_definition.json",
+    "sha256": "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b",
+    "base": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+  }
+]

@@ -1,0 +1,79 @@
+{
+  "status": "build failed: diagnostic namespace/digest formatting",
+  "files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+      "sha256": "73386a2e105ddc5779993515eff5dfc5abbfc8bc0bbd92ea12e7c902a26cce48"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_adoption.rs",
+      "sha256": "82e33d3e4f799cfd9121fa3db111da6f0e629bb0bec753bdad9fb77073c0cf47"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs",
+      "sha256": "a011b6ae781c4d507d21a5a784af80f8d03413b5c39764d751b7469d6f976e4a"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+      "sha256": "87110acba42749ae75695e6cf9b8618f0856c8b749319320ded79550e21251db"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_input_projection.rs",
+      "sha256": "56a1a82d6e7c110a3455cd096e09c5190216ca3130131828eb8426a52fda5c55"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_v8_owner.rs",
+      "sha256": "160f081304efdad727b67f18e99a88a7d55657f31f4b1777e9be3b67ccbd33ba"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs",
+      "sha256": "1dc9852ebde9b276fd9ed212ebb0cc98941e61b7f03f11825a2d6b8619c21fde"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_litter_phase.rs",
+      "sha256": "af495dbb83ccd5296fdd61987d46a26cbc8a77333894368608e7e4a81f12333a"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+      "sha256": "73ae7f21114de6ab382ca43e69097d35245e6f775aba3c006dff659855d048b4"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+      "sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transaction_v3.rs",
+      "sha256": "2af6aac6eb1ac810a241f08e97dca47252c2ea68b1f04dbd431f61781706a4e7"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver.rs",
+      "sha256": "fd719b5a7fdc6e05afe5cf4601361e39c6bc2875599846f79a9bcffd665b4347"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+      "sha256": "7544e79a508e99805359b23ed21ff42db6837a6cb36e2cfbf0bf0da57982e9d7"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/snow_accuracy_policy.rs",
+      "sha256": "db9801f18641911b175593a1dce0d4b9374522d29bdfc9d11c85176092319ff8"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+      "sha256": "74b1b64afdbb66802412101b40b829290ba55234f51d0ae8f5e9aacbea081e55"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/litter_phase_tests.rs",
+      "sha256": "a87c6484748e34c281d50f2c49321a7bff30b1914807da20db0704eb11c86930"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/litter_phase.rs",
+      "sha256": "22c06e64f32ec1b44770647b938b9b9c697d5bd2f3f0bcca9dd0cd1ed68da0eb"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transaction.rs",
+      "sha256": "1a72a6f4fc0fe9fcb2a8003a8f6e68dfe883014559c10ba94cc9fb7f2e820d87"
+    }
+  ],
+  "source_tar_sha256": "bc8f4e0d58db30258605f391f172a9c1f757c303dc5be79bf1d2bdc2aad021f4",
+  "build_log_sha256": "9c3989966bf8338965af0b547f761cff19db3df049723fcd7e67ebe2c7fdfd11"
+}

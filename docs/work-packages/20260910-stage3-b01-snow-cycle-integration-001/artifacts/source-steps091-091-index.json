@@ -1,0 +1,16 @@
+{
+  "archive": "source-steps091-091.tar.gz",
+  "sha256": "00a41cf84feed4a9f63e2995a9d155c263234fbabf6a0befdc4de10503dc6652",
+  "files": [
+    {
+      "path": "step091.patch",
+      "bytes": 29498,
+      "sha256": "1815dee7a9d1f6982e653fc968d4611b611b8419f24df3acbce6882be10ecd6a"
+    },
+    {
+      "path": "step091-source.json",
+      "bytes": 131458,
+      "sha256": "0e16ad3a185ff4f7ecb40bce278f6561ff88a28896a45f738613bb74f37953cb"
+    }
+  ]
+}

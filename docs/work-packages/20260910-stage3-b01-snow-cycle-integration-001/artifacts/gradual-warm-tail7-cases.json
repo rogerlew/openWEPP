@@ -1,0 +1,86 @@
+{
+  "status": "FROZEN_BEFORE_POLICY_RESULTS",
+  "classification": "ASSUMED_FOR_EXECUTION",
+  "columns": [
+    "precipitation_mm",
+    "tmax_C",
+    "tmin_C",
+    "radiation_ly_day",
+    "dewpoint_C"
+  ],
+  "storm_duration_hours": 2,
+  "relative_peak_time": 0.25,
+  "peak_intensity_ratio": 25,
+  "wind_m_s": 3,
+  "wind_direction_degrees": 180,
+  "initialization": "one common authenticated constructor, no state resets",
+  "cases": {
+    "gradual_warm_tail7": {
+      "split": "named bounded integration extension",
+      "forcing": [
+        [
+          12,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          2,
+          -2,
+          130,
+          -3
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ]
+      ],
+      "canopy": "positive"
+    }
+  },
+  "extension": {
+    "name": "gradual_warm_tail7",
+    "original_cases_sha256": "e9aa671e7d881cf8bfee9b014c30730b7780582041ef269b0248e32d68d7b4e7",
+    "original_case": "gradual",
+    "original_prefix_days": 3,
+    "maximum_total_days": 7,
+    "added_days": 4,
+    "chronology": "2001-01-01 through 2001-01-07 inclusive; original days 1-3 unchanged; days 4-7 repeat original day 3",
+    "warm_tail_source": "original gradual forcing[2]",
+    "frozen_before_extended_candidate_execution": true,
+    "rationale": "058 completes original 3 days with 6.2626496776554894 kg/m2 snow water; continuing same dry warm tuple permits actual melt and subsequent snow-free evolution without changing cold prefix"
+  }
+}

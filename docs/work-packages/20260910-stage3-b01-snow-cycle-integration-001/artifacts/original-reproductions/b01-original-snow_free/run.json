@@ -1,0 +1,94 @@
+{
+  "carrier": {
+    "counts": [
+      {
+        "completed": 0,
+        "errors": 0,
+        "started": 0
+      },
+      {
+        "completed": 0,
+        "errors": 0,
+        "started": 0
+      },
+      {
+        "completed": 0,
+        "errors": 0,
+        "started": 0
+      },
+      {
+        "completed": 0,
+        "errors": 0,
+        "started": 0
+      },
+      {
+        "completed": 0,
+        "errors": 0,
+        "started": 0
+      }
+    ],
+    "dropped_records": 0,
+    "records": []
+  },
+  "case": "snow_free",
+  "clock_hz": 100,
+  "cpu_ticks_end": 2,
+  "cpu_ticks_start": 0,
+  "days_requested": 1,
+  "error": "RuntimeSurfaceFailure { surface: \"r7c_direct_production_executor\", detail: \"HS-SIMPIPE-E-001 direct runtime kernel guard failed in snow_stage3_v11: prepare: VEG-E-123: imported V10 segment execution failed: unsupported production custody: forest litter is missing its configured vegetation occupancy for the native V3 covered solver\" }",
+  "execution": "FAIL",
+  "lse": {
+    "complete": {
+      "completions": 0,
+      "errors": 0,
+      "starts": 0
+    },
+    "component_replay": {
+      "completions": 0,
+      "errors": 0,
+      "starts": 0
+    },
+    "dropped_events": 0,
+    "evaluations": {
+      "completions": 0,
+      "errors": 0,
+      "starts": 0
+    },
+    "events": [],
+    "identity_anchor": {
+      "completions": 0,
+      "errors": 0,
+      "starts": 0
+    },
+    "iterations": 0,
+    "leaf_calls": 0,
+    "maps": {
+      "completions": 0,
+      "errors": 0,
+      "starts": 0
+    },
+    "overflow": false,
+    "probes": {
+      "completions": 0,
+      "errors": 0,
+      "starts": 0
+    },
+    "solves": {
+      "completions": 0,
+      "errors": 0,
+      "starts": 0
+    },
+    "sweeps": {
+      "completions": 0,
+      "errors": 0,
+      "starts": 0
+    }
+  },
+  "ofes": 1,
+  "parents": [],
+  "policy": "B01",
+  "rss_kib": 29936,
+  "runner_wall_s": 0.020272082,
+  "schema": "snow_accuracy_run_v1",
+  "snapshot": null
+}

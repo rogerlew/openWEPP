@@ -1,0 +1,22 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working022/crates/openwepp-land-surface-energy)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working022/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 07s
+────────────
+ Nextest run ID 71204988-fcb8-4369-87de-a171b8cbdcb6 with nextest profile: default
+    Starting 9 tests across 1 binary (1427 tests skipped)
+        PASS [   0.004s] (1/9) openwepp-hillslope-orchestrator snow_stage3_v11_attachment::support_liquid_receiver_mutation_tests::receipt_bearing_full_runoff_noop_is_exact_and_false_noops_reject
+        PASS [   0.005s] (2/9) openwepp-hillslope-orchestrator snow_stage3_v11_attachment::support_liquid_receiver_mutation_tests::retained_mass_requires_exact_surface_and_enthalpy_mutations
+        PASS [   0.005s] (3/9) openwepp-hillslope-orchestrator snow_stage3_v11_attachment::support_liquid_receiver_mutation_tests::per_output_first_hop_reconstruction_is_exact_and_rejects_split_receipt_poisons
+        PASS [   0.009s] (4/9) openwepp-hillslope-orchestrator direct_runtime::stage3_committed_publication::tests::support_liquid_publication_routes_source_runoff_and_destination_runon_once
+        PASS [   0.012s] (5/9) openwepp-hillslope-orchestrator direct_runtime::stage3_committed_publication::tests::support_liquid_publication_uses_exact_capacity_dispositions_and_rejects_poisons
+        PASS [   0.044s] (6/9) openwepp-hillslope-orchestrator land_surface_energy_shadow::v3_tests::native_snow_liquid_candidate_rejects_unrepresentable_temperature_before_install
+        PASS [   0.101s] (7/9) openwepp-hillslope-orchestrator land_surface_energy_shadow::v3_tests::native_snow_liquid_candidate_preserves_ice_and_reprojects_zero_heat_credit
+        PASS [   0.174s] (8/9) openwepp-hillslope-orchestrator land_surface_energy_shadow::v3_tests::native_snow_liquid_publication_authenticates_replay_and_rejects_substitution
+        PASS [   0.796s] (9/9) openwepp-hillslope-orchestrator v9_real_consumer_shadow::v3_publication_retention_tests::native_drain_histories_retain_partial_state_finalize_dry_tail_and_reject_replay
+────────────
+     Summary [   0.799s] 9 tests run: 9 passed, 1427 skipped

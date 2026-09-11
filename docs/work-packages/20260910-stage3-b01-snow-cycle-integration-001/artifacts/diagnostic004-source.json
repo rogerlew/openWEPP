@@ -1,0 +1,48 @@
+{
+  "base": "B01-original final016 retained composition",
+  "changes": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs",
+      "sha256": "b240471ec2bbdaf6e36e0042c9a32b0c8473814f77f242be5849ea1108b54680"
+    }
+  ],
+  "build_script": "#!/usr/bin/env bash\nset -euo pipefail\ncd /tmp/openwepp-b01-cycle-20260910/working\nnix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/tmp/openwepp-b01-cycle-20260910/target-working CARGO_PROFILE_RELEASE_LTO=false RUST_MIN_STACK=67108864 cargo test -p openwepp-runner --lib --features test-fixture-authority,openwepp-hillslope-orchestrator/persisted-restart-v1,openwepp-hillslope-orchestrator/restart-authority-evidence --release --offline --no-run --message-format=json-render-diagnostics > /tmp/openwepp-b01-cycle-20260910/build004.log 2>&1\n",
+  "binary": "/tmp/openwepp-b01-cycle-20260910/diagnostic004-runner",
+  "binary_sha256": "074aebb29c52f4d5baf4009e81f9f8398001d9d87c97cd1653df14ca9259824b",
+  "cargo_artifact": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///tmp/openwepp-b01-cycle-20260910/working/crates/openwepp-runner#0.1.0",
+    "manifest_path": "/tmp/openwepp-b01-cycle-20260910/working/crates/openwepp-runner/Cargo.toml",
+    "target": {
+      "kind": [
+        "lib"
+      ],
+      "crate_types": [
+        "lib"
+      ],
+      "name": "openwepp_runner",
+      "src_path": "/tmp/openwepp-b01-cycle-20260910/working/crates/openwepp-runner/src/lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "3",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": true
+    },
+    "features": [
+      "default",
+      "test-fixture-authority"
+    ],
+    "filenames": [
+      "/tmp/openwepp-b01-cycle-20260910/target-working/release/deps/openwepp_runner-faea39d7f0be2204"
+    ],
+    "executable": "/tmp/openwepp-b01-cycle-20260910/target-working/release/deps/openwepp_runner-faea39d7f0be2204",
+    "fresh": false
+  },
+  "build_log_sha256": "6bcecdeb989e92737322c62c587a97175176fa17d92fa4d6aa0b570ea089422b"
+}

@@ -1,0 +1,116 @@
+{
+  "archive": "source-steps104-109-soil005-009.tar.gz",
+  "sha256": "79b8404b5aaeae4e72ffda9dd0afdebf9132df5db4b23cc790c4a92ad5a27b64",
+  "files": [
+    {
+      "path": "working104.patch",
+      "bytes": 1621,
+      "sha256": "4074c651b105acf7f6fa5c71965479bc8a4c022893c0d481a4c5d1a27a27149e"
+    },
+    {
+      "path": "working104-source.json",
+      "bytes": 130871,
+      "sha256": "57aa6e6110bb427a58fab0c6095e649404d8907bffffe9cc7f56ebc896891703"
+    },
+    {
+      "path": "working105.patch",
+      "bytes": 2044,
+      "sha256": "d041eaa9e25291c314b2197fcf14718dac195c994a968f6989aef7291b4b4c26"
+    },
+    {
+      "path": "working105-source.json",
+      "bytes": 130871,
+      "sha256": "a6f98cb54490de2845c24a38c1bd4002db5b34fd51b0c2c3df4de9e931d167bf"
+    },
+    {
+      "path": "working106.patch",
+      "bytes": 2949,
+      "sha256": "112f765f6dd49b11d2c2795fb04866fe611470c5338110866f73b51005233a9d"
+    },
+    {
+      "path": "working106-source.json",
+      "bytes": 131004,
+      "sha256": "ec0581bf8bdf773ac452bd1beb0ccc0a1bd64570c0f4b7f1f406962e50159f37"
+    },
+    {
+      "path": "working107.patch",
+      "bytes": 830,
+      "sha256": "c64a570b28381e72c2200569b5d9297d2ed2a851ab7998bad9c1c21e11d3b08a"
+    },
+    {
+      "path": "working107-source.json",
+      "bytes": 130901,
+      "sha256": "99ea0acf067a51ba87eefd69e05a91a96057af8acbd84445f68da85bc4548bad"
+    },
+    {
+      "path": "working108.patch",
+      "bytes": 1809,
+      "sha256": "4d5501a15d890b72962c3ff08eb5b25285cbdaaacd94580c424eca1813957f68"
+    },
+    {
+      "path": "working108-source.json",
+      "bytes": 130907,
+      "sha256": "8f5f7cf9d0eb6337a88c87819ffd121d54fe432920305bf6593f707a8d06928a"
+    },
+    {
+      "path": "working109.patch",
+      "bytes": 1809,
+      "sha256": "4d5501a15d890b72962c3ff08eb5b25285cbdaaacd94580c424eca1813957f68"
+    },
+    {
+      "path": "working109-source.json",
+      "bytes": 130907,
+      "sha256": "07de6dbdcc2761ee4be884cbf2ccff966c1645609ea1242690ed991c1c8ec888"
+    },
+    {
+      "path": "soil005.patch",
+      "bytes": 12131,
+      "sha256": "35e68884275e6dc8b0921cfb6d322a518bd11bd8a63b4a8ab39d6f22394cbbff"
+    },
+    {
+      "path": "soil005-source.json",
+      "bytes": 131454,
+      "sha256": "59565edc1d6b3a4ffc529adc9835f125817814bc254c9bc872ce170795f2fb7f"
+    },
+    {
+      "path": "soil006.patch",
+      "bytes": 1504,
+      "sha256": "81fde22132d1ca5a110dbf3784047962b0b06d22736c51309526f5a9f7dd9198"
+    },
+    {
+      "path": "soil006-source.json",
+      "bytes": 131052,
+      "sha256": "b1a9fbb6eaf03662d5884eeef4d774cedde096b898cd43d2bb962bdc507f3568"
+    },
+    {
+      "path": "soil007.patch",
+      "bytes": 4753,
+      "sha256": "8a3938aa08bfab72193d5c2958b224459e15ebf5cf5e620e09a599def04f4a71"
+    },
+    {
+      "path": "soil007-source.json",
+      "bytes": 131052,
+      "sha256": "9be960cc281ce28887b71a764f793889a2870c5d4e52b7eaac06b1ab71789b89"
+    },
+    {
+      "path": "soil008.patch",
+      "bytes": 7529,
+      "sha256": "4ac24bfa29c6738d4aa6460a76c04e2ac8dd53c0257a588125b75e9cdab75d3d"
+    },
+    {
+      "path": "soil008-source.json",
+      "bytes": 131142,
+      "sha256": "50641ba38e13c3710c4d308dad881eecc1e393afc8a00d5d3decc22be296f210"
+    },
+    {
+      "path": "soil009.patch",
+      "bytes": 9452,
+      "sha256": "138ec92809bacb9395e7a208db675ae537afe7d87be5c8bcb879f533184e8687"
+    },
+    {
+      "path": "soil009-source.json",
+      "bytes": 131304,
+      "sha256": "2d4a2bf04e95303b037f3b95012c751720a57133a3ea39580ccf247697b02709"
+    }
+  ]
+}

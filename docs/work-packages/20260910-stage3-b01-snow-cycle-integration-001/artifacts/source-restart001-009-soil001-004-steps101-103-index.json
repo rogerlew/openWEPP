@@ -1,0 +1,166 @@
+{
+  "archive": "source-restart001-009-soil001-004-steps101-103.tar.gz",
+  "sha256": "beb3b359013559aecc6deb44048c0a2b1b88abd697fe6b548f30413bdcadbb4c",
+  "files": [
+    {
+      "path": "working101.patch",
+      "bytes": 34534,
+      "sha256": "28c5460014d59a12eb52608569391113014d3160ff8bafa5db8f79471b438c55"
+    },
+    {
+      "path": "working101-source.json",
+      "bytes": 131538,
+      "sha256": "387a98bf92375ae2b3c70cfbcb9121bca3fca2e70fe7c712601149a5eaee2edc"
+    },
+    {
+      "path": "working102.patch",
+      "bytes": 10029,
+      "sha256": "cd5e6fe26caf2382e13b0c4838ef276b3d7ea512284b849346bb28080bafa2d3"
+    },
+    {
+      "path": "working102-source.json",
+      "bytes": 130892,
+      "sha256": "da070d7c95a895e77343a1c15a47da6595075457bd546a67a501e64f14dea9c0"
+    },
+    {
+      "path": "working103.patch",
+      "bytes": 27733,
+      "sha256": "963fa06a597b67ab8d7477fcc7d71afbaa044b1db81f62c2761945c947b23ba8"
+    },
+    {
+      "path": "working103-source.json",
+      "bytes": 131271,
+      "sha256": "f1ecaad5e7b4654e5387c844b39ab02b7cd0fe50ae31f929892712e7b0fe3b83"
+    },
+    {
+      "path": "restart001.patch",
+      "bytes": 21515,
+      "sha256": "47c56e08ee310d1abb1c294fdc90b401241ab33f6bd15a5c39655453db1f72ac"
+    },
+    {
+      "path": "restart001-source.json",
+      "bytes": 131447,
+      "sha256": "208be702e96fc0aa777bdd194f3419943bb0adae25bfc2257197fa52a0cdfdb2"
+    },
+    {
+      "path": "restart002.patch",
+      "bytes": 5608,
+      "sha256": "74ab85ecb5d4d1e5733aa9ce4158b0c330998339decdb59d4887e3a4dc6a2ecd"
+    },
+    {
+      "path": "restart002-source.json",
+      "bytes": 130993,
+      "sha256": "6277b0084253d3c87370723d696862f942cef6c4de1b56e678894a28d004d7bc"
+    },
+    {
+      "path": "restart003.patch",
+      "bytes": 11228,
+      "sha256": "e7da5d003f268865127545062d417be498d412453923a3277e7c8f7cb40f94dc"
+    },
+    {
+      "path": "restart003-source.json",
+      "bytes": 131182,
+      "sha256": "130a4aed0b266fb50b814e4bde9ffb5a38da1017d4c91a455525740ed37bba01"
+    },
+    {
+      "path": "restart004.patch",
+      "bytes": 7485,
+      "sha256": "58fd375184e2de74ca25076953a1fd0a42de250e6b2f0ffc72630444fc56c76a"
+    },
+    {
+      "path": "restart004-source.json",
+      "bytes": 130907,
+      "sha256": "7000f5411d5f9e313b0a56adda1886646323a423c180e4e200a5c9f2c7e8decb"
+    },
+    {
+      "path": "restart005.patch",
+      "bytes": 4580,
+      "sha256": "f1675907235cc426bd3c89c6a0ebd64fab4cfed443bd104685556abff0570163"
+    },
+    {
+      "path": "restart005-source.json",
+      "bytes": 131074,
+      "sha256": "24b5084bb09988ef85402f047901ff502b0249543c9873472c1b07c5bcf11abc"
+    },
+    {
+      "path": "restart006.patch",
+      "bytes": 9725,
+      "sha256": "0c834d49852a63cec725d6b98b0725acc5e6b9d0a13f5ee1e8289d8fddfe5ebf"
+    },
+    {
+      "path": "restart006-source.json",
+      "bytes": 130978,
+      "sha256": "cc34df79cf2d9d6b8a2a8b7258d29fcc3931fbf8f23b62b62b450d90ae98100a"
+    },
+    {
+      "path": "restart007.patch",
+      "bytes": 10302,
+      "sha256": "c0a17c5ac006c2d01b26c08c726b76cbe8ec0df1f5464747f753d02d7d4bd9f0"
+    },
+    {
+      "path": "restart007-source.json",
+      "bytes": 131163,
+      "sha256": "2382a8ca2e8bf2ea25bba3e8ec8e5c9f893b1bd0188916a34f14f0cf53070f6f"
+    },
+    {
+      "path": "restart008.patch",
+      "bytes": 1024,
+      "sha256": "a31f35d32921848137bf026739d734c5074852e8c24f4ef160c1a66412aaae78"
+    },
+    {
+      "path": "restart008-source.json",
+      "bytes": 130907,
+      "sha256": "e0ba65aeed2da5bd62d43a5f250ae5f747485acf688d529c40dff4ea73f93809"
+    },
+    {
+      "path": "restart009.patch",
+      "bytes": 4145,
+      "sha256": "f72ef55f90b99a1c116d47006222e538c4d3a76687482d3750d6a8187659f601"
+    },
+    {
+      "path": "restart009-source.json",
+      "bytes": 131015,
+      "sha256": "0878be572e1ead759fef05f1b117e1b8d959dbbb6b4ec250678ee1e967c931fb"
+    },
+    {
+      "path": "soil001.patch",
+      "bytes": 11115,
+      "sha256": "b871db7067cadebeef9ef78e56f10828964096f82f788eb6e94b65621e307b9f"
+    },
+    {
+      "path": "soil001-source.json",
+      "bytes": 131244,
+      "sha256": "adeb04e8b83797b26d15bdd12b2858cc1abe0939476825e41b93ffd5755c8de9"
+    },
+    {
+      "path": "soil002.patch",
+      "bytes": 2739,
+      "sha256": "8c4442c2539ee647112081df8d93c559e274d1f4fd52d545f72f836f12c5e2f6"
+    },
+    {
+      "path": "soil002-source.json",
+      "bytes": 130882,
+      "sha256": "e40bd80a7f2ffed9cfcda0a048ade02e7f089c02da992c69630f840d6d717f69"
+    },
+    {
+      "path": "soil003.patch",
+      "bytes": 795,
+      "sha256": "8ee884051d6dce709343e2e5fa7e5934c2f6be54b8bef3efab99a7bd920fb87a"
+    },
+    {
+      "path": "soil003-source.json",
+      "bytes": 130882,
+      "sha256": "ed5a79ecdfcc890b326779fcd3a4985f6f51ea92716f6ca940ea3a6ae8b6da07"
+    },
+    {
+      "path": "soil004.patch",
+      "bytes": 7741,
+      "sha256": "66b83002c2ddfb1f82b731661f6a723bce0092e0fc9ad4a6707714a84e598c00"
+    },
+    {
+      "path": "soil004-source.json",
+      "bytes": 130882,
+      "sha256": "69f12517241c74600fc85612846876e94a764ca874d20521557a7390edb4cbb5"
+    }
+  ]
+}

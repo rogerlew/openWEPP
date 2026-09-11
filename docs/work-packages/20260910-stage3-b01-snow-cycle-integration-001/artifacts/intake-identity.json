@@ -1,0 +1,19 @@
+{
+  "R0": {
+    "checked": 701,
+    "mismatches": []
+  },
+  "candidate": {
+    "checked": 707,
+    "mismatches": []
+  },
+  "reproduction-check": {
+    "checked": 707,
+    "mismatches": []
+  },
+  "binary": {
+    "path": "/tmp/openwepp-snow-accuracy-20260910/final-runner-v16",
+    "expected": "68268f7583b298ce87dd1bcf29d6047a521de8dab16d704cfa2e4f2570889f4b",
+    "actual": "68268f7583b298ce87dd1bcf29d6047a521de8dab16d704cfa2e4f2570889f4b"
+  }
+}

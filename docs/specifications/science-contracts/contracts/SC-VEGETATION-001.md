@@ -3078,3 +3078,23 @@ constitutive behavior unchanged.
 | 2026-08-20 | 22 | Codex | Completed additive Restart V3 by composing all V2 admission and full-suffix equivalence, deriving typed receipt identities, binding one complete owner candidate per owner/slab, and aggregating shared-inventory authorization. |
 | 2026-08-20 | 21 | Codex | Froze Restart V2 as nonproduction for resource custody and introduced additive closed Restart V3 typed debit/transition continuation authority. |
 | 2026-08-20 | 26 | Codex | Bound forest-covered V11 to the shared Child 2C canopy-air carrier, sealed exposure wind, exact-once flux lineage, active participant support, and pre/post-event regime custody. |
+
+
+## Isolated B01 transparent-canopy liquid-energy amendment
+
+For the authorized 2026-09-10 B01 cycle experiment only, the
+[transparent-canopy liquid rule](SC-LANDSURFACEENERGY-001/water-vapor.md#isolated-b01-transparent-canopy-liquid)
+specializes source-bound liquid passage when all beginning canopy areas and
+canopy liquid are zero. Positive incoming liquid retains signed mixture
+enthalpy through unchanged E04 mass routing. The passage ledger carries its
+authenticated release temperature, while the zero-area numerical wet coordinate
+retains its canonical anchor and supplies the next occupancy warm start.
+This narrowly excepts transparent passage from INV-VEGETATION-114's equality
+between release and numerical wet temperature and E04's below-reference refusal;
+ordinary/nontransparent canopy rules remain binding. Explicit source/rank proof,
+zero interception/storage/vapor/drainage, original beginning eligibility and
+persisted source rebinding are mandatory. A dry column carries no mixture proof. This adds no canopy thermal
+mass, active-canopy storage model, frozen canopy process, or runtime activation.
+Nontransparent reached state remains subject to independent energy assessment;
+production/integration/release HOLD is unchanged. Provenance: existing liquid
+enthalpy/occupancy routing authority plus first-law conservation, [INFERENCE][Static].

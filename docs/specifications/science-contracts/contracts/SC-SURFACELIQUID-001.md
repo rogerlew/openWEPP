@@ -2203,3 +2203,363 @@ and advanced-cursor-without-proof poisons.
 | test vector | `OBL-SURFACELIQUID-C-025`: real transition, prefix poisons, zero-work counters, ordinal/cumulative identity, finalization, restart, rollback. |
 | binding exposure | `SURFACELIQUID-V28-NATIVE-INACTIVE-PREFIX-TRANSITION`, active, `new-INV`, IDs `035/C-025`, dual review/verification. |
 | change log | 2026-09-03, contract 28: authenticated represented-snow inactive-prefix chronology for the first exact snow-free WB14 child; unchanged physics/tolerances. |
+
+
+## Isolated B01 positive-origin native snow drainage
+
+This prospective experimental companion to `INV-SURFACELIQUID-023/025/026`,
+`OBL-SURFACELIQUID-C-016` and `SC-SNOWENERGY-001` applies only to the isolated
+B01 snow-cycle integration experiment. Production/integration/release HOLD
+remains. The implementation must use a newly distinguished persisted policy
+identity (12) in addition to its typed drain schema; policy11 cannot describe
+this change. Constants, snow thresholds and routing constitutive laws remain
+unchanged. Evidence: [INFERENCE][Static], owner-authorized integration repair
+of physically generated drainage, with independent review before execution.
+
+During every charged represented-snow map, inactive native litter owners remain
+byte-identical as required by INV026. After acceptance of that map, authentic
+positive-support snow-liquid output may credit native surface storage even
+while snow ice remains. This drain and its authenticated custody-only parent finalization below are
+the only exceptions to INV026's under-snow storage/reseal prohibition. It performs no litter vapor,
+phase solve, atmospheric exchange, soil/infiltration solve, current-ingress or
+WB14 work. It does not change snow classification, create a disappearance
+event, or alter snow inventory already debited by the donor. Its origin is
+the actual positive support, never a fabricated zero-duration support.
+
+Allocate liquid against existing configured capacity using the same checked
+capacity, proportional retention, area conversion and forward routing
+arithmetic as the existing snow-liquid receiver. Extract shared arithmetic;
+do not introduce a second constitutive law or project a native owner into a
+legacy physical envelope. Each delivered parcel is retained once or routed
+once along configured topology, with its actual sensible enthalpy. Preserve
+litter ice and all unrelated state. Nonuniform source/recipient areas apply
+at every route. Store credit and outlet transfer must independently close the
+donor debit; generated melt is not a substitute for actual donor output.
+
+A separately tagged native drain publication binds: persisted policy/schema;
+actual origin support and parent bounds; donor lane/OFE and complete ending
+owner identity; accepted output and ordered output-set digests; complete
+configured destination partition; receiver context and ordinal; recipient
+predecessor surface/LSE/exact owners and receipt chains; actual allocation
+receipts and energy operands; ending native owners and exact carry. The
+canonical record must distinguish drainage from phase publication. Zero or
+foreign support, missing/duplicate outputs, wrong areas, stale predecessors,
+kind substitution and replay reject before publication. There is no extra
+pending reservoir: acceptance atomically consumes the donor handoff and credits
+the recipient or its routed outlet. Failure preserves all prior owners.
+
+Native surface V2 liquid and V3 sensible-energy high mirrors advance together
+with the V4 exact enthalpy owner. The exact sum is beginning high plus retained
+signed-dyadic carry plus the actual retained sensible-energy operands, rounded
+once with the existing nearest-even rule. The litter temperature coordinate is rederived from the credited high mirror
+and ending heat capacity using the existing canonical sensible-enthalpy
+projection: T = 273.15 K + U_hi / (C_dry + c_w L_end + c_i I_begin),
+with unchanged material constants and existing domain/consistency guards.
+This updates the dependent temperature coordinate only, with no melt/refreeze
+or equilibration solve. A zero-enthalpy liquid credit still changes capacity
+and therefore can change T. Test this with nonzero initial temperature offset,
+as well as nonzero credited enthalpy and exact carry. A drain-specific operand
+validator may use this same arithmetic; it must not invent six phase-free operands,
+fusion, soil, or WB14 receipts to satisfy an ordinary phase validator. Parent
+partial/final posture is derived from actual parent/support bounds, and
+persistent markers follow INV025, with exact receipt lineage advanced once
+per accepted drain. Existing non-drain validation remains unchanged.
+
+Collect every eligible accepted lane output for one support into one atomic
+drain record. The marker before this operation is either the persistent parent
+predecessor P (no final physical publication yet) or T (an ordinary final
+publication on this same parent/support already stamped T). Partial drainage
+retains P. Final drainage changes P to T once, or retains T when the exact
+preceding same-parent final publication proves that stamp; it never increments
+the transaction a second time. Foreign T or earlier/future parent joins reject.
+
+A parent changed by partial drainage may end with no new liquid output. At its
+actual accepted endpoint, a separately tagged custody-only parent-finalization
+record stamps T once and retains all physical quantities/high/carry exactly.
+It authenticates the dirty parent's drain history, actual final support,
+predecessor and ending owners, with zero new mass/energy operands and zero
+physical work. It is not a drain, phase solve, or synthetic donor output. A
+parent that already finalized needs no such record; a wholly unchanged inactive
+parent stays byte-identical. This finalization is mandatory before the dirty
+parent's persistent publication or subsequent parent starts. Tests must cover
+a partial drain followed by only dry supports to parent end and reject repeated,
+early, omitted, or foreign-parent finalization.
+
+History ordering means actual owner transitions, not a fabricated gap-free
+partition of donor supports. Dry supports need no drain entries. An ordinary
+physical publication and its subsequent drainage may share the same positive
+origin support/end tick but have distinct kinds and exact sequential predecessor
+joins. Receiver ordinal and parent/support identity disambiguate that order. The
+positive origin support identifies already evaluated donor physics; the
+recipient custody entry never charges it as a second elapsed physics interval.
+
+Physical and exact histories retain matching tagged entries in actual order.
+Every drain validates beginning/ending joins, preserves the adoption anchor,
+and advances the common history chain. Ordinary-to-drain-to-ordinary sequences
+and successive partial drains are valid only with exact predecessor continuity.
+Restore performs full semantic validation of every entry and rejects omission,
+reordering, duplication, kind substitution, changed donor/recipient/carry,
+wrong transaction posture and mismatched physical/exact history. No history
+reset, empty phase publication, downgraded owner or unrecorded owner reseal is
+permitted.
+
+Required contract-derived tests: authentic retained-ice drain; full/partial/zero
+capacity and overflow; nonzero heat with nonzero exact carry; unequal tile/OFE
+areas; zero prohibited physical work and unchanged snow mask/ice; all identity
+and history poisons above; complete rollback; and actual fresh-process restart
+through an accepted drain followed by ordinary snow-free work. Independent
+per-support and cumulative water/energy reconstruction is required before a
+closure claim.
+
+| Profile surface | Binding |
+| --- | --- |
+| invariant/guard map | INV023/025 exact arithmetic and posture; INV026 byte retention during maps, with only the separately authenticated post-acceptance drain and its custody-only parent-finalization exceptions. |
+| test-vector map | OBL-C-016 plus native drain allocation, exact carry, tagged history, negative replay and fresh-process vectors above. |
+| binding exposure | SURFACELIQUID-B01-NATIVE-DRAIN, isolated experimental companion; maps to existing INV023/025/026 and OBL-C-016. |
+| change log | 2026-09-10: prospective policy12 native positive-origin drain custody; no production activation or phase/WB14 authority. |
+
+
+### Policy13 custody lineage correction
+
+Policy13 supersedes policy12's instruction to stamp native physical transaction
+markers during drainage or its custody-only parent finalization. Policy12's
+reached typed failure is retained: the frozen V2 owner validator correctly
+requires a physically accepted WB14 continuation interval1..48 when its
+physical marker is stamped; represented-snow drainage performs no WB14 step
+and cannot manufacture such an interval. This correction adds no phase,
+infiltration, numerical tolerance, frozen-schema, or validator relaxation.
+
+INV025's physical partial/final marker rule applies only to actual physical
+phase/WB14 publication; this separate policy13 custody chain is an explicit
+exception for drain/finalization records, with no change to ordinary INV025.
+
+For policy13, a drain retains every beginning native V2 record marker, LSE V3
+physical transaction marker, V4 exact record marker, and the entire WB14
+continuation (including interval/carry/marker) unchanged. Only actually credited
+liquid, sensible enthalpy high/carry, dependent temperature, and their sealed
+physical owner digests change. The separate typed custody receipt/history
+advances under the actual snow parent transaction/support/ordinal. Its
+parent-open/closed posture is distinct from physical LSE/WB14 chronology.
+A same-endpoint ordinary phase followed by a drain retains the actual physical
+marker already installed by that phase, without advancing it again.
+
+A dirty parent's custody-only finalization closes its tagged custody history
+at the authentic accepted parent endpoint. It preserves native surface and
+LSE physical bytes, exact physical state digest, all markers, and exact high/
+carry; only the exact receipt chain and paired history/publication identities
+advance. No output parcel, mass/energy operand, elapsed physical evaluation or
+WB14 continuation is invented. Entirely untouched parents need no record.
+
+The next actual snow-free physical transaction uses the retained physical
+predecessor (possibly older than the last snow parent) and a strictly later
+real transaction, following existing INV025 and canonical V3 execution joins.
+Its separate physical-history predecessor is the latest authenticated custody
+receipt chain. Missing/foreign policy13, altered physical markers or WB14
+continuations, unclosed dirty parents, duplicate finalization, old parent reuse,
+replayed or omitted donor output, and wrong support chronology reject atomically.
+Partial checkpoint restoration preserves both physical and custody lineages;
+record round trips are not fresh-process workflow evidence.
+
+Required regression vectors include the retained policy12 failure; drain at
+WB14 interval0 with nonzero ice; multiple partial drains and a dry final child;
+exactly unchanged physical bytes/carry at custody finalization; paired history
+restore; next real snow-free phase using the retained predecessor; same-endpoint
+ordinary-final then drain; all marker, parent, output and history poisons above.
+Production/integration/release HOLD remains. [INFERENCE][Static], prospective
+2026-09-10 correction to the isolated companion; model and evidence review must
+accept it before dependent execution.
+
+Durable policy13 boundary guard: committed and pending-complete projections
+require a closed custody history. Only an in-progress projection may retain
+one open dirty parent, whose full parent identity, support bounds, accepted
+cursor, receipt tail and owner set match the enclosing in-progress checkpoint.
+Missing enclosing parent or cursor/owner mismatch rejects before installation;
+restore must never synthesize finalization. This distinction does not weaken
+full semantic replay or the subsequent fresh-process comparison obligation.
+
+Policy13 active-parent mirror clarification: where an actual WB14 parent is
+already staged, native drainage updates that parent's candidate surface-owner
+mirror and its existing liquid-arithmetic candidate to the same accepted native
+liquid state. Persistent beginning owner, parent identity, prepared/accepted
+cursor, all continuation fields and physical transaction markers remain exactly
+unchanged. This is the existing checked custody-only candidate update, not a
+WB14 evaluation, synthetic accepted interval or legacy physical-owner downgrade.
+The native parent validator must verify the updated candidate mirror against
+its native owner before installation. A finalization without liquid leaves the
+entire staged parent unchanged. Missing/stale candidate linkage refuses
+atomically. Required vectors include active-parent drain, unchanged chronology,
+interleaved partial phase/drain, and final phase followed by same-tick drainage.
+
+### Policy13 native custody restart disposition
+
+The isolated B01 continuation may use an explicitly tagged policy13 native
+resident restart disposition instead of an ordinary frozen-litter phase
+checkpoint. A custody successor is neither receipt-free nor a fabricated
+ordinary phase publication. Ordinary V3 scientific-owner and V4 phase-checkpoint
+validators retain their existing physical marker, soil-support and receipt
+requirements unchanged.
+
+The new disposition carries actual native LSE V3 state, native surface V2 owner,
+exact V4 state including every carry, native WB14 working-parent bytes when
+present, paired tagged physical/exact history, and the retained adoption and
+latest physical/custody receipt-chain identities. Authenticated external
+configuration/owner identity must match. Full history replay validates each
+phase or native drain/finalization transition, both projections, exact arithmetic,
+predecessor continuity, and the actual ending owner. The supplied adoption
+anchor is bound to the run's authenticated beginning native owner; a new anchor
+cannot be invented at restore to discard prior accepted custody.
+
+The enclosing existing persisted workflow separately retains actual soil and
+other prognostic owners, clock/support/cursor, accepted donor outputs, pending
+transfers, archive prefix and output continuation. Native resident installation
+must precede its final complete-owner/clock validation. Matching tagged history
+and complete donor vectors authenticate native packets; dirty-parent posture is
+checked against the enclosing committed/pending/in-progress state as specified
+above. Missing, foreign, corrupt or omitted policy/owner/history/packet inputs,
+altered carries/markers, stale adoption, wrong support, replay and duplicate
+transfer refuse before any live owner or output continuation is installed.
+
+Required vectors: authenticated adoption followed by drain; ordinary phase
+followed by drain/finalization; mixed phase/drain suffix; nonzero exact carry;
+wrong latest owner or anchor; omitted/reordered history; duplicate parcel;
+and open dirty history in a closed checkpoint. Fresh-process continuation at
+actually reached resolved, live-bulk and drainage/melt-out states is required
+for workflow qualification. This additive disposition does not make a locally
+restored record into fresh-process evidence or activate production defaults.
+
+Policy14 inherits all policy13 allocation, physical-marker, active-parent,
+exact-carry, tagged-history and native restart obligations above. It adds the
+composite active-covered/native LSE owner defined in
+`SC-LANDSURFACEENERGY-001/terminal-support.md` under "Isolated B01 policy14
+composite LSE custody". Native records/wires explicitly bind policy14. A drain
+retains the active covered component exactly and updates only native litter
+custody; no legacy owner downgrade or substitution of native litter temperature
+for the active snow interface is permitted. Policy13 execution/rejection bytes
+remain historical evidence; this encoding is prospective.
+
+The explicit policy14 full-frame disposition also preserves active Lane-D
+configuration and its accumulated run summary when present. Configuration
+must equal the independently reconstructed run configuration and pass its
+existing domain validator. Preserve all summary fields and diagnostic trace
+posture exactly; do not reset routed/storage/tail quantities on continuation.
+The ordinary V1 restart's unsupported-active-routing refusal remains unchanged.
+Any projection through that older base removes these fields only from a private
+projection copy, carries them explicitly in the sealed native envelope, and
+restores them before full-frame equality and continuation. The actual lane
+water, transfer ledger, downstream operands and shadow projection remain bound
+to their original persisted owners; bootstrap routing is not replayed.
+
+
+<a id="isolated-b01-ordinary-ground-adoption"></a>
+## Isolated B01 ordinary-ground mass and energy adoption
+
+For the owner-authorized policy14 experiment only, INV-SURFACELIQUID-029 is
+extended from ordinary withdrawal custody to complete ordinary ground endpoint
+adoption in a mixed native-litter/ordinary-ground batch. This repairs reached
+omitted condensation and ordinary thermal state, and duplicated retained-ingress
+heat. It is not a new ground process model or permission to change forcing,
+constitutive laws, solver tolerance, capacity, or native litter phase behavior.
+Provenance: existing signed-vapor first law in SC-LANDSURFACEENERGY-001
+water-vapor, existing canonical surface resource arithmetic, and owner
+authorization2026-09-10 sections4/7. Evidence [INFERENCE][Static].
+
+The ordinary handoff contains the actual immutable effective native beginning,
+actual accepted fixed-final ordinary problem/evaluation, complete unified
+request/authorization/finalized-use/condensation-credit protocol, and exact
+transaction, positive child support, OFE/tile/surface, source, configuration,
+owner and predecessor bindings. Each ordinary destination is unique and
+disjoint from native litter phase destinations. No self-sealed foreign
+candidate, stale compatibility mirror or inferred ending inventory is an
+admissible source. Ordinary input mass, high enthalpy and temperature are
+projected from the actual effective native beginning before solving. Existing
+ordinary material, aerodynamic and thermal parameters remain unchanged.
+
+Apply the existing canonical V1 resource validation/arithmetic for ordinary
+withdrawals and condensation on their exact native V2 beginning coordinates.
+Preserve key ordering, 0<=F<=A<=D, tile fraction conversion and typed capacity
+overflow. Native litter vapor rows are already consumed by their phase
+receipts and remain excluded. Condensation credits are applied once even to
+an initially dry bare surface. Selecting soil as the outbound vapor source
+does not discard newly condensed surface water or its thermal capacity.
+Every unmatched surface credit must have an authenticated ordinary endpoint;
+missing, duplicate or foreign credits reject. No synthetic zero request can
+stand in for a missing credit or process state.
+
+The accepted ordinary thermal endpoint and its independently reconstructible
+primitive energy terms are transported into the native LSE/exact companion
+exactly once as specified by the LSE companion amendment. Condensation sensible
+heat is already included in signed vapor energy; mass credit does not add it
+again. Actual capacity overflow exports its mass and liquid enthalpy separately.
+Native litter phase/spill/ice/energy receipts and unaffected ordinary records
+retain their own exact custody. One sealed heterogeneous join and semantic
+replay validates the complete ordinary handoff before one current-ingress/WB14
+call. No wholesale legacy-owner substitution or carry reset is allowed.
+
+Pre-ingress and post-ingress endpoints are distinct typed states. Receiver
+application either starts with the genuine pre-ingress endpoint and credits
+retained receipts once, or consumes an explicitly validated already-credited
+native endpoint without reapplying those receipts. It may not relabel a native
+post-ingress endpoint as pre-ingress. Both paths preserve actual recipient,
+soil/WB14 and complete-owner joins; this is an explicit physical posture, not
+a failure fallback. Published compatibility views must be projections of the
+same accepted physical state and cannot become an additional reservoir.
+
+Required vectors: initially dry condensation, positive beginning water,
+withdrawal and condensation populations, capacity overflow, mixed native and
+ordinary destinations, nonzero exact carry, genuine pre/post ingress joins,
+partial-parent continuation, missing/duplicate/foreign/wrong-support and source
+substitutions, ordinary/native overlap, repeated adoption and full rollback.
+Independent accepted-only per-support and cumulative water/energy inventories
+must include actual owners on both sides; omission is failure, not zero.
+
+Binding: EXP-B01-ORDINARY-GROUND-ADOPTION-20260910 extends INV-SURFACELIQUID-029
+and its LSE-157 companion only in this isolated default-off experiment.
+Typed resource/energy/source/chronology and atomic owner validators enforce it.
+Change log2026-09-10: prospective complete ordinary ground adoption; production,
+integration and release HOLD remains until separately authorized qualification.
+
+The ordinary adoption receipt and its before/after surface, LSE and exact
+companion joins are retained in the paired V3/V4 publication history. Complete
+clock projection and fresh-process restore validate this family at every
+committed, beginning and staged position, including support and full protocol
+identity. Ephemeral telemetry alone is insufficient; no ordinary receipt is
+serialized as a litter phase receipt.
+
+Covered terminal ingress uses a distinct typed covered-canopy-plus-terminal-
+ground posture, carrying actual TerminalReceiver parcels and any routed runon.
+It requires a terminal parcel, retains every kind/source/support/enthalpy, and
+excludes ordinary precipitation already owned by canopy E04. The historical
+covered-runon-only posture continues to reject terminal and raw-rain kinds.
+No terminal parcel is relabeled as runon or canopy melt. Existing canonical
+destination, duplicate, amount and receipt validation remains binding.
+
+
+### Policy14 exact inactive surface at a native day boundary (2026-09-10)
+
+The explicit NativeB01 persisted disposition may retain a never-executed WB14
+continuation (interval zero, no accepted transaction, zero cumulative operands)
+across an actual completed snow-covered day. Its physical cursor is not the
+coupled scheduler cursor. Do not stamp accepted lineage onto that owner or
+invent 48 physical WB14 executions to satisfy ordinary V1 admission.
+
+Before private legacy admission or lineage normalization, validate and retain
+the exact configured surface owner, its actual working-parent component and
+the unique coupled-clock surface view against the authenticated native
+supplement. Withhold that compatibility field only in the private between-days
+admission copy under explicit NativeB01 authority. Restore its exact canonical
+bytes through the native owner hook, then install the authenticated native
+resident and verify complete clock, publication/event history, position-specific
+native history and full-frame equality before returning any usable state.
+Missing surface, native supplement, mismatched clock components, foreign
+configuration or history must fail; withholding is not optional owner admission.
+Ordinary V1 guards remain unchanged. Actual owner mass, energy, carries,
+transaction, physical day/interval, provider position and coupled scheduler
+are preserved exactly. Required tests include the authentic inactive interval-zero
+day-end case, substituted/missing owner and history, exact round-trip bytes and
+fresh-process continuation. This repairs private admission only and grants no
+budget or workflow completion claim. Production/integration/release HOLD remains.
+
+This private between-days withholding rule applies to every authenticated
+NativeB01 surface posture, including active retained continuations; physical
+cursor validity is determined by native history and enclosing clock custody,
+not the compatibility scheduler. It does not extend to ordinary admission.

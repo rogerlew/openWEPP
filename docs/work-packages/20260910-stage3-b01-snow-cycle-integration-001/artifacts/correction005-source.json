@@ -1,0 +1,62 @@
+{
+  "base": "B01-original final016 retained composition",
+  "changes": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+      "sha256": "bb05f9d5a74fc621889304c0dfa33a5d9bcae128897a1c78e72641d5e712dcf6"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs",
+      "sha256": "ffefb5dccb0650beb5dcab2d1ca61f1c52277def45218fc1f099450916099915"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver_test_audit.rs",
+      "sha256": "9c0d96b4efce67e52c12866479c5712a7271f2d3acc65d3aa0868a738da5399b"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/snow_accuracy_policy.rs",
+      "sha256": "8fd91d693428db24ec3d137b0696e3e83eab5be3e9a765efe09b6be77c60a94d"
+    }
+  ],
+  "policy_id": 9,
+  "build_log": "/tmp/openwepp-b01-cycle-20260910/build005.log",
+  "build_note": "release LTO=false; orchestrator and runner opt-level1; explicit fixture and restart features; correctness diagnostic, no matched timing claim",
+  "binary": "/tmp/openwepp-b01-cycle-20260910/correction005-runner",
+  "binary_sha256": "e4068db096e815198c41b208c759272420e474808e13a5d111e3161000484da3",
+  "cargo_artifact": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///tmp/openwepp-b01-cycle-20260910/working/crates/openwepp-runner#0.1.0",
+    "manifest_path": "/tmp/openwepp-b01-cycle-20260910/working/crates/openwepp-runner/Cargo.toml",
+    "target": {
+      "kind": [
+        "lib"
+      ],
+      "crate_types": [
+        "lib"
+      ],
+      "name": "openwepp_runner",
+      "src_path": "/tmp/openwepp-b01-cycle-20260910/working/crates/openwepp-runner/src/lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "1",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": true
+    },
+    "features": [
+      "default",
+      "test-fixture-authority"
+    ],
+    "filenames": [
+      "/tmp/openwepp-b01-cycle-20260910/target-working/release/deps/openwepp_runner-5f2e45c674e868ff"
+    ],
+    "executable": "/tmp/openwepp-b01-cycle-20260910/target-working/release/deps/openwepp_runner-5f2e45c674e868ff",
+    "fresh": false
+  },
+  "timing_qualification": "NONE: opt-level1 correctness run; other test executable still compiling"
+}

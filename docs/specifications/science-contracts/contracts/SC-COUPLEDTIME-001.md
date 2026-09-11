@@ -381,6 +381,18 @@ seals the same terminal roots/counts and qualification fold; only the active
 day and exact next-owner/event/WB14 tail remain resident. The next day is not
 admitted while an archive acknowledgement is pending.
 
+For the isolated B01 policy14 cycle, successful acknowledgement also retires
+the delivered immutable full-day publication capability. Before retirement,
+its day, publication receipt, ordered-support binding and beginning/ending
+owner sets must equal the pending archive evidence. Retire it only in the
+same final atomic commit as receipt-history rotation and prefix advancement,
+after durable exact acknowledgement and every count/root check. Missing,
+foreign or failed acknowledgement retains the complete capability and all
+other state; repeated acknowledgement refuses. This is delivery lifecycle,
+not checkpoint normalization. Unacknowledged capability remains resident and
+cannot be silently omitted from continuation. Already emitted rows and all
+prognostic owners remain unchanged, and the next day publishes exactly once.
+
 Archive acknowledgement is an atomic owner operation. Any write, sync,
 content-digest, manifest-append, publication-rotation, prefix-fold, or final
 owner/count/root failure leaves the full completed day resident and changes no

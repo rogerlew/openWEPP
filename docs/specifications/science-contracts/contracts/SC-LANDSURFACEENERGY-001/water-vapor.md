@@ -225,3 +225,130 @@ phase ownership, or any non-reference temperature.
 | <a id="OBL-LANDSURFACEENERGY-P-004"></a> `OBL-LANDSURFACEENERGY-P-004` | reject all schema-v8 terminal payloads until a reviewed atomic cutover revises both snow and receiving-surface authority. | All LSE producer paths; retain named model/regime and reviewed terminal-cutover limits | v31:L317-L318 | [Guards/errors](#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
 | <a id="OBL-LANDSURFACEENERGY-C-001"></a> `OBL-LANDSURFACEENERGY-C-001` | ET supplies one actual evaporation debit and consumes no second latent debit. | ET consumers of actual evaporation and latent energy | v31:L326-L327 | [Guards/errors](#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
 | <a id="OBL-LANDSURFACEENERGY-C-002"></a> `OBL-LANDSURFACEENERGY-C-002` | infiltration/runoff consumes one water offer, returns sealed partition terms, and remains sole water-partition owner. | Infiltration/runoff consumers of the LSE water offer | v31:L328-L329 | [Guards/errors](#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
+
+
+<a id="isolated-b01-transparent-canopy-liquid"></a>
+## Isolated B01 transparent-canopy liquid energy
+
+The owner-authorized B01 cycle integration experiment may correct the reached
+zero-area canopy liquid-temperature identity under policy14. This is an
+explicit experimental amendment to source-bound liquid release temperature, not a
+new canopy heat-capacity model, freezing model, or production activation.
+Provenance is the first law applied to the existing liquid reference and
+SC-VEGETATION-001 INV-075/114, with the 2026-09-10 owner authorization sections
+4 and7. Evidence class: [INFERENCE][Static]; independent accepted-primitive
+reconstruction of the reached rain transfer motivates implementation, not a
+calibrated parameter or changed forcing.
+
+The admitted transparent column is identified from immutable beginning state
+before iteration: every occupancy has exactly zero LAI, SAI, sun/shade/stem
+component area and beginning canopy liquid. Zero wet fraction alone is not
+sufficient. In this regime interception capacity, canopy storage, radiation,
+sensible exchange and vapor exchange are zero under the existing equations.
+Retain the existing top-to-bottom E04 water splits, including the separate
+stemflow bypass. The column does not exchange heat with the passing water.
+For positive incoming mass, its actual release temperature therefore represents
+
+```text
+M_in = sum(m_p)                    [kg m^-2 tile ground]
+H_in = sum(m_p*h_p)                [J m^-2 tile ground]
+T_release = 273.15 + H_in/(4218*M_in)   [K].
+```
+
+Use actual authenticated precipitation parcels and their retained provider,
+source state, destination, transaction and support, never air or ground
+substitution. Each occupancy receives its actual upstream release mass and
+enthalpy. A wholly transparent column retains the same mixture temperature
+through every rank while stemflow bypasses lower ranks. The sum of terminal
+throughfall/drainage and all stemflow enthalpies must independently equal the
+top incoming enthalpy within the prospectively declared arithmetic allowance.
+Downstream OFE mixing remains a separate conservative transfer and may change
+source-tagged receipt temperatures; those postmix tags are not enthalpy tracers.
+
+For this transfer's binary64 arithmetic, use the prospective forward-error
+allowance `gamma_n*A` in J m^-2 tile ground, `gamma_n=n*u/(1-n*u)`,
+`u=2^-53`, `n=64*(N_parcels+4*N_occupancies+8)`. This conservatively counts
+parcel products/sums, the mixture division/reference addition, unchanged mass
+splits and final enthalpy products/sums. `A` is the sum of absolute incoming
+and outgoing `m*h` products plus `4218*sum(m*(abs(T)+273.15))` over those same
+inputs/outputs, explicitly retaining subtraction/reference-rounding scale.
+Add only the separately authorized one-upward-ULP reference publication term
+`4218*M*ulp(273.15)` when that exact existing rule actually applies. This is
+an accounting allowance, not the nonlinear temperature tolerance; any missing
+source or larger discrepancy remains failed evidence. Report individual
+supports before cumulative sums. Compute the mixture once from the complete
+top parcel set, then retain unchanged specific enthalpy along each transparent
+rank's linear mass splits; `N_parcels` counts every top product/sum entry once
+and `4*N_occupancies` bounds the four release branches per rank. An
+implementation that instead re-sums tagged parcel lists at each rank must count
+all those entries explicitly. Integer counts and all allowance operands must
+be finite/checked, with `n*u<1`. This relative-error model admits only normal
+nonzero evaluated masses, products, sums and divisions; exact mathematical
+zero remains allowed. A subnormal or underflowed nonzero calculation, or
+arithmetic overflow, yields typed arithmetic-domain refusal in this isolated
+identity/closure path. It is never normalized to zero or charged an invented
+underflow reservoir. The separately authorized ULP term applies only to the
+actual mass whose release temperature undergoes that exact named adjustment.
+
+When incoming mass and beginning canopy liquid are both exactly absent, keep
+the existing inactive coordinate anchor. Zero mass carries no temperature or
+energy. A positive-mass missing/foreign/corrupt thermal source rejects before
+iteration. No guessed temperature, zero-filled heat, extra residual reservoir,
+postsolve clipping or dropped parcel is permitted. The downstream liquid
+material domain remains 200..350 K. Authenticated passage may carry signed
+liquid sensible enthalpy below the reference temperature; it does not freeze,
+warm, clip or repartition the already supplied liquid phase. The existing
+one-upward-ULP publication rule remains exact and separate from the raw
+source-mixture temperature, with its mass-specific allowance as above.
+
+This paragraph prospectively supersedes the earlier transparent numerical
+anchor amendment. The zero-area numerical wet coordinate retains its canonical
+inactive target `max(T_canopy,273.15 K)` in the residual and both ordinary/native
+Jacobians. Existing liquid-vapor trial domains remain unchanged. This numerical
+coordinate carries no component energy and does not set the passage temperature.
+Publish its numerical component value into occupancy state and the next warm
+start; retain the distinct source-bound release temperature in the E04 ledger.
+For this passage only, that ledger temperature need not equal the numerical wet
+coordinate, and its below-reference value does not invoke canopy freezing.
+Ordinary/nontransparent below-freezing refusal and release-coordinate equality
+remain unchanged. Interception capacity/intercepted water, beginning/ending
+canopy stores, vapor exchange and both drainage terms must be exactly zero.
+
+The private typed boundary retains complete validated forcing and destination,
+transaction/support/configuration joins. Each positive-input transparent ledger
+must carry explicit typed source proof bound to that immutable boundary and its
+actual occupancy/rank. Required proof presence is rederived even for warm liquid;
+omission cannot downgrade to ordinary admission. Dry columns carry no mixture
+proof. The proof describes top input M/H/raw mixture T; each rank's actual mass
+must independently match predecessor throughfall after unchanged stemflow splits.
+Potential and fixed-final projection validate this same source context and their
+respective pass. A global policy flag, zero ending store or self-sealed proof is
+insufficient. Persisted replay rebinds proof to original beginning eligibility,
+forcing/configuration/support and preserves both temperature roles exactly.
+No nonlinear tolerance, component closure or custody guard is loosened.
+
+Required checks are zero-area rain with a temperature distinct from canopy
+and ground, unequal-temperature positive parcel mixing, two occupancy ranks
+with nonzero stemflow, no-rain absence, positive beginning-store/area exclusion,
+missing/foreign/source/support/enthalpy/rank proof poisons, ordinary cold refusal,
+numerical-anchor/Jacobian parity, warm/cold and mixed-temperature passage,
+authentic rain-plus-snow provider reconstruction, two-support cold continuation
+and restored second-support parity for both temperature roles,
+actual accepted pre-mix donor and postmix recipient closure, and repeated
+workflow/rollback/restart evidence. Acceptance observations must continue to
+report canopy area and liquid inventory on every admitted support; a reached
+nontransparent canopy is outside this limited repair and must receive its own
+energy assessment before whole-cycle closure is claimed. Production,
+integration and release remain HOLD.
+
+Binding exposure: EXP-B01-TRANSPARENT-CANOPY-LIQUID-20260910, active only in the
+isolated authorized experiment; maps to existing INV-LANDSURFACEENERGY-105/107
+liquid custody and SC-VEGETATION-001 INV-075/114. Typed LSE domain, identity,
+component-closure and complete-owner rollback guards enforce this amendment.
+Change log: 2026-09-10, prospective experimental transparent-column liquid
+enthalpy identity; no new material constant or active-canopy process.
+
+Change log: 2026-09-10, supersede transparent wet-coordinate/source-temperature
+identity with independently source-bound passage and unchanged numerical anchor.
+Actual090 cold provider reconstruction establishes residual mixed-phase liquid;
+this exception adds no canopy freezing or phase-repartition process.

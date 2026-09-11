@@ -1,0 +1,722 @@
+[
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                0,
+            ),
+            end_ns: ModelTimeNs(
+                420000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -6.807769273900549,
+        ),
+        maximum_composed_value: Some(
+            -6.505687104990148,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000068077692739,
+        ),
+        maximum_scaled_error: 30.20801124186932,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.support_start_ns",
+                "0",
+                "180000000000",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                0,
+            ),
+            end_ns: ModelTimeNs(
+                180000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -7.076363038598209,
+        ),
+        maximum_composed_value: Some(
+            -6.9575138112234765,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000070763630386,
+        ),
+        maximum_scaled_error: 11.884838636040392,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.coefficient_hex",
+                "0",
+                "1",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                60000000000,
+            ),
+            end_ns: ModelTimeNs(
+                180000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -6.9575138112234765,
+        ),
+        maximum_composed_value: Some(
+            -6.886259310559962,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000069575138113,
+        ),
+        maximum_scaled_error: 7.125400491279151,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.exponent2",
+                "-41",
+                "-40",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                180000000000,
+            ),
+            end_ns: ModelTimeNs(
+                300000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -6.521991827705385,
+        ),
+        maximum_composed_value: Some(
+            -6.464895830401536,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000065219918277,
+        ),
+        maximum_scaled_error: 5.709562492664957,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.coefficient_hex",
+                "0",
+                "1",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                240000000000,
+            ),
+            end_ns: ModelTimeNs(
+                360000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -6.358240473964696,
+        ),
+        maximum_composed_value: Some(
+            -6.307540279077324,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000063582404739,
+        ),
+        maximum_scaled_error: 5.069987252539048,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.exponent2",
+                "-39",
+                "-41",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                360000000000,
+            ),
+            end_ns: ModelTimeNs(
+                480000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -6.113786528377321,
+        ),
+        maximum_composed_value: Some(
+            -6.073500803047049,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000061137865284,
+        ),
+        maximum_scaled_error: 4.028547903345229,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.support_start_ns",
+                "360000000000",
+                "420000000000",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                420000000000,
+            ),
+            end_ns: ModelTimeNs(
+                540000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -6.024432816410864,
+        ),
+        maximum_composed_value: Some(
+            -5.988242625528355,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000060244328163,
+        ),
+        maximum_scaled_error: 3.6189972858449186,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.support_start_ns",
+                "420000000000",
+                "480000000000",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                480000000000,
+            ),
+            end_ns: ModelTimeNs(
+                600000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.952178952983958,
+        ),
+        maximum_composed_value: Some(
+            -5.919440895690349,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.01000005952178953,
+        ),
+        maximum_scaled_error: 3.2737862431993388,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.coefficient_hex",
+                "3",
+                "1",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                540000000000,
+            ),
+            end_ns: ModelTimeNs(
+                660000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.894078273707716,
+        ),
+        maximum_composed_value: Some(
+            -5.864231338076928,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000058940782737,
+        ),
+        maximum_scaled_error: 2.9846759711650037,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.sign",
+                "1",
+                "-1",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                600000000000,
+            ),
+            end_ns: ModelTimeNs(
+                720000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.847651534780529,
+        ),
+        maximum_composed_value: Some(
+            -5.820214347457801,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000058476515347,
+        ),
+        maximum_scaled_error: 2.743702688055558,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.coefficient_hex",
+                "5",
+                "0",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                660000000000,
+            ),
+            end_ns: ModelTimeNs(
+                780000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.810827322783432,
+        ),
+        maximum_composed_value: Some(
+            -5.785391672650874,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000058108273228,
+        ),
+        maximum_scaled_error: 2.5435502331245528,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.coefficient_hex",
+                "3",
+                "7",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                720000000000,
+            ),
+            end_ns: ModelTimeNs(
+                840000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.781884324471236,
+        ),
+        maximum_composed_value: Some(
+            -5.758107087736109,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000057818843245,
+        ),
+        maximum_scaled_error: 2.3777099258689955,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.exponent2",
+                "-39",
+                "-41",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                780000000000,
+            ),
+            end_ns: ModelTimeNs(
+                900000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.759398210994339,
+        ),
+        maximum_composed_value: Some(
+            -5.736992916052934,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.01000005759398211,
+        ),
+        maximum_scaled_error: 2.240516590113312,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.coefficient_hex",
+                "7",
+                "5",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                840000000000,
+            ),
+            end_ns: ModelTimeNs(
+                960000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.742194334899189,
+        ),
+        maximum_composed_value: Some(
+            -5.720923057763381,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.01000005742194335,
+        ),
+        maximum_scaled_error: 2.1271154992702423,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.sign",
+                "1",
+                "-1",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                900000000000,
+            ),
+            end_ns: ModelTimeNs(
+                1020000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.7293065270414045,
+        ),
+        maximum_composed_value: Some(
+            -5.708972471058777,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000057293065271,
+        ),
+        maximum_scaled_error: 2.0333939483255294,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.coefficient_hex",
+                "7",
+                "1",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                960000000000,
+            ),
+            end_ns: ModelTimeNs(
+                1080000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.719941769485336,
+        ),
+        maximum_composed_value: Some(
+            -5.70038267874178,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000057199417696,
+        ),
+        maximum_scaled_error: 1.9558978867335692,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.sign",
+                "1",
+                "-1",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                1020000000000,
+            ),
+            end_ns: ModelTimeNs(
+                1140000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.713450256963895,
+        ),
+        maximum_composed_value: Some(
+            -5.694532692557494,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.01000005713450257,
+        ),
+        maximum_scaled_error: 1.8917456322456,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.exponent2",
+                "-40",
+                "-41",
+            ),
+        ),
+    },
+    AdaptiveComparisonAuditV1 {
+        support: TimeSupport {
+            start_ns: ModelTimeNs(
+                1080000000000,
+            ),
+            end_ns: ModelTimeNs(
+                1200000000000,
+            ),
+        },
+        maximum_owner_id: Some(
+            "snow",
+        ),
+        maximum_path: Some(
+            "lanes[0][1].layers[0].temperature_c",
+        ),
+        maximum_tolerance_authority: Some(
+            "SC-SNOWENERGY-001@25:TOL-SNOWENERGY-004-adaptive-temperature:TemperatureKOrC",
+        ),
+        maximum_direct_value: Some(
+            -5.70930024661915,
+        ),
+        maximum_composed_value: Some(
+            -5.690914687864397,
+        ),
+        maximum_tolerance_denominator: Some(
+            0.010000057093002467,
+        ),
+        maximum_scaled_error: 1.8385453786677168,
+        first_discrete_surface_kind: Some(
+            "Identity",
+        ),
+        first_discrete_surface_delta: Some(
+            (
+                "soil_thermal",
+                "owner.state.ofes[0].ordered_layers[0].enthalpy_carry.coefficient_hex",
+                "5",
+                "3",
+            ),
+        ),
+    },
+]

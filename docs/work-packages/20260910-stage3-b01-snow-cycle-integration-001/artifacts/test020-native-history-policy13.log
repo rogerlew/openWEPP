@@ -1,0 +1,17 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working020/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 00s
+────────────
+ Nextest run ID 4d11e9bb-042a-41c3-aad9-2370c5b39cf1 with nextest profile: default
+    Starting 5 tests across 1 binary (1431 tests skipped)
+        PASS [   0.042s] (1/5) openwepp-hillslope-orchestrator land_surface_energy_shadow::v3_tests::native_snow_liquid_candidate_rejects_unrepresentable_temperature_before_install
+        PASS [   0.102s] (2/5) openwepp-hillslope-orchestrator land_surface_energy_shadow::v3_tests::native_snow_liquid_candidate_preserves_ice_and_reprojects_zero_heat_credit
+        PASS [   0.164s] (3/5) openwepp-hillslope-orchestrator land_surface_energy_shadow::v3_tests::native_snow_liquid_publication_authenticates_replay_and_rejects_substitution
+        PASS [   0.707s] (4/5) openwepp-hillslope-orchestrator v9_real_consumer_shadow::v3_publication_retention_tests::native_drain_histories_retain_partial_state_finalize_dry_tail_and_reject_replay
+        PASS [   1.797s] (5/5) openwepp-hillslope-orchestrator v9_real_consumer_shadow::v3_publication_retention_tests::install_frozen_litter_v3_resident_moves_validated_history_without_roundtrip
+────────────
+     Summary [   1.799s] 5 tests run: 5 passed, 1431 skipped

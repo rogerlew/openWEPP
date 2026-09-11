@@ -1,0 +1,66 @@
+{
+  "archive": "source-steps116-119-soil012-013.tar.gz",
+  "sha256": "20e5de4e1e10f04dd5a6b8d2ac87286cb5e2ab5e697e22d3b612788237588638",
+  "files": [
+    {
+      "path": "working116.patch",
+      "bytes": 1893,
+      "sha256": "91e22aa3db322ac5fc519cf53b6606803572d1ec7d14ee144573150e87463aba"
+    },
+    {
+      "path": "working116-source.json",
+      "bytes": 130892,
+      "sha256": "fe77dad978124f179e9c5a28300277bbc96a2e63e231dbf2bb0bf19824c618de"
+    },
+    {
+      "path": "working117.patch",
+      "bytes": 3213,
+      "sha256": "17a3b3b25b16add37c772b686e33ba3d82a62ba0b93ef1cd47f976cfc5b4e436"
+    },
+    {
+      "path": "working117-source.json",
+      "bytes": 130906,
+      "sha256": "6aeed39af7ee17503352e09d9432177534fc4e24913fbd7229c55d0fada651bf"
+    },
+    {
+      "path": "working118.patch",
+      "bytes": 3136,
+      "sha256": "98bc0144ad33c503177d2b9668da0dc377cb432e2b1ff3af70a8140df82a0ab4"
+    },
+    {
+      "path": "working118-source.json",
+      "bytes": 130906,
+      "sha256": "9d302a0cc53e3335010763726f10fc6f36f6bd9119266334d7caa143b8b1b3e9"
+    },
+    {
+      "path": "working119.patch",
+      "bytes": 3033,
+      "sha256": "9052c8928ca86f40f10e71126a3658698510c8da66cadf6791bfc76c49c920c4"
+    },
+    {
+      "path": "working119-source.json",
+      "bytes": 130881,
+      "sha256": "0485965c390557025133481ac4457b0320d93db67053e22bbd21c4412e8a3f66"
+    },
+    {
+      "path": "soil012.patch",
+      "bytes": 3836,
+      "sha256": "754cffbc9cd4201e78b7084cd97d2527701d9d7b1a540ae26fcc734069b97ac2"
+    },
+    {
+      "path": "soil012-source.json",
+      "bytes": 131052,
+      "sha256": "bbee7009035787031c2e503ed337c35098c07ca21e6784cfd6ec69275c4bd733"
+    },
+    {
+      "path": "soil013.patch",
+      "bytes": 2721,
+      "sha256": "68cb3ab0ea6a234520cb850d924d283bd45dd1b9a487af05e629c12eba303028"
+    },
+    {
+      "path": "soil013-source.json",
+      "bytes": 131064,
+      "sha256": "fc763bf40c664e8f564de7f291cfa887c579716ad3b137db9c14ba3c0dd85c26"
+    }
+  ]
+}

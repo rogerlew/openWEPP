@@ -1,0 +1,27 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
+@@ -1977,6 +1977,24 @@
+         assert!(restored.restart_authority_install_clock_runtime_mode(&serde_json::to_vec(&wire).unwrap()).is_err());
+         assert_eq!(restored, original);
+     }
++    // These inputs first pass the strict canonical parser: refusal must come
++    // from historical-mode or actual active-owner admission, not JSON ordering.
++    let mut historical = Policy14LseOwnerTransport::from_canonical_bytes(&expected).unwrap();
++    historical.runtime_authority = Policy14RuntimeAuthority::HistoricalV8;
++    let historical = historical.canonical_bytes().unwrap();
++    assert!(Policy14LseOwnerTransport::from_canonical_bytes(&historical).is_ok());
++    assert!(restored.restart_authority_install_clock_runtime_mode(&historical).is_err());
++    assert_eq!(restored, original);
++    let genuine = Policy14LseOwnerTransport::from_canonical_bytes(&expected).unwrap();
++    let mut other_active = original.inner.lse_state.clone();
++    other_active.tiles[0].surface_enthalpy_j_m2_tile_ground += 1.0;
++    other_active.state_sha256 = other_active.canonical_sha256().unwrap();
++    let foreign_active = Policy14LseOwnerTransport::new(genuine.runtime_authority,
++        serde_json::to_vec(&other_active).unwrap(), genuine.native_litter_lse_v3,
++        genuine.native_exact_surface_enthalpy_v4).unwrap().canonical_bytes().unwrap();
++    assert!(Policy14LseOwnerTransport::from_canonical_bytes(&foreign_active).is_ok());
++    assert!(restored.restart_authority_install_clock_runtime_mode(&foreign_active).is_err());
++    assert_eq!(restored, original);
+     let mut mode_swap = Policy14LseOwnerTransport::from_canonical_bytes(&expected).unwrap();
+     mode_swap.runtime_authority = Policy14RuntimeAuthority::V10NonpositiveAssimilation;
+     let foreign = mode_swap.canonical_bytes().unwrap();

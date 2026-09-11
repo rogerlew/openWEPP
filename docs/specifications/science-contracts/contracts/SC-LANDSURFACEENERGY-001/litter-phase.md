@@ -431,3 +431,89 @@ complete rollback.
 |---|---|---|---|---|---|
 | <a id="OBL-LANDSURFACEENERGY-C-011"></a> `OBL-LANDSURFACEENERGY-C-011` | prove the post-phase raw litter liquid and sensible enthalpy split into one within-capacity retained state and one typed spill, with exact phase-receipt/transaction/support/key custody, one negative exact-surface operand, one current-ingress/WB14 handoff, independent tile/OFE mass and enthalpy reconstruction, no re-solve, and complete rollback. | V3 litter post-phase capacity-spill consumers | v31:L350-L354 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#spill); named fixtures/tests/real consumers |
 | <a id="OBL-LANDSURFACEENERGY-C-012"></a> `OBL-LANDSURFACEENERGY-C-012` | prove a heterogeneous V3 batch classifies and consumes every finalized surface row exactly once: accepted native litter vapor rows only through their phase receipts and all remaining authenticated ordinary rows through one canonical debit of the phase-adjusted V2 owner before one ingress. Prove no phase/spill/ice/enthalpy replacement or energy replay, exact transaction/support/key/cardinality joins, and full rollback. | Heterogeneous finalized native/ordinary resource join consumers | v31:L355-L360 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#resource-join); named fixtures/tests/real consumers |
+
+## Isolated B01 open-litter integration (2026-09-10)
+
+For `20260910-stage3-b01-snow-cycle-integration-001` only, a legitimate inactive
+canopy forest-litter tile uses the native open reference-air equation set with
+V3 phase-free litter vapor and storage. No synthetic vegetation occupancy or
+empty covered column substitutes for the open geometry. The unknowns are surface
+and configured soil temperatures; open radiation, neutral heat/vapor resistance,
+reference-air humidity/density, and soil Crank–Nicolson equations remain unchanged.
+The two canonical phase vapor equations above use the actual open neutral vapor
+resistance and reference-air recipient. Each positive phase request is bounded
+by its named immutable beginning pool and fixed phase authorization; negative
+transport remains exact. Post-vapor liquid/ice capacities enter sensible storage.
+
+Potential and fixed-final executions use the same native open V3 residual.
+The unchanged normalized solver's Jacobian probes freeze each phase's own
+raw-law or cap branch, choosing the cap side at a tie. Private probe arithmetic
+creates no accepted vapor receipt, phase operation, owner, or publication.
+Natural base, line-search, and final evaluations retain strict raw/request/
+availability validation. The accepted fixed-final operands alone enter the
+existing one-time phase/ingress/liquid-only-WB14 coordinator, exact surface and
+soil custody, and atomic finalization. Opposite-sign phase fluxes cannot be
+collapsed before request, authorization, material or energy accounting.
+
+The isolated profile retains the60-second support floor and tests exact-floor,
+ordinary and below-floor behavior before integration claims. It adds no smaller
+support, new phase law, canopy equation, water source or tolerance. The existing
+canonical raw law scales only emitting saturation humidity by interception;
+recipient humidity is not scaled. Correcting the contrary historical code is
+part of this identified experiment and may change accepted physical trajectories.
+Production/integration/release qualification remains HOLD.
+
+
+<a id="isolated-b01-ordinary-ground-adoption"></a>
+## Isolated policy14 ordinary ground energy companion
+
+The isolated B01 ordinary-ground adoption in
+SC-SURFACELIQUID-001#isolated-b01-ordinary-ground-adoption extends LSE-157's
+ordinary-debit-only assumption. Actual ordinary fixed-final energy must reach
+the mixed native owner; an accepted evaluator followed by unchanged native
+ordinary U is not an accepted thermal update. Existing phase, vapor, radiation,
+soil conduction, material constants and numerical acceptance remain binding.
+
+For each admitted nonlitter ordinary surface, reconstruct the pre-ingress
+energy increment from its actual accepted primitive operands:
+
+```text
+DeltaU_pre = dt*(R_sw + R_lw - H_s - Q_v - G_s1)
+Q_v = v_s*(4218*(T_s-273.15) + L_v(T_s)).
+```
+
+Use the actual ordinary starting high plus exact carry, the existing exact
+dyadic accumulation and projection rules, and a distinctly tagged ordinary
+fixed-final primitive receipt. Candidate Uend-Ubegin is a comparison operand,
+not the exact-energy oracle. No litter phase receipt, fusion term or phase
+solver call is fabricated for ordinary ground. The full actual source problem,
+accepted endpoint and support/owner identity bind the new receipt; duplicate,
+foreign, wrong-support or native-overlapping receipts reject.
+
+The selected endpoint's U and post-vapor mass must satisfy the existing thermal
+capacity relation; initially dry condensation contributes its surface mass.
+Signed Q_v already carries sensible and latent condensation heat. Do not add
+another credit-times-specific-enthalpy term. Deduct actual capacity-overflow
+enthalpy exactly once, then add actual retained current-ingress energy exactly
+once. Native litter exact updates retain their existing phase/spill operands.
+Retain each nonzero incoming exact carry through the ordinary primitive update;
+no mirror adoption may reset it or infer a new carry to conceal a residual.
+
+Ordinary nonlinear consistency remains distinct from transfer accounting.
+Compare the accepted ordinary high/temperature to exact physical projection
+under the existing declared projection rules; do not loosen accounting bounds
+to absorb a missing flux or wrong starting owner. If those rules expose a
+separate numerical inconsistency, diagnose and review that obligation before
+changing it. Actual before/after inventories and independent primitive sums
+remain mandatory per support and cumulatively, with correct areas.
+
+Required vectors and rollback are those of the surface companion, plus signed
+condensation sensible heat counted once, exact-carry preservation, a clean
+no-ingress ordinary thermal change, and partial-parent retained-ingress heat
+counted once across both native and compatibility projections. Provenance is
+the existing water-vapor first law, exact energy arithmetic and owner2026-09-10
+authorization sections4/7. Binding EXP-B01-ORDINARY-GROUND-ADOPTION-20260910
+extends INV-LANDSURFACEENERGY-157 in the isolated policy14 experiment only.
+Evidence [INFERENCE][Static]; change log2026-09-10. Production/integration/release
+HOLD remains. No physical-fidelity or complete-cycle claim follows from this
+prospective authority.

@@ -1,0 +1,6 @@
+
+running 1 test
+test snow_accuracy_observer::b01_cycle_observer_captures_joined_workers ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1429 filtered out; finished in 0.00s
+

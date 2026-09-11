@@ -1,0 +1,576 @@
+{
+  "archive": "raw-correction052-and-restart049.tar.gz",
+  "sha256": "175b194fa6941b064653b4af449e69a38195e9faeccb1d97a3834a8901ea9b46",
+  "files": [
+    {
+      "path": "correction052-gradual/comparisons.txt",
+      "sha256": "40134a815291d8a097636679e5e569b6f8434c3e45525ef7ed1a9267eba637e4",
+      "bytes": 5412593
+    },
+    {
+      "path": "correction052-gradual/configuration.json",
+      "sha256": "b9b86193ee61350fc21ea687161e1a2048f9ab6abc22d0f77b1e51d57c2fa91a",
+      "bytes": 9519
+    },
+    {
+      "path": "correction052-gradual/fixture-path.txt",
+      "sha256": "e4bb2be2c873cda05416c9129c982b5e32dd7baee13e11fd5fcd448e1f3a56b8",
+      "bytes": 49
+    },
+    {
+      "path": "correction052-gradual/inputs.json",
+      "sha256": "85b9f1b7fb6b5b9df12fbc25406751418f464d202dc3a55498d56ccbfb1ec82a",
+      "bytes": 1272
+    },
+    {
+      "path": "correction052-gradual/observations.json",
+      "sha256": "3080a6273ecdbb1b1e56b0caa8b2e016be8ad15c8a41079edd780221de94283f",
+      "bytes": 926178141
+    },
+    {
+      "path": "correction052-gradual/receipt.json",
+      "sha256": "378196bf1a32e71ba700faf9809e244836bb459b5f4b7ac2463d808f2a1efac2",
+      "bytes": 2747
+    },
+    {
+      "path": "correction052-gradual/run.json",
+      "sha256": "7ba52353781c1de9dc30b2287c82f543c55e3089e8a9cb503db6413b6dd15671",
+      "bytes": 27495
+    },
+    {
+      "path": "correction052-gradual/started.json",
+      "sha256": "960d8472c8da84cf49fcf052051e16e39e03d8d0706bbbee0831a51f0fb05bed",
+      "bytes": 1341
+    },
+    {
+      "path": "correction052-gradual/stderr.log",
+      "sha256": "fb6588c5f89a1bc7454a64d7635bd10ad8b0941dd92d4666e201f112db62e428",
+      "bytes": 508
+    },
+    {
+      "path": "correction052-gradual/stdout.log",
+      "sha256": "5880076a9f5dc54b765a8f8240917ec3696db707c19118019745cc23107af9d1",
+      "bytes": 19937
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/README.md",
+      "sha256": "8a4e18ec84a0e88bd21a627929cfff42cf997c1ce77f459099830631acfb96bc",
+      "bytes": 1250
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/case.man.yaml",
+      "sha256": "661f8e1576b2dffe0909283677242893298d58ebcf02aa18abe4282b5b1be7ad",
+      "bytes": 2715
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/case.run",
+      "sha256": "5f4b7f0f74efeac97b917cfe5ee8d5aa3b2a08ca9fe1e109dd01f7ac046da23a",
+      "bytes": 532
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/case.run.snow_stage3_v11_owner_seed.json",
+      "sha256": "fd1814f8e0fef3f4c083704c79c417fa91b7dc9926a8679c501a3aa07701b71a",
+      "bytes": 36209
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/frost.txt",
+      "sha256": "b6f81ef2040b029e361b63be4bd9591dbc3a151b9ecae927805152e365521e53",
+      "bytes": 43
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/p102.cli",
+      "sha256": "7cf8eee581b5c8c195098998857ced41d8335153514bf4e1a6c7c9504be452ed",
+      "bytes": 659
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/p102.man",
+      "sha256": "6abc78f34c8900fd11d243ef5916b9acf89fa25fd087bddc64d9c02b7517ce5f",
+      "bytes": 3467
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/p102.run",
+      "sha256": "1cabf3319ccf83baaf00d4c94c6de6804a09918307f162275b58fc6ea64b577f",
+      "bytes": 343
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/p102.slp",
+      "sha256": "be38e0a111db3708ca73bf9d207fd799ddd3c67bff4fecaabbfbab3956d12d74",
+      "bytes": 75
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/p102.sol",
+      "sha256": "e0a86be22d7c819ac963620648b844ed18d1ac78ee867ea34587dad7ef225dca",
+      "bytes": 1136
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/pmetpara.txt",
+      "sha256": "7f67616e491e293a41ef3a79940108cf5de5cb0b780ab9728234ee1eb2aaf9b2",
+      "bytes": 2690
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/snow.txt",
+      "sha256": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba",
+      "bytes": 87
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078844381184067/wepp_ui.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "correction052-continuity/comparisons.txt",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2
+    },
+    {
+      "path": "correction052-continuity/configuration.json",
+      "sha256": "b9b86193ee61350fc21ea687161e1a2048f9ab6abc22d0f77b1e51d57c2fa91a",
+      "bytes": 9519
+    },
+    {
+      "path": "correction052-continuity/fixture-path.txt",
+      "sha256": "97cd722938752b732d6e82fbaaeda1cbd7cc34cfd2bb0c3865a0d60d2287e6bb",
+      "bytes": 49
+    },
+    {
+      "path": "correction052-continuity/inputs.json",
+      "sha256": "3d702dce6aea4178fa06394936e8352a44e5bfda5fa1e41fcd9e109df94bfd1b",
+      "bytes": 1239
+    },
+    {
+      "path": "correction052-continuity/observations.json",
+      "sha256": "86d7cc8b7ea61e30e9f652950225c77a203d3b41f27713de1c99a56581eda3ea",
+      "bytes": 6995173
+    },
+    {
+      "path": "correction052-continuity/outputs.json",
+      "sha256": "14742895cb7b6e84dc8a75d295af9b9e7b6800a3bf0424997ad8903424b5a67e",
+      "bytes": 12187
+    },
+    {
+      "path": "correction052-continuity/receipt.json",
+      "sha256": "7a8231a9900be52aa892d1c57748635c1c718959231a4656430b7e21ddef70f3",
+      "bytes": 2868
+    },
+    {
+      "path": "correction052-continuity/run.json",
+      "sha256": "6d7ff64e6c7b31f9384e5daf6c265f4536eff6d373e80f2ba279d455d8c3c4e3",
+      "bytes": 12545
+    },
+    {
+      "path": "correction052-continuity/started.json",
+      "sha256": "2d1c133b823420fb3dad370d78e00df47756d406e86937e916ee565efed4e19c",
+      "bytes": 1353
+    },
+    {
+      "path": "correction052-continuity/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "correction052-continuity/stdout.log",
+      "sha256": "ff82eb14e5bb9def944ad226fc34fed1f880fdcb33fe00f401463c7ed46a0d8c",
+      "bytes": 9062
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/README.md",
+      "sha256": "8a4e18ec84a0e88bd21a627929cfff42cf997c1ce77f459099830631acfb96bc",
+      "bytes": 1250
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/case.man.yaml",
+      "sha256": "661f8e1576b2dffe0909283677242893298d58ebcf02aa18abe4282b5b1be7ad",
+      "bytes": 2715
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/case.run",
+      "sha256": "5f4b7f0f74efeac97b917cfe5ee8d5aa3b2a08ca9fe1e109dd01f7ac046da23a",
+      "bytes": 532
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/case.run.snow_stage3_v11_owner_seed.json",
+      "sha256": "c287477eec29e74fa2102844e473ee8a225e30606697677219cfb5720e0d2dcc",
+      "bytes": 36209
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/frost.txt",
+      "sha256": "b6f81ef2040b029e361b63be4bd9591dbc3a151b9ecae927805152e365521e53",
+      "bytes": 43
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/output/H83.hbp",
+      "sha256": "32ed01b9b04dd79270332685c936cc41620c91950239bf96e92b126b4da8626a",
+      "bytes": 2142
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/output/H83.loss.json",
+      "sha256": "a73cd3adcecfcc992554916fb0d302cbe6162bcd99c4c50e423c0891f6bfffec",
+      "bytes": 353
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/output/H83.pass.parquet",
+      "sha256": "bc17f64400540ac0930c77a8d754f845747368d9494b2c313485a17ac001e8df",
+      "bytes": 7064
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/output/H83.plot.parquet",
+      "sha256": "20268795915e5e353bebade735688e95cb729eb4091c46c8ea7786e1ef49e26e",
+      "bytes": 202
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/output/H83.wat-subhourly.parquet",
+      "sha256": "6dcd11083d883ab5b774e4ce7576fd977fa7135b52434a6aab41a8fe8a619527",
+      "bytes": 13628
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/output/H83.wat.parquet",
+      "sha256": "4682f4da0b5a0b95c3f7bb87d6ceb0f016e550e285cee39193e393c82bcc0e92",
+      "bytes": 16032
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/output/openwepp_hillslope_run_manifest.json",
+      "sha256": "4bf9ba9019013af82e403d857aa4bca8a765d687e1353c5ef50879be4276cf5e",
+      "bytes": 13179
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/output/openwepp_hillslope_run_manifest.json.stage3-v11-evidence-v1.bin",
+      "sha256": "ae8e1e498b5068de452371f0f03d9b4382c5834e1e791968ea158632336a5b18",
+      "bytes": 751437
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/p102.cli",
+      "sha256": "c7a19c0d996dc169244179d5658204fa400963e8f65770b96ad8f1c5f75b5dab",
+      "bytes": 484
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/p102.man",
+      "sha256": "6abc78f34c8900fd11d243ef5916b9acf89fa25fd087bddc64d9c02b7517ce5f",
+      "bytes": 3467
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/p102.run",
+      "sha256": "1cabf3319ccf83baaf00d4c94c6de6804a09918307f162275b58fc6ea64b577f",
+      "bytes": 343
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/p102.slp",
+      "sha256": "be38e0a111db3708ca73bf9d207fd799ddd3c67bff4fecaabbfbab3956d12d74",
+      "bytes": 75
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/p102.sol",
+      "sha256": "e0a86be22d7c819ac963620648b844ed18d1ac78ee867ea34587dad7ef225dca",
+      "bytes": 1136
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/pmetpara.txt",
+      "sha256": "7f67616e491e293a41ef3a79940108cf5de5cb0b780ab9728234ee1eb2aaf9b2",
+      "bytes": 2690
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/snow.txt",
+      "sha256": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba",
+      "bytes": 87
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789078832430481954/wepp_ui.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "correction052-energy01/diagnostic.json",
+      "sha256": "9ebc1f227a9f295b39b281ff4f46c366bd4da09e75e47b6c6fe2dc35aeea6a98",
+      "bytes": 2706
+    },
+    {
+      "path": "energy052.log",
+      "sha256": "9ebc1f227a9f295b39b281ff4f46c366bd4da09e75e47b6c6fe2dc35aeea6a98",
+      "bytes": 2706
+    },
+    {
+      "path": "evidence-review052-trajectory.json",
+      "sha256": "19f522f341d5e460b6f2a23cda3240909352bf90b08ecebb02862f91cdfcbd5a",
+      "bytes": 339353
+    },
+    {
+      "path": "evidence-review052-trajectory.py",
+      "sha256": "0a6c9ac9dc3d532057019ff9b5f512a62b941ddad69bb07df972a67be57c5620",
+      "bytes": 7081
+    },
+    {
+      "path": "evidence-review052-trajectory.log",
+      "sha256": "5d88495fbacfaa4c58a31f98a67fc2d6bc0e2a3ae8e8679c545e480dd78428f9",
+      "bytes": 3553
+    },
+    {
+      "path": "correction049-checkpoint-smoke/comparisons.txt",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2
+    },
+    {
+      "path": "correction049-checkpoint-smoke/configuration.json",
+      "sha256": "b9b86193ee61350fc21ea687161e1a2048f9ab6abc22d0f77b1e51d57c2fa91a",
+      "bytes": 9519
+    },
+    {
+      "path": "correction049-checkpoint-smoke/fixture-path.txt",
+      "sha256": "36145eccbcc969c9c8d32c51336a3e55f99aacbcf5fc1f12472eb01bccbaa69f",
+      "bytes": 49
+    },
+    {
+      "path": "correction049-checkpoint-smoke/inputs.json",
+      "sha256": "3d702dce6aea4178fa06394936e8352a44e5bfda5fa1e41fcd9e109df94bfd1b",
+      "bytes": 1239
+    },
+    {
+      "path": "correction049-checkpoint-smoke/observations.json",
+      "sha256": "18afa7bff5175527d45dabdf5a668eb084d6ef26f6a64fd036b740b92d985b0e",
+      "bytes": 6962549
+    },
+    {
+      "path": "correction049-checkpoint-smoke/receipt.json",
+      "sha256": "56875b092a9d35048995747a3ee5ed6aee1b582d60889314ed09b65f4fdd7f56",
+      "bytes": 2936
+    },
+    {
+      "path": "correction049-checkpoint-smoke/run.json",
+      "sha256": "c30db1f9d09b3a3d448d6161fdb72213971da1625fefb6ebcaccf512623b84ee",
+      "bytes": 2697
+    },
+    {
+      "path": "correction049-checkpoint-smoke/started.json",
+      "sha256": "d1c6912b18c879c7ff6e968637c05350ea34e7833a15537b7be4b9bfd5497fbc",
+      "bytes": 1507
+    },
+    {
+      "path": "correction049-checkpoint-smoke/stderr.log",
+      "sha256": "499f33e45a83fbb78149c551f3fda8c96210d4d5eaed23491a2f0ef8a5cd0a08",
+      "bytes": 586
+    },
+    {
+      "path": "correction049-checkpoint-smoke/stdout.log",
+      "sha256": "454c0e97fdee5b2c42117c4433b69a5fe1754c1d15f3e52a63b6b1e5f0342f7f",
+      "bytes": 2137
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/README.md",
+      "sha256": "8a4e18ec84a0e88bd21a627929cfff42cf997c1ce77f459099830631acfb96bc",
+      "bytes": 1250
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/case.man.yaml",
+      "sha256": "661f8e1576b2dffe0909283677242893298d58ebcf02aa18abe4282b5b1be7ad",
+      "bytes": 2715
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/case.run",
+      "sha256": "5f4b7f0f74efeac97b917cfe5ee8d5aa3b2a08ca9fe1e109dd01f7ac046da23a",
+      "bytes": 532
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/case.run.snow_stage3_v11_owner_seed.json",
+      "sha256": "c287477eec29e74fa2102844e473ee8a225e30606697677219cfb5720e0d2dcc",
+      "bytes": 36209
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/frost.txt",
+      "sha256": "b6f81ef2040b029e361b63be4bd9591dbc3a151b9ecae927805152e365521e53",
+      "bytes": 43
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/p102.cli",
+      "sha256": "c7a19c0d996dc169244179d5658204fa400963e8f65770b96ad8f1c5f75b5dab",
+      "bytes": 484
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/p102.man",
+      "sha256": "6abc78f34c8900fd11d243ef5916b9acf89fa25fd087bddc64d9c02b7517ce5f",
+      "bytes": 3467
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/p102.run",
+      "sha256": "1cabf3319ccf83baaf00d4c94c6de6804a09918307f162275b58fc6ea64b577f",
+      "bytes": 343
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/p102.slp",
+      "sha256": "be38e0a111db3708ca73bf9d207fd799ddd3c67bff4fecaabbfbab3956d12d74",
+      "bytes": 75
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/p102.sol",
+      "sha256": "e0a86be22d7c819ac963620648b844ed18d1ac78ee867ea34587dad7ef225dca",
+      "bytes": 1136
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/pmetpara.txt",
+      "sha256": "7f67616e491e293a41ef3a79940108cf5de5cb0b780ab9728234ee1eb2aaf9b2",
+      "bytes": 2690
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/snow.txt",
+      "sha256": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba",
+      "bytes": 87
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789077286254702477/wepp_ui.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "correction046-rain-on-snow/comparisons.txt",
+      "sha256": "ab2c51abbbd91369af798b8277e2b2b0c888d59208fc3266021cf83621b3b643",
+      "bytes": 3684558
+    },
+    {
+      "path": "correction046-rain-on-snow/configuration.json",
+      "sha256": "b9b86193ee61350fc21ea687161e1a2048f9ab6abc22d0f77b1e51d57c2fa91a",
+      "bytes": 9519
+    },
+    {
+      "path": "correction046-rain-on-snow/fixture-path.txt",
+      "sha256": "c31ada615e256307587f3a13a6d502347b625cc31154760096f2f85ddc111d6b",
+      "bytes": 49
+    },
+    {
+      "path": "correction046-rain-on-snow/inputs.json",
+      "sha256": "d5fa32696a81be5a83ce375395440417b3c2a70f4a7d31296fd93db10a3271e9",
+      "bytes": 1274
+    },
+    {
+      "path": "correction046-rain-on-snow/observations.json",
+      "sha256": "d6a43ed420fc111c1062ca235fe10809e42d1c06187c30ff9b51d69e797135c2",
+      "bytes": 639555887
+    },
+    {
+      "path": "correction046-rain-on-snow/receipt.json",
+      "sha256": "6d96d56a21b1697f090b32be57250e39dba28c5154dbebe455163af4a3ace0ae",
+      "bytes": 2759
+    },
+    {
+      "path": "correction046-rain-on-snow/run.json",
+      "sha256": "0affbcfa1cbe211364b7dc277b1f5e08bc0cad7d49ed760b854cb1e322e22865",
+      "bytes": 19516
+    },
+    {
+      "path": "correction046-rain-on-snow/started.json",
+      "sha256": "961e5b13cc8866abdfcd69bfea42b3a2c2a25dd646a59dd51c7a6f99b8ff9772",
+      "bytes": 1361
+    },
+    {
+      "path": "correction046-rain-on-snow/stderr.log",
+      "sha256": "2d2035d4c359bebc3410118d130cee8625de178c00e67b931fb6051481fbcd7e",
+      "bytes": 692
+    },
+    {
+      "path": "correction046-rain-on-snow/stdout.log",
+      "sha256": "b516b1253d3fabab147bd1e7770d3ba4bf3223420fbab592a5fc4fe299268e5c",
+      "bytes": 14258
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/README.md",
+      "sha256": "8a4e18ec84a0e88bd21a627929cfff42cf997c1ce77f459099830631acfb96bc",
+      "bytes": 1250
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/case.man.yaml",
+      "sha256": "661f8e1576b2dffe0909283677242893298d58ebcf02aa18abe4282b5b1be7ad",
+      "bytes": 2715
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/case.run",
+      "sha256": "5f4b7f0f74efeac97b917cfe5ee8d5aa3b2a08ca9fe1e109dd01f7ac046da23a",
+      "bytes": 532
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/case.run.snow_stage3_v11_owner_seed.json",
+      "sha256": "fd1814f8e0fef3f4c083704c79c417fa91b7dc9926a8679c501a3aa07701b71a",
+      "bytes": 36209
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/frost.txt",
+      "sha256": "b6f81ef2040b029e361b63be4bd9591dbc3a151b9ecae927805152e365521e53",
+      "bytes": 43
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/p102.cli",
+      "sha256": "e1365225ccfb89b4fa12f4b66a2d950d4e25bf6662f77cf8c100cef4f52a8eb1",
+      "bytes": 661
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/p102.man",
+      "sha256": "6abc78f34c8900fd11d243ef5916b9acf89fa25fd087bddc64d9c02b7517ce5f",
+      "bytes": 3467
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/p102.run",
+      "sha256": "1cabf3319ccf83baaf00d4c94c6de6804a09918307f162275b58fc6ea64b577f",
+      "bytes": 343
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/p102.slp",
+      "sha256": "be38e0a111db3708ca73bf9d207fd799ddd3c67bff4fecaabbfbab3956d12d74",
+      "bytes": 75
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/p102.sol",
+      "sha256": "e0a86be22d7c819ac963620648b844ed18d1ac78ee867ea34587dad7ef225dca",
+      "bytes": 1136
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/pmetpara.txt",
+      "sha256": "7f67616e491e293a41ef3a79940108cf5de5cb0b780ab9728234ee1eb2aaf9b2",
+      "bytes": 2690
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/snow.txt",
+      "sha256": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba",
+      "bytes": 87
+    },
+    {
+      "path": "fixtures/snow_accuracy_continuous_1789076711456019690/wepp_ui.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "correction046-energy03/diagnostic.json",
+      "sha256": "0520094946ec4c447cca0f5937919af7e52b3f67d749a3db3c21dd08115afb03",
+      "bytes": 3907
+    },
+    {
+      "path": "energy046-03.log",
+      "sha256": "0520094946ec4c447cca0f5937919af7e52b3f67d749a3db3c21dd08115afb03",
+      "bytes": 3907
+    },
+    {
+      "path": "focused052.log",
+      "sha256": "2b7bcdcd3dee5700a615f90d5777b91982a5505a5a6aa27a193c3b7d8917c22d",
+      "bytes": 1185
+    },
+    {
+      "path": "red052.log",
+      "sha256": "92ebb04846bed6229bb28bf29eb16f8587ec31c0021144504a823d6e8cf21f7e",
+      "bytes": 1978
+    },
+    {
+      "path": "red052-source.json",
+      "sha256": "e1721e13e91f8ef2a17987df5227316fca834a4ed3f98239767de4d169ec3538",
+      "bytes": 417
+    },
+    {
+      "path": "red052.patch",
+      "sha256": "c206d4b89ae4722cf532788a407ce09604fe19aa6ec8dcb16790b1efdb57493d",
+      "bytes": 685
+    },
+    {
+      "path": "model-review052-lse.log",
+      "sha256": "a60a496417bf72f7bc76f9ac313cd7ee8103270d806d62afcb9ee0f3af7d6ec8",
+      "bytes": 244
+    },
+    {
+      "path": "model-review052-cold.log",
+      "sha256": "db048ff3814d9f428abe1d320e0ec0059c3072ff129b7f3af1b5b5db5b16a0b9",
+      "bytes": 230
+    }
+  ]
+}

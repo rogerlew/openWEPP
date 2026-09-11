@@ -1,0 +1,501 @@
+{
+  "status": "FROZEN_BEFORE_POLICY_RESULTS",
+  "classification": "ASSUMED_FOR_EXECUTION",
+  "columns": [
+    "precipitation_mm",
+    "tmax_C",
+    "tmin_C",
+    "radiation_ly_day",
+    "dewpoint_C"
+  ],
+  "storm_duration_hours": 2,
+  "relative_peak_time": 0.25,
+  "peak_intensity_ratio": 25,
+  "wind_m_s": 3,
+  "wind_direction_degrees": 180,
+  "initialization": "one common authenticated constructor, no state resets",
+  "cases": {
+    "continuity": {
+      "split": "development",
+      "forcing": [
+        [
+          50,
+          18,
+          9,
+          260,
+          7
+        ]
+      ],
+      "canopy": "positive"
+    },
+    "snow_free": {
+      "split": "development",
+      "forcing": [
+        [
+          0,
+          12,
+          2,
+          200,
+          1
+        ]
+      ],
+      "canopy": "inactive"
+    },
+    "persistent": {
+      "split": "development",
+      "forcing": [
+        [
+          12,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ]
+      ],
+      "canopy": "positive"
+    },
+    "gradual": {
+      "split": "development",
+      "forcing": [
+        [
+          12,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          2,
+          -2,
+          130,
+          -3
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ]
+      ],
+      "canopy": "positive"
+    },
+    "rain_on_snow": {
+      "split": "development",
+      "forcing": [
+        [
+          12,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          50,
+          18,
+          9,
+          260,
+          7
+        ]
+      ],
+      "canopy": "positive"
+    },
+    "intermittent": {
+      "split": "development",
+      "forcing": [
+        [
+          0.5,
+          -2,
+          -6,
+          90,
+          -7
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0.5,
+          -2,
+          -6,
+          90,
+          -7
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0.5,
+          -2,
+          -6,
+          90,
+          -7
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ]
+      ],
+      "canopy": "inactive"
+    },
+    "insulation": {
+      "split": "development",
+      "forcing": [
+        [
+          0.5,
+          -2,
+          -6,
+          90,
+          -7
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ]
+      ],
+      "canopy": "positive"
+    },
+    "long_transition": {
+      "split": "finalist_continuity",
+      "forcing": [
+        [
+          12,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          2,
+          -2,
+          130,
+          -3
+        ],
+        [
+          0,
+          2,
+          -2,
+          130,
+          -3
+        ],
+        [
+          0,
+          2,
+          -2,
+          130,
+          -3
+        ],
+        [
+          0,
+          2,
+          -2,
+          130,
+          -3
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ]
+      ],
+      "canopy": "positive"
+    },
+    "heldout_intermittent": {
+      "split": "heldout",
+      "forcing": [
+        [
+          0.8,
+          -1,
+          -5,
+          110,
+          -6
+        ],
+        [
+          0,
+          12,
+          2,
+          200,
+          1
+        ],
+        [
+          0,
+          4,
+          -3,
+          140,
+          -4
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          1.4,
+          -2,
+          -7,
+          70,
+          -8
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          0.8,
+          -1,
+          -5,
+          110,
+          -6
+        ],
+        [
+          0,
+          12,
+          2,
+          200,
+          1
+        ],
+        [
+          0,
+          4,
+          -3,
+          140,
+          -4
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ],
+        [
+          1.4,
+          -2,
+          -7,
+          70,
+          -8
+        ],
+        [
+          0,
+          -3,
+          -9,
+          80,
+          -10
+        ],
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ]
+      ],
+      "canopy": "positive"
+    },
+    "mixed_resolved_trace": {
+      "canopy": "positive",
+      "forcing": [
+        [
+          0,
+          12,
+          3,
+          260,
+          1
+        ]
+      ],
+      "purpose": "Authentic two-OFE simultaneous resolved/trace execution",
+      "initial_swe_mm": [
+        5.0,
+        0.05
+      ],
+      "areas_m2": [
+        100.0,
+        200.0
+      ],
+      "initialization": "Scale original typed constructor snow extensives before seed authoring and execution; retain intensive state and all other parameters"
+    }
+  }
+}

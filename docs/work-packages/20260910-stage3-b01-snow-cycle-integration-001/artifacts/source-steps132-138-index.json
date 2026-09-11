@@ -1,0 +1,76 @@
+{
+  "archive": "source-steps132-138.tar.gz",
+  "sha256": "b6940bdf3ac291cb9a6635fc7b3c40b55d0bd59d39db81ad95caa15019f6628f",
+  "files": [
+    {
+      "path": "working132.patch",
+      "bytes": 16312,
+      "sha256": "c7969dfbac60efb826aaf85a9754e0cf95d93cfed32159a6f343cc5fb51aec77"
+    },
+    {
+      "path": "working132-source.json",
+      "bytes": 131038,
+      "sha256": "22a09d0903001821a38730d1880e5ab0ebbb7b40011a6bf8aaf4cff797113eca"
+    },
+    {
+      "path": "working133.patch",
+      "bytes": 1214,
+      "sha256": "c0cf4809e85d328b67aac18eb3dd8f8ba7986c6f9b381a4650f730f18bf3bf63"
+    },
+    {
+      "path": "working133-source.json",
+      "bytes": 130879,
+      "sha256": "3ae2488df58185e39440e909cb1e25057318da5d68e3512c9ffc87d8972cf2d5"
+    },
+    {
+      "path": "working134.patch",
+      "bytes": 11054,
+      "sha256": "7c85f4930d955d7096864ab3088bd21ad24c8bd3ffd81879282f7943891a23e1"
+    },
+    {
+      "path": "working134-source.json",
+      "bytes": 131053,
+      "sha256": "fdca1620d9c7db858fdd4020e5c14322ba98febd275916edfab0de87b1ebd603"
+    },
+    {
+      "path": "working135.patch",
+      "bytes": 3582,
+      "sha256": "4cb36c24b13c31260eeb46c6bddedd77a0daf68e90fbfcffdf8456c28b32eea4"
+    },
+    {
+      "path": "working135-source.json",
+      "bytes": 130967,
+      "sha256": "a518bfe1a37b0ea7bdec5611ac5abab381cbb8be58a26d9f4aeb436ac5295a84"
+    },
+    {
+      "path": "working136.patch",
+      "bytes": 2568,
+      "sha256": "77e8c0ddab2e84b69211251e9289494e93137f280a742d9f25e481dce59e9761"
+    },
+    {
+      "path": "working136-source.json",
+      "bytes": 130879,
+      "sha256": "02d797862a17b0585ed1326d5363ebd17bc90fdf00701c46678abf352a11b193"
+    },
+    {
+      "path": "working137.patch",
+      "bytes": 6743,
+      "sha256": "524ff7e91428fa03c5c3512c1ae08c58bd1c76227ed87e6ba99ad01c00a8e329"
+    },
+    {
+      "path": "working137-source.json",
+      "bytes": 131016,
+      "sha256": "f7a760e6e4ecdf4e11276fe6ee534e37e56277760f5293c523a3a069b56d717a"
+    },
+    {
+      "path": "working138.patch",
+      "bytes": 1546,
+      "sha256": "90bdf20062627753a47c8e1906d9495d2a503a33f232044d6831e750022bfe7f"
+    },
+    {
+      "path": "working138-source.json",
+      "bytes": 130900,
+      "sha256": "2ac3007e3ac2f79561c2d30ebc2606acbabb5026a9d0844f001d09f5127a1a9d"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+
+running 1 test
+test v9_real_consumer_shadow::v11_covered::b01_cycle_endpoint_stabilization_real_maps ... 
+thread 'v9_real_consumer_shadow::v11_covered::b01_cycle_endpoint_stabilization_real_maps' (2189080) panicked at crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver_test_audit.rs:1520:42:
+typed cap rejection
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    v9_real_consumer_shadow::v11_covered::b01_cycle_endpoint_stabilization_real_maps
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1428 filtered out; finished in 0.15s
+

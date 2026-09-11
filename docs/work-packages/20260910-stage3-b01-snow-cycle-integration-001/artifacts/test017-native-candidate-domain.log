@@ -1,0 +1,15 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working017/crates/openwepp-hillslope-orchestrator)
+error[E0433]: cannot find type `SurfaceConfiguration` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_tests.rs:2329:20
+     |
+2329 |             if let SurfaceConfiguration::ForestLitter { thickness_m, dry_density_kg_m3,
+     |                    ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `SurfaceConfiguration`
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-hillslope-orchestrator --lib --features persisted-restart-v1,restart-authority-evidence --offline` exited with code 101

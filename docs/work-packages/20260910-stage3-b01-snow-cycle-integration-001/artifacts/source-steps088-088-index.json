@@ -1,0 +1,16 @@
+{
+  "archive": "source-steps088-088.tar.gz",
+  "sha256": "a0287927d02804623ecb1ed717634504d1633978ba7da46177d337cc1e996f43",
+  "files": [
+    {
+      "path": "step088.patch",
+      "bytes": 8272,
+      "sha256": "67f7b68066ccb8e9e80d72dbe74db6f76eeed83f1d2ed51b8164b78b5e463504"
+    },
+    {
+      "path": "step088-source.json",
+      "bytes": 131312,
+      "sha256": "c1d83627aa1728794f4aa48eefc216cc56a055a31b4ba90d1adac203ebfa05b9"
+    }
+  ]
+}

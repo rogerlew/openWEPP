@@ -1,0 +1,10 @@
+
+running 1 test
+test v9_real_consumer_shadow::v11_covered::b01_cycle_endpoint_stabilization_real_maps ... 
+thread 'canonical-covered-role-audit' (2173080) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs:2059:19:
+synchronized covered parent cadence: AdaptiveTrial { phase: "covered direct", start_ns: 0, end_ns: 60000000000, duration_ns: 60000000000, source: V11(Executor(AdaptiveRefinement("canonical covered evaluation budget"))) }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1427 filtered out; finished in 0.18s
+

@@ -1,0 +1,31 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+    Checking openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working021/crates/openwepp-land-surface-energy)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-b01-cycle-20260910/working021/crates/openwepp-hillslope-orchestrator)
+error[E0631]: type mismatch in function arguments
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_publication.rs:348:22
+    |
+348 |             .map_err(ConsumerError::SurfaceLiquidReplay)?;
+    |              ------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected due to this
+    |              |
+    |              required by a bound introduced by this call
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v11_error.rs:21:5
+    |
+ 21 |     SurfaceLiquidReplay(crate::DirectSurfaceLiquidError),
+    |     ------------------- found signature defined here
+    |
+    = note: expected function signature `fn(v9_real_consumer_shadow::DirectV10RealConsumerError) -> _`
+               found function signature `fn(surface_liquid_owner::DirectSurfaceLiquidError) -> _`
+note: required by a bound in `Result::<T, E>::map_err`
+   --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:962:4
+help: consider wrapping the function in a closure
+    |
+348 |             .map_err(|arg0: v9_real_consumer_shadow::DirectV10RealConsumerError| ConsumerError::SurfaceLiquidReplay(/* surface_liquid_owner::DirectSurfaceLiquidError */))?;
+    |                      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++                                   ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+For more information about this error, try `rustc --explain E0631`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error
