@@ -1,0 +1,54 @@
+{
+  "cwd": "/workdir/openWEPP",
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/verify_publication.py",
+    "604ac07be"
+  ],
+  "commit": "604ac07be",
+  "method": "Actual GitHub raw-content retrieval compared with git show COMMIT:path bytes for every file in commit diff",
+  "files": [
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-access-stop.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/604ac07be/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-access-stop.json",
+      "local_sha256": "85d601b2171a1dd50cad0a435e1d8047eae372fabcc63bc3617a3e0e0b3bea2b",
+      "local_bytes": 1092,
+      "remote_sha256": "85d601b2171a1dd50cad0a435e1d8047eae372fabcc63bc3617a3e0e0b3bea2b",
+      "remote_bytes": 1092,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-authorization.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/604ac07be/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-authorization.md",
+      "local_sha256": "b875e27ce2d9bc5006255c9134a00863fe44f24e134ba87c0a54f56f6f364859",
+      "local_bytes": 9591,
+      "remote_sha256": "b875e27ce2d9bc5006255c9134a00863fe44f24e134ba87c0a54f56f6f364859",
+      "remote_bytes": 9591,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/package.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/604ac07be/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/package.md",
+      "local_sha256": "d22775ecf7740469b8acfd4d20cbac572197ab7373258c4b90a756d459ee69e0",
+      "local_bytes": 65452,
+      "remote_sha256": "d22775ecf7740469b8acfd4d20cbac572197ab7373258c4b90a756d459ee69e0",
+      "remote_bytes": 65452,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/active.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/604ac07be/docs/work-packages/active.md",
+      "local_sha256": "207de0f4521eb1edbac71d47ba05098c83b87794eada8ad014e316977941cfb0",
+      "local_bytes": 6899,
+      "remote_sha256": "207de0f4521eb1edbac71d47ba05098c83b87794eada8ad014e316977941cfb0",
+      "remote_bytes": 6899,
+      "equal": true,
+      "lfs_pointer": false
+    }
+  ],
+  "all_equal": true,
+  "scope": "New scoped commit bytes only; not full historical source/LFS retrieval"
+}
