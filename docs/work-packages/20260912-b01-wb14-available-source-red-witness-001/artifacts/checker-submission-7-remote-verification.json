@@ -1,0 +1,124 @@
+{
+  "cwd": "/workdir/openWEPP",
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/verify_publication.py",
+    "1e197a917"
+  ],
+  "commit": "1e197a917",
+  "method": "Actual GitHub raw-content retrieval compared with git show COMMIT:path bytes for every file in commit diff",
+  "files": [
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py",
+      "local_sha256": "e7f74c26201949b9cf428600001d2c6324109d3a34adc98fe05cc55ea544025e",
+      "local_bytes": 10734,
+      "remote_sha256": "e7f74c26201949b9cf428600001d2c6324109d3a34adc98fe05cc55ea544025e",
+      "remote_bytes": 10734,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-6-preedit.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-6-preedit.txt",
+      "local_sha256": "3d1716d92030dccc2be190ed9ab25c4fc183fc68fccb4ed336adeb822f75cccc",
+      "local_bytes": 446,
+      "remote_sha256": "3d1716d92030dccc2be190ed9ab25c4fc183fc68fccb4ed336adeb822f75cccc",
+      "remote_bytes": 446,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-7-execution.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-7-execution.txt",
+      "local_sha256": "be250ffb584507173968d95bdad0df51deb7db363fbf2f03112e8483154e2ae2",
+      "local_bytes": 2862,
+      "remote_sha256": "be250ffb584507173968d95bdad0df51deb7db363fbf2f03112e8483154e2ae2",
+      "remote_bytes": 2862,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-7-precheck.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-7-precheck.txt",
+      "local_sha256": "0a397abf24898332db5e26aa63de280d8a746f2a654396e9a73fc4a025d8b99b",
+      "local_bytes": 341,
+      "remote_sha256": "0a397abf24898332db5e26aa63de280d8a746f2a654396e9a73fc4a025d8b99b",
+      "remote_bytes": 341,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-7-result.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-7-result.json",
+      "local_sha256": "9a682de132972d3133671fdbe4f19543c5117e78e67c82363efa95ae59463c2b",
+      "local_bytes": 2373,
+      "remote_sha256": "9a682de132972d3133671fdbe4f19543c5117e78e67c82363efa95ae59463c2b",
+      "remote_bytes": 2373,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-7-terminal-custody.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-7-terminal-custody.json",
+      "local_sha256": "de48b143d0c31814bcb60c2ffb4397624ee74ff5d4f8c00e5e1090f6b40bf678",
+      "local_bytes": 818,
+      "remote_sha256": "de48b143d0c31814bcb60c2ffb4397624ee74ff5d4f8c00e5e1090f6b40bf678",
+      "remote_bytes": 818,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/correctness-replacement-review.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/correctness-replacement-review.txt",
+      "local_sha256": "aa4d222756bc6271f4f5805deffb581235a19511489136d6c0d16b7e95ceb126",
+      "local_bytes": 3734,
+      "remote_sha256": "aa4d222756bc6271f4f5805deffb581235a19511489136d6c0d16b7e95ceb126",
+      "remote_bytes": 3734,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/qa-replacement-current-custody.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/qa-replacement-current-custody.txt",
+      "local_sha256": "bde43b721b7364b55c9d696ca11fd04f1e4a160773c90be188a7fd9d74071f72",
+      "local_bytes": 4594,
+      "remote_sha256": "bde43b721b7364b55c9d696ca11fd04f1e4a160773c90be188a7fd9d74071f72",
+      "remote_bytes": 4594,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py",
+      "local_sha256": "70caea902057fd10a1aac5490cc13760e1b701707fa33cad051dff057816689a",
+      "local_bytes": 6824,
+      "remote_sha256": "70caea902057fd10a1aac5490cc13760e1b701707fa33cad051dff057816689a",
+      "remote_bytes": 6824,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/package.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/package.md",
+      "local_sha256": "89332c24707bd01b6bd7976b08ade441a86130731ab9c64eed9424a31550751c",
+      "local_bytes": 60931,
+      "remote_sha256": "89332c24707bd01b6bd7976b08ade441a86130731ab9c64eed9424a31550751c",
+      "remote_bytes": 60931,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/active.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1e197a917/docs/work-packages/active.md",
+      "local_sha256": "10fabf3d3ed03bec8de8b7cd52c5eb6b838291d267dc830cedade15184ff718a",
+      "local_bytes": 6963,
+      "remote_sha256": "10fabf3d3ed03bec8de8b7cd52c5eb6b838291d267dc830cedade15184ff718a",
+      "remote_bytes": 6963,
+      "equal": true,
+      "lfs_pointer": false
+    }
+  ],
+  "all_equal": true,
+  "scope": "New scoped commit bytes only; not full historical source/LFS retrieval"
+}
