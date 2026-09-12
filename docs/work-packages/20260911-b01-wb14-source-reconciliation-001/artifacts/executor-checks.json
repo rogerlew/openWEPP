@@ -1,0 +1,161 @@
+{
+  "cwd": "/workdir/openWEPP",
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/validate_assessment.py"
+  ],
+  "exit": 0,
+  "results": [
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/actual-byte-inventory-first-attempt.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/actual-byte-inventory.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/authority-identity.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/available-version-provenance.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/base-remote-metadata.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/executor-checks.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/fresh-recipe-relevant-input-comparison.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/fresh-recipe-whole-source-comparison.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/historical-boundary-input.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/historical-fixture-remote-verification.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/outer-seam-log-identity.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/recipe-remote-verification.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/revised-baseline-proposal.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/staged-whitespace-first-check.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/static-test-harness-inventory.json",
+      "status": "PASS"
+    },
+    {
+      "check": "Python syntax",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/audit.py",
+      "status": "PASS"
+    },
+    {
+      "check": "Python syntax",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/compare_reconstructed_source.py",
+      "status": "PASS"
+    },
+    {
+      "check": "Python syntax",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/compare_whole_source.py",
+      "status": "PASS"
+    },
+    {
+      "check": "Python syntax",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/static_test_inventory.py",
+      "status": "PASS"
+    },
+    {
+      "check": "Python syntax",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/validate_assessment.py",
+      "status": "PASS"
+    },
+    {
+      "check": "Python syntax",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version_provenance.py",
+      "status": "PASS"
+    },
+    {
+      "check": "shell syntax",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/reconstruct_available_source.sh",
+      "status": "PASS"
+    },
+    {
+      "check": "prospective command syntax only",
+      "block": 0,
+      "status": "PASS"
+    },
+    {
+      "check": "prospective command syntax only",
+      "block": 1,
+      "status": "PASS"
+    },
+    {
+      "check": "prospective command syntax only",
+      "block": 2,
+      "status": "PASS"
+    },
+    {
+      "check": "owned local links",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/package.md",
+      "status": "PASS"
+    },
+    {
+      "check": "owned local links",
+      "path": "docs/work-packages/active.md",
+      "status": "PASS"
+    },
+    {
+      "check": "owned local links",
+      "path": "docs/work-packages/README.md",
+      "status": "PASS"
+    },
+    {
+      "check": "terminal staged plus unstaged whitespace",
+      "argv": [
+        "git",
+        "diff",
+        "HEAD",
+        "--check"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "scope": "Assessment artifact validation only; no Rust or prospective shell workflows executed"
+}

@@ -1,6 +1,6 @@
 # Work Packages
 
-- [20260911 B01 WB14 source reconciliation](20260911-b01-wb14-source-reconciliation-001/package.md): Scaffold for a bounded source-provenance and harness-scope decision after exact recovery stopped at 925/927 file matches; no baseline substitution or runtime execution authorized by preparation.
+- [20260911 B01 WB14 source reconciliation](20260911-b01-wb14-source-reconciliation-001/package.md): Completed independently reviewed assessment; retained recipe fully reproduces available source, but source/test adoption remains HOLD pending the real-runner injection and total-physics observation bridge.
 
 - [20260911 B01 WB14 verified cadence repair](20260911-b01-wb14-verified-cadence-repair-001/package.md): Owner-adopted isolated durable source reconstruction, matched baseline/candidate regressions and full-parent cadence proof.
 

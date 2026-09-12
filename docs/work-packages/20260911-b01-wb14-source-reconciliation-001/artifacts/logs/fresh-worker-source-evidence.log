@@ -1,0 +1,18 @@
++ rg -n -C 2 'fn accepted_stage3_real_runner_routes_lane_d_and_publishes_summary|fn cqr_laned_active_configure_wrapper_builds_authoritative_active_config_without_routing|fn cqr_laned_active_configure_subprocess_probe' /workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs /workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs-1076-
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs-1077-#[test]
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs:1078:fn cqr_laned_active_configure_subprocess_probe() {
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs-1079-    if std::env::var("CQR_HA08_CONFIGURE_PROBE").as_deref() != Ok("1") {
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs-1080-        return;
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs-1166-
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs-1167-#[test]
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs:1168:fn cqr_laned_active_configure_wrapper_builds_authoritative_active_config_without_routing() {
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs-1169-    let test_name =
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs-1170-        "hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_configure_subprocess_probe";
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs-662-
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs-663-#[test]
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs:664:fn accepted_stage3_real_runner_routes_lane_d_and_publishes_summary() {
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs-665-    const PROBE: &str = "OPENWEPP_STAGE3_LANED_REAL_CONSUMER_PROBE";
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs-666-    if std::env::var_os(PROBE).is_none() {

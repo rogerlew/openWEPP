@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "gh",
+    "api",
+    "repos/rogerlew/openWEPP/git/commits/e89befa4678eadec039b3e7f7fe0a176af8e9dc5"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "exit": 0,
+  "base_commit": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+  "local_tree": "9b7039f2933ee0a3dd56968c6eabb0e254df528a",
+  "remote_commit": "e89befa4678eadec039b3e7f7fe0a176af8e9dc5",
+  "remote_tree": "9b7039f2933ee0a3dd56968c6eabb0e254df528a",
+  "same_tree": true,
+  "scope": "Remote commit/tree metadata retrieval only; not full base blob retrieval"
+}

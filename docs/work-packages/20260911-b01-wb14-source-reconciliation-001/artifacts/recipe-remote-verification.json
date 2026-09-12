@@ -1,0 +1,137 @@
+{
+  "cwd": "/workdir/openWEPP",
+  "commit": "1497c078cfa524315763e17bdb225594480be0b4",
+  "method": "GitHub contents API raw retrieval; ordinary Git bytes",
+  "files": [
+    {
+      "path": "docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/R0-composition.patch",
+      "argv": [
+        "gh",
+        "api",
+        "-H",
+        "Accept: application/vnd.github.raw+json",
+        "repos/rogerlew/openWEPP/contents/docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/R0-composition.patch?ref=1497c078cfa524315763e17bdb225594480be0b4"
+      ],
+      "exit": 0,
+      "local_sha256": "5db3436348bdaae05cfe458d33b97075c6a4e820d4fb474d506b0da17e22d943",
+      "remote_sha256": "5db3436348bdaae05cfe458d33b97075c6a4e820d4fb474d506b0da17e22d943",
+      "equal": true
+    },
+    {
+      "path": "docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/R0-untracked-source.tar.gz",
+      "argv": [
+        "gh",
+        "api",
+        "-H",
+        "Accept: application/vnd.github.raw+json",
+        "repos/rogerlew/openWEPP/contents/docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/R0-untracked-source.tar.gz?ref=1497c078cfa524315763e17bdb225594480be0b4"
+      ],
+      "exit": 1,
+      "local_sha256": "dc80bd1b382d6007f67e8c9588bbdbbced9cbeab712720d38f2faa5c491262d8",
+      "remote_sha256": "bedc34ba158f46e4c5c579d2fa4d120fbc7f25ad475cbaff2e9d88fd44fd8ce0",
+      "equal": false,
+      "retry": {
+        "reason": "gh binary output failed: transform: short source buffer",
+        "argv": [
+          "curl",
+          "--fail",
+          "--location",
+          "--silent",
+          "--show-error",
+          "https://raw.githubusercontent.com/rogerlew/openWEPP/1497c078cfa524315763e17bdb225594480be0b4/docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/R0-untracked-source.tar.gz",
+          "-o",
+          "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/remote-R0-untracked-source.tar.gz"
+        ],
+        "exit": 0,
+        "remote_sha256": "dc80bd1b382d6007f67e8c9588bbdbbced9cbeab712720d38f2faa5c491262d8",
+        "equal": true
+      }
+    },
+    {
+      "path": "docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/R0-source.json",
+      "argv": [
+        "gh",
+        "api",
+        "-H",
+        "Accept: application/vnd.github.raw+json",
+        "repos/rogerlew/openWEPP/contents/docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/R0-source.json?ref=1497c078cfa524315763e17bdb225594480be0b4"
+      ],
+      "exit": 0,
+      "local_sha256": "63b6fc908598581db2d8858c6352849e2df76b5a543e7ecbae09792e6b1cdaee",
+      "remote_sha256": "63b6fc908598581db2d8858c6352849e2df76b5a543e7ecbae09792e6b1cdaee",
+      "equal": true
+    },
+    {
+      "path": "docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/PBC-final-build016.patch",
+      "argv": [
+        "gh",
+        "api",
+        "-H",
+        "Accept: application/vnd.github.raw+json",
+        "repos/rogerlew/openWEPP/contents/docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/PBC-final-build016.patch?ref=1497c078cfa524315763e17bdb225594480be0b4"
+      ],
+      "exit": 0,
+      "local_sha256": "91878772522b22a733401600dc7c5b1442f627ab2357d6679ad0d030e2a69e88",
+      "remote_sha256": "91878772522b22a733401600dc7c5b1442f627ab2357d6679ad0d030e2a69e88",
+      "equal": true
+    },
+    {
+      "path": "docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/PBC-final-build016-source.json",
+      "argv": [
+        "gh",
+        "api",
+        "-H",
+        "Accept: application/vnd.github.raw+json",
+        "repos/rogerlew/openWEPP/contents/docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/artifacts/PBC-final-build016-source.json?ref=1497c078cfa524315763e17bdb225594480be0b4"
+      ],
+      "exit": 0,
+      "local_sha256": "219c81ef2241c1549d784f7781b59e18697b0e17b84ea004b4843b540ea27b54",
+      "remote_sha256": "219c81ef2241c1549d784f7781b59e18697b0e17b84ea004b4843b540ea27b54",
+      "equal": true
+    },
+    {
+      "path": "docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/correction145.patch",
+      "argv": [
+        "gh",
+        "api",
+        "-H",
+        "Accept: application/vnd.github.raw+json",
+        "repos/rogerlew/openWEPP/contents/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/correction145.patch?ref=1497c078cfa524315763e17bdb225594480be0b4"
+      ],
+      "exit": 0,
+      "local_sha256": "52e53716f3a640a1f90984b2294557f42fe629e91dcd444728db0a93590cdc1d",
+      "remote_sha256": "52e53716f3a640a1f90984b2294557f42fe629e91dcd444728db0a93590cdc1d",
+      "equal": true
+    },
+    {
+      "path": "docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/correction145-source.json",
+      "argv": [
+        "gh",
+        "api",
+        "-H",
+        "Accept: application/vnd.github.raw+json",
+        "repos/rogerlew/openWEPP/contents/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/correction145-source.json?ref=1497c078cfa524315763e17bdb225594480be0b4"
+      ],
+      "exit": 0,
+      "local_sha256": "5f8d2d8c011974718435b08f29c83514c27bd88c3bf424720d863a900153c697",
+      "remote_sha256": "5f8d2d8c011974718435b08f29c83514c27bd88c3bf424720d863a900153c697",
+      "equal": true
+    },
+    {
+      "path": "docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/wb14-parent-cadence-repair-candidate.patch",
+      "argv": [
+        "gh",
+        "api",
+        "-H",
+        "Accept: application/vnd.github.raw+json",
+        "repos/rogerlew/openWEPP/contents/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/wb14-parent-cadence-repair-candidate.patch?ref=1497c078cfa524315763e17bdb225594480be0b4"
+      ],
+      "exit": 0,
+      "local_sha256": "1b7f8a7b48f02d0aa117969081295325e7af0e11de0d914af6306c739df338bb",
+      "remote_sha256": "1b7f8a7b48f02d0aa117969081295325e7af0e11de0d914af6306c739df338bb",
+      "equal": true
+    }
+  ],
+  "full_base_and_raw_stop_point145_lfs_retrieval": "NOT RUN; no complete remote reconstruction claim",
+  "final_all_equal": true
+}

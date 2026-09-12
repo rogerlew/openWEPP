@@ -1,0 +1,60 @@
++ rg -n -C 2 'begin_spooled|finish_to_file|take\(\)|execute_hillslope_run_with_runtime_policy|surface_liquid_wb14_cadence_caller_failure|execute_surface_liquid_ingress_with_parent_state_and_coupled_binding|\#\[path = "surface_liquid_ingress_context_tests.rs"\]|include!\("surface_liquid_wb14_native_prefix_tests.rs"\)' /workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs /workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs /workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs-2971-    }
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs-2972-
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs:2973:    include!("surface_liquid_wb14_native_prefix_tests.rs");
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs-2974-}
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-957-    finalize_parent_interval: bool,
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-958-) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:959:    execute_surface_liquid_ingress_with_parent_state_and_coupled_binding(
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-960-        configuration,
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-961-        resource,
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-967-}
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-968-
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:969:pub(crate) fn execute_surface_liquid_ingress_with_parent_state_and_coupled_binding(
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-970-    configuration: &DirectSurfaceLiquidConfiguration,
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-971-    resource: &DirectSurfaceLiquidResourceCandidate,
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-975-    coupled_binding: Option<DirectWb14CoupledChildBindingV1>,
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-976-) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:977:    execute_surface_liquid_ingress_with_parent_state_and_coupled_binding_and_phase_capacity_spills(
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-978-        configuration,
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-979-        resource,
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-987-
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-988-#[allow(clippy::too_many_arguments)]
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:989:pub(crate) fn execute_surface_liquid_ingress_with_parent_state_and_coupled_binding_and_phase_capacity_spills(
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-990-    configuration: &DirectSurfaceLiquidConfiguration,
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-991-    resource: &DirectSurfaceLiquidResourceCandidate,
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-1071-        if crate::snow_accuracy_observer::physical_enabled() {
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-1072-            crate::snow_accuracy_observer::record(serde_json::json!({
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:1073:                "kind":"surface_liquid_wb14_cadence_caller_failure", "error":error.to_string(),
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-1074-                "input_typed_bytes":serde_json::to_vec(input).map_err(|error|error.to_string()),
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-1075-                "parent_working_typed_bytes":parent_working_state.map(|state|serde_json::to_vec(state).map_err(|error|error.to_string())),
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-2994-
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-2995-#[cfg(test)]
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:2996:#[path = "surface_liquid_ingress_context_tests.rs"]
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs-2997-mod context_tests;
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-136-    }
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-137-    let physical = std::env::var("OPENWEPP_ACCURACY_PHYSICAL").is_ok_and(|v| v == "1");
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs:138:    openwepp_hillslope_orchestrator::snow_accuracy_observer::begin_spooled(physical, &destination.join("physical-rows.jsonpart")).expect("bounded observation spool");
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-139-    if physical {
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-140-        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_comparison_test_audit();
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-153-    let cpu0 = release_scale_process_cpu_ticks().expect("cpu start");
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-154-    let started = std::time::Instant::now();
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs:155:    let result = execute_hillslope_run_with_runtime_policy(
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-156-        &request,
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-157-        &["openwepp-cli-hill".to_owned()],
+--
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-165-    let carrier = carrier.finish().expect("carrier counters");
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-166-    let lse = lse.finish().expect("LSE counters");
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs:167:    openwepp_hillslope_orchestrator::snow_accuracy_observer::finish_to_file(&destination.join("observations.json")).expect("physical observations");
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-168-    let comparisons = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_comparison_test_audit();
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs:169:    let audit = crate::hillslope::snow_stage3_v11_qualification_audit::take();
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-170-    let telemetry = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_parent_telemetry_v1();
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs-171-    drop(telemetry_guard);

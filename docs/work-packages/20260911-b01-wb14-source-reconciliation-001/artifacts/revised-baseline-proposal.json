@@ -1,0 +1,89 @@
+{
+  "proposal_id": "reconciled-available145-r1",
+  "status": "ASSESSED_NOT_RECOMMENDED_HOLD",
+  "basis": {
+    "retained_source_root": "/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs",
+    "expected_working145_map_sha256": "b6fb949e967af911bd3d508c02e023bf0a349b30e3c0697631276b351b50e88f",
+    "revised_actual_map_sha256": "c7aea0707d0c6a0876ec4bee5a7fcf15e751a092e086f517ced7edba8282b71e",
+    "actual_map_evidence": "actual-byte-inventory.json",
+    "reconstruction_recipe_inputs": "actual-byte-inventory.json#reconstruction_inputs"
+  },
+  "explicit_substitutions": [
+    {
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs",
+      "expected_sha256": "730f9e36c83837251b080ede62069acabef5e19b828c59d1a5fad2a087ca4b10",
+      "retained_available_sha256": "982dac38c5b45b60eeb6db22a9ad839037359ff3fbc38fae11c10b069d434d76",
+      "preserved_copy": "source-copies/precedence_tests.available.rs"
+    },
+    {
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs",
+      "expected_sha256": "9b0c40bcada9706a100714fe7b9913bc016124b68be8f5e0f8716efae857d2ad",
+      "retained_available_sha256": "041c0df1739385995e5cc6c241510523e0e4c74bedfba34bf152c501461e53fd",
+      "preserved_copy": "source-copies/raw_hash_tests.available.rs"
+    }
+  ],
+  "unchanged_production_proof": {
+    "method": "All 927 expected manifest paths were rehashed; the only mismatches are the two explicit tests above.",
+    "matching_entries": 925,
+    "production_path_mismatches": 0,
+    "fresh_recipe_replay": "fresh-recipe-relevant-input-comparison.json",
+    "fresh_recipe_relevant_paths": 744,
+    "fresh_recipe_relevant_digest": "665eed6aa814735412aa66b74a03ef8e2afcf1cab2ea1c0597b6e5febf8d81de",
+    "fresh_recipe_relevant_mismatches": 0,
+    "whole_source_replay": "fresh-recipe-whole-source-comparison.json",
+    "whole_source_regular_files": 36057,
+    "whole_source_regular_digest": "8b29e888b96c223f46d8c2432c49560bbf68c15871491cfdaa68b1221cd373c6",
+    "whole_source_regular_mismatches": 0,
+    "whole_source_symlinks": 1318,
+    "whole_source_symlink_target_digest": "6c50ef172d22672ba98f0b66f3a45da1849b0c47409f771affd079430196b58f",
+    "whole_source_symlink_mismatches": 0,
+    "scope_limit": "Fresh recipe replay now compares every regular file and symlink target in reconstructed source to retained source; external symlink resolution list is empty. Immutable external build/toolchain/runtime inputs are not source bytes and remain outside this identity claim."
+  },
+  "unknowns": [
+    "Expected historical bytes for both substitutions are unavailable; their semantic delta is UNKNOWN.",
+    "The retained partial source contains no source-visible ignored fresh-process direct-ingress test for day 4/interval 22/transaction 255.",
+    "Remote full old base and full raw-stop-point145 LFS archive retrieval were not run; local identities are preserved."
+  ],
+  "prospective_test_scope_amendment": {
+    "registration_parent": "crates/openwepp-runner/src/hillslope/03_tests.rs:49 existing include of tests03/snow_accuracy_experiment.rs",
+    "new_path": "crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs",
+    "test_name": "wb14_day4_interval22_transaction255_fresh_process_prefix_cadence_replay",
+    "ignored_attribute": "#[ignore = \"fresh process WB14 prefix/cadence authority\"]",
+    "proposed_command": "cd /workdir/openwepp-experiments/b01-wb14-cadence/candidate && nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-cadence-targets/candidate RUST_MIN_STACK=67108864 cargo test --manifest-path /workdir/openwepp-experiments/b01-wb14-cadence/candidate/Cargo.toml -p openwepp-runner --lib --locked --release --features test-fixture-authority,openwepp-hillslope-orchestrator/persisted-restart-v1,openwepp-hillslope-orchestrator/restart-authority-evidence hillslope::tests::wb14_day4_interval22_transaction255_fresh_process_prefix_cadence_replay -- --ignored --exact --nocapture",
+    "cargo_target_note": "No Cargo manifest edit is proposed: openwepp-runner directly depends on openwepp-hillslope-orchestrator, and the workspace feature selectors activate its two existing features. Command is proposed only and was not run.",
+    "required_coverage": "two layers: fresh self-spawned runner worker through execute_hillslope_run_with_runtime_policy and a new non-public feature-gated successful-ingress observation record; existing orchestrator crate-test modules for private execute_surface_liquid_ingress_with_parent_state_and_coupled_binding vectors, [385200,387000) parent, inert [385200,385920) prefix, 18 physical children/OFE, complete-owner rollback, receipt custody, uninterrupted/split replay, independent operands, and full poison/precedence matrix in ../package.md#checkpoint-3--harness-inventory",
+    "disposition": "UNRESOLVED_NECESSARY_COMPONENTS_ONLY: commands/test paths are not a sufficient accepted scope. cfg(test)/pub(crate) injection and total counters are unavailable to the runner dependency. See owning package negative decision.",
+    "exact_test_observation_write_paths": [
+      "crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs",
+      "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs",
+      "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14_native_prefix_tests.rs",
+      "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs (test/evidence-only observations and existing test-only sections)"
+    ],
+    "source_custody": "Freeze reconstructed-available145. After separate owner adoption create baseline-red/candidate copies; add matched tests/observations before any cadence source correction. Command names prospective candidate; paired red uses baseline-red source/target.",
+    "worker_process": {
+      "executable": "std::env::current_exe()",
+      "args": [
+        "--exact",
+        "hillslope::tests::wb14_day4_interval22_transaction255_fresh_process_prefix_cadence_replay",
+        "--ignored",
+        "--nocapture"
+      ],
+      "environment": {
+        "OPENWEPP_WB14_PREFIX_CADENCE_WORKER": "1"
+      },
+      "acceptance": "require successful child and exactly one named worker test executed; zero selected/skipped is failure"
+    },
+    "private_vector_commands": "../package.md#proposed-private-vector-commands",
+    "coordinator_restart_api": [
+      "DirectWb14ParentWorkingState::restart_bytes(configuration)",
+      "DirectWb14ParentWorkingState::from_restart_bytes(configuration, bytes)"
+    ],
+    "observation_feature": "restart-authority-evidence"
+  },
+  "recommendation": "HOLD: inspected source is recoverable but no source adoption or complete test-scope amendment is recommended until late-phase runner injection, total prefix/suffix physics observation, exact fixture and outer restart/rollback interfaces are bound.",
+  "remaining_test_authority_gaps": [
+    "runner-to-orchestrator late-phase refusal injection/observation bridge",
+    "total WB14 physics-entry observation including prefix construction, accessible to runner dependency build",
+    "bounded worker fixture derivation from gradual_warm_tail7-cases.json and complete outer restart/rollback observation"
+  ]
+}

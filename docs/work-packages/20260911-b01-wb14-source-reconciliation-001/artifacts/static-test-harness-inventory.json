@@ -1,0 +1,991 @@
+{
+  "available_files": {
+    "precedence_tests.rs": {
+      "functions": [
+        {
+          "assertion_kinds": [
+            "assert!"
+          ],
+          "error_codes": [],
+          "ignored": false,
+          "line": 17,
+          "name": "assert_hashes",
+          "production_calls": [],
+          "test": false
+        },
+        {
+          "assertion_kinds": [],
+          "error_codes": [],
+          "ignored": false,
+          "line": 45,
+          "name": "two_ofe_attachment_fixture",
+          "production_calls": [],
+          "test": false
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002",
+            "E004",
+            "E005"
+          ],
+          "ignored": false,
+          "line": 116,
+          "name": "request_identity_native_domain_cardinality_and_bound_precedence_is_canonical",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert!",
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 175,
+          "name": "ingress_identity_precedes_request_and_winter_e003_without_callback",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert!",
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 237,
+          "name": "configured_surface_source_identity_precedes_request_and_winter_e003",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 296,
+          "name": "source_mapping_e002_attempt_hash_binds_wb14_inputs",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E003"
+          ],
+          "ignored": false,
+          "line": 340,
+          "name": "unified_attempt_hash_distinguishes_ingress_component_and_wb14_operands",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 399,
+          "name": "unified_snapshot_mismatch_reports_computed_beginning_hash",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E003"
+          ],
+          "ignored": false,
+          "line": 440,
+          "name": "public_attachment_rejects_each_nonfinite_production_lane_area_as_e003",
+          "production_calls": [
+            "configure_surface_liquid_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 481,
+          "name": "attachment_lane_identity_precedes_nonfinite_area_in_any_position",
+          "production_calls": [
+            "configure_surface_liquid_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 505,
+          "name": "attachment_state_identity_precedes_nonfinite_lane_area_without_mutation",
+          "production_calls": [
+            "configure_surface_liquid_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 557,
+          "name": "request_identity_precedes_nonfinite_beginning_surface_state",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 622,
+          "name": "request_identity_precedes_stale_digest_nonfinite_configuration_and_binds_raw_bits",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 673,
+          "name": "every_cross_input_e002_precedes_config_or_state_e003_without_callback",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 756,
+          "name": "stale_config_or_state_digest_with_nonfinite_bits_is_identity_failure_without_callback",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E003"
+          ],
+          "ignored": false,
+          "line": 818,
+          "name": "receiver_rejects_every_invalid_lane_area_as_e003_without_mutation_or_callback",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 882,
+          "name": "receiver_state_identity_precedes_invalid_lane_domain_without_mutation_or_callback",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E007"
+          ],
+          "ignored": false,
+          "line": 951,
+          "name": "exact_one_custody_precedes_finite_cadence_failure",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002",
+            "E005"
+          ],
+          "ignored": false,
+          "line": 992,
+          "name": "final_protocol_identity_and_cardinality_precede_nonfinite_and_negative_amounts",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002",
+            "E003"
+          ],
+          "ignored": false,
+          "line": 1074,
+          "name": "finalization_applies_precedence_across_protocol_and_all_receiver_sets",
+          "production_calls": [],
+          "test": true
+        }
+      ],
+      "sha256": "982dac38c5b45b60eeb6db22a9ad839037359ff3fbc38fae11c10b069d434d76",
+      "test_functions": [
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002",
+            "E004",
+            "E005"
+          ],
+          "ignored": false,
+          "line": 116,
+          "name": "request_identity_native_domain_cardinality_and_bound_precedence_is_canonical",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert!",
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 175,
+          "name": "ingress_identity_precedes_request_and_winter_e003_without_callback",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert!",
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 237,
+          "name": "configured_surface_source_identity_precedes_request_and_winter_e003",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 296,
+          "name": "source_mapping_e002_attempt_hash_binds_wb14_inputs",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E003"
+          ],
+          "ignored": false,
+          "line": 340,
+          "name": "unified_attempt_hash_distinguishes_ingress_component_and_wb14_operands",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 399,
+          "name": "unified_snapshot_mismatch_reports_computed_beginning_hash",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E003"
+          ],
+          "ignored": false,
+          "line": 440,
+          "name": "public_attachment_rejects_each_nonfinite_production_lane_area_as_e003",
+          "production_calls": [
+            "configure_surface_liquid_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 481,
+          "name": "attachment_lane_identity_precedes_nonfinite_area_in_any_position",
+          "production_calls": [
+            "configure_surface_liquid_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 505,
+          "name": "attachment_state_identity_precedes_nonfinite_lane_area_without_mutation",
+          "production_calls": [
+            "configure_surface_liquid_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 557,
+          "name": "request_identity_precedes_nonfinite_beginning_surface_state",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 622,
+          "name": "request_identity_precedes_stale_digest_nonfinite_configuration_and_binds_raw_bits",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 673,
+          "name": "every_cross_input_e002_precedes_config_or_state_e003_without_callback",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 756,
+          "name": "stale_config_or_state_digest_with_nonfinite_bits_is_identity_failure_without_callback",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E003"
+          ],
+          "ignored": false,
+          "line": 818,
+          "name": "receiver_rejects_every_invalid_lane_area_as_e003_without_mutation_or_callback",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 882,
+          "name": "receiver_state_identity_precedes_invalid_lane_domain_without_mutation_or_callback",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E007"
+          ],
+          "ignored": false,
+          "line": 951,
+          "name": "exact_one_custody_precedes_finite_cadence_failure",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002",
+            "E005"
+          ],
+          "ignored": false,
+          "line": 992,
+          "name": "final_protocol_identity_and_cardinality_precede_nonfinite_and_negative_amounts",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002",
+            "E003"
+          ],
+          "ignored": false,
+          "line": 1074,
+          "name": "finalization_applies_precedence_across_protocol_and_all_receiver_sets",
+          "production_calls": [],
+          "test": true
+        }
+      ]
+    },
+    "raw_hash_tests.rs": {
+      "functions": [
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [],
+          "ignored": false,
+          "line": 4,
+          "name": "surface_attachment_attempt_hashes_bind_raw_invalid_bits_not_stale_declared_digests",
+          "production_calls": [
+            "configure_surface_liquid_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert!",
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 63,
+          "name": "unified_snapshot_failure_hashes_bind_raw_invalid_configuration_bits",
+          "production_calls": [
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert!",
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [],
+          "ignored": false,
+          "line": 103,
+          "name": "unified_entry_joins_raw_configuration_and_state_attempts_with_v3_envelope",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 196,
+          "name": "ingress_identity_attempt_binds_differing_raw_invalid_configuration_bits",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        }
+      ],
+      "sha256": "041c0df1739385995e5cc6c241510523e0e4c74bedfba34bf152c501461e53fd",
+      "test_functions": [
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [],
+          "ignored": false,
+          "line": 4,
+          "name": "surface_attachment_attempt_hashes_bind_raw_invalid_bits_not_stale_declared_digests",
+          "production_calls": [
+            "configure_surface_liquid_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert!",
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 63,
+          "name": "unified_snapshot_failure_hashes_bind_raw_invalid_configuration_bits",
+          "production_calls": [
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert!",
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [],
+          "ignored": false,
+          "line": 103,
+          "name": "unified_entry_joins_raw_configuration_and_state_attempts_with_v3_envelope",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow"
+          ],
+          "test": true
+        },
+        {
+          "assertion_kinds": [
+            "assert_eq!",
+            "assert_ne!",
+            "expect_err"
+          ],
+          "error_codes": [
+            "E002"
+          ],
+          "ignored": false,
+          "line": 196,
+          "name": "ingress_identity_attempt_binds_differing_raw_invalid_configuration_bits",
+          "production_calls": [
+            "execute_unified_real_hydrology_shadow",
+            "unified_beginning_hydrology_snapshot_sha256"
+          ],
+          "test": true
+        }
+      ]
+    }
+  },
+  "fixture_lineage": [
+    {
+      "line": 55,
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+    },
+    {
+      "line": 77,
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+    },
+    {
+      "line": 203,
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+    },
+    {
+      "line": 240,
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+    },
+    {
+      "line": 313,
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+    },
+    {
+      "line": 1385,
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+    },
+    {
+      "line": 1741,
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+    }
+  ],
+  "git_available_versions": {
+    "precedence_tests.rs": [
+      {
+        "commit": "96c46c88e01e4faaecccd084e402ebb6dcb1e6cd",
+        "sha256": "982dac38c5b45b60eeb6db22a9ad839037359ff3fbc38fae11c10b069d434d76"
+      },
+      {
+        "commit": "0edf04577ef21df43f40ed0bf0c449581e0213be",
+        "sha256": "75060793004e4e22b6c019535663b74fa93b1644a726136d988ab0215ac40172"
+      },
+      {
+        "commit": "537345efa514f51423e2ef7e70ae6c30b0b12c1f",
+        "sha256": "159de2adc1ee5deae05669b4a877fe0d9aabc86317b20a4d09be2647b74f2464"
+      },
+      {
+        "commit": "4360daef1e289e240997f409a6ecf7cb78d0001d",
+        "sha256": "69a9175633d37379e056c681d11a304ad0cd66fccd1948fcff177c85ad8f0fc3"
+      },
+      {
+        "commit": "15a110ece02941d02424dd54e111e6446e044e42",
+        "sha256": "9a6dbb1fba5dce6dfb060d42a87c6fec4fb843eb633bf17cf9dc1492c78d15bd"
+      },
+      {
+        "commit": "413c0c32a41ad609b43343a4fd461c58bdc94862",
+        "sha256": "e68a71d66a7838110fe929a6eb0b4aa6cde7dee05488a9c812af7a73d7b40f1f"
+      },
+      {
+        "commit": "3ac61997d4e853aabfe3ea6c669e9fd731955493",
+        "sha256": "ecbcb75daa603acbc11e9e039c83cedce7fa20d7e98d6f0b4e2561f8e46b8f82"
+      },
+      {
+        "commit": "ac8d87e9e05956d7fe2d9f981797a3b77d8639b1",
+        "sha256": "0d17473182f9269b00361954de8f6985bd8d5509533a40560284e373fa68c96f"
+      },
+      {
+        "commit": "73299b9815fe1bf7d31de6946f613f39ed6fddf3",
+        "sha256": "16f7f59a0149d2ffd3c517d43b2061f6d72c2adde4b25807c841d61fcad5ef28"
+      },
+      {
+        "commit": "5d298ca1c2a77cced86af4e8501302550656e0f6",
+        "sha256": "0a5424e0bbd2937f10604f494e6849f2a0424a484b30f41d070ac71b1571a2f2"
+      },
+      {
+        "commit": "10b914da116967bbe619eb48f6518729c8f20cc8",
+        "sha256": "bd63bf9250425ce8387bcd6f7073775cd277b329598f6cad72c68605a7ecdb71"
+      },
+      {
+        "commit": "c9524729a80616f99e85fbb771f8e6c055fb0cc8",
+        "sha256": "ad9f30425247f74effcd826cba9f94661da9e3b389846b5d5047e2aab2c2ef69"
+      },
+      {
+        "commit": "f249431d409afd2de169cba544db64b75698c792",
+        "sha256": "4f81af9bc2368031354e801499bf78a7c2ca61d9b93da22d7c661c9f6fab5258"
+      }
+    ],
+    "raw_hash_tests.rs": [
+      {
+        "commit": "96c46c88e01e4faaecccd084e402ebb6dcb1e6cd",
+        "sha256": "041c0df1739385995e5cc6c241510523e0e4c74bedfba34bf152c501461e53fd"
+      },
+      {
+        "commit": "0edf04577ef21df43f40ed0bf0c449581e0213be",
+        "sha256": "ca9860adb6c309d1d7f048f1d77cc9f6145d9819d208de11c8106e9ee81d74c2"
+      },
+      {
+        "commit": "15a110ece02941d02424dd54e111e6446e044e42",
+        "sha256": "1039f92066b476ebe8a5cd262057c32e2cb3f5ed1f66d578c55cfe0324090611"
+      },
+      {
+        "commit": "fb89e5a55802c702272a311a8d167af4a722ff09",
+        "sha256": "d0224f949fbddd47112cb70f5d4ae37a3f5d8a6c33ab36d366b131a2c17edb98"
+      },
+      {
+        "commit": "2e32a8a0e3f5473720704b4d419d7340f63a5ca9",
+        "sha256": "0c09729ca71aca21d819add03079e4e2e0a44436292ee1d578f00ee7c0c4b6ea"
+      }
+    ]
+  },
+  "manual_static_evidence": {
+    "classification": "Registration, fixtures, production call paths and nearby harness descriptions are manual static findings; hashes bind their inspected source, not compiler discovery.",
+    "source_sha256": {
+      "Cargo.toml": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+      "crates/openwepp-hillslope-orchestrator/Cargo.toml": "83e0214de808dd87f6452ffca9fe2c9f85fdbeb10cbc03addda01e142f388c74",
+      "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs": "1ab5fa82391f617e1c8713e4b3fcd5894b2b6fb34da054c297da03eb8ccc427b",
+      "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs": "60d2ec1ca0d0fd4b8b8e1d468cf6dd1047b51901f031023c1a5df013dd469af8",
+      "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests.rs": "90d940f12ba2dd1685c70a40c5817423952afbd33408c0e1abc226fc5d515b61",
+      "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs": "1826924b199e8a1ff7a42776ac99713b0b1bb01ab8207a1ea508cc1539096c29",
+      "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs": "a5ec580696c0cb17552970a654f5b3064343caf70812c96e2d4f96a1c730ac0a",
+      "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs": "dfef7863a6ec427ec7f2c2a461def09be1e60c0b4ad592fd71942df4291c32c7",
+      "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14_native_prefix_tests.rs": "23adc22116326324cfc5cf4dd7959c0cce25276b1e53d965df39e65f56b2af47",
+      "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs": "21a6d09fd67a4efbb8bf3f1bc15f81640f71415d6952479e77d2a86050049c71",
+      "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs": "a011b6ae781c4d507d21a5a784af80f8d03413b5c39764d751b7469d6f976e4a",
+      "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs": "5bd1ed07e3712bb1bc023de5eb1a47677806fc0a7d9d197dea420f4d42d4a47e"
+    }
+  },
+  "nearby_harnesses": [
+    {
+      "entrypoint": "DirectWb14ParentIntervalV1 / validate_native_inactive_wb14_prefix_v1",
+      "kind": "native-prefix unit",
+      "limit": "not ignored; does not bind day4/interval22/transaction255 real ingress",
+      "registration": "surface_liquid_wb14.rs:2973 include!(surface_liquid_wb14_native_prefix_tests.rs)",
+      "test_file": "direct_runtime/surface_liquid_wb14_native_prefix_tests.rs",
+      "tests": "native_inactive_prefix_* lines 2,53,116,154,197; ordinary controls 261,284"
+    },
+    {
+      "entrypoint": "execute_surface_liquid_ingress",
+      "kind": "ingress-context unit",
+      "limit": "uses day_index=3, interval=0, transaction=411; no fresh-process/parent prefix lifecycle",
+      "registration": "surface_liquid_ingress.rs:2996 #[path = surface_liquid_ingress_context_tests.rs]",
+      "test_file": "direct_runtime/surface_liquid_ingress_context_tests.rs",
+      "tests": "cadence_failure_is_e008_with_exact_transaction_and_attempt_hash line 284"
+    },
+    {
+      "entrypoint": "B01.install then publication projection",
+      "kind": "ignored B01 publication",
+      "limit": "no surface-liquid ingress/WB14 or target boundary",
+      "registration": "stage3_committed_publication.rs:2711 #[path = stage3_committed_publication_tests.rs]",
+      "test_file": "direct_runtime/stage3_committed_publication_tests.rs",
+      "tests": "actual_day_four_thin_snow_publication_preserves_owner line 748; #[ignore] line 747"
+    }
+  ],
+  "production_call_paths": {
+    "attachment": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:677 configure_surface_liquid_shadow",
+    "snapshot": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs:866 unified_beginning_hydrology_snapshot_sha256",
+    "unified_entry": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs:5 execute_unified_real_hydrology_shadow"
+  },
+  "registration": {
+    "crate_package": "openwepp-hillslope-orchestrator (crates/openwepp-hillslope-orchestrator/Cargo.toml:2)",
+    "features": "no feature cfg adjacent to registration; crate feature restart-authority-evidence exists but does not gate it",
+    "module_parent": [
+      {
+        "line": 77,
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs"
+      },
+      {
+        "line": 78,
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs"
+      }
+    ],
+    "parent_module_source": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs",
+    "submodule_lines": [
+      {
+        "line": 36,
+        "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+      },
+      {
+        "line": 37,
+        "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+      },
+      {
+        "line": 39,
+        "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+      },
+      {
+        "line": 40,
+        "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+      }
+    ],
+    "test_cfg": "#[cfg(test)] gates raw_boundary_contract_tests; no Cargo [[test]] path names this root source file"
+  },
+  "retained_patch_trace": {
+    "archive_member_occurrences": 0,
+    "direct_path_occurrences": 0,
+    "meaning": "retained-patch/archive inspection does not identify a source-producing patch/member for either available file",
+    "searched_patches": [
+      "R0-composition.patch",
+      "PBC-final-build016.patch",
+      "correction145.patch"
+    ]
+  },
+  "source_root": "/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs"
+}

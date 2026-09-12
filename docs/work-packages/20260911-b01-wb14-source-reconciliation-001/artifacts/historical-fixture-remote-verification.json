@@ -1,0 +1,9 @@
+{
+  "method": "Python urllib.request.urlopen GET",
+  "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/1497c078cfa524315763e17bdb225594480be0b4/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+  "commit": "1497c078cfa524315763e17bdb225594480be0b4",
+  "path": "docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+  "sha256": "c48cc560dff31102085ebcf852225b2063a1629ad96cfa9f7283364df44fbf3f",
+  "equal_to_local": true,
+  "scope": "Historical fixture bytes only; not executed"
+}

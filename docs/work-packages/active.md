@@ -7,7 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
-| B01 WB14 source reconciliation (scaffolded) | [record](20260911-b01-wb14-source-reconciliation-001/package.md) | Proposed bounded source/test-scope assessment; execution and any revised-baseline adoption remain separate owner decisions. |
+| B01 WB14 source reconciliation (assessment complete) | [record](20260911-b01-wb14-source-reconciliation-001/package.md) | HOLD recommendation: available source recoverable; source/test adoption awaits a concrete real-runner injection and total-physics observation bridge. |
 | B01 WB14 verified cadence repair (HOLD) | [record](20260911-b01-wb14-verified-cadence-repair-001/package.md) | Exact recovery stopped at 925/927 file matches; two required test-file byte sequences unavailable. No candidate or authentic runs. |
 | Astra package orchestration (complete) | [record](20260911-astra-package-orchestration-001/package.md) | Implemented and independently reviewed Astra oversight, delegated implementation and between-package direction review. B01 recovery/execution remains outside this package. |
 | Bounded execution and external Pro review (complete) | [record](20260911-bounded-execution-external-review-001/package.md) | Implemented and independently reviewed model routing, checkpoint bounds and manual exchange tooling; B01 remains paused. |

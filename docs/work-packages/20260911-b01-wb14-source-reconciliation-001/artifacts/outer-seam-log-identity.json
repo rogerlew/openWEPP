@@ -1,0 +1,8 @@
+{
+  "path": "logs/outer-rollback-seam.log.gz",
+  "encoding": "gzip",
+  "raw_sha256": "209237f3984818bf7b0d2ea41975fb497ca27de11c340624ba8819d24c6b4e11",
+  "compressed_sha256": "28edcad74e061e82c855de11866c88a975da94e52202b87987247448ddbd27ef",
+  "original_durable_path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/logs/outer-rollback-seam.log",
+  "reason": "Lossless raw excerpt preservation including terminal blank line; no source bytes edited."
+}

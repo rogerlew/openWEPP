@@ -1,0 +1,9 @@
+{
+  "path": "docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+  "sha256": "c48cc560dff31102085ebcf852225b2063a1629ad96cfa9f7283364df44fbf3f",
+  "case": "gradual_warm_tail7",
+  "ofes": 1,
+  "policy": "B01",
+  "classification": "Historical reproduction input, not permission to run tail7 or saved-checkpoint resume. Any later bounded fixture must preserve exact recorded inputs and separate heterogeneous/nonzero controls.",
+  "status": "IDENTIFIED_NOT_EXECUTED"
+}

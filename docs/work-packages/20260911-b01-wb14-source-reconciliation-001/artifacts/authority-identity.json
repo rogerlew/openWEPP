@@ -1,0 +1,16 @@
+{
+  "authority_root": "/workdir/openWEPP",
+  "commit": "1497c078cfa524315763e17bdb225594480be0b4",
+  "files": {
+    "AGENTS.md": "8e22a94cd1883bdd6b2a240daa6f8f2f996f71542faa7d9165d26a8bdd519342",
+    "docs/work-packages/AGENTS.md": "77b7b1147ed19ca45fc1bbec28f78a6ea596e7a1c65f0629de6c1c8627773834",
+    "docs/work-packages/role-orchestration.md": "c4bdeab56672dfdeb095696a11e171f6df728140f35803afab0656398a283eca",
+    "docs/standards/bounded-agent-execution.md": "f8654ee6b72d9b731ba11fac338588a19a31758cdbf66d65f76e057c2783af02",
+    "docs/standards/testing-and-gate-strategy.md": "b487b9a4648fb5226d76cac2aaad8067ed736c2ff2bf11a3d4e9f3b6a61ecbe9",
+    "docs/specifications/science-contracts/AGENTS.md": "87030167d4dffeeac9de5790018a678fec790c3f949d0afab51afe92127c8b1c",
+    "docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md": "0f7bfb46764f1db883988e0b34771be2e455435b213095fe61756d332e94931e",
+    "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md": "b76d674dff647066f3cfabb1756bc121ed49942250b51319799c16964b0445d2",
+    "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": "e0e0735fd240ec9b7f1b7bcba759b7b8db4bb59fc4f8dd6d5390be27dce33e23"
+  },
+  "runtime_source_root": "/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs"
+}

@@ -1,0 +1,30 @@
++ git log --all '--format=%H %s' -- tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs
+96c46c88e01e4faaecccd084e402ebb6dcb1e6cd Implement strict V8 LSE runtime shadow
+0edf04577ef21df43f40ed0bf0c449581e0213be close custody heavy gate lint
+537345efa514f51423e2ef7e70ae6c30b0b12c1f unify custody protocol precedence
+4360daef1e289e240997f409a6ecf7cb78d0001d complete attachment identity precedence
+15a110ece02941d02424dd54e111e6446e044e42 seal custody digest precedence and attempt lineage
+413c0c32a41ad609b43343a4fd461c58bdc94862 complete global custody precedence and coverage
+3ac61997d4e853aabfe3ea6c669e9fd731955493 type LSE custody error taxonomy
+ac8d87e9e05956d7fe2d9f981797a3b77d8639b1 seal custody source and rollback lineage
+73299b9815fe1bf7d31de6946f613f39ed6fddf3 complete custody sealing and source preflight
+5d298ca1c2a77cced86af4e8501302550656e0f6 complete custody receiver provenance and unified preflight
+10b914da116967bbe619eb48f6518729c8f20cc8 enforce exact custody enthalpy and context
+c9524729a80616f99e85fbb771f8e6c055fb0cc8 complete custody cross-input error precedence
+f249431d409afd2de169cba544db64b75698c792 close custody infiltration and precedence findings
++ git log --all '--format=%H %s' -- tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs
+96c46c88e01e4faaecccd084e402ebb6dcb1e6cd Implement strict V8 LSE runtime shadow
+0edf04577ef21df43f40ed0bf0c449581e0213be close custody heavy gate lint
+15a110ece02941d02424dd54e111e6446e044e42 seal custody digest precedence and attempt lineage
+fb89e5a55802c702272a311a8d167af4a722ff09 preserve complete custody failure evidence
+2e32a8a0e3f5473720704b4d419d7340f63a5ca9 complete surface liquid custody error boundaries
++ git diff --stat 0edf04577ef21df43f40ed0bf0c449581e0213be 96c46c88e01e4faaecccd084e402ebb6dcb1e6cd -- tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs
+ .../precedence_tests.rs                                               | 4 ++++
+ .../raw_hash_tests.rs                                                 | 2 ++
+ 2 files changed, 6 insertions(+)
++ rg -n 'land_surface_energy_real_hydrology_shadow_contract.rs|raw_boundary_contract_tests|surface_liquid_wb14_native_prefix_tests|surface_liquid_ingress_context_tests|actual_day_four_thin_snow_publication_preserves_owner' /workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src /workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/Cargo.toml --glob '*.rs' --glob '*.toml'
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:2996:#[path = "surface_liquid_ingress_context_tests.rs"]
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs:2973:    include!("surface_liquid_wb14_native_prefix_tests.rs");
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests.rs:748:fn actual_day_four_thin_snow_publication_preserves_owner() {
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs:77:#[path = "../../../../tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"]
+/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs:78:mod raw_boundary_contract_tests;

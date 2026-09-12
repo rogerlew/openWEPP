@@ -1,0 +1,204 @@
+{
+  "tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs": [
+    {
+      "commit": "f249431d409afd2de169cba544db64b75698c792",
+      "compressed_sha256": "7e5c01d6d2d3ce3a747c32054b1dd668f1b0e9d685a89a6ee704dac588a52193",
+      "encoding": "gzip",
+      "file_sha256": "4f81af9bc2368031354e801499bf78a7c2ca61d9b93da22d7c661c9f6fab5258",
+      "parent": "2e32a8a0e3f5473720704b4d419d7340f63a5ca9",
+      "subject": "close custody infiltration and precedence findings",
+      "transition_diff": "version-diffs/precedence_tests.rs/f249431d409afd2de169cba544db64b75698c792.patch.gz",
+      "transition_diff_lines": 189,
+      "transition_diff_sha256": "82289334ed7629d1669e90a61f5ea89498090780727caf820cc4c2bf179544a0"
+    },
+    {
+      "commit": "c9524729a80616f99e85fbb771f8e6c055fb0cc8",
+      "compressed_sha256": "fa147f54240d4f640b53ff381b11900703463b3d3d849a607d9cd85c3e74d53b",
+      "encoding": "gzip",
+      "file_sha256": "ad9f30425247f74effcd826cba9f94661da9e3b389846b5d5047e2aab2c2ef69",
+      "parent": "7b208bb267f3c2b193362fa4cf6c033901f1631a",
+      "subject": "complete custody cross-input error precedence",
+      "transition_diff": "version-diffs/precedence_tests.rs/c9524729a80616f99e85fbb771f8e6c055fb0cc8.patch.gz",
+      "transition_diff_lines": 140,
+      "transition_diff_sha256": "bcf75a4703f24bd7c06143ed8d98736a534f735de6d4906b5a7e184fe4f97b8c"
+    },
+    {
+      "commit": "10b914da116967bbe619eb48f6518729c8f20cc8",
+      "compressed_sha256": "90d71f09a0a1764e1175cfc2c7b0f7da9fcebd75f92a9038be81c666ee6d9837",
+      "encoding": "gzip",
+      "file_sha256": "bd63bf9250425ce8387bcd6f7073775cd277b329598f6cad72c68605a7ecdb71",
+      "parent": "c9524729a80616f99e85fbb771f8e6c055fb0cc8",
+      "subject": "enforce exact custody enthalpy and context",
+      "transition_diff": "version-diffs/precedence_tests.rs/10b914da116967bbe619eb48f6518729c8f20cc8.patch.gz",
+      "transition_diff_lines": 151,
+      "transition_diff_sha256": "bd189294b0a592b118e9ee969cf2f4bc2b32f0c1164bc66579d4c44e88b21345"
+    },
+    {
+      "commit": "5d298ca1c2a77cced86af4e8501302550656e0f6",
+      "compressed_sha256": "f3d3ba5e6a524c63184f9153bb25d75f148f495cef81d5e1b99335fe8da8c796",
+      "encoding": "gzip",
+      "file_sha256": "0a5424e0bbd2937f10604f494e6849f2a0424a484b30f41d070ac71b1571a2f2",
+      "parent": "85358c9b24d2ad74f34a1efc12295f147e393e84",
+      "subject": "complete custody receiver provenance and unified preflight",
+      "transition_diff": "version-diffs/precedence_tests.rs/5d298ca1c2a77cced86af4e8501302550656e0f6.patch.gz",
+      "transition_diff_lines": 71,
+      "transition_diff_sha256": "b0a573a28684394273382b427cb68352873e816519f6b73e630662c81199751b"
+    },
+    {
+      "commit": "73299b9815fe1bf7d31de6946f613f39ed6fddf3",
+      "compressed_sha256": "fcac12022169c51f2ccebe43bbb0579048d3028ae3855fb89678b3263871b923",
+      "encoding": "gzip",
+      "file_sha256": "16f7f59a0149d2ffd3c517d43b2061f6d72c2adde4b25807c841d61fcad5ef28",
+      "parent": "d5214488754195b6dfbd6443868231230baf3cbb",
+      "subject": "complete custody sealing and source preflight",
+      "transition_diff": "version-diffs/precedence_tests.rs/73299b9815fe1bf7d31de6946f613f39ed6fddf3.patch.gz",
+      "transition_diff_lines": 166,
+      "transition_diff_sha256": "cbd0ce33952d89e819f0166ce3774fe32d56d6f9978b47c40096ce53745628fe"
+    },
+    {
+      "commit": "ac8d87e9e05956d7fe2d9f981797a3b77d8639b1",
+      "compressed_sha256": "a16d5418b886e1cadeb6e00c9067d2c58969926594ac17ebe6f71db29654078d",
+      "encoding": "gzip",
+      "file_sha256": "0d17473182f9269b00361954de8f6985bd8d5509533a40560284e373fa68c96f",
+      "parent": "73299b9815fe1bf7d31de6946f613f39ed6fddf3",
+      "subject": "seal custody source and rollback lineage",
+      "transition_diff": "version-diffs/precedence_tests.rs/ac8d87e9e05956d7fe2d9f981797a3b77d8639b1.patch.gz",
+      "transition_diff_lines": 120,
+      "transition_diff_sha256": "da345a821f1bb8bda45096566e989fa49a3ad968da90dd6c66c488471bb1ae5c"
+    },
+    {
+      "commit": "3ac61997d4e853aabfe3ea6c669e9fd731955493",
+      "compressed_sha256": "e8fb3d4a7b42e600dbc93194c7664a82edb1ae9522b17420e93db134dabe713e",
+      "encoding": "gzip",
+      "file_sha256": "ecbcb75daa603acbc11e9e039c83cedce7fa20d7e98d6f0b4e2561f8e46b8f82",
+      "parent": "fb89e5a55802c702272a311a8d167af4a722ff09",
+      "subject": "type LSE custody error taxonomy",
+      "transition_diff": "version-diffs/precedence_tests.rs/3ac61997d4e853aabfe3ea6c669e9fd731955493.patch.gz",
+      "transition_diff_lines": 62,
+      "transition_diff_sha256": "674546295d893382c5243314595583e3cb244cb463640d6313e01e2931767f10"
+    },
+    {
+      "commit": "413c0c32a41ad609b43343a4fd461c58bdc94862",
+      "compressed_sha256": "184e579e4b6d3d895fb7825ef4574115d552099a0fdcb6dd53d3043e23a36906",
+      "encoding": "gzip",
+      "file_sha256": "e68a71d66a7838110fe929a6eb0b4aa6cde7dee05488a9c812af7a73d7b40f1f",
+      "parent": "3ac61997d4e853aabfe3ea6c669e9fd731955493",
+      "subject": "complete global custody precedence and coverage",
+      "transition_diff": "version-diffs/precedence_tests.rs/413c0c32a41ad609b43343a4fd461c58bdc94862.patch.gz",
+      "transition_diff_lines": 92,
+      "transition_diff_sha256": "e77ded767841208737c6e42f92ce800a71c0a4f6c5cd9979497d485532608d64"
+    },
+    {
+      "commit": "15a110ece02941d02424dd54e111e6446e044e42",
+      "compressed_sha256": "40b2b5b119e2179e535f9497d2e4744f35dd022756ad02a6e820f9d88d3d9699",
+      "encoding": "gzip",
+      "file_sha256": "9a6dbb1fba5dce6dfb060d42a87c6fec4fb843eb633bf17cf9dc1492c78d15bd",
+      "parent": "413c0c32a41ad609b43343a4fd461c58bdc94862",
+      "subject": "seal custody digest precedence and attempt lineage",
+      "transition_diff": "version-diffs/precedence_tests.rs/15a110ece02941d02424dd54e111e6446e044e42.patch.gz",
+      "transition_diff_lines": 73,
+      "transition_diff_sha256": "2d517e04c4d0f8955f4cd825638e5cae03ac11ac6aafeb71b518818c02dffc22"
+    },
+    {
+      "commit": "4360daef1e289e240997f409a6ecf7cb78d0001d",
+      "compressed_sha256": "26e3a95bae751e978312ce75949e5040a81280da391d20ca7887eb0eeb4b4aca",
+      "encoding": "gzip",
+      "file_sha256": "69a9175633d37379e056c681d11a304ad0cd66fccd1948fcff177c85ad8f0fc3",
+      "parent": "15a110ece02941d02424dd54e111e6446e044e42",
+      "subject": "complete attachment identity precedence",
+      "transition_diff": "version-diffs/precedence_tests.rs/4360daef1e289e240997f409a6ecf7cb78d0001d.patch.gz",
+      "transition_diff_lines": 63,
+      "transition_diff_sha256": "2dc809cb14fab60ab399f1077c0ebe2659b75223411fa2da5254e24402454357"
+    },
+    {
+      "commit": "537345efa514f51423e2ef7e70ae6c30b0b12c1f",
+      "compressed_sha256": "45ff9e672b8610936ae80cfa733b23e9373f9fda3dc147c9aaa65174d74e98be",
+      "encoding": "gzip",
+      "file_sha256": "159de2adc1ee5deae05669b4a877fe0d9aabc86317b20a4d09be2647b74f2464",
+      "parent": "2afffa9dcbcee2681572f912d63d90e31c035118",
+      "subject": "unify custody protocol precedence",
+      "transition_diff": "version-diffs/precedence_tests.rs/537345efa514f51423e2ef7e70ae6c30b0b12c1f.patch.gz",
+      "transition_diff_lines": 217,
+      "transition_diff_sha256": "fb53062e8d6ff50170f9f894aaf90416684e042f37008a80ce1b6b83e3d579cb"
+    },
+    {
+      "commit": "0edf04577ef21df43f40ed0bf0c449581e0213be",
+      "compressed_sha256": "98f1518cdf7a85e495e1d7fd52f5941ee22317c02caa0013f24133b9ac678bfc",
+      "encoding": "gzip",
+      "file_sha256": "75060793004e4e22b6c019535663b74fa93b1644a726136d988ab0215ac40172",
+      "parent": "ba22c88f5032b3bfb9f13e9c1feedb522734e0c2",
+      "subject": "close custody heavy gate lint",
+      "transition_diff": "version-diffs/precedence_tests.rs/0edf04577ef21df43f40ed0bf0c449581e0213be.patch.gz",
+      "transition_diff_lines": 57,
+      "transition_diff_sha256": "09952575916909ff0dfa8449d858446146735e653c6e3d739368cdf7e24a3015"
+    },
+    {
+      "commit": "96c46c88e01e4faaecccd084e402ebb6dcb1e6cd",
+      "compressed_sha256": "923e569ce59e216847ab85eabf6292fe5427d3e8af2c0fd6945ea62df28c54f8",
+      "encoding": "gzip",
+      "file_sha256": "982dac38c5b45b60eeb6db22a9ad839037359ff3fbc38fae11c10b069d434d76",
+      "parent": "099b15d2b13f52899e65b8d266a3c067cb9773c1",
+      "subject": "Implement strict V8 LSE runtime shadow",
+      "transition_diff": "version-diffs/precedence_tests.rs/96c46c88e01e4faaecccd084e402ebb6dcb1e6cd.patch.gz",
+      "transition_diff_lines": 22,
+      "transition_diff_sha256": "10896bfcc6814a0b6b621e7164fe48f06769d45241de0c66e79c9d832e18ded0"
+    }
+  ],
+  "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs": [
+    {
+      "commit": "2e32a8a0e3f5473720704b4d419d7340f63a5ca9",
+      "compressed_sha256": "21ea831e7d2a02585caf91fa1c684ff22beb0418e1ec29cdaa66d079b0541cdf",
+      "encoding": "gzip",
+      "file_sha256": "0c09729ca71aca21d819add03079e4e2e0a44436292ee1d578f00ee7c0c4b6ea",
+      "parent": "fe6cc4bd5e908d3761ffd6555a8c6565083c57bd",
+      "subject": "complete surface liquid custody error boundaries",
+      "transition_diff": "version-diffs/raw_hash_tests.rs/2e32a8a0e3f5473720704b4d419d7340f63a5ca9.patch.gz",
+      "transition_diff_lines": 106,
+      "transition_diff_sha256": "1665edc0474c846bdb7bd26204021e933a6ed534c80dfcbabd53e6d2c020d89c"
+    },
+    {
+      "commit": "fb89e5a55802c702272a311a8d167af4a722ff09",
+      "compressed_sha256": "a7fb065af4fee2569bd3bf9710f701f7080e1219bfcd58476711d3c89165ae73",
+      "encoding": "gzip",
+      "file_sha256": "d0224f949fbddd47112cb70f5d4ae37a3f5d8a6c33ab36d366b131a2c17edb98",
+      "parent": "fc65b28196abedced8d9a721a471e69281749dc6",
+      "subject": "preserve complete custody failure evidence",
+      "transition_diff": "version-diffs/raw_hash_tests.rs/fb89e5a55802c702272a311a8d167af4a722ff09.patch.gz",
+      "transition_diff_lines": 101,
+      "transition_diff_sha256": "8719d58866ccdd46ff12d88de65b98fdcfbd85ec08ff93f87acdc926b7ab62d9"
+    },
+    {
+      "commit": "15a110ece02941d02424dd54e111e6446e044e42",
+      "compressed_sha256": "b1277563539d3429b772a78bf7853a4531d802b07ec89d166e31dfea610bb490",
+      "encoding": "gzip",
+      "file_sha256": "1039f92066b476ebe8a5cd262057c32e2cb3f5ed1f66d578c55cfe0324090611",
+      "parent": "413c0c32a41ad609b43343a4fd461c58bdc94862",
+      "subject": "seal custody digest precedence and attempt lineage",
+      "transition_diff": "version-diffs/raw_hash_tests.rs/15a110ece02941d02424dd54e111e6446e044e42.patch.gz",
+      "transition_diff_lines": 76,
+      "transition_diff_sha256": "432f1be227df2127dbd272203e3ad7b788f9f16720221087a18fa7b4a03d7699"
+    },
+    {
+      "commit": "0edf04577ef21df43f40ed0bf0c449581e0213be",
+      "compressed_sha256": "45457701aaf2f258b4226ea6e52e03a05bc3881c76fd9d5eacb3198595c9fb3b",
+      "encoding": "gzip",
+      "file_sha256": "ca9860adb6c309d1d7f048f1d77cc9f6145d9819d208de11c8106e9ee81d74c2",
+      "parent": "ba22c88f5032b3bfb9f13e9c1feedb522734e0c2",
+      "subject": "close custody heavy gate lint",
+      "transition_diff": "version-diffs/raw_hash_tests.rs/0edf04577ef21df43f40ed0bf0c449581e0213be.patch.gz",
+      "transition_diff_lines": 13,
+      "transition_diff_sha256": "c8c842608b7401a381cf0da363387beb8c75114572d842933e2284ae1d4b572a"
+    },
+    {
+      "commit": "96c46c88e01e4faaecccd084e402ebb6dcb1e6cd",
+      "compressed_sha256": "8335f55a0e6f3bb9b77f9169ac2b4825966ed9aa0cbaec2137c8002efd476524",
+      "encoding": "gzip",
+      "file_sha256": "041c0df1739385995e5cc6c241510523e0e4c74bedfba34bf152c501461e53fd",
+      "parent": "099b15d2b13f52899e65b8d266a3c067cb9773c1",
+      "subject": "Implement strict V8 LSE runtime shadow",
+      "transition_diff": "version-diffs/raw_hash_tests.rs/96c46c88e01e4faaecccd084e402ebb6dcb1e6cd.patch.gz",
+      "transition_diff_lines": 13,
+      "transition_diff_sha256": "36f79377dac4be7414241ba615348d639ab94372a2aa4adcf34afdae5a7afbb0"
+    }
+  ]
+}

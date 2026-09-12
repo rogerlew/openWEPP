@@ -1,0 +1,16 @@
+Reviewer: /root/reconciliation_qa (rust_qa_reviewer, Terra/medium)
+Static/Ran: independent read-only evidence checks; no Rust execution.
+
+Findings
+- Medium — fixed and verified: artifacts/static_test_inventory.py omitted assertion macros due to a trailing word boundary after !. The repaired call-lookahead captures all four forms; regenerated inventory and 12 manually inspected source hashes verify.
+
+Non-blocking follow-up
+- Remote artifact publication and full remote old-base/LFS retrieval remain pending. The record labels these limits accurately and does not claim adoption or remote custody.
+
+QA pass: Independent checks reproduced the 927-entry map result (925 matches, two named mismatches) and both whole-source digests (36,057 files; 1,318 symlinks; no external links). Static registration, feature, fixture, harness, and proposed-command claims are bounded correctly. No Rust builds, tests, or authentic runs were performed.
+
+
+Affected review continuation — final negative assessment:
+Medium wording finding fixed and verified: the existing ignored runner test is no longer mislabeled as self-spawned fresh-process evidence.
+
+QA pass: The final HOLD disposition is evidence-backed and bounded. All 18 gzip provenance diffs decompress to their original recorded hashes; raw durable copies remain. The preserved whitespace failure and current clean diff checks are accurate. No Rust execution occurred; publication and remote custody remain pending.
