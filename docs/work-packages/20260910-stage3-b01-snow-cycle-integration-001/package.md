@@ -1,6 +1,6 @@
 # B01 snow-cycle integration
 
-Status: PAUSED BY OWNER for quota assessment. Modeling objectives incomplete; production/integration/release HOLD.
+Status: PAUSED BY OWNER; source reconstruction and cadence verification pending. Modeling objectives incomplete; production/integration/release HOLD.
 
 ## Authorization and scope
 
@@ -41,6 +41,66 @@ three complete minimal-observer primary-cycle and ten-OFE warm runs. Fidelity an
 production qualification remain separate from artifact delivery and cycle completion.
 
 ## Current action and evidence
+
+### Preservation and progress assessment (2026-09-11)
+
+Owner requested preservation of the dirty primary worktree and an assessment of
+how to resume progress. Ran: the surviving record, unverified two-file candidate
+patch and failed-inventory log were committed and pushed in
+`430047b1119c29dc2eedc4609087d882b6c47980`. `git ls-remote` confirmed that remote
+main, and independent HTTP retrieval of both artifacts from that exact GitHub
+commit reproduced their recorded SHA-256 values below. The primary worktree was
+clean after preservation. Publication does not validate the candidate or restore
+the deleted experiment tree.
+
+Static: the retained source chain is available locally; a missing `/tmp` checkout
+does not establish an unavailable base. The predecessor's
+[reproduction instructions](../20260910-stage3-snow-accuracy-runtime-001/package.md#reproduction-and-retained-identity)
+identify this order:
+
+1. Export Git base `e89befa4678eadec039b3e7f7fe0a176af8e9dc5` (object present).
+2. Apply the predecessor's `artifacts/R0-composition.patch`, unpack
+   `artifacts/R0-untracked-source.tar.gz`, and verify `artifacts/R0-source.json`.
+3. Apply its `artifacts/PBC-final-build016.patch` and verify the final016 identities.
+4. Apply this package's [correction145.patch](artifacts/correction145.patch).
+5. Verify actual restored files against the full working145 manifest, then apply
+   [the preserved candidate patch](artifacts/wb14-parent-cadence-repair-candidate.patch)
+   and verify the two candidate-file and manifest hashes recorded below.
+
+Ran: local artifact hashes match the retained recipe: R0 composition
+`5db3436348bdaae05cfe458d33b97075c6a4e820d4fb474d506b0da17e22d943`,
+R0 untracked archive `dc80bd1b382d6007f67e8c9588bbdbbced9cbeab712720d38f2faa5c491262d8`,
+final016 patch `91878772522b22a733401600dc7c5b1442f627ab2357d6679ad0d030e2a69e88`.
+Read-only extraction of `build145-prepare.py` and
+`build145-execution-identity.json` from
+[raw-stop-point145.tar.gz](artifacts/raw-stop-point145.tar.gz) located the full
+927-file manifest and original aggregation algorithm:
+`sha256(json.dumps(files, sort_keys=True, separators=(',', ':')).encode())`.
+An inline `.venv/bin/python` check reproduced
+`b6fb949e967af911bd3d508c02e023bf0a349b30e3c0697631276b351b50e88f` from that
+retained manifest, and all 717 entries in `correction145-source.json` agree.
+This verifies metadata consistency, not reconstructed source bytes. The earlier
+assessment that the base required a backup was premature; all identified recipe
+inputs and the hash algorithm have now been located. Source reconstruction has
+not yet been executed; any additional file mismatch must be resolved from retained
+evidence rather than substituting current HEAD.
+
+Recommended next execution: Astra owns one Terra implementation assignment to
+restore/verify working145 and the candidate in durable storage outside `/tmp`,
+then establish a nonzero feature-correct Nextest inventory and the retrospective
+baseline/candidate ingress regression. Keep source, baseline and build targets
+distinct; the observed storage availability was 87 GiB under `/workdir` and
+503 GiB under `/tmp`, suitable for separate disposable build targets. Preserve
+Nix, explicit manifests/features and the retained stack configuration.
+The cadence deliverable must include first/subsequent/final/replay and negative
+cases, complete owner-byte/call-count and independent operand evidence, then
+required lint/correctness checks and complementary reviews. A compile-only result
+does not finish it. Follow-on restart, authentic-cycle, mixed-lane and conservation
+work remains separately scoped after cadence evidence establishes readiness.
+
+No reconstruction, build, simulation or repair was run in this assessment; the
+old explicit repair limits and stops are not reset. The chronology below records
+prior attempts and their original source paths, not currently existing trees.
 
 ### B01-WB14-PARENT-CADENCE-REPAIR (2026-09-11)
 
