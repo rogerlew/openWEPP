@@ -1,6 +1,6 @@
 # B01 WB14 verified parent cadence repair
 
-Status: SCAFFOLDED; execution not started. Modeling/production/release remain HOLD.
+Status: HOLD — exact source recovery failed on 2 of 927 files. Owner adopted execution on 2026-09-11. Modeling/production/release remain HOLD.
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
 
 ## Objective and authorization
@@ -24,7 +24,7 @@ adoption; the parent record remains the integration/backlog record, not a second
 cadence ledger. Preserve finding `B01-CONT-005`: admission must work through the
 entire prefix-backed parent, not just its first physical child.
 
-## Proposed execution envelope
+## Adopted execution envelope
 
 Astra orchestrates recovery, assignment, integration, validation, source custody
 and disposition. Terra owns detailed implementation and focused verification;
@@ -255,11 +255,11 @@ and both reviews to accept their scope. Otherwise record HOLD with the first
 failure, remaining obligations and exact next decision. Build success, preserved
 evidence and scaffold completion cannot be labeled verified cadence repair.
 
-Current state: source recipe and manifest algorithm located in the predecessor;
+Scaffold-time state: source recipe and manifest algorithm located in the predecessor;
 the candidate patch/log are remotely preserved. Reconstruction, new tests,
 baseline/candidate execution, full-parent proof, lint/full correctness/A0/A1/A3,
 independent operands and execution reviews are all NOT RUN for this package.
-Next action after owner adoption: assign Terra the recovery and exact inventory
+Scaffold-time next action after owner adoption: assign Terra the recovery and exact inventory
 deliverable, with no semantic source edit until source verification and baseline
 fixture preparation are complete. Wider B01 work stays paused.
 
@@ -287,5 +287,139 @@ that fix in their original sessions. Final attributable verdicts:
 >
 > The rollback row now requires complete live/persistent and staged custody comparisons across the named owner domains, plus parent candidate, provider/GSI/event cursors, accepted receipt chronology/history, publication buffers/receipts, and physical-call counters. It expressly rejects `state_mutated=false` as sufficient evidence. No affected QA finding.
 
-Scaffold preparation is complete. Package execution remains NOT STARTED; all
-execution acceptance above remains unmet until actual source-bound verification.
+Scaffold preparation is complete. The owner's instruction to execute this package
+adopts the execution envelope; scaffold review remains historical evidence only.
+
+## Execution ledger
+
+Execution adoption recorded 2026-09-12 03:55 UTC (2026-09-11 owner timezone).
+Primary source/authority root is `/workdir/openWEPP` at
+`d3bbc104b2b69ac16e96acb7722b0a9795a89d94`, initially clean. Governing contracts
+are pinned to that primary source, separately from reconstructed runtime source.
+Intent is critical chronology/state/guard implementation with unchanged science,
+features and tolerances. The package validation plan and all acceptance rows above
+remain binding. Authentic runs consumed: 0 of 0; new corrective cycles: 0.
+Historical consumption above is retained separately.
+
+Astra assigned `/root/cadence_implementation` (`implementer`, configured
+Terra/medium) the recovery/inventory checkpoint: reconstruct and hash-verify all
+927 working145 files and the original candidate, inspect exact feature gates and
+required harnesses/authority targets, and propose bound test paths and operand
+symbols. No further semantic edits are authorized at that checkpoint. The agent
+may write recovery/evidence scripts under the durable experiment root, but not
+primary-checkout Rust or this record. Astra owns this record, integration,
+validation decisions and subsequent independent reviews.
+
+Checkpoints are exact recovery/inventory; contract-derived fixture preparation
+and retrospective baseline red; in-envelope correction/focused verification;
+full required validation and complementary independent review; recoverable
+publication and disposition. The two-cycle/60-active-minute reassessment and
+explicit stop conditions above apply throughout. All runtime acceptance remains
+NOT RUN pending source-bound execution.
+
+### Recovery stop and retained evidence
+
+Ran: `/root/cadence_implementation` executed the retained recipe in
+`/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs`.
+R0 verified 701/701 files; final016 verified 41/41 changed-file identities.
+The correction145 result matched only 925/927 required files. Astra separately
+read and hashed all 927 actual files with repo `.venv/bin/python`, confirming
+the same two mismatches and actual map digest:
+`c7aea0707d0c6a0876ec4bee5a7fcf15e751a092e086f517ced7edba8282b71e`.
+The expected map remains
+`b6fb949e967af911bd3d508c02e023bf0a349b30e3c0697631276b351b50e88f`.
+
+The mismatching paths under
+`tests/integration/land_surface_energy_real_hydrology_shadow_contract/` are
+`precedence_tests.rs` and `raw_hash_tests.rs`. Full expected/actual hashes and
+bounded search inventory are in [recovery-mismatch.json](artifacts/recovery-mismatch.json).
+The implementer checked retained patches, archive membership, work-package
+tarballs, reachable path history, 64 unreachable Git trees and old identity
+manifests without locating the exact bytes. This is an unavailable-primary-source
+stop under the adopted envelope, not a scientific impossibility claim.
+
+Evidence retained:
+
+- [full build145 identity](artifacts/build145-execution-identity.json) and
+  [retained manifest algorithm](artifacts/build145-prepare.py), extracted from
+  the existing raw-stop-point145 archive;
+- [first recovery script](artifacts/reconstruct.sh) and
+  [first failed log](artifacts/reconstruct-first-attempt.log): exit 1 after
+  R0 verification because the script assumed the wrong final016 manifest key;
+- [continuation script](artifacts/continue-reconstruct.sh) and
+  [continued log](artifacts/reconstruct-continue.log): exit 1 at the two actual
+  working145 byte mismatches after passing final016;
+- [Astra actual-byte verification](artifacts/parent-actual-byte-verification.json):
+  exit 0, 927 read, 925 matching; this is executor corroboration, not independent
+  acceptance review.
+
+These scripts are preserved failed-attempt evidence, not a corrected reusable
+recovery tool. The continuation log labels the expected manifest-map digest as
+`working145_map_sha256`; it does not represent the actual-byte map. The separate
+actual-byte verification above resolves that distinction. Recovery scripts used
+system `python3`, contrary to repo-local Python guidance; Astra's corroboration
+used `.venv/bin/python`. No Rust compile or test ran; test count is zero.
+
+The 3.2 GiB partial source remains durable at the path above. `working145`,
+`baseline-red` and `candidate` were never created. The preserved cadence patch
+was not applied, and no further runtime correction or fixture was authored.
+No source cleanup occurred. Authentic runs remain 0/0. One failed recovery-script
+correction/verification cycle occurred; no Rust corrective cycle occurred.
+Execution ended at the recovery stop, before the 60-minute reassessment boundary;
+precise active versus wait accounting is UNOBSERVED.
+
+Static inventory from the partial tree suggested no matching required ignored
+direct-ingress fresh-process harness in the authorized test paths. This is not a
+verified candidate inventory or proof of global absence. Exact-source recovery
+must precede binding the actual harness and A0/A1/A3 commands. No harness
+substitution is authorized. All baseline/candidate, full-parent, negative,
+rollback, split/replay, scientific operand, formatting, Clippy, full correctness
+and authority acceptance remains NOT RUN.
+
+### Execution review and disposition
+
+Static: independent `/root/cadence_correctness` (`rust_code_reviewer`, Sol/high)
+reviewed the clarification at `dafe138fe7022d59ba8ff7d685308eb434bba486`
+against its parent `c98e731020e9611c7708f99b89e1c1fd036c7568` and applicable
+coupled-time/snow authority. Contract SHA-256:
+`0f7bfb46764f1db883988e0b34771be2e455435b213095fe61756d332e94931e`.
+Final findings, attributable to that reviewer:
+
+> HIGH — historical sequence remains RED. A retrospective baseline failure can
+> establish regression sensitivity only. It cannot satisfy the preimplementation
+> sequence or support a claim that OBL-SURFACELIQUID-C-025 fully passed.
+>
+> HIGH — exact recovery and runtime acceptance remain unmet. HOLD. Primary
+> recovery logs were not independently verified by this reviewer.
+>
+> MEDIUM — clarification provenance is absent from the contract-local change log.
+> The 2026-09-11 clarification is not recorded at SC-SURFACELIQUID-001 line 2205.
+> This is an out-of-envelope owner follow-up.
+>
+> No semantic contradiction was found in the two changed guard-map rows.
+> Complete-parent validation is a prerequisite for alternate cadence admission;
+> it does not override compound-error precedence. Final bounded verdict: HOLD.
+
+The reviewer withdrew an initial suspected precedence contradiction after
+checking the distinction between successful validation and simultaneous-error
+ordering. No source fix was made. The original final review is retained in
+[correctness-review.txt](artifacts/correctness-review.txt).
+A requested distinct QA/evidence reviewer could not be spawned: the tool returned
+`agent thread limit reached`. No independent QA verdict is claimed. Both complete
+execution reviews and runtime acceptance remain unmet; this static review does
+not approve the repair. Contract change-log maintenance belongs to the owner’s
+authority-maintenance scope, outside this package’s permitted runtime correction.
+
+Disposition: HOLD, repair incomplete. First blocker is exact working145 recovery.
+Next required input is the two exact file byte sequences matching the expected
+hashes in recovery-mismatch.json (or owner-adopted revised source scope, which
+cannot be labeled exact working145). Wider B01 work stays paused. After exact
+recovery, all remaining acceptance/checks/reviews still apply.
+
+Terminal diff is confined to this record, locator/catalog and recovery/review
+artifacts. Ran from `/workdir/openWEPP`: `git diff --check`, both retained shell
+scripts through `bash -n`, local-reference resolution and artifact JSON parsing
+all PASS. These documentation/evidence checks do not validate runtime behavior.
+Publication custody: scoped evidence is prepared for commit/push on existing
+`main`; exact working145/candidate custody remains unavailable regardless of
+evidence publication. No complete recovered-source claim is made.

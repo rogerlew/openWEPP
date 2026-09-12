@@ -1,0 +1,19 @@
+Static — correctness/authority review.
+
+1. **HIGH — historical sequence remains RED.** `SC-SURFACELIQUID-001.md:2188-2196` requires the expected red before proving the transition; the authoring procedure likewise requires contract-derived tests and gate evidence before production edits at `science-contract-authoring-procedure.md:103-110`. The package accurately records at `package.md:139-145` that the candidate preceded baseline execution. A retrospective baseline failure can establish regression sensitivity only. It cannot satisfy the preimplementation sequence or support a claim that `OBL-SURFACELIQUID-C-025` fully passed. Disposition: **retrospective RED only; HOLD for execution acceptance**.
+
+2. **HIGH — exact recovery and runtime acceptance remain unmet.** `package.md:93-108` requires verification of all 927 working145 files before candidate work. Recovery currently reports 925/927 matches, with two required bytes unavailable; I did not receive primary recovery logs to independently verify that report. Baseline/candidate execution, complete-parent chronology, rollback, operands, lint, A0/A1/A3, and full correctness remain unexecuted. Disposition: **HOLD**.
+
+3. **MEDIUM — clarification provenance is absent from the contract-local change log.** The binding clarification landed on 2026-09-11, but `SC-SURFACELIQUID-001.md:2205` records only the 2026-09-03 contract-28 amendment. The science-contract workflow requires amendment history/change-log maintenance. The current package excludes further science amendments, so this is an out-of-envelope owner follow-up and must not be repaired inside this runtime package.
+
+No semantic contradiction was found in the two changed guard-map rows. `SC-SURFACELIQUID-001.md:2201-2202` establishes successful complete-parent validation as a prerequisite for using parent-local cadence. It does not override compound-error precedence at lines 661-678. For example, noncontiguous child/carry plus scalar-receipt substitution resolves at row 8 to `E-008` before row 12; configuration identity plus cadence resolves at row 2 to `E-002`. This interpretation aligns the existing inactive-prefix authority at lines 2150-2179, `SC-COUPLEDTIME-001.md:1010-1025`, and `SC-SNOWENERGY-001.md:3364-3378`. The package’s compound-poison tests remain necessary runtime evidence.
+
+Reviewed source identity:
+
+- Commit `dafe138fe7022d59ba8ff7d685308eb434bba486`, parent `c98e731020e9611c7708f99b89e1c1fd036c7568`.
+- Changed contract blob `fddbf2c9fa30e67b038fde46f1fd3b564a2ae2f5`, SHA-256 `0f7bfb46764f1db883988e0b34771be2e455435b213095fe61756d332e94931e`.
+- Parent contract blob `43b8885529df6b4066d29530295dd542dc68997b`.
+- Coupled-time blob `ba28830f9a83c5902e407165718926d5f90c37b2`; snow-energy blob `b79f949e0539d650d5f2d8e7d2665b0e3f61a8b0`.
+- Current package snapshot: worktree over `d3bbc104b2b69ac16e96acb7722b0a9795a89d94`, file SHA-256 `4dbc47e9d4720e2f145a1ae5e2697c699c4a5bf5b217aa1efa8183ad07994a37`.
+
+Final bounded verdict: **HOLD**. The clarification’s semantic content has no blocking contradiction, but this review does not approve the unrecovered or unexecuted cadence repair.

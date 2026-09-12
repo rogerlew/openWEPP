@@ -1,0 +1,31 @@
+{
+  "status": "STOPPED_EXACT_RECOVERY_UNAVAILABLE",
+  "recovered_root": "/workdir/openwepp-experiments/b01-wb14-cadence/recovery-inputs",
+  "working145_manifest_files": 927,
+  "expected_map_sha256": "b6fb949e967af911bd3d508c02e023bf0a349b30e3c0697631276b351b50e88f",
+  "actual_map_sha256": "c7aea0707d0c6a0876ec4bee5a7fcf15e751a092e086f517ced7edba8282b71e",
+  "mismatches": [
+    {
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs",
+      "expected_sha256": "730f9e36c83837251b080ede62069acabef5e19b828c59d1a5fad2a087ca4b10",
+      "actual_sha256": "982dac38c5b45b60eeb6db22a9ad839037359ff3fbc38fae11c10b069d434d76"
+    },
+    {
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs",
+      "expected_sha256": "9b0c40bcada9706a100714fe7b9913bc016124b68be8f5e0f8716efae857d2ad",
+      "actual_sha256": "041c0df1739385995e5cc6c241510523e0e4c74bedfba34bf152c501461e53fd"
+    }
+  ],
+  "verified_stages": {
+    "R0": { "files": 701, "mismatches": 0 },
+    "final016_changed_files": { "files": 41, "mismatches": 0 }
+  },
+  "absent_exact_bytes_searches": [
+    "correction145.patch and PBC-final-build016.patch",
+    "raw-stop-point145.tar.gz member list",
+    "all B01 artifact tarballs and all work-package artifact tarballs",
+    "reachable Git history for the two paths (13 and 5 revisions)",
+    "64 unreachable Git trees",
+    "retained build101/102/103/105/109/113 identity manifests (metadata only)"
+  ]
+}

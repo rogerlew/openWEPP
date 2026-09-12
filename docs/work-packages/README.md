@@ -1,6 +1,6 @@
 # Work Packages
 
-- [20260911 B01 WB14 verified cadence repair](20260911-b01-wb14-verified-cadence-repair-001/package.md): SCAFFOLDED; durable source reconstruction, matched baseline/candidate regressions and full-parent cadence proof; execution not started.
+- [20260911 B01 WB14 verified cadence repair](20260911-b01-wb14-verified-cadence-repair-001/package.md): Owner-adopted isolated durable source reconstruction, matched baseline/candidate regressions and full-parent cadence proof.
 
 - [20260911 Astra package orchestration](20260911-astra-package-orchestration-001/package.md): COMPLETE; Astra execution oversight, delegated implementation and between-package science/technical direction; two independent reviews passed.
 
