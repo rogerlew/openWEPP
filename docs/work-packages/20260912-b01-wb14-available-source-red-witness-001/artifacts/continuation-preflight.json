@@ -1,0 +1,230 @@
+{
+  "verified_at_utc": "2026-09-12T15:43:03.162836+00:00",
+  "evidence_class": "Current read-only verification; historical build environment was not captured",
+  "build_revision": "484b03b21fb059c4d2b99c66c4bc7cf7c1c1fe2c",
+  "governing_revision": "a13d9a5137658fd5f931dcd7fcd2a03301bd2d30",
+  "checks": {
+    "source_map": true,
+    "runtime_templates": true,
+    "binary": true,
+    "selected_cargo_row": true,
+    "retained_exact_listing": true,
+    "build_input_digest": true,
+    "embedded_stamps": true,
+    "repo_nix_revision_join": true,
+    "collectors_pinned": true,
+    "cases": true,
+    "durable_space": true,
+    "new_output": true,
+    "scratch_directory": true
+  },
+  "source_map": {
+    "actual_sha256": "c7aea0707d0c6a0876ec4bee5a7fcf15e751a092e086f517ced7edba8282b71e",
+    "entries": 927,
+    "mismatches": []
+  },
+  "runtime_template_inputs": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/README.md",
+      "bytes": 1250,
+      "sha256": "8a4e18ec84a0e88bd21a627929cfff42cf997c1ce77f459099830631acfb96bc"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/frost.txt",
+      "bytes": 43,
+      "sha256": "b6f81ef2040b029e361b63be4bd9591dbc3a151b9ecae927805152e365521e53"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.cli",
+      "bytes": 260214,
+      "sha256": "05aec431a2d033f01f0844b7f396b8cf973d03737df8a6acbd652c995cbadf11"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.man",
+      "bytes": 11932,
+      "sha256": "61b696985cc7e382cf3d0b323f1ad30be199a665eabe9c663c30de1ab5cdfa2c"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.run",
+      "bytes": 343,
+      "sha256": "1cabf3319ccf83baaf00d4c94c6de6804a09918307f162275b58fc6ea64b577f"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.slp",
+      "bytes": 205,
+      "sha256": "c9a641285332da593a093773960b132cfe1460043f3cf0bf45aac74db45a0e06"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.sol",
+      "bytes": 1694,
+      "sha256": "e66ac38f4d08d00b63190782ccf1d320f710a113df3a683d425a6b78be953b2a"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/pmetpara.txt",
+      "bytes": 2690,
+      "sha256": "7f67616e491e293a41ef3a79940108cf5de5cb0b780ab9728234ee1eb2aaf9b2"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/snow.txt",
+      "bytes": 87,
+      "sha256": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/wepp_ui.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/cancov_forest/marcell_conifer_mn/p8.man.yaml",
+      "bytes": 6625,
+      "sha256": "5b592a479211418ccc7d6a3390b51294cc67a6e1f1db53f4af8f527ef3126175"
+    }
+  ],
+  "binary": {
+    "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/openwepp_runner-identity-stamped.frozen",
+    "bytes": 48794192,
+    "sha256": "958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f"
+  },
+  "build_input_digest": {
+    "sha256": "69de3ea11154652532983f91b3e87e6ed1355aa462a9f9fee66c0463f8a8c994",
+    "algorithm": "SHA256(json.dumps(inputs, sort_keys=True, separators=(',', ':')).encode('utf-8')); no newline",
+    "retained_inputs": {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/current-build-inputs.json",
+      "bytes": 912,
+      "sha256": "c4133a770cc86c8e65e0c76787d44c72003e170961db026aecff09c2e486ee1c"
+    }
+  },
+  "retained_build_evidence": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/selected-cargo-artifact-corrected.jsonl",
+      "bytes": 1028,
+      "sha256": "aaef55853951fe3a4cf7352cdf5682364dc98fc8e511a36296e96ea5a2e64cad"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/logs/build-corrected.jsonl",
+      "bytes": 135909,
+      "sha256": "c02be8ba5103d541c7eee7476f809f15308c732d1b44ebbdae0e5079b87ccdd9"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/logs/build-corrected.stderr",
+      "bytes": 1161,
+      "sha256": "033a454321838ef969bc9213372d7090b5b73a08e72d79a56fe72d979690b716"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/compiled-listing-identity-stamped.stdout",
+      "bytes": 72,
+      "sha256": "5cbf4e23a1df85a5bb0d670026519d5ba06cff94e9b1122c6371d573e496b973"
+    }
+  ],
+  "actual_repo_nix_inputs": [
+    {
+      "path": "/workdir/openWEPP/flake.nix",
+      "bytes": 2041,
+      "sha256": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+      "matches_build_revision": true,
+      "matches_governing_revision": true
+    },
+    {
+      "path": "/workdir/openWEPP/flake.lock",
+      "bytes": 564,
+      "sha256": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+      "matches_build_revision": true,
+      "matches_governing_revision": true
+    },
+    {
+      "path": "/workdir/openWEPP/tools/dev/openwepp-env",
+      "bytes": 2733,
+      "sha256": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051",
+      "matches_build_revision": true,
+      "matches_governing_revision": true
+    }
+  ],
+  "collectors_and_cases": [
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/collect.py",
+      "bytes": 12583,
+      "sha256": "824d60b7667c118cd6c011fad5312ddaec85a4ebf00ce5646a48e79b3d20b2aa"
+    },
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/run_series.py",
+      "bytes": 18446,
+      "sha256": "f1ea797124f4a4e1cb4e02da049a403ac6db6d8780f839b0b334197b4f348052"
+    },
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+      "bytes": 1906,
+      "sha256": "c48cc560dff31102085ebcf852225b2063a1629ad96cfa9f7283364df44fbf3f"
+    }
+  ],
+  "resources": {
+    "available_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "selected_cpu": 0,
+    "free_bytes": 85284753408,
+    "historical_archive_expanded_bytes": 6237316179,
+    "historical_archive_index": {
+      "path": "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/raw-stop-point145-index.json",
+      "bytes": 24196,
+      "sha256": "2e5516cc0c456a3d1a9d064acdd3967f537a61861d77d7e5b7dd443d460c8366"
+    },
+    "space_margin_requirement": "3 times retained expanded inventory, allowing observation, spool and preservation"
+  },
+  "launch": {
+    "argv": [
+      "/workdir/openWEPP/.venv/bin/python",
+      "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/collect.py",
+      "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/openwepp_runner-identity-stamped.frozen",
+      "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/authentic-continuation-20260912-1",
+      "--policy",
+      "B01",
+      "--case",
+      "gradual_warm_tail7",
+      "--ofes",
+      "1",
+      "--cases",
+      "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+      "--cpu",
+      "0",
+      "--timeout",
+      "3600"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "out": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/authentic-continuation-20260912-1",
+    "parent_environment_overrides": {
+      "TMPDIR": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/fixture-scratch-continuation-20260912-1",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "relevant_inherited_environment": {
+      "PATH": "/home/roger/.codex/packages/standalone/releases/0.154.0-x86_64-unknown-linux-musl/codex-path:/home/roger/.local/bin:/home/roger/.codex/tmp/arg0/codex-arg0BxAdIS:/home/roger/.codex/packages/standalone/releases/0.154.0-x86_64-unknown-linux-musl/codex-path:/home/roger/.local/bin:/home/roger/.local/bin:/home/roger/.local/bin:/home/roger/.local/bin:/home/roger/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+    },
+    "collector_environment_policy": "Unchanged collector removes OPENWEPP_* then installs its explicit treatment; no ambient secret dump",
+    "expected_child_argv": [
+      "taskset",
+      "-c",
+      "0",
+      "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/openwepp_runner-identity-stamped.frozen",
+      "hillslope::tests::stage3_snow_accuracy_case",
+      "--ignored",
+      "--exact",
+      "--nocapture",
+      "--test-threads=1"
+    ]
+  },
+  "all_checks_pass": true
+}

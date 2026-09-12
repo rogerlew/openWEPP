@@ -1,0 +1,32 @@
+{
+  "json_files": [
+    "artifacts/terminal-custody-checks.json",
+    "artifacts/continuation-preflight.json",
+    "artifacts/historical-correction145-warm-tail7-pair.json",
+    "artifacts/build-evidence-index.json",
+    "artifacts/remote-evidence-verification.json",
+    "artifacts/execution-command-history.json"
+  ],
+  "links": [
+    "artifacts/owner-authorization.md",
+    "../20260911-b01-wb14-evidence-interface-design-001/package.md",
+    "../20260911-b01-wb14-source-reconciliation-001/artifacts/revised-baseline-proposal.json",
+    "artifacts/correctness-review.txt",
+    "artifacts/qa-review.txt",
+    "artifacts/execution-command-history.json",
+    "artifacts/check_witness.correction-1.py",
+    "artifacts/build-evidence-index.json",
+    "artifacts/terminal-custody-checks.json",
+    "artifacts/remote-evidence-verification.json",
+    "artifacts/continuation-authorization.md",
+    "artifacts/continuation-preflight.json",
+    "artifacts/continuation_preflight.py",
+    "artifacts/historical-correction145-warm-tail7-pair.json"
+  ],
+  "preserved_prior_script_bytes": {
+    "check_witness": "95a69b9b2962e76c353ebc25ce2cac762f5e13b996c83652b6f84359ba3cda13",
+    "test_check_witness": "105634cba44c85ee0379bb7b03d7fc7889e0fa5eafd695f6a451f373a6427230"
+  },
+  "git_diff_check_exit": 0,
+  "scope": "Custody/document-only checks after stop; no checker behavior or authentic execution"
+}

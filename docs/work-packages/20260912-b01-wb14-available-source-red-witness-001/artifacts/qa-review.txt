@@ -143,3 +143,63 @@ Non-blocking debt/follow-ups
 Verdict: FAIL / HOLD. The hard stop at two unsuccessful checker corrections is
 consistent with this evidence. The authentic invocation remains unspent and
 must not be launched under this package.
+
+Continuation terminal QA review — supplemental allowance
+
+Static: adopted continuation authorization, final retained checker/tests,
+historical-pair fixture, continuation preflight receipt, package ledger, and
+available failed-cut artifacts. Ran: read-only inspection only. No Python
+checks, Rust execution, build, or authentic invocation was run. This section is
+attributable to /root/witness_qa and preserves the earlier review sections.
+
+Findings
+
+1. HIGH — the supplemental correction-cycle ceiling was exceeded. The adopted
+continuation carries two failed cycles and permits two more, so it hard-stops at
+four total. Parent records three chronological supplemental failed verification
+events: actual-pair prefix join failure, no-op boundary negative failure, then
+syntax failure in the extended receipt-negative test. The second supplemental
+failure reaches 4/4; the third edit and its later test result occurred after the
+binding stop. The events are separately observable failures, not one edit-loop
+submission. The authentic invocation must remain 0/1 and no further correction,
+review-to-green, or launch is authorized under this allowance.
+
+2. HIGH — final checker acceptance remains incomplete even apart from the
+budget stop. The final suite labels a capture-process mutation as `observer`
+at `test_check_witness.py:18`; it does not independently poison observation
+state. It also lacks the continuation-required targeted controls for each
+cumulative coordinate, nonfinite/nonnumeric cumulative values, wrong/missing/
+extra OFE membership, missing beginning/parent/working payloads, and the
+specified prefix/prior-receipt cases. Its positive depends on the historical
+pair, which is appropriate source-shaped development evidence, but the test
+does not establish all required rejection predicates. `check_witness.py:63-64`
+does now compare cumulative binary64 values across the enumerated states and
+enforces exact OFE membership at line 59; those fixed portions are not reopened.
+
+3. HIGH — correction chronology cannot be fully independently reproduced from
+preserved bytes. Only initial/pre-continuation, `correction-1`, and final script
+cuts are retained; the three reported supplemental failing transient submissions,
+their exact test outputs, and a per-event ledger are not. This conflicts with
+the continuation requirement to retain original failures and accepted fixes.
+The parent’s recorded chronology is sufficient to conservatively enforce the
+stop, but it cannot substantiate a claim that the final script was reached within
+the supplemental bound.
+
+Verified evidence
+
+`continuation-preflight.json` provides a concrete, not-yet-executed collector
+argv/cwd/output path, CPU 0, source/binary/build stamp joins, both collector
+hashes, current REPO Nix joins, and a durable-space margin based on the retained
+expanded archive inventory. Its all-true checks improve preflight provenance but
+do not cure checker acceptance or authorize the run. The frozen binary identity
+remains the previously verified
+`958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f`.
+
+Non-blocking debt/follow-ups
+
+- If a future owner authorizes a new checkpoint, preserve each correction
+  submission and command/result before the next edit so cycle disposition is
+  auditable.
+
+Verdict: FAIL / HOLD. The supplemental hard stop applies; no authentic
+invocation may occur in this package continuation.

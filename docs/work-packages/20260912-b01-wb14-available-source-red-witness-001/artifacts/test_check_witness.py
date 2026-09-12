@@ -1,12 +1,26 @@
+"""Source-shaped checker controls from streamed historical records; no Rust run."""
 import copy,hashlib,json,tempfile
 from pathlib import Path
-from check_witness import check,ERROR,TEST
-def ok(x):return {'Ok':list(json.dumps(x,separators=(',',':')).encode())}
-def st():return {'continuations':[{'day_index':0,'next_interval_index':0,'cumulative_supply_m':0.0,'cumulative_infiltration_m':0.0}]}
+from check_witness import check,TEST
+BASE=Path(__file__).with_name('historical-correction145-warm-tail7-pair.json')
+def h(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 with tempfile.TemporaryDirectory() as q:
- d=Path(q);b=d/'b';b.write_bytes(b'x');l=d/'l';l.write_text(TEST+': test\n\n1 test, 0 benchmarks\n');ids=list(range(32));I={'day_index':4,'interval_index':22,'transaction_id':'255','interval_s':60.0};P={'coupled_parent_transaction_sha256':ids,'parent_beginning_owner_sha256':ids,'prefix_ending_owner_sha256':ids,'coupled_receipt_sha256':ids,'proof_sha256':ids,'parent_support_start_ns':'385200000000000','prefix_end_ns':'385920000000000','parent_support_end_ns':'387000000000000'};W={'accepted_until_ns':'385920000000000','persistent_beginning_state':st(),'candidate_state':st(),'per_ofe_authorities':{'x':{'working':{'next_child_ordinal':0},'receipts':[],'inactive_prefix':P}}};B={'coupled_parent_transaction_sha256':ids,'accepted_slab_sha256':ids,'parent_beginning_complete_owner_set_sha256':ids,'parent_support_start_ns':'385200000000000','parent_support_end_ns':'387000000000000','child_support_start_ns':'385920000000000','child_support_end_ns':'385980000000000'};C={'process':1,'session':1,'thread':'t','ordinal':0};G={'kind':'surface_liquid_wb14_cadence_failure','capture':C,'input_typed_bytes':ok(I),'beginning_typed_bytes':ok(st()),'initial':True,'expected_day':0,'expected_interval':0,'accepted_parent_local_projection':False,'parent_child_mode':True,'finalize_parent_interval':False};H={'kind':'surface_liquid_wb14_cadence_caller_failure','capture':dict(C,ordinal=1),'input_typed_bytes':ok(I),'beginning_typed_bytes':ok(st()),'parent_working_typed_bytes':ok(W),'working_typed_bytes':ok(st()),'coupled_binding':B,'error':ERROR,'parent_child_mode':True,'finalize_parent_interval':False};O={'schema':'snow_accuracy_observation_v2','physical_enabled':True,'overflow':False,'counts_poisoned':False,'counts':{},'physical':[G,H]};o=d/'o';o.write_text(json.dumps(O));r=d/'r';r.write_text(json.dumps({'execution':'FAIL'}));h=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();R={'timeout':False,'exit_code':1,'execution_valid':False,'runner_execution':'FAIL','binary_unchanged':True,'runner_receipt_sha256':h(r),'binary_sha256':h(b),'argv':['taskset','-c','0',str(b),TEST,'--ignored','--exact','--nocapture','--test-threads=1'],'artifact_sha256':{'observations.json':h(o)}};z=d/'z';z.write_text(json.dumps(R));assert check(o,z,r,b,l)['witness_verdict']=='PASS'
- for f in [lambda x:x['physical'].pop(),lambda x:x.update(counts_poisoned=True),lambda x:x['physical'][1].update(error='panic'),lambda x:x['physical'][0]['capture'].update(process=2),lambda x:x['physical'][0].update(input_typed_bytes={'Ok':[123]})]:
-  x=copy.deepcopy(O);f(x);o.write_text(json.dumps(x));R['artifact_sha256']['observations.json']=h(o);z.write_text(json.dumps(R))
-  try:check(o,z,r,b,l);raise AssertionError('negative accepted')
+ d=Path(q);b=d/'binary';b.write_bytes(b'frozen');l=d/'listing';l.write_text(TEST+': test\n\n1 test, 0 benchmarks\n')
+ x=json.loads(BASE.read_text())['records'];g=copy.deepcopy(x[0]['row']);c=copy.deepcopy(x[1]['row']);g['capture']['ordinal']=0;c['capture']['ordinal']=1
+ o=d/'observations.json';r=d/'run.json';r.write_text('{"execution":"FAIL"}')
+ def receipt():return {'timeout':False,'exit_code':1,'execution_valid':False,'runner_execution':'FAIL','binary_unchanged':True,'runner_receipt_sha256':h(r),'binary_sha256':h(b),'argv':['taskset','-c','0',str(b),TEST,'--ignored','--exact','--nocapture','--test-threads=1'],'artifact_sha256':{'observations.json':h(o)}}
+ def run(rows,mut=None,mut_receipt=None):
+  v={'schema':'snow_accuracy_observation_v2','physical_enabled':True,'overflow':False,'counts_poisoned':False,'counts':{},'physical':rows};o.write_text(json.dumps(v));z=receipt();
+  if mut:mut(z)
+  if mut_receipt:mut_receipt(z)
+  rp=d/'receipt.json';rp.write_text(json.dumps(z));return check(o,rp,r,b,l)
+ assert run([g,c])['witness_verdict']=='PASS'
+ cases=[('missing',lambda a:[a[0]]),('observer',lambda a:(a.__setitem__(0,dict(a[0],capture=dict(a[0]['capture'],process=9))),a)[1]),('boundary',lambda a:(a[0]['input_typed_bytes']['Ok'].__setitem__(0,124),a)[1]),('panic',lambda a:(a[1].__setitem__('error','panic'),a)[1]),('raw-pair',lambda a:(a[1]['input_typed_bytes']['Ok'].__setitem__(1,123),a)[1]),('ordinal',lambda a:(a[1]['capture'].__setitem__('ordinal',9),a)[1])]
+ for name,f in cases:
+  a=copy.deepcopy([g,c])
+  try:run(f(a));raise AssertionError(name)
   except (ValueError,json.JSONDecodeError):pass
-print('PASS authentic-shaped positive and five negatives')
+ for name,change in [('wrong-binary',lambda z:z.update(binary_sha256='0'*64)),('timeout',lambda z:z.update(timeout=True)),('zero-exit',lambda z:z.update(exit_code=0)),('infrastructure',lambda z:z.update(infrastructure_error='x')),('wrong-argv',lambda z:z.update(argv=[])),('hash-join',lambda z:z.update(runner_receipt_sha256='0'*64))]:
+  try:run(copy.deepcopy([g,c]),mut_receipt=change);raise AssertionError(name)
+  except ValueError:pass
+ print('PASS source-shaped positive and twelve targeted negatives')

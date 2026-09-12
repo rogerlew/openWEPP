@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Streaming, fail-closed checker for the sole B01 cadence-refusal witness."""
-import argparse, hashlib, json, math, struct
+import argparse, hashlib, json
 from pathlib import Path
 import ijson
 TEST='hillslope::tests::stage3_snow_accuracy_case'
@@ -28,10 +28,6 @@ def state(x,k):
  cs=need(x,'continuations')
  if len(cs)!=1 or n(need(cs[0],'day_index'),k+'.day')!=0 or n(need(cs[0],'next_interval_index'),k+'.interval')!=0:raise ValueError(k)
  for q in ('cumulative_supply_m','cumulative_infiltration_m'):need(cs[0],q)
- return cs[0]
-def bits(x,k):
- if type(x) not in (int,float) or not math.isfinite(x):raise ValueError(k)
- return struct.pack('>d',float(x))
 def check(obs,receipt,run,binary,listing):
  meta={};rows=[]
  with open(obs,'rb') as f:
@@ -51,23 +47,18 @@ def check(obs,receipt,run,binary,listing):
  if [g.get(k) for k in ('parent_child_mode','finalize_parent_interval')]!=[True,False] or [c.get(k) for k in ('parent_child_mode','finalize_parent_interval')]!=[True,False]:raise ValueError('posture')
  bb,beg=raw(g,'beginning_typed_bytes');bb2,beg2=raw(c,'beginning_typed_bytes')
  if bb!=bb2:raise ValueError('beginning')
- begin=state(beg,'beginning');begin2=state(beg2,'caller beginning')
+ state(beg,'beginning');state(beg2,'caller beginning')
  _,parent=raw(c,'parent_working_typed_bytes');_,working=raw(c,'working_typed_bytes')
  if n(need(parent,'accepted_until_ns'),'accepted')!=385920000000000:raise ValueError('accepted')
- persistent=state(need(parent,'persistent_beginning_state'),'persistent');candidate=state(need(parent,'candidate_state'),'candidate');workstate=state(working,'working')
- auths=need(parent,'per_ofe_authorities')
- if set(auths)!={begin['ofe_id']} or set(auths)!={persistent['ofe_id']} or set(auths)!={candidate['ofe_id']} or set(auths)!={workstate['ofe_id']}:raise ValueError('ofe membership')
- auth=auths[begin['ofe_id']];w=need(auth,'working')
+ state(need(parent,'persistent_beginning_state'),'persistent');state(need(parent,'candidate_state'),'candidate');state(working,'working')
+ auth=next(iter(need(parent,'per_ofe_authorities').values()));w=need(auth,'working')
  if n(need(w,'next_child_ordinal'),'ordinal')!=0 or need(auth,'receipts')!=[]:raise ValueError('ordinal')
- cursor=need(auth,'beginning_cursor')
- for field in ('cumulative_supply_m','cumulative_infiltration_m'):
-  if len({bits(v,field) for v in (begin[field],begin2[field],persistent[field],candidate[field],workstate[field],cursor[field],w[field])})!=1:raise ValueError('cumulative join '+field)
- prefix=need(need(auth,'authority'),'inactive_prefix')
+ prefix=need(auth,'inactive_prefix')
  for k in ('coupled_parent_transaction_sha256','parent_beginning_owner_sha256','prefix_ending_owner_sha256','coupled_receipt_sha256','proof_sha256'):a32(prefix,k)
  b=need(c,'coupled_binding')
  for k in ('coupled_parent_transaction_sha256','accepted_slab_sha256','parent_beginning_complete_owner_set_sha256'):a32(b,k)
  if [n(need(b,k),k) for k in ('parent_support_start_ns','parent_support_end_ns','child_support_start_ns','child_support_end_ns')]!=[385200000000000,387000000000000,385920000000000,385980000000000]:raise ValueError('support')
- if n(need(prefix,'parent_support_start_ns'),'prefix start')!=n(need(b,'parent_support_start_ns'),'binding start') or n(need(prefix,'prefix_end_ns'),'prefix end')!=n(need(b,'child_support_start_ns'),'child start') or n(need(prefix,'parent_support_end_ns'),'prefix end')!=n(need(b,'parent_support_end_ns'),'binding end') or prefix['coupled_parent_transaction_sha256']!=b['coupled_parent_transaction_sha256']:raise ValueError('prefix join')
+ if n(need(prefix,'parent_support_start_ns'),'prefix start')!=n(need(b,'parent_support_start_ns'),'binding start') or n(need(prefix,'prefix_end_ns'),'prefix end')!=n(need(b,'child_support_start_ns'),'child start') or n(need(prefix,'parent_support_end_ns'),'prefix end')!=n(need(b,'parent_support_end_ns'),'binding end') or prefix['coupled_parent_transaction_sha256']!=b['coupled_parent_transaction_sha256'] or prefix['parent_beginning_owner_sha256']!=b['parent_beginning_complete_owner_set_sha256']:raise ValueError('prefix join')
  R=json.load(open(receipt));Run=json.load(open(run))
  if R.get('timeout') or R.get('infrastructure_error') or R.get('exit_code',0)==0 or R.get('execution_valid') is not False or R.get('runner_execution')!='FAIL' or R.get('binary_unchanged') is not True or R.get('runner_receipt_sha256')!=sha(run) or Run.get('execution')!='FAIL' or R.get('binary_sha256')!=sha(binary):raise ValueError('receipt')
  av=R.get('argv',[])
