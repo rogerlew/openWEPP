@@ -1,0 +1,28 @@
+Static — replacement QA review, independent of author/extraction and prior QA conversation.
+
+Reviewer: /root/witness_qa_replacement (Terra/medium). The following response was returned before subsequent messaging failed with `agent thread limit reached`. Parent preserves the response; no final fix verification occurred.
+
+Primary evidence access confirmed:
+
+- Packet is readable and matches `d8f…cc76`, 48,384 bytes.
+- Raw current observation file is readable at the packet’s path and is 3,699,473,934 bytes.
+- Current packet, extraction command/result, custody checks, both original/continuation review records, authorizations, and package record are accessible.
+- I did not re-export, parse the full corpus, execute checker/tests, list/execute binaries, or launch collectors.
+
+Findings:
+
+1. HIGH — current checker/test cut remains unverified and cannot clear prior HOLD. test_check_witness.py:17 is the prior twelve-negative historical-fixture suite; the package explicitly records that the complete current-run inventory is NOT RUN. Its broad `except ValueError` assertions do not prove the intended predicate rejected each one-field mutation. New named controls must assert valid surrounding serialization, the intended semantic refusal, and one positive against source-shaped current evidence.
+
+2. HIGH — required QA inventory still has documented gaps. The preserved suite has no demonstrated independent controls for each cumulative coordinate/nonfinite-or-nonnumeric values, exact/missing/extra OFE membership, missing beginning/parent/working payloads, scalar/prefix/support/ordinal/prior-receipt joins, exact reason/invocation/artifact joins, zero-selection/listing, and full u128 handling. Prior acceptance of binary64 cumulative comparison and exact OFE membership is preserved, but requires named regression evidence on the corrected cut.
+
+3. HIGH — raw membership/hash/selection joins are custody evidence only until checker application. current-extraction-execution.json reports a complete 123,088-record scan, two matches, and the prescribed raw hash. current-packet-custody-checks.json verifies packet/script identities and typed payload shape. Neither is independent checker acceptance or a complete source-map/selection predicate evaluation.
+
+4. MEDIUM — packet decimal prose is stale. current-run-boundary-packet.json says decimal values are JSON strings, while custody evidence records actual Decimal JSON number tokens. Preserve the packet; tests/checker must use actual numeric tokens and typed-byte arrays.
+
+Non-blocking follow-up:
+
+- Retain exact checker and test hashes plus command/result evidence for every named positive and negative case before requesting fix verification. Preserve the existing 6/7 failure ledger and all earlier HOLD findings.
+
+QA verdict: HOLD. Witness remains NOT EVALUATED and checker acceptance FAIL/HOLD pending a corrected checker/test cut and my bounded verification of its membership/hash/selection joins, extraction integrity, and named negative evidence.
+
+Custody note: parent normalized Markdown emphasis and file links to local artifact names in this preserved response; substantive wording is unchanged.

@@ -1,0 +1,56 @@
+{
+  "evidence_class": "Ran: parent safe preservation only; no checker tests or independent final acceptance",
+  "reference_cut": "90016cbc314cb1013f7a1835549be9a37e2238bd",
+  "checks": {
+    "check_witness.py": {
+      "unchanged": true,
+      "bytes": 6598,
+      "sha256": "fcd2e09623fd5644c7552c6d560603dfe8b095ca077eda475ba5163dc4db477d"
+    },
+    "test_check_witness.py": {
+      "unchanged": true,
+      "bytes": 2484,
+      "sha256": "743a311131e46665b907041bfaac658fed6b0657054cc02ae3abf46371f32cd7"
+    },
+    "extract_current_pair.py": {
+      "unchanged": true,
+      "bytes": 8417,
+      "sha256": "f15d3215dfd825e9c3e57943a1074cf198a8022f4a01705dc2130a66f6632336"
+    },
+    "current-run-boundary-packet.json": {
+      "unchanged": true,
+      "bytes": 48384,
+      "sha256": "d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76"
+    },
+    "correctness-review.txt": {
+      "unchanged": true,
+      "bytes": 4932,
+      "sha256": "ef2a4be46f8ca6920809590b0aadf55e2592ec7889632d515e6931d0def1a9f3"
+    },
+    "qa-review.txt": {
+      "unchanged": true,
+      "bytes": 11731,
+      "sha256": "3c0a46fec8a29ed76ca0d29ac826828bb00a395c1434a97b3046cd635623cd0b"
+    },
+    "authorization_copy": true,
+    "package_json": true,
+    "package_links": true,
+    "diff_check": true
+  },
+  "access_failure": {
+    "tool": "collaboration.send_message",
+    "target": "/root/witness_qa_replacement",
+    "error": "agent thread limit reached"
+  },
+  "named_tests": "NOT RUN",
+  "witness": "NOT EVALUATED",
+  "failed_cycles": 6,
+  "failed_cycle_ceiling": 7,
+  "authentic_invocations": 1,
+  "additional_authentic_invocations": 0,
+  "time_utc": "2026-09-12T21:31:37.887883+00:00",
+  "resumed_active_seconds": 337,
+  "cumulative_active_seconds": 3841,
+  "remaining_supplement_seconds": 2620,
+  "pure_wait_seconds_deducted": 0
+}

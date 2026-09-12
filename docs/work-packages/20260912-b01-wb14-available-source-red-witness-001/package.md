@@ -3,8 +3,8 @@
 Ran: **Collection COLLECTED; authentic invocations 1/1, permit exhausted.**
 Collector exit 0; child exit 101; timeout false; runner FAIL;
 `execution_valid=false`. **Witness NOT EVALUATED; checker acceptance FAIL/HOLD;
-package INCOMPLETE/HOLD.** Captured-witness adjudication stopped because the
-required existing QA conversation is unavailable; see the latest section.
+package INCOMPLETE/HOLD.** Captured-witness adjudication stopped after the authorized replacement QA
+conversation became inaccessible (`agent thread limit reached`); see the latest section.
 Raw output is preserved locally; collection is not
 accepted witness evidence. The historical five unsuccessful correction cycles
 against a ceiling of four remain an execution defect. See the raw-only section
@@ -746,3 +746,29 @@ The following custody-annotation commit does not reopen the availability stop.
 Next dependent action requires the existing required QA conversation to become
 available or an explicit owner revision of that review-continuity constraint.
 All original witness tests and both independent scopes remain mandatory.
+
+
+## Owner-adopted QA replacement amendment — 2026-09-12
+
+Ran: owner requested execution of the [replacement amendment](artifacts/qa-replacement-authorization.md), adopting it at clean reference cut `90016cbc314cb1013f7a1835549be9a37e2238bd` on existing `main`. Conservative resumed start **21:26:00 UTC**. Carry **58m24s cumulative active**, **10m43s** consumed supplement, **49m17s** remaining, **6/7 unsuccessful cycles**, and the historical overrun against four. No post-reference work was present. Charge all resumed elapsed time unless a pure wait is explicitly recorded. No authentic invocations remain (1/1 consumed).
+
+Intent: finish the existing finite checker/test inventory, apply it to the captured corpus, and obtain both independent affected-scope dispositions. Writes remain this package's checker/tests/evidence/record and affected locator. Selected checks are named Python positive/negative behavior, syntax, current raw membership/hash/selection joins, and final JSON/reference/copy/diff checks. No production behavior or authority changes; no Rust builds/tests, binary executions/listings, collectors, fixtures, raw modifications, source adoption or cleanup.
+
+Authorized replacement conversations established: `/root/witness_correctness_replacement` (Sol/high, correctness) and `/root/witness_qa_replacement` (Terra/medium, QA/evidence). Both are distinct independent replacements, not same-conversation continuations; neither authors implementation or extraction. Each received the amendment, existing authorization, original and continuation findings, exact source/binary/packet/raw identifiers, frozen acceptance and ledger. Prior HOLD findings remain intact pending affected fix verification. These consume the one-time replacement permissions; no additional wave is authorized.
+
+Runner remains FAIL, execution_valid=false; witness NOT EVALUATED and package INCOMPLETE/HOLD while implementation and review remain pending. The preserved packet and raw corpus are unchanged; its decimal prose discrepancy and both historical substitution UNKNOWN gaps remain explicit.
+
+
+### Replacement access failure and stopped disposition
+
+Ran: QA replacement returned its [initial HOLD review](artifacts/qa-replacement-review.txt), confirming primary packet/raw access. Correctness replacement confirmed primary access and returned [interim FAIL/HOLD findings](artifacts/correctness-replacement-review.txt). Neither completed current-run adjudication or fix verification. Accepted unchanged historical review portions remain retained; all original HOLD findings remain binding.
+
+The next `collaboration.send_message` to `/root/witness_qa_replacement`, requesting preservation of its response and later same-conversation verification, failed exactly: **`agent thread limit reached`**. This is tool-level reviewer-conversation access failure after initial establishment, not evidence-file corruption or a reviewer verdict. Parent immediately interrupted `/root/witness_checker_implementation` and `/root/witness_correctness_replacement`; both returned previous status `running`. No repeated access/spawn attempts, alternate reviewer, expensive fallback or fresh verifier wave followed. Required QA access is unavailable under the amendment's hard stop; the replacement permissions do not renew.
+
+The implementer had received the finite inventory and was preparing; inspection after interruption shows **no checker/test edits or new implementation artifacts**. Exact checker SHA-256 remains `fcd2e09623fd5644c7552c6d560603dfe8b095ca077eda475ba5163dc4db477d`; tests remain `743a311131e46665b907041bfaac658fed6b0657054cc02ae3abf46371f32cd7`, byte-identical to reference cut `90016cbc314cb1013f7a1835549be9a37e2238bd`. No corrective submission or failed verification occurred. Counts remain **6/7**, with historical overrun against four preserved.
+
+**Named-test results: NOT RUN. Current-run checker application: NOT RUN. Witness: NOT EVALUATED. Checker: FAIL/HOLD. Package: INCOMPLETE/HOLD.** This is incomplete adjudication, not an evaluated unsuccessful witness. The earlier runner FAIL and execution_valid=false remain unchanged. Required current negative cases and both final independent dispositions remain unmet. Current source, frozen binary, raw corpus, packet and extraction bytes remain unchanged; packet number-token prose discrepancy and two historical substitution UNKNOWN gaps persist. No conservation, restart, rollback, prefix validity, cadence, performance, historical equivalence or production qualification claim follows.
+
+Only safe record/evidence preservation and carried scoped publication follow this stop. Parent reviewed SC-SURFACELIQUID-001 INV-035/C-025 for the bounded claim: supplied prefix bytes and initial ordinal do not independently authenticate the full prefix or satisfy broader cadence obligations. Full multi-GB raw corpus remains local; compact records are the only publication scope.
+
+At **21:31:37 UTC**, resumed active time is **5m37s**, cumulative **64m01s**; supplement consumed **16m20s**, nominal remainder **43m40s**. No pure waits deducted. Usable execution allowance is zero while required reviewer access is unavailable.
