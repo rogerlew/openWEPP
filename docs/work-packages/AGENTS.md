@@ -14,10 +14,25 @@ contents in reports. No mandatory kickoff file, prompt archive, reading map,
 owned-file manifest, handoff, gate-results, line-count or final-disposition file.
 An existing external format/schema may still require a specific evidence file.
 
+## Orchestration and direction
+
+Astra owns efficient execution and oversight of each authorized work-package.
+Use role-orchestration.md for delegation, progress decisions and source custody.
+Detailed implementation belongs to assigned implementers; the orchestrator owns
+integration, independent review, evidence completeness and disposition.
+This guide authorizes bounded implementation/extraction delegation as well as
+the independent reviews below, subject to actual tool policy.
+
+Between packages, Codex Astra or the owner's ChatGPT Pro science/technical review
+assesses results and recommends the next package's direction. The owner adopts
+new scope; routine execution within adopted scope stays with the orchestrator.
+Direction-setting advice does not satisfy independent acceptance review of work
+that conversation authored or materially designed.
+
 ## Reading and scope
 Read root and applicable write-path instructions, this guide and package.md.
 Read only your role procedure and the relevant standard/authority sections.
-Role procedures: role-authoring.md, role-implementation.md, role-review.md;
+Role procedures: role-orchestration.md, role-authoring.md, role-implementation.md, role-review.md;
 role-runner.md and role-verification.md only for assigned execution/verification.
 Combined author/implementer work reads them once. A link is a reference, not an
 unconditional recursive reading assignment. Follow dependencies needed to
@@ -44,13 +59,13 @@ locally with compact output unless delegation has a concrete independent benefit
 elapsed command time alone is not a reason to create another agent.
 
 ## Completion and failures
-Execute the active checkpoint through correction, checks and disposition within
-the owner's bounds. Follow ../standards/bounded-agent-execution.md: one bounded
-deliverable, normally two failed correction cycles or 60 active minutes. Record
-checkpoint acceptance separately from overall package acceptance. At a spent
-budget or new downstream failure, preserve state and return pending work; do not
-roll into the next checkpoint without owner direction or an explicit bounded
-sequence. A pause does not waive checks or make an incomplete package complete. Every applicable current-scope requirement
+Execute authorized package scope through correction, checks and disposition under
+../standards/bounded-agent-execution.md. Internal checkpoints are orchestrator
+management boundaries unless the owner explicitly makes them stop boundaries.
+At an explicit spent budget, stop condition or out-of-scope defect, preserve state
+and return pending work. Internal reassessment never renews an owner allowance.
+Record checkpoint acceptance separately from overall package acceptance.
+A pause does not waive checks or make an incomplete package complete. Every applicable current-scope requirement
 needs direct, current evidence. Record PASS, FAIL, BLOCKED or NOT RUN truthfully;
 an unmet required acceptance criterion prevents completion.
 Campaign-owned requirements may be assigned prospectively to a named later

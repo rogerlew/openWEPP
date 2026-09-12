@@ -7,6 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
+| Astra package orchestration (complete) | [record](20260911-astra-package-orchestration-001/package.md) | Implemented and independently reviewed Astra oversight, delegated implementation and between-package direction review. B01 recovery/execution remains outside this package. |
 | Bounded execution and external Pro review (complete) | [record](20260911-bounded-execution-external-review-001/package.md) | Implemented and independently reviewed model routing, checkpoint bounds and manual exchange tooling; B01 remains paused. |
 | Stage 3 B01 snow-cycle integration (paused by owner) | [record](20260910-stage3-b01-snow-cycle-integration-001/package.md) | Paused for quota assessment; source145 cold checkpoint written but no fresh-process resume; cycle/receiver/budgets/cost incomplete. Production HOLD. |
 | Stage 3 snow accuracy–runtime experiment (executed; qualification HOLD) | [record](20260910-stage3-snow-accuracy-runtime-001/package.md) | Owner-authorized isolated numerical, bulk-trace and coupling-cadence modeling experiment; physical comparison, conservation, continuous and multi-OFE evidence; no production activation. |

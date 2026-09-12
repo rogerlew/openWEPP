@@ -5,12 +5,14 @@ Status: <in progress / complete / hold>. Source base: <commit or retained identi
 ## Objective and scope
 <User-authorized outcome, intended surfaces and protected boundaries.>
 
-## Active checkpoint
-<Starting source, one deliverable, permitted changes, checks and authentic-run
-allowance. Default: two failed correction cycles or 60 active minutes; record
-start, excluded waits and consumed corrections. Return at new downstream failure.
-Owner direction or an explicit bounded sequence controls the next checkpoint.
-Overall package acceptance remains separate. See ../AGENTS.md and
+## Execution envelope
+<Astra orchestrator; starting source and durable source/evidence paths; bounded
+deliverables, assigned implementer, checks and authentic-run allowance.
+Explicit owner time/cycle/failure stops and carried consumption, if any.
+Internal checkpoints/reassessment follow the standard; they do not reset owner
+limits or authorize successor scope. Overall package acceptance remains separate.
+Record commit/push permissions and actual preservation/publication state.
+See ../AGENTS.md, ../role-orchestration.md and
 ../../standards/bounded-agent-execution.md.>
 
 ## Authority and acceptance
@@ -27,4 +29,5 @@ results and raw evidence links. Record material decisions here, not in a handoff
 Each reviewer owns their section; serialize shared-record writes.>
 
 ## Disposition
-<Supported result, remaining blockers and claim limits.>
+<Supported result, remaining blockers, source/evidence custody and claim limits.
+Science/technical direction question for the next package when needed.>

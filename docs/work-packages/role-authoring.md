@@ -8,8 +8,12 @@ search history only for identified dependencies.
 Create package.md only. State objective, authorized scope/boundaries, acceptance,
 selected checks and next action. A short instruction to execute this record is a
 sufficient kickoff; no separate prompt or scaffold commit is required. State the
-active checkpoint and bounds under ../standards/bounded-agent-execution.md; keep
-the broader backlog separate from the current execution allowance.
+package execution envelope and internal checkpoints under
+../standards/bounded-agent-execution.md. Distinguish explicit owner stop limits
+from orchestrator management points and keep successor scope separate.
+Use between-package Codex Astra or ChatGPT Pro direction review to establish the
+scientific/technical basis when needed; do not require a new adviser prompt for
+each internal step.
 Use docs/work-packages/templates/package.md if helpful. Package scope and cadence
 serve the user's objective; do not widen or merge packages to amortize paperwork.
 

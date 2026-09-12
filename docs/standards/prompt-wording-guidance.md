@@ -1,7 +1,7 @@
 # Prompt wording guidance
 
 Use package.md as the execution contract and continuation record. A kickoff can
-simply say: "Execute the active bounded checkpoint in
+simply say: "Orchestrate the authorized work-package in
 docs/work-packages/<id>/package.md." Do not duplicate
 governance, acceptance, reading inventories or handoff state in another file.
 The task's actual scope controls external actions; do not invent blanket network
@@ -10,12 +10,14 @@ restrictions or magic authorization phrases.
 ## Task instructions
 State the objective and authorized boundaries plainly. Name relevant authority
 sections and selected checks in package.md. Continue through implementation,
-correction, validation and disposition within the active checkpoint bounds in
-[bounded-agent-execution.md](bounded-agent-execution.md). Package-wide objectives
-do not authorize unlimited correction loops. Preserve acceptance when pausing.
+correction, validation and disposition within the package envelope and explicit
+owner limits in [bounded-agent-execution.md](bounded-agent-execution.md). Astra
+owns internal checkpoints and routine corrections; do not require a new adviser
+prompt at each step. Preserve acceptance when pausing.
 Use [the Pro role](chatgpt-pro-role.md) and
 [external kickoff](../work-packages/templates/chatgpt-pro-kickoff.md) for the
-owner's manual exchange; external proposals need owner adoption.
+owner's between-package direction review or a named scientific escalation;
+new scope proposed externally needs owner adoption.
 
 Common review selection and delegation authorization live in
 ../work-packages/AGENTS.md. Bounded work has one independent reviewer; consequential

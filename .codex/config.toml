@@ -1,5 +1,5 @@
 # Defaults for new trusted sessions; running sessions and explicit overrides are unchanged.
-model = "gpt-5.6-terra"
+model = "gpt-6-astra"
 model_reasoning_effort = "medium"
 
 [features]
@@ -30,10 +30,14 @@ config_file = "agents/package_verifier.toml"
 description = "Bounded simple edits with explicit ownership; no scientific design."
 config_file = "agents/worker.toml"
 
+[agents.implementer]
+description = "Detailed package implementation and focused verification under Astra orchestration."
+config_file = "agents/implementer.toml"
+
 [agents.explorer]
 description = "Read-only targeted source and evidence extraction."
 config_file = "agents/explorer.toml"
 
 [agents.science_advisor]
-description = "Exceptional execution-dependent scientific question; cannot independently review its own design."
+description = "Science/technical direction between packages, or a named in-package scientific blocker; cannot independently review its own design."
 config_file = "agents/science_advisor.toml"
