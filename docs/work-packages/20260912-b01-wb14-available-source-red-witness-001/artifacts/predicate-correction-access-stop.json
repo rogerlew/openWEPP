@@ -1,0 +1,25 @@
+{
+  "evidence_class": "Ran",
+  "base": "76d6d17cf09ddb2a2a6d150c91eb409128305af7",
+  "live_inventory": [
+    "/root"
+  ],
+  "continuation_tool": "collaboration.followup_task",
+  "results": {
+    "/root/witness_correctness_replacement": "live agent path `/root/witness_correctness_replacement` not found",
+    "/root/witness_qa_replacement": "live agent path `/root/witness_qa_replacement` not found"
+  },
+  "disposition": "BLOCKED: required reviewer access unavailable",
+  "new_corrective_cycles": 0,
+  "cumulative_failures": 7,
+  "adopted_ceiling": 9,
+  "named_cases": "ALL NOT RUN in this continuation; prior submission-7 results unchanged",
+  "current_evidence_checker": "NOT RUN",
+  "correctness_fix_verification": "BLOCKED",
+  "qa_fix_verification": "BLOCKED",
+  "unchanged_sha256": {
+    "check_witness.py": "e7f74c26201949b9cf428600001d2c6324109d3a34adc98fe05cc55ea544025e",
+    "test_check_witness.py": "70caea902057fd10a1aac5490cc13760e1b701707fa33cad051dff057816689a",
+    "current-run-boundary-packet.json": "d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76"
+  }
+}

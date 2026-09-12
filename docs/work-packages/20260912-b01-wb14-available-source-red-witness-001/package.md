@@ -3,8 +3,9 @@
 Ran: **Collection COLLECTED; authentic invocations 1/1, permit exhausted.**
 Collector exit 0; child exit 101; timeout false; runner FAIL;
 `execution_valid=false`. **Witness NOT EVALUATED; checker acceptance FAIL/HOLD;
-package INCOMPLETE/HOLD.** Continuation stopped at the **7/7 failed-correction ceiling**; named boundary
-test failed and no corrected-cut witness adjudication occurred; see the latest section.
+package INCOMPLETE/HOLD.** Owner adopted the cycle ceiling amendment to **7/9**; continuation is now stopped
+by inaccessible required reviewer conversations. No checker correction or current
+witness adjudication occurred; see the latest section.
 Raw output is preserved locally; collection is not
 accepted witness evidence. The historical five unsuccessful correction cycles
 against a ceiling of four remain an execution defect. See the raw-only section
@@ -808,3 +809,16 @@ At **21:54:21 UTC**, this continuation consumed **8m21s** active (no pure waits 
 Ran: scoped failed-source/evidence commit **`1e197a917`** pushed to existing `origin/main`; **11/11 changed files retrieved from exact-commit GitHub URLs and byte-matched**, no LFS pointers, in [remote verification](artifacts/checker-submission-7-remote-verification.json). This includes the recoverable exact failed checker/test cut, transcripts, independent custody evidence and records; it does not publish the multi-GB corpus. Parent terminal checks passed unchanged packet/extractor/original reviews, exact failed-cut hashes, package JSON/references and diff whitespace. Final diff stays within the authorized checker/tests, existing package evidence/record and active locator. No Rust, runtime/source, fixture, binary, collector, authority or checkpoint bytes changed.
 
 Live-agent inventory confirms both remaining child slots completed and none running; the same correctness conversation completed its initial review earlier. No deletion/close tool was exposed or used. At **21:55:09 UTC**, continuation active consumption including publication is **9m09s**, cumulative **74m20s**; supplement consumed **26m39s**, nominal remainder **33m21s**, no pure waits deducted. **7/7 failures and 1/1 invocations** leave zero usable correction/run allowance. This final receipt annotation is preservation only; return without another correction, review-to-green, source adoption or simulation.
+
+
+### Predicate-correction authorization adopted; required review access stop
+
+Ran: owner requested execution of the [predicate correction authorization](artifacts/predicate-correction-authorization.md) at clean exact base `76d6d17cf09ddb2a2a6d150c91eb409128305af7`. Same checkpoint **B01-WB14-AVAILABLE-SOURCE-RED-WITNESS**; cumulative failure ceiling changes from seven to nine, with no added time. Carry 74m20s cumulative active, 26m39s supplement consumed and 33m21s remaining. Historical seven failures and overrun against four remain unchanged. Conservative charge start **2026-09-12 23:35:00 UTC** (rounded earlier than the first observed clock); no pure waits deducted.
+
+Intent was one implementer correction of B01-CONT-011/012, full named Python inventory/syntax, retained current-evidence application and the same two independent fix verifications. Runtime allowance remains ZERO; original invocation is exhausted at 1/1. Before implementation, live inventory returned only `/root`. Supported `collaboration.followup_task` continuation independently returned **live agent path not found** for both `/root/witness_correctness_replacement` and `/root/witness_qa_replacement`; exact responses and current small-file hashes are in the [access-stop evidence](artifacts/predicate-correction-access-stop.json). These are actual continuation failures, not an assumption that completed conversations are unavailable. No replacement reviewer was spawned.
+
+The authorization says “An actual inaccessible required slot stops acceptance” and requires stopping at inaccessible necessary evidence/review. Therefore no implementation or verification cycle began. Only authorization/access evidence, this record and the locator change. Checker/test candidate diff is empty against the exact base; their hashes remain those of submission 7. Packet hash remains unchanged. Raw-custody, source/build/selection, extraction and prior review evidence are reused unchanged; no corpus hashing or re-export occurred.
+
+**All named cases NOT RUN in this continuation; current-evidence checker NOT RUN; correctness and QA affected fix verification BLOCKED; witness NOT EVALUATED; checker FAIL/HOLD; package INCOMPLETE/HOLD.** Prior per-case results remain in `checker-submission-7-result.json`, with their explicit unexecuted cases. Both prior independent FAIL/HOLD dispositions remain attributable and unresolved. Runner remains FAIL, execution_valid=false, outputs.json absent; no rollback or broader acceptance follows. New failed correction cycles **0**, cumulative **7/9**; additional runtime invocations **0**. Required next condition is restored access to both named conversations or an owner amendment of the review-continuity constraint. Scoped preservation/publication remains authorized.
+
+At **23:37:23 UTC**, conservative continuation consumption is **2m23s**, cumulative **76m43s**; supplement consumed **29m02s**, nominal remainder **30m58s**. No waits deducted; failures **7/9**, invocations **1/1**. Review access prevents further correction regardless of nominal balance.
