@@ -1,0 +1,8 @@
+{
+  "command": "/workdir/openWEPP/.venv/bin/python docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/extract_current_pair.py --source /workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/observations.json --index docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-index.json --run /workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/run.json --receipt /workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/receipt.json --output docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/current-run-boundary-packet.json",
+  "cwd": "/workdir/openWEPP",
+  "exit_code": 2,
+  "stderr": "extract_current_pair: ERROR: receipt self hash disagrees with runner_receipt_sha256\n",
+  "stream_started": false,
+  "script": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/extract_current_pair.failed-1.py"
+}

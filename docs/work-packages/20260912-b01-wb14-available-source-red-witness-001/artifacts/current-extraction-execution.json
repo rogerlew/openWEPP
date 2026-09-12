@@ -1,0 +1,40 @@
+{
+  "evidence_class": "Ran: extraction worker command/result, reported by /root/captured_packet; no independent acceptance",
+  "cwd": "/workdir/openWEPP",
+  "command": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/extract_current_pair.py",
+    "--source",
+    "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/observations.json",
+    "--index",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-index.json",
+    "--run",
+    "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/run.json",
+    "--receipt",
+    "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/receipt.json",
+    "--output",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/current-run-boundary-packet.json"
+  ],
+  "exit_code": 0,
+  "reported_elapsed_s_approx": 90.6,
+  "stdout": {
+    "source_bytes": 3699473934,
+    "source_sha256": "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9",
+    "records_scanned": 123088,
+    "matching_records": 2,
+    "output": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/current-run-boundary-packet.json"
+  },
+  "script_sha256": "f15d3215dfd825e9c3e57943a1074cf198a8022f4a01705dc2130a66f6632336",
+  "worker_checks": {
+    "py_compile": "PASS",
+    "small_integer_and_decimal_parser": "PASS",
+    "truncated_and_trailing_refusal": "PASS"
+  },
+  "parent_checks": "current-packet-custody-checks.json",
+  "known_metadata_limitation": "decimal_encoding describes strings but actual serializer preserves Decimal number tokens; original source and packet unchanged",
+  "witness": "NOT EVALUATED",
+  "independent_correctness": "NOT RUN",
+  "independent_qa": "UNAVAILABLE",
+  "checker_test_inventory": "NOT RUN",
+  "new_authentic_invocations": 0
+}

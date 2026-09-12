@@ -1,0 +1,65 @@
+{
+  "evidence_class": "Ran: parent preservation checks only; not independent QA or witness acceptance",
+  "cwd": "/workdir/openWEPP",
+  "checks": {
+    "u128_max": true,
+    "u128_max_serialize": true,
+    "above_u64": true,
+    "above_u64_serialize": true,
+    "decimal_number": true,
+    "truncated": true,
+    "trailing": true,
+    "script_identity": true,
+    "source_identity": true,
+    "typed_payloads_valid": true,
+    "authorization_copy": true,
+    "json_parse": true,
+    "package_links": true,
+    "check_witness.py_unchanged": true,
+    "test_check_witness.py_unchanged": true,
+    "correctness-review.txt_unchanged": true,
+    "qa-review.txt_unchanged": true,
+    "diff_check": true
+  },
+  "typed_payload_inventory": [
+    {
+      "ordinal": 123086,
+      "field": "beginning_typed_bytes",
+      "bytes": 887,
+      "sha256": "9058fd7dad195a9dd75475badf716e6b7c585644180c9ec59a54c9767c6d0b32"
+    },
+    {
+      "ordinal": 123086,
+      "field": "input_typed_bytes",
+      "bytes": 2203,
+      "sha256": "9c46a8b867a6a05c45902ae13a43be05bb7fb5d28971f3ab4dd0c89e277c3b55"
+    },
+    {
+      "ordinal": 123087,
+      "field": "beginning_typed_bytes",
+      "bytes": 887,
+      "sha256": "9058fd7dad195a9dd75475badf716e6b7c585644180c9ec59a54c9767c6d0b32"
+    },
+    {
+      "ordinal": 123087,
+      "field": "input_typed_bytes",
+      "bytes": 2203,
+      "sha256": "9c46a8b867a6a05c45902ae13a43be05bb7fb5d28971f3ab4dd0c89e277c3b55"
+    },
+    {
+      "ordinal": 123087,
+      "field": "parent_working_typed_bytes",
+      "bytes": 5398,
+      "sha256": "07f50df314daf5d2be2c8019752f34cd49e20c732515c97af4aad424b58163b4"
+    },
+    {
+      "ordinal": 123087,
+      "field": "working_typed_bytes",
+      "bytes": 887,
+      "sha256": "9058fd7dad195a9dd75475badf716e6b7c585644180c9ec59a54c9767c6d0b32"
+    }
+  ],
+  "packet_sha256": "d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76",
+  "packet_bytes": 48384,
+  "limitation": "packet extraction.decimal_encoding prose is stale: serializer emits Decimal as exact JSON number tokens, not strings. Original extraction bytes preserved."
+}

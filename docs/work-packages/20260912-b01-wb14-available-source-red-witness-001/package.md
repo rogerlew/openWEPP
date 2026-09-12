@@ -3,7 +3,9 @@
 Ran: **Collection COLLECTED; authentic invocations 1/1, permit exhausted.**
 Collector exit 0; child exit 101; timeout false; runner FAIL;
 `execution_valid=false`. **Witness NOT EVALUATED; checker acceptance FAIL/HOLD;
-package INCOMPLETE/HOLD.** Raw output is preserved locally; collection is not
+package INCOMPLETE/HOLD.** Captured-witness adjudication stopped because the
+required existing QA conversation is unavailable; see the latest section.
+Raw output is preserved locally; collection is not
 accepted witness evidence. The historical five unsuccessful correction cycles
 against a ceiling of four remain an execution defect. See the raw-only section
 below for current receipts, byte custody, limitations and time ledger.
@@ -602,3 +604,127 @@ At **19:11:34 UTC**, final preservation/publication accounting is
 deduction. This custody annotation does not renew the exhausted launch permit.
 Return after raw collection; all witness/checker/cadence continuation requires
 separate owner direction.
+
+
+## Owner-adopted captured-witness adjudication — 2026-09-12
+
+Ran: owner requested execution of the [captured-witness authorization](artifacts/captured-witness-adjudication-authorization.md).
+Starting checkout is clean at exact evidence/governance cut
+`7b8d14d5d835655143148fd6528c719ba9665cc3`, on existing `main`.
+Same checkpoint; carried active ledger **47m41s**, five unsuccessful cycles.
+Adopted supplement: 60 additional active minutes or two further unsuccessful
+cycles, whichever first; prospective cumulative ceiling seven. The earlier
+five-against-four overrun remains a defect. Conservative supplemental start
+**2026-09-12 20:50:00 UTC**; no pure waits deducted. Authentic-run allowance
+**ZERO**, original invocation **1/1**. Frozen source/binary/build and all witness
+predicates remain unchanged; accepted build/selection evidence is reused.
+
+Intent before edits: complete-stream extraction and source hash joins, then the
+existing checker/test inventory and two independent affected-scope reviews.
+Only package evidence, minimal extraction support, offline checker/tests and the
+affected locator are authorized. Python syntax/behavior, full-stream raw joins,
+and scoped JSON/link/copy/diff checks apply. No production or authority behavior
+changes; Rust/scientific qualification is outside this evidence-only increment.
+
+**Availability stop:** live-agent inventory contained only `/root`.
+Attempt to resume existing QA `/root/witness_qa` with `followup_task` returned
+`live agent path /root/witness_qa not found`. This is newly unavailable required
+QA independence, distinct from the already-known correctness slot for which one
+replacement is allowed. The adopted instruction says “Any newly unavailable
+required slot stops acceptance rather than authorizing a reviewer cascade” and
+names unavailable required independence as a stop. No QA replacement or
+correctness replacement is launched; no same-reviewer continuity is invented.
+Both current-run independent review scopes remain unmet. Prior attributable
+[correctness](artifacts/correctness-review.txt) and [QA](artifacts/qa-review.txt)
+findings/verdicts remain unchanged.
+
+Checker corrections, executable case table, witness checker execution and
+independent adjudication are **NOT RUN** because of that explicit stop.
+No new corrective cycle is consumed; total remains **5/7**, historical overrun
+unchanged. Checker cut remains SHA-256
+`fcd2e09623fd5644c7552c6d560603dfe8b095ca077eda475ba5163dc4db477d`;
+tests remain `743a311131e46665b907041bfaac658fed6b0657054cc02ae3abf46371f32cd7`
+at the starting commit. None of the outstanding predicate/test inventory is
+waived or represented as verified.
+
+Safe preservation proceeds because the owner explicitly requires the actual
+current-run boundary packet to be exported and published independently of checker
+acceptance. `/root/captured_packet` (worker, Luna/medium) owns only minimal
+extraction support and compact packet/evidence. Parent owns this record, checks
+and scoped publication. Raw observations/receipts/logs/fixture/source/binary stay
+read-only. The new extraction is custody evidence, not independent QA or witness
+acceptance. No historical pair substitution, cleanup or successor work occurs.
+
+
+### Preservation extraction correction
+
+Ran: first extraction helper failed with exit 2 before observation parsing:
+`extract_current_pair: ERROR: receipt self hash disagrees with runner_receipt_sha256`.
+The helper incorrectly compared the receipt's own hash with its runner-receipt
+field, which actually binds `run.json`. This is a preservation-tool defect,
+not corrupt raw evidence or a new runtime failure. The initial helper was also
+written at the package root instead of its assigned artifacts directory.
+The worker stopped and reported without further editing. Parent inspection
+confirmed the join error and found receipt completeness fields incorrectly
+required at observation top level; these are included in one bounded correction.
+
+Conservatively charge this failed extraction verification as supplemental
+unsuccessful event **1**, cumulative **6/7** (even though this was the initial
+preservation helper, not a submitted checker correction). Before that correction,
+retain the exact failed script and command/result; preserve source-shaped numeric
+JSON and collect actual observation scalar flags separately from receipt flags.
+Only the explicit packet-preservation deliverable continues. Witness checker,
+case-table implementation and independent adjudication remain stopped.
+
+
+### Preserved current-run packet and stopped disposition
+
+Ran: corrected [extraction script](artifacts/extract_current_pair.py), SHA-256
+`f15d3215dfd825e9c3e57943a1074cf198a8022f4a01705dc2130a66f6632336`,
+completed exit 0; [command/result](artifacts/current-extraction-execution.json).
+The [current-run boundary packet](artifacts/current-run-boundary-packet.json)
+is **48,384 bytes**, SHA-256
+`d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76`.
+Complete bounded-memory parsing scanned **123,088 physical records**, retaining
+all two matching records at zero-based positions **123086/123087**, including
+original capture coordinates and all six typed-byte arrays. Full source size
+**3,699,473,934 bytes** and SHA-256
+`7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9`
+match the original index and collector artifact hash. Receipt/run and indexed
+started/input/stdout/stderr hashes join. This actual packet is not the historical
+correction145 development pair.
+
+Observed top-level scalars: `counts_poisoned=false`, `overflow=false`,
+`physical_enabled=true`, schema `snow_accuracy_observation_v2`. Separate receipt
+facts remain `observation_complete=true`, `files_complete=false`,
+`days_complete=false`; `outputs.json` remains absent. Runner remains FAIL and
+`execution_valid=false`. No prefix, total-physics, rollback, restart, conservation,
+performance or equivalence conclusion follows from extraction.
+
+Ran: [parent custody checks](artifacts/current-packet-custody-checks.json) passed
+Python syntax, integer parsing/serialization at maximum u128 and above u64,
+exact decimal numeric serialization, truncated/trailing JSON refusal, typed-byte
+array validity/JSON decoding, script/packet hash binding, authorization copy,
+package JSON/links, unchanged checker/tests/reviews and diff whitespace.
+These focused extraction checks are **not** the missing witness case table,
+checker semantics coverage, or independent correctness/QA review. Packet metadata
+`extraction.decimal_encoding` has stale prose saying decimals are strings;
+the actual serializer emits exact JSON number tokens. The preserved script and
+packet are left intact, with that non-acceptance custody limitation explicit.
+
+The [failed helper](artifacts/extract_current_pair.failed-1.py) and
+[failed command/result](artifacts/current-extraction-failed-1.json) remain retained.
+The correction completed without another failed verification. Supplemental failed
+count remains **1**, cumulative **6/7**. No checker corrections, full required
+predicate inventory, witness execution, or independent adjudication occurred.
+**Witness NOT EVALUATED; checker acceptance FAIL/HOLD; package INCOMPLETE/HOLD.**
+Required QA availability stops adjudication; no reviewer cascade or next package.
+The authorized one-time correctness replacement was not consumed.
+
+At **20:59:56 UTC**, conservative supplemental active consumption is
+**9m56s**, plus carried 47m41s = **57m37s cumulative**.
+No pure waits deducted, including extraction waits. Authentic invocations remain
+**1/1**, additional **0**; further execution remains stopped by unavailable
+independence regardless of nominal time/cycle balance. Scoped publication follows
+under carried permission, on existing `main`. Entire multi-GB corpus and fixture
+remain local; only compact packet and supporting records are being published.
