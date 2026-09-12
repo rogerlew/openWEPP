@@ -1,0 +1,124 @@
+{
+  "cwd": "/workdir/openWEPP",
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/verify_publication.py",
+    "817f683e8b72ebf8a238aedc547309226a6cac50"
+  ],
+  "commit": "817f683e8b72ebf8a238aedc547309226a6cac50",
+  "method": "Actual GitHub raw-content retrieval compared with git show COMMIT:path bytes for every file in commit diff",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/correctness-review.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/correctness-review.txt",
+      "local_sha256": "8a711865ff830dfaf3f1172bb6a8ca4a23349f64c3be4a2dc371fcbb8c60bba2",
+      "local_bytes": 10648,
+      "remote_sha256": "8a711865ff830dfaf3f1172bb6a8ca4a23349f64c3be4a2dc371fcbb8c60bba2",
+      "remote_bytes": 10648,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/executor-checks.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/executor-checks.json",
+      "local_sha256": "46c624390f42eb5950c1499561a3f2066f3a800f00f7e42b2088752a6d006451",
+      "local_bytes": 19361,
+      "remote_sha256": "46c624390f42eb5950c1499561a3f2066f3a800f00f7e42b2088752a6d006451",
+      "remote_bytes": 19361,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/final-inspected-source-identities.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/final-inspected-source-identities.json",
+      "local_sha256": "6894ca4e9d09c318f69b392c83a4eec14f85f9cf0039b20c908daafea6ac5837",
+      "local_bytes": 7250,
+      "remote_sha256": "6894ca4e9d09c318f69b392c83a4eec14f85f9cf0039b20c908daafea6ac5837",
+      "remote_bytes": 7250,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/qa-review.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/qa-review.txt",
+      "local_sha256": "2c87619f70622391d5fe837774bd172549e2860a0739714a9453f2fbb17ebcfe",
+      "local_bytes": 5753,
+      "remote_sha256": "2c87619f70622391d5fe837774bd172549e2860a0739714a9453f2fbb17ebcfe",
+      "remote_bytes": 5753,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/retired-design-draft-identity.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/retired-design-draft-identity.json",
+      "local_sha256": "9564752f43bb11551b816e9b2cc6a0230c4748a4fc44bd54d5c4c54dc6be98fc",
+      "local_bytes": 291,
+      "remote_sha256": "9564752f43bb11551b816e9b2cc6a0230c4748a4fc44bd54d5c4c54dc6be98fc",
+      "remote_bytes": 291,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/retired-design-draft.md.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/retired-design-draft.md.gz",
+      "local_sha256": "ffdce17e8e0d2324d044cb4ef9a86e53f66de210cff4472f8b6527d16f157694",
+      "local_bytes": 8656,
+      "remote_sha256": "ffdce17e8e0d2324d044cb4ef9a86e53f66de210cff4472f8b6527d16f157694",
+      "remote_bytes": 8656,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/selected-source-identity.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/selected-source-identity.json",
+      "local_sha256": "ed9b6b65cd9c00963c692077c34caebc3de8cbd24a5876b70c4fbe6c7d6adcaa",
+      "local_bytes": 2482,
+      "remote_sha256": "ed9b6b65cd9c00963c692077c34caebc3de8cbd24a5876b70c4fbe6c7d6adcaa",
+      "remote_bytes": 2482,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/validate_design.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/validate_design.py",
+      "local_sha256": "b4f2c2d0df93f5b833ed458d1d6cf362f4dfb1c5528d67bf2d94b855d5ad5db3",
+      "local_bytes": 6433,
+      "remote_sha256": "b4f2c2d0df93f5b833ed458d1d6cf362f4dfb1c5528d67bf2d94b855d5ad5db3",
+      "remote_bytes": 6433,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/package.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/package.md",
+      "local_sha256": "8b1a820b52746bb23699983ade56537cc8b6b1641045fe2f5827e7162928dbcd",
+      "local_bytes": 24151,
+      "remote_sha256": "8b1a820b52746bb23699983ade56537cc8b6b1641045fe2f5827e7162928dbcd",
+      "remote_bytes": 24151,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/README.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/README.md",
+      "local_sha256": "0a44eb65e51ba16a6d81a081332445ac78f4f1b1e52fa2317bb3482d043b7339",
+      "local_bytes": 411392,
+      "remote_sha256": "0a44eb65e51ba16a6d81a081332445ac78f4f1b1e52fa2317bb3482d043b7339",
+      "remote_bytes": 411392,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/active.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/817f683e8b72ebf8a238aedc547309226a6cac50/docs/work-packages/active.md",
+      "local_sha256": "2e43a9292d575d9e339ca97288ef4b0cb0447a2d6668b63ba6dcd792a4e2017c",
+      "local_bytes": 6477,
+      "remote_sha256": "2e43a9292d575d9e339ca97288ef4b0cb0447a2d6668b63ba6dcd792a4e2017c",
+      "remote_bytes": 6477,
+      "equal": true,
+      "lfs_pointer": false
+    }
+  ],
+  "all_equal": true,
+  "scope": "New scoped commit bytes only; not full historical source/LFS retrieval"
+}

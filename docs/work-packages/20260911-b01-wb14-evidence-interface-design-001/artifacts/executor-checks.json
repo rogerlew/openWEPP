@@ -23,6 +23,11 @@
     {
       "check": "JSON syntax",
       "status": "PASS",
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/remote-evidence-verification.json"
+    },
+    {
+      "check": "JSON syntax",
+      "status": "PASS",
       "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/retired-design-draft-identity.json"
     },
     {
@@ -413,6 +418,12 @@
       "check": "New evidence trailing whitespace",
       "status": "PASS",
       "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/qa-review.txt",
+      "lines": []
+    },
+    {
+      "check": "New evidence trailing whitespace",
+      "status": "PASS",
+      "path": "docs/work-packages/20260911-b01-wb14-evidence-interface-design-001/artifacts/remote-evidence-verification.json",
       "lines": []
     },
     {

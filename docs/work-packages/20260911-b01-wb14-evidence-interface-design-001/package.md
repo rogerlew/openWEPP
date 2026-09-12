@@ -377,3 +377,20 @@ agent wall time is counted once. Delegated work comprised Terra's initial draft
 and two correction submissions plus distinct correctness/QA initial reviews,
 same-reviewer fix checks and preservation checks, all within this same ledger.
 The stop was the exhausted two unsuccessful correction cycles, not elapsed time.
+
+### Publication custody
+
+Scoped evidence commit `817f683e8b72ebf8a238aedc547309226a6cac50` was pushed to
+existing `origin/main` under the carried permission. Ran the retained predecessor
+[publication verifier](../20260911-b01-wb14-source-reconciliation-001/artifacts/verify_publication.py)
+with that exact commit: **11/11 changed files retrieved from GitHub and matched
+byte-for-byte against `git show COMMIT:path`**, with no LFS pointers. The
+[receipt](artifacts/remote-evidence-verification.json) retains URLs, byte counts,
+hashes, exact argv and result. This verifies this new evidence only; full old
+runtime-source base and historical LFS archive retrieval remain NOT RUN.
+
+At the verified-custody cut, 2026-09-12 07:10:32 UTC, conservative cumulative
+consumption is **24 minutes 12 seconds**, including all waits and concurrent
+reviews counted once; unsuccessful correction cycles remain **2/2**. The final
+receipt/closure annotation commit adds only custody preservation. No unused
+minutes override the exhausted cycle stop, and no successor action is authorized.
