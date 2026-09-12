@@ -2198,8 +2198,8 @@ and advanced-cursor-without-proof poisons.
 | Profile surface | Binding |
 | --- | --- |
 | algorithm step | Authenticate the complete native inactive prefix, seed the parent-local WB14 chronology at its exact end without physics, then accept the first snow-free physical child as ordinal zero. |
-| branch/guard | Native cursor advancement requires the explicit coupled-receipt-backed proof; ordinary parents remain unchanged and no inactive WB14 receipt is admissible. |
-| invariant guard map | `INV-SURFACELIQUID-035` -> inactive-prefix constructor/digest, per-OFE parent identity and receipt-chain seed, physical-child support/ordinal validator, final partition, replay/restart, rollback. |
+| branch/guard | Native cursor advancement requires the explicit coupled-receipt-backed proof. Cadence may substitute the parent-local cursor only after the supplied parent working state has validated its schema, configuration/model/parameter/topology/lane, parent transaction/support, owner joins, accepted-until/child-start join, scalar receipt chains, and inactive-prefix proof; an unvalidated parent object, zero persistent cursor, ordinal, hash, or absent receipt is never authority. Ordinary parents remain unchanged and no inactive WB14 receipt is admissible. |
+| invariant guard map | `INV-SURFACELIQUID-035` -> inactive-prefix constructor/digest, complete parent-working-context validator before parent-local cadence admission, per-OFE parent identity and receipt-chain seed, physical-child support/ordinal validator, final partition, replay/restart, rollback. |
 | test vector | `OBL-SURFACELIQUID-C-025`: real transition, prefix poisons, zero-work counters, ordinal/cumulative identity, finalization, restart, rollback. |
 | binding exposure | `SURFACELIQUID-V28-NATIVE-INACTIVE-PREFIX-TRANSITION`, active, `new-INV`, IDs `035/C-025`, dual review/verification. |
 | change log | 2026-09-03, contract 28: authenticated represented-snow inactive-prefix chronology for the first exact snow-free WB14 child; unchanged physics/tolerances. |

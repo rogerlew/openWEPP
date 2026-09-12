@@ -42,6 +42,63 @@ production qualification remain separate from artifact delivery and cycle comple
 
 ## Current action and evidence
 
+### B01-WB14-PARENT-CADENCE-REPAIR (2026-09-11)
+
+**ACTIVE — owner-adopted bounded successor checkpoint.** Source is the retained
+working145 composition (`b6fb949e967af911bd3d508c02e023bf0a349b30e3c0697631276b351b50e88f`),
+copied without working146 into
+`/tmp/openwepp-b01-cycle-20260910/wb14-parent-cadence-repair` with dedicated
+`target-wb14-parent-cadence-repair`. The production checkout remains untouched.
+The defect hypothesis is narrow: preflight validates the persistent cursor before
+the complete supplied parent working context, incorrectly refusing the authenticated
+day-4 / interval-22 first physical child after the `[385200,385920)` inactive
+prefix. Permitted writes are the two ingress files, directly affected existing tests,
+the minimal SC-SURFACELIQUID-001 guard-map clarification, and this record.
+
+**Contract-first intent and frozen checks:** INV-SURFACELIQUID-012/013/014/026/035,
+SC-SNOWENERGY-001 INV-083/087, and SC-COUPLEDTIME accepted-slab, inactive-owner,
+parent-finalization and atomic-rejection obligations bind. The clarification requires
+complete parent context validation before it can select parent-local cadence; it does
+not change physics, tolerances, persistent-cursor publication, or prefix receipts.
+Before implementation, capture the old exact fixture refusal through the real ingress
+entrypoint. Candidate checks are its first/subsequent/final/replay and custody poisons,
+ordinary controls, byte rollback/call counters and independent operand reconstruction;
+rustfmt; warnings-denied owning-crate Clippy; applicable A0/A1/A3; affected docs/schema;
+and `cargo nextest run --workspace --profile full` with working145's feature posture.
+Authentic-run allowance is zero. Required independent reviews are custody/chronology
+correctness and QA/evidence; no review may self-approve.
+
+**Ledger:** this repair checkpoint starts on adoption with a 60-active-minute/two-
+unsuccessful-correction-cycle cap. Historical diagnostic consumption is preserved as
+approximately 30 supplemental active minutes, zero correction cycles, and no recorded
+wait; it is not this checkpoint's ledger. Current repair consumption is in progress;
+no correction cycle has yet failed.
+
+**Current disposition — BLOCKED, no acceptance claimed.** Static implementation in
+the isolated copy moves complete `DirectWb14ParentWorkingState::validate_nested`
+plus supplied-input/support joins ahead of cadence; only that validated result can
+select the parent-local cadence posture. Nix supplied Cargo 1.95.0. Direct rustfmt
+check of the touched files reports pre-existing working145 formatting drift across
+those whole files (including lines outside this correction), so it is not green.
+The first focused owning-crate command,
+`nix develop /workdir/openWEPP --command cargo test -p
+openwepp-hillslope-orchestrator --lib surface_liquid_ingress --no-fail-fast`,
+compiled dependencies then failed before running tests on unrelated retained-source
+debt: missing `restart_authority_*` methods on `DirectV10RealConsumerShadow`
+(`v10_soil_thermal_v2_tests.rs:3071` et seq.) and missing
+`restart_authority_validate_native_exact_adoption` on `FrozenLitterV4Resident`
+(`v3_publication_retention_tests.rs:1848` et seq.). This is the first new downstream
+failure and is preserved without repair. The required old-red/green real-entrypoint
+fixture, first/subsequent/final/replay proof, custody negatives, atomicity/
+reconstruction, Clippy, A0/A1/A3, and full nextest regression are **NOT RUN**. The
+required prospective independent custody reviewer was requested through the
+authorized Terra route, but that route failed immediately with model-capacity error;
+the second independent QA/evidence review was not started. This is not a passed
+correction. The isolated diff is retained at
+`/tmp/openwepp-b01-cycle-20260910/wb14-parent-cadence-repair`; production source,
+working145, working146, and authentic-run inputs remain unchanged. Repair correction
+count is zero because no compiled/tested correction cycle occurred.
+
 ### WB14 working145 custody diagnosis — v2 supplement (2026-09-11)
 
 The owner granted this same checkpoint one additional 60 active minutes/two
