@@ -273,10 +273,16 @@ The implementer retained [command history](artifacts/execution-command-history.j
 from its tool calls during safe preservation. It records the initial command,
 corrected stamp environment, selected paths and reported Python attempts. It is
 not complete ambient-environment capture or a contemporaneous launch receipt.
-The exact intermediate `d643e3e...` checker bytes were **not separately retained**
-before supersession, despite the preservation request. Original attempt-1 scripts
-and final failed scripts are retained; no reconstruction of the missing middle
-draft is claimed. This custody gap remains visible.
+The implementer did not separately retain the intermediate `d643e3e...` checker
+before supersession, despite the preservation request. During safe preservation
+the parent recovered [that failed correction](artifacts/check_witness.correction-1.py)
+from its earlier complete verbatim tool read, reversing only the explicitly
+observed later added lines. Recovered SHA-256
+`d643e3e28ed2c7b2020122c77ca0a08c8c66328a01a955d6395951291882a87b`
+matches the implementer's contemporaneously reported digest prefix. Original,
+intermediate and final failed scripts are now retained. This is recovery of this
+session's checker evidence, not another historical source-recovery search or a
+third implementation correction.
 
 Both original frozen binaries and unique build logs/input/selection evidence are
 retained under the durable external directory; the disposable target remains
