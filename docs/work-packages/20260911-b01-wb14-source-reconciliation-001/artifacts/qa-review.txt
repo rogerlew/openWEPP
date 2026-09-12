@@ -14,3 +14,7 @@ Affected review continuation — final negative assessment:
 Medium wording finding fixed and verified: the existing ignored runner test is no longer mislabeled as self-spawned fresh-process evidence.
 
 QA pass: The final HOLD disposition is evidence-backed and bounded. All 18 gzip provenance diffs decompress to their original recorded hashes; raw durable copies remain. The preserved whitespace failure and current clean diff checks are accurate. No Rust execution occurred; publication and remote custody remain pending.
+
+
+Final custody verification:
+QA custody pass: Commit fd54c730… is on origin/main; all 74 changed files match their GitHub raw bytes with no LFS pointers. Independent remote samples matched local commit blobs. Full old-base and raw-stop-point145 LFS retrieval remain explicitly NOT RUN.

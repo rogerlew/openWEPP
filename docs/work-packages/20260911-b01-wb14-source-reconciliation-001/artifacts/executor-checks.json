@@ -68,6 +68,11 @@
     },
     {
       "check": "JSON parse",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/remote-evidence-verification.json",
+      "status": "PASS"
+    },
+    {
+      "check": "JSON parse",
       "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/revised-baseline-proposal.json",
       "status": "PASS"
     },
@@ -104,6 +109,11 @@
     {
       "check": "Python syntax",
       "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/validate_assessment.py",
+      "status": "PASS"
+    },
+    {
+      "check": "Python syntax",
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/verify_publication.py",
       "status": "PASS"
     },
     {

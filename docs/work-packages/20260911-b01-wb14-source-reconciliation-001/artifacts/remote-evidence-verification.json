@@ -1,0 +1,754 @@
+{
+  "cwd": "/workdir/openWEPP",
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/verify_publication.py",
+    "fd54c7302b17aba1703085bcd28b48b814ff7445"
+  ],
+  "commit": "fd54c7302b17aba1703085bcd28b48b814ff7445",
+  "method": "Actual GitHub raw-content retrieval compared with git show COMMIT:path bytes for every file in commit diff",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/actual-byte-inventory-first-attempt.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/actual-byte-inventory-first-attempt.json",
+      "local_sha256": "17e3d03ffdafe63a9aeccd61516c25ce64b40634608a86738482081e6a434abb",
+      "local_bytes": 4085296,
+      "remote_sha256": "17e3d03ffdafe63a9aeccd61516c25ce64b40634608a86738482081e6a434abb",
+      "remote_bytes": 4085296,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/actual-byte-inventory.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/actual-byte-inventory.json",
+      "local_sha256": "dcb755bf90bcfda42fc4e00dec7a88a3a21989712427b93f3b34282a32f96283",
+      "local_bytes": 4223304,
+      "remote_sha256": "dcb755bf90bcfda42fc4e00dec7a88a3a21989712427b93f3b34282a32f96283",
+      "remote_bytes": 4223304,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/audit.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/audit.py",
+      "local_sha256": "f580625fae01449693cbc285313b274acf962e053d7e9ee5c0b8d850fd80e149",
+      "local_bytes": 5673,
+      "remote_sha256": "f580625fae01449693cbc285313b274acf962e053d7e9ee5c0b8d850fd80e149",
+      "remote_bytes": 5673,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/authority-identity.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/authority-identity.json",
+      "local_sha256": "e49950c15fa4b9a8e7f9ca73d0f8f043abf6087455c866f6a210092ffc9173c9",
+      "local_bytes": 1308,
+      "remote_sha256": "e49950c15fa4b9a8e7f9ca73d0f8f043abf6087455c866f6a210092ffc9173c9",
+      "remote_bytes": 1308,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/available-version-provenance.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/available-version-provenance.json",
+      "local_sha256": "c65d3c9c8d6579ba498251dd16dce4a602262b9e8d392dc9e7f4fa3d2613e772",
+      "local_bytes": 11933,
+      "remote_sha256": "c65d3c9c8d6579ba498251dd16dce4a602262b9e8d392dc9e7f4fa3d2613e772",
+      "remote_bytes": 11933,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/base-remote-metadata.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/base-remote-metadata.json",
+      "local_sha256": "add9331c1f4303db49693a8b16bc21cb0c1c30b008ce865431a888884696220c",
+      "local_bytes": 520,
+      "remote_sha256": "add9331c1f4303db49693a8b16bc21cb0c1c30b008ce865431a888884696220c",
+      "remote_bytes": 520,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/compare_reconstructed_source.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/compare_reconstructed_source.py",
+      "local_sha256": "32841b17c8f45ed703aaf849e02ff94618d25fae54d0fa8f6d904043aaaa5ef1",
+      "local_bytes": 1752,
+      "remote_sha256": "32841b17c8f45ed703aaf849e02ff94618d25fae54d0fa8f6d904043aaaa5ef1",
+      "remote_bytes": 1752,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/compare_whole_source.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/compare_whole_source.py",
+      "local_sha256": "840bb3074df7d39f041ef15488342fa9158ff12e8386898524d4744f8cc88903",
+      "local_bytes": 2134,
+      "remote_sha256": "840bb3074df7d39f041ef15488342fa9158ff12e8386898524d4744f8cc88903",
+      "remote_bytes": 2134,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/correctness-review.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/correctness-review.txt",
+      "local_sha256": "dc49c4aac8eb0a6782d1538ca60371d2a0c938d80fadfb5260535262007a0802",
+      "local_bytes": 1247,
+      "remote_sha256": "dc49c4aac8eb0a6782d1538ca60371d2a0c938d80fadfb5260535262007a0802",
+      "remote_bytes": 1247,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/executor-checks.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/executor-checks.json",
+      "local_sha256": "57a5444e5d70e3a7f96db5d8a42c129d32dfcf21254bd4afcc41071c833860f1",
+      "local_bytes": 5332,
+      "remote_sha256": "57a5444e5d70e3a7f96db5d8a42c129d32dfcf21254bd4afcc41071c833860f1",
+      "remote_bytes": 5332,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/fresh-recipe-relevant-input-comparison.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/fresh-recipe-relevant-input-comparison.json",
+      "local_sha256": "d2478756fd366c02e1c03169fcb80ef1a0a63f3db3dbcd85b7b5b44b498e03eb",
+      "local_bytes": 217982,
+      "remote_sha256": "d2478756fd366c02e1c03169fcb80ef1a0a63f3db3dbcd85b7b5b44b498e03eb",
+      "remote_bytes": 217982,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/fresh-recipe-whole-source-comparison.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/fresh-recipe-whole-source-comparison.json",
+      "local_sha256": "2b83702742beae81ebe737289608047c09478f127ed925caa5084143993f8d52",
+      "local_bytes": 13108394,
+      "remote_sha256": "2b83702742beae81ebe737289608047c09478f127ed925caa5084143993f8d52",
+      "remote_bytes": 13108394,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/historical-boundary-input.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/historical-boundary-input.json",
+      "local_sha256": "102aea6193879aa3c9ec593a484868f50d863b87d579b22b62690bcdfa210364",
+      "local_bytes": 522,
+      "remote_sha256": "102aea6193879aa3c9ec593a484868f50d863b87d579b22b62690bcdfa210364",
+      "remote_bytes": 522,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/historical-fixture-remote-verification.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/historical-fixture-remote-verification.json",
+      "local_sha256": "92ab1a11558ed4e448450aae0ff3a9c9b2ceda8d5e6e59609709b158def1f7d0",
+      "local_bytes": 602,
+      "remote_sha256": "92ab1a11558ed4e448450aae0ff3a9c9b2ceda8d5e6e59609709b158def1f7d0",
+      "remote_bytes": 602,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/audit-correctness-fix.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/audit-correctness-fix.log",
+      "local_sha256": "2519e7c26996dffda336c05345de1d819fef6bf7aa3e476d5ee789915f0c0f0b",
+      "local_bytes": 295,
+      "remote_sha256": "2519e7c26996dffda336c05345de1d819fef6bf7aa3e476d5ee789915f0c0f0b",
+      "remote_bytes": 295,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/audit-final.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/audit-final.log",
+      "local_sha256": "2519e7c26996dffda336c05345de1d819fef6bf7aa3e476d5ee789915f0c0f0b",
+      "local_bytes": 295,
+      "remote_sha256": "2519e7c26996dffda336c05345de1d819fef6bf7aa3e476d5ee789915f0c0f0b",
+      "remote_bytes": 295,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/audit-rerun.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/audit-rerun.log",
+      "local_sha256": "2519e7c26996dffda336c05345de1d819fef6bf7aa3e476d5ee789915f0c0f0b",
+      "local_bytes": 295,
+      "remote_sha256": "2519e7c26996dffda336c05345de1d819fef6bf7aa3e476d5ee789915f0c0f0b",
+      "remote_bytes": 295,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/audit.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/audit.log",
+      "local_sha256": "bd36b726d95dce6d0349d52c5e9e78cab76392cead736bfc3843f2c1bcf65931",
+      "local_bytes": 167,
+      "remote_sha256": "bd36b726d95dce6d0349d52c5e9e78cab76392cead736bfc3843f2c1bcf65931",
+      "remote_bytes": 167,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/available-git-head-diff.patch",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/available-git-head-diff.patch",
+      "local_sha256": "324a62156c514caf33a0a3a35df22318e4e9536eff9b6403a14cd00e25a84b8b",
+      "local_bytes": 2754,
+      "remote_sha256": "324a62156c514caf33a0a3a35df22318e4e9536eff9b6403a14cd00e25a84b8b",
+      "remote_bytes": 2754,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/final-artifacts.sha256",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/final-artifacts.sha256",
+      "local_sha256": "37bba2b7610489404711618cf6e345e923aa1761e6907eb715148808ae0f1a04",
+      "local_bytes": 1237,
+      "remote_sha256": "37bba2b7610489404711618cf6e345e923aa1761e6907eb715148808ae0f1a04",
+      "remote_bytes": 1237,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/fresh-worker-source-evidence.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/fresh-worker-source-evidence.log",
+      "local_sha256": "cba99ed795c97f42e3eebc54f8b71fe4ad043a58b7149532c2810f31d81d7e3a",
+      "local_bytes": 3186,
+      "remote_sha256": "cba99ed795c97f42e3eebc54f8b71fe4ad043a58b7149532c2810f31d81d7e3a",
+      "remote_bytes": 3186,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/outer-owner-search.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/outer-owner-search.log",
+      "local_sha256": "8db3be4fec83753f491315286760f9af06e86e927432166850db9f34f1f0173d",
+      "local_bytes": 7237,
+      "remote_sha256": "8db3be4fec83753f491315286760f9af06e86e927432166850db9f34f1f0173d",
+      "remote_bytes": 7237,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/outer-rollback-seam.log.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/outer-rollback-seam.log.gz",
+      "local_sha256": "28edcad74e061e82c855de11866c88a975da94e52202b87987247448ddbd27ef",
+      "local_bytes": 5314,
+      "remote_sha256": "28edcad74e061e82c855de11866c88a975da94e52202b87987247448ddbd27ef",
+      "remote_bytes": 5314,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/reconstruct-available-source.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/reconstruct-available-source.log",
+      "local_sha256": "340633d493c7a92809ed9a9ebd8666fcb4e2de320955eb68b0bde069cdcc4322",
+      "local_bytes": 21035,
+      "remote_sha256": "340633d493c7a92809ed9a9ebd8666fcb4e2de320955eb68b0bde069cdcc4322",
+      "remote_bytes": 21035,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/runner-harness-search.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/runner-harness-search.log",
+      "local_sha256": "5ef656c9758ca2c8a672d2b722fd7538b062d677304ca9ecf599b528e673dbb3",
+      "local_bytes": 54156,
+      "remote_sha256": "5ef656c9758ca2c8a672d2b722fd7538b062d677304ca9ecf599b528e673dbb3",
+      "remote_bytes": 54156,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/runner-outer-transaction-search.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/runner-outer-transaction-search.log",
+      "local_sha256": "f92acfecd8a003374580a0bbc8838783db0baa190b25d115e5846327ed900d23",
+      "local_bytes": 84927,
+      "remote_sha256": "f92acfecd8a003374580a0bbc8838783db0baa190b25d115e5846327ed900d23",
+      "remote_bytes": 84927,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/source-copies.sha256",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/source-copies.sha256",
+      "local_sha256": "b852931f45a94038824cd49c62a5cb435b57b9eecf0ae5547f85408aa8d15b99",
+      "local_bytes": 520,
+      "remote_sha256": "b852931f45a94038824cd49c62a5cb435b57b9eecf0ae5547f85408aa8d15b99",
+      "remote_bytes": 520,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/stable-cut.sha256",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/stable-cut.sha256",
+      "local_sha256": "c920d0c0cd8ed84b75e82873b30b96eb3c903b770c3980f339ca4986ad88963f",
+      "local_bytes": 982,
+      "remote_sha256": "c920d0c0cd8ed84b75e82873b30b96eb3c903b770c3980f339ca4986ad88963f",
+      "remote_bytes": 982,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/static-searches.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/static-searches.log",
+      "local_sha256": "a9a7ecb27260bd2de4783543989749512a73c84c4ce7168fc6ea24e87ef1b981",
+      "local_bytes": 3714,
+      "remote_sha256": "a9a7ecb27260bd2de4783543989749512a73c84c4ce7168fc6ea24e87ef1b981",
+      "remote_bytes": 3714,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/static-test-inventory-final.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/static-test-inventory-final.log",
+      "local_sha256": "d348e5a7a2e217e51dbd0c0f36339e2f4d85346467bd9c2b5c06c8affd8d7ee0",
+      "local_bytes": 131,
+      "remote_sha256": "d348e5a7a2e217e51dbd0c0f36339e2f4d85346467bd9c2b5c06c8affd8d7ee0",
+      "remote_bytes": 131,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/static-test-inventory-qa-fix.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/static-test-inventory-qa-fix.log",
+      "local_sha256": "d348e5a7a2e217e51dbd0c0f36339e2f4d85346467bd9c2b5c06c8affd8d7ee0",
+      "local_bytes": 131,
+      "remote_sha256": "d348e5a7a2e217e51dbd0c0f36339e2f4d85346467bd9c2b5c06c8affd8d7ee0",
+      "remote_bytes": 131,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/static-test-inventory-scope-separated.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/static-test-inventory-scope-separated.log",
+      "local_sha256": "d348e5a7a2e217e51dbd0c0f36339e2f4d85346467bd9c2b5c06c8affd8d7ee0",
+      "local_bytes": 131,
+      "remote_sha256": "d348e5a7a2e217e51dbd0c0f36339e2f4d85346467bd9c2b5c06c8affd8d7ee0",
+      "remote_bytes": 131,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/static-test-inventory.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/static-test-inventory.log",
+      "local_sha256": "d348e5a7a2e217e51dbd0c0f36339e2f4d85346467bd9c2b5c06c8affd8d7ee0",
+      "local_bytes": 131,
+      "remote_sha256": "d348e5a7a2e217e51dbd0c0f36339e2f4d85346467bd9c2b5c06c8affd8d7ee0",
+      "remote_bytes": 131,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/two-layer-observation-evidence.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/two-layer-observation-evidence.log",
+      "local_sha256": "dbef38e5388ddd7946d91ab9064886a05175c83be6c1b438cefc073c0fca72a4",
+      "local_bytes": 10946,
+      "remote_sha256": "dbef38e5388ddd7946d91ab9064886a05175c83be6c1b438cefc073c0fca72a4",
+      "remote_bytes": 10946,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/version-provenance-gzip.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/version-provenance-gzip.log",
+      "local_sha256": "1f33452970349c04be69da0232935e87b914696aa3ffc736962d7d70df2d6bea",
+      "local_bytes": 190,
+      "remote_sha256": "1f33452970349c04be69da0232935e87b914696aa3ffc736962d7d70df2d6bea",
+      "remote_bytes": 190,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/version-provenance.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/version-provenance.log",
+      "local_sha256": "1f33452970349c04be69da0232935e87b914696aa3ffc736962d7d70df2d6bea",
+      "local_bytes": 190,
+      "remote_sha256": "1f33452970349c04be69da0232935e87b914696aa3ffc736962d7d70df2d6bea",
+      "remote_bytes": 190,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/whole-source-comparison-final.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/whole-source-comparison-final.log",
+      "local_sha256": "95dd38e3bdc4b0d92493ff9071757e09046bc551b5d09b8d2fe9c7f47ffadcd5",
+      "local_bytes": 265,
+      "remote_sha256": "95dd38e3bdc4b0d92493ff9071757e09046bc551b5d09b8d2fe9c7f47ffadcd5",
+      "remote_bytes": 265,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/whole-source-comparison.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/logs/whole-source-comparison.log",
+      "local_sha256": "95dd38e3bdc4b0d92493ff9071757e09046bc551b5d09b8d2fe9c7f47ffadcd5",
+      "local_bytes": 265,
+      "remote_sha256": "95dd38e3bdc4b0d92493ff9071757e09046bc551b5d09b8d2fe9c7f47ffadcd5",
+      "remote_bytes": 265,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/outer-seam-log-identity.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/outer-seam-log-identity.json",
+      "local_sha256": "124376cdeb0529c4611fa378ab46d67a090fe8dcda506a094cf0acc267380dac",
+      "local_bytes": 469,
+      "remote_sha256": "124376cdeb0529c4611fa378ab46d67a090fe8dcda506a094cf0acc267380dac",
+      "remote_bytes": 469,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/protocol-initial.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/protocol-initial.txt",
+      "local_sha256": "77b7885600b0acaa4648b32c7122cd2c5caa480d8365ad58bedb846d89c1fb6b",
+      "local_bytes": 1468,
+      "remote_sha256": "77b7885600b0acaa4648b32c7122cd2c5caa480d8365ad58bedb846d89c1fb6b",
+      "remote_bytes": 1468,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/protocol.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/protocol.md",
+      "local_sha256": "ee23ecca9b0764d56867ff821c369713dd990f0f3b6054494ac892a4c69d482e",
+      "local_bytes": 2001,
+      "remote_sha256": "ee23ecca9b0764d56867ff821c369713dd990f0f3b6054494ac892a4c69d482e",
+      "remote_bytes": 2001,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/qa-review.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/qa-review.txt",
+      "local_sha256": "d337dc405c5019c5b5fcbda022c6f716f79fae3c4f7e88152c6246ba6de9b993",
+      "local_bytes": 1465,
+      "remote_sha256": "d337dc405c5019c5b5fcbda022c6f716f79fae3c4f7e88152c6246ba6de9b993",
+      "remote_bytes": 1465,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/recipe-remote-verification.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/recipe-remote-verification.json",
+      "local_sha256": "cd670bc2ac8aac884a214e963bf5450675b30e1ba87c93c275093d05a2bb5519",
+      "local_bytes": 6231,
+      "remote_sha256": "cd670bc2ac8aac884a214e963bf5450675b30e1ba87c93c275093d05a2bb5519",
+      "remote_bytes": 6231,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/reconstruct_available_source.sh",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/reconstruct_available_source.sh",
+      "local_sha256": "36a2e00fe78c73a3c7c0d97c0c3c65e512cf46e374ac65e386f7af88011b44a6",
+      "local_bytes": 1046,
+      "remote_sha256": "36a2e00fe78c73a3c7c0d97c0c3c65e512cf46e374ac65e386f7af88011b44a6",
+      "remote_bytes": 1046,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/revised-baseline-proposal.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/revised-baseline-proposal.json",
+      "local_sha256": "ac788fc6d5a5744720e56791e03bd290b0807b8aa2b6f9af0b56dd9bf1271de7",
+      "local_bytes": 7343,
+      "remote_sha256": "ac788fc6d5a5744720e56791e03bd290b0807b8aa2b6f9af0b56dd9bf1271de7",
+      "remote_bytes": 7343,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/source-copies/available-fresh-process-b01-excerpt.rs",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/source-copies/available-fresh-process-b01-excerpt.rs",
+      "local_sha256": "8d951992489b662a984baa6a323764cc7ca738df383a707b96588e7d4d8fe602",
+      "local_bytes": 2363,
+      "remote_sha256": "8d951992489b662a984baa6a323764cc7ca738df383a707b96588e7d4d8fe602",
+      "remote_bytes": 2363,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/source-copies/precedence_tests.available.rs",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/source-copies/precedence_tests.available.rs",
+      "local_sha256": "982dac38c5b45b60eeb6db22a9ad839037359ff3fbc38fae11c10b069d434d76",
+      "local_bytes": 44725,
+      "remote_sha256": "982dac38c5b45b60eeb6db22a9ad839037359ff3fbc38fae11c10b069d434d76",
+      "remote_bytes": 44725,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/source-copies/raw_hash_tests.available.rs",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/source-copies/raw_hash_tests.available.rs",
+      "local_sha256": "041c0df1739385995e5cc6c241510523e0e4c74bedfba34bf152c501461e53fd",
+      "local_bytes": 10140,
+      "remote_sha256": "041c0df1739385995e5cc6c241510523e0e4c74bedfba34bf152c501461e53fd",
+      "remote_bytes": 10140,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/staged-whitespace-first-check.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/staged-whitespace-first-check.json",
+      "local_sha256": "64075847d14cd754a4c9ce682f6e5805c67aea62855e69130c525537574f1332",
+      "local_bytes": 2714,
+      "remote_sha256": "64075847d14cd754a4c9ce682f6e5805c67aea62855e69130c525537574f1332",
+      "remote_bytes": 2714,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/static-test-harness-inventory.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/static-test-harness-inventory.json",
+      "local_sha256": "8704db4774b9b1db58fd6c852be39f756053e0c9005800b0af2b512bc780a00b",
+      "local_bytes": 32020,
+      "remote_sha256": "8704db4774b9b1db58fd6c852be39f756053e0c9005800b0af2b512bc780a00b",
+      "remote_bytes": 32020,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/static_test_inventory.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/static_test_inventory.py",
+      "local_sha256": "838bec734793b662d4c0cbbbbd8c3172cb32cff87e41d540e55bc40d63d20f85",
+      "local_bytes": 8042,
+      "remote_sha256": "838bec734793b662d4c0cbbbbd8c3172cb32cff87e41d540e55bc40d63d20f85",
+      "remote_bytes": 8042,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/validate_assessment.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/validate_assessment.py",
+      "local_sha256": "a4bbe2fbbfac7a1c9d0bccd0ba39900c2e711991783e6d14cf95539825cf5a0f",
+      "local_bytes": 2497,
+      "remote_sha256": "a4bbe2fbbfac7a1c9d0bccd0ba39900c2e711991783e6d14cf95539825cf5a0f",
+      "remote_bytes": 2497,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/0edf04577ef21df43f40ed0bf0c449581e0213be.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/0edf04577ef21df43f40ed0bf0c449581e0213be.patch.gz",
+      "local_sha256": "98f1518cdf7a85e495e1d7fd52f5941ee22317c02caa0013f24133b9ac678bfc",
+      "local_bytes": 931,
+      "remote_sha256": "98f1518cdf7a85e495e1d7fd52f5941ee22317c02caa0013f24133b9ac678bfc",
+      "remote_bytes": 931,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/10b914da116967bbe619eb48f6518729c8f20cc8.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/10b914da116967bbe619eb48f6518729c8f20cc8.patch.gz",
+      "local_sha256": "90d71f09a0a1764e1175cfc2c7b0f7da9fcebd75f92a9038be81c666ee6d9837",
+      "local_bytes": 1899,
+      "remote_sha256": "90d71f09a0a1764e1175cfc2c7b0f7da9fcebd75f92a9038be81c666ee6d9837",
+      "remote_bytes": 1899,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/15a110ece02941d02424dd54e111e6446e044e42.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/15a110ece02941d02424dd54e111e6446e044e42.patch.gz",
+      "local_sha256": "40b2b5b119e2179e535f9497d2e4744f35dd022756ad02a6e820f9d88d3d9699",
+      "local_bytes": 993,
+      "remote_sha256": "40b2b5b119e2179e535f9497d2e4744f35dd022756ad02a6e820f9d88d3d9699",
+      "remote_bytes": 993,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/3ac61997d4e853aabfe3ea6c669e9fd731955493.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/3ac61997d4e853aabfe3ea6c669e9fd731955493.patch.gz",
+      "local_sha256": "e8fb3d4a7b42e600dbc93194c7664a82edb1ae9522b17420e93db134dabe713e",
+      "local_bytes": 995,
+      "remote_sha256": "e8fb3d4a7b42e600dbc93194c7664a82edb1ae9522b17420e93db134dabe713e",
+      "remote_bytes": 995,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/413c0c32a41ad609b43343a4fd461c58bdc94862.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/413c0c32a41ad609b43343a4fd461c58bdc94862.patch.gz",
+      "local_sha256": "184e579e4b6d3d895fb7825ef4574115d552099a0fdcb6dd53d3043e23a36906",
+      "local_bytes": 1250,
+      "remote_sha256": "184e579e4b6d3d895fb7825ef4574115d552099a0fdcb6dd53d3043e23a36906",
+      "remote_bytes": 1250,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/4360daef1e289e240997f409a6ecf7cb78d0001d.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/4360daef1e289e240997f409a6ecf7cb78d0001d.patch.gz",
+      "local_sha256": "26e3a95bae751e978312ce75949e5040a81280da391d20ca7887eb0eeb4b4aca",
+      "local_bytes": 899,
+      "remote_sha256": "26e3a95bae751e978312ce75949e5040a81280da391d20ca7887eb0eeb4b4aca",
+      "remote_bytes": 899,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/537345efa514f51423e2ef7e70ae6c30b0b12c1f.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/537345efa514f51423e2ef7e70ae6c30b0b12c1f.patch.gz",
+      "local_sha256": "45ff9e672b8610936ae80cfa733b23e9373f9fda3dc147c9aaa65174d74e98be",
+      "local_bytes": 1998,
+      "remote_sha256": "45ff9e672b8610936ae80cfa733b23e9373f9fda3dc147c9aaa65174d74e98be",
+      "remote_bytes": 1998,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/5d298ca1c2a77cced86af4e8501302550656e0f6.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/5d298ca1c2a77cced86af4e8501302550656e0f6.patch.gz",
+      "local_sha256": "f3d3ba5e6a524c63184f9153bb25d75f148f495cef81d5e1b99335fe8da8c796",
+      "local_bytes": 1167,
+      "remote_sha256": "f3d3ba5e6a524c63184f9153bb25d75f148f495cef81d5e1b99335fe8da8c796",
+      "remote_bytes": 1167,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/73299b9815fe1bf7d31de6946f613f39ed6fddf3.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/73299b9815fe1bf7d31de6946f613f39ed6fddf3.patch.gz",
+      "local_sha256": "fcac12022169c51f2ccebe43bbb0579048d3028ae3855fb89678b3263871b923",
+      "local_bytes": 1614,
+      "remote_sha256": "fcac12022169c51f2ccebe43bbb0579048d3028ae3855fb89678b3263871b923",
+      "remote_bytes": 1614,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/96c46c88e01e4faaecccd084e402ebb6dcb1e6cd.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/96c46c88e01e4faaecccd084e402ebb6dcb1e6cd.patch.gz",
+      "local_sha256": "923e569ce59e216847ab85eabf6292fe5427d3e8af2c0fd6945ea62df28c54f8",
+      "local_bytes": 491,
+      "remote_sha256": "923e569ce59e216847ab85eabf6292fe5427d3e8af2c0fd6945ea62df28c54f8",
+      "remote_bytes": 491,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/ac8d87e9e05956d7fe2d9f981797a3b77d8639b1.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/ac8d87e9e05956d7fe2d9f981797a3b77d8639b1.patch.gz",
+      "local_sha256": "a16d5418b886e1cadeb6e00c9067d2c58969926594ac17ebe6f71db29654078d",
+      "local_bytes": 1526,
+      "remote_sha256": "a16d5418b886e1cadeb6e00c9067d2c58969926594ac17ebe6f71db29654078d",
+      "remote_bytes": 1526,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/c9524729a80616f99e85fbb771f8e6c055fb0cc8.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/c9524729a80616f99e85fbb771f8e6c055fb0cc8.patch.gz",
+      "local_sha256": "fa147f54240d4f640b53ff381b11900703463b3d3d849a607d9cd85c3e74d53b",
+      "local_bytes": 1616,
+      "remote_sha256": "fa147f54240d4f640b53ff381b11900703463b3d3d849a607d9cd85c3e74d53b",
+      "remote_bytes": 1616,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/f249431d409afd2de169cba544db64b75698c792.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/precedence_tests.rs/f249431d409afd2de169cba544db64b75698c792.patch.gz",
+      "local_sha256": "7e5c01d6d2d3ce3a747c32054b1dd668f1b0e9d685a89a6ee704dac588a52193",
+      "local_bytes": 1708,
+      "remote_sha256": "7e5c01d6d2d3ce3a747c32054b1dd668f1b0e9d685a89a6ee704dac588a52193",
+      "remote_bytes": 1708,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/raw_hash_tests.rs/0edf04577ef21df43f40ed0bf0c449581e0213be.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/raw_hash_tests.rs/0edf04577ef21df43f40ed0bf0c449581e0213be.patch.gz",
+      "local_sha256": "45457701aaf2f258b4226ea6e52e03a05bc3881c76fd9d5eacb3198595c9fb3b",
+      "local_bytes": 390,
+      "remote_sha256": "45457701aaf2f258b4226ea6e52e03a05bc3881c76fd9d5eacb3198595c9fb3b",
+      "remote_bytes": 390,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/raw_hash_tests.rs/15a110ece02941d02424dd54e111e6446e044e42.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/raw_hash_tests.rs/15a110ece02941d02424dd54e111e6446e044e42.patch.gz",
+      "local_sha256": "b1277563539d3429b772a78bf7853a4531d802b07ec89d166e31dfea610bb490",
+      "local_bytes": 1164,
+      "remote_sha256": "b1277563539d3429b772a78bf7853a4531d802b07ec89d166e31dfea610bb490",
+      "remote_bytes": 1164,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/raw_hash_tests.rs/2e32a8a0e3f5473720704b4d419d7340f63a5ca9.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/raw_hash_tests.rs/2e32a8a0e3f5473720704b4d419d7340f63a5ca9.patch.gz",
+      "local_sha256": "21ea831e7d2a02585caf91fa1c684ff22beb0418e1ec29cdaa66d079b0541cdf",
+      "local_bytes": 1213,
+      "remote_sha256": "21ea831e7d2a02585caf91fa1c684ff22beb0418e1ec29cdaa66d079b0541cdf",
+      "remote_bytes": 1213,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/raw_hash_tests.rs/96c46c88e01e4faaecccd084e402ebb6dcb1e6cd.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/raw_hash_tests.rs/96c46c88e01e4faaecccd084e402ebb6dcb1e6cd.patch.gz",
+      "local_sha256": "8335f55a0e6f3bb9b77f9169ac2b4825966ed9aa0cbaec2137c8002efd476524",
+      "local_bytes": 402,
+      "remote_sha256": "8335f55a0e6f3bb9b77f9169ac2b4825966ed9aa0cbaec2137c8002efd476524",
+      "remote_bytes": 402,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/raw_hash_tests.rs/fb89e5a55802c702272a311a8d167af4a722ff09.patch.gz",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version-diffs/raw_hash_tests.rs/fb89e5a55802c702272a311a8d167af4a722ff09.patch.gz",
+      "local_sha256": "a7fb065af4fee2569bd3bf9710f701f7080e1219bfcd58476711d3c89165ae73",
+      "local_bytes": 1133,
+      "remote_sha256": "a7fb065af4fee2569bd3bf9710f701f7080e1219bfcd58476711d3c89165ae73",
+      "remote_bytes": 1133,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version_provenance.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/version_provenance.py",
+      "local_sha256": "6e9dd5693fe1029fde100ffffe9d1ab8c607b6b9586d14c1c72e2613457caebd",
+      "local_bytes": 1574,
+      "remote_sha256": "6e9dd5693fe1029fde100ffffe9d1ab8c607b6b9586d14c1c72e2613457caebd",
+      "remote_bytes": 1574,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/package.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/20260911-b01-wb14-source-reconciliation-001/package.md",
+      "local_sha256": "ff4d5064f95a68be19a8f09f834e2034552b0cb1b3e8aa86e55a71c11a5013c8",
+      "local_bytes": 58378,
+      "remote_sha256": "ff4d5064f95a68be19a8f09f834e2034552b0cb1b3e8aa86e55a71c11a5013c8",
+      "remote_bytes": 58378,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/README.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/README.md",
+      "local_sha256": "adf518f0fd60e15dcece19a36d0d2311d14f02702bbfa02a7d425b35bbdcf520",
+      "local_bytes": 411101,
+      "remote_sha256": "adf518f0fd60e15dcece19a36d0d2311d14f02702bbfa02a7d425b35bbdcf520",
+      "remote_bytes": 411101,
+      "equal": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/active.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fd54c7302b17aba1703085bcd28b48b814ff7445/docs/work-packages/active.md",
+      "local_sha256": "d0711340267c87341fface56fe5450c65bfbd796219e0958c6b3de8d4090c107",
+      "local_bytes": 6214,
+      "remote_sha256": "d0711340267c87341fface56fe5450c65bfbd796219e0958c6b3de8d4090c107",
+      "remote_bytes": 6214,
+      "equal": true,
+      "lfs_pointer": false
+    }
+  ],
+  "all_equal": true,
+  "scope": "New scoped commit bytes only; not full historical source/LFS retrieval"
+}

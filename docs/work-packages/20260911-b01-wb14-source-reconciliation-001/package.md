@@ -190,8 +190,7 @@ does not substitute for these execution reviews or future cadence reviews.
 
 The source/test assessment now recommends HOLD. The inspected revised-source
 candidate is recoverable, but the complete real-runner test bridge remains
-unbound. Both independent execution reviews accept this negative assessment. Evidence
-publication is the final custody step below. Cadence
+unbound. Both independent execution reviews accept this negative assessment. The assessment evidence has been published and remotely byte-verified below. Cadence
 repair remains HOLD; the proposed baseline and expanded test scope are not adopted.
 
 ### Scaffold checks and review
@@ -808,7 +807,8 @@ confirms the remote base commit/tree identity only. Full old-base blob retrieval
 and full raw-stop-point145 LFS archive retrieval were NOT RUN. The archive is
 locally hash-verified; no complete remote reconstructed-source claim is made.
 The source proposal is locally recoverable from the retained base/inputs and
-fresh copy. New assessment artifact publication is pending.
+fresh copy. At this assessment cut publication was pending; the final custody
+verification below records its completion.
 
 
 ## Independent execution review and corrections
@@ -926,4 +926,33 @@ The raw outer-owner excerpt is also preserved losslessly in
 blank line flagged the text whitespace checker. Its durable original remains.
 The [historical fixture remote check](artifacts/historical-fixture-remote-verification.json)
 retrieved the exact frozen input bytes at the adoption commit; no fixture run
-is implied. Publication of the new assessment evidence is pending below.
+is implied. Publication of the new assessment evidence is recorded below.
+
+
+### Publication custody
+
+Scoped assessment commit `fd54c7302b17aba1703085bcd28b48b814ff7445` was pushed
+to existing `origin/main` under the carried package-evidence permission.
+Ran `.venv/bin/python /workdir/openwepp-experiments/b01-wb14-source-reconciliation/verify_publication.py fd54c7302b17aba1703085bcd28b48b814ff7445`
+from `/workdir/openWEPP`: exit 0. The verifier fetched **all 74 changed files**
+from GitHub at that exact commit and compared every remote byte to
+`git show COMMIT:path`: **74/74 PASS**, no LFS pointers. The
+[receipt](artifacts/remote-evidence-verification.json) retains exact URLs,
+lengths/hashes, argv and results; the [verification script](artifacts/verify_publication.py)
+is preserved. This verifies the new record, scripts, copied test bytes, full
+identity/provenance comparisons and negative evidence.
+
+Eight prior recipe inputs and the frozen historical fixture were also remotely
+retrieved and matched as recorded above. Full old-base blob retrieval and full
+raw-stop-point145 LFS archive retrieval remain **NOT RUN**; no complete remote
+runtime-source claim is made. Both original partial source and fresh recipe
+copy remain durable locally. The scope ends with this independently reviewed
+negative assessment: source/test adoption and cadence execution remain HOLD.
+
+
+Same QA reviewer verified publication membership (74 unique changed paths),
+receipt/script integrity, and independently retrieved the proposal and full
+whole-source comparison from GitHub. Both remote samples matched their commit
+blobs. Final custody verdict: **PASS**, scoped to the new assessment commit;
+full historical source/LFS retrieval remains NOT RUN. This receipt and closure
+annotation are preserved in the subsequent scoped closure commit.
