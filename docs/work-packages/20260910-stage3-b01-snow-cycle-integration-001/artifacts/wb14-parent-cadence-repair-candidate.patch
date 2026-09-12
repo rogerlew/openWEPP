@@ -1,0 +1,140 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_preflight.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_preflight.rs
+@@ -87,6 +87,7 @@
+     input: &DirectSurfaceLiquidIngressInput,
+     parent_child_mode: bool,
+     finalize_parent_interval: bool,
++    validated_parent_local_context: bool,
+ ) -> Result<(), DirectSurfaceLiquidError> {
+     if input.interval_s > INTERVAL_S {
+         return Err(production_binding_failure(
+@@ -124,10 +125,12 @@
+                 continuation.next_interval_index,
+             )
+         };
+-        let projected_parent_index = input.interval_index.checked_add(1);
+-        let accepted_parent_local_projection = parent_child_mode
+-            && continuation.day_index == input.day_index
+-            && Some(continuation.next_interval_index) == projected_parent_index;
++        // Persistent mirrors intentionally remain at the parent predecessor
++        // while the authenticated parent-local scalar authorities advance.
++        // Therefore only the complete context validator, not these mirrors,
++        // can authorize this alternate cadence posture.
++        let accepted_parent_local_projection =
++            validated_parent_local_context && parent_child_mode;
+         if (expected.0 != Some(input.day_index) || expected.1 != input.interval_index)
+             && !accepted_parent_local_projection
+         {
+--- a/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs
+@@ -1062,36 +1062,6 @@
+         input.transaction_id,
+         &input.wb14_parameters,
+     )?;
+-    validate_cadence(
+-        resource.beginning_state(),
+-        input,
+-        parent_child_mode,
+-        finalize_parent_interval,
+-    ).inspect_err(|error| {
+-        if crate::snow_accuracy_observer::physical_enabled() {
+-            crate::snow_accuracy_observer::record(serde_json::json!({
+-                "kind":"surface_liquid_wb14_cadence_caller_failure", "error":error.to_string(),
+-                "input_typed_bytes":serde_json::to_vec(input).map_err(|error|error.to_string()),
+-                "parent_working_typed_bytes":parent_working_state.map(|state|serde_json::to_vec(state).map_err(|error|error.to_string())),
+-                "beginning_typed_bytes":serde_json::to_vec(resource.beginning_state()).map_err(|error|error.to_string()),
+-                "working_typed_bytes":serde_json::to_vec(resource.working_state()).map_err(|error|error.to_string()),
+-                "coupled_binding":coupled_binding.map(|binding|serde_json::json!({
+-                    "proposed_upper_bound_s_bits":binding.proposed_upper_bound_s_bits,
+-                    "coupled_parent_transaction_sha256":binding.coupled_parent_transaction_sha256,
+-                    "accepted_slab_sha256":binding.accepted_slab_sha256,
+-                    "parent_beginning_complete_owner_set_sha256":binding.parent_beginning_complete_owner_set_sha256,
+-                    "parent_support_start_ns":binding.parent_support_start_ns.to_string(),
+-                    "parent_support_end_ns":binding.parent_support_end_ns.to_string(),
+-                    "child_support_start_ns":binding.child_support_start_ns.to_string(),
+-                    "child_support_end_ns":binding.child_support_end_ns.to_string()
+-                })),
+-                "parent_child_mode":parent_child_mode,"finalize_parent_interval":finalize_parent_interval
+-            }));
+-        }
+-    })?;
+-    let mut pending =
+-        validate_and_build_local_ingress(configuration, resource, input, phase_capacity_spills)?;
+-    let mut ending = resource.working_state().clone();
+     let (
+         derived_parent_support_start_ns,
+         derived_parent_support_end_ns,
+@@ -1113,7 +1083,8 @@
+         ),
+     };
+     let wb14_model_definition_sha256 = format!("{:x}", Sha256::digest(WB14_MODEL_DEFINITION));
+-    if let Some(parent) = parent_working_state {
++    let validated_parent_local_context = if let Some(parent) = parent_working_state {
++        parent.validate_nested(configuration)?;
+         if parent.schema != WB14_PARENT_WORKING_SCHEMA
+             || parent.parent_day_index != input.day_index
+             || parent.parent_interval_index != input.interval_index
+@@ -1131,7 +1102,8 @@
+                 != coupled_binding.map_or(parent.accepted_until_ns, |binding| {
+                     binding.child_support_start_ns
+                 })
+-            || parent.candidate_state.continuations.len() != ending.continuations.len()
++            || parent.candidate_state.continuations.len()
++                != resource.working_state().continuations.len()
+             || resource.beginning_state() != &parent.candidate_state
+         {
+             return Err(production_binding_failure(
+@@ -1140,18 +1112,47 @@
+                 "WB14 parent-local identity, chronology, or immutable parameters",
+             ));
+         }
+-    }
++        true
++    } else {
++        false
++    };
++    validate_cadence(
++        resource.beginning_state(),
++        input,
++        parent_child_mode,
++        finalize_parent_interval,
++        validated_parent_local_context,
++    ).inspect_err(|error| {
++        if crate::snow_accuracy_observer::physical_enabled() {
++            crate::snow_accuracy_observer::record(serde_json::json!({
++                "kind":"surface_liquid_wb14_cadence_caller_failure", "error":error.to_string(),
++                "input_typed_bytes":serde_json::to_vec(input).map_err(|error|error.to_string()),
++                "parent_working_typed_bytes":parent_working_state.map(|state|serde_json::to_vec(state).map_err(|error|error.to_string())),
++                "beginning_typed_bytes":serde_json::to_vec(resource.beginning_state()).map_err(|error|error.to_string()),
++                "working_typed_bytes":serde_json::to_vec(resource.working_state()).map_err(|error|error.to_string()),
++                "coupled_binding":coupled_binding.map(|binding|serde_json::json!({
++                    "proposed_upper_bound_s_bits":binding.proposed_upper_bound_s_bits,
++                    "coupled_parent_transaction_sha256":binding.coupled_parent_transaction_sha256,
++                    "accepted_slab_sha256":binding.accepted_slab_sha256,
++                    "parent_beginning_complete_owner_set_sha256":binding.parent_beginning_complete_owner_set_sha256,
++                    "parent_support_start_ns":binding.parent_support_start_ns.to_string(),
++                    "parent_support_end_ns":binding.parent_support_end_ns.to_string(),
++                    "child_support_start_ns":binding.child_support_start_ns.to_string(),
++                    "child_support_end_ns":binding.child_support_end_ns.to_string()
++                })),
++                "parent_child_mode":parent_child_mode,"finalize_parent_interval":finalize_parent_interval
++            }));
++        }
++    })?;
++    let mut pending =
++        validate_and_build_local_ingress(configuration, resource, input, phase_capacity_spills)?;
++    let mut ending = resource.working_state().clone();
+     let persistent_beginning_state = parent_working_state.map_or_else(
+         || resource.beginning_state().clone(),
+         |parent| parent.persistent_beginning_state.clone(),
+     );
+     let mut per_ofe_authorities = match parent_working_state {
+         Some(parent) => {
+-            for authority in parent.per_ofe_authorities.values() {
+-                authority.canonical_sha256().map_err(|_| {
+-                    DirectSurfaceLiquidError::Identity("invalid WB14 scalar receipt chain")
+-                })?;
+-            }
+             parent.per_ofe_authorities.clone()
+         }
+         None => begin_scalar_wb14_authorities(

@@ -44,7 +44,10 @@ production qualification remain separate from artifact delivery and cycle comple
 
 ### B01-WB14-PARENT-CADENCE-REPAIR (2026-09-11)
 
-**ACTIVE — owner-adopted bounded successor checkpoint.** Source is the retained
+**ACTIVE — owner-adopted bounded successor checkpoint.** The owner adopted
+`/tmp/openwepp_b01_wb14_parent_cadence_repair_authorization_v2.md`; its one
+deliverable is source-bound feature-correct verification, not a restart repair or
+authentic simulation. Source is the retained
 working145 composition (`b6fb949e967af911bd3d508c02e023bf0a349b30e3c0697631276b351b50e88f`),
 copied without working146 into
 `/tmp/openwepp-b01-cycle-20260910/wb14-parent-cadence-repair` with dedicated
@@ -68,11 +71,11 @@ and `cargo nextest run --workspace --profile full` with working145's feature pos
 Authentic-run allowance is zero. Required independent reviews are custody/chronology
 correctness and QA/evidence; no review may self-approve.
 
-**Ledger:** this repair checkpoint starts on adoption with a 60-active-minute/two-
-unsuccessful-correction-cycle cap. Historical diagnostic consumption is preserved as
-approximately 30 supplemental active minutes, zero correction cycles, and no recorded
-wait; it is not this checkpoint's ledger. Current repair consumption is in progress;
-no correction cycle has yet failed.
+**Ledger:** v2 grants at most 30 active minutes or one further unsuccessful
+correction cycle. Historical active time is **UNOBSERVED** and is not reconstructed;
+the prior failed corrective edit/compilation is recorded as one unsuccessful cycle.
+This continuation performed no correction. Its feature-correct inventory attempted
+one configuration build and stopped on infrastructure failure; no wait was excluded.
 
 **Current disposition — BLOCKED, no acceptance claimed.** Static implementation in
 the isolated copy moves complete `DirectWb14ParentWorkingState::validate_nested`
@@ -97,7 +100,45 @@ the second independent QA/evidence review was not started. This is not a passed
 correction. The isolated diff is retained at
 `/tmp/openwepp-b01-cycle-20260910/wb14-parent-cadence-repair`; production source,
 working145, working146, and authentic-run inputs remain unchanged. Repair correction
-count is zero because no compiled/tested correction cycle occurred.
+count is one: the earlier corrective source edit was followed by failed compilation.
+
+**v2 feature-selection evidence — BLOCKED before inventory.** The candidate was
+preserved as the working145-relative two-file patch
+[`wb14-parent-cadence-repair-candidate.patch`](artifacts/wb14-parent-cadence-repair-candidate.patch)
+(SHA-256 `1b7f8a7b48f02d0aa117969081295325e7af0e11de0d914af6306c739df338bb`);
+the two candidate file SHA-256 values are
+`45d6b2fb901adf7f37d14595ed088657886079027340adf71012cadb41e098de`
+(`surface_liquid_ingress.rs`) and
+`249d4b1d4214381c762a9d7457f20a70a9997954a88e268717a63231e5cce141`
+(`surface_liquid_ingress_preflight.rs`). The bound manifest is the isolated
+candidate's unchanged `Cargo.toml` (SHA-256
+`e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676`), whose
+owning-crate defaults are empty and which declares both required features. The
+corresponding methods and exact enclosing `cfg` gates were statically found in the
+candidate, confirming the former default-feature failure was a feature-selection
+mismatch rather than missing implementations.
+
+Ran (exit 101): from cwd
+`/tmp/openwepp-b01-cycle-20260910/wb14-parent-cadence-repair`, Nix Cargo 1.95.0
+ran the v2 `cargo nextest list --manifest-path "$SRC/Cargo.toml" -p
+openwepp-hillslope-orchestrator --lib --locked --features
+'persisted-restart-v1,restart-authority-evidence' -E 'test(surface_liquid_ingress)'`
+with the candidate target requested. Nix announced its configured cache target while
+rustc used `/tmp/openwepp-b01-cycle-20260910/target-wb14-parent-cadence-repair`.
+It failed during dependency compilation with `/tmp` at 100% (14 MiB free), including
+`No space left on device` and a concurrent rustc SIGSEGV; it listed and executed zero
+tests. The compact raw command/output record is
+[`wb14-parent-cadence-repair-feature-nextest-list.log`](artifacts/wb14-parent-cadence-repair-feature-nextest-list.log)
+(SHA-256 `3aa57f914935585123d35722a1206838e6cf0d69245818340d9c0402ac137fa2`). This
+is necessary-primary-evidence unavailability, so no candidate retry, baseline copy,
+test addition, formatting, lint, broad gate, review dispatch, or downstream repair
+was attempted. Baseline/candidate red-green, first/subsequent/final/replay, custody
+negatives, atomicity/owner-byte/call-count/independent operands and all broader
+required checks remain **NOT RUN**; required independent reviews remain outstanding.
+At the owner's subsequent `/tmp` cleanup direction, the isolated candidate, its
+working145 base, and target under `/tmp/openwepp-b01-cycle-20260910` were removed.
+The repository-held candidate patch above is the retained recovery record; no result
+or source identity is newly claimed from the deleted temporary trees.
 
 ### WB14 working145 custody diagnosis — v2 supplement (2026-09-11)
 

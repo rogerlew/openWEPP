@@ -1,0 +1,14 @@
+Command (cwd `/tmp/openwepp-b01-cycle-20260910/wb14-parent-cadence-repair`):
+
+`nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/tmp/openwepp-b01-cycle-20260910/target-wb14-parent-cadence-repair cargo nextest list --manifest-path /tmp/openwepp-b01-cycle-20260910/wb14-parent-cadence-repair/Cargo.toml -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E 'test(surface_liquid_ingress)'`
+
+Nix shell reports Cargo 1.95.0. The shell selected its configured target
+`/workdir/.cache/openwepp/targets/wb14-parent-cadence-repair-20627028bc11` while
+Rust compiler output used the explicitly supplied isolated target path. The command
+did not complete test inventory: compile output first failed with `No space left on
+device` while writing `libopenwepp_land_surface_energy`; a concurrent rustc process
+then terminated with `SIGSEGV`. Cargo exited 101. No tests were listed or executed.
+
+Disk state captured immediately after failure: `/tmp` had 14 MiB available (100% of
+503 GiB used); the isolated target occupied 637 MiB. This is retained infrastructure
+failure evidence, not an assertion about the candidate's correctness.
