@@ -728,3 +728,21 @@ No pure waits deducted, including extraction waits. Authentic invocations remain
 independence regardless of nominal time/cycle balance. Scoped publication follows
 under carried permission, on existing `main`. Entire multi-GB corpus and fixture
 remain local; only compact packet and supporting records are being published.
+
+
+Ran: evidence commit `bb6e4172c` was pushed to existing `origin/main`;
+**9/9 changed files retrieved from exact-commit GitHub URLs and byte-matched**, no
+LFS pointers, in [remote verification](artifacts/current-packet-remote-verification.json).
+This verifies remote custody of the compact packet, extraction/failure evidence,
+authorization and records only, not the multi-GB raw corpus or source recovery.
+Terminal diff contains only this package's preservation files/record and the
+active locator. No checker/test, prior review, Rust, runtime/source/fixture,
+collector, dependency, authority or checkpoint bytes changed.
+
+At **21:00:43 UTC**, conservative supplemental preservation/publication
+consumption is **10m43s**, cumulative **58m24s**;
+no waits deducted, one supplemental failed extraction verification, **6/7** total.
+The following custody-annotation commit does not reopen the availability stop.
+Next dependent action requires the existing required QA conversation to become
+available or an explicit owner revision of that review-continuity constraint.
+All original witness tests and both independent scopes remain mandatory.
