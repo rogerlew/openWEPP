@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/collect.py",
+    "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/openwepp_runner-identity-stamped.frozen",
+    "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1",
+    "--policy",
+    "B01",
+    "--case",
+    "gradual_warm_tail7",
+    "--ofes",
+    "1",
+    "--cases",
+    "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+    "--cpu",
+    "0",
+    "--timeout",
+    "3600"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "environment_overrides": {
+    "TMPDIR": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "relevant_inherited_environment": {
+    "PATH": "/home/roger/.codex/packages/standalone/releases/0.154.0-x86_64-unknown-linux-musl/codex-path:/home/roger/.local/bin:/home/roger/.codex/tmp/arg0/codex-arg0BxAdIS:/home/roger/.codex/packages/standalone/releases/0.154.0-x86_64-unknown-linux-musl/codex-path:/home/roger/.local/bin:/home/roger/.local/bin:/home/roger/.local/bin:/home/roger/.local/bin:/home/roger/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+    "LANG": "en_US.UTF-8",
+    "LC_ALL": "C.UTF-8"
+  },
+  "start_utc": "2026-09-12T18:44:19.699015+00:00",
+  "wrapper_pid": 783563,
+  "collector_launch_attempt": 1,
+  "authentic_ceiling": 1
+}

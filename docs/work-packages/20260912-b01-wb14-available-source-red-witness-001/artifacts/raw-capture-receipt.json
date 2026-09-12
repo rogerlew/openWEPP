@@ -1,0 +1,81 @@
+{
+  "schema": "snow_accuracy_process_v1",
+  "argv": [
+    "taskset",
+    "-c",
+    "0",
+    "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/openwepp_runner-identity-stamped.frozen",
+    "hillslope::tests::stage3_snow_accuracy_case",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1",
+  "binary_sha256": "958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f",
+  "cases_sha256": "c48cc560dff31102085ebcf852225b2063a1629ad96cfa9f7283364df44fbf3f",
+  "collector_sha256": "824d60b7667c118cd6c011fad5312ddaec85a4ebf00ce5646a48e79b3d20b2aa",
+  "predecessor_collector_sha256": "f1ea797124f4a4e1cb4e02da049a403ac6db6d8780f839b0b334197b4f348052",
+  "policy": "B01",
+  "case": "gradual_warm_tail7",
+  "ofes": 1,
+  "physical": true,
+  "environment": {
+    "RUST_MIN_STACK": "67108864",
+    "OPENWEPP_EXPERIMENT_OFES": "1",
+    "OPENWEPP_EXPERIMENT_REPEATS": "1",
+    "OPENWEPP_COMPACT_COST": "off",
+    "OPENWEPP_ACCURACY_POLICY": "B01",
+    "OPENWEPP_ACCURACY_CASE": "gradual_warm_tail7",
+    "OPENWEPP_ACCURACY_CASES": "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+    "OPENWEPP_ACCURACY_OUTPUT": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1",
+    "OPENWEPP_ACCURACY_PHYSICAL": "1"
+  },
+  "timeout_s": 3600.0,
+  "timeout": false,
+  "execution_valid": false,
+  "scientific_qualification": "NOT_ASSESSED",
+  "exit_code": 101,
+  "process_user_s": 1385.934685,
+  "process_system_s": 4.099801,
+  "lifetime_peak_rss_kib": 2589788,
+  "binary_unchanged": true,
+  "runner_receipt_present": true,
+  "runner_execution": "FAIL",
+  "runner_wall_s": 1389.272509587,
+  "runner_receipt_sha256": "d22e3e16b844a3f1525b217efc1a413ad0403473c469b40a07d9402fc5de44c3",
+  "policy_identity_valid": true,
+  "completed_days": null,
+  "physical_rows": 123088,
+  "observation_complete": true,
+  "days_complete": false,
+  "counter_errors": {
+    "carrier": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "lse": {
+      "complete": 0,
+      "component_replay": 0,
+      "evaluations": 0,
+      "identity_anchor": 0,
+      "maps": 0,
+      "probes": 0,
+      "solves": 0,
+      "sweeps": 0
+    }
+  },
+  "counters_complete": true,
+  "files_complete": false,
+  "wall_s": 1456.063941698987,
+  "artifact_sha256": {
+    "stdout.log": "36d37d77226cfd93e755eadbc8be10cd5c884183817730073677302c70e1e29b",
+    "stderr.log": "6a24bf50bfd00f76945d4281ea706819c5084283b6b9ef8a1c9ae4a953ba3556",
+    "run.json": "d22e3e16b844a3f1525b217efc1a413ad0403473c469b40a07d9402fc5de44c3",
+    "observations.json": "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9",
+    "inputs.json": "feac1e37b6a082ee1c193f11894766aac26eff1346ab4ca954e8c86b9d5cb273"
+  }
+}

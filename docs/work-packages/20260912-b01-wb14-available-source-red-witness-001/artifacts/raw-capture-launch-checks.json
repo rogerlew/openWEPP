@@ -1,0 +1,130 @@
+{
+  "checked_at_utc": "2026-09-12T18:43:52.533710+00:00",
+  "checks": {
+    "inputs": true,
+    "cpu_0": true,
+    "space": true,
+    "output_absent": true,
+    "scratch_absent": true,
+    "prior_receipts_absent": true,
+    "taskset": true,
+    "dependency_import": true
+  },
+  "inputs": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/openwepp_runner-identity-stamped.frozen",
+      "bytes": 48794192,
+      "sha256": "958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/collect.py",
+      "bytes": 12583,
+      "sha256": "824d60b7667c118cd6c011fad5312ddaec85a4ebf00ce5646a48e79b3d20b2aa",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/run_series.py",
+      "bytes": 18446,
+      "sha256": "f1ea797124f4a4e1cb4e02da049a403ac6db6d8780f839b0b334197b4f348052",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+      "bytes": 1906,
+      "sha256": "c48cc560dff31102085ebcf852225b2063a1629ad96cfa9f7283364df44fbf3f",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/README.md",
+      "bytes": 1250,
+      "sha256": "8a4e18ec84a0e88bd21a627929cfff42cf997c1ce77f459099830631acfb96bc",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/frost.txt",
+      "bytes": 43,
+      "sha256": "b6f81ef2040b029e361b63be4bd9591dbc3a151b9ecae927805152e365521e53",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.cli",
+      "bytes": 260214,
+      "sha256": "05aec431a2d033f01f0844b7f396b8cf973d03737df8a6acbd652c995cbadf11",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.man",
+      "bytes": 11932,
+      "sha256": "61b696985cc7e382cf3d0b323f1ad30be199a665eabe9c663c30de1ab5cdfa2c",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.run",
+      "bytes": 343,
+      "sha256": "1cabf3319ccf83baaf00d4c94c6de6804a09918307f162275b58fc6ea64b577f",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.slp",
+      "bytes": 205,
+      "sha256": "c9a641285332da593a093773960b132cfe1460043f3cf0bf45aac74db45a0e06",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.sol",
+      "bytes": 1694,
+      "sha256": "e66ac38f4d08d00b63190782ccf1d320f710a113df3a683d425a6b78be953b2a",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/pmetpara.txt",
+      "bytes": 2690,
+      "sha256": "7f67616e491e293a41ef3a79940108cf5de5cb0b780ab9728234ee1eb2aaf9b2",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/snow.txt",
+      "bytes": 87,
+      "sha256": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/wepp_ui.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches_retained": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/cancov_forest/marcell_conifer_mn/p8.man.yaml",
+      "bytes": 6625,
+      "sha256": "5b592a479211418ccc7d6a3390b51294cc67a6e1f1db53f4af8f527ef3126175",
+      "matches_retained": true
+    }
+  ],
+  "free_bytes": 85284282368,
+  "required_free_bytes": 18711948537,
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "ijson_version": "3.4.0",
+  "prior_process_inspection": "ps -eo pid,comm,args: no live openwepp_runner or collect.py",
+  "source_build_listing_evidence": "Reused unchanged continuation-preflight.json; no rebuild, source-map recovery or listing rerun",
+  "output": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1",
+  "scratch": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1"
+}

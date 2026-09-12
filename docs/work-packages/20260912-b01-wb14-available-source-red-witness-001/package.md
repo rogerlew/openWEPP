@@ -1,13 +1,12 @@
 # B01 WB14 available-source red witness
 
-Ran/Static: **INCOMPLETE / HOLD — continuation stopped at the hard cycle bound.**
-The delegated loop reported three supplemental failed verifications, reaching
-**5 cumulative failures against the authorized ceiling of 4**. The ceiling was
-reached at the second supplemental failure; subsequent edits were an execution
-overrun, not an authorized reset. Authentic invocation remains **0/1, NOT RUN**.
-Two builds completed; authentic invocation **NOT RUN (0/1)**; runner and witness
-verdicts **NOT EVALUATED**. The corrected stamped binary is retained, but no
-executable witness or usable authentic boundary packet was produced.
+Ran: **Collection COLLECTED; authentic invocations 1/1, permit exhausted.**
+Collector exit 0; child exit 101; timeout false; runner FAIL;
+`execution_valid=false`. **Witness NOT EVALUATED; checker acceptance FAIL/HOLD;
+package INCOMPLETE/HOLD.** Raw output is preserved locally; collection is not
+accepted witness evidence. The historical five unsuccessful correction cycles
+against a ceiling of four remain an execution defect. See the raw-only section
+below for current receipts, byte custody, limitations and time ledger.
 
 ## Adopted scope and acceptance
 
@@ -481,3 +480,111 @@ retains exact URLs, hashes, command and result. This verifies new evidence only,
 not historical source/LFS recovery. The following receipt annotation is custody
 preservation, not further correction or invocation. Checker acceptance remains
 FAIL/HOLD and original authentic invocation remains **0/1**.
+
+
+## Owner-adopted raw-only collection — 2026-09-12
+
+The owner requested `execute /tmp/openwepp_b01_wb14_raw_capture_only_authorization.md`,
+adopting its ordering amendment for this same checkpoint at reference cut
+`a0f7e9baeb366bb83282245226fc86371be21846`. One raw collection may precede
+accepted checker tests and both independent witness reviews. Every finding,
+required negative test, scientific predicate and reviewer obligation remains
+binding for witness acceptance and package completion. Witness NOT EVALUATED;
+checker FAIL/HOLD; package INCOMPLETE/HOLD.
+
+Carried owner ledger: **38m44s active; five unsuccessful cycles against the old
+ceiling of four; authentic invocations 0/1**. The overrun remains an execution
+defect. This exception grants 60 additional active minutes and ZERO corrective
+edit cycles. Conservative start **18:41:00 UTC**; charge all elapsed time unless
+explicitly recorded as pure wait. One collector-launch attempt exhausts the
+permit even if its child cannot start; no retry. Existing child timeout is 3600 s.
+
+Astra directly owns launch checks, the exact authorized invocation and preservation;
+no delegates/reviewers, checker work, builds, source recovery or code changes.
+Selected checks: refresh frozen binary size/hash, unchanged collectors/case and
+runtime-template bytes against the retained continuation preflight; available
+CPU 0, existing dependency imports, fresh output/scratch, absent prior launch,
+and free disk >= 18,711,948,537 bytes. Reuse accepted source-map, build-input,
+Cargo selection and listing evidence. Source remains reconciled-available145-r1
+with both UNKNOWN historical test-substitution deltas; no historical-source or
+qualification-source adoption. Stop on any failed required launch check.
+
+Permitted writes are create-new raw output, isolated fixture scratch, launch/
+exit/hash evidence, this package and affected locator. Preserve first observed
+result and every produced raw file; do not invoke the rejected checker.
+Documentation/JSON/link and terminal scoped diff checks apply to preservation;
+no production changes or scientific qualification tests are selected here.
+
+Read-only checks found no prior authentic receipts or live runner/collector;
+old run-output and continuation scratch are empty. The earlier attempted read
+of an external continuation-preflight path was a locator mistake: the retained
+receipt exists at this package's `artifacts/continuation-preflight.json` and is
+reused unchanged. Required binary, collectors, case and all eleven template files
+match it; CPU 0 and ijson 3.4.0 are available without installation.
+
+### Raw collection result and preservation
+
+Ran: [fresh launch checks](artifacts/raw-capture-launch-checks.json) passed.
+[Actual launch](artifacts/raw-capture-launch.json) began at
+**18:44:19.699015 UTC** (collector PID 783564; observed child PID 783581).
+The exact absolute argv and parent cwd/environment are retained separately from
+[child started receipt](artifacts/raw-capture-started.json), which retains its
+argv, cwd, treatment and timeout. No replay, checkpoint or poison flags were used.
+The [collector exit record](artifacts/raw-capture-exit.json) ended at
+**19:08:38.423111 UTC**, exit **0**, elapsed **1458.7240168568678 s**.
+Child exit **101** is from the unchanged [collector receipt](artifacts/raw-capture-receipt.json);
+`timeout=false`, no `infrastructure_error` field, runner `FAIL`,
+`execution_valid=false`, `binary_unchanged=true`. Child exit time was not
+separately timestamped; the receipt retains child resource times and runner wall
+**1389.272509587 s**, distinct from collector elapsed time.
+
+The retained [runner receipt](artifacts/raw-capture-run.json) and
+[raw stderr](artifacts/raw-capture-stderr.log) report
+`SURFACELIQUID-E-008 IngressCandidate: WB14 day or interval continuation mismatch`.
+This is the runner-reported result only, not an accepted exact failure witness.
+Collector values remain verbatim: `observation_complete=true`,
+`physical_rows=123088`, `days_complete=false`, `files_complete=false`,
+`completed_days=null`, `scientific_qualification=NOT_ASSESSED`.
+`outputs.json` is absent. No independent observation parsing, boundary join,
+checker execution or scientific adjudication was performed under this permit.
+
+**Collection: COLLECTED**, with the above limitations. Durable raw root:
+`/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1`.
+Fixture:
+`/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363`.
+The [streaming index](artifacts/raw-capture-index.json) records every produced
+regular file in output and scratch plus collector stdout/stderr: **26 files,
+7,381,291,592 bytes**. Both `observations.json` and `physical-rows.jsonpart` are
+retained. All five collector artifact hashes match independent streaming SHA-256
+computations. Small receipts/logs are copied byte-for-byte into this package;
+the complete raw corpus and fixture remain in durable local storage. No remote
+custody of that corpus, historical source recovery or qualification-source adoption
+is claimed.
+
+**Witness: NOT EVALUATED. Checker acceptance: FAIL/HOLD. Package:
+INCOMPLETE/HOLD.** Every outstanding required checker test, complete join and both
+independent witness reviews remains unmet. Collection does not establish a valid
+prefix, conservation, total inactive physics, complete rollback, restart
+equivalence, cadence acceptance or production readiness. Five prior unsuccessful
+cycles remain; this action used **zero corrective edits**, **one collector launch**
+and **one authentic child invocation**, exhausting the original 1/1 run ceiling.
+No further run, checker continuation, review or repair is authorized here.
+
+Recorded pure process waits: session 23880 initial 5 s; tool cells 10–34 each
+50 s (25 calls); cell 35 43.228206992 s. Deduct only **1298 s** conservatively;
+all other reading, orchestration, inspection, hashing and preservation is charged.
+Final active ledger and custody checks are recorded at disposition below.
+
+Ran: preservation checks passed new JSON parsing, package references, verbatim
+small-file copies, all five collector hash joins, post-run frozen binary identity
+and `git diff --check`. Terminal scope is this package's raw records and affected
+active locator only; no Rust, checker/tests, collector/imports, fixtures, source,
+build inputs, contracts or numerical settings changed. No code/scientific tests
+or independent reviews ran, and none are claimed passed.
+
+At **19:10:51 UTC**, conservative exception consumption is
+**8m14s active**, plus carried **38m44s** =
+**46m58s cumulative active**. Pure waits deducted: 1298 s.
+Collector and child invocations are 1/1; usable run/correction allowance is zero.
+Scoped record publication follows under carried permission; large raw/fixture
+bytes remain local and are not included in the publication claim.

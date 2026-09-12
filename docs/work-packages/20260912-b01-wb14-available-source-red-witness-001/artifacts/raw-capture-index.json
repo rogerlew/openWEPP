@@ -1,0 +1,155 @@
+{
+  "evidence_class": "Ran: streaming byte inventory only; witness NOT EVALUATED",
+  "created_utc": "2026-09-12T19:09:17.801803+00:00",
+  "collection": "COLLECTED",
+  "files": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/comparisons.txt",
+      "bytes": 7179032,
+      "sha256": "fd865400f97d35a09b370c87b5d134303d230fbfb9c6cb61f9abef619328bb74"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/configuration.json",
+      "bytes": 9519,
+      "sha256": "b9b86193ee61350fc21ea687161e1a2048f9ab6abc22d0f77b1e51d57c2fa91a"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/fixture-path.txt",
+      "bytes": 143,
+      "sha256": "43d98ffb941869d44b8da58ff4b24afd6736f3bb8de5a72800c21f9526a3c0ab"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/inputs.json",
+      "bytes": 1356,
+      "sha256": "feac1e37b6a082ee1c193f11894766aac26eff1346ab4ca954e8c86b9d5cb273"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/observations.json",
+      "bytes": 3699473934,
+      "sha256": "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/physical-rows.jsonpart",
+      "bytes": 3674503764,
+      "sha256": "61e0068b2977ff555415c92bb36bdf942809d94bddd8c5eeedf072cc8d3c64c9"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/receipt.json",
+      "bytes": 2923,
+      "sha256": "5240bef80cf9cbd4f7e030fff8a5316d65253e0274fbd32c5a6315579f24d7a9"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/run.json",
+      "bytes": 40029,
+      "sha256": "d22e3e16b844a3f1525b217efc1a413ad0403473c469b40a07d9402fc5de44c3"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/started.json",
+      "bytes": 1523,
+      "sha256": "8d997f3e191f1c98d5200e7c2e7097f473c51e4104775cf911eb3c2e03294c1d"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/stderr.log",
+      "bytes": 641,
+      "sha256": "6a24bf50bfd00f76945d4281ea706819c5084283b6b9ef8a1c9ae4a953ba3556"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/stdout.log",
+      "bytes": 28972,
+      "sha256": "36d37d77226cfd93e755eadbc8be10cd5c884183817730073677302c70e1e29b"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-collector.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-collector.stdout",
+      "bytes": 206,
+      "sha256": "78b8ce878de375534d512eeffb995b99789e0269402cb751462c1e266c03c609"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/README.md",
+      "bytes": 1250,
+      "sha256": "8a4e18ec84a0e88bd21a627929cfff42cf997c1ce77f459099830631acfb96bc"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/case.man.yaml",
+      "bytes": 2715,
+      "sha256": "661f8e1576b2dffe0909283677242893298d58ebcf02aa18abe4282b5b1be7ad"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/case.run",
+      "bytes": 532,
+      "sha256": "5f4b7f0f74efeac97b917cfe5ee8d5aa3b2a08ca9fe1e109dd01f7ac046da23a"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/case.run.snow_stage3_v11_owner_seed.json",
+      "bytes": 36209,
+      "sha256": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/frost.txt",
+      "bytes": 43,
+      "sha256": "b6f81ef2040b029e361b63be4bd9591dbc3a151b9ecae927805152e365521e53"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/p102.cli",
+      "bytes": 1003,
+      "sha256": "5af208853205300ab2cc606070407fccccba3b4c8d770f5e242613033fa2508a"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/p102.man",
+      "bytes": 3467,
+      "sha256": "6abc78f34c8900fd11d243ef5916b9acf89fa25fd087bddc64d9c02b7517ce5f"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/p102.run",
+      "bytes": 343,
+      "sha256": "1cabf3319ccf83baaf00d4c94c6de6804a09918307f162275b58fc6ea64b577f"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/p102.slp",
+      "bytes": 75,
+      "sha256": "be38e0a111db3708ca73bf9d207fd799ddd3c67bff4fecaabbfbab3956d12d74"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/p102.sol",
+      "bytes": 1136,
+      "sha256": "e0a86be22d7c819ac963620648b844ed18d1ac78ee867ea34587dad7ef225dca"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/pmetpara.txt",
+      "bytes": 2690,
+      "sha256": "7f67616e491e293a41ef3a79940108cf5de5cb0b780ab9728234ee1eb2aaf9b2"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/snow.txt",
+      "bytes": 87,
+      "sha256": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/wepp_ui.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "file_count": 26,
+  "total_regular_bytes": 7381291592,
+  "collector_hash_matches": {
+    "stdout.log": true,
+    "stderr.log": true,
+    "run.json": true,
+    "observations.json": true,
+    "inputs.json": true
+  },
+  "fixture_path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363",
+  "missing_expected_outputs": [
+    "outputs.json"
+  ],
+  "limitations": [
+    "Collector files_complete=false and days_complete=false; no output manifest.",
+    "Collector observation_complete=true is retained verbatim, not independent witness acceptance.",
+    "All raw bytes remain at durable local paths; no remote custody of the raw corpus claimed."
+  ]
+}

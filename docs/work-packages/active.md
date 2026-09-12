@@ -7,7 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
-| B01 WB14 available-source red witness (incomplete, continuation stopped) | [record](20260912-b01-wb14-available-source-red-witness-001/package.md) | Supplemental cycle ceiling exhausted; delegated overrun recorded at 5 failures against ceiling 4. Frozen binary retained, authentic invocation NOT RUN; source/cadence HOLD. |
+| B01 WB14 available-source red witness (raw collected, incomplete) | [record](20260912-b01-wb14-available-source-red-witness-001/package.md) | Raw-only exception used: invocation 1/1, child 101, runner FAIL; witness NOT EVALUATED, checker/package HOLD. Prior 5/4 cycle overrun retained; source/cadence HOLD. |
 | B01 WB14 evidence interface design (incomplete, stopped) | [record](20260911-b01-wb14-evidence-interface-design-001/package.md) | Two unsuccessful correction cycles exhausted; implementation envelope not recommended for adoption. Source/cadence/release HOLD. |
 | B01 WB14 source reconciliation (assessment complete) | [record](20260911-b01-wb14-source-reconciliation-001/package.md) | HOLD recommendation: available source recoverable; source/test adoption awaits a concrete real-runner injection and total-physics observation bridge. |
 | B01 WB14 verified cadence repair (HOLD) | [record](20260911-b01-wb14-verified-cadence-repair-001/package.md) | Exact recovery stopped at 925/927 file matches; two required test-file byte sequences unavailable. No candidate or authentic runs. |
