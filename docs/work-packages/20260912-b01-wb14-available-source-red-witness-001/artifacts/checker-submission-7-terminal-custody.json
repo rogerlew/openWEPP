@@ -1,0 +1,25 @@
+{
+  "evidence_class": "Ran: parent safe preservation checks only; no failed-suite rerun",
+  "cwd": "/workdir/openWEPP",
+  "checks": {
+    "current-run-boundary-packet.json_unchanged": true,
+    "extract_current_pair.py_unchanged": true,
+    "correctness-review.txt_unchanged": true,
+    "qa-review.txt_unchanged": true,
+    "all_json_parse": true,
+    "package_links": true,
+    "checker_failed_cut_unchanged": true,
+    "tests_failed_cut_unchanged": true,
+    "diff_whitespace": true
+  },
+  "time_utc": "2026-09-12T21:54:21.910595+00:00",
+  "resumed_active_seconds": 501,
+  "cumulative_active_seconds": 4412,
+  "supplement_consumed_seconds": 1551,
+  "nominal_remaining_seconds": 2049,
+  "cycles": "7/7",
+  "invocations": "1/1",
+  "witness": "NOT EVALUATED",
+  "checker": "FAIL/HOLD",
+  "package": "INCOMPLETE/HOLD"
+}

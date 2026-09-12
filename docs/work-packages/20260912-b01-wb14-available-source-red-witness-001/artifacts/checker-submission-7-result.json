@@ -1,0 +1,70 @@
+{
+  "evidence_class": "Ran: author-reported existing execution transcript; parent hashed retained bytes only, no rerun",
+  "cwd": "/workdir/openWEPP",
+  "reference_cut": "f99aab7b7",
+  "checker": {
+    "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py",
+    "sha256": "e7f74c26201949b9cf428600001d2c6324109d3a34adc98fe05cc55ea544025e"
+  },
+  "tests": {
+    "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py",
+    "sha256": "70caea902057fd10a1aac5490cc13760e1b701707fa33cad051dff057816689a"
+  },
+  "syntax": {
+    "argv": [
+      ".venv/bin/python",
+      "-m",
+      "py_compile",
+      "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py",
+      "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py"
+    ],
+    "exit_code": 0,
+    "attribution": "/root/witness_checker_implementation"
+  },
+  "named_suite": {
+    "argv": [
+      ".venv/bin/python",
+      "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py"
+    ],
+    "exit_code": 1,
+    "transcript": "checker-submission-7-execution.txt",
+    "cases": [
+      {
+        "name": "current_packet_positive",
+        "result": "completed without assertion failure, inferred from sequential control flow; no per-case output"
+      },
+      {
+        "name": "missing_record",
+        "result": "completed without assertion failure, inferred from sequential control flow; no per-case output"
+      },
+      {
+        "name": "wrong_boundary_valid_json",
+        "result": "FAIL",
+        "expected_refusal": "input",
+        "actual_refusal": "input_pair"
+      },
+      {
+        "name": "all subsequent cases",
+        "result": "NOT RUN: process terminated at first failure"
+      }
+    ]
+  },
+  "current_corpus_application": "NOT RUN",
+  "independent_corrected_cut_reviews": "NOT RUN",
+  "witness": "NOT EVALUATED",
+  "checker_acceptance": "FAIL/HOLD",
+  "package": "INCOMPLETE/HOLD",
+  "cycles": {
+    "carried": 6,
+    "new_unsuccessful": 1,
+    "total": 7,
+    "ceiling": 7,
+    "earlier_overrun_against_four": "retained"
+  },
+  "authentic_invocations": {
+    "total": 1,
+    "ceiling": 1,
+    "additional": 0
+  },
+  "post_failure_checker_edits": false
+}

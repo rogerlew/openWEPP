@@ -1,0 +1,62 @@
+QA replacement current-custody preservation
+
+Reviewer: /root/witness_qa_replacement
+Evidence class: Ran: completed read-only custody command begun before the 7/7
+hard stop; result observed after the interruption window. This artifact records
+an already-completed command only. No post-stop verification was launched.
+
+cwd: /workdir/openWEPP
+argv: ["./.venv/bin/python", "-"]
+exit_code: 0
+stdout:
+{"all_checks_pass": true, "checks": {"binary_selection": true, "index_inputs.json": true, "index_receipt.json": true, "index_run.json": true, "index_source_equals_stream": true, "index_started.json": true, "index_stderr.log": true, "index_stdout.log": true, "kind_sequence": ["surface_liquid_wb14_cadence_failure", "surface_liquid_wb14_cadence_caller_failure"], "packet_receipt_equals_raw": true, "packet_records_equal_stream_matches": true, "packet_run_equals_raw": true, "packet_source_equals_stream": true, "packet_stream_equals_stream": true, "receipt_binds_observations": true, "receipt_binds_run": true, "runner_state": true}, "matches": [[123086, "surface_liquid_wb14_cadence_failure"], [123087, "surface_liquid_wb14_cadence_caller_failure"]], "records_scanned": 123088, "source_bytes": 3699473934, "source_sha256": "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9"}
+
+Embedded Python source:
+import hashlib, json
+from pathlib import Path
+import ijson
+root = Path('/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1')
+pkg = Path('docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts')
+packet = json.loads((pkg/'current-run-boundary-packet.json').read_text())
+index = json.loads((pkg/'raw-capture-index.json').read_text())
+by_path = {e['path']: e for e in index['files']}
+obs = root/'observations.json'
+kinds = {'surface_liquid_wb14_cadence_failure','surface_liquid_wb14_cadence_caller_failure'}
+h = hashlib.sha256(); size = 0
+class Reader:
+    def __init__(self, f): self.f=f
+    def read(self,n=-1):
+        global size
+        b=self.f.read(n); h.update(b); size += len(b); return b
+found=[]; rows=0
+with obs.open('rb') as f:
+    for ordinal,row in enumerate(ijson.items(Reader(f), 'physical.item', use_float=False)):
+        rows=ordinal+1
+        if isinstance(row,dict) and row.get('kind') in kinds:
+            found.append({'physical_ordinal':ordinal,'record':row})
+checks = {
+ 'packet_source_equals_stream': packet['source']=={'path':str(obs),'bytes':size,'sha256':h.hexdigest()},
+ 'index_source_equals_stream': (by_path[str(obs)]['bytes'],by_path[str(obs)]['sha256']) == (size,h.hexdigest()),
+ 'packet_stream_equals_stream': packet['stream']['records_scanned']==rows and packet['stream']['matching_records']==len(found),
+ 'packet_records_equal_stream_matches': packet['records']==found,
+ 'kind_sequence': [r['record'].get('kind') for r in found],
+}
+for name in ('run.json','receipt.json','started.json','inputs.json','stdout.log','stderr.log'):
+    p=root/name; d=hashlib.sha256(p.read_bytes()).hexdigest()
+    checks['index_'+name]=(d==by_path[str(p)]['sha256'])
+run=json.loads((root/'run.json').read_text()); receipt=json.loads((root/'receipt.json').read_text())
+checks.update({
+ 'receipt_binds_run': receipt.get('runner_receipt_sha256') == hashlib.sha256((root/'run.json').read_bytes()).hexdigest(),
+ 'receipt_binds_observations': receipt.get('artifact_sha256',{}).get('observations.json') == h.hexdigest(),
+ 'packet_run_equals_raw': packet['run']['sha256'] == hashlib.sha256((root/'run.json').read_bytes()).hexdigest(),
+ 'packet_receipt_equals_raw': packet['receipt']['sha256'] == hashlib.sha256((root/'receipt.json').read_bytes()).hexdigest(),
+ 'runner_state': run.get('execution')=='FAIL' and receipt.get('runner_execution')=='FAIL' and receipt.get('execution_valid') is False,
+ 'binary_selection': receipt.get('binary_sha256') == '958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f' and packet['receipt'].get('binary_sha256') == receipt.get('binary_sha256'),
+})
+print(json.dumps({'source_bytes':size,'source_sha256':h.hexdigest(),'records_scanned':rows,'matches':[(x['physical_ordinal'],x['record'].get('kind')) for x in found],'all_checks_pass':all(v is True for k,v in checks.items() if isinstance(v,bool)),'checks':checks},sort_keys=True))
+
+Disposition: FAIL/HOLD preserved. This custody check is not checker acceptance or
+witness evaluation. The named checker suite had already failed at
+wrong_boundary_valid_json (expected input, received input_pair); current corpus
+checker application remains NOT RUN. No further review or execution is permitted
+after the 7/7 hard stop.

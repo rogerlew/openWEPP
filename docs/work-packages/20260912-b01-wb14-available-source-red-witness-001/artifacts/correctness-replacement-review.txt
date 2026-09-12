@@ -1,3 +1,18 @@
 Static: interim correctness replacement message, attributable to /root/witness_correctness_replacement (Sol/high). Parent interrupted further review on required QA access loss; no final fix verification is claimed.
 
 Correctness replacement primary access established at HEAD 90016cbc. Verified exact packet d8f1fe07…cc76, current checker fcd2e096…77d, tests 743a3111…cd7. Current cut remains FAIL/HOLD: historical positive substituted for current packet; key guard scalar/parent-state/support/identity joins absent; all-equal cumulative check admits nonzero/negative initial state despite producer exact +0.0 requirement; most 32-byte identities shape-only; receipt/run/artifact completeness/hash and exact failure correlation incomplete; negative cases accept unrelated exceptions and boundary test is malformed JSON. Finite concrete inventory sent to implementer; I’m mapping exact producer identity relationships now.
+
+
+Static: resumed same correctness conversation completed its initial review of reference cut 90016cbc, checker fcd2e096…77d, tests 743a3111…cd7, packet d8f1fe07…cc76, observation 7a944817…ba9. No Rust, checker suite, binary, or simulation execution. Parent summary of returned findings; full response remains in the reviewer conversation.
+
+1. HIGH: missing guard actual-day/interval/OFE/state_mutated, parent day/interval/support/accepted-until, beginning/candidate/working/persistent, parameter/configuration and upper-bound bits joins. Producer target E008 precedes later parent validation (surface_liquid_ingress.rs:1065-1091), so captured relationships need explicit checks.
+2. HIGH: cumulative equality alone accepts equal negative/nonzero values. Initial branch requires exact positive-zero binary64 cumulatives (surface_liquid_ingress_preflight.rs:98-117); all seven operands need numeric/finite/domain validation.
+3. HIGH: binding/prefix/authority coupled-parent transaction and parent supports join; binding child start joins prefix end. Binding parent_beginning_complete_owner_set_sha256 joins prefix prefix_ending_owner_sha256. Authority parent_beginning_owner_sha256 joins prefix parent_beginning_owner_sha256. These two owner digests are legitimately distinct. Accepted-slab digest must be nonzero; it has no equal field in this payload.
+4. HIGH: exact run/observation correlation, case/policy/physical selection and available artifact joins incomplete. Preserve actual exit101, runner FAIL, execution_valid=false, no timeout/infrastructure error, observation_complete=true, physical_rows123088, files_complete=false/days_complete=false without rollback/prefix claims.
+5. HIGH: historical development positive and malformed-JSON boundary negative do not satisfy current source-shaped named cases; broad exceptions do not prove intended predicate.
+
+Residual mandatory inventory remains that of the adopted authorization: valid boundaries, binary, loss, truncation, separate panic/timeout, raw/capture joins, every cumulative coordinate and numeric domain poison, OFE membership, missing payloads, scalar/posture/prefix/support/ordinal/prior-receipt joins, reason/invocation/run/artifacts/listing/selection, and full u128 limits.
+
+Accepted unchanged portions: bounded streaming, authentic Ok byte wrapper, raw guard/caller input and beginning comparisons, binary64 cumulative equality and exact OFE-map membership. Those improvements remain accepted as present and need the listed bounded corrections/tests.
+
+Verdict: FAIL/HOLD on inspected pre-correction cut; witness NOT EVALUATED. Packet is preservation/membership extraction, not full inactive-prefix authentication, rollback, restart, conservation or C-025 closure. Same reviewer remains assigned final affected fix verification.

@@ -1,0 +1,5 @@
+Pre-edit submitted cut, retained by Git reference 90016cbc314cb1013f7a1835549be9a37e2238bd.
+check_witness.py  fcd2e09623fd5644c7552c6d560603dfe8b095ca077eda475ba5163dc4db477d
+test_check_witness.py  743a311131e46665b907041bfaac658fed6b0657054cc02ae3abf46371f32cd7
+Exact capture command: sha256sum artifacts/check_witness.py artifacts/test_check_witness.py
+Result: the two hashes above, before the named case table and one consolidated correction.

@@ -1,0 +1,37 @@
+Safe-preservation transcript from existing implementation tool calls. No command was rerun.
+
+Precheck command (cwd /workdir/openWEPP):
+.venv/bin/python -m py_compile docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py
+
+Precheck result: exit 0; stdout/stderr empty.
+The same call printed these submitted source identities before the py_compile invocation:
+e7f74c26201949b9cf428600001d2c6324109d3a34adc98fe05cc55ea544025e  docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py
+70caea902057fd10a1aac5490cc13760e1b701707fa33cad051dff057816689a  docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py
+
+Failed corrective-verification command (cwd /workdir/openWEPP):
+.venv/bin/python docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py
+
+Result: exit 1; verbatim stderr/stdout transcript:
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py", line 35, in reject
+    try: result=check(pp,rp,up,BINARY,lp)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workdir/openWEPP/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py", line 75, in check
+    if gb != cb: fail("input_pair")
+                 ^^^^^^^^^^^^^^^^^^
+  File "/workdir/openWEPP/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py", line 13, in fail
+    def fail(code): raise WitnessError(code)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+check_witness.WitnessError: input_pair
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py", line 43, in <module>
+    reject("wrong_boundary_valid_json", "input", lambda p:edit_input(p,0,lambda x:x.__setitem__("day_index",5)))
+  File "/workdir/openWEPP/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py", line 36, in reject
+    except WitnessError as e: assert e.code==code, f"{name}: {e.code} != {code}"
+                                     ^^^^^^^^^^^^
+AssertionError: wrong_boundary_valid_json: input_pair != input
+
+No per-case progress was printed. Therefore the only completed named case observable from this invocation is current_packet_positive, because it precedes wrong_boundary_valid_json and did not terminate execution. The next named case failed as shown. No current-corpus application, review, or additional verification followed.

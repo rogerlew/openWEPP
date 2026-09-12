@@ -1,0 +1,4 @@
+Submitted source/test cut before the one allowed corrective verification.
+check_witness.py  fcd2e09623fd5644c7552c6d560603dfe8b095ca077eda475ba5163dc4db477d
+test_check_witness.py  d91f5e4a6f155fc774815a4422815795561b61a2bffb40cd5ef716ec22e33c62
+The test file is the required readable named case table, written before the checker correction.
