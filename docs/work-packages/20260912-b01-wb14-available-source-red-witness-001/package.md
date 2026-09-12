@@ -297,3 +297,19 @@ At 13:39:32 UTC, conservative cumulative active consumption including safe
 preservation is **25 minutes 32 seconds**; nominal minutes remaining 34 minutes
 28 seconds, with **2/2 cycles exhausted**. Publication is the remaining custody
 action under the carried scoped commit/push permission; no further execution.
+
+### Published evidence custody
+
+Scoped commit `23ca4d5f553d7ddf615cb5bf530e51f0540fe7b9` was pushed to the existing
+`origin/main`. Ran the retained predecessor publication verifier against this
+commit: **14/14 changed files actually retrieved from GitHub and matched byte for
+byte**, including the 31.8 MB build archive; no LFS pointers. The
+[remote receipt](artifacts/remote-evidence-verification.json) retains URLs,
+counts, hashes, command and results. This verifies new evidence files only;
+complete historical source/LFS recovery remains unperformed and unclaimed.
+
+At verified publication cut **13:40:21 UTC**, conservative cumulative active time
+is **26 minutes 21 seconds**; nominal active time remaining **33 minutes 39
+seconds**, but the **2/2 unsuccessful-cycle hard stop** remains binding. The
+receipt/closure annotation commit adds only custody preservation. Authentic
+invocations remain **0/1**, with no permission to spend the run after this stop.
