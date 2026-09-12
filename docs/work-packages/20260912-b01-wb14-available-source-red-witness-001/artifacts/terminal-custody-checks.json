@@ -1,0 +1,16 @@
+{
+  "json_parsed": [
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/build-evidence-index.json",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/execution-command-history.json"
+  ],
+  "package_links_checked": [
+    "artifacts/owner-authorization.md",
+    "../20260911-b01-wb14-evidence-interface-design-001/package.md",
+    "../20260911-b01-wb14-source-reconciliation-001/artifacts/revised-baseline-proposal.json",
+    "artifacts/correctness-review.txt",
+    "artifacts/qa-review.txt",
+    "artifacts/execution-command-history.json"
+  ],
+  "git_diff_check_exit": 0,
+  "scope": "Terminal custody/document checks only; checker acceptance FAIL, authentic invocation NOT RUN"
+}

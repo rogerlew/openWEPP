@@ -1,0 +1,29 @@
+{
+  "status": "STOPPED_AFTER_2_OF_2_UNSUCCESSFUL_CHECKER_VERIFICATIONS",
+  "authentic_invocation": "NOT_RUN",
+  "cwd": "/workdir/openWEPP",
+  "source_cwd": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145",
+  "commands": [
+    {
+      "kind": "initial_build_rejected_preflight",
+      "exit_code": 0,
+      "log": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/logs/build.jsonl",
+      "stderr": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/logs/build.stderr",
+      "argv": "nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/build-target CARGO_PROFILE_RELEASE_LTO=false RUST_MIN_STACK=67108864 cargo test --manifest-path /workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/Cargo.toml -p openwepp-runner --lib --locked --release --no-run --features openwepp-runner/test-fixture-authority,openwepp-hillslope-orchestrator/persisted-restart-v1,openwepp-hillslope-orchestrator/restart-authority-evidence --config profile.release.package.openwepp-hillslope-orchestrator.opt-level=1 --config profile.release.package.openwepp-runner.opt-level=1 --message-format=json-render-diagnostics",
+      "note": "completed in 5m12s; rejected because required B01 identity env values were absent"
+    },
+    {
+      "kind": "corrected_stamped_build",
+      "exit_code": 0,
+      "log": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/logs/build-corrected.jsonl",
+      "stderr": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/logs/build-corrected.stderr",
+      "env": {"OPENWEPP_B01_SOURCE_SHA256":"c7aea0707d0c6a0876ec4bee5a7fcf15e751a092e086f517ced7edba8282b71e","OPENWEPP_B01_BUILD_INPUTS_SHA256":"69de3ea11154652532983f91b3e87e6ed1355aa462a9f9fee66c0463f8a8c994"},
+      "note": "same build argv and target as initial build, with the two displayed env values"
+    },
+    {"kind":"selection_and_listing","exit_code":0,"selected_row":"artifacts/selected-cargo-artifact-corrected.jsonl","binary":"artifacts/openwepp_runner-identity-stamped.frozen","listing":"artifacts/compiled-listing-identity-stamped.stdout"},
+    {"kind":"checker_system_python_attempt","exit_code":1,"command":"python3 test_check_witness.py","failure":"ModuleNotFoundError: No module named 'ijson'"},
+    {"kind":"checker_venv_attempt","exit_code":0,"command":"/workdir/openWEPP/.venv/bin/python -m py_compile check_witness.py test_check_witness.py && /workdir/openWEPP/.venv/bin/python test_check_witness.py","output":"PASS authentic-shaped positive and five negatives"}
+  ],
+  "preserved_drafts": ["artifacts/check_witness.attempt-1.py", "artifacts/test_check_witness.attempt-1.py"],
+  "gap_not_retroactively_corrected": "input-build-resource-receipt.json does not pin imported predecessor collector or actual REPO Nix inputs"
+}

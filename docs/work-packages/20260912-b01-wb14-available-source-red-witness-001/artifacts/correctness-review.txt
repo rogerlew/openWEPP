@@ -1,0 +1,73 @@
+Independent correctness review — initial pre-run cut
+
+Reviewer: /root/witness_correctness, replacement conversation. This review is
+independent of the author/adviser and does not claim continuity with the
+unavailable predecessor correctness-review conversation.
+
+Scope: failure/source/control-flow interpretation and offline checker correctness
+against the adopted witness acceptance. Static evidence: owner authorization,
+package record, unchanged reconciled-available145-r1 producer source, collector,
+checker/tests, and the retained prior warm-tail7 observation inventory/target rows.
+Ran: no Rust, physics, or authentic invocation. The prior observation was streamed
+read-only solely to inspect its authentic producer schema.
+
+1. HIGH — the checker cannot accept authentic producer records.
+   `check_witness.py:20-29,37-50` expects each typed byte value to be a bare list
+   and accepts only an integer `interval_s`. The producer at
+   `surface_liquid_ingress.rs:1073-1077` and
+   `surface_liquid_ingress_preflight.rs:136-145` serializes `Result<Vec<u8>,
+   String>`, yielding `{"Ok":[...]}`, and the decoded input contains JSON
+   `"interval_s":60.0`. The synthetic positive fixture models neither authentic
+   shape. This is an unconditional pre-run blocker.
+
+2. HIGH — the checker does not enforce or preserve the required boundary packet.
+   `check_witness.py:40-79` compares only decoded input objects and four support
+   values. It does not require byte-for-byte guard/caller input and beginning
+   equality; capture process/session/thread equality plus consecutive guard/caller
+   ordinals; guard `initial=true`, expected day/interval 0/0,
+   `accepted_parent_local_projection=false`, or the matching OFE; caller/guard
+   parent-child and nonfinal posture equality; or decode the caller's complete
+   parent working, beginning, and working bytes. Consequently it does not prove
+   parent accepted-until/child-start equality, initial persistent day/interval and
+   cumulative values, physical ordinal zero/no prior receipts, or the supplied
+   inactive-prefix payload. It also ignores the binding's upper-bound bits and
+   three 32-byte identities and cannot cross-check those bytes against the parent
+   packet. Its output omits the complete target rows and raw typed arrays. A
+   fabricated or incomplete packet can pass. Preserve all supplied bytes and
+   pairwise joins while retaining the authorization's explicit limits: these
+   producer bytes do not independently validate the full prefix, and
+   `state_mutated=false` does not establish complete rollback.
+
+3. HIGH — the checker does not establish the specified natural runner failure or
+   correlate it to the exact invocation. `check_witness.py:42,62-76` accepts any
+   caller text containing `SURFACELIQUID-E-008`; the unchanged source emits the
+   required exact reason `SURFACELIQUID-E-008 IngressCandidate: WB14 day or
+   interval continuation mismatch`. It does not require a nonzero child exit,
+   absence of `infrastructure_error`, a present FAIL run receipt and hash join,
+   receipt/observation completeness, counts presence, or raw artifact hash joins.
+   Membership tests on `argv` do not prove the exact compiled listing or the
+   authorized invocation, and no listing evidence is an input. Thus a generic or
+   manufactured E008 receipt can pass.
+
+4. HIGH — whole-file loading is not a viable complete-observation check at the
+   known scale. `check_witness.py:11-12,34-35` uses `read_bytes()` for both parsing
+   and hashing. The retained prior warm-tail7 `observations.json` is
+   3,699,597,023 bytes. This approach requires multiple multi-gigabyte allocations
+   and can fail before disposition. Stream a complete parse and target-row
+   extraction, hash in bounded chunks, and require the schema's counts object,
+   physical mode, no overflow, and no count poisoning. Retain the original path,
+   full-file hash, row locations, and complete extracted records.
+
+5. MEDIUM — the synthetic checks do not validate the corrected acceptance surface.
+   `test_check_witness.py` uses an inauthentic positive; its wrong-boundary case
+   changes only a redundant field, its truncated input already has the wrong
+   wrapper, and generic panic and timeout are changed together. It lacks independent
+   cases for raw pair mismatch, capture mismatch, missing beginning/parent/working
+   bytes, exact failure reason, infrastructure/nonzero-exit/run-receipt joins,
+   counts presence, inactive-prefix/ordinal/receipt constraints, and large-u128
+   decoding. Python integers avoid narrowing, but the helper admits negative and
+   out-of-u128 values and has no test proving values above u64 remain exact.
+
+Initial verdict: FAIL / HOLD. Do not spend the single authentic invocation until
+these checker defects are corrected and this same reviewer verifies the affected
+cut. No finding reopens accepted historical reconciliation or the failed design.

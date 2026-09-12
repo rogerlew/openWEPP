@@ -1,5 +1,7 @@
 # Work Packages
 
+- [20260912 B01 WB14 available-source red witness](20260912-b01-wb14-available-source-red-witness-001/package.md): INCOMPLETE/HOLD at two unsuccessful checker correction cycles; stamped executable retained, authentic invocation NOT RUN. Source adoption and cadence repair remain paused.
+
 - [20260911 B01 WB14 evidence interface design](20260911-b01-wb14-evidence-interface-design-001/package.md): INCOMPLETE; stopped at the owner’s two unsuccessful correction-cycle limit. The proposed evidence interface/test envelope is not implementation-ready or recommended for adoption.
 
 - [20260911 B01 WB14 source reconciliation](20260911-b01-wb14-source-reconciliation-001/package.md): Completed independently reviewed assessment; retained recipe fully reproduces available source, but source/test adoption remains HOLD pending the real-runner injection and total-physics observation bridge.

@@ -1,0 +1,94 @@
+{
+  "archive": "build-evidence.tar.gz",
+  "bytes": 31846246,
+  "sha256": "29ee2160c2f1cfcbd2b65fb1f58ad0a58c5168a18061bb4ac392bdaa44f466c2",
+  "members": [
+    {
+      "path": "artifacts/compiled-listing-identity-stamped.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/compiled-listing-identity-stamped.stdout",
+      "bytes": 72,
+      "sha256": "5cbf4e23a1df85a5bb0d670026519d5ba06cff94e9b1122c6371d573e496b973"
+    },
+    {
+      "path": "artifacts/compiled-listing.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/compiled-listing.stdout",
+      "bytes": 72,
+      "sha256": "5cbf4e23a1df85a5bb0d670026519d5ba06cff94e9b1122c6371d573e496b973"
+    },
+    {
+      "path": "artifacts/current-build-inputs.json",
+      "bytes": 912,
+      "sha256": "c4133a770cc86c8e65e0c76787d44c72003e170961db026aecff09c2e486ee1c"
+    },
+    {
+      "path": "artifacts/current-rustc-vv.txt",
+      "bytes": 436,
+      "sha256": "fa4ddc9860802e1477482966d3f6b14790f1d4d9f1310bca2078bedc762a28b6"
+    },
+    {
+      "path": "artifacts/frozen-binary-identity-stamped.sha256",
+      "bytes": 377,
+      "sha256": "660105fd9b49d556e675c558ce87112391d70ccbbff2dda03ed4a9f445fe9692"
+    },
+    {
+      "path": "artifacts/frozen-binary.sha256",
+      "bytes": 377,
+      "sha256": "98710a5d492ff24909e672cf7abb9be04bbe7db8acdcb818bb3e938ada095e58"
+    },
+    {
+      "path": "artifacts/input-build-resource-receipt.json",
+      "bytes": 2529,
+      "sha256": "28e7ef5ab4e44f2afb2d664c96ab69d615e34505d4e68a73187ef48d1006a3e5"
+    },
+    {
+      "path": "artifacts/openwepp_runner-5f2e45c674e868ff.frozen",
+      "bytes": 44944072,
+      "sha256": "8faac2eea6e11b237267d0475c1dc135e88c5ed401c763061bb8a1f101ce90b6"
+    },
+    {
+      "path": "artifacts/openwepp_runner-identity-stamped.frozen",
+      "bytes": 48794192,
+      "sha256": "958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f"
+    },
+    {
+      "path": "artifacts/selected-cargo-artifact-corrected.jsonl",
+      "bytes": 1028,
+      "sha256": "aaef55853951fe3a4cf7352cdf5682364dc98fc8e511a36296e96ea5a2e64cad"
+    },
+    {
+      "path": "artifacts/selected-cargo-artifact.jsonl",
+      "bytes": 1028,
+      "sha256": "aaef55853951fe3a4cf7352cdf5682364dc98fc8e511a36296e96ea5a2e64cad"
+    },
+    {
+      "path": "logs/build-corrected.jsonl",
+      "bytes": 135909,
+      "sha256": "c02be8ba5103d541c7eee7476f809f15308c732d1b44ebbdae0e5079b87ccdd9"
+    },
+    {
+      "path": "logs/build-corrected.stderr",
+      "bytes": 1161,
+      "sha256": "033a454321838ef969bc9213372d7090b5b73a08e72d79a56fe72d979690b716"
+    },
+    {
+      "path": "logs/build.jsonl",
+      "bytes": 136045,
+      "sha256": "287ce3fa037f8689ba74bbc11a283869a2198d4cf0b7af19149f91c27459c67b"
+    },
+    {
+      "path": "logs/build.stderr",
+      "bytes": 7536,
+      "sha256": "a8f3f45cd1f8a14dc1b6c32aa83a2b32d2eb590c23eccc5c7235c3f515adbddb"
+    }
+  ],
+  "verified_all_members_against_durable_originals": true,
+  "scope": "Both frozen build executables and build/selection/input evidence only; no authentic invocation and no complete source archive"
+}

@@ -1,0 +1,145 @@
+Independent QA/evidence review — pre-run cut
+
+Reviewer: /root/witness_qa (replacement QA conversation; independent of the
+author/adviser and distinct from correctness review). Scope: actual build argv,
+inputs, source/binary selection, durable evidence, resource sizing, and checker
+negative-test quality. This review does not claim continuity with any unavailable
+historical reviewer.
+
+Static: adopted authorization, package record, collector, current source, Cargo
+JSON/stderr, and durable build artifacts. Ran: source/input hash checks and
+read-only artifact inspection only. No Rust, physics, checker, or authentic
+runner invocation was run by this reviewer.
+
+Findings
+
+1. HIGH — required embedded provenance stamps are absent from the selected
+   executable. The authorization requires source and build-input stamps derived
+   from the actual source and inputs. The producer uses
+   `option_env!("OPENWEPP_B01_SOURCE_SHA256")` and
+   `option_env!("OPENWEPP_B01_BUILD_INPUTS_SHA256")` at
+   `crates/openwepp-runner/src/hillslope/native_custody_restart_experiment.rs:100-101`.
+   The retained build command/evidence supplies neither variable, and the frozen
+   executable does not contain current source-map digest
+   `c7aea0707d0c6a0876ec4bee5a7fcf15e751a092e086f517ced7edba8282b71e` or a
+   recorded actual build-input digest. Its eventual diagnostic would therefore
+   encode null stamp values. Do not spend the authentic invocation on this
+   binary. Preserve it as the unstamped attempt; build, select, freeze, list,
+   and record a separately stamped executable from explicit actual inputs.
+
+2. HIGH — pre-run acceptance is incomplete. The prescribed actual invocation
+   cannot yet be audited because consumed-input/source/build identity records,
+   collector and predecessor-collector hashes, exact command/cwd/environment,
+   available CPU, and retained-archive based durable-space sizing are absent.
+   No authentic result is present. The required corrected checker and its
+   required synthetic negative behavior evidence are also not yet available for
+   QA review. These are prerequisites, not post-run documentation.
+
+3. MEDIUM — the current build log is a mixed stream, not JSONL: its first three
+   lines are Nix-shell text before Cargo JSON. A naive all-line JSON parser fails.
+   The selected row is nevertheless valid when extracted by accepting only JSON
+   rows; preserve the raw log and document that parsing rule, rather than
+   labelling the raw file pure JSONL.
+
+Verified evidence
+
+The original un-stamped build has one matching Cargo compiler-artifact row:
+`logs/build.jsonl:161` identifies test-profile `openwepp_runner`, opt-level 1,
+with runner feature `test-fixture-authority`; the immediately preceding
+orchestrator row has opt-level 1 and both required restart features. The durable
+selected row names that executable. Its copied frozen binary is 44,944,072 bytes
+with SHA-256
+`8faac2eea6e11b237267d0475c1dc135e88c5ed401c763061bb8a1f101ce90b6`;
+the source target and frozen copy hashes agree. The durable compiled-listing
+stdout contains only `hillslope::tests::stage3_snow_accuracy_case: test` followed
+by the libtest summary `1 test, 0 benchmarks`; listing stderr is empty.
+
+Non-blocking debt/follow-ups
+
+- The build emitted one dead-code warning in `logs/build.stderr`. This
+  evidence-only package changes no Rust source, so `cargo fmt`, clippy with
+  warnings denied, Rust tests, and cargo-deny are not increment gates for this
+  documentation/checker scope. Record the warning as inherited build evidence;
+  it must not be represented as a green lint result.
+- After the corrected checker is stable, retain its exact script/test hashes and
+  a command/result showing one positive plus each required independent negative
+  behavior. QA will verify that corrected cut and the stamped build/input records
+  before invocation readiness.
+
+Verdict: HOLD. No authentic invocation is QA-ready.
+
+Terminal QA verification — final stopped cut
+
+Static: final checker/test scripts and the corrected build/input/resource
+evidence. Ran: read-only hash, Cargo-row, listing, binary-string, and receipt
+inspection. No checker execution, Rust execution, or authentic invocation was
+performed. This is same-reviewer verification of the pre-run evidence, not a
+third correction.
+
+Findings
+
+1. HIGH — the final checker test does not cover three mandatory independent
+   rejections. `artifacts/test_check_witness.py:8-11` has five negatives:
+   missing record, observer loss, generic panic, capture-process mismatch, and
+   truncated input. It has no wrong-boundary mutation, no wrong-binary mutation,
+   and no timeout-only mutation. The adopted authorization requires all of
+   missing-record, wrong-boundary, wrong-binary, observer-loss, truncated-input,
+   and generic-panic/timeout behavior before invocation. A capture mismatch is
+   useful additional coverage but cannot replace the three omitted cases.
+
+2. HIGH — cumulative state and full packet joins remain accepted on presence
+   alone. `artifacts/check_witness.py:27-30` only requires that two cumulative
+   fields exist. Calls at lines 50 and 53 validate each decoded state separately;
+   none compare the guard and caller beginning states, nor compare the persistent
+   beginning/candidate/working cumulative values with the required paired
+   packet. `test_check_witness.py:5-7` supplies all four states as the same
+   minimal zero-valued fixture, so it cannot show a mismatched cumulative value
+   is rejected. The positive fixture also omits the complete authentic context
+   needed to exercise the required byte/identity joins. The checker therefore
+   cannot establish the stated complete boundary packet.
+
+3. HIGH — full pre-run command provenance remains incomplete. The corrected
+   `input-build-resource-receipt.json` records source/input hashes, CPU set and
+   space, but does not retain the exact corrected build argv/cwd/environment or
+   the collector invocation argv/cwd/environment that acceptance requires. No
+   authentic invocation exists, so the latter cannot be supplied retrospectively;
+   the build command/environment must still be retained if this evidence is used
+   for any future authorization.
+
+4. HIGH — required same-reviewer correctness fix verification is missing. The
+   package record says the initial correctness reviewer became unavailable after
+   the thread-limit failure. Its original HOLD findings have no same-reviewer
+   verification of this final checker. The required independent correctness
+   review remains unmet; QA inspection does not substitute for it.
+
+Verified corrected build evidence
+
+The previous unstamped binary is correctly superseded for preflight purposes.
+`input-build-resource-receipt.json` records the current 927-entry source-map
+digest `c7aea0707d0c6a0876ec4bee5a7fcf15e751a092e086f517ced7edba8282b71e`,
+the preserved case and collector identities, all three required features, an
+available CPU set, 85,349,187,584 free bytes, and 6,237,316,179 expanded archive
+bytes. The retained compiler value includes the Nix-shell banner plus `rustc
+1.95.0`; this is actual captured compiler-command output and does not itself
+require another rebuild.
+
+The corrected selected Cargo row is a test-profile `openwepp_runner` artifact
+with runner opt-level 1 and the required runner feature. The frozen binary and
+target executable agree at SHA-256
+`958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f`.
+Its dependency file and embedded strings contain both the current source stamp
+and build-input stamp
+`69de3ea11154652532983f91b3e87e6ed1355aa462a9f9fee66c0463f8a8c994`.
+The corrected compiled listing is the exact named test with an empty stderr.
+The build-input file is retained, but the receipt does not state the canonical
+serialization used to derive its quoted digest; that limits reproducibility of
+the digest calculation, not the evidence that the quoted value was embedded.
+
+Non-blocking debt/follow-ups
+
+- Retain raw corrected build stdout/stderr and document the intentional
+  non-JSON Nix banner before Cargo JSON, as for the first build.
+
+Verdict: FAIL / HOLD. The hard stop at two unsuccessful checker corrections is
+consistent with this evidence. The authentic invocation remains unspent and
+must not be launched under this package.
