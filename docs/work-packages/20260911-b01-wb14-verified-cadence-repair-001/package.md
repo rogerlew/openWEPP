@@ -420,6 +420,13 @@ Terminal diff is confined to this record, locator/catalog and recovery/review
 artifacts. Ran from `/workdir/openWEPP`: `git diff --check`, both retained shell
 scripts through `bash -n`, local-reference resolution and artifact JSON parsing
 all PASS. These documentation/evidence checks do not validate runtime behavior.
-Publication custody: scoped evidence is prepared for commit/push on existing
-`main`; exact working145/candidate custody remains unavailable regardless of
-evidence publication. No complete recovered-source claim is made.
+Publication custody: evidence commit
+`261daa8ec31a74a1f8f8d44c1fd19f0178cf0ca8` was pushed to existing `main`.
+Astra fetched all ten package/artifact files directly from GitHub at that commit
+and compared every byte to the local files: PASS. The verification result is
+retained at the durable experiment root as `remote-evidence-verification.json`.
+These new artifacts use ordinary Git bytes, not LFS pointers. This verifies the
+new stop evidence only; prior large recovery archives were not remotely
+re-downloaded in this execution. Exact working145/candidate custody remains
+unavailable regardless of evidence publication. No complete recovered-source
+claim is made.
