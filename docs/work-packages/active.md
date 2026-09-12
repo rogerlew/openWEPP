@@ -7,6 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
+| B01 WB14 evidence interface design (incomplete, stopped) | [record](20260911-b01-wb14-evidence-interface-design-001/package.md) | Two unsuccessful correction cycles exhausted; implementation envelope not recommended for adoption. Source/cadence/release HOLD. |
 | B01 WB14 source reconciliation (assessment complete) | [record](20260911-b01-wb14-source-reconciliation-001/package.md) | HOLD recommendation: available source recoverable; source/test adoption awaits a concrete real-runner injection and total-physics observation bridge. |
 | B01 WB14 verified cadence repair (HOLD) | [record](20260911-b01-wb14-verified-cadence-repair-001/package.md) | Exact recovery stopped at 925/927 file matches; two required test-file byte sequences unavailable. No candidate or authentic runs. |
 | Astra package orchestration (complete) | [record](20260911-astra-package-orchestration-001/package.md) | Implemented and independently reviewed Astra oversight, delegated implementation and between-package direction review. B01 recovery/execution remains outside this package. |

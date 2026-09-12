@@ -1,0 +1,54 @@
+Reviewer: /root/interface_correctness, rust_code_reviewer (Sol/high), independent of design authors.
+Initial findings, 2026-09-12; source: first revised technical draft with integration-corrected appendix.
+
+Correctness initial blockers (Static; retained r1 source, governing a0af6a), consolidated for one rewrite:
+
+1 HIGH — package.md:121-190 vs 311-357 is internally contradictory and still non-implementable. The earlier public API exposes Wb14EvidencePhase::BeforeAcceptedChildPublication/child_ordinal and an ingress-local refusal; late text instead selects Stage3V11FailureInjection::OutcomeLedgerBuilt(one-based coupled ordinal) at snow_stage3_v11_adaptive_execution.rs:2510-17. Only the same-thread capability is said to supersede the summary (154), so old API/hook survive. Existing setters are cfg(test), pub(crate), and require &mut DirectSnowStage3V11ShadowAttachment (attachment_runtime.rs:502-518); runner has no such state access. Define ONE canonical feature API and exact internal bridge at each existing phase hook (including stack_helpers.rs:1943 for FinalOwnerJoinCompleted), with exact Wb14EvidenceError variants/codes, observer-only vs armed modes, one-shot/fire/finish/Drop semantics. Request must bind run_id/hillslope identity (currently absent), parent transaction+support, exact child support, OFE/lane, phase, one-based coupled accepted ordinal AND distinct WB14 ordinal. State the actual selected numeric coupled ordinal/support; 'its ordinal' is not exact. Existing session finish rejects unfired/missing target, so the required no-injection control has no valid collection semantics.
+
+2 HIGH — physical counter seam is wrong/ambiguous. package 169-178 calls pre-advance_one_ofe the total physical hook; 328-337 later demotes it to broad entry and proposes 'around line 2250' / before 'first' continuation. Actual WB14 invocation is advance_wb14_continuation_interval at surface_liquid_ingress.rs:2292 inside the per-boundary loop; line2250 is only error construction. Specify broad ingress attempt separately, increment physical-call-attempt immediately before EVERY 2292 call, and completed transition only after Ok; retain rejected-call observation. Retract the earlier total-call claim. Bind records to run/parent/OFE/lane/window/support/ordinals and exact beginning bits.
+
+3 HIGH — fixture worker cannot invoke stage3_snow_accuracy_case wholesale as package 359-366 claims. snow_accuracy_experiment.rs:45-46,116-138 writes diagnostic destination files before execution; 167-183 writes more; 185 requires success. It is an inline #[test], not reusable construction API. Extract/reuse lawful setup within the same file (to avoid duplicated substantial fixture logic), then implement a custom negative worker that begins the session on its libtest thread, executes once, requires the exact typed Err/reached/fired witness, lets output transaction Drop finish, and only then create_new-writes the snapshot to a distinct harness-evidence path. Distinguish allowed harness diagnostics from absence of runner final/staged/manifest/Stage3 evidence. Chronology must replay all authenticated rows day_index 0..3 plus target day_index 4 intervals 0..21 before [385200,385920); package's 'replay days 1--3' is insufficient/ambiguous. Give exact current_exe args/env and exactly-one-worker selection evidence.
+
+4 HIGH — outer restart/rollback is not bound. package 237-258 is a list; 367-371 names only native_custody_restart_experiment::Workflow::project/restore, which checkpoints after a committed day/archive (runner05:593-631), not the in-progress target parent. Existing canonical partial APIs are snow_stage3_v11_restart.rs:910 stage_prepared_day_until_posture_v2 and :944 finish_in_progress_prepared_day_v2; DirectSnowStage3V11InProgressExecutionV2 at :98-122 owns day_candidate/support_current and all support histories/cursors. Specify exact interruption posture, snapshot/wire position and uninterrupted-vs-resumed comparison using these plus the complete native Workflow envelope; distinguish coordinator-only restart. Existing runner rollback audit (runner05:1-109) emits only booleans and inaccessible internal values, while the frame is local and dropped on Err; package 395-403's claimed actual-value outer oracle has no schema/API. Define exact runner-owned before/after capture/snapshot type and seam, complete fields/bytes, output transaction path/state capture, and collection after unwind.
+
+5 HIGH — independent A0 operands at package 260-270/403-409 are incomplete and risk reusing derived receipts. DirectIngressAmount is tile-ground basis (ingress.rs:121-127); independent conversion requires DirectSurfaceLiquidConfigurationRecord.tile_fraction and ofe_area_m2 (surface_liquid_owner.rs:541-548), amount start/end, source/destination/store/run identities, and checked mass*tile_fraction*area plus mass*specific enthalpy before comparing OFE-ground receipt partitions. Include WATER_DENSITY_KG_M3=1000 and exact WB14 transition input/output bits, receipt disposition/support/routing. 'Topology area' and sealed owner/receipt bytes alone do not define the reconstruction formula or prove water/energy closure.
+
+6 HIGH — complete future write list 384-393 omits required files and conflicts with design: FinalOwnerJoinCompleted observation requires snow_stage3_v11_adaptive_execution_stack_helpers.rs:1943; output transaction state/path oracle likely requires output_transaction.rs (or an exact no-edit alternative); shared fixture extraction/custom worker must be explicit. Earlier envelope 272-275 says two ingress injection positions, later says Stage3 hooks+one physical seam. Replace with exact exhaustive paths and purpose.
+
+7 HIGH — validation commands are not implementation-ready. Package already names private tests at 376-379 yet 293 defers exact private commands. Add exact feature-gated private test commands. The preservation commands 380-382 use --exact with module-prefix filters precedence_tests:: / raw_hash_tests::, which will select zero exact test names; use an appropriate nextest filter or enumerate exact names and require nonzero 18/4 counts. Also specify baseline/candidate cwd and worker env/snapshot isolation.
+
+8 MEDIUM (supporting 1/phase precedence) — OutcomeLedgerBuilt hook at adaptive_execution.rs:2510 fires before the accepted receipt predecessor/ending-clock joins at 2542-2558; SubslabAccepted is after state assignment/owner_joins.extend at 2563-2584; FinalOwnerJoinCompleted is before finalize at stack_helpers:1943-50. The spec must state this real guard precedence and exact compound-poison expected error for each selected phase; current 'after actual accepted receipt' plus generic ordered-guard claim is insufficient.
+
+No source edits or Rust execution. These are the complete initial correctness blockers from this pass.
+
+Same-reviewer final fix verification, revised visible specification:
+
+Static final fix verification against retained reconciled-available145-r1 and governing a0af6a. No Rust execution or source writes.
+
+1. High — facade remains non-implementable. package.md:93 uses u64 for a kernel TransactionId that is u128, and conflates transaction 255 with the separate coupled-parent digest. The snapshot type remains a placeholder, errors lack concrete fields/codes, the TLS-to-attachment bridge is unspecified, and observe-only mode still requires the unknown support and ordinal it is meant to discover.
+2. High — two-stage capture is circular. The retained baseline rejects during cadence preflight before reaching the physical child or OutcomeLedgerBuilt. It cannot produce the successful observe-only capture required at package.md:149. Discovering the tuple after cadence repair violates the requirement that matched evidence precede that repair.
+3. High — restart and rollback remain unbound. package.md:178 selects no exact interruption posture. Its four runner locations are control sites rather than mappings for committed, pending, in-progress day-candidate, and current-support wire roles. The runner capture schema and post-output-transaction collection path remain unspecified.
+4. High — validation commands are incomplete. package.md:230 supplies only one baseline runner command and one provisional private-vector command. It omits separate observe/arm runs, the candidate runner, remaining private and restart vectors, feature checks, and executable 18/4 preservation commands. The private filter is explicitly not yet an actual fully qualified test name.
+5. Medium — source identities remain incomplete. The identity artifact omits relied-on surfaces including src/lib.rs, src/direct_runtime.rs, the ingress coordinator, real-parent execution, feature declaration, and fixture template.
+6. Medium — the terminal ledger is stale. package.md:251 still reports one failed cycle and proposes another correction, conflicting with the header’s binding two-cycle stop.
+
+Verified corrections: the conflicting draft was retired; the actual physical call at ingress line 2292 is correctly separated from broad attempts and completed transitions; fixture construction and chronology are corrected; independent water/energy operands are materially complete; the write envelope and phase precedence were substantially improved.
+
+Residual risk remains unchanged: historical substituted tests retain UNKNOWN semantics, the authentic target tuple and runtime cost are unknown, and no runtime, restart, rollback, conservation, comparator, or matched red/green evidence ran.
+
+Verdict: FAIL / HOLD. The two-correction hard stop has been reached. The interface is not ready for adoption or implementation.
+
+Same-reviewer disposition consistency verification:
+Static disposition check: PASS for publication as INCOMPLETE/HOLD evidence.
+
+The package now consistently records:
+- Header: incomplete, HOLD, no implementation-ready design or adoption.
+- Hard stop: two of two unsuccessful correction cycles exhausted.
+- Earlier ledger: explicitly historical and superseded.
+- Final decision: do not adopt the proposed envelope; no third correction is authorized.
+- Reviews: both FAIL/HOLD findings and unresolved technical blockers remain visible.
+- Retired draft: clearly archived as raw provenance rather than live instructions.
+- Catalogs: active.md and README.md link the package and describe the same stopped/HOLD state.
+- Source custody: 23 inspected identities are recorded while explicitly disclaiming complete fixture dependency coverage.
+
+Scoped evidence commit/push and remote byte verification remain pending. This verdict does not approve the design, source, implementation, cadence repair, or runtime behavior.

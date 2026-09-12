@@ -1,5 +1,7 @@
 # Work Packages
 
+- [20260911 B01 WB14 evidence interface design](20260911-b01-wb14-evidence-interface-design-001/package.md): INCOMPLETE; stopped at the owner’s two unsuccessful correction-cycle limit. The proposed evidence interface/test envelope is not implementation-ready or recommended for adoption.
+
 - [20260911 B01 WB14 source reconciliation](20260911-b01-wb14-source-reconciliation-001/package.md): Completed independently reviewed assessment; retained recipe fully reproduces available source, but source/test adoption remains HOLD pending the real-runner injection and total-physics observation bridge.
 
 - [20260911 B01 WB14 verified cadence repair](20260911-b01-wb14-verified-cadence-repair-001/package.md): Owner-adopted isolated durable source reconstruction, matched baseline/candidate regressions and full-parent cadence proof.

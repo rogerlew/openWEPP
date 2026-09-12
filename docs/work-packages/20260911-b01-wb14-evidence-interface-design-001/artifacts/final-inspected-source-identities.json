@@ -1,0 +1,146 @@
+{
+  "scope": "Safe custody at hard stop: identities of inspected/cited existing source surfaces, not complete future fixture dependency closure or design acceptance",
+  "source_root": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145",
+  "prior_inventory": "docs/work-packages/20260911-b01-wb14-source-reconciliation-001/artifacts/fresh-recipe-whole-source-comparison.json",
+  "files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/Cargo.toml",
+      "sha256": "83e0214de808dd87f6452ffca9fe2c9f85fdbeb10cbc03addda01e142f388c74",
+      "prior_sha256": "83e0214de808dd87f6452ffca9fe2c9f85fdbeb10cbc03addda01e142f388c74",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs",
+      "sha256": "abc1642dd30dc1336cb73c2c45f3c5fb53517c5c9542c6ff293e4f0d8fc671c3",
+      "prior_sha256": "abc1642dd30dc1336cb73c2c45f3c5fb53517c5c9542c6ff293e4f0d8fc671c3",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs",
+      "sha256": "1826924b199e8a1ff7a42776ac99713b0b1bb01ab8207a1ea508cc1539096c29",
+      "prior_sha256": "1826924b199e8a1ff7a42776ac99713b0b1bb01ab8207a1ea508cc1539096c29",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_coordinator.rs",
+      "sha256": "af0c281679e5b600e219eca487f3af93928f7eb2bdaaafdb1b47867115dec835",
+      "prior_sha256": "af0c281679e5b600e219eca487f3af93928f7eb2bdaaafdb1b47867115dec835",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs",
+      "sha256": "60245f2938f2473fd6cd4ffc44865f601a692265b678f3ca9d05dfc0b4f68508",
+      "prior_sha256": "60245f2938f2473fd6cd4ffc44865f601a692265b678f3ca9d05dfc0b4f68508",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs",
+      "sha256": "dfef7863a6ec427ec7f2c2a461def09be1e60c0b4ad592fd71942df4291c32c7",
+      "prior_sha256": "dfef7863a6ec427ec7f2c2a461def09be1e60c0b4ad592fd71942df4291c32c7",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/lib.rs",
+      "sha256": "489cb0bf3e6b271e4bb23908e56cf92f45782389b7234265f74e38bf31aca1f6",
+      "prior_sha256": "489cb0bf3e6b271e4bb23908e56cf92f45782389b7234265f74e38bf31aca1f6",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs",
+      "sha256": "77e8035d8d7b5d490883d50892721c757cfa0a3fdf4b1dfc2fac37d96fe9ba0b",
+      "prior_sha256": "77e8035d8d7b5d490883d50892721c757cfa0a3fdf4b1dfc2fac37d96fe9ba0b",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+      "sha256": "a3dfd35c775d6911c45483696319eaa75361bfcdbc2e96c11957ad9c926a0586",
+      "prior_sha256": "a3dfd35c775d6911c45483696319eaa75361bfcdbc2e96c11957ad9c926a0586",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "sha256": "af5deef99b53455ed1e2fc5b797651ee6d3e64435dafd07bc9f0ad772d682117",
+      "prior_sha256": "af5deef99b53455ed1e2fc5b797651ee6d3e64435dafd07bc9f0ad772d682117",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs",
+      "sha256": "56448fb008e4870f5e0ee2563cd2188c642201b4e3d15bb21694c2689f1af330",
+      "prior_sha256": "56448fb008e4870f5e0ee2563cd2188c642201b4e3d15bb21694c2689f1af330",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs",
+      "sha256": "65c3920d7d7a4e827e45352481d410c1b9db12c1262d0f1fa0a0aab1107e3cea",
+      "prior_sha256": "65c3920d7d7a4e827e45352481d410c1b9db12c1262d0f1fa0a0aab1107e3cea",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs",
+      "sha256": "088c046409e348a9abc2217fc7a4cb049d87edb0ba927be58f02e2b269ade888",
+      "prior_sha256": "088c046409e348a9abc2217fc7a4cb049d87edb0ba927be58f02e2b269ade888",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+      "sha256": "df3381653313efdce1db7e2bb48c54b4fb8bda81bb49a45365050c39a849df1d",
+      "prior_sha256": "df3381653313efdce1db7e2bb48c54b4fb8bda81bb49a45365050c39a849df1d",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+      "sha256": "72415fa5e73f8157c49641f4c82b4a475b6a4a7a8124dafa8611a73ada328d4e",
+      "prior_sha256": "72415fa5e73f8157c49641f4c82b4a475b6a4a7a8124dafa8611a73ada328d4e",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-runner/Cargo.toml",
+      "sha256": "389c3203e91ed6d39baf5f7ef757f50e767f4776a96501e284b6914cb8a81c3b",
+      "prior_sha256": "389c3203e91ed6d39baf5f7ef757f50e767f4776a96501e284b6914cb8a81c3b",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/03_tests.rs",
+      "sha256": "a4dbee9353a2905cbf069d9f3c7182b2654717c1114d5d528dd8a81a2d332b2e",
+      "prior_sha256": "a4dbee9353a2905cbf069d9f3c7182b2654717c1114d5d528dd8a81a2d332b2e",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs",
+      "sha256": "a1bcea3155c3724dea21678e4227af0be69fe1de6f272fdf820370b6c0ed6975",
+      "prior_sha256": "a1bcea3155c3724dea21678e4227af0be69fe1de6f272fdf820370b6c0ed6975",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/native_custody_restart_experiment.rs",
+      "sha256": "82c77e6d0aa4a1c9b897a6f9453b8d09b7f2f526fcff002accb218bf45fd518f",
+      "prior_sha256": "82c77e6d0aa4a1c9b897a6f9453b8d09b7f2f526fcff002accb218bf45fd518f",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/output_transaction.rs",
+      "sha256": "8afbf7605b14cb17d28dcf22b7fe3c0e1bd04a1c5fedbfe0d75c8b94192c734f",
+      "prior_sha256": "8afbf7605b14cb17d28dcf22b7fe3c0e1bd04a1c5fedbfe0d75c8b94192c734f",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/test_fixture_authority.rs",
+      "sha256": "0c65fe473c622e32539921a060d093cfd637e07c8d8b27f6c377b48d9757d3e7",
+      "prior_sha256": "0c65fe473c622e32539921a060d093cfd637e07c8d8b27f6c377b48d9757d3e7",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs",
+      "sha256": "ea5a1c412faab8f71e5def8099079a60c4d213d497e60205b1d74b2872520614",
+      "prior_sha256": "ea5a1c412faab8f71e5def8099079a60c4d213d497e60205b1d74b2872520614",
+      "equal": true
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs",
+      "sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+      "prior_sha256": "a6eb6c59d38324d58ce6dff4cd954bd919aaf9fab8cc41cdb30d610fd0198319",
+      "equal": true
+    }
+  ],
+  "all_equal": true
+}

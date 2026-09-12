@@ -1,0 +1,48 @@
+Reviewer: /root/interface_qa, rust_qa_reviewer (Terra/medium), independent of design authors.
+Initial response, 2026-09-12; source: first revised technical draft with integration-corrected appendix.
+
+Static QA review — BLOCKED.
+
+- Blocker — package.md:121-191 vs 311-391: Earlier facade/injection design conflicts with the corrected appendix on phase, error type, timing, and write locations. The earlier design is not explicitly superseded.
+- Blocker — package.md:204-217, 359-409: The existing accuracy helper writes diagnostic files and requires runner success, so it cannot serve as the proposed negative-worker path that asserts absence of outputs/evidence. The fixture replay also needs authentic days 0–3 before day 4.
+- Blocker — package.md:373-382: cargo nextest ... precedence_tests:: --exact and the raw-hash variant select zero tests because --exact rejects module prefixes. Commands need exact test selection plus a nonzero-count guard for all 18 and four assertions.
+- Blocker — package.md:132-151: Public facade signatures use unqualified, non-reexported TransactionId and OfeId; the proposed cross-crate API is not compilable as written.
+- Blocker — package.md:339-357: Thread-local session isolation lacks a specified !Send/!Sync capability boundary and tests for stale, foreign, and parallel-session leakage.
+- Blocker — selected-source identity artifact: Seven selected hashes omit several source files relied on for API, fixture, registration, and output claims. The validator does not validate those source hashes or the prospective text command blocks.
+- Blocker — package.md:260-270, 395-409: Independent fixture/closure evidence lacks a concrete immutable artifact schema, per-OFE aggregation, output-file allowlist, and execution-cost envelope.
+
+Static source evidence: physical WB14 transition is at surface_liquid_ingress.rs:2283-2299, immediately before advance_wb14_continuation_interval, supporting the appendix rather than the earlier ingress-loop hook claim.
+
+Same-reviewer final fix verification (corrected specification; line references before retired-draft archival moved the visible section):
+
+Static fix verification — HOLD / FAIL for design adoption. No Rust execution.
+
+Accepted fixes:
+- The visible technical section now explicitly replaces the retired conflicting draft.
+- The public DTO uses primitives/String, avoiding unavailable TransactionId/OfeId reexports.
+- PhantomData<Rc<()>>, worker-local session start, and leakage-test requirements address the earlier session-isolation gap.
+- The custom worker no longer calls the success-only accuracy test; it replays days 0–3 and day 4 intervals 0–21.
+- The physical counter seam is correctly placed immediately around every advance_wb14_continuation_interval call.
+- The operand conversion formula and output allowlist are concrete.
+- The selected identity artifact now records the additional helper/input hashes; checked values match the retained source.
+
+Remaining blockers:
+- High — package.md:515-532: Restart is still a placeholder. It says “at an exact DirectSnowStage3V11InterruptionPostureV2” without selecting one of the actual enum variants, and names a future capture schema without its fields, byte format, visibility, or collection API. The required in-progress restart oracle remains non-implementable.
+- High — package.md:552-585: Commands remain intentionally incomplete: only baseline runner and candidate private-vector commands are provided; no matched candidate runner, baseline private-vector, exact integration command/count parser, feature compile, anti-evasion, fmt, Clippy, test/nextest, or deny commands are defined. The private test filter is expressly a placeholder at lines 578–580.
+- High — selected-source-identity.json; validate_design.py: The new “additional” identities are recorded but not checked by validate_design.py; the validator iterates only selected_regular_files. lib.rs, Cargo.toml, fixture template, and other cited registration/API surfaces are still absent from durable verified identity coverage.
+- High — disposition consistency: Package header correctly says INCOMPLETE / HOLD and terminal 2 of 2, but its old review ledger still says 1 of 2 and instructs a further correction. active.md still says review is in progress, and README.md calls it an owner-adopted specification. These claims must be reconciled before publishing evidence custody; authorization adopted the design checkpoint, not an implementation-ready specification.
+
+The retired-draft archival change is appropriate preservation and does not alter the HOLD verdict.
+
+Same-reviewer preservation verification:
+Static preservation verification: PASS for custody/disposition, subject to recording this final QA result; design remains FAIL / HOLD.
+
+Accepted preservation changes:
+- package.md, active.md, and README.md consistently state the two-cycle hard stop and no adoption.
+- The historical 1 of 2 ledger is explicitly superseded by the hard-stop disposition.
+- final-inspected-source-identities.json records 23 inspected source files, each matching the predecessor regular-file map.
+- validate_design.py now verifies those 23 files, the earlier additional identities, the governing-root fixture hash, and lossless retired-draft gzip custody.
+- The artifact accurately limits this to inspected/cited-source custody, not transitive fixture dependency closure.
+
+Publication-readiness item from reviewer: preserve this same-reviewer final verification beside the initial findings before asserting artifacts retain both initial and final findings. This response is now recorded here; earlier final design verification is in the preceding section.
+No Rust builds, listings, tests, or simulations were run.
