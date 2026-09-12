@@ -472,3 +472,12 @@ was exhausted and exceeded (**actual 5; authorized ceiling 4**). No new allowanc
 is inferred. The final diff is limited to this existing package and affected
 locator/catalog lines. The frozen executable and all production/source inputs
 remain unchanged; no scientific acceptance claim is made.
+
+Continuation evidence commit `eafec32cfc3040c9cf40567f14bbbdd712eace41` was pushed
+to existing `origin/main`. Ran the retained publication verifier: **14/14 changed
+files retrieved from GitHub and byte-matched**, with no LFS pointers. The
+[continuation remote receipt](artifacts/continuation-remote-verification.json)
+retains exact URLs, hashes, command and result. This verifies new evidence only,
+not historical source/LFS recovery. The following receipt annotation is custody
+preservation, not further correction or invocation. Checker acceptance remains
+FAIL/HOLD and original authentic invocation remains **0/1**.
