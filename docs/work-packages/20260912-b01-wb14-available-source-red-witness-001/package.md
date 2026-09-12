@@ -588,3 +588,17 @@ At **19:10:51 UTC**, conservative exception consumption is
 Collector and child invocations are 1/1; usable run/correction allowance is zero.
 Scoped record publication follows under carried permission; large raw/fixture
 bytes remain local and are not included in the publication claim.
+
+Scoped evidence commit `fdaaecdd91606caccd9aa48fa017e11bc7ec79dd` was pushed
+to existing `origin/main`. Ran: **15/15 published files retrieved by exact-commit
+GitHub HTTPS URL and byte-matched**, recorded in
+[remote verification](artifacts/raw-capture-remote-verification.json). This proves
+remote custody of those records/small raw files only; the 7,381,291,592-byte corpus
+and fixture are local. No historical-source recovery claim follows.
+
+At **19:11:34 UTC**, final preservation/publication accounting is
+**8m57s additional active**, plus 38m44s =
+**47m41s cumulative active**, with the same 1298 s pure-wait
+deduction. This custody annotation does not renew the exhausted launch permit.
+Return after raw collection; all witness/checker/cadence continuation requires
+separate owner direction.

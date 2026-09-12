@@ -1,0 +1,114 @@
+{
+  "commit": "fdaaecdd91606caccd9aa48fa017e11bc7ec79dd",
+  "verified_utc": "2026-09-12T19:11:14.865655+00:00",
+  "method": "HTTPS GET each exact-commit raw GitHub URL; byte comparison against local committed files",
+  "files": [
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-collector-process.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-collector-process.json",
+      "bytes": 74,
+      "sha256": "7eb033e6c802a2d61f0b06ef67e52c97059482b949221da31b5e30c8a9176639",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-collector.stderr",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-collector.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-collector.stdout",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-collector.stdout",
+      "bytes": 206,
+      "sha256": "78b8ce878de375534d512eeffb995b99789e0269402cb751462c1e266c03c609",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-exit.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-exit.json",
+      "bytes": 115,
+      "sha256": "57c133126602b39cdd5d326eb85d73c406f99886c79f2606be722954c593e10c",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-fixture-path.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-fixture-path.txt",
+      "bytes": 143,
+      "sha256": "43d98ffb941869d44b8da58ff4b24afd6736f3bb8de5a72800c21f9526a3c0ab",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-index.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-index.json",
+      "bytes": 7802,
+      "sha256": "84cb214655adcce8477c6399d0535a1221f9ae1b816632d1a4e7b05d1400679c",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-launch-checks.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-launch-checks.json",
+      "bytes": 5437,
+      "sha256": "e1a82d5ecb1f000b6f35870d5a528e8f71242a0bacc396663693544bd863fd5d",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-launch.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-launch.json",
+      "bytes": 1640,
+      "sha256": "0129471f98fa370cb83ff583318f891928fcc8c6b0597852ec78a87b2ca0f6dd",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-receipt.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-receipt.json",
+      "bytes": 2923,
+      "sha256": "5240bef80cf9cbd4f7e030fff8a5316d65253e0274fbd32c5a6315579f24d7a9",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-run.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-run.json",
+      "bytes": 40029,
+      "sha256": "d22e3e16b844a3f1525b217efc1a413ad0403473c469b40a07d9402fc5de44c3",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-started.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-started.json",
+      "bytes": 1523,
+      "sha256": "8d997f3e191f1c98d5200e7c2e7097f473c51e4104775cf911eb3c2e03294c1d",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-stderr.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-stderr.log",
+      "bytes": 641,
+      "sha256": "6a24bf50bfd00f76945d4281ea706819c5084283b6b9ef8a1c9ae4a953ba3556",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-stdout.log",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/raw-capture-stdout.log",
+      "bytes": 28972,
+      "sha256": "36d37d77226cfd93e755eadbc8be10cd5c884183817730073677302c70e1e29b",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/package.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/package.md",
+      "bytes": 38257,
+      "sha256": "9b585a5f51662d1071ac285ef705ac79d2955f486dc917f0c9ae535dbb3e261c",
+      "matches_local": true
+    },
+    {
+      "path": "docs/work-packages/active.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/fdaaecdd91606caccd9aa48fa017e11bc7ec79dd/docs/work-packages/active.md",
+      "bytes": 6788,
+      "sha256": "946f3a0033ed5342db9238242e8a5ec7b039f32cd0a731c0beaca7f69085e1d8",
+      "matches_local": true
+    }
+  ],
+  "all_match": true,
+  "scope": "15 published record and small raw evidence files only; full raw corpus and fixture remain local"
+}
