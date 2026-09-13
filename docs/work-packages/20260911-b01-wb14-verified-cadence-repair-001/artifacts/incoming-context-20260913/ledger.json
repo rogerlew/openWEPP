@@ -1,0 +1,15 @@
+{
+  "continuation_start_utc": "2026-09-13T21:46:00+00:00",
+  "recorded_utc": "2026-09-13T22:03:57.069257+00:00",
+  "carried_seconds": 5078,
+  "additional_seconds": 1077,
+  "total_active_seconds": 6155,
+  "remaining_seconds": 1045,
+  "failed_cycles": 5,
+  "cycle_ceiling": 6,
+  "pure_wait_deductions_seconds": 0,
+  "concurrent_wall_time_counted_once": true,
+  "delegate_token_use": "UNOBSERVED",
+  "runtime_corrections": 0,
+  "runtime_builds_tests_runner_collector_simulations": 0
+}

@@ -1,0 +1,217 @@
+{
+  "all_record_fields": [
+    "capture",
+    "clock_owner_set_sha256",
+    "clock_owners",
+    "commit_posture",
+    "event_ordinal",
+    "kind",
+    "lineage",
+    "native_surface_owner_canonical_json",
+    "owner_digests",
+    "owners_canonical_json",
+    "parent_support",
+    "parent_transaction_id",
+    "scalars",
+    "segment_id",
+    "slab_ordinal",
+    "time_ns"
+  ],
+  "clock_owner_set_sha256": "bb7a55e254c6206e3e579d76c0b2c9a00856d730b7601a932f895fd8777288b1",
+  "clock_owners": [
+    {
+      "digest": "b9933ca19331e9fbbb0daa6c273c4a45c60289221040973098b2a14532be6aeb",
+      "owner_id": "bgc"
+    },
+    {
+      "digest": "124054cd3c1ef9b0052d4d5f10c4af70859490a7eac45baa87c1cf1086363819",
+      "owner_id": "hydrology"
+    },
+    {
+      "digest": "ace2a96ab772387e2f0dbbc8b7dd2bb6a4416eb433903dacbd7cca039ef29850",
+      "owner_id": "land_surface_energy"
+    },
+    {
+      "digest": "5d421ef684a57257568664c41b3d9d12aacb8e66a0dca51ce26a94fe90ebaaf5",
+      "owner_id": "snow"
+    },
+    {
+      "digest": "9049413f4f5fc2767df155d6c2d4cc73cec916d142d2ddebd9add6d1ca839e3f",
+      "owner_id": "soil_thermal"
+    },
+    {
+      "digest": "0fabede42941f39017a2907eb476a1b63eb2e828fcb01fb058e10af711d48f0d",
+      "owner_id": "surface_liquid"
+    },
+    {
+      "digest": "b5f9b0d86995f53281c3b5e91bdc6f1dd20f6b659f76481414f571b10eab4ce9",
+      "owner_id": "vegetation"
+    }
+  ],
+  "command": "/workdir/openWEPP/.venv/bin/python /tmp/extract_b01_current_context.py --json-decimal-string-v1",
+  "commit_posture": "provisional until enclosing accepted_day",
+  "duration_s": 38.973,
+  "event_ordinal": 1,
+  "evidence_class": "Ran: read-only complete-stream ijson parse; no simulation, build, or test",
+  "exit": 0,
+  "kind": "inner_accepted_state",
+  "lineage": {
+    "day_index": 4,
+    "interval_index": 22,
+    "last_owner_join": {
+      "accepted_slab_sha256": "be7d3fd988afef69d65dfb6bb919e258981712ca6643c7a93279829d8a903097",
+      "beginning_complete_owner_set_sha256": "eccea1b6048dae260d5f68aa2758c3a7bc241b65837e7d1a86943b0a6efa7e79",
+      "biogeochemistry_owner_sha256": "b9933ca19331e9fbbb0daa6c273c4a45c60289221040973098b2a14532be6aeb",
+      "component_carrier_receipt_set_sha256": "948e5b99d05044f06420e0969d1c27218ccc45d532629a05921e21b53e260858",
+      "ending_complete_owner_set_sha256": "45ec2996472f27b636ca11f788e28c2702a40836651436f450b63b9d29b057af",
+      "final_boundary_receipt_set_sha256": "a3ea03df6533a74d7cdf67ed6f598a94adfb6d2ca34b077d7f4fe9552e8ef15b",
+      "final_lane_boundary_receipt_set_sha256": "6e8bf1536effa9720a80c6cab8687dc84d46ef0e7237d85944314a5413016c52",
+      "forcing_receipt_sha256": "c8e121197344b6de1f6048dfcb0d9f5e4b50384ec0809e52da7d977130c32be5",
+      "hydrology_owner_sha256": "124054cd3c1ef9b0052d4d5f10c4af70859490a7eac45baa87c1cf1086363819",
+      "land_surface_energy_owner_sha256": "ace2a96ab772387e2f0dbbc8b7dd2bb6a4416eb433903dacbd7cca039ef29850",
+      "parent_interval_sha256": "9cabe33a2bc0ff5d32cdc48c6ee8c79ae050951b0f052d5cee3f9dce764fff9b",
+      "parent_transaction_sha256": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+      "physical_outcome_ledger_set_sha256": "f3b48658473918d399f492fe8629832dbe07919e9771e3a644210f1af8391202",
+      "receipt_sha256": "77bd66714f1bd6cfd3fa6672cce43b56b0c4cf6219d2c0365ad56be4dc684909",
+      "run_identity": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9",
+      "segment_sha256": "a660676a0a921d38b820e738925648021420e4cb5cc1adea5f146269052ad7ff",
+      "snow_owner_sha256": "bb698e471cc675ae928806dfa3af4c89ed5c3f1a0fa7b1d4c31e9d1959d1ae1f",
+      "snow_soil_heat_receipt_set_sha256": "f13348b3003bcfe09a0fee4d461d15be59f2cc53538ae4d1a3cdc7f667fb7f99",
+      "soil_thermal_owner_sha256": "9049413f4f5fc2767df155d6c2d4cc73cec916d142d2ddebd9add6d1ca839e3f",
+      "stage3_physical_state_sha256": "c1c123441a440a179210e62a356bbde391ec1821d15208b3d4ad68e43ad94d22",
+      "support": {
+        "end_ns": "385920000000000",
+        "start_ns": "385620000000000"
+      },
+      "surface_liquid_owner_sha256": "0fabede42941f39017a2907eb476a1b63eb2e828fcb01fb058e10af711d48f0d",
+      "terminal_snow_soil_heat_receipt_set_sha256": "858cbde15ffbc27cdfde00213d47da6e96804876f4c34184575279b36826b3f0",
+      "vegetation_owner_sha256": "b5f9b0d86995f53281c3b5e91bdc6f1dd20f6b659f76481414f571b10eab4ce9",
+      "wb14_child_receipt_set_sha256": "81d32173612d3b45e725fdf4f761d6e45c9bf19b42198d64c447879bec43dfd6",
+      "wb14_parent_receipt_set_sha256": null
+    },
+    "pending_terminal_parcels": {
+      "fa7bbeb8e27bf236ceacf249663ce045c5c1ae8b870ccdb7404514fc4f7692e4": {
+        "destination_ofe_id": "ofe-1",
+        "event_ordinal": 0,
+        "event_result_digest": "162db5439e6020b499f7839024f154cc62161531a9b76d94983933441ff22f7e",
+        "mass_kg_m2_tile_ground": "1.1325407132005754",
+        "parcel_digest": "fa7bbeb8e27bf236ceacf249663ce045c5c1ae8b870ccdb7404514fc4f7692e4",
+        "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+        "posture": "ProducedUnconsumed",
+        "receiver_destinations": [
+          {
+            "destination_fraction": "0.38",
+            "destination_ofe_id": "ofe-1",
+            "destination_tile_id": "forest"
+          },
+          {
+            "destination_fraction": "0.62",
+            "destination_ofe_id": "ofe-1",
+            "destination_tile_id": "open"
+          }
+        ],
+        "receiver_topology_sha256": "fd203ccdb571cd7b1a1eb5a878101fa35ca5cf193372d67f29005e66842ee4e9",
+        "source_lane_id": 1,
+        "specific_liquid_enthalpy_j_kg": "4758.8160095468065",
+        "support": {
+          "end_ns": "385920000000000",
+          "start_ns": "385620000000000"
+        },
+        "temperature_k": "274.27821621847954",
+        "terminal_event_proposal_core_id": "aa0fe905a1a8d2f0a70c3de13ef8505497e34d2adda2562bad0d4739ea473532"
+      }
+    },
+    "prepared_support": {
+      "end_ns": "387000000000000",
+      "start_ns": "385200000000000"
+    },
+    "snow_enthalpy_material_owner": null,
+    "terminal_parcels": [
+      {
+        "destination_ofe_id": "ofe-1",
+        "event_ordinal": 0,
+        "event_result_digest": "162db5439e6020b499f7839024f154cc62161531a9b76d94983933441ff22f7e",
+        "mass_kg_m2_tile_ground": "1.1325407132005754",
+        "parcel_digest": "fa7bbeb8e27bf236ceacf249663ce045c5c1ae8b870ccdb7404514fc4f7692e4",
+        "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+        "posture": "ProducedUnconsumed",
+        "receiver_destinations": [
+          {
+            "destination_fraction": "0.38",
+            "destination_ofe_id": "ofe-1",
+            "destination_tile_id": "forest"
+          },
+          {
+            "destination_fraction": "0.62",
+            "destination_ofe_id": "ofe-1",
+            "destination_tile_id": "open"
+          }
+        ],
+        "receiver_topology_sha256": "fd203ccdb571cd7b1a1eb5a878101fa35ca5cf193372d67f29005e66842ee4e9",
+        "source_lane_id": 1,
+        "specific_liquid_enthalpy_j_kg": "4758.8160095468065",
+        "support": {
+          "end_ns": "385920000000000",
+          "start_ns": "385620000000000"
+        },
+        "temperature_k": "274.27821621847954",
+        "terminal_event_proposal_core_id": "aa0fe905a1a8d2f0a70c3de13ef8505497e34d2adda2562bad0d4739ea473532"
+      }
+    ]
+  },
+  "ordinal_zero_based": 123085,
+  "owner_digests": {
+    "bgc": "b9933ca19331e9fbbb0daa6c273c4a45c60289221040973098b2a14532be6aeb",
+    "hydrology": "4a37f6f8f668669caf9bda7db998f2905ad3140017ff8b38fecb81f2d8dad704",
+    "land_surface_energy": "ace2a96ab772387e2f0dbbc8b7dd2bb6a4416eb433903dacbd7cca039ef29850",
+    "snow": "c1c123441a440a179210e62a356bbde391ec1821d15208b3d4ad68e43ad94d22",
+    "soil_thermal": "9049413f4f5fc2767df155d6c2d4cc73cec916d142d2ddebd9add6d1ca839e3f",
+    "surface_liquid": "a64d5cd3dec70bac8f079d0256ad063af49063dab9d8a96414b6999b5c5f963f",
+    "vegetation": "d9b2ba9a3dde54ed0d245ab86efc431143660c19b179a4cc69a57a7281a8dcce"
+  },
+  "owners_canonical_json_inventory": {
+    "bgc": {
+      "sha256": "b9933ca19331e9fbbb0daa6c273c4a45c60289221040973098b2a14532be6aeb",
+      "utf8_bytes": 572
+    },
+    "hydrology": {
+      "sha256": "4a37f6f8f668669caf9bda7db998f2905ad3140017ff8b38fecb81f2d8dad704",
+      "utf8_bytes": 1183
+    },
+    "land_surface_energy": {
+      "sha256": "ace2a96ab772387e2f0dbbc8b7dd2bb6a4416eb433903dacbd7cca039ef29850",
+      "utf8_bytes": 9421
+    },
+    "snow": {
+      "sha256": "c1c123441a440a179210e62a356bbde391ec1821d15208b3d4ad68e43ad94d22",
+      "utf8_bytes": 821
+    },
+    "soil_thermal": {
+      "sha256": "9049413f4f5fc2767df155d6c2d4cc73cec916d142d2ddebd9add6d1ca839e3f",
+      "utf8_bytes": 2499
+    },
+    "surface_liquid": {
+      "sha256": "a64d5cd3dec70bac8f079d0256ad063af49063dab9d8a96414b6999b5c5f963f",
+      "utf8_bytes": 1065
+    },
+    "vegetation": {
+      "sha256": "d9b2ba9a3dde54ed0d245ab86efc431143660c19b179a4cc69a57a7281a8dcce",
+      "utf8_bytes": 3826
+    }
+  },
+  "parent_support": {
+    "end_ns": "387000000000000",
+    "start_ns": "385200000000000"
+  },
+  "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+  "scope": "This exact pre-failure observer row proves retained owner projections and partial clock coordinates. The observer schema does not serialize CoupledClockStateV1, AcceptedSlabReceiptV1, accepted receipt histories, or live_beginning_revision.",
+  "segment_id": "dd70d04da094597be40018ca3cdef814ec6879f472500b4d89f2eb814bcc7963",
+  "slab_ordinal": 8,
+  "source": {
+    "array_prefix": "physical.item",
+    "bytes": 3699473934,
+    "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/observations.json",
+    "sha256_previously_verified": "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9"
+  },
+  "time_ns": "385920000000000"
+}

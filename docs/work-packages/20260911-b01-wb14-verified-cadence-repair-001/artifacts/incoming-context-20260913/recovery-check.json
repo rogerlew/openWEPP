@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: current rejected-cut reconstruction against retained baseline",
+  "utc": "2026-09-13T21:48:25.863289+00:00",
+  "baseline": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+  "candidate": "/workdir/openwepp-experiments/b01-wb14-cadence/parent-cadence-candidate-20260913",
+  "patch_sha256": "81095563aac9d3eebc3cde607c01f92fb2f7d25230a364e1ac021ef075753bb6",
+  "reconstruction_exit": 0,
+  "reconstruction_stdout": "patching file crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs\npatching file crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_preflight.rs\n",
+  "candidate_hashes": {
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs": "ed2bb42c2bf7821cce4f1457cd106f04e8af3d6ec106dfbf9818699fdb1797f7",
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_preflight.rs": "098a0d259db9a9c8d036d6c9b761c9e38aec528504c0d538a6ae3aead81ee1ff"
+  },
+  "byte_equality": true
+}

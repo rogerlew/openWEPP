@@ -1,0 +1,78 @@
+{
+  "evidence_class": "Ran: parsed retained accepted fixture bytes; static availability inference only",
+  "utc": "2026-09-13T21:54:01.500082+00:00",
+  "packet_source": {
+    "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/observations.json",
+    "bytes": 3699473934,
+    "sha256": "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9"
+  },
+  "packet_stream": {
+    "array_prefix": "physical.item",
+    "records_scanned": 123088,
+    "matching_records": 2,
+    "trailing_validation": "ijson complete stream parse"
+  },
+  "records": [
+    {
+      "ordinal": 123086,
+      "kind": "surface_liquid_wb14_cadence_failure",
+      "fields": [
+        "accepted_parent_local_projection",
+        "actual_day",
+        "actual_interval",
+        "beginning_typed_bytes",
+        "capture",
+        "expected_day",
+        "expected_interval",
+        "finalize_parent_interval",
+        "initial",
+        "input_typed_bytes",
+        "kind",
+        "ofe_id",
+        "parent_child_mode",
+        "state_mutated"
+      ]
+    },
+    {
+      "ordinal": 123087,
+      "kind": "surface_liquid_wb14_cadence_caller_failure",
+      "fields": [
+        "beginning_typed_bytes",
+        "capture",
+        "coupled_binding",
+        "error",
+        "finalize_parent_interval",
+        "input_typed_bytes",
+        "kind",
+        "parent_child_mode",
+        "parent_working_typed_bytes",
+        "working_typed_bytes"
+      ]
+    }
+  ],
+  "seed_phase": {
+    "kind": "between_days",
+    "next_day_index": 0,
+    "accepted_interval_count": 0
+  },
+  "seed_committed_fields": [
+    "gsi_configuration",
+    "gsi_state",
+    "static_forcing_configuration",
+    "provider_cursor",
+    "surface_liquid_configuration",
+    "scientific"
+  ],
+  "seed_scientific_fields": [
+    "vegetation_v10",
+    "lse_v2",
+    "direct_hydrology",
+    "soil_thermal",
+    "biogeochemistry"
+  ],
+  "fixture_hashes": {
+    "b01_wb14_current_run_boundary_packet.json": "d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76",
+    "b01_wb14_owner_seed.json": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515"
+  },
+  "limits": "Does not rescan full raw stream or prove global absence. No checkpoint restore or simulation performed."
+}

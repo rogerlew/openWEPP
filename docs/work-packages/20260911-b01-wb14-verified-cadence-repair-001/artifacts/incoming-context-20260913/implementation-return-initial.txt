@@ -1,0 +1,111 @@
+Static implementation return — B01-WB14-PARENT-CADENCE-CANDIDATE
+
+Scope and source identity
+
+- Candidate only: /workdir/openwepp-experiments/b01-wb14-cadence/parent-cadence-candidate-20260913
+- Candidate is a detached source directory, not a Git worktree. No source, test,
+  configuration, package, or primary-checkout mutation was made by this worker.
+- Candidate hashes before this return: direct_runtime/surface_liquid_ingress.rs
+  ed2bb42c2bf7821cce4f1457cd106f04e8af3d6ec106dfbf9818699fdb1797f7;
+  surface_liquid_ingress_preflight.rs
+  098a0d259db9a9c8d036d6c9b761c9e38aec528504c0d538a6ae3aead81ee1ff;
+  surface_liquid_ingress_coordinator.rs
+  af0c281679e5b600e219eca487f3af93928f7eb2bdaaafdb1b47867115dec835;
+  surface_liquid_wb14.rs
+  dfef7863a6ec427ec7f2c2a461def09be1e60c0b4ad592fd71942df4291c32c7.
+- Parent independently confirmed recoverability of the rejected patch before this
+  investigation. This worker did not mutate that cut.
+
+Actual producer-to-ingress path and lifecycle
+
+1. The current provisional coupled-child binding is produced from the accepted
+   provisional slab, parent id, beginning owner ledger digest and current support
+   before physical work in snow_stage3_v11_terminal_execution.rs:2318-2344 and
+   snow_stage3_v11_real_parent_execution.rs:113-150. The final binding is made
+   only after physical output at terminal_execution.rs:2395-2409 and
+   real_parent_execution.rs:160-192. The provisional/final separation is an
+   intentional acyclic lifecycle, not a reason to require a future digest.
+2. Current raw binding transport is DirectV11SnowCoveredStackInputs in
+   v11_covered/execution.rs:1147-1185 or DirectV11RealConsumerStack's
+   new_parent_child_with_ending_snow_owner path, then v9_real_consumer_shadow.rs
+   (native-prefix staging around 847-900), frozen_litter_v3_adoption.rs, and
+   land_surface_energy_shadow/v3_execution.rs:31-54/505. It reaches
+   direct_runtime/surface_liquid_owner/v2_ingress_adapter.rs:635 and
+   direct_runtime/surface_liquid_ingress.rs:969/1038.
+3. The captured parent already contains the validated inactive prefix and scalar
+   state; its canonical producer is surface_liquid_wb14.rs:644-651 and its parent
+   construction is surface_liquid_ingress_coordinator.rs:938 onward. The existing
+   prefix successor check is first-child-specific. It cannot supply later-child
+   external successor authority by itself.
+
+Feasible production shape if authentic producer inputs are available
+
+A private immutable provisional-context token can be constructed at (1), carried
+beside the raw final/reseal binding through the private V11/V9/V3 adapter path,
+and joined to the raw binding, current parent and resource before ingress/WB14.
+The public DirectV11SnowCoveredStackInputs API need not change: its public new
+path can remain untrusted while a crate-private factory installs the token in the
+private stack. A later final reseal remains responsible for final-slab checks.
+This would reject absent, foreign, stale or replayed raw bindings before physical
+entry and does not require final output before its computation.
+
+Concrete unavailable input gap
+
+The retained B01 packet provides an authentic captured raw first ingress call,
+not the complete coupled-time producer context required to invoke that proposed
+factory mechanically:
+
+- direct_runtime/fixtures/b01_wb14_current_run_boundary_packet.json (48,384 B)
+  declares a complete-stream extraction with exactly two matching records. Its
+  caller record preserves input bytes, parent-working bytes, beginning/working
+  state and raw coupled binding for [385920,385980) s. It preserves only the
+  accepted_slab_sha256 digest; it does not preserve the accepted provisional slab
+  receipt/object, current coupled clock, complete beginning-owner set operands, or
+  a provider capability/context from which to reconstruct them independently.
+- direct_runtime/fixtures/b01_wb14_owner_seed.json (36,209 B) supplies owner and
+  configuration seed material, not that current coupled-time receipt/clock.
+- The packet's source metadata identifies the 3,674,503,764-byte read-only raw
+  physical stream physical-rows.jsonpart. Its already-retained complete ijson
+  extraction reports only the two matching ingress records; the witness stops at
+  the first cadence refusal. A narrow read-only schema check confirmed the stream
+  begins with observer records and the ingress observer in
+  surface_liquid_ingress.rs:1127-1141 records only the failed caller's raw input,
+  parent state, working state and raw binding. It cannot retroactively construct
+  missing coupled-clock authority. No raw parse, replay, regeneration or mutation
+  ran in this investigation.
+- No later captured child provider was found in candidate/baseline retained
+  fixtures for [385980,386040) through [386940,387000), nor a final accepted event
+  to close the day-4/interval-22 parent. This is bounded to the inspected retained
+  sources, not a claim that no such material exists elsewhere.
+- The only B01 full-context hooks found are ignored tests in
+  snow_stage3_v11_restart.rs:3036/3077 and
+  v9_real_consumer_shadow_v11_error.rs:94. They explicitly require external
+  OPENWEPP_B01_PARENT_REPLAY, OPENWEPP_B01_EXTERNAL_LSE_CONFIGURATION,
+  OPENWEPP_B01_ARCHIVED_PARENT, OPENWEPP_B01_SNOW_CONSTRUCTOR_STATE and/or
+  OPENWEPP_B01_FINALIZATION_EVENT inputs, which are not candidate fixtures.
+
+Disposition
+
+Do not author a partial first-child-only trusted-context patch. It would not meet
+the mandatory subsequent/final eighteen-child acceptance, and test-only
+reconstruction from raw hashes would violate the incoming-authentication rule.
+This is a concrete missing authentic fixture/provider input stop pending
+independent review, not a claim that the production protocol is infeasible in
+principle. No corrective verification was run; therefore no additional failed
+cycle was consumed. Remaining acceptance includes complete authenticated
+first/subsequent/final context, required negatives with entry counters/state-byte
+rollback, retained positive regression, progression, accounting, ordinary control,
+source-quality checks and independent correctness/QA.
+
+Commands/results
+
+- sha256sum of the four direct-runtime surfaces: all four values above matched the
+  adopted candidate identity.
+- jq inspection of the two retained fixture schemas: packet records=2; owner seed
+  does not contain a coupled-time slab/clock object.
+- stat/head plus targeted read-only pattern inspection of physical-rows.jsonpart:
+  source exists at the recorded 3,674,503,764 B path; no execution occurred.
+- Source inspection of the candidate observer call sites and the retained
+  extract_current_pair.py lineage: the packet's complete-stream extraction, not a
+  new worker parse, is the evidence for two matching records.
+

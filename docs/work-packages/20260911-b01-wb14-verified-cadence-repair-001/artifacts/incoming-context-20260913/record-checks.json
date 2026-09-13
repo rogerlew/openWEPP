@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: bounded documentation/evidence checks, not runtime verification",
+  "utc": "2026-09-13T22:03:57.069257+00:00",
+  "cwd": "/workdir/openWEPP",
+  "json_files_parsed": 8,
+  "new_package_links": "PASS",
+  "git_diff_check_exit": 0,
+  "changed_scope": [
+    " M docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+    "?? docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/incoming-context-20260913/"
+  ],
+  "runtime_tests": "NOT RUN",
+  "staged_full_whitespace_exit": 2,
+  "preserved_raw_whitespace": "two blank EOF lines in original worker reports retained byte-exact",
+  "staged_whitespace_excluding_two_original_reports_exit": 0
+}
