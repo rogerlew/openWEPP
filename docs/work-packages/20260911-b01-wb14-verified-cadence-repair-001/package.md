@@ -599,3 +599,183 @@ runner/collector invocations**. No pure waits deducted. Remaining allowance is
 not permission to resume past the protected-source stop. Final publication-record
 custody adds only the short subsequent commit/push/remote check; exact final
 elapsed time is retained in the durable terminal verification and final reply.
+
+
+### Owner-authorized protected-test compatibility continuation
+
+Owner instruction: “authorization for protected-test compatibility fix granted”.
+Continuation started **2026-09-13 03:09:20 UTC** from clean governance HEAD
+`80e0cba6a0afbe5d6dfae0f22a84a5c4a8e98a33`. This removes the prior protected-source
+stop only for the three missing variant arms in the diagnostic copy's
+`raw_hash_tests.rs:220` and `precedence_tests.rs:192,710`. Preserve all18/four tests
+and assertions. No production, feature/cfg, visibility, manifest, fixture-byte or
+science change is authorized. Continue the same checkpoint and existing test
+copy, completing the original new-test import/context fixes and validation scope.
+Historical failed cut, logs, findings and published custody remain preserved.
+
+Allowance carried: **19m15s consumed, 40m45s remaining**, zero unsuccessful
+corrective-edit/verification cycles, two previous listing calls, zero tests and
+zero runner/collector calls. Owner-wait time between turns is inactive, not a
+budget reset. Conservatively count all continuation elapsed wall time; hard
+continuation deadline **03:50:05 UTC**. The original unanticipated setup/context/
+consumer failure stops and two-unsuccessful-cycle ceiling remain binding.
+
+Intent before edits: add the new enum variant to the existing test pattern
+alternatives without modifying their actions/assertions; fix the new import and
+complete source-defined fixture/context checks, preserving intended admission.
+Reuse `/root/ingress_test_writer` as sole writer (same Terra/medium session,
+confirmed resumed by supported followup); no nested spawning. Reuse existing
+correctness and QA sessions for review of their fixes and expanded compatibility
+scope. Astra owns integration/evidence/record and source publication.
+
+Selected validation: actual same-feature compiled listing, frozen nonzero exact
+context/regression/local-control selections, all18 precedence/four raw-hash
+controls, affected-file formatting, warnings-denied owning-crate Clippy, and
+appropriate source-level anti-evasion guards for the touched authority tests
+(`bash tools/release/check_authority_suite_antievasion.sh` and compiled
+`auth11_required_suite_obligation_guards_contract`). Use retained Nix, explicit
+copy manifest, separate build target, stack64MiB, and complete redirected stdout/
+stderr with numeric exits. One command at a time; poll a running process rather
+than launch duplicates. Preserve each failed cut before correction; an unintended
+failed verification returns to Astra first. A planned real-entrypoint exact E008
+expected-red remains distinct from failed setup or compilation. Broader cadence
+and production acceptance remain HOLD regardless of this checkpoint result.
+
+
+Pre-execution validation applicability refinement: inspection of
+`required-suite-obligations.json` found neither compatibility test path belongs
+to an external suite's registry/doc/integration-test/cohort/required-fixture owned
+paths. The three added alternatives change no suite posture, cohort, required-case
+binding or assertions. Therefore the root external-authority anti-evasion trigger
+is NOT_APPLICABLE; the initially conservative shell/auth11 selection is withdrawn
+before any such execution. The shell guard requires Git refs and cannot certify
+this non-Git diagnostic copy by checking unrelated primary-checkout refs. No guard,
+filter, registry, tool or prospective validation machinery is changed. Actual22
+control execution and independent exact-diff review remain selected and required.
+
+
+Continuation result: the three variant alternatives and import fix cleared the
+initial build errors; a first listing selected both B01 test names, exit0.
+A subsequent context-join enhancement then failed compiled listing with E0277
+at `context_tests.rs:203` (`serde_json::Value` versus `Vec<u32>`). Full raw log
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/b01-wb14-compiled-listing-frozen-final.log`
+records exit101 and no selected tests on that cut. The writer returned before
+correction, and independent correctness confirmed the failure and the unchanged
+assertions in the three compatibility arms. Failed corrective cycles now **1/2**.
+Astra authorized preserving that cut and correcting only the typed comparison
+before another build. No setup/runtime test had executed at this point; expected-red
+remains unestablished. The second unsuccessful cycle would stop this checkpoint.
+
+
+### Compatibility continuation disposition: two-cycle hard stop
+
+**HOLD / INCOMPLETE.** The authorized compatibility fix is applied in the isolated
+copy: exactly three match alternatives for `CoveredCanopyReleaseAndTerminalGround`
+were added, with all existing actions/assertions preserved. The original inherited
+E0004 and new import errors cleared. This does not qualify the complete regression
+or substitute for the unexecuted18/four compatibility controls.
+
+The correction of the E0277 comparison compiled. On an earlier successful cut,
+the captured parent-context test executed1/1 PASS, exit0. It exercised the actual
+configuration constructor, `from_restart_bytes`/nested validation and represented
+external context joins without reminting proof, owner, cursor or clock state.
+Those joins do not independently authenticate the opaque accepted-slab digest
+against the complete coupled history.
+
+The real crate-private ingress entrypoint then returned the exact captured
+`SURFACELIQUID-E-008`, `IngressCandidate`, transaction255, detail
+`WB14 day or interval continuation mismatch`, with1 selected failing test,
+Nextest exit100. However, this executable cut used `.expect_err()` followed by
+unconditional panic. Astra and correctness rejected it because it could never
+turn green unchanged. Its E008 transcript is a genuine behavior observation,
+**not an accepted unchanged red/green regression**. The failed design was retained
+before the writer changed the predicate to conditional error inspection followed
+by intended admission.
+
+That final correction omitted a semicolon after the ingress call at
+`surface_liquid_ingress_context_tests.rs:247`. Its compiled listing failed exit101
+before selection. This is **unsuccessful corrective verification2/2**; all further
+source edits, builds, tests and lint stopped. The final source is preserved at
+SHA-256 `0c86634bc0eb7843ed2494b15a877db3fce9380304dcd081ac2a768e45f9e228`.
+No semicolon repair was applied after the hard stop.
+
+The writer's files named `b01-wb14-ordinary-control*` actually select
+`direct_runtime::surface_liquid_wb14::tests::native_inactive_prefix_starts_first_physical_child_without_wb14_receipt`.
+That native-prefix helper passed1/1, but **the required ordinary non-prefix real
+ingress control was NOT RUN**. Earlier progress/review wording calling this an
+ordinary control is corrected; filenames and original reviews remain retained.
+
+| Continuation outcome | Evidence and limitation |
+| --- | --- |
+| Compatibility changes | Three alternatives applied; earlier crate compiled; actions/assertions unchanged by independent static review. All22 controls NOT RUN. |
+| Context | Earlier1/1 PASS; helper/context body retained; no final-cut compilation or complete-history authentication claim. |
+| Real ingress E008 | Exact refusal observed on rejected unconditional-panic cut; no accepted final red/green regression. |
+| Ordinary control | NOT RUN; only native-prefix helper1/1 PASS. |
+| Final compilation | FAIL exit101, zero selection; missing semicolon, cycle2/2. |
+| Formatting / Clippy | Intermediate formatting reported exit0 without separate raw log; terminal formatting/Clippy NOT RUN at stop. |
+| Command/source freeze | Numeric exits retained; command index is retrospective argv tails, not a complete frozen pre-execution manifest. |
+| Reviews | Same correctness BLOCK and same QA STOP/HOLD. No final runtime approval. |
+| Wider cadence | All earlier required rows remain unfulfilled; no production repair or broader qualification. |
+
+Small source/evidence artifacts:
+
+- [Three-arm compatibility patch](artifacts/ingress-regression/compatibility-continuation/protected-test-compatibility.patch)
+  and [terminal source identities](artifacts/ingress-regression/compatibility-continuation/terminal-source-identities.json).
+- [Cycle1 failed context patch](artifacts/ingress-regression/compatibility-continuation/context-join-cycle1-failed.patch)
+  and [E0277 log](artifacts/ingress-regression/compatibility-continuation/b01-wb14-compiled-listing-frozen-final.log).
+- [Rejected unconditional-panic patch](artifacts/ingress-regression/compatibility-continuation/expected-red-unconditional-panic-cut.patch),
+  [exact E008 observation](artifacts/ingress-regression/compatibility-continuation/b01-wb14-expected-red.log),
+  [context PASS](artifacts/ingress-regression/compatibility-continuation/b01-wb14-context.log),
+  and [actual helper selection](artifacts/ingress-regression/compatibility-continuation/b01-wb14-ordinary-control-list.log).
+- [Final uncompiled patch](artifacts/ingress-regression/compatibility-continuation/final-red-green-cycle2-failed.patch)
+  and [semicolon compile failure](artifacts/ingress-regression/compatibility-continuation/b01-wb14-final-compiled-listing.log).
+- [Retrospective command/result index](artifacts/ingress-regression/compatibility-continuation/hard-stop-command-result.json)
+  records six B01 listing calls (four exit0/two exit101), one helper listing
+  (exit0) and three test calls (context0, defective-red100, helper0). Thus this
+  continuation ran three selected tests, with two passes and one defective-design
+  failure; it did not execute the final regression. Previous two listing calls
+  and historical unobserved exits remain separate. The retained binary is the
+  last successful intermediate executable, not the final failed source.
+- [Correctness review and correction](artifacts/ingress-regression/compatibility-continuation/correctness-review.txt)
+  and [QA review and correction](artifacts/ingress-regression/compatibility-continuation/qa-review.txt).
+  Both identify incomplete acceptance. Correctness corrected its ordinary-control
+  wording. QA withdrew a filename-transposition finding: `compiled-listing-final`
+  (exit0) and `final-compiled-listing` (exit101) are distinct logs, accurately
+  indexed. Original responses and same-reviewer corrections are retained.
+
+Ran after stop, preservation only: Astra compared the diagnostic tree with its
+immutable base (`diff -qr`, exit1 means differences), finding exactly three
+modified test modules and the prior two immutable fixture copies; no production
+change. [Preservation verification](artifacts/ingress-regression/compatibility-continuation/preservation-verification.json)
+matched all10 log numeric exits and reconstructed all three intermediate/final
+context patches and both compatibility source files against their exact retained
+bases, byte-for-byte. No build/test or source correction was executed for those
+checks. Parent custody reconciliation completed after the reviews' initial
+missing-terminal-reconciliation observations; this does not close runtime gaps.
+
+Next owner decision, if continuation is desired, must explicitly revise the
+spent two-cycle allowance. Remaining active minutes alone do not authorize it.
+The pending work is the retained test's syntax correction, proper final compiled
+red/green verification, ordinary non-prefix ingress control, all22 compatibility
+controls, lint/source quality, complete command/source identity and independent
+fix verification. Duplicated configuration decoding still needs justification.
+Production cadence correction remains unauthorized. No runner/collector call,
+full simulation, witness rerun, baseline/candidate comparison or source cleanup
+occurred in this continuation.
+
+
+Terminal preservation checks:74 local references, three continuation JSON
+artifacts and both unchanged fixture joins PASS. Staged whitespace checking
+flags only nine required blank-context patch lines and the retained Nextest
+`Cancelling due to test failure:` line's trailing space. Those raw artifacts
+byte-match originals; all other staged files pass ordinary `git diff --check`.
+No raw bytes, source formatting rule or global whitespace policy was changed.
+This is evidence preservation, not terminal Rust formatting/Clippy acceptance.
+
+At **2026-09-13 03:27:53 UTC**, cumulative active consumption is
+**37m48s**, including the prior19m15s and all current elapsed wall
+time without wait deductions. Failed corrective cycles are **2/2**, with no
+post-stop source/build/test work; new runner/collector calls remain **0/0**.
+Remaining time cannot override the exhausted cycle cap. Scoped evidence and
+compatibility patches are being published on existing `main`; final remote
+custody and its brief additional elapsed time follow below.

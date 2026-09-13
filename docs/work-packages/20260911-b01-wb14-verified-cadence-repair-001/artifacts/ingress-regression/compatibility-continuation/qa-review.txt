@@ -1,0 +1,22 @@
+Static/Ran QA continuation review — `/root/ingress_qa`; same-checkpoint independent fix review.
+
+- **HIGH — final deliverable remains uncompiled and hard-stopped:** the terminal cut has the missing semicolon at `surface_liquid_ingress_context_tests.rs:247`. The retained final listing records exit 101 and zero selection. This is the second unsuccessful corrective verification; **HARD STOP / HOLD** applies. No test, lint, or source correction may follow under this checkpoint.
+
+- **HIGH — retained command-summary inconsistency:** durable `hard-stop-command-result.json` reports `b01-wb14-compiled-listing-final.log` exit 0, while that retained log records the semicolon compile failure and exit 101. The JSON must not be treated as an accurate command-result index unless corrected/dispositioned. Its copy into the primary artifact set was also pending during this review.
+
+- **HIGH — ordinary-control acceptance remains unmet:** the 1/1 passing “ordinary control” selected `native_inactive_prefix_starts_first_physical_child_without_wb14_receipt`, a native-prefix helper control. It is not the required ordinary non-prefix real-ingress control. Its historical filename/result must not be used to claim that requirement.
+
+- **MEDIUM — identity/freeze limits:** the context pass and E008 observation are attributable only to earlier successful cuts. The terminal source identity explicitly says it does not compile; the hard-stop JSON has retrospective argv tails rather than a complete frozen pre-execution command artifact. The full 22 compatibility controls and warnings-denied Clippy were not run.
+
+Static source custody is otherwise consistent: comparison reports only the test module, two prior immutable fixtures, and the three owner-authorized compatibility match changes; no production source change. The three added alternatives preserve the prior match actions/assertions by static inspection. The earlier runtime E008 transcript is an observation from the rejected unconditional-panic test design, not accepted red/green evidence.
+
+QA verdict: **STOP / HOLD.** Preserve all cuts and their limits; do not claim an executable regression, expected-red acceptance, non-prefix control, final source freeze, or full validation.
+
+Same-reviewer correction:
+
+Correction to my prior continuation review: withdraw the command-summary inconsistency finding. I transposed two distinct artifacts.
+
+- `b01-wb14-compiled-listing-final.log` records exit 0, matching its `hard-stop-command-result.json` entry.
+- `b01-wb14-final-compiled-listing.log` records the missing-semicolon failure and exit 101, also matching its separate JSON entry.
+
+The hard-stop JSON is therefore consistent for those listings. All other findings and the **STOP / HOLD** verdict remain unchanged.

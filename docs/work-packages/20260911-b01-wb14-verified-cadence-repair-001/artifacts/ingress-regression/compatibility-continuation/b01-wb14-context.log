@@ -1,0 +1,12 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/baseline-red-815dd4883f42
+  scratch: /tmp/openwepp-roger-baseline-red-815dd4883f42
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID e50c161b-2c02-4456-a46c-76788e9ee9a1 with nextest profile: default
+    Starting 1 test across 1 binary (1466 tests skipped)
+────────────
+     Summary [   0.043s] 1 test run: 1 passed, 1466 skipped
+cargo_nextest_context_exit=0

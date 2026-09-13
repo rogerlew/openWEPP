@@ -1,0 +1,10 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/baseline-red-815dd4883f42
+  scratch: /tmp/openwepp-roger-baseline-red-815dd4883f42
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.72s
+openwepp-hillslope-orchestrator direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress
+openwepp-hillslope-orchestrator direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_parent_context_passes_source_defined_joins
+cargo_nextest_list_exit=0

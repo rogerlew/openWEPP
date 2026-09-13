@@ -1,0 +1,269 @@
+--- /workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs	2026-09-06 19:55:50.000000000 -0700
++++ crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs	2026-09-12 20:17:15.277952206 -0700
+@@ -1,7 +1,9 @@
+ //! Public canonical-context poisons for the surface-liquid ingress boundary.
+ 
+-use openwepp_kernel_contract::{TileId, TransactionId};
++use openwepp_kernel_contract::{ResourceOwnerId, TileId, TransactionId};
+ use openwepp_land_surface_energy::{OfeId, SourceId, SurfaceId};
++use sha2::{Digest, Sha256};
++use crate::DirectSurfaceLiquidOfeBinding;
+ 
+ use super::tests::{
+     initial_state, one_tile_configuration, open_ingress, parameters, resource_candidate,
+@@ -9,12 +11,254 @@
+ };
+ use super::{
+     DirectGroundIngressMode, DirectOfeWb14Parameters, DirectSurfaceLiquidConfiguration,
++    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidOwnedState,
++    DirectWb14CoupledChildBindingV1,
++    DirectWb14ParentWorkingState,
+     DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidPhase,
+     DirectSurfaceLiquidReceiptDisposition, DirectSurfaceLiquidReceiptRecipient,
+     DirectTileGroundIngress, INTERVAL_S, REFERENCE_TEMPERATURE_K, WATER_DENSITY_KG_M3,
+-    execute_surface_liquid_ingress, liquid_specific_enthalpy,
++    execute_surface_liquid_ingress, execute_surface_liquid_ingress_with_parent_state_and_coupled_binding,
++    liquid_specific_enthalpy,
+ };
+ 
++const B01_PACKET: &[u8] = include_bytes!("fixtures/b01_wb14_current_run_boundary_packet.json");
++const B01_OWNER_SEED: &[u8] = include_bytes!("fixtures/b01_wb14_owner_seed.json");
++
++fn b01_hex_f64(value: &str) -> f64 {
++    let bits = u64::from_str_radix(value.strip_prefix("0x").expect("hex float"), 16)
++        .expect("binary64 bits");
++    f64::from_bits(bits)
++}
++
++fn b01_bytes(value: &serde_json::Value) -> Vec<u8> {
++    value
++        .as_array()
++        .expect("captured byte array")
++        .iter()
++        .map(|byte| u8::try_from(byte.as_u64().expect("captured byte integer")).expect("u8"))
++        .collect()
++}
++
++fn b01_digest(value: &serde_json::Value) -> [u8; 32] {
++    b01_bytes(value).try_into().expect("captured SHA-256")
++}
++
++fn b01_captured_context() -> (
++    DirectSurfaceLiquidConfiguration,
++    DirectSurfaceLiquidOwnedState,
++    DirectSurfaceLiquidIngressInput,
++    DirectWb14ParentWorkingState,
++    DirectWb14CoupledChildBindingV1,
++) {
++    let seed: serde_json::Value = serde_json::from_slice(B01_OWNER_SEED).expect("owner seed JSON");
++    let wire = &seed["checkpoint"]["phase"]["committed"]["surface_liquid_configuration"];
++    let topology = wire["ofe_topology"]
++        .as_array()
++        .expect("OFE topology")
++        .iter()
++        .map(|value| OfeId::try_new(value.as_str().expect("OFE id")).expect("valid OFE id"))
++        .collect();
++    let bindings: Vec<DirectSurfaceLiquidOfeBinding> =
++        serde_json::from_value(wire["ofe_bindings"].clone()).expect("OFE bindings");
++    let records = wire["records"]
++        .as_array()
++        .expect("surface-liquid records")
++        .iter()
++        .map(|record| DirectSurfaceLiquidConfigurationRecord {
++            key: serde_json::from_value(record["key"].clone()).expect("store key"),
++            tile_fraction: b01_hex_f64(record["tile_fraction"].as_str().expect("tile fraction")),
++            capacity_kg_m2_tile: b01_hex_f64(
++                record["capacity_kg_m2_tile"].as_str().expect("capacity"),
++            ),
++            ofe_area_m2: b01_hex_f64(record["ofe_area_m2"].as_str().expect("OFE area")),
++            ground_ingress_mode: serde_json::from_value(record["ground_ingress_mode"].clone())
++                .expect("ground ingress mode"),
++            runon_destination_ofe_id: record["runon_destination_ofe_id"]
++                .as_str()
++                .map(|value| OfeId::try_new(value).expect("runon OFE")),
++            runon_destination_tile_id: record["runon_destination_tile_id"]
++                .as_str()
++                .map(|value| TileId::try_new(value).expect("runon tile")),
++        })
++        .collect();
++    let configuration = DirectSurfaceLiquidConfiguration::new(
++        ResourceOwnerId::try_new(wire["owner_id"].as_str().expect("owner id"))
++            .expect("valid owner id"),
++        wire["run_id"].as_u64().expect("run id"),
++        topology,
++        bindings,
++        records,
++    )
++    .expect("source-defined captured configuration");
++
++    let packet: serde_json::Value = serde_json::from_slice(B01_PACKET).expect("boundary packet JSON");
++    let records = packet["records"].as_array().expect("packet records");
++    let ingress_record = &records[0]["record"];
++    let caller_record = &records[1]["record"];
++    let beginning: DirectSurfaceLiquidOwnedState = serde_json::from_slice(&b01_bytes(
++        &ingress_record["beginning_typed_bytes"]["Ok"],
++    ))
++    .expect("captured beginning state");
++    let input: DirectSurfaceLiquidIngressInput = serde_json::from_slice(&b01_bytes(
++        &ingress_record["input_typed_bytes"]["Ok"],
++    ))
++    .expect("captured ingress input");
++    let working: DirectSurfaceLiquidOwnedState = serde_json::from_slice(&b01_bytes(
++        &caller_record["working_typed_bytes"]["Ok"],
++    ))
++    .expect("captured caller working state");
++    assert_eq!(
++        working, beginning,
++        "caller working state must retain the exact ingress beginning owner"
++    );
++    let parent = DirectWb14ParentWorkingState::from_restart_bytes(
++        &configuration,
++        &b01_bytes(&caller_record["parent_working_typed_bytes"]["Ok"]),
++    )
++    .expect("captured parent passes nested context validation");
++    let binding = &caller_record["coupled_binding"];
++    let coupled_binding = DirectWb14CoupledChildBindingV1 {
++        proposed_upper_bound_s_bits: binding["proposed_upper_bound_s_bits"]
++            .as_u64()
++            .expect("upper bound bits"),
++        coupled_parent_transaction_sha256: b01_digest(&binding["coupled_parent_transaction_sha256"]),
++        accepted_slab_sha256: b01_digest(&binding["accepted_slab_sha256"]),
++        parent_beginning_complete_owner_set_sha256: b01_digest(
++            &binding["parent_beginning_complete_owner_set_sha256"],
++        ),
++        parent_support_start_ns: binding["parent_support_start_ns"]
++            .as_str()
++            .expect("parent start")
++            .parse()
++            .expect("parent start ns"),
++        parent_support_end_ns: binding["parent_support_end_ns"]
++            .as_str()
++            .expect("parent end")
++            .parse()
++            .expect("parent end ns"),
++        child_support_start_ns: binding["child_support_start_ns"]
++            .as_str()
++            .expect("child start")
++            .parse()
++            .expect("child start ns"),
++        child_support_end_ns: binding["child_support_end_ns"]
++            .as_str()
++            .expect("child end")
++            .parse()
++            .expect("child end ns"),
++    };
++    (configuration, beginning, input, parent, coupled_binding)
++}
++
++#[test]
++fn b01_wb14_captured_parent_context_passes_source_defined_joins() {
++    let (configuration, beginning, input, parent, binding) = b01_captured_context();
++    assert_eq!(configuration.configuration_sha256, beginning.configuration_sha256);
++    assert_eq!(parent.candidate_state(), &beginning);
++    assert_eq!(input.day_index, 4);
++    assert_eq!(input.interval_index, 22);
++    assert_eq!(input.interval_s.to_bits(), 60.0_f64.to_bits());
++    assert_eq!(input.transaction_id, TransactionId(255));
++    assert_eq!(
++        input.wb14_parameters,
++        serde_json::from_value::<Vec<DirectOfeWb14Parameters>>(
++            serde_json::from_slice::<serde_json::Value>(
++                &parent.restart_bytes(&configuration).expect("validated parent bytes"),
++            )
++            .expect("validated parent JSON")["parameters"]
++                .clone(),
++        )
++        .expect("captured parent parameters"),
++    );
++    assert_eq!(
++        configuration
++            .ofe_bindings
++            .iter()
++            .map(|row| row.production_lane_id)
++            .collect::<Vec<_>>(),
++        vec![1],
++    );
++    let (derived_start, derived_end, derived_wb14_configuration, derived_lanes) =
++        super::wb14_parent_binding(&configuration, &input).expect("derived WB14 parent binding");
++    assert_eq!(derived_start, 385_200_000_000_000);
++    assert_eq!(derived_end, 387_000_000_000_000);
++    assert_eq!(binding.parent_support_start_ns, 385_200_000_000_000);
++    assert_eq!(binding.parent_support_end_ns, 387_000_000_000_000);
++    assert_eq!(binding.child_support_start_ns, 385_920_000_000_000);
++    assert_eq!(binding.child_support_end_ns, 385_980_000_000_000);
++    assert_eq!(binding.proposed_upper_bound_s_bits, 60.0_f64.to_bits());
++    let parent_wire: serde_json::Value = serde_json::from_slice(
++        &parent.restart_bytes(&configuration).expect("validated parent bytes"),
++    )
++    .expect("validated parent JSON");
++    assert_eq!(parent_wire["parent_day_index"], 4);
++    assert_eq!(parent_wire["parent_interval_index"], 22);
++    assert_eq!(parent_wire["accepted_until_ns"], 385_920_000_000_000_u64);
++    assert_eq!(parent_wire["parent_support_start_ns"], 385_200_000_000_000_i64);
++    assert_eq!(parent_wire["parent_support_end_ns"], 387_000_000_000_000_i64);
++    assert_eq!(
++        parent_wire["wb14_configuration_sha256"],
++        derived_wb14_configuration,
++    );
++    assert_eq!(
++        serde_json::from_value::<Vec<u32>>(parent_wire["production_lane_ids"].clone())
++            .expect("captured parent production lanes"),
++        derived_lanes,
++    );
++    assert_eq!(
++        parent_wire["wb14_model_definition_sha256"],
++        format!(
++            "{:x}",
++            Sha256::digest(
++                b"OPENWEPP_WB14_GREEN_AMPT_MODEL_DEFINITION_V1:advance_wb14_continuation_interval"
++            )
++        ),
++    );
++    assert_eq!(
++        parent_wire["candidate_state"]["continuations"].as_array().map(Vec::len),
++        Some(beginning.continuations.len()),
++    );
++    let authority = &parent_wire["per_ofe_authorities"]["ofe-1"]["authority"];
++    assert_eq!(
++        b01_digest(&authority["coupled_parent_transaction_sha256"]),
++        binding.coupled_parent_transaction_sha256,
++    );
++    assert_eq!(
++        b01_digest(&authority["inactive_prefix"]["prefix_ending_owner_sha256"]),
++        binding.parent_beginning_complete_owner_set_sha256,
++    );
++    assert_eq!(authority["production_lane_id"], 1);
++    parent
++        .validate_in_process(&configuration)
++        .expect("captured parent nested joins");
++}
++
++#[test]
++fn b01_wb14_captured_first_physical_child_must_enter_real_ingress() {
++    let (configuration, beginning, input, parent, binding) = b01_captured_context();
++    let resource = resource_candidate(&configuration, &beginning, input.transaction_id, None, &[]);
++    let error = execute_surface_liquid_ingress_with_parent_state_and_coupled_binding(
++        &configuration,
++        &resource,
++        &input,
++        Some(&parent),
++        false,
++        Some(binding),
++    )
++    .expect_err("contract-required first physical child after the validated inactive prefix");
++    let failure = error.failure().expect("canonical expected-red failure");
++    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E008);
++    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IngressCandidate);
++    assert_eq!(failure.context.transaction_id, Some(TransactionId(255)));
++    assert_eq!(
++        failure.detail,
++        "WB14 day or interval continuation mismatch",
++    );
++    panic!(
++        "EXPECTED_RED: captured first physical child reached real ingress and was wrongly refused: {error}"
++    );
++}
++
+ fn five_window_configuration() -> DirectSurfaceLiquidConfiguration {
+     let base = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+     let records = (0..5)

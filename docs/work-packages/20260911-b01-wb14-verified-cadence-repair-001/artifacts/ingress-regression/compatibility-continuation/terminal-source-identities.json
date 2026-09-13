@@ -1,0 +1,32 @@
+{
+  "comparison_command": [
+    "diff",
+    "-qr",
+    "--exclude=.git",
+    "--exclude=target",
+    "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red"
+  ],
+  "comparison_exit": 1,
+  "meaning": "differences found, exactly these three modified files plus fixtures directory containing two prior unchanged fixtures",
+  "source_changes": [
+    {
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs",
+      "base_sha256": "982dac38c5b45b60eeb6db22a9ad839037359ff3fbc38fae11c10b069d434d76",
+      "candidate_sha256": "b2df4d81905c92095070a4aa7f5ff89c4883eeb934c3f2b43c646cb0d8f1f7e5"
+    },
+    {
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs",
+      "base_sha256": "041c0df1739385995e5cc6c241510523e0e4c74bedfba34bf152c501461e53fd",
+      "candidate_sha256": "afc499fa26c946c9a1122ed08c49aee7f270d0b646ee8c935d414cf2aa375e62"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs",
+      "base_sha256": "a5ec580696c0cb17552970a654f5b3064343caf70812c96e2d4f96a1c730ac0a",
+      "candidate_sha256": "0c86634bc0eb7843ed2494b15a877db3fce9380304dcd081ac2a768e45f9e228"
+    }
+  ],
+  "production_changes": [],
+  "fixtures_unchanged_from_previous_checkpoint": true,
+  "final_cut_compiles": false
+}

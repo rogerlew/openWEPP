@@ -1,0 +1,33 @@
+Reviewer: /root/ingress_correctness (same independent correctness conversation).
+
+Static review; supplied run logs inspected. Reviewer executed no tests or builds.
+
+**Open findings**
+
+- **High — BLOCK:** The frozen final regression does not compile. `surface_liquid_ingress_context_tests.rs:240` omits the semicolon after the real-entrypoint call at line 247. The compiler reports `expected ';', found keyword 'if'`; listing exits 101. The frozen source SHA-256 is `0c86634bc0eb7843ed2494b15a877db3fce9380304dcd081ac2a768e45f9e228`, identical to `final-red-green-cycle2-failed-context-tests.rs`. This was corrective cycle 2/2, so the authorization cap requires STOP. No executable final regression or valid expected-red delivery exists.
+
+- **Medium — unresolved duplicated decoding:** `surface_liquid_ingress_context_tests.rs:27` manually reproduces substantial restart configuration decoding already owned by `SurfaceLiquidConfigurationRestartV1::restore` in immutable `crates/openwepp-persisted-restart-v1/src/surface_liquid.rs:212`. The helper does recompute the canonical configuration digest through `DirectSurfaceLiquidConfiguration::new`, limiting immediate drift risk, but intentional duplication still needs explicit justification.
+
+**Closed/static findings**
+
+- The earlier executable cut used `.expect_err()` followed by unconditional panic and therefore could never turn green unchanged. The final source corrects that predicate statically: it conditionally inspects an `Err` for exact E008 fields, then requires `result.expect(...)`. Compilation prevents verification of this correction.
+
+- The three authorized compatibility edits are exact exhaustive-pattern additions for `CoveredCanopyReleaseAndTerminalGround` at `raw_hash_tests.rs:220` and `precedence_tests.rs:192,710`. Existing branch actions and assertions are unchanged. Their file SHA-256 values are `afc499fa…75e62` and `b2df4d81…1f7e5`.
+
+- The captured context is feasible without fabrication. The helper decodes the exact packet request, beginning/working state, parent bytes, and coupled binding; reconstructs the retained owner-seed configuration through the canonical constructor; and decodes the parent through `DirectWb14ParentWorkingState::from_restart_bytes`, which invokes `validate_nested`. Its checks cover configuration, parameter, lane, model, support, owner-prefix, accepted-until, transaction, and child-bound joins. Supplied evidence shows this unchanged context test passed 1/1.
+
+**Residual risk and missing validation**
+
+- The earlier unconditional-panic cut reached the real crate-private entrypoint and observed exact `SURFACELIQUID-E-008`, `IngressCandidate`, transaction 255, and detail `WB14 day or interval continuation mismatch`. That transcript proves current behavior but cannot qualify as the unchanged red/green regression.
+- The supplied ordinary control passed 1/1.
+- The final cut has no compiled listing or executed test. The required 18 precedence and four raw-hash controls, formatting, warnings-denied Clippy, final source-diff/touched-file controls, and final fixture/source identity reconciliation were not completed.
+- The context evidence validates source-defined joins represented in the captured objects; it does not independently authenticate the opaque accepted-slab digest against complete coupled history.
+- All wider cadence obligations remain unmet: first/subsequent/final-child repair, 18-child progression, rollback, independent transfer accounting, runner coverage, and split restart.
+
+**Disposition: BLOCK / HOLD.** The authorization ceiling was reached with an uncompiled final regression, so this checkpoint cannot claim expected-red delivery or acceptance.
+
+Same-reviewer correction:
+
+The prior statement “ordinary control passed 1/1” was inaccurate. The supplied log executed `direct_runtime::surface_liquid_wb14::tests::native_inactive_prefix_starts_first_physical_child_without_wb14_receipt`, which is a native inactive-prefix helper control. It does not satisfy the required ordinary non-prefix real-ingress control. That required control was **NOT RUN**.
+
+The historical log filename remains unchanged. This correction does not alter the **BLOCK / HOLD** disposition.

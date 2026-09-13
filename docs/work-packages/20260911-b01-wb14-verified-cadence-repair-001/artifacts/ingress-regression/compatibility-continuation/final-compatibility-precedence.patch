@@ -1,0 +1,22 @@
+--- /workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs	2026-09-06 19:55:50.000000000 -0700
++++ /workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs	2026-09-12 20:11:01.355420783 -0700
+@@ -193,7 +193,8 @@
+                     DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+                     | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+                     | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
+-                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
++                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. }
++                    | DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { tile_id, .. } => {
+                         *tile_id = TileId::try_new("unknown-tile").expect("unknown tile");
+                     }
+                 }
+@@ -711,7 +712,8 @@
+                     DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+                     | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+                     | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
+-                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
++                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. }
++                    | DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { tile_id, .. } => {
+                         *tile_id = TileId::try_new("unknown-tile").expect("tile");
+                     }
+                 },

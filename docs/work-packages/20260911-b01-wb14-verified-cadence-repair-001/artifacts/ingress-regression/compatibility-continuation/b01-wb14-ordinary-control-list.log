@@ -1,0 +1,8 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/baseline-red-815dd4883f42
+  scratch: /tmp/openwepp-roger-baseline-red-815dd4883f42
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+openwepp-hillslope-orchestrator direct_runtime::surface_liquid_wb14::tests::native_inactive_prefix_starts_first_physical_child_without_wb14_receipt
+cargo_nextest_ordinary_control_list_exit=0
