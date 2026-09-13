@@ -1,0 +1,32 @@
+{
+  "evidence_class": "Ran: focused candidate admission regression",
+  "name": "unchanged-admission",
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/parent-cadence-candidate-20260913",
+  "argv": [
+    "nix", "develop", "/workdir/openWEPP", "--command", "env",
+    "CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-cadence-targets/parent-cadence-candidate-20260913",
+    "RUST_MIN_STACK=67108864", "cargo", "nextest", "run",
+    "--manifest-path", "/workdir/openwepp-experiments/b01-wb14-cadence/parent-cadence-candidate-20260913/Cargo.toml",
+    "-p", "openwepp-hillslope-orchestrator", "--lib", "--locked",
+    "--features", "persisted-restart-v1,restart-authority-evidence",
+    "-E", "test(=direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress)"
+  ],
+  "exit": 0,
+  "result": { "selected": 1, "passed": 1, "failed": 0, "skipped": 1466 },
+  "start_utc": "UNAVAILABLE: command output was streamed without timestamp capture",
+  "end_utc": "UNAVAILABLE: command output was streamed without timestamp capture; log mtime is not execution-end evidence",
+  "log": "unchanged-admission.log",
+  "source_identity": {
+    "base": "reconciled-available145-r1",
+    "base_map_sha256": "c7aea0707d0c6a0876ec4bee5a7fcf15e751a092e086f517ced7edba8282b71e",
+    "baseline_terminal_reconciliation": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/terminal-reconciliation.json",
+    "baseline_terminal_reconciliation_sha256": "d7df96804dd4d36e8c9779f763a1e692d61b45714818e72eb597f381faced7bc",
+    "baseline_ingress_sha256": "1826924b199e8a1ff7a42776ac99713b0b1bb01ab8207a1ea508cc1539096c29",
+    "baseline_preflight_sha256": "b0d362563f6fda1ae49cac2be9b011bbb3d83f497f399e2b6c29524f98af1ae3",
+    "candidate_ingress_sha256": "ed2bb42c2bf7821cce4f1457cd106f04e8af3d6ec106dfbf9818699fdb1797f7",
+    "candidate_preflight_sha256": "098a0d259db9a9c8d036d6c9b761c9e38aec528504c0d538a6ae3aead81ee1ff",
+    "candidate_patch": "first-incomplete-admission-cut.patch",
+    "candidate_patch_sha256": "81095563aac9d3eebc3cde607c01f92fb2f7d25230a364e1ac021ef075753bb6"
+  },
+  "continuity": "The baseline terminal reconciliation identifies baseline-red as the verified base plus three accepted test patches and two fixtures. The authorized five fixture/test hashes were checked before the copy; no source fixture or test was changed in the candidate."
+}

@@ -1,0 +1,25 @@
+Reviewer identity: /root/candidate_qa, Terra/medium
+
+Static QA review — independent replacement; no builds/tests or edits run by me. I inspected the frozen candidate, primary and candidate-local evidence, package acceptance, and prior QA findings.
+
+## Findings
+
+- **HIGH — incomplete admission authorization**: [surface_liquid_ingress.rs](/workdir/openwepp-experiments/b01-wb14-cadence/parent-cadence-candidate-20260913/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:1086) permits a parent-local context without a coupled binding: the `None` branch derives support bounds and the equality at line 1102 becomes tautological. [surface_liquid_ingress_preflight.rs](/workdir/openwepp-experiments/b01-wb14-cadence/parent-cadence-candidate-20260913/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_preflight.rs:131) then bypasses cadence solely on `parent_child_mode && validated_parent_local_context`. This does not authenticate the incoming coupled-parent transaction, slab, complete owner-set binding, or successor relation required before alternate admission. The author’s disposition correctly identifies this as incomplete; this cut cannot be accepted.
+
+- **HIGH — insufficient test coverage for the new bypass**: the only executed candidate test is the captured happy-path regression at [surface_liquid_ingress_context_tests.rs](/workdir/openwepp-experiments/b01-wb14-cadence/parent-cadence-candidate-20260913/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs:250). It supplies a valid parent and binding. No candidate execution covers missing/foreign/replayed binding, invalid successor/ordinal/support, canonical error precedence, ordinary ingress, 18-child progression, rollback, or independent accounting. The package explicitly requires these before repair acceptance.
+
+- **MEDIUM — source-quality gates remain unmet**: no `cargo fmt`, warnings-denied Clippy, test suite, doctest, or deny evidence was run for this production-path candidate. The inherited Clippy record remains FAIL and is not covered by the prior test-only lint exception.
+
+## Non-blocking debt / evidence limits
+
+- The candidate is a frozen, attributable two-source-file cut: patch SHA-256 `810955…3bb6`; ingress `ed2bb4…797f7`; preflight `098a0d…e1ff`. Primary and candidate-local patch, command JSON, and log bytes match. The five accepted test/fixture hashes match the authorization; parent’s 927-base-map reconciliation reports only these two runtime changes plus trial artifacts.
+
+- Inspected execution evidence reports the unchanged admission test PASS 1/1, 1466 skipped, exit 0. Its start/end timestamps are explicitly unavailable, so it establishes only the recorded focused result, not a timed or broader validation run.
+
+- No local/remote custody ledger exists for this new candidate beyond the primary small-artifact record; no remote publication claim should be made. The carried ledger is `cycle 5/6`; this review does not alter it.
+
+- I cannot establish from static review whether a fully authenticated incoming-binding repair is implementable inside the remaining envelope. Existing authority structures show related receipt-chain machinery, but the required authentic pre-child input/history and a bounded test vector are not evidenced. That is a correctness/design feasibility question, not a QA approval.
+
+**QA verdict: HOLD.** The focused test result is a genuine recorded green for the unchanged regression, but it is not repair acceptance.
+
+Correction: `cargo deny` is NOT_APPLICABLE here because the candidate leaves dependency manifests, lockfile, resolved dependencies, and toolchain unchanged. It is not an acceptance blocker. The required formatting, warnings-denied Clippy, doctest, and full correctness obligations remain unmet.
