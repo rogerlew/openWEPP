@@ -581,3 +581,21 @@ No simulation claim, source cleanup, branch switch or unrelated change occurred.
 Publication uses the carried scoped commit/push permission; the full raw corpus
 and full diagnostic tree remain local. Remote source recoverability is not
 inferred from hashes or from publication of this small failed patch.
+
+
+Publication: scoped evidence commit `6103f05e6b2220eefc8f4a858d04598f84b442ce`
+was pushed to existing `origin/main`, exit0. [Remote verification](artifacts/ingress-regression/remote-verification.json)
+fetched all14 changed files from exact-commit GitHub URLs and byte-matched all
+197,135 bytes: PASS, no LFS pointers. This verifies the small failed cut and
+records, not the complete available source or multi-GB raw corpus. The same QA
+reviewer checked terminal custody/patch whitespace disposition; its response is
+appended to the retained QA review. This publication-record supplement will be
+pushed under the same permission and independently fetched before the final reply.
+
+At **2026-09-13 02:19:52 UTC**, conservative elapsed active
+consumption is **18m46s**, with **0/2 unsuccessful corrective-edit/
+verification cycles**, two failed-listing calls on one uncorrected cut and **0/0
+runner/collector invocations**. No pure waits deducted. Remaining allowance is
+not permission to resume past the protected-source stop. Final publication-record
+custody adds only the short subsequent commit/push/remote check; exact final
+elapsed time is retained in the durable terminal verification and final reply.

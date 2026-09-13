@@ -28,3 +28,12 @@ Static custody passes: the diagnostic copy differs from the available base only 
 `cargo deny` is **NOT_APPLICABLE** under testing strategy §6.2(7): manifests, lockfile, dependencies, and toolchain are unchanged. Its absence is not an unmet requirement.
 
 QA verdict: **STOP / HOLD.** Evidence preservation is acceptable; compiled regression and runtime acceptance remain unmet.
+
+
+Same-reviewer terminal custody check:
+
+No materially inaccurate terminal custody claim found.
+
+Ran static checks confirm the staged raw patch is byte-identical to the durable preserved patch (`0f0518…b638`), and its reconstruction record correctly reports exit 0 and exact failed-cut hash `d22f…adc7`.
+
+`git diff --cached --check` reports only the three known trailing-space lines in that preserved raw patch (5, 9, 25). The record does not claim an unconditional formatting/diff-check pass. This is a properly retained evidence-format exception, not a custody defect.

@@ -1,0 +1,93 @@
+{
+  "evidence_class": "Ran: exact-commit remote byte retrieval",
+  "commit": "6103f05e6b2220eefc8f4a858d04598f84b442ce",
+  "verified_at_utc": "2026-09-13T02:19:27.909326+00:00",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression-authorization.md",
+      "bytes": 13003,
+      "sha256": "5ce78484497d064806016d5f50cda1cc5d26d27f7259dbdf8c5cd9d7b348bcf2",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/correctness-review.txt",
+      "bytes": 4484,
+      "sha256": "47932e6e47980e72bf8babd48efc4bbbadb054394cbc2d03407d0ff03a62383f",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/first-compiled-listing-artifacts/b01_wb14_current_run_boundary_packet.json",
+      "bytes": 48384,
+      "sha256": "d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/first-compiled-listing-artifacts/b01_wb14_owner_seed.json",
+      "bytes": 36209,
+      "sha256": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/first-compiled-listing-artifacts/failed-context-test.patch",
+      "bytes": 8298,
+      "sha256": "0f05188a2eda233caf652f715bd623502f025d3a2f09394b4cd5b9255100b638",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/first-compiled-listing-changed-files.json",
+      "bytes": 1235,
+      "sha256": "5d3f592b72ec8ad5a788415af2bfb02ce45aef428c7afd567d5a92cfa8d3b484",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/first-compiled-listing-failure-20260913.md",
+      "bytes": 3055,
+      "sha256": "0895a401b4c349bef11e9d92f8f09624dfb5edb9c9807fde5107ad91e22c91a5",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/first-compiled-listing-identities.json",
+      "bytes": 1379,
+      "sha256": "3d0ac18787170e783fbd51bdbbbd23798ce6e0d04721b7b7e3c98a24293ae61f",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/first-compiled-listing-rustc-diagnostics.jsonl",
+      "bytes": 25952,
+      "sha256": "ac211ee6b6792de955058fcf20e200eaac6466983214239a3ae9649a1539b1e4",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/ingress-context-feasibility-20260913.md",
+      "bytes": 2167,
+      "sha256": "610f0cc9bf74aa7389f675bb374d8d52523d8919f616ff5b7bb2deee5d66222b",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/patch-reconstruction-check.json",
+      "bytes": 1117,
+      "sha256": "83ff8eb1a7470f216889ab55b72375178c9e4ec81d1f5e39ff61f37c6ef31747",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/qa-review.txt",
+      "bytes": 3565,
+      "sha256": "ea501d29dc0a9230bbc50d57301b69828b7bc39af430985300fd06e3185e9167",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 40967,
+      "sha256": "73092375eb49ea0c9acdb77931f58c98cff2b03ff44f06c1255788b56dc9f44c",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/active.md",
+      "bytes": 7320,
+      "sha256": "0c430f709de8a3e6b8f72e3b0670d40fa57437a49f979ea32d65af651e310941",
+      "remote_byte_equal": true
+    }
+  ],
+  "pass": true,
+  "scope": "small new failed-source/evidence files only; no full source or raw corpus verification"
+}
