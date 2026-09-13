@@ -52,6 +52,10 @@ Local custody: immutable available145 and accepted `baseline-red` remain availab
 
 At **2026-09-13 20:13:25 UTC**, cumulative active consumption is **82m53s**, remaining **37m07s**; successor trial elapsed **12m45s**, failed corrective cycles **5/6**, no pure-wait deductions. No new downstream runtime exception was observed: the first test returned `Ok`; the stop is the independently confirmed required-binding/context gap. Only evidence preservation/publication continues. Final publication time will be added to the custody record.
 
+Publication custody: commit `78f4a3c751966913ee832c5a7b3ca4022b993809` was pushed to existing `origin/main`, exit0. [Exact-commit remote verification](artifacts/parent-cadence-candidate-20260913/remote-verification.json) fetched and matched all9 published files,127,182 bytes, with no LFS pointers. This verifies small patch/evidence bytes, not complete source or raw-corpus remote custody. This custody supplement will also be committed/pushed and fetched; its terminal verification and final additional elapsed time are retained locally at `/workdir/openwepp-experiments/b01-wb14-cadence/logs/parent-cadence-candidate-terminal-publication.json`.
+
+At **2026-09-13 20:14:35 UTC**, cumulative active time is **84m03s**, remaining **35m57s**, unsuccessful cycles **5/6**, no pure-wait deductions. Only preservation/publication occurred after the scope stop. Final result remains **HOLD / NOT ACCEPTED**; the unchanged-test1/1 green does not close B01-CONT-005.
+
 ## Objective and authorization
 
 Deliver a recoverable, source-verified correction of WB14 cadence admission through

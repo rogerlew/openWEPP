@@ -1,0 +1,72 @@
+{
+  "evidence_class": "Ran: exact-commit remote byte verification",
+  "commit": "78f4a3c751966913ee832c5a7b3ca4022b993809",
+  "push_exit": 0,
+  "verified_utc": "2026-09-13T20:14:14.869116+00:00",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/parent-cadence-candidate-20260913/baseline-candidate-tree-diff.log",
+      "bytes": 806,
+      "sha256": "3278bd95dab940739a1d7ccfcabf1e5a107f7de5f4222f7c43e0f64adc544998",
+      "remote_matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/parent-cadence-candidate-20260913/correctness-review.txt",
+      "bytes": 9172,
+      "sha256": "8fda5006359c3e7dfb07639ec7c6fb95170dfac4cdc95f36f47263826c1b9d67",
+      "remote_matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/parent-cadence-candidate-20260913/first-incomplete-admission-cut.patch",
+      "bytes": 7311,
+      "sha256": "81095563aac9d3eebc3cde607c01f92fb2f7d25230a364e1ac021ef075753bb6",
+      "remote_matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/parent-cadence-candidate-20260913/patch-reconstruction.json",
+      "bytes": 1131,
+      "sha256": "f57ac655739002cac0ec510f174ef85dc371cb0788d0c7ea13d5fdafd3dcdc4b",
+      "remote_matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/parent-cadence-candidate-20260913/qa-review.txt",
+      "bytes": 3867,
+      "sha256": "af56b997a56d0e716ca398928543afc63b350b45b55890f3485750e94f20badd",
+      "remote_matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/parent-cadence-candidate-20260913/source-continuity.json",
+      "bytes": 1426,
+      "sha256": "413db5d0501393487e55fca4d1928f4a43f7df5617b6850c0b2b9524d98c200d",
+      "remote_matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/parent-cadence-candidate-20260913/unchanged-admission-command.json",
+      "bytes": 2496,
+      "sha256": "f2fb39a9d5f21c347b31dddcfd134cdd7dcdac2cd4e1a844e7580b2980c97de5",
+      "remote_matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/parent-cadence-candidate-20260913/unchanged-admission.log",
+      "bytes": 4075,
+      "sha256": "8496afac7573407f0a5eaeae816ccce6d787cce4c6e6657b0c0606cf2b063a4d",
+      "remote_matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 96898,
+      "sha256": "0ad8f1f3911ab2c236aab3c0bd5f5fe2eace4bbf2d32375becd2b73171edd84c",
+      "remote_matches": true,
+      "lfs_pointer": false
+    }
+  ],
+  "scope": "small evidence files only; no full candidate source/raw-corpus backup claim"
+}
