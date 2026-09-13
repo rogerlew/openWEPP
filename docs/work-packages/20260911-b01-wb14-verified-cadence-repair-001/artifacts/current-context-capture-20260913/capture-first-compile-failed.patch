@@ -1,0 +1,124 @@
+--- baseline-red/crates/openwepp-hillslope-orchestrator/src/lib.rs
++++ capture/crates/openwepp-hillslope-orchestrator/src/lib.rs
+@@ -311,3 +311,4 @@
+ 
+ pub mod snow_accuracy_bulk;
+ pub mod snow_accuracy_observer;
++mod snow_stage3_v11_current_context_capture;
+--- baseline-red/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
++++ capture/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+@@ -2325,6 +2325,19 @@
+         child_support_start_ns: support.start_ns().get() as u128,
+         child_support_end_ns: support.end_ns().get() as u128,
+     };
++    crate::snow_stage3_v11_current_context_capture::record_pre_child_context(
++        context,
++        beginning_parent,
++        beginning_consumer,
++        beginning_clock,
++        prepared,
++        &reduction,
++        &ledger,
++        &provisional_receipt,
++        &provisional_binding,
++        day_index,
++        interval_index,
++    )?;
+     let finalize_wb14_parent_interval =
+         support.end_ns() == beginning_clock.parent_support().end_ns();
+     let mut provisional_executor = prepare_provisional_covered_executor_v1(
+--- baseline-red/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
++++ capture/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
+@@ -0,0 +1,92 @@
++//! B01 diagnostic pre-child context capture. This is not a restart schema.
++
++use crate::{
++    DirectSnowStage3V11AttachmentError,
++    snow_stage3_v11_attachment::{DirectSnowStage3V11PreparedSupport, DirectSnowStage3V11StaticContext},
++    v9_real_consumer_shadow::DirectV10RealConsumerShadow,
++};
++use openwepp_coupled_time::{
++    AcceptedSlabReceiptV1, ConstraintReductionReceiptV1, CoupledClockStateV1,
++    CoupledTimeRestartV2, DiagnosticReductionV1, LedgerEntryV1, digest_bytes,
++};
++use openwepp_vegetation::V11ParentTransaction;
++
++const CLOCK_MODEL_DOMAIN: &[u8] = b"OPENWEPP_STAGE3_V11_COUPLED_CLOCK_RESTART_MODEL_V1";
++const CLOCK_AUTHORITY_DOMAIN: &[u8] = b"SC-SNOWENERGY-001@22+SC-COUPLEDTIME-001";
++const CLOCK_REDUCTION_ID: &str = "stage3-v11-restart-no-publication";
++
++fn identity(error: impl std::fmt::Display) -> DirectSnowStage3V11AttachmentError {
++    let _ = error;
++    DirectSnowStage3V11AttachmentError::Identity("B01 current-context diagnostic serialization")
++}
++
++/// Record only values that already exist at the accepted provisional boundary.
++/// The coupled-time wrapper follows the existing Stage-3 restart serializer's
++/// explicit no-publication posture; the actual constraint reduction is retained
++/// separately below and is never replaced with that diagnostic wrapper.
++pub(crate) fn record_pre_child_context(
++    context: &DirectSnowStage3V11StaticContext,
++    parent: &V11ParentTransaction,
++    consumer: &DirectV10RealConsumerShadow,
++    clock: &CoupledClockStateV1,
++    prepared: &DirectSnowStage3V11PreparedSupport,
++    reduction: &ConstraintReductionReceiptV1,
++    ledger: &LedgerEntryV1,
++    receipt: &AcceptedSlabReceiptV1,
++    binding: &crate::direct_runtime::DirectWb14CoupledChildBindingV1,
++    day_index: usize,
++    interval_index: usize,
++) -> Result<(), DirectSnowStage3V11AttachmentError> {
++    if !crate::snow_accuracy_observer::physical_global_enabled() {
++        return Ok(());
++    }
++    let clock_restart = CoupledTimeRestartV2::new(
++        digest_bytes(CLOCK_MODEL_DOMAIN),
++        digest_bytes(CLOCK_AUTHORITY_DOMAIN),
++        clock.clone(),
++        DiagnosticReductionV1::new(CLOCK_REDUCTION_ID.into(), "dimensionless".into())
++            .map_err(identity)?,
++        None,
++        Vec::new(),
++    )
++    .map_err(identity)?
++    .to_canonical_json()
++    .map_err(identity)?;
++    let owners = consumer
++        .canonical_v11_parent_owner_state_bytes()
++        .map_err(DirectSnowStage3V11AttachmentError::Owner)?
++        .into_iter()
++        .map(|(name, bytes)| {
++            let value = serde_json::from_slice::<serde_json::Value>(&bytes).map_err(identity)?;
++            Ok((name, value))
++        })
++        .collect::<Result<std::collections::BTreeMap<_, _>, _>>()?;
++    let parent_checkpoint = serde_json::to_value(parent.checkpoint()).map_err(identity)?;
++    let provisional_receipt = serde_json::to_value(receipt).map_err(identity)?;
++    let constraint_reduction = serde_json::to_value(reduction).map_err(identity)?;
++    let complete_owner_ledger = serde_json::to_value(ledger).map_err(identity)?;
++    let provider_cursor = serde_json::to_value(consumer.provider_cursor()).map_err(identity)?;
++    crate::snow_accuracy_observer::record(serde_json::json!({
++        "kind": "b01_wb14_pre_child_current_context_v1",
++        "day_index": day_index,
++        "interval_index": interval_index,
++        "support": prepared.support(),
++        "parent_support": clock.parent_support(),
++        "accepted_until": clock.accepted_until(),
++        "parent_checkpoint": parent_checkpoint,
++        "complete_owner_canonical_json": owners,
++        "coupled_clock_restart_canonical_json": clock_restart,
++        "coupled_clock_restart_model_sha256": digest_bytes(CLOCK_MODEL_DOMAIN),
++        "coupled_clock_restart_authority_sha256": digest_bytes(CLOCK_AUTHORITY_DOMAIN),
++        "coupled_clock_restart_policy_sha256": context.controller_policy,
++        "constraint_reduction": constraint_reduction,
++        "complete_owner_ledger": complete_owner_ledger,
++        "provisional_receipt": provisional_receipt,
++        "coupled_binding": binding,
++        "provider_cursor": provider_cursor,
++        "static_run_identity": context.run_identity,
++        "static_topology_identity": context.topology_identity,
++        "capture_posture": "before physical ingress; diagnostic no-publication wrapper"
++    }));
++    Ok(())
++}

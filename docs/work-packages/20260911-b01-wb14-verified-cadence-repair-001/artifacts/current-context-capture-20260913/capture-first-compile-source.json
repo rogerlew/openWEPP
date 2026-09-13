@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Ran: preserve failed recorder cut before bounded correction",
+  "utc": "2026-09-13T22:35:43.632176+00:00",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+  "capture": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "source_sha256": {
+    "crates/openwepp-hillslope-orchestrator/src/lib.rs": "13cb587e3fb4964aeab1f678d8237dc12ffa8bb61ce0e00579f8b2650e8742e6",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs": "f66f65c7302f03134d4bdff0e5498ef1d637a173e81fb6f0680211979e50ce90",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs": "35c6dcb86d764f4141c739086580e95d04cdc907d8e590b0604ddee46cf74117"
+  },
+  "patch_sha256": "5e9e0fce86b6da5aa60d069a7c5aa19a6470bcfa25b51a5ff18bae675416b3ea",
+  "compile_exit": 101,
+  "compile_duration_s_reported_by_worker": 26.77,
+  "first_error": "E0277 DirectWb14CoupledChildBindingV1 lacks serde::Serialize",
+  "failed_cycles": 6,
+  "ceiling": 7,
+  "runtime_capture_invocations": 0,
+  "fresh_probes": 0
+}

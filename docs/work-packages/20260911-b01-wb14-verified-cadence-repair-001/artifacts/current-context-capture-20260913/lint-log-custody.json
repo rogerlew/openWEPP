@@ -1,0 +1,18 @@
+[
+  {
+    "published": "baseline-clippy.stdout.log.gz",
+    "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/artifacts/current-context-capture-20260913/primary-lint-logs/baseline-clippy.stdout.log",
+    "raw_bytes": 13437957,
+    "raw_sha256": "88f4a414a060dd35d581ffbad25361df30a2ce3e31cff9dc57af5e512f83f88f",
+    "gzip_sha256": "8a1657bd0b82dd1d8e2c8705c94f6f1a53ee67028be9b4bbf1a541f9bc23c707",
+    "decompression_exact": true
+  },
+  {
+    "published": "baseline-runner-clippy.stdout.log.gz",
+    "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/artifacts/current-context-capture-20260913/primary-lint-logs/baseline-runner-clippy.stdout.log",
+    "raw_bytes": 328387,
+    "raw_sha256": "83263aeab467bd228e05d581c612c828da95d1e791a3b20104d2f8fad3afcea7",
+    "gzip_sha256": "cf808e0394652c0f61ba9f0a366ccfc5dd5397c5e43d24ebeaf781fd3db5aa06",
+    "decompression_exact": true
+  }
+]

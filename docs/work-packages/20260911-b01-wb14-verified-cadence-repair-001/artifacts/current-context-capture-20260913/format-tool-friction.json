@@ -1,0 +1,23 @@
+{
+  "evidence_class": "Ran: worker-reported shell failure before formatting tool startup",
+  "argv": [
+    "cargo",
+    "fmt",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/Cargo.toml",
+    "--",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "exit": 127,
+  "stderr": "/bin/bash: cargo: command not found",
+  "duration_s_reported": 2e-06,
+  "timestamps": "UNAVAILABLE",
+  "formatter_executed": false,
+  "validator_executed": false,
+  "source_mutated_by_command": false,
+  "astra_disposition": "failed mutating formatting action, no --check/no validator started; same unfinished correction, not another failed corrective verification",
+  "failed_cycles": 6,
+  "ceiling": 7
+}

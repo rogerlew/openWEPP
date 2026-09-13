@@ -1,0 +1,21 @@
+[
+  {
+    "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+    "argv": "nix develop /workdir/openWEPP --command rustfmt --edition 2024 crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+    "raw_meta_local": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/artifacts/current-context-capture-20260913/logs/rustfmt-module.meta",
+    "raw_meta_sha256": "f19f3eab7da4f95f62b9f249b47a7c1b4e9cf9493cd2dbd5960244647f9a139e",
+    "environment_note": "Unrelated inherited session/environment fields omitted; original retained locally",
+    "action": "mutating rustfmt, not a check"
+  },
+  {
+    "start_utc": "2026-09-13T22:50:52Z",
+    "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+    "argv": "nix develop /workdir/openWEPP --command rustfmt --edition 2024 crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+    "end_utc": "2026-09-13T22:50:54Z",
+    "exit": "0",
+    "raw_meta_local": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/artifacts/current-context-capture-20260913/logs/rustfmt-composed.meta",
+    "raw_meta_sha256": "b9745cb7dcdc15354b72e7336a6feb8755df7d08a4aa1d4ceb5b1751576f4a62",
+    "environment_note": "Unrelated inherited session/environment fields omitted; original retained locally",
+    "action": "mutating rustfmt, not a check"
+  }
+]

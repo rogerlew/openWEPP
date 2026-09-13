@@ -1,0 +1,29 @@
+Implementation return — preservation-only after failed corrective verification 7/7
+
+Isolated source cut
+/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913
+
+Changed source paths (preserved in pre-focused-test.patch):
+- crates/openwepp-hillslope-orchestrator/src/lib.rs
+- crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs (new)
+- crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+- crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
+
+Implemented but unverified cut
+- Exact day 4 / interval 22 / target support recorder gate before covered physical ingress; recorder errors only emit diagnostic rows and cannot replace the model result.
+- Canonical CoupledTimeRestartV2 record/restore using the source-defined no-publication wrapper, V11 parent restore through configured BGC scope, and clone-only provisional StepConstraint/reduction/ledger/candidate/accept reconstruction.
+- Captured canonical clock owner payloads, consumer canonical payloads, V11 vegetation config, LSE config, provider cursor, and pending produced-unconsumed terminal parcels.
+- Focused fixture test was added, intended to exercise composed capture/import and assert zero physical counters, with a missing-LSE negative case.
+
+Exact failed verification
+See focused-importer-test.json and its referenced logs. Exit 101 occurred during compilation at 2026-09-13T22:52:26Z, before any test body ran.
+First relevant compiler diagnostic: E0382 at snow_stage3_v11_current_context_capture.rs:221. LedgerEntryV1 was moved into vec![ledger] for CoupledSlabCandidateV1 then returned for durable comparison. No source edits, builds, tests, replay, collector, or fresh-process probe ran after this failure.
+
+Static selector finding
+The command used filter b01_current_context_importer_restores_fixture_without_physics with --exact. The test is defined in the nested #[cfg(test)] module v9_real_consumer_shadow::tests, so its fully qualified libtest name is expected to be v9_real_consumer_shadow::tests::b01_current_context_importer_restores_fixture_without_physics. Therefore the passed bare filter would not match under --exact even if compilation had succeeded. This is a static path analysis only; it was not rerun.
+
+Unfinished acceptance
+- Capture the actual remaining parent prepared support/forcing through existing DirectSnowStage3V11PreparedSupportRestartV2::project at parent preparation; the terminal hook only records current support/provider cursor and terminal custody.
+- Validate all seven actual canonical owner payloads against restored clock/parent and join same-run inactive-prefix/ingress evidence where required; current consumer subset validation does not establish all seven payload semantics.
+- Repair the compiler failure and execute the correctly fully-qualified focused test.
+- Run the parent-owned capture replay, separate fresh-process import probe, review, and publication only after a new authorization/plan resolves the 7/7 stop.

@@ -1,0 +1,32 @@
+Replacement final correctness review: /root/capture_correctness_final. This is an independent replacement for unavailable /root/incoming_correctness; it preserves that review's scope and findings but claims no same-conversation continuity.
+
+Evidence class: Static review of the terminal isolated cut at /workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913 and inspection of supplied execution evidence. Reviewer-ran read-only SHA-256 checks matched pre-focused-test-source.sha256 for all four changed source files and matched terminal-source-recovery.json's da01cf0668f4a0f81bd83ca291000c99cd6086a75fef271e19ac5a17e52abb85 patch identity. I ran no build, test, collector, replay, restore, or probe. The supplied focused command exited 101 during compilation; no test body ran.
+
+Findings, ordered by severity:
+
+- HIGH — The terminal cut does not compile, and hard stop 7/7 is binding. crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:216 moves ledger into vec![ledger], then :221 returns ledger. focused-importer-test.stderr.log records E0382 and exit 101 before libtest execution. This independently blocks the fixture test, capture replay, and fresh-process probe.
+
+- HIGH — The importer can establish internal row consistency but cannot authenticate the required complete producer context. crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:88-104 records a provider cursor, terminal parcel custody, run/topology identities, parent/support fields, and a binding projection, but import_and_reconstruct_pre_child_context at :227-345 never consumes or validates those fields. It accepts forcing_receipt directly from the row at :292-301 and accepts DirectSnowStage3V11StaticContext from the caller; it does not restore/project the actual remaining-parent DirectSnowStage3V11PreparedSupportRestartV2/provider/forcing source or prove that the provider produced that receipt. This fails the checkpoint requirement that the fixture be usable by the real constructor/provider path rather than merely reconstructing from self-described IDs and digests.
+
+- HIGH — Complete-owner validation is incomplete and can accept substituted consumer-owner bytes. At snow_stage3_v11_current_context_capture.rs:323-333 the duplicated clock-owner map is compared with the owners already inside the canonical clock restart, which proves those two fields agree. At :334-343 the separately captured consumer owner payload checks only nonempty values and that each key exists in restored_clock_owners; it never compares the values. The importer also does not join all seven owner payloads to the restored parent, binding, accepted prefix, or provider state. A corrupted nonempty consumer payload can therefore pass. This does not satisfy SC-COUPLEDTIME-001 INV-024/031 or the adopted complete-owner/predecessor relationship requirement.
+
+- MEDIUM — Target selection remains only partially repaired. snow_stage3_v11_current_context_capture.rs:19-29 and :121-130 gate day, interval, and child support, but do not bind the required parent support, run identity, topology identity, or once-only custody. Repeated calls at the same coordinates can emit multiple rows. The initial selector finding therefore remains open for the omitted joins even though day 4 / interval 22 and child support are now correct.
+
+- MEDIUM — The provisional constructor is substantially duplicated. snow_stage3_v11_current_context_capture.rs:163-221 independently mirrors the StepConstraint -> reduction -> complete-owner ledger -> CoupledSlabCandidate -> accept_slab sequence in snow_stage3_v11_terminal_execution.rs:2292-2330. The synthetic test at v9_real_consumer_shadow_tests.rs:1054-1096 uses this same helper to manufacture the row and import it, so it can prove helper self-consistency while missing drift from the real producer. The present ledger ownership mismatch already demonstrates drift. Centralize the constructor path or provide explicit justification plus a non-tautological real-producer comparison.
+
+Affected initial-finding status:
+
+- The initial observation-error propagation finding is statically addressed: record_pre_child_context no longer returns or propagates capture errors into the model path. Runtime observation-only behavior is unverified.
+- The initial JSON Value byte-loss finding is statically addressed by retaining Vec<u8> canonical payloads. Authentic payload and relationship validation remains blocked by the two HIGH findings above.
+- An importer now exists, but the initial missing-consumer finding remains open because provider/prepared-support restoration and complete owner/parent/prefix joins are absent.
+- The original non-Serialize compile defect was removed, but compilation remains blocked by E0382; there is no accepted build fix.
+- The target selector finding is only partially addressed and remains open as described above.
+
+Residual risk and missing tests:
+
+- The focused test executed zero tests. Its bare --exact filter also would not select the nested libtest name v9_real_consumer_shadow::tests::b01_current_context_importer_restores_fixture_without_physics after compilation is repaired.
+- No actual B01 context bundle exists from this cut. Capture runner/collector and fresh-process restore/provisional probe remain 0/1 and 0/1. There is therefore no evidence of actual payload restoration, zero physical entry, unchanged baseline E008, once-only parcel custody, or source/input/build/binary-bound bundle identity.
+- No corrected focused test, matched candidate lint, separate reverse-consumer runner lint, actual capture comparison, canonical fresh-process restore, owner/prefix poison evidence, or real constructor/provider exercise ran.
+- SC-SURFACELIQUID-001 INV-035/C-025, SC-COUPLEDTIME-001 INV-024/031 and OBL-014, and SC-SNOWENERGY-001 INV-087/C-055 remain unfulfilled for this checkpoint. The broader B01-CONT-005/013/014 repair requirements remain open.
+
+Verdict: HOLD / NOT ACCEPTED. The terminal cut is an unverified, noncompiling diagnostic implementation and does not deliver the source-bound pre-child fixture or fresh-process usability proof. Under hard stop 7/7, no correction, test, capture, or probe is authorized; preserve this evidence and keep the parent cadence candidate suspended.

@@ -1,0 +1,7 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-persisted-restart-v1 v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-persisted-restart-v1)
+    Checking openwepp-runner v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-runner)
+error: could not compile `openwepp-runner` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-runner` (lib test) due to 79 previous errors

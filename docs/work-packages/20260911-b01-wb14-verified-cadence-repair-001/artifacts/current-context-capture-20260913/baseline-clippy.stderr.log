@@ -1,0 +1,83 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling num-traits v0.2.19
+   Compiling zerocopy v0.8.48
+   Compiling libc v0.2.186
+   Compiling getrandom v0.3.4
+   Compiling ahash v0.8.12
+   Compiling syn v2.0.117
+    Checking bytes v1.11.1
+    Checking lexical-util v1.0.7
+   Compiling semver v1.0.28
+    Checking once_cell v1.21.4
+    Checking iana-time-zone v0.1.65
+    Checking arrow-schema v54.3.1
+    Checking hashbrown v0.15.5
+    Checking bitflags v1.3.2
+   Compiling paste v1.0.15
+   Compiling snap v1.1.1
+    Checking static_assertions v1.1.0
+    Checking byteorder v1.5.0
+    Checking integer-encoding v3.0.4
+    Checking twox-hash v1.6.3
+   Compiling rustc_version v0.4.1
+   Compiling seq-macro v0.3.6
+    Checking toml_write v0.1.2
+    Checking powerfmt v0.2.0
+    Checking winnow v0.7.15
+    Checking time-core v0.1.8
+    Checking lexical-parse-integer v1.0.6
+    Checking lexical-write-integer v1.0.6
+    Checking openwepp-comparator-metadata v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-comparator-metadata)
+    Checking deranged v0.5.8
+    Checking num-conv v0.2.2
+    Checking openwepp-legacy-bridge v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-legacy-bridge)
+   Compiling rustix v1.1.4
+   Compiling flatbuffers v24.12.23
+    Checking linux-raw-sys v0.12.1
+    Checking lexical-parse-float v1.0.6
+    Checking openwepp-summary-accumulator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-summary-accumulator)
+    Checking bitflags v2.13.0
+    Checking lexical-write-float v1.0.6
+    Checking lexical-core v1.0.6
+    Checking num-integer v0.1.46
+    Checking num-complex v0.4.6
+    Checking chrono v0.4.44
+    Checking atoi v2.0.0
+    Checking ordered-float v2.10.1
+    Checking thrift v0.17.0
+    Checking num-bigint v0.4.6
+    Checking num-iter v0.1.45
+    Checking time v0.3.47
+    Checking num-rational v0.4.2
+    Checking num v0.4.3
+   Compiling serde_derive v1.0.228
+   Compiling zerocopy-derive v0.8.48
+    Checking serde v1.0.228
+    Checking openwepp-kernel-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-kernel-contract)
+    Checking serde_yaml v0.9.34+deprecated
+    Checking openwepp-coupled-time v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-coupled-time)
+    Checking serde_spanned v0.6.9
+    Checking toml_datetime v0.6.11
+    Checking toml_edit v0.22.27
+    Checking openwepp-land-surface-energy v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-land-surface-energy)
+    Checking openwepp-biogeochemistry v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-biogeochemistry)
+    Checking openwepp-management-schema v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-management-schema)
+    Checking openwepp-vegetation v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-vegetation)
+    Checking toml v0.8.23
+    Checking half v2.7.1
+    Checking arrow-buffer v54.3.1
+    Checking openwepp-input-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-input-contract)
+    Checking arrow-data v54.3.1
+    Checking arrow-array v54.3.1
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-watershed-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-watershed-orchestrator)
+    Checking arrow-select v54.3.1
+    Checking arrow-ipc v54.3.1
+    Checking arrow-cast v54.3.1
+    Checking parquet v54.3.1
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-hillslope-output v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-output)
+    Checking openwepp-watershed-output v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-watershed-output)
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1231 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1536 previous errors

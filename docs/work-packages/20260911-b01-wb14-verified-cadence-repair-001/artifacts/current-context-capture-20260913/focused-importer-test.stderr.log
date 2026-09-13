@@ -1,0 +1,65 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling typenum v1.20.0
+   Compiling cfg-if v1.0.4
+   Compiling itoa v1.0.18
+   Compiling cpufeatures v0.2.17
+   Compiling equivalent v1.0.2
+   Compiling openwepp-unit-boundary v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-unit-boundary)
+   Compiling hashbrown v0.17.1
+   Compiling openwepp-sim-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-sim-contract)
+   Compiling serde_core v1.0.228
+   Compiling zmij v1.0.21
+   Compiling num-traits v0.2.19
+   Compiling simd-adler32 v0.3.9
+   Compiling adler2 v2.0.1
+   Compiling ryu v1.0.23
+   Compiling thiserror v2.0.20
+   Compiling unsafe-libyaml v0.2.11
+   Compiling memchr v2.8.0
+   Compiling crc32fast v1.5.0
+   Compiling base64 v0.22.1
+   Compiling libm v0.2.16
+   Compiling openwepp-plant-phenology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-plant-phenology)
+   Compiling miniz_oxide v0.8.9
+   Compiling openwepp-meteorology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-meteorology)
+   Compiling flate2 v1.1.9
+   Compiling indexmap v2.14.0
+   Compiling num-integer v0.1.46
+   Compiling openwepp-topology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-topology)
+   Compiling generic-array v0.14.7
+   Compiling num-bigint v0.4.6
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling serde v1.0.228
+   Compiling serde_json v1.0.150
+   Compiling openwepp-kernel-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-kernel-contract)
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling openwepp-coupled-time v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-coupled-time)
+   Compiling openwepp-biogeochemistry v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-biogeochemistry)
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-land-surface-energy)
+   Compiling openwepp-management-schema v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-management-schema)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-vegetation)
+   Compiling openwepp-input-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-input-contract)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+error[E0382]: use of moved value: `ledger`
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:221:28
+    |
+202 |     let ledger = LedgerEntryV1::new(
+    |         ------ move occurs because `ledger` has type `openwepp_coupled_time::LedgerEntryV1`, which does not implement the `Copy` trait
+...
+216 |         vec![ledger],
+    |              ------ value moved here
+...
+221 |     Ok((cloned, reduction, ledger, receipt))
+    |                            ^^^^^^ value used here after move
+    |
+help: consider cloning the value if the performance cost is acceptable
+    |
+216 |         vec![ledger.clone()],
+    |                    ++++++++
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error

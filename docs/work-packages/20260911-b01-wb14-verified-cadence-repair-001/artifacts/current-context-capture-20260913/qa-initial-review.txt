@@ -1,0 +1,21 @@
+Reviewer identity: /root/incoming_qa, Terra/medium
+
+Static QA initial review — independent of the capture writer and adviser. I ran no build, test, runner, collector, replay, restore, or probe. I reviewed the owner-adopted capture authorization, current package section, baseline/input/collector evidence, preserved first failed cut, and prospective lint evidence. The suspended cadence candidate is out of this review's scope.
+
+## Findings
+
+- **HIGH — the capture source is not yet a runnable, reviewable increment**: [capture-first-compile-source.json](capture-first-compile-source.json) preserves the first recorder cut with focused compile exit 101, `DirectWb14CoupledChildBindingV1` lacking `Serialize`, and records failed cycle 6/7. Its terminal/capture module changes must be corrected and source identity re-frozen before the authorized 0/1 collector replay or 0/1 fresh-process probe. This review does not assess a later mutable correction.
+
+- **HIGH — the initial recorder does not meet observation-only or consumer-usability requirements**: the retained [correctness initial review](correctness-initial-review.txt) identifies `?` propagation from recorder serialization/validation into the legitimate producer, which can replace expected E008 before physics. The same cut has neither an importer nor a fresh-process real-constructor path and lacks all required provider/starting inputs. The next cut must retain recording failure separately, bind one exact day-4/interval-22 support/parent target, preserve canonical bytes where byte custody is claimed, and make the real consumer read the bundle. A JSON record alone is insufficient.
+
+- **MEDIUM — no matched no-new-relevant-diagnostics conclusion is available yet**: [baseline-clippy.json](baseline-clippy.json) is a valid prospective baseline measurement using the declared packages, features, toolchain environment and `--no-deps -D warnings`; it exits 101. The capture-side matched command, source-to-diagnostic mapping, and comparison against the frozen final capture diff remain unrun. The baseline failures remain FAIL and cannot be treated as a green lint result or as an exception for recorder defects.
+
+## Non-blocking debt / follow-ups
+
+- [baseline-continuity.json](baseline-continuity.json) establishes the 927-entry baseline map plus all three accepted test and two fixture identities. The rejected cadence patch is excluded; this is the correct diagnostic baseline custody posture.
+
+- [original-input-protocol-check.json](original-input-protocol-check.json) records the original templates, collector/case/Nix inputs, selected CPU 0, no old-corpus rehash/checkpoint operation, and 60.8 GB workspace free against an 18.7 GB storage requirement. This supports readiness of the original input/collector protocol, subject to rechecking the frozen final executable and capture destination before launch.
+
+- `cargo deny` and external-authority anti-evasion are presently **NOT_APPLICABLE** to the stated diagnostic-only source shape because dependency inputs, suite posture, cohorts and required-case bindings are not authorized to change. Reconcile this classification against the terminal diff.
+
+**QA initial disposition: BLOCK BEFORE REPLAY OR PROBE; READY FOR THE SINGLE BOUNDED RECORDER/IMPORTER CORRECTION.** Capture and probe allowances remain 0/1 each. This review adds no runtime invocation or failed cycle.

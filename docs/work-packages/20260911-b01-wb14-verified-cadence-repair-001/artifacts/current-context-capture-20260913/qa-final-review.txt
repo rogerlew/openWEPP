@@ -1,0 +1,21 @@
+Reviewer identity: /root/incoming_qa, Terra/medium
+
+Static final preservation review — same independent QA reviewer as the initial review. I ran no build, test, runner, collector, replay, restore, probe, formatter, or source edit. I reviewed the exact preserved source, focused-command record and complete logs, source reconstruction, initial reviews, lint evidence, and format-tool record.
+
+## Findings
+
+- **HIGH — neither authorized runtime result exists**: [focused-importer-test.json](focused-importer-test.json) records compile exit 101 before any test body; capture replay and fresh-process probe each remain 0/1. The terminal source itself documents unfulfilled prepared-support/forcing capture, seven-owner validation, real importer test, replay and probe. There is no source-bound bundle, canonical fresh-process usability result, or observation-only capture result to accept.
+
+- **HIGH — the focused test command could not have selected the declared nested test**: the command passes `b01_current_context_importer_restores_fixture_without_physics -- --exact`, but the source declares the test at `v9_real_consumer_shadow::tests::b01_current_context_importer_restores_fixture_without_physics`. The bare selector is wrong under libtest `--exact`; even after compilation it would select zero tests. This is separate from the actual E0382 moved-`ledger` compiler failure at `snow_stage3_v11_current_context_capture.rs:221`, which already prevented all test execution.
+
+- **MEDIUM — source-quality and matched-lint evidence remains incomplete**: [format-tool-friction.json](format-tool-friction.json) shows an earlier outside-Nix `cargo fmt` attempt exited 127 before Cargo or rustfmt started, with no source mutation or validator. The later isolated Nix `rustfmt` module and composed commands did execute successfully and caused the preserved formatting churn in the terminal four-file patch. Neither command was a non-mutating `rustfmt --check` validation, so no formatting-check PASS exists. Baseline denied-warning Clippy is recorded as FAIL, while a matched final-capture command and no-new-relevant-diagnostics mapping were never produced. No lint PASS is available.
+
+## Non-blocking debt / follow-ups
+
+- [terminal-source-recovery.json](terminal-source-recovery.json) is sound preservation evidence: 10,146 paths were compared, only four authorized capture paths differ, and `pre-focused-test.patch` reconstructs each changed byte exactly. Direct comparison agrees with that four-file scope.
+
+- The failed compile is truthfully preserved as correction cycle 7/7. The earlier format exit 127 occurred before any formatter/compiler action and does not reset or consume a corrective-verification cycle; the later successful mutating rustfmt action also does not validate the final source. Both are recorded, and no corrective work may proceed under the hard stop.
+
+- `cargo deny` and authority-suite anti-evasion remain **NOT_APPLICABLE** for the preserved terminal diff: it does not change dependencies, manifests, suite posture, fixtures or required-case bindings. This does not waive the unmet capture, probe, formatting, or matched-lint checks.
+
+**QA verdict: HOLD / NOT ACCEPTED.** Preservation and source custody are adequate, but the 7/7 hard stop leaves the capture checkpoint incomplete. No capture/probe result or future-child evidence is inferred, and no new authorization should be treated as supplied by this review.

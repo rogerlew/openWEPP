@@ -1,0 +1,32 @@
+{
+  "purpose": "prospective separate baseline runner lint coverage",
+  "argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "env",
+    "CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-cadence-targets/baseline-red",
+    "RUST_MIN_STACK=67108864",
+    "cargo",
+    "clippy",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/Cargo.toml",
+    "-p",
+    "openwepp-runner",
+    "--all-targets",
+    "--locked",
+    "--features",
+    "openwepp-runner/test-fixture-authority,openwepp-hillslope-orchestrator/persisted-restart-v1,openwepp-hillslope-orchestrator/restart-authority-evidence",
+    "--message-format=json",
+    "--",
+    "--no-deps",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+  "start_utc": "2026-09-13T22:45:22.784851+00:00",
+  "source_identity": "baseline-continuity.json",
+  "end_utc": "2026-09-13T22:45:59.581868+00:00",
+  "exit": 101
+}

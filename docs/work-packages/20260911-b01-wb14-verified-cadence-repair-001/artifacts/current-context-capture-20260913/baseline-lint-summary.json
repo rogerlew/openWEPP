@@ -1,0 +1,443 @@
+{
+  "evidence_class": "Ran: parse baseline denied-warning diagnostics",
+  "exit": 101,
+  "diagnostic_counts": [
+    {
+      "level": "error",
+      "code": "clippy::assigning_clones",
+      "count": 14
+    },
+    {
+      "level": "error",
+      "code": "clippy::bool_comparison",
+      "count": 1
+    },
+    {
+      "level": "error",
+      "code": "clippy::bool_to_int_with_if",
+      "count": 1
+    },
+    {
+      "level": "error",
+      "code": "clippy::borrow_as_ptr",
+      "count": 4
+    },
+    {
+      "level": "error",
+      "code": "clippy::box_collection",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::cast_possible_truncation",
+      "count": 49
+    },
+    {
+      "level": "error",
+      "code": "clippy::cast_precision_loss",
+      "count": 65
+    },
+    {
+      "level": "error",
+      "code": "clippy::cast_sign_loss",
+      "count": 11
+    },
+    {
+      "level": "error",
+      "code": "clippy::clone_on_copy",
+      "count": 10
+    },
+    {
+      "level": "error",
+      "code": "clippy::cloned_ref_to_slice_refs",
+      "count": 5
+    },
+    {
+      "level": "error",
+      "code": "clippy::collapsible_else_if",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::default_trait_access",
+      "count": 4
+    },
+    {
+      "level": "error",
+      "code": "clippy::doc_markdown",
+      "count": 6
+    },
+    {
+      "level": "error",
+      "code": "clippy::double_must_use",
+      "count": 4
+    },
+    {
+      "level": "error",
+      "code": "clippy::drop_non_drop",
+      "count": 15
+    },
+    {
+      "level": "error",
+      "code": "clippy::elidable_lifetime_names",
+      "count": 5
+    },
+    {
+      "level": "error",
+      "code": "clippy::err_expect",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::excessive_precision",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::field_reassign_with_default",
+      "count": 1
+    },
+    {
+      "level": "error",
+      "code": "clippy::filter_map_bool_then",
+      "count": 16
+    },
+    {
+      "level": "error",
+      "code": "clippy::filter_next",
+      "count": 3
+    },
+    {
+      "level": "error",
+      "code": "clippy::float_cmp",
+      "count": 80
+    },
+    {
+      "level": "error",
+      "code": "clippy::fn_params_excessive_bools",
+      "count": 3
+    },
+    {
+      "level": "error",
+      "code": "clippy::format_collect",
+      "count": 10
+    },
+    {
+      "level": "error",
+      "code": "clippy::if_not_else",
+      "count": 4
+    },
+    {
+      "level": "error",
+      "code": "clippy::if_same_then_else",
+      "count": 4
+    },
+    {
+      "level": "error",
+      "code": "clippy::ignored_unit_patterns",
+      "count": 31
+    },
+    {
+      "level": "error",
+      "code": "clippy::inconsistent_digit_grouping",
+      "count": 8
+    },
+    {
+      "level": "error",
+      "code": "clippy::inline_always",
+      "count": 14
+    },
+    {
+      "level": "error",
+      "code": "clippy::items_after_statements",
+      "count": 34
+    },
+    {
+      "level": "error",
+      "code": "clippy::items_after_test_module",
+      "count": 3
+    },
+    {
+      "level": "error",
+      "code": "clippy::iter_cloned_collect",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::iter_overeager_cloned",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::large_enum_variant",
+      "count": 25
+    },
+    {
+      "level": "error",
+      "code": "clippy::large_stack_arrays",
+      "count": 1
+    },
+    {
+      "level": "error",
+      "code": "clippy::large_types_passed_by_value",
+      "count": 24
+    },
+    {
+      "level": "error",
+      "code": "clippy::let_unit_value",
+      "count": 12
+    },
+    {
+      "level": "error",
+      "code": "clippy::manual_contains",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::manual_inspect",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::manual_let_else",
+      "count": 6
+    },
+    {
+      "level": "error",
+      "code": "clippy::manual_midpoint",
+      "count": 3
+    },
+    {
+      "level": "error",
+      "code": "clippy::manual_range_contains",
+      "count": 4
+    },
+    {
+      "level": "error",
+      "code": "clippy::map_flatten",
+      "count": 1
+    },
+    {
+      "level": "error",
+      "code": "clippy::map_identity",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::map_unwrap_or",
+      "count": 8
+    },
+    {
+      "level": "error",
+      "code": "clippy::match_same_arms",
+      "count": 29
+    },
+    {
+      "level": "error",
+      "code": "clippy::match_wildcard_for_single_variants",
+      "count": 5
+    },
+    {
+      "level": "error",
+      "code": "clippy::must_use_candidate",
+      "count": 108
+    },
+    {
+      "level": "error",
+      "code": "clippy::needless_borrow",
+      "count": 13
+    },
+    {
+      "level": "error",
+      "code": "clippy::needless_borrows_for_generic_args",
+      "count": 3
+    },
+    {
+      "level": "error",
+      "code": "clippy::needless_pass_by_value",
+      "count": 57
+    },
+    {
+      "level": "error",
+      "code": "clippy::needless_range_loop",
+      "count": 4
+    },
+    {
+      "level": "error",
+      "code": "clippy::needless_raw_string_hashes",
+      "count": 1
+    },
+    {
+      "level": "error",
+      "code": "clippy::needless_return",
+      "count": 3
+    },
+    {
+      "level": "error",
+      "code": "clippy::no_effect_underscore_binding",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::obfuscated_if_else",
+      "count": 1
+    },
+    {
+      "level": "error",
+      "code": "clippy::option_as_ref_cloned",
+      "count": 8
+    },
+    {
+      "level": "error",
+      "code": "clippy::option_option",
+      "count": 1
+    },
+    {
+      "level": "error",
+      "code": "clippy::redundant_closure",
+      "count": 10
+    },
+    {
+      "level": "error",
+      "code": "clippy::redundant_closure_for_method_calls",
+      "count": 9
+    },
+    {
+      "level": "error",
+      "code": "clippy::redundant_iter_cloned",
+      "count": 1
+    },
+    {
+      "level": "error",
+      "code": "clippy::result_large_err",
+      "count": 1464
+    },
+    {
+      "level": "error",
+      "code": "clippy::semicolon_if_nothing_returned",
+      "count": 11
+    },
+    {
+      "level": "error",
+      "code": "clippy::similar_names",
+      "count": 8
+    },
+    {
+      "level": "error",
+      "code": "clippy::single_element_loop",
+      "count": 1
+    },
+    {
+      "level": "error",
+      "code": "clippy::single_match_else",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::struct_excessive_bools",
+      "count": 5
+    },
+    {
+      "level": "error",
+      "code": "clippy::struct_field_names",
+      "count": 21
+    },
+    {
+      "level": "error",
+      "code": "clippy::too_many_arguments",
+      "count": 64
+    },
+    {
+      "level": "error",
+      "code": "clippy::too_many_lines",
+      "count": 290
+    },
+    {
+      "level": "error",
+      "code": "clippy::trivially_copy_pass_by_ref",
+      "count": 8
+    },
+    {
+      "level": "error",
+      "code": "clippy::type_complexity",
+      "count": 27
+    },
+    {
+      "level": "error",
+      "code": "clippy::uninlined_format_args",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::unnecessary_cast",
+      "count": 8
+    },
+    {
+      "level": "error",
+      "code": "clippy::unnecessary_fallible_conversions",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::unnecessary_lazy_evaluations",
+      "count": 8
+    },
+    {
+      "level": "error",
+      "code": "clippy::unnecessary_map_or",
+      "count": 10
+    },
+    {
+      "level": "error",
+      "code": "clippy::unnecessary_wraps",
+      "count": 12
+    },
+    {
+      "level": "error",
+      "code": "clippy::unnested_or_patterns",
+      "count": 4
+    },
+    {
+      "level": "error",
+      "code": "clippy::unreadable_literal",
+      "count": 27
+    },
+    {
+      "level": "error",
+      "code": "clippy::unused_self",
+      "count": 9
+    },
+    {
+      "level": "error",
+      "code": "clippy::used_underscore_binding",
+      "count": 9
+    },
+    {
+      "level": "error",
+      "code": "clippy::useless_conversion",
+      "count": 7
+    },
+    {
+      "level": "error",
+      "code": "clippy::useless_vec",
+      "count": 2
+    },
+    {
+      "level": "error",
+      "code": "clippy::wildcard_imports",
+      "count": 3
+    },
+    {
+      "level": "error",
+      "code": "dead_code",
+      "count": 1
+    }
+  ],
+  "non_clippy_errors": [
+    "field `ending_snow_hint` is never read"
+  ],
+  "owning_lib_summary": 1231,
+  "owning_lib_test_summary": 1536,
+  "runner_lint_coverage": "BLOCKED by selected orchestrator errors; not claimed complete",
+  "no_new_diagnostics_acceptance": "NOT YET EVALUATED"
+}

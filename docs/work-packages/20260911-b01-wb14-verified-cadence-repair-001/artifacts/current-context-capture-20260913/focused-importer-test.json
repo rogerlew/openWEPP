@@ -1,0 +1,16 @@
+{
+  "record_kind": "sanitized-focused-importer-test-v1",
+  "redaction": "The raw local meta records the inherited environment and session/network identifiers. This published record retains only the command, source identity, timestamps, exit result, and required tool variables.",
+  "raw_local_meta_path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/artifacts/current-context-capture-20260913/logs/focused-importer-test.meta",
+  "raw_local_meta_sha256": "3b817d14a5ea33f0c423d1e9f2bb09c10e84edd3d043ba2b0abc8301dff35310",
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "start_utc": "2026-09-13T22:51:48Z",
+  "end_utc": "2026-09-13T22:52:26Z",
+  "exit": 101,
+  "argv": ["nix", "develop", "/workdir/openWEPP", "--command", "env", "CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913", "RUST_MIN_STACK=67108864", "cargo", "test", "--manifest-path", "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/Cargo.toml", "-p", "openwepp-hillslope-orchestrator", "--locked", "--features", "persisted-restart-v1,restart-authority-evidence", "b01_current_context_importer_restores_fixture_without_physics", "--", "--exact", "--nocapture"],
+  "relevant_environment": {"CARGO_TARGET_DIR":"/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913", "RUST_MIN_STACK":"67108864", "LANG":"C.UTF-8", "LC_ALL":"C.UTF-8"},
+  "source_identity_file": "pre-focused-test-source.sha256",
+  "stdout": "focused-importer-test.stdout.log",
+  "stderr": "focused-importer-test.stderr.log",
+  "result": "failed compilation before test execution"
+}
