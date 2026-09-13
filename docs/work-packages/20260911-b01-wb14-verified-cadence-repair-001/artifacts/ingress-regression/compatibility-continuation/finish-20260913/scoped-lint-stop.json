@@ -1,0 +1,22 @@
+{
+  "evidence_class": "Ran: post-command source continuity and log preservation",
+  "exit": 101,
+  "source_hashes_unchanged": true,
+  "terminal_tree_diff_unchanged": true,
+  "compiler_summaries": [
+    "error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1231 previous errors",
+    "error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1536 previous errors"
+  ],
+  "log_sha256": {
+    "clippy.json": "6d971e13b2304244b151e1f5378863c5ddaf33847c1ffc8e9a4b93a68164a6ff",
+    "clippy.stderr.log": "aa62a1260f3c60e7c6805702ca13cac3720d9e043fea897163fe9a7797249886",
+    "clippy.stdout.log": "b26861f132c0187134590eeff7a5d634cc649adae69a9c53aa01e6964acf1144",
+    "scoped-clippy.json": "223a9023fa1e4199ab4c3b700ba66d4159b658d7ec6a57de078987742278d16b",
+    "scoped-clippy.stderr.log": "ea0c97e4e5a2085e826af7cea27571838fa79e1fe744471f1aa46e753d9531ad",
+    "scoped-clippy.stdout.log": "b26861f132c0187134590eeff7a5d634cc649adae69a9c53aa01e6964acf1144"
+  },
+  "failed_cycles": 4,
+  "ceiling": 4,
+  "checkpoint": "HOLD / INCOMPLETE",
+  "no_rerun": true
+}

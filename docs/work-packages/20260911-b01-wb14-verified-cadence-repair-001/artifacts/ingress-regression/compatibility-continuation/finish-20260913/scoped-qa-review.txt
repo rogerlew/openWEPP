@@ -1,0 +1,33 @@
+Reviewer: /root/scoped_qa, rust_qa_reviewer (Terra/medium), independent replacement.
+
+Original response:
+
+Static QA review — replacement conversation; no commands, builds, tests, listings, or edits run.
+
+- **HIGH — acceptance pending:** [scoped-clippy.json](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/scoped-clippy.json) and its distinct stdout/stderr logs do not yet exist. The mandated owning-crate `--all-targets --no-deps -D warnings` result is therefore **NOT RUN**. This blocks checkpoint acceptance until the parent records a successful exact invocation and identities.
+
+- **HIGH — retained broad lint remains FAIL:** [clippy.json](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/clippy.json) records exit 101 for the broad command. It must remain visible as a failed dependency-inclusive result; a scoped pass can establish only the selected owning crate’s source quality.
+
+- **MEDIUM — scope limitation:** `--no-deps` is defensible for this test-only increment because the reconciled final diff changes only the orchestrator test module and compatibility test exhaustiveness, with unchanged manifests, lockfile, fixtures, and production code. It does not establish source quality for `openwepp-land-surface-energy` or reverse dependents. Any dependency/reverse-dependent lint obligation independently found applicable remains unmet.
+
+- **LOW — maintainability debt:** [surface_liquid_ingress_context_tests.rs](/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs:27) manually decodes a substantial restart/configuration representation through untyped JSON. Canonical constructor and nested validation reduce drift risk, but a reusable fixture decoder would make this regression easier to maintain. This is non-blocking for the frozen test-only scope.
+
+Non-blocking follow-up: retain the prior withdrawal of the command-summary misattribution. Retain the correction that the ordinary-control identity is `external_precipitation_and_runon_ids_pass_independent_frozen_identity_closure`; the historical native-prefix helper result cannot support that requirement.
+
+Exact final source and fixture identities match `terminal-reconciliation.json`: context `a426c420…8279ab`, precedence `6e0bd56d…b2f14`, raw-hash `afc499fa…75e62`, packet `d8f1fe07…2cc76`, seed `d1c46726…2c15`. Static inspection confirms the final expected-red predicate is syntactically corrected and the three compatibility changes add the new exhaustive enum alternative without changing branch actions/assertions.
+
+QA disposition: **HOLD pending the scoped lint evidence.** No QA finding blocks acceptance after that command passes with the specified identities and distinct complete logs; broader cadence/package readiness remains HOLD.
+
+Same-reviewer final response:
+
+Static/Ran QA correction — scoped lint is now **FAIL**, replacing my prior **NOT RUN** finding.
+
+- **HIGH — scoped owning-crate source-quality gate failed:** [scoped-clippy.json](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/scoped-clippy.json) records the authorized `openwepp-hillslope-orchestrator --all-targets --locked --features … -- --no-deps -D warnings` command, exit 101 at `2026-09-13T17:57:37.347437Z`. Separate stdout/stderr logs are retained. The first owning-crate diagnostic is `clippy::similar_names` at `strict_v8_endpoint_tests.rs:836`; the terminal test target reports 1,536 errors. The hard-stop is reached (4/4); no correction or rerun is authorized.
+
+- **HIGH — no inherited-lint acceptance exists:** these owning-crate diagnostics cannot be accepted as harmless or inherited. The bounded inherited-lint policy was not prospectively selected with matched baseline/candidate diagnostics. The retained broad dependency-inclusive Clippy exit 101 also remains a visible **FAIL**.
+
+- **MEDIUM — continuity is sound but does not cure the gate failure:** [scoped-lint-continuity.json](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/scoped-lint-continuity.json) records no source/input mismatches, and independent hashes match all three final patches and both fixtures. Source was untouched.
+
+Non-blocking debt remains the manual JSON restart/configuration decoder in [surface_liquid_ingress_context_tests.rs](/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs:27).
+
+QA disposition: **HOLD.** The scoped lint acceptance criterion failed; preserve the complete logs and all prior limits.

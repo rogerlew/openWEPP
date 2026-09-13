@@ -1,0 +1,8 @@
+{
+  "evidence_class": "Ran: staged whitespace inspection",
+  "raw_check_exit": 2,
+  "raw_log_whitespace_diagnostics": 56,
+  "all_findings_in_verbatim_stderr": true,
+  "non_raw_check_exit": 0,
+  "raw_bytes_preserved": true
+}

@@ -1,0 +1,21 @@
+Static — replacement correctness review; no same-conversation continuity. Supplied execution logs were inspected. I ran no builds, tests, listings, or source edits.
+
+Findings:
+
+- **High — BLOCK:** The required scoped source-quality check failed. `scoped-clippy.json` records exit 101 with 1,536 warnings-denied diagnostics in the owning crate’s lib-test target; the first is `clippy::similar_names` at `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/strict_v8_endpoint_tests.rs:836`. The command is applicable: the context regression is an orchestrator unit-test module, while the changed precedence/raw-hash files enter that same lib-test target through `land_surface_energy_shadow/mod.rs:76-78`. `--no-deps` correctly excludes dependency lint diagnostics. No reverse-dependent lint is independently required because the exact diff changes only `cfg(test)` code and fixtures, with no production API, manifest, feature, or dependency change. However, this checkpoint expressly requires a green owning-crate Clippy result and did not prospectively adopt inherited-diagnostic acceptance. The fourth unsuccessful-cycle hard stop therefore blocks acceptance. The earlier broad Clippy result also remains FAIL.
+
+No additional correctness finding was identified in the bounded regression:
+
+- The intended-admission predicate at `surface_liquid_ingress_context_tests.rs:250-268` accepts only `Ok`; on baseline `Err`, it verifies exact E008, `IngressCandidate`, transaction 255, and the cadence-detail string before the final admission assertion fails.
+- The captured parent uses canonical `from_restart_bytes` nested validation; binary64 fixture fields use exact bit decoding, and `DirectSurfaceLiquidConfiguration::new` reconstructs and checks canonical configuration identity. The retained local configuration decoding is explicitly justified: importing the persisted-restart decoder would create a forbidden reverse dependency/cycle. Its immutable-fixture confinement and canonical constructor check adequately justify the duplication.
+- The ordinary control at `surface_liquid_ingress_tests.rs:517` is an actual non-prefix `execute_surface_liquid_ingress` path with independent precipitation/runon identities.
+- Exact reconciliation shows only the context-test addition and three exhaustive enum alternatives in the precedence/raw-hash modules. Those alternatives retain the existing branch bodies and assertions. Supplied results preserve all 18 precedence and four raw-hash cases as PASS.
+- Source and fixture hashes match `terminal-reconciliation.json`; no production file changed.
+
+Residual risk and missing validation:
+
+- There is no accepted warnings-denied lint result for the owning crate.
+- The expected-red remains evidence of the baseline cadence defect. It does not prove the eventual INV-035/C-025 repair, full coupled-prefix authentication, 18-child parent completion, restart equivalence, rollback, or independent transfer closure.
+- The separate context test proves the captured object’s source-defined joins; the expected-red path still reaches the existing cadence rejection before the later parent-working-context checks. The eventual production correction must preserve the contract-required ordering that validates the complete supplied parent before alternate cadence admission.
+
+**Disposition: HOLD / NOT ACCEPTED.**

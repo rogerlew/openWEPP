@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Ran: bounded record/link/JSON/diff checks",
+  "local_package_links": 65,
+  "json_files": 20,
+  "missing_links": [],
+  "modified_tracked_paths": [
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+    "docs/work-packages/active.md"
+  ],
+  "source_changes": false,
+  "review_correctness": "HOLD / NOT ACCEPTED",
+  "review_qa": "HOLD",
+  "checkpoint": "HOLD / INCOMPLETE",
+  "failed_cycles": 4
+}
