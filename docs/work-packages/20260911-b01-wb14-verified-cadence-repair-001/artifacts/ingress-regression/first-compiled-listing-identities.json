@@ -1,0 +1,24 @@
+{
+  "schema": "b01_wb14_first_compiled_listing_identities_v1",
+  "owner_seed": {
+    "origin": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-fixture-20260912-1/snow_accuracy_continuous_1789238659782286363/case.run.snow_stage3_v11_owner_seed.json",
+    "sha256": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515",
+    "embedded_surface_liquid_configuration_sha256": "a25b600e898017500147cd87919e81b1e663f24bd6b6c60748cd78c22cef1c86"
+  },
+  "baseline_context_test": {
+    "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs",
+    "sha256": "a5ec580696c0cb17552970a654f5b3064343caf70812c96e2d4f96a1c730ac0a"
+  },
+  "protected_substituted_tests": [
+    {
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs",
+      "expected_sha256": "730f9e36c83837251b080ede62069acabef5e19b828c59d1a5fad2a087ca4b10",
+      "available_source_sha256": "982dac38c5b45b60eeb6db22a9ad839037359ff3fbc38fae11c10b069d434d76"
+    },
+    {
+      "path": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs",
+      "expected_sha256": "9b0c40bcada9706a100714fe7b9913bc016124b68be8f5e0f8716efae857d2ad",
+      "available_source_sha256": "041c0df1739385995e5cc6c241510523e0e4c74bedfba34bf152c501461e53fd"
+    }
+  ]
+}

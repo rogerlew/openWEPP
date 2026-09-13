@@ -1,0 +1,30 @@
+Static/Ran QA review — `/root/ingress_qa`, independent of writer and correctness reviewer.
+
+- **HIGH — acceptance unmet:** the only compiled-listing cut aborts before test selection on E0432 in `surface_liquid_ingress_context_tests.rs:12` and three protected inherited E0004 failures. Zero tests, context validation, controls, expected-red transcript, `clippy`, and `deny` results exist. HOLD/STOP is required.
+
+- **HIGH — regression assertion is insufficiently diagnostic:** `surface_liquid_ingress_context_tests.rs:159` uses `.expect(...)`, so any returned error causes a panic; it does not assert the required exact E008 error and location. Even if compilation succeeded, this alone would not establish the specified expected-red behavior.
+
+- **MEDIUM — execution result is deliberately incomplete:** both listing invocations’ exit codes and complete shell output are UNOBSERVED. The retained raw rustc JSON diagnostics establish the compile errors, but cannot establish an invoked-command exit/result beyond that.
+
+Evidence custody is otherwise adequate for this stopped cut: the diagnostic copy differs from `reconstructed-available145` only by the one test module and two fixture files; fixture/module hashes match the retained artifacts; source production files checked unchanged. The published `patch-reconstruction-check.json` records successful reconstruction from base hash `a5ec…ac0a` to exact failed-cut hash `d22f…adc7` using patch `0f05…b638`. Fixture lineage and the owner-seed origin are explicitly recorded; their use does not claim full-source recovery.
+
+Non-blocking follow-up: if a later authorized checkpoint repairs compilation, make the red assertion inspect the returned E008 code/location explicitly, while retaining the admission assertion for green comparison.
+
+QA verdict: **STOP / HOLD.** Preservation and lineage pass static QA; source/runtime acceptance cannot pass.
+
+
+Same-reviewer clarification (supersedes the initial deny and assertion findings):
+
+Static/Ran QA review — `/root/ingress_qa`, independent of writer and correctness reviewer.
+
+- **HIGH — acceptance unmet:** the compiled-listing cut aborts before test selection on E0432 in `surface_liquid_ingress_context_tests.rs:12` and three protected inherited E0004 failures. Zero tests, context validation, controls, expected-red transcript, and Clippy results exist. HOLD/STOP is required.
+
+- **HIGH — full expected-red evidence is unmet:** the retained intended-admission assertion at `surface_liquid_ingress_context_tests.rs:159` is appropriate for unchanged red/green comparison, but no compiled transcript binds the returned E008 code/location. A later checkpoint may bind that exact observation through its transcript or assertion; this cut cannot do so.
+
+- **MEDIUM — execution result is deliberately incomplete:** both listing invocations’ exit codes and complete shell output are UNOBSERVED. The retained rustc JSON diagnostics establish compilation errors only.
+
+Static custody passes: the diagnostic copy differs from the available base only by the permitted test module and two fixtures; retained artifacts match documented hashes; patch reconstruction restores `d22f…adc7` from base `a5ec…ac0a`; no full-source-recovery claim is made.
+
+`cargo deny` is **NOT_APPLICABLE** under testing strategy §6.2(7): manifests, lockfile, dependencies, and toolchain are unchanged. Its absence is not an unmet requirement.
+
+QA verdict: **STOP / HOLD.** Evidence preservation is acceptable; compiled regression and runtime acceptance remain unmet.

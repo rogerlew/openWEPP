@@ -1,0 +1,30 @@
+{
+  "schema": "b01_wb14_changed_files_v1",
+  "comparison": {
+    "immutable_source": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145",
+    "diagnostic_copy": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+    "method": "diff -qr --exclude .git --exclude target"
+  },
+  "source_changes": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs",
+      "sha256": "d22fafea09aebbef47c8f963bdf63a75890a13edff7c270d16cb88785bc5adc7"
+    }
+  ],
+  "new_fixtures": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/fixtures/b01_wb14_current_run_boundary_packet.json",
+      "sha256": "d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/fixtures/b01_wb14_owner_seed.json",
+      "sha256": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515"
+    }
+  ],
+  "generated": {
+    "path": "target/nextest/default",
+    "created_by": "cargo nextest list local nextest state",
+    "content_status": "empty directory at preservation inspection"
+  },
+  "production_source_changes": []
+}

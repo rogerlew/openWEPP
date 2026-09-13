@@ -1,0 +1,37 @@
+Reviewer: `/root/ingress_correctness`
+Scope: independent correctness review of the new ingress regression cut only.
+Reviewed cut: `surface_liquid_ingress_context_tests.rs` SHA-256 `d22fafea09aebbef47c8f963bdf63a75890a13edff7c270d16cb88785bc5adc7`, based on `reconstructed-available145`, not recovered working145.
+
+Evidence: Static source/diff/fixture inspection. Inspected supplied compiler diagnostics from two listing attempts; I did not run them. No tests executed.
+
+Findings:
+
+1. **HIGH — No compiled regression or expected-red result exists.** The required crate-test listing cannot compile because the protected substituted sources have non-exhaustive matches for `CoveredCanopyReleaseAndTerminalGround` at:
+
+   - `tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs:220`
+   - `tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs:192`
+   - `tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs:710`
+
+   These are the two admitted substituted source files and are read-only in this checkpoint. Crate-private entrypoint access requires a unit test, whose `cfg(test)` build includes these modules before Nextest can select tests. Integration-test relocation cannot access the required entrypoint. Excluding modules, changing features or visibility, or editing the protected 18/four tests is prohibited. No in-envelope compiled-selection route remains.
+
+2. **HIGH — The new test cut independently fails compilation.** At `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs:12`, `super::DirectSurfaceLiquidOfeBinding` is unresolved (`E0432`); the compiler identifies `crate::DirectSurfaceLiquidOfeBinding` as the available re-export. `SoilLayerId` is also unused. This local defect remained unfixed when the external immutable-source compilation stop was recognized.
+
+3. **MEDIUM — The retained setup test does not establish every external parent/request/binding join required to call this an admissible-parent regression.** At `surface_liquid_ingress_context_tests.rs:144`, `from_restart_bytes` and `validate_in_process` would validate the parent’s internal schema, configuration, parameter, lane, support, owner, cursor, receipt-chain, and inactive-prefix proof joins. The test separately checks only the configuration/beginning digest, candidate/beginning equality, transaction/day/interval, parent start, and child start. It does not retain checks for:
+
+   - captured `working_typed_bytes` versus the reconstructed resource working state;
+   - parent accepted-until versus binding child start;
+   - parent day/interval and parameters versus the ingress input;
+   - parent lane identities versus the reconstructed configuration;
+   - parent end, child end, and exact 60-second child-support duration.
+
+   This matters because the unchanged entrypoint applies cadence at `surface_liquid_ingress.rs:1065` before its external parent/input/binding joins at `surface_liquid_ingress.rs:1116`. An E008 cadence failure alone therefore would not prove those later joins pass.
+
+4. **MEDIUM — The fixture helper duplicates restart configuration decoding.** `b01_captured_context` manually decodes restart hex floats and rebuilds configuration records, mirroring `DirectSurfaceLiquidConfigurationRestartV1::restore` in `crates/openwepp-persisted-restart-v1/src/surface_liquid.rs:212`. If retained, this duplicated test logic needs explicit justification because future restart-format drift could silently change fixture meaning.
+
+Residual risk and missing tests:
+
+Static feasibility is positive. Packet `d8f1fe07…cc76` contains byte-identical ingress/beginning rows plus authentic parent-working bytes and coupled binding. Indexed owner seed `d1c46726…f515` contains the exact configuration with embedded digest `a25b600e…1c86`. The capture can therefore establish the required context without reminting proof, owner, cursor, ordinal, or clock state.
+
+Neither context validation nor the real-entrypoint regression executed. There is no compiled test listing, exact selected count, expected E008 transcript, or ordinary local control result. Numeric exits are unobserved, and complete shell logs were not retained; only raw compiler diagnostics remain.
+
+**Verdict: BLOCK / no approval.** The static fixture is feasible, but this checkpoint delivered no compiled regression and cannot claim expected-red. HOLD is accurate.

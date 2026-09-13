@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Ran: source-patch reconstruction only; no Rust build or tests",
+  "command": [
+    "patch",
+    "--batch",
+    "/tmp/b01-ingress-patch-check-amg8yhn2/surface_liquid_ingress_context_tests.rs",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/first-compiled-listing-artifacts/failed-context-test.patch"
+  ],
+  "exit_code": 0,
+  "stdout": "patching file /tmp/b01-ingress-patch-check-amg8yhn2/surface_liquid_ingress_context_tests.rs\n",
+  "stderr": "",
+  "base_path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs",
+  "base_sha256": "a5ec580696c0cb17552970a654f5b3064343caf70812c96e2d4f96a1c730ac0a",
+  "patch_sha256": "0f05188a2eda233caf652f715bd623502f025d3a2f09394b4cd5b9255100b638",
+  "restored_sha256": "d22fafea09aebbef47c8f963bdf63a75890a13edff7c270d16cb88785bc5adc7",
+  "candidate_sha256": "d22fafea09aebbef47c8f963bdf63a75890a13edff7c270d16cb88785bc5adc7",
+  "byte_equal": true
+}

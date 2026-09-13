@@ -1,6 +1,6 @@
 # B01 WB14 verified parent cadence repair
 
-Status: HOLD — exact source recovery failed on 2 of 927 files. Owner adopted execution on 2026-09-11. Modeling/production/release remain HOLD.
+Status: HOLD — broader cadence repair remains incomplete; historical exact working145 recovery failed on 2 of 927 files. Owner adopted the bounded available-source test-only ingress regression checkpoint below on 2026-09-13 UTC. Modeling/production/release remain HOLD.
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
 
 ## Objective and authorization
@@ -430,3 +430,154 @@ new stop evidence only; prior large recovery archives were not remotely
 re-downloaded in this execution. Exact working145/candidate custody remains
 unavailable regardless of evidence publication. No complete recovered-source
 claim is made.
+
+
+## Adopted test-only checkpoint: B01-WB14-INGRESS-RED-REGRESSION
+
+Status: **HOLD / INCOMPLETE — compiled-listing failure at a protected-source boundary.**
+Owner explicitly adopted the [authorization](artifacts/ingress-regression-authorization.md)
+with “yes”; start **2026-09-13 02:01:06 UTC**. This checkpoint belongs to this
+record and does not reopen the completed witness or authorize production repair.
+
+Intent declared before edits: add a compiled crate-test regression entering
+`execute_surface_liquid_ingress_with_parent_state_and_coupled_binding` with the
+captured day4/interval22/full-u128 transaction255 request; separately establish
+source-defined nested and external context joins, then retain the intended
+admission assertion and exact known E008 as EXPECTED_RED. Builds, compiled
+listings and focused tests only; ZERO runner/collector calls. Production code,
+existing assertions and 18 precedence/four raw-hash tests, witness, accepted packet,
+inputs, manifests, lockfile, toolchain, features/cfg and science remained read-only.
+Permitted writes were new tests/helpers/fixture bytes, this record and evidence/locator.
+
+Authority read: SC-SURFACELIQUID-001 INV-012/013/014/026/035, ordered guards and
+OBL-C-025; SC-COUPLEDTIME-001 INV-031/OBL-014; SC-SNOWENERGY-001
+INV-083/087/OBL-C-055. Internal nested validation is distinct from independent
+complete accepted-history authentication. Neither is claimed from the offline witness.
+
+### Actual source, assignments and allowance
+
+Governance/evidence root: initially clean `e49266c312d44cf3390e1728bd68bc8399328b35`
+on existing `main`. Immutable executable source:
+`/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145`,
+`reconciled-available145-r1`, accepted 927-entry actual map
+`c7aea0707d0c6a0876ec4bee5a7fcf15e751a092e086f517ced7edba8282b71e`.
+Accepted whole-source regular-file and symlink-target inventories are reused and
+remain distinct. The diagnostic source-use exception does not recover working145,
+prove substitution equivalence, or adopt a correction/qualification baseline.
+
+Sole writer `/root/ingress_test_writer` (configured Terra/medium) created
+`/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red` only after
+`test ! -e` passed. No nested agents. Astra owned orchestration, this record and
+publication. Separate disposable build target:
+`/tmp/openwepp-b01-wb14-cadence-targets/baseline-red`; Nextest additionally created
+empty local `target/nextest/default` metadata directories in the test copy.
+The terminal `diff -qr --exclude .git --exclude target` found only one changed
+crate-test module and two new fixture files; production/existing assertions unchanged.
+
+Hard limit: 60 active minutes or two unsuccessful corrective-edit/verification
+cycles, whichever first. Conservatively count elapsed wall time without deducting
+waits; deadline03:01:06 UTC. Actual execution stopped on protected-source scope,
+not allowance exhaustion. **One failed source cut, two listing calls, zero
+corrective edits followed by verification, zero tests, zero runner/collector calls.**
+The completed witness ledger stays separate: published99m02s, failures8/9,
+invocations1/1; any later recorded custody is unchanged and not borrowed/reset.
+
+Prior reviewers `/root/witness_correctness_fresh` and `/root/witness_qa_fresh`
+each returned `live agent path ... not found` to actual `followup_task` calls.
+The adopted one-replacement-per-inaccessible-scope permission was used for
+`/root/ingress_correctness` (Sol/high) and `/root/ingress_qa` (Terra/medium).
+They are distinct from each other and the writer/adviser; no same-conversation
+continuity with historical witness reviews is claimed.
+
+### Results and retained evidence
+
+Static: full packet inventory corrected the writer's initial first-record-only
+missing-parent report before any tests ran. Caller record123087 contains authentic
+parent/working bytes and coupled binding. Indexed owner seed contains the exact
+configuration needed by the parent. This establishes fixture availability, not
+executed validator success. No proof, cursor, ordinal, owner or clock was reminted.
+
+Ran: two [listing invocations](artifacts/ingress-regression/first-compiled-listing-failure-20260913.md)
+on the same uncorrected cut used the actual copy manifest, retained Nix shell,
+`persisted-restart-v1,restart-authority-evidence`, and `RUST_MIN_STACK=67108864`.
+The second waited on the first artifact lock. Compilation failed with new-test
+E0432 (`super::DirectSurfaceLiquidOfeBinding`) plus unused `SoilLayerId`, and three
+inherited E0004 matches omitting `CoveredCanopyReleaseAndTerminalGround` in the
+protected `raw_hash_tests.rs:220` and `precedence_tests.rs:192,710`.
+[Raw rustc diagnostics](artifacts/ingress-regression/first-compiled-listing-rustc-diagnostics.jsonl)
+retain all compiler errors. Numeric shell exits and full shell stdout/stderr are
+**UNOBSERVED**; they were not properly retained. No inferred exit101 or complete
+command-log claim is made. There was no rerun after the scope stop.
+
+Crate unit-test compilation includes these protected modules before Nextest
+selection. Integration tests cannot reach the required crate-private entrypoint;
+changing visibility/features/cfg or the protected matches is outside authorization.
+Astra stopped source work rather than applying the new import correction alone
+or altering protected sources. This stop leaves that author defect unresolved too.
+
+| Required result | Actual outcome |
+| --- | --- |
+| Executable regression / exact expected-red | NOT DELIVERED: uncompiled failed patch retained; zero selected/executed tests. No EXPECTED_RED classification. |
+| Context validation / ordinary control | NOT RUN: authentic inputs exist, but Rust validators, complete external joins and local control did not execute. |
+| Source/fixture/command/result identity | Patch/fixture custody retained; raw compiler diagnostics available; numeric exits/full shell logs UNOBSERVED. |
+| Source quality | No separate terminal formatting PASS; Clippy NOT RUN after stop. First command attempted whole-manifest formatting, with no production diff. Cargo deny NOT_APPLICABLE because dependency inputs unchanged. |
+| Independent reviews | Correctness BLOCK and QA STOP/HOLD; complete review is not acceptance. |
+| Wider cadence | All older requirements remain unfulfilled: B01-CONT-005 first/subsequent/final children, 18-child progression, complete rollback, independent transfer accounting, actual runner coverage, split restart and wider applicable qualification. |
+
+Retained [failed test patch](artifacts/ingress-regression/first-compiled-listing-artifacts/failed-context-test.patch)
+SHA-256 `0f05188a2eda233caf652f715bd623502f025d3a2f09394b4cd5b9255100b638`
+is relative to the exact available-source context module. Immutable fixture copies:
+[packet](artifacts/ingress-regression/first-compiled-listing-artifacts/b01_wb14_current_run_boundary_packet.json)
+`d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76`;
+[owner seed](artifacts/ingress-regression/first-compiled-listing-artifacts/b01_wb14_owner_seed.json)
+`d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515`.
+[Identities](artifacts/ingress-regression/first-compiled-listing-identities.json),
+[changed-file inventory](artifacts/ingress-regression/first-compiled-listing-changed-files.json),
+and [static feasibility](artifacts/ingress-regression/ingress-context-feasibility-20260913.md)
+retain lineage and distinctions. The feasibility note's “parent validates only
+against” wording means required input compatibility, not a successful Rust run.
+
+Ran: [patch reconstruction](artifacts/ingress-regression/patch-reconstruction-check.json)
+applied the retained patch to a disposable single-file copy of baseline
+`a5ec580696c0cb17552970a654f5b3064343caf70812c96e2d4f96a1c730ac0a`, exit0,
+reproducing failed test hash
+`d22fafea09aebbef47c8f963bdf63a75890a13edff7c270d16cb88785bc5adc7` exactly.
+This proves local patch recoverability, not compiled behavior or remote full-source recovery.
+
+[Correctness review](artifacts/ingress-regression/correctness-review.txt) confirms
+the scope blocker and new import defect. It additionally records missing external
+working-state, cursor/support, day/interval/parameter, lane and endpoint/duration
+joins and duplicated restart decoding needing justification. These remain unresolved.
+[QA review](artifacts/ingress-regression/qa-review.txt) accepts static custody only.
+Its same-reviewer clarification preserves intended-admission assertions for unchanged
+red/green comparison while requiring actual exact-error/location evidence, and
+corrects the initial absent-deny-result concern to NOT_APPLICABLE. Original and
+clarified responses are retained; no source fixes or fix verification occurred.
+Review wording calling a local artifact “published” does not establish remote custody.
+
+Next owner decision: whether to authorize a separately bounded compatibility
+change to the protected substituted matches, preserving their assertions, then
+finish the regression and unresolved context checks. No production cadence
+correction is supported or begun. Completed witness evidence stays closed;
+no 75-control rerun, packet re-export, corpus rehash, frozen executable rebuild,
+runner/collector invocation, checkpoint operation or baseline/candidate comparison occurred.
+
+
+Terminal evidence checks (2026-09-13 02:18:45 UTC): repo `.venv/bin/python`
+resolved59 local references, parsed5 artifact JSON files and8 raw compiler
+JSONL records, and byte-joined both fixture copies to retained originals: PASS.
+Actual patch application/reconstruction passed. Initial staged `git diff --check`
+reported three trailing-whitespace rows in the verbatim unified patch. Inspection
+proved they are exactly its required single-space blank-context lines5,9,25;
+all other staged files pass the normal check. The raw patch remains unchanged;
+no whitespace policy or source formatting requirement was relaxed.
+
+At this timestamp, conservative elapsed active consumption is **17m39s** (no
+wait deduction), with zero corrective-edit/verification cycles and zero new
+runner/collector calls. Final publication custody time will be added below.
+Terminal primary-checkout diff is confined to this record, the active locator,
+adopted authorization and small failed-source/fixture/review/evidence artifacts.
+No simulation claim, source cleanup, branch switch or unrelated change occurred.
+Publication uses the carried scoped commit/push permission; the full raw corpus
+and full diagnostic tree remain local. Remote source recoverability is not
+inferred from hashes or from publication of this small failed patch.
