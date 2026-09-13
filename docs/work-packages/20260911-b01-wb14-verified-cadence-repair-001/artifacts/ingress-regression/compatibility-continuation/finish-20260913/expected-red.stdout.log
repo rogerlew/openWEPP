@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/baseline-red-815dd4883f42
+  scratch: /tmp/openwepp-roger-baseline-red-815dd4883f42
+  cache:   /workdir/.cache/openwepp

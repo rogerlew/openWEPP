@@ -1,0 +1,68 @@
+{
+  "evidence_class": "Ran: command logs, final source equality, assertion-preservation comparison",
+  "listed": 25,
+  "tests": {
+    "context": {
+      "selected": 1,
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "exit": 0,
+      "classification": "PASS"
+    },
+    "expected-red": {
+      "selected": 1,
+      "executed": 1,
+      "passed": 0,
+      "failed": 1,
+      "exit": 100,
+      "classification": "EXPECTED_RED"
+    },
+    "ordinary": {
+      "selected": 1,
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "exit": 0,
+      "classification": "PASS"
+    },
+    "precedence": {
+      "selected": 18,
+      "executed": 18,
+      "passed": 18,
+      "failed": 0,
+      "exit": 0,
+      "classification": "PASS"
+    },
+    "raw-hash": {
+      "selected": 4,
+      "executed": 4,
+      "passed": 4,
+      "failed": 0,
+      "exit": 0,
+      "classification": "PASS"
+    }
+  },
+  "formatting_exit": 0,
+  "clippy_exit": 101,
+  "clippy_observation": "27 errors in unchanged production dependency openwepp-land-surface-energy; owning-crate lint incomplete",
+  "same_final_source_for_all_commands": true,
+  "assertion_preservation": {
+    "existing_context_body_unchanged_ignoring_whitespace": true,
+    "ordinary_control_file_byte_identical": true,
+    "ordinary_control_sha256": "4f9a801e559b9d47568bef985b2f62540f5b026e4e4da16212219dfbc76e73cb",
+    "precedence_only_added_variant_ignoring_whitespace": true,
+    "raw_hash_only_added_variant_ignoring_whitespace": true
+  },
+  "metadata": {
+    "workspace_root": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+    "target_directory": "/tmp/openwepp-b01-wb14-cadence-targets/baseline-red"
+  },
+  "review_correctness": "UNAVAILABLE prior session not found; NOT ACCEPTED",
+  "review_qa": "UNAVAILABLE prior session not found; NOT ACCEPTED",
+  "checkpoint": "HOLD / INCOMPLETE",
+  "failed_cycles": 3,
+  "failed_cycle_ceiling": 4,
+  "cycle_note": "Conservatively count correction followed by selected Clippy failure as third unsuccessful verification cycle; expected-red not counted",
+  "runner_collector_calls": 0
+}

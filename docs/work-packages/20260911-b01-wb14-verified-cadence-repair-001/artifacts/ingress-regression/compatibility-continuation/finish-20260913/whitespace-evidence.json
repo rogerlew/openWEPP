@@ -1,0 +1,76 @@
+{
+  "git_diff_cached_check_exit": 2,
+  "only_raw_artifact_rows": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/clippy.stderr.log",
+      "line": 199,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/clippy.stderr.log",
+      "line": 212,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/clippy.stderr.log",
+      "line": 235,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/clippy.stderr.log",
+      "line": 248,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/clippy.stderr.log",
+      "line": 261,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/clippy.stderr.log",
+      "line": 274,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/clippy.stderr.log",
+      "line": 317,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/expected-red.stderr.log",
+      "line": 25,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/final-red-green-cycle2-failed.patch",
+      "line": 5,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/final-red-green-cycle2-failed.patch",
+      "line": 11,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/final-red-green-cycle2-failed.patch",
+      "line": 28,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/terminal-context.patch",
+      "line": 5,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/terminal-context.patch",
+      "line": 11,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/finish-20260913/terminal-context.patch",
+      "line": 277,
+      "reason": "verbatim tool output or required unified-patch blank context"
+    }
+  ],
+  "other_staged_files": "PASS ordinary whitespace checking"
+}

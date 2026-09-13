@@ -1,0 +1,17 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/baseline-red-815dd4883f42
+  scratch: /tmp/openwepp-roger-baseline-red-815dd4883f42
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator)
+error: expected `;`, found keyword `if`
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs:247:6
+    |
+247 |     )
+    |      ^ help: add `;` here
+248 |     if let Err(error) = &result {
+    |     -- unexpected token
+
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-hillslope-orchestrator --lib --features persisted-restart-v1,restart-authority-evidence --locked` exited with code 101
+cargo_nextest_final_list_exit=101

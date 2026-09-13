@@ -1,0 +1,8 @@
+{
+  "path": "/tmp/openwepp-b01-wb14-cadence-targets/baseline-red/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab",
+  "sha256": "7eaf0c098cb6dcb85496594acef6a4326c4a4d26b4ee9b845c34c4f7af2d6a07",
+  "bytes": 416113792,
+  "mtime_ns": 1789320747761113197,
+  "source_binding": "final-list.json; all subsequent commands retain same source hashes",
+  "preserved_at_utc": "2026-09-13T17:36:09.797506+00:00"
+}

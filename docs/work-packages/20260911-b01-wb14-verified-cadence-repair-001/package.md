@@ -794,3 +794,100 @@ calls **0/0**. Final reply/durable terminal remote verification records the shor
 additional publication-check time. No source edits, builds, tests or lint occurred
 after the two-cycle stop. Independent reviews remain BLOCK/HOLD, and the working
 regression remains uncompiled at the retained missing-semicolon cut.
+
+
+### Owner-adopted ingress regression finish — 2026-09-13
+
+Owner requested execution of `/tmp/openwepp_b01_wb14_ingress_regression_continuation_authorization.md`, adopting its draft scope and amendment. Same checkpoint **B01-WB14-INGRESS-RED-REGRESSION**; production cadence remains HOLD. Evidence HEAD is `c21dfe91b0962e28febccf427b430486e06bc355`; executable source remains the modified `baseline-red` diagnostic copy over immutable `reconciled-available145-r1`, never identified by the base hash alone.
+
+Carry **39m14s consumed, 2 failed cycles**; ceiling now **4 unsuccessful cycles**, no extra active time. Conservative continuation start **17:26:35 UTC**, remaining **20m46s**, deadline **17:47:21 UTC** without pure-wait deductions. Reading, delegates, orchestration, checks and publication count concurrently once. ZERO runner/collector or simulation/checkpoint operations. Witness 1/1 remains closed. Stop on prescribed downstream failure, forbidden required change, source/fixture drift, or either ceiling.
+
+Intent before edits: Terra alone repairs the missing semicolon, preserves conditional exact-E008 inspection and unconditional intended-admission assertion, selects or minimally adds an ordinary non-prefix real-ingress control, and resolves local fixture-decoder justification. Preserve all pre-existing assertions, three compatibility alternatives and both immutable fixture bytes. No production, authority, cfg/features/visibility, dependency, manifest, lock or toolchain edits.
+
+Selected checks: final compiled selections; separate context PASS and exact E008 EXPECTED_RED (process failure recorded separately); ordinary real ingress PASS; all18 precedence/four raw-hash controls; affected-file Rustfmt and warnings-denied owning-crate Clippy with `persisted-restart-v1,restart-authority-evidence`. Explicit diagnostic manifest/cwd, retained Nix setup, separate disposable target and `RUST_MIN_STACK=67108864`; freeze hashes and commands before execution, one build/test command at a time. Anti-evasion remains NOT_APPLICABLE under the prior bounded diff disposition; cargo-deny NOT_APPLICABLE for unchanged dependencies. No broader campaign is authorized.
+
+Runtime agent inventory contains only this root. Follow-up attempts to `/root/ingress_correctness` and `/root/ingress_qa` each returned `live agent path ... not found`. Required same-reviewer fix verification is **UNAVAILABLE**, an acceptance gap; no substitute approval or fresh general reviewer wave is claimed. A new explicitly pinned Terra implementer `/root/ingress_test_writer` owns only bounded test edits/inspection; Astra owns execution/evidence.
+
+
+#### Final-cut results and bounded stop
+
+**Ran: final regression observed; checkpoint HOLD / INCOMPLETE.**
+The corrected intended-admission test compiled and reached canonical E008 with
+`IngressCandidate`, transaction255, and exact detail `WB14 day or interval continuation mismatch`.
+The conditional error assertions passed; the unconditional `result.expect(...)`
+failed at final context-test line268. Nextest exit100 is retained as process FAIL
+and separately classified **EXPECTED_RED**, the planned successful baseline
+observation. It adds no failed correction cycle and makes no future-green claim.
+
+[Selected checks](artifacts/ingress-regression/compatibility-continuation/finish-20260913/selected-checks.json)
+were fixed before final-cut execution. Each named command JSON contains exact argv,
+cwd, pre-execution source/fixture/manifest hashes, target, start/end and numeric
+exit, with separate raw stdout/stderr. Nix shell prints its initial cache target;
+the explicit `env CARGO_TARGET_DIR=...` is applied afterward. Cargo metadata
+confirmed the effective target is `/tmp/openwepp-b01-wb14-cadence-targets/baseline-red`.
+The diagnostic workspace/manifest is `/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/Cargo.toml`;
+default features plus `persisted-restart-v1,restart-authority-evidence`, locked
+resolution and stack67108864 were retained. One command ran at a time.
+
+| Requirement | Final result |
+| --- | --- |
+| Compiled inventory | PASS exit0; exactly25 cases =1 context +1 red +1 ordinary +18 precedence +4 raw-hash. |
+| Separate captured context | PASS1/1, exit0; represented source-defined joins only, no complete-history authentication claim. |
+| Intended-admission regression | EXPECTED_RED1/1; Nextest exit100, exact known E008 at final admission assertion. |
+| Ordinary non-prefix real ingress | PASS1/1, exit0; `direct_runtime::surface_liquid_ingress::tests::external_precipitation_and_runon_ids_pass_independent_frozen_identity_closure`, unchanged source body calls actual ingress then candidate validation. |
+| Precedence controls | PASS18/18, exit0, registered owning-crate `land_surface_energy_shadow::raw_boundary_contract_tests::precedence_tests`. |
+| Raw-hash controls | PASS4/4, exit0, corresponding registered `raw_hash_tests`. |
+| Affected-test formatting | PASS, Rustfmt edition2024 formatting and separate final check exit0. |
+| Warnings-denied Clippy | FAIL exit101;27 errors in unchanged `openwepp-land-surface-energy` production dependency, owning-crate lint incomplete. |
+| Evidence reconciliation | PASS; same final source across all commands, immutable fixtures, three patches reconstruct exact final bytes. |
+| Independent correctness | UNAVAILABLE prior `/root/ingress_correctness` session; affected fix verification NOT ACCEPTED. |
+| Independent QA/evidence | UNAVAILABLE prior `/root/ingress_qa` session; affected fix verification NOT ACCEPTED. |
+
+[Results and counts](artifacts/ingress-regression/compatibility-continuation/finish-20260913/results.json),
+[red transcript](artifacts/ingress-regression/compatibility-continuation/finish-20260913/expected-red.stderr.log),
+[Clippy transcript](artifacts/ingress-regression/compatibility-continuation/finish-20260913/clippy.stderr.log)
+and [binary identity](artifacts/ingress-regression/compatibility-continuation/finish-20260913/binary-identity.json)
+retain the primary evidence. First Clippy error is `redundant_closure_for_method_calls`
+at unchanged `covered_liquid.rs:198`; further failures include precision-loss,
+large-value passing, documentation and other lints. No lint was waived and no
+production correction, relaxed command, or rerun followed. Correction followed
+by this failed selected verification is conservatively carried as **cycle3/4**.
+The concrete stop is an unmet source-quality check requiring forbidden production
+changes, not exhaustion of the four-cycle ceiling.
+
+Static: [decoder justification](artifacts/ingress-regression/compatibility-continuation/finish-20260913/decoder-justification.md)
+acknowledges duplicated local configuration decoding. The canonical persisted
+configuration restore is in a downstream crate absent from the orchestrator's
+manifest; reuse requires prohibited dependency/manifest changes. The fixed
+owner-seed values are extracted via hex `u64` and `f64::from_bits`, then passed
+through the canonical configuration constructor and compared by digest with the
+captured beginning owner. The parent uses canonical `from_restart_bytes` and
+nested validation. This rationale is documented, not independently accepted
+closure of the historical medium review finding.
+
+[Terminal reconciliation](artifacts/ingress-regression/compatibility-continuation/finish-20260913/terminal-reconciliation.json)
+compares the diagnostic copy against immutable available145, with exactly three
+modified test modules plus the two prior fixture copies. Context final hash is
+`a426c4208d0b1e4fed55b3132fe4a8202e1e39a2c0033cb0247c8ee8ff8279ab`;
+precedence final hash is `6e0bd56d8c5a9fb2bd2fd548908b69fa2abe44263daa532a4e8bff8bfd3b2f14`;
+raw-hash remains `afc499fa26c946c9a1122ed08c49aee7f270d0b646ee8c935d414cf2aa375e62`.
+The precedence hash changed only through formatting of the two approved pattern
+alternatives. Normalized source comparison verifies the only compatibility
+changes are those alternatives and every pre-existing context body is preserved.
+The final `terminal-*.patch` files reconstruct all three final files byte-for-byte
+against the retained base. Copied earlier files named `terminal-source-identities.json`,
+`final-red-green-cycle2-failed.patch`, and their old logs remain historical stopped
+cut evidence; they are not the new terminal identity.
+
+No new runtime setup/context/consumer failure occurred. The witness remains closed
+at1/1; no runner/collector calls, simulations, checkpoint operations or candidate
+production execution occurred. B01-CONT-005 full-parent progression, C-025 complete
+prefix authentication, total inactive physics, rollback, independent accounting,
+runner coverage and restart remain unfulfilled. No cadence repair follows this
+return. The owner must resolve the lint scope and unavailable reviewer continuity
+before checkpoint acceptance can be considered; remaining allowance grants no
+automatic downstream repair.
+
+Preservation timestamp **2026-09-13 17:36:26 UTC**: cumulative active consumption **49m05s**, remaining **10m55s**, **3/4 failed cycles**. No pure waits deducted. All local package links resolve and retained JSON parses. Publication time is added in the final custody record.
+
+Staged whitespace inspection flags only six required blank-context patch lines, seven verbatim Clippy suggestion lines and one verbatim Nextest cancellation line. Raw bytes remain intact; all other staged content passes ordinary whitespace checking. This does not waive the failed Clippy requirement.

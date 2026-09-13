@@ -1,0 +1,56 @@
+{
+  "schema": "b01_wb14_hard_stop_command_result_v1",
+  "status": "HARD_STOP_TWO_UNSUCCESSFUL_CORRECTIVE_VERIFICATIONS",
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+  "environment": {
+    "nix_develop": "/workdir/openWEPP",
+    "CARGO_TARGET_DIR": "/tmp/openwepp-b01-wb14-cadence-targets/baseline-red",
+    "RUST_MIN_STACK": "67108864",
+    "features": "persisted-restart-v1,restart-authority-evidence",
+    "locked": true
+  },
+  "retained_log_results": [
+    {"log": "b01-wb14-compiled-listing.log", "argv_tail": "cargo nextest list -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E test(b01_wb14)", "exit": 0},
+    {"log": "b01-wb14-compiled-listing-final.log", "argv_tail": "cargo nextest list -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E test(b01_wb14)", "exit": 0},
+    {"log": "b01-wb14-compiled-listing-frozen.log", "argv_tail": "cargo nextest list -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E test(b01_wb14)", "exit": 0},
+    {"log": "b01-wb14-compiled-listing-frozen-final.log", "argv_tail": "cargo nextest list -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E test(b01_wb14)", "exit": 101},
+    {"log": "b01-wb14-compiled-listing-cycle2.log", "argv_tail": "cargo nextest list -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E test(b01_wb14)", "exit": 0},
+    {"log": "b01-wb14-context.log", "argv_tail": "cargo nextest run -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E test(b01_wb14_captured_parent_context_passes_source_defined_joins)", "exit": 0},
+    {"log": "b01-wb14-expected-red.log", "argv_tail": "cargo nextest run -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E test(b01_wb14_captured_first_physical_child_must_enter_real_ingress)", "exit": 100, "classification": "runtime E008 observation only; unconditional-panic design rejected"},
+    {"log": "b01-wb14-ordinary-control-list.log", "argv_tail": "cargo nextest list -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E test(native_inactive_prefix_starts_first_physical_child_without_wb14_receipt)", "exit": 0},
+    {"log": "b01-wb14-ordinary-control.log", "argv_tail": "cargo nextest run -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E test(native_inactive_prefix_starts_first_physical_child_without_wb14_receipt)", "exit": 0},
+    {"log": "b01-wb14-final-compiled-listing.log", "argv_tail": "cargo nextest list -p openwepp-hillslope-orchestrator --lib --locked --features persisted-restart-v1,restart-authority-evidence -E test(b01_wb14)", "exit": 101, "failure": "missing semicolon before if let Err"}
+  ],
+  "rustfmt": {
+    "argv": "nix develop /workdir/openWEPP --command cargo fmt --manifest-path /workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/Cargo.toml --check",
+    "observed_exit": 0,
+    "individual_raw_logs": "NOT_RETAINED; retrospective result only"
+  },
+  "freeze": {
+    "final_compiled_listing": "NOT_ESTABLISHED; final source cut failed compilation",
+    "context_and_control": "retrospectively attributable to earlier compiled cuts only",
+    "binary": {
+      "path": "/tmp/openwepp-b01-wb14-cadence-targets/baseline-red/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab",
+      "sha256": "bb5d5780911d6e7124780302fe6bc98ddcf001769fdfb4c0228b2f688f43d171",
+      "limitation": "last successful compiled artifact; does not represent final failed source cut"
+    }
+  },
+  "source_identities": {
+    "base_context_test": "a5ec580696c0cb17552970a654f5b3064343caf70812c96e2d4f96a1c730ac0a",
+    "final_failed_context_test": "0c86634bc0eb7843ed2494b15a877db3fce9380304dcd081ac2a768e45f9e228",
+    "final_precedence_test": "b2df4d81905c92095070a4aa7f5ff89c4883eeb934c3f2b43c646cb0d8f1f7e5",
+    "final_raw_hash_test": "afc499fa26c946c9a1122ed08c49aee7f270d0b646ee8c935d414cf2aa375e62",
+    "compatibility_patches": {
+      "precedence": "final-compatibility-precedence.patch sha256 77204cb5333abf3f7e834a092ac6de4b9ae6738089e7b19c5eef6a009caab701",
+      "raw_hash": "final-compatibility-raw-hash.patch sha256 6305a9d64b249a1eba35cbf0e0867931fb5f6619a065ac40461c6aea16068f6a"
+    },
+    "context_control_red_relation": "Static diff from preserved expected-red cut to final failed cut changes only the real-entrypoint test tail; b01_captured_context helper is unchanged. Retrospective only."
+  },
+  "changed_files": [
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/fixtures/b01_wb14_current_run_boundary_packet.json",
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/fixtures/b01_wb14_owner_seed.json",
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs",
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs"
+  ]
+}

@@ -1,0 +1,47 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+────────────
+ Nextest run ID dd5bddb7-f95f-4338-a097-f6df42b9edaf with nextest profile: default
+    Starting 1 test across 1 binary (1466 tests skipped)
+        FAIL [   0.018s] (1/1) openwepp-hillslope-orchestrator direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress
+  stdout ───
+
+    running 1 test
+    test direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress ... FAILED
+
+    failures:
+
+    failures:
+        direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1466 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress' (1985645) panicked at crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs:268:12:
+    EXPECTED_RED baseline: the validated first physical child must be admitted: Failure(DirectSurfaceLiquidFailure { code: E008, phase: IngressCandidate, context: DirectSurfaceLiquidErrorContext { transaction_id: Some(TransactionId(255)), owner_id: Some(ResourceOwnerId("production-hydrology")), ofe_id: Some(OfeId("ofe-1")), tile_id: None, surface_id: None, source_id: None, parcel_id: None }, rollback: DirectSurfaceLiquidRollbackHashes { beginning_owner_sha256: Some("0368e37bfa660864f3ef1f5f39351d0adde68fa525287d517b1fa45f354f4951"), attempted_owner_sha256: Some("0368e37bfa660864f3ef1f5f39351d0adde68fa525287d517b1fa45f354f4951") }, detail: "WB14 day or interval continuation mismatch" })
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.022s] 1 test run: 0 passed, 1 failed, 1466 skipped
+        FAIL [   0.018s] (1/1) openwepp-hillslope-orchestrator direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress
+  stdout ───
+
+    running 1 test
+    test direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress ... FAILED
+
+    failures:
+
+    failures:
+        direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1466 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress' (1985645) panicked at crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs:268:12:
+    EXPECTED_RED baseline: the validated first physical child must be admitted: Failure(DirectSurfaceLiquidFailure { code: E008, phase: IngressCandidate, context: DirectSurfaceLiquidErrorContext { transaction_id: Some(TransactionId(255)), owner_id: Some(ResourceOwnerId("production-hydrology")), ofe_id: Some(OfeId("ofe-1")), tile_id: None, surface_id: None, source_id: None, parcel_id: None }, rollback: DirectSurfaceLiquidRollbackHashes { beginning_owner_sha256: Some("0368e37bfa660864f3ef1f5f39351d0adde68fa525287d517b1fa45f354f4951"), attempted_owner_sha256: Some("0368e37bfa660864f3ef1f5f39351d0adde68fa525287d517b1fa45f354f4951") }, detail: "WB14 day or interval continuation mismatch" })
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

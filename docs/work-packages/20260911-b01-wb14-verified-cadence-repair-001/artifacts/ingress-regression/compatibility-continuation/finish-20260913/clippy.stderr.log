@@ -1,0 +1,382 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking serde_core v1.0.228
+    Checking typenum v1.20.0
+    Checking cfg-if v1.0.4
+    Checking itoa v1.0.18
+    Checking cpufeatures v0.2.17
+    Checking openwepp-unit-boundary v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-unit-boundary)
+    Checking hashbrown v0.17.1
+    Checking equivalent v1.0.2
+    Checking openwepp-sim-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-sim-contract)
+    Checking thiserror v2.0.20
+    Checking zmij v1.0.21
+    Checking memchr v2.8.0
+    Checking simd-adler32 v0.3.9
+    Checking num-traits v0.2.19
+    Checking unsafe-libyaml v0.2.11
+    Checking adler2 v2.0.1
+    Checking ryu v1.0.23
+    Checking base64 v0.22.1
+    Checking crc32fast v1.5.0
+    Checking openwepp-plant-phenology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-plant-phenology)
+    Checking libm v0.2.16
+    Checking miniz_oxide v0.8.9
+    Checking openwepp-meteorology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-meteorology)
+    Checking num-integer v0.1.46
+    Checking openwepp-topology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-topology)
+    Checking flate2 v1.1.9
+    Checking generic-array v0.14.7
+    Checking indexmap v2.14.0
+    Checking num-bigint v0.4.6
+    Checking crypto-common v0.1.7
+    Checking block-buffer v0.10.4
+    Checking digest v0.10.7
+    Checking sha2 v0.10.9
+    Checking serde v1.0.228
+    Checking serde_json v1.0.150
+    Checking openwepp-kernel-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-kernel-contract)
+    Checking serde_yaml v0.9.34+deprecated
+    Checking openwepp-coupled-time v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-coupled-time)
+    Checking openwepp-management-schema v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-management-schema)
+    Checking openwepp-biogeochemistry v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-biogeochemistry)
+    Checking openwepp-land-surface-energy v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-land-surface-energy)
+    Checking openwepp-vegetation v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-vegetation)
+    Checking openwepp-input-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-input-contract)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-climate-runtime-adapter)
+error: redundant closure
+   --> crates/openwepp-land-surface-energy/src/covered_liquid.rs:198:62
+    |
+198 |     let temperature=proof.map_or(numerical_wet_temperature_k,|p|p.release_temperature_k());
+    |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `super::transparent_canopy::TransparentCanopyPassageProofV1::release_temperature_k`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure_for_method_calls
+    = note: `-D clippy::redundant-closure-for-method-calls` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::redundant_closure_for_method_calls)]`
+
+error: casting `u128` to `f64` may cause a loss of precision (`u128` is 128 bits wide, but `f64`'s mantissa is only 52 bits wide)
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:1990:29
+     |
+1990 |                         || ((exchange.end_ns - exchange.start_ns) as f64 / 1e9).to_bits() != column.interval_s.to_bits() {
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_precision_loss
+     = note: `-D clippy::cast-precision-loss` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::cast_precision_loss)]`
+
+error: this argument (360 byte) is passed by value, but might be more efficient if passed by reference (limit: 256 byte)
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:164:16
+    |
+164 |         vapor: V3OpenVapor,
+    |                ^^^^^^^^^^^ help: consider passing by reference instead: `&V3OpenVapor`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#large_types_passed_by_value
+    = note: `-D clippy::large-types-passed-by-value` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::large_types_passed_by_value)]`
+
+error: adding items after statements is confusing, since items exist from the start of the scope
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:217:5
+    |
+217 | /     struct Detail {
+218 | |         natural: Option<V3PhaseFreeOpenEvaluation>,
+219 | |         branches: PhaseBranches,
+220 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#items_after_statements
+    = note: `-D clippy::items-after-statements` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::items_after_statements)]`
+
+error: item in documentation is missing backticks
+  --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:73:51
+   |
+73 |     /// Positive/zero executed component area, or not_applicable for other coordinates.
+   |                                                   ^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#doc_markdown
+   = note: `-D clippy::doc-markdown` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::doc_markdown)]`
+help: try
+   |
+73 -     /// Positive/zero executed component area, or not_applicable for other coordinates.
+73 +     /// Positive/zero executed component area, or `not_applicable` for other coordinates.
+   |
+
+error: item in documentation is missing backticks
+  --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:75:20
+   |
+75 |     /// lifecycle, finite_difference, or identity_anchor.
+   |                    ^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#doc_markdown
+help: try
+   |
+75 -     /// lifecycle, finite_difference, or identity_anchor.
+75 +     /// lifecycle, `finite_difference`, or identity_anchor.
+   |
+
+error: item in documentation is missing backticks
+  --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:75:42
+   |
+75 |     /// lifecycle, finite_difference, or identity_anchor.
+   |                                          ^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#doc_markdown
+help: try
+   |
+75 -     /// lifecycle, finite_difference, or identity_anchor.
+75 +     /// lifecycle, finite_difference, or `identity_anchor`.
+   |
+
+error: item in documentation is missing backticks
+   --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:428:60
+    |
+428 | /// Bounded test-support evidence; the full-supply Covered FixedFinal vector is
+    |                                                            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#doc_markdown
+help: try
+    |
+428 - /// Bounded test-support evidence; the full-supply Covered FixedFinal vector is
+428 + /// Bounded test-support evidence; the full-supply Covered `FixedFinal` vector is
+    |
+
+error: large size difference between variants
+   --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:440:1
+    |
+440 | /  enum ObserverSolveResult {
+441 | |      Covered(Result<crate::CoveredColumnSolveOutcome, crate::LandSurfaceEnergyError>),
+    | |      -------------------------------------------------------------------------------- the second-largest variant contains at least 256 bytes
+442 | |/     V3(
+443 | ||         Result<
+444 | ||             crate::NormalizedSolveOutcome<crate::V3PhaseFreeCoveredEvaluation>,
+445 | ||             crate::LandSurfaceEnergyError,
+446 | ||         >,
+447 | ||     ),
+    | ||_____- the largest variant contains at least 816 bytes
+448 | |  }
+    | |__^ the entire enum is at least 816 bytes
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#large_enum_variant
+    = note: `-D clippy::large-enum-variant` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::large_enum_variant)]`
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+    |
+443 ~         Box<Result<
+444 +             crate::NormalizedSolveOutcome<crate::V3PhaseFreeCoveredEvaluation>,
+445 +             crate::LandSurfaceEnergyError,
+446 ~         >>,
+    |
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/transaction.rs:2192:12
+     |
+2192 |         && ground_vapor != boundary.vapor_to_canopy_air_kg_m2_s {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(ground_vapor - boundary.vapor_to_canopy_air_kg_m2_s).abs() > error_margin`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+     = note: `-D clippy::float-cmp` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/transaction.rs:2198:12
+     |
+2198 |         && ground_sensible != boundary.sensible_to_canopy_air_w_m2 {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(ground_sensible - boundary.sensible_to_canopy_air_w_m2).abs() > error_margin`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: this method could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/transaction.rs:2973:12
+     |
+2973 |     pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem { &self.beginning }
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+     = note: `-D clippy::must-use-candidate` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::must_use_candidate)]`
+help: add the attribute
+     |
+2973 ~     #[must_use] 
+2974 ~     pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem { &self.beginning }
+     |
+
+error: this method could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/transaction.rs:2978:12
+     |
+2978 |     pub fn accuracy_observation_beginning(&self) -> &CoveredColumnInputs { &self.beginning }
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+2978 ~     #[must_use] 
+2979 ~     pub fn accuracy_observation_beginning(&self) -> &CoveredColumnInputs { &self.beginning }
+     |
+
+error: usage of wildcard import
+ --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:4:5
+  |
+4 | use crate::*;
+  |     ^^^^^^^^ help: try: `crate::{RuntimeTileIdentity, OpenSurfaceProblem, V3LitterResidualContext, V3PhaseFreeOpenEvaluation, PotentialWaterRequestBatch, V3PhaseSpecificVaporAuthorization, WaterProtocol, SoilThermalTileCandidate, OwnerRollbackHash, NormalizedSolveOutcome, LandSurfaceEnergyError, SurfaceClass, SurfaceClassKind, WaterSourceType, LitterPhaseConfiguration, BeginningLitterPhaseState, solve_v3_phase_free_open_surface, WaterAmount, Sha256Digest, WaterAuthorization, SoilThermalFinalizationBeginning, validate_ground_heat_join}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#wildcard_imports
+  = note: `-D clippy::wildcard-imports` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::wildcard_imports)]`
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:15:12
+   |
+15 |     pub fn identity(&self) -> &RuntimeTileIdentity {
+   |            ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+   |
+15 ~     #[must_use] 
+16 ~     pub fn identity(&self) -> &RuntimeTileIdentity {
+   |
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:18:12
+   |
+18 |     pub fn accepted(&self) -> &V3PhaseFreeOpenEvaluation {
+   |            ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+   |
+18 ~     #[must_use] 
+19 ~     pub fn accepted(&self) -> &V3PhaseFreeOpenEvaluation {
+   |
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:21:12
+   |
+21 |     pub fn request_batch(&self) -> &PotentialWaterRequestBatch {
+   |            ^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+   |
+21 ~     #[must_use] 
+22 ~     pub fn request_batch(&self) -> &PotentialWaterRequestBatch {
+   |
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:359:12
+    |
+359 |     pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem { &self.beginning }
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+359 ~     #[must_use] 
+360 ~     pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem { &self.beginning }
+    |
+
+error: docs for function returning `Result` missing `# Errors` section
+  --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:38:5
+   |
+38 | /     pub fn try_new(forcing:&LandSurfaceForcing,ofe_id:&OfeId,tile_id:&TileId,tile_fraction:f64)
+39 | |         ->Result<Self,LandSurfaceEnergyError> {
+   | |_____________________________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_errors_doc
+   = note: `-D clippy::missing-errors-doc` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::missing_errors_doc)]`
+
+error: docs for function returning `Result` missing `# Errors` section
+  --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:72:5
+   |
+72 | /     pub fn validate_against_actual_forcing(&self,forcing:&LandSurfaceForcing,ofe:&OfeId,tile:&TileId,fraction:f64)
+73 | |         ->Result<(),LandSurfaceEnergyError> {
+   | |___________________________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_errors_doc
+
+error: assigning the result of `Clone::clone()` may be inefficient
+  --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:75:9
+   |
+75 |         expected.configuration_sha256=self.configuration_sha256.clone();
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `clone_from()`: `expected.configuration_sha256.clone_from(&self.configuration_sha256)`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#assigning_clones
+   = note: `-D clippy::assigning-clones` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::assigning_clones)]`
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:85:12
+   |
+85 |     pub fn is_wholly_transparent_canopy(&self)->bool {
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+   |
+85 ~     #[must_use] 
+86 ~     pub fn is_wholly_transparent_canopy(&self)->bool {
+   |
+
+error: docs for function returning `Result` missing `# Errors` section
+  --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:90:5
+   |
+90 | /     pub fn bind_transparent_liquid(&mut self,forcing:&LandSurfaceForcing,identity:&RuntimeTileIdentity)
+91 | |         ->Result<(),LandSurfaceEnergyError> {
+   | |___________________________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_errors_doc
+
+error: docs for function returning `Result` missing `# Errors` section
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:100:5
+    |
+100 |     pub fn validate_transparent_liquid(&self,identity:Option<&RuntimeTileIdentity>)->Result<(),LandSurfaceEnergyError> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_errors_doc
+
+error: unused `self` argument
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:125:47
+    |
+125 |     pub(crate) fn inactive_component_anchor_k(&self,component:usize,canopy:f64)->f64 {
+    |                                               ^^^^^
+    |
+    = help: consider refactoring to an associated function
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unused_self
+    = note: `-D clippy::unused-self` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unused_self)]`
+
+error: this `if` statement can be collapsed
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:191:9
+    |
+191 | / ...   if l.transparent_passage.is_some() {
+192 | | ...       if l.stemflow_kg_m2_tile.to_bits()!=product(occupancy.stemflow_fraction,l.incident_rain_kg_m2_tile)?.to_bits()
+193 | | ...           || l.throughfall_kg_m2_tile.to_bits()!=product(1.0-occupancy.stemflow_fraction,l.incident_rain_kg_m2_tile)?.to_bits...
+194 | | ...           return Err(LandSurfaceEnergyError::StateLineage("transparent passage unchanged E04 splits"));
+195 | | ...       }
+196 | | ...   }
+    | |_______^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+191 ~         if l.transparent_passage.is_some()
+192 ~             && (l.stemflow_kg_m2_tile.to_bits()!=product(occupancy.stemflow_fraction,l.incident_rain_kg_m2_tile)?.to_bits()
+193 ~                 || l.throughfall_kg_m2_tile.to_bits()!=product(1.0-occupancy.stemflow_fraction,l.incident_rain_kg_m2_tile)?.to_bits()) {
+194 |                 return Err(LandSurfaceEnergyError::StateLineage("transparent passage unchanged E04 splits"));
+195 ~             }
+    |
+
+error: docs for function returning `Result` missing `# Errors` section
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:204:5
+    |
+204 | /     pub fn rebind_transparent_liquid_native_configuration(
+205 | |         &mut self,forcing:&LandSurfaceForcing,predecessor:&RuntimeTileIdentity,native:&RuntimeTileIdentity,
+206 | |     )->Result<(),LandSurfaceEnergyError> {
+    | |________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_errors_doc
+
+error: could not compile `openwepp-land-surface-energy` (lib) due to 27 previous errors

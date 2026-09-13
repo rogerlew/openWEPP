@@ -1,0 +1,43 @@
+{
+  "name": "final-list",
+  "intended_outcome": "25 compiled cases: context1 red1 ordinary1 precedence18 rawhash4",
+  "argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "env",
+    "CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-cadence-targets/baseline-red",
+    "RUST_MIN_STACK=67108864",
+    "cargo",
+    "nextest",
+    "list",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/Cargo.toml",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "--lib",
+    "--locked",
+    "--features",
+    "persisted-restart-v1,restart-authority-evidence",
+    "-E",
+    "test(b01_wb14_captured_) | test(=direct_runtime::surface_liquid_ingress::tests::external_precipitation_and_runon_ids_pass_independent_frozen_identity_closure) | test(land_surface_energy_shadow::raw_boundary_contract_tests::precedence_tests::) | test(land_surface_energy_shadow::raw_boundary_contract_tests::raw_hash_tests::)"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+  "effective_target": "/tmp/openwepp-b01-wb14-cadence-targets/baseline-red",
+  "target_evidence": "cargo metadata observed 2026-09-13",
+  "source_base": "reconciled-available145-r1",
+  "source_hashes": {
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs": "a426c4208d0b1e4fed55b3132fe4a8202e1e39a2c0033cb0247c8ee8ff8279ab",
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs": "6e0bd56d8c5a9fb2bd2fd548908b69fa2abe44263daa532a4e8bff8bfd3b2f14",
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs": "afc499fa26c946c9a1122ed08c49aee7f270d0b646ee8c935d414cf2aa375e62",
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/fixtures/b01_wb14_current_run_boundary_packet.json": "d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76",
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/fixtures/b01_wb14_owner_seed.json": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515",
+    "Cargo.toml": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+    "Cargo.lock": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c",
+    "crates/openwepp-hillslope-orchestrator/Cargo.toml": "83e0214de808dd87f6452ffca9fe2c9f85fdbeb10cbc03addda01e142f388c74"
+  },
+  "start_utc": "2026-09-13T17:32:14.040603+00:00",
+  "exit": 0,
+  "end_utc": "2026-09-13T17:32:27.885161+00:00"
+}

@@ -1,0 +1,37 @@
+{
+  "evidence_cut": "c21dfe91b0962e28febccf427b430486e06bc355",
+  "manifest": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/Cargo.toml",
+  "features": "persisted-restart-v1,restart-authority-evidence",
+  "default_features": true,
+  "locked": true,
+  "selected": {
+    "context": {
+      "filter": "test(=direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_parent_context_passes_source_defined_joins)",
+      "count": 1,
+      "intended": "PASS"
+    },
+    "red": {
+      "filter": "test(=direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress)",
+      "count": 1,
+      "intended": "EXPECTED_RED exact E008 IngressCandidate transaction255 detail WB14 day or interval continuation mismatch; unconditional intended-admission failure"
+    },
+    "ordinary": {
+      "filter": "test(=direct_runtime::surface_liquid_ingress::tests::external_precipitation_and_runon_ids_pass_independent_frozen_identity_closure)",
+      "count": 1,
+      "intended": "PASS"
+    },
+    "precedence": {
+      "filter": "test(land_surface_energy_shadow::raw_boundary_contract_tests::precedence_tests::)",
+      "count": 18,
+      "intended": "PASS"
+    },
+    "raw_hash": {
+      "filter": "test(land_surface_energy_shadow::raw_boundary_contract_tests::raw_hash_tests::)",
+      "count": 4,
+      "intended": "PASS"
+    }
+  },
+  "formatting": "rustfmt --edition 2024 --check on three affected modules",
+  "clippy": "cargo clippy --manifest-path <diagnostic manifest> -p openwepp-hillslope-orchestrator --all-targets --locked --features persisted-restart-v1,restart-authority-evidence -- -D warnings",
+  "review": "two required prior sessions unavailable; acceptance gap"
+}

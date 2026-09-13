@@ -1,0 +1,34 @@
+--- a/tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs
++++ b/tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs
+@@ -193,7 +193,8 @@
+                     DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+                     | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+                     | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
+-                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
++                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. }
++                    | DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { tile_id, .. } => {
+                         *tile_id = TileId::try_new("unknown-tile").expect("unknown tile");
+                     }
+                 }
+@@ -711,7 +712,8 @@
+                     DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+                     | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+                     | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
+-                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
++                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. }
++                    | DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { tile_id, .. } => {
+                         *tile_id = TileId::try_new("unknown-tile").expect("tile");
+                     }
+                 },
+--- a/tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs
++++ b/tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs
+@@ -221,7 +221,8 @@
+             DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+             | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+             | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
+-            | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
++            | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. }
++            | DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { tile_id, .. } => {
+                 *tile_id = TileId::try_new("unknown-tile").expect("tile");
+             }
+         }

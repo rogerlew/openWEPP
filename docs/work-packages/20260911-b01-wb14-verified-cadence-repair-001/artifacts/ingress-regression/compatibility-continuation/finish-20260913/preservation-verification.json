@@ -1,0 +1,105 @@
+{
+  "scope": "preservation verification only; no builds or tests executed",
+  "raw_logs": [
+    {
+      "log": "b01-wb14-compiled-listing.log",
+      "sha256": "bfff772eaff5fb3c5ab1b7ab8105c5cb4dee2409499b1e2f102ac02ac3323ceb",
+      "bytes": 780,
+      "observed_numeric_exit": 0
+    },
+    {
+      "log": "b01-wb14-compiled-listing-final.log",
+      "sha256": "8f9dee93ac32d2c63b1f9a2bb49bf7b832912b1dd9dc85994c332d891a7356e6",
+      "bytes": 780,
+      "observed_numeric_exit": 0
+    },
+    {
+      "log": "b01-wb14-compiled-listing-frozen.log",
+      "sha256": "3e3deb4f6deadd8e63fe9ad6eba5a64431c84e572ffa4c9231c92d9b0389ed89",
+      "bytes": 780,
+      "observed_numeric_exit": 0
+    },
+    {
+      "log": "b01-wb14-compiled-listing-frozen-final.log",
+      "sha256": "65c0b3114f8aec5eb8ffc977db361ea171c9989ae63daa3155c461e2a6b60bec",
+      "bytes": 1794,
+      "observed_numeric_exit": 101
+    },
+    {
+      "log": "b01-wb14-compiled-listing-cycle2.log",
+      "sha256": "b477c496a1e1e2241fc6bb980d79b354ad4539a44bbe93ad79f15bcb41e2dc48",
+      "bytes": 780,
+      "observed_numeric_exit": 0
+    },
+    {
+      "log": "b01-wb14-context.log",
+      "sha256": "e5261ed525cbb24ee08e5cd748fcf3068e5161e940fdb668d7f0d8e6d082a8c4",
+      "bytes": 605,
+      "observed_numeric_exit": 0
+    },
+    {
+      "log": "b01-wb14-expected-red.log",
+      "sha256": "d8b3cd2a1033a5dd6335e501f96c7600ec70189bd4f3d2b91953843dcf857c64",
+      "bytes": 3148,
+      "observed_numeric_exit": 100
+    },
+    {
+      "log": "b01-wb14-ordinary-control-list.log",
+      "sha256": "c3267a834da9abb7aa24dd4c47a2a2ede6965b8b23a52e6d487465fac1437336",
+      "bytes": 493,
+      "observed_numeric_exit": 0
+    },
+    {
+      "log": "b01-wb14-ordinary-control.log",
+      "sha256": "7c81169328dbc8093f82aa7487296fbc079bd7b3d80181424277cac5513dec1d",
+      "bytes": 614,
+      "observed_numeric_exit": 0
+    },
+    {
+      "log": "b01-wb14-final-compiled-listing.log",
+      "sha256": "80cc7809659ad3dd8622650fb7e0ad72c2727936d5faf60710c615542cec83dc",
+      "bytes": 1058,
+      "observed_numeric_exit": 101
+    }
+  ],
+  "patch_reconstruction": [
+    {
+      "patch": "context-join-cycle1-failed.patch",
+      "patch_sha256": "e47f556949a19ce0d502ee3a1db555dc9ce3a0ded5151112c29a44b62bea1091",
+      "base": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs",
+      "base_sha256": "a5ec580696c0cb17552970a654f5b3064343caf70812c96e2d4f96a1c730ac0a",
+      "exit": 0,
+      "stdout": "patching file /tmp/b01-compat-preserve-op53bawj/surface_liquid_ingress_context_tests.rs\n",
+      "restored_sha256": "fceae1c8c20e8b06f0e46513cf08d00e14953064e11eb0ee022fcfdc9bab0df9",
+      "target_raw_sha256": "fceae1c8c20e8b06f0e46513cf08d00e14953064e11eb0ee022fcfdc9bab0df9",
+      "byte_equal": true
+    },
+    {
+      "patch": "expected-red-unconditional-panic-cut.patch",
+      "patch_sha256": "84b7fcd14e8a6ae5fa90862d76e14d7c2fc2bfb6abf70f6282afabb197be529e",
+      "base": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs",
+      "base_sha256": "a5ec580696c0cb17552970a654f5b3064343caf70812c96e2d4f96a1c730ac0a",
+      "exit": 0,
+      "stdout": "patching file /tmp/b01-compat-preserve-1j6x1smy/surface_liquid_ingress_context_tests.rs\n",
+      "restored_sha256": "4e2afc1380bdfd4ca1f98d58ecc21419de026bb8844de08e7c11f2c639a520eb",
+      "target_raw_sha256": "4e2afc1380bdfd4ca1f98d58ecc21419de026bb8844de08e7c11f2c639a520eb",
+      "byte_equal": true
+    },
+    {
+      "patch": "final-red-green-cycle2-failed.patch",
+      "patch_sha256": "ed33383aa6c1eabfd64add32eab4cd6fdcf89ec9618a751b892c86d33ba8e42f",
+      "base": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs",
+      "base_sha256": "a5ec580696c0cb17552970a654f5b3064343caf70812c96e2d4f96a1c730ac0a",
+      "exit": 0,
+      "stdout": "patching file /tmp/b01-compat-preserve-s68o5km5/surface_liquid_ingress_context_tests.rs\n",
+      "restored_sha256": "0c86634bc0eb7843ed2494b15a877db3fce9380304dcd081ac2a768e45f9e228",
+      "target_raw_sha256": "0c86634bc0eb7843ed2494b15a877db3fce9380304dcd081ac2a768e45f9e228",
+      "byte_equal": true
+    }
+  ],
+  "compatibility_patch_reconstruction": {
+    "exit": 0,
+    "stdout": "patching file tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs\npatching file tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs\n",
+    "both_files_byte_equal": true
+  }
+}
