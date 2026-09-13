@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Ran: Astra independent full compiler-message JSON multiset comparison",
+  "normalization": "Only replace each recorded absolute source root with <SOURCE>; preserve all remaining JSON fields including target, code, rendered diagnostic, source spans/columns, children, suggestions and multiplicity.",
+  "reference_messages": 2767,
+  "candidate_messages": 2767,
+  "reference_distinct": 1559,
+  "candidate_distinct": 1559,
+  "reference_only": 0,
+  "candidate_only": 0,
+  "equal": true,
+  "multiset_sha256": "f3a624ef547278986d61252dcfabb18eb6224524dfd5b13072c212d324307edd",
+  "scope_limit": "Per-message rustc compilation mode is absent from Cargo JSON; target is library descriptor. Both completed lib/lib-test invocations bound separately by stderr and command exits. Compatibility/call-surface attribution independently reviewed."
+}

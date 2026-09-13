@@ -1,0 +1,57 @@
+{
+  "evidence_class": "Ran: matched commands and source/input evidence reuse verification",
+  "utc": "2026-09-13T18:22:21.795795+00:00",
+  "candidate_unchanged": true,
+  "base927_unchanged": true,
+  "reference927_expected": true,
+  "normalized_command_identical": true,
+  "nix_and_compiler_environment_identical": true,
+  "reused": {
+    "context": {
+      "record": "../finish-20260913/context.json",
+      "exit": 0,
+      "source_identity_matches": true,
+      "stdout_sha256": "b26861f132c0187134590eeff7a5d634cc649adae69a9c53aa01e6964acf1144",
+      "stderr_sha256": "1913301b74a8f4d71365fc58f6e92c1a60753cce1038c94763b0e14e8c49fe99"
+    },
+    "expected-red": {
+      "record": "../finish-20260913/expected-red.json",
+      "exit": 100,
+      "source_identity_matches": true,
+      "stdout_sha256": "b26861f132c0187134590eeff7a5d634cc649adae69a9c53aa01e6964acf1144",
+      "stderr_sha256": "e9bbf2f2b9bad402871c8c16e6cfbce7073ba28b96a701bb4122066f2021a4f9"
+    },
+    "ordinary": {
+      "record": "../finish-20260913/ordinary.json",
+      "exit": 0,
+      "source_identity_matches": true,
+      "stdout_sha256": "b26861f132c0187134590eeff7a5d634cc649adae69a9c53aa01e6964acf1144",
+      "stderr_sha256": "bd1b35723c0d086d8b7087c270111719bdad499def5f903a6353a8894ecc6733"
+    },
+    "precedence": {
+      "record": "../finish-20260913/precedence.json",
+      "exit": 0,
+      "source_identity_matches": true,
+      "stdout_sha256": "b26861f132c0187134590eeff7a5d634cc649adae69a9c53aa01e6964acf1144",
+      "stderr_sha256": "6cb207c0d25a85ba339390250bf79f7ca6cad54ffd7134f7c7eff882049f957a"
+    },
+    "raw-hash": {
+      "record": "../finish-20260913/raw-hash.json",
+      "exit": 0,
+      "source_identity_matches": true,
+      "stdout_sha256": "b26861f132c0187134590eeff7a5d634cc649adae69a9c53aa01e6964acf1144",
+      "stderr_sha256": "55333924d17646e967d081ecff4e8fb6653cadbd439909c9126ccdd50136ae6c"
+    },
+    "formatting": {
+      "record": "../finish-20260913/formatting.json",
+      "exit": 0,
+      "source_identity_matches": true,
+      "stdout_sha256": "b26861f132c0187134590eeff7a5d634cc649adae69a9c53aa01e6964acf1144",
+      "stderr_sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8"
+    }
+  },
+  "source_corrections": 0,
+  "verification_batches": 0,
+  "failed_cycles": 4,
+  "comparison_invocations": 2
+}

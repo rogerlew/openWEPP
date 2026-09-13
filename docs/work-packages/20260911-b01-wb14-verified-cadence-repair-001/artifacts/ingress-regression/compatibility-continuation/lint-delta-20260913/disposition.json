@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Ran: final bounded JSON/link/diff checks",
+  "package_links": 83,
+  "json_files": 9,
+  "missing_links": [],
+  "checkpoint": "COMPLETE test-only under explicit exception",
+  "lint_delta": "PASS",
+  "clippy_broad": "FAIL",
+  "clippy_prior_scoped": "FAIL",
+  "clippy_reference_exit": 101,
+  "clippy_candidate_exit": 101,
+  "correctness": "PASS bounded exception",
+  "qa": "PASS bounded exception",
+  "broader_cadence": "HOLD",
+  "source_changes": 0,
+  "failed_cycles": 4,
+  "cycle_ceiling": 6
+}

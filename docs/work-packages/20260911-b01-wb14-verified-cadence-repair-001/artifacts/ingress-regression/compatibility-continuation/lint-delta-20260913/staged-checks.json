@@ -1,0 +1,6 @@
+{
+  "evidence_class": "Ran: staged terminal diff checks",
+  "whitespace_exit": 0,
+  "tracked_source_edits": false,
+  "only_package_locator_and_lint_evidence": true
+}

@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: all-fields diagnostic path scan",
+  "scope": "Entire compiler-message JSON recursively serialized, including children and macro expansion metadata; not primary-only",
+  "changed_module_mentions": {
+    "reference": {
+      "surface_liquid_ingress_context_tests.rs": 0,
+      "precedence_tests.rs": 0,
+      "raw_hash_tests.rs": 0
+    },
+    "candidate-initial": {
+      "surface_liquid_ingress_context_tests.rs": 0,
+      "precedence_tests.rs": 0,
+      "raw_hash_tests.rs": 0
+    }
+  },
+  "common_mode_compatibility_diagnostics": 0
+}

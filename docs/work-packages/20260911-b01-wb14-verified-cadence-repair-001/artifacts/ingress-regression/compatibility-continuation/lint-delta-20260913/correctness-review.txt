@@ -1,0 +1,22 @@
+Reviewer identity: /root/scoped_correctness, Sol/high; reused conversation.
+
+Static replacement correctness review; supplied Ran evidence inspected. I ran no builds, tests, listings, or source edits.
+
+Findings:
+
+- **No blocking or current-scope lint finding.** The owner’s dated selection-timing exception is narrowly applicable to this test-only checkpoint. The candidate adds one `cfg(test)` context/helper block and two immutable fixtures; the compatibility changes add only three exhaustive `CoveredCanopyReleaseAndTerminalGround` alternatives at `precedence_tests.rs:196-199,718-721` and `raw_hash_tests.rs:224`. No production function, arithmetic, guard, error taxonomy, serialization schema, API, manifest, feature, dependency, or authority changed. Reverse dependents do not compile this crate’s unit-test modules, so no reverse-dependent lint obligation arises.
+
+- **The matched attribution supports no-new-relevant-diagnostics acceptance.** Reference and candidate used the same owning crate, `--all-targets`, locked graph, features, toolchain environment, `--no-deps`, and `-D warnings`. Both completed with exit 101 and the same lib/lib-test summaries: 1,231 and 1,536 prior errors. After normalizing only the absolute source root, all 2,767 complete `compiler-message` JSON objects match as a multiset, including multiplicity, target descriptor, code, rendered text, primary/secondary/expansion spans, source content, children, and suggestions; both have 1,559 distinct messages and zero one-sided entries. No diagnostic has a primary path in any of the three changed modules.
+
+- **The common-mode compatibility additions do not hide an attributable diagnostic.** Static inspection confirms each added alternative binds the existing `tile_id` and enters the unchanged branch body. No action or assertion changed. Because the reference contains these exact formatted arms and the complete diagnostic set contains no primary span in either compatibility file, there is no added-arm diagnostic to subtract as inherited. The retained 18 precedence and four raw-hash passes remain source-identical and applicable.
+
+- **No relevant inherited diagnostic establishes a correctness or security defect in this increment.** Existing warnings along the called ingress/WB14 surface include float-to-integer casts and exact floating-point comparisons at `surface_liquid_ingress.rs:1192,1268,1277,1360`, `surface_liquid_ingress_coordinator.rs:575`, and `surface_liquid_wb14.rs:1452-1484`. They are byte-identical across reference and candidate. Their surrounding finite-value, positive-duration, 60-second-grid, support-bound, checked-add, and exact chronology joins constrain the operations; the warnings alone do not demonstrate numerical or domain failure. This regression neither changes nor bypasses those guards. No new unsafe, trust-boundary, parser, or serialization behavior is introduced.
+
+Residual risk and evidence limits:
+
+- Cargo’s failed `compiler-message` records identify the owning library target but omit whether each message came from the normal-lib or lib-test rustc invocation. The two terminal summaries establish that both invocations ran, and full multiset equality with multiplicity makes the missing per-message mode label nonblocking.
+- `build-finished:false` is the expected Cargo result for warnings-denied lint failure. The original broad and scoped Clippy executions remain historical FAILs; this review supports only **lint-delta PASS under the owner’s 2026-09-13 one-off exception**, not green Clippy.
+- The candidate source and all relevant inputs are unchanged, so reusing context PASS 1/1, exact E008 EXPECTED_RED 1/1, ordinary real-ingress PASS 1/1, precedence PASS 18/18, raw-hash PASS 4/4, and formatting PASS is valid. No verification batch was required.
+- This disposition does not qualify the production cadence repair. Full INV-035/C-025 prefix authentication, parent progression, zero inactive physics, rollback, accounting, runner coverage, and split restart remain HOLD.
+
+**Approval:** No correctness blocker remains for the bounded lint-delta criterion or closure of this test-only regression checkpoint under the explicit owner exception. The broader cadence package remains HOLD.

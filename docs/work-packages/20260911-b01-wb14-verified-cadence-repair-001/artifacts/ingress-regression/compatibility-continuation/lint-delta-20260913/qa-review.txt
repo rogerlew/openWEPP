@@ -1,0 +1,19 @@
+Reviewer identity: /root/scoped_qa, Terra/medium; reused conversation after sequencing active slots.
+
+Static QA review — independent replacement continuation; no commands, builds, tests, listings, edits, or witness review run.
+
+No blocking findings.
+
+- **LOW — evidence limitation:** Cargo compiler-message records do not identify whether a diagnostic arose from the library or lib-test compile mode. This is explicitly recorded as unavailable. The limitation is bounded by both raw stderr logs: reference and candidate each completed `lib` (1,231 errors) and `lib test` (1,536 errors), with exit 101 and failed build-finished JSON records.
+
+- **LOW — exception scope:** this is a dated owner exception for this test-only checkpoint, not prospective compliance with the normal inherited-lint policy. It cannot be represented as green Clippy, a general lint waiver, or production/cadence qualification.
+
+Primary evidence supports acceptance of the exception:
+
+- [planned-comparison.json](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/lint-delta-20260913/planned-comparison.json) binds identical reference/candidate command shape, features, `--all-targets`, `--locked`, `--no-deps`, `-D warnings`, toolchain route, and separate targets.
+- [source-reference.json](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/lint-delta-20260913/source-reference.json) establishes a buildable reference with only the two protected compatibility files’ three approved enum arms and the exact base context module. Candidate continuity, manifests, fixtures, Nix inputs, and tool identities match the bound records.
+- [attribution.json](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/lint-delta-20260913/attribution.json) is `COMPLETE`, has no problems, and classifies all 2,767 diagnostics as `inherited_unchanged`; none intersects a shared compatibility arm, including secondary/nested spans.
+- [full-message-comparison.json](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/lint-delta-20260913/full-message-comparison.json) confirms exact normalized diagnostic multisets: 2,767 total, 1,559 distinct, and zero reference-only/candidate-only messages.
+- [continuity-and-reuse.json](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/lint-delta-20260913/continuity-and-reuse.json) records no candidate correction and valid reuse of unchanged context, expected-red, ordinary real-ingress, precedence, raw-hash, and formatting evidence.
+
+QA disposition: **PASS for the owner’s bounded lint-delta exception.** The original broad Clippy failure and both scoped reference/candidate exit-101 results remain **FAIL**. The wider cadence package remains **HOLD**.

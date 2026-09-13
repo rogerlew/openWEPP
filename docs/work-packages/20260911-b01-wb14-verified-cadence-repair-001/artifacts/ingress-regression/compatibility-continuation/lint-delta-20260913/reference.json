@@ -1,0 +1,65 @@
+{
+  "name": "reference",
+  "argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "env",
+    "CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-cadence-targets/lint-reference-compat-only-20260913",
+    "RUST_MIN_STACK=67108864",
+    "cargo",
+    "clippy",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/lint-reference-compat-only-20260913/Cargo.toml",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "--all-targets",
+    "--locked",
+    "--features",
+    "persisted-restart-v1,restart-authority-evidence",
+    "--message-format=json",
+    "--",
+    "--no-deps",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/lint-reference-compat-only-20260913",
+  "effective_target": "/tmp/openwepp-b01-wb14-cadence-targets/lint-reference-compat-only-20260913",
+  "source_hashes": {
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs": "a5ec580696c0cb17552970a654f5b3064343caf70812c96e2d4f96a1c730ac0a",
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs": "6e0bd56d8c5a9fb2bd2fd548908b69fa2abe44263daa532a4e8bff8bfd3b2f14",
+    "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs": "afc499fa26c946c9a1122ed08c49aee7f270d0b646ee8c935d414cf2aa375e62",
+    "Cargo.toml": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+    "Cargo.lock": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c",
+    "crates/openwepp-hillslope-orchestrator/Cargo.toml": "83e0214de808dd87f6452ffca9fe2c9f85fdbeb10cbc03addda01e142f388c74",
+    "flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6"
+  },
+  "missing_identity_paths": [
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/fixtures/b01_wb14_current_run_boundary_packet.json",
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/fixtures/b01_wb14_owner_seed.json"
+  ],
+  "nix_hashes": {
+    "flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6"
+  },
+  "compiler_environment": {
+    "RUSTFLAGS": null,
+    "RUSTDOCFLAGS": null,
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "RUSTC": null,
+    "RUSTC_WRAPPER": null,
+    "RUSTUP_TOOLCHAIN": null
+  },
+  "start_utc": "2026-09-13T18:18:45.914423+00:00",
+  "stdout_path": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/lint-delta-20260913/reference.stdout.log",
+  "stderr_path": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/lint-delta-20260913/reference.stderr.log",
+  "exit": 101,
+  "end_utc": "2026-09-13T18:19:32.376356+00:00",
+  "source_unchanged": true,
+  "log_sha256": {
+    "stdout_path": "37bcf7aeaaa8a7afac6df242dc64dc70a344276df1ac449a3e9ddeed430cd87b",
+    "stderr_path": "55411eff495b22ea14fd23f9192064df426b3a83f59a7ac37eb476fa906ce366"
+  }
+}
