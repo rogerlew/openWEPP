@@ -779,3 +779,18 @@ post-stop source/build/test work; new runner/collector calls remain **0/0**.
 Remaining time cannot override the exhausted cycle cap. Scoped evidence and
 compatibility patches are being published on existing `main`; final remote
 custody and its brief additional elapsed time follow below.
+
+
+Publication custody: commit `37023bf43129e9b4be0ce1df7b703568d92495a3` was
+pushed to existing `origin/main`, exit0. [Remote byte verification](artifacts/ingress-regression/compatibility-continuation/remote-verification.json)
+fetched and matched all23 changed files,132,639 bytes, from exact-commit GitHub
+URLs; no LFS pointers. This publishes only small compatibility/test patches and
+stopped evidence, not full source or raw-corpus recoverability. The publication
+record itself will be pushed and remotely fetched before the final reply.
+
+At **2026-09-13 03:28:59 UTC**, cumulative active consumption is
+**38m54s**, failed corrective cycles **2/2**, new runner/collector
+calls **0/0**. Final reply/durable terminal remote verification records the short
+additional publication-check time. No source edits, builds, tests or lint occurred
+after the two-cycle stop. Independent reviews remain BLOCK/HOLD, and the working
+regression remains uncompiled at the retained missing-semicolon cut.

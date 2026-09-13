@@ -1,0 +1,147 @@
+{
+  "evidence_class": "Ran: exact-commit remote byte retrieval",
+  "commit": "37023bf43129e9b4be0ce1df7b703568d92495a3",
+  "verified_utc": "2026-09-13T03:28:33.706828+00:00",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/b01-wb14-compiled-listing-cycle2.log",
+      "bytes": 780,
+      "sha256": "b477c496a1e1e2241fc6bb980d79b354ad4539a44bbe93ad79f15bcb41e2dc48",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/b01-wb14-compiled-listing-final.log",
+      "bytes": 780,
+      "sha256": "8f9dee93ac32d2c63b1f9a2bb49bf7b832912b1dd9dc85994c332d891a7356e6",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/b01-wb14-compiled-listing-frozen-final.log",
+      "bytes": 1794,
+      "sha256": "65c0b3114f8aec5eb8ffc977db361ea171c9989ae63daa3155c461e2a6b60bec",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/b01-wb14-compiled-listing-frozen.log",
+      "bytes": 780,
+      "sha256": "3e3deb4f6deadd8e63fe9ad6eba5a64431c84e572ffa4c9231c92d9b0389ed89",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/b01-wb14-compiled-listing.log",
+      "bytes": 780,
+      "sha256": "bfff772eaff5fb3c5ab1b7ab8105c5cb4dee2409499b1e2f102ac02ac3323ceb",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/b01-wb14-context.log",
+      "bytes": 605,
+      "sha256": "e5261ed525cbb24ee08e5cd748fcf3068e5161e940fdb668d7f0d8e6d082a8c4",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/b01-wb14-expected-red.log",
+      "bytes": 3148,
+      "sha256": "d8b3cd2a1033a5dd6335e501f96c7600ec70189bd4f3d2b91953843dcf857c64",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/b01-wb14-final-compiled-listing.log",
+      "bytes": 1058,
+      "sha256": "80cc7809659ad3dd8622650fb7e0ad72c2727936d5faf60710c615542cec83dc",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/b01-wb14-ordinary-control-list.log",
+      "bytes": 493,
+      "sha256": "c3267a834da9abb7aa24dd4c47a2a2ede6965b8b23a52e6d487465fac1437336",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/b01-wb14-ordinary-control.log",
+      "bytes": 614,
+      "sha256": "7c81169328dbc8093f82aa7487296fbc079bd7b3d80181424277cac5513dec1d",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/context-join-cycle1-failed.patch",
+      "bytes": 11472,
+      "sha256": "e47f556949a19ce0d502ee3a1db555dc9ce3a0ded5151112c29a44b62bea1091",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/correctness-review.txt",
+      "bytes": 4216,
+      "sha256": "4f5f077c5f79266d7cf072619dc297d547700a691733ba37d9356b5176eb881b",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/expected-red-unconditional-panic-cut.patch",
+      "bytes": 12145,
+      "sha256": "84b7fcd14e8a6ae5fa90862d76e14d7c2fc2bfb6abf70f6282afabb197be529e",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/final-compatibility-precedence.patch",
+      "bytes": 1787,
+      "sha256": "77204cb5333abf3f7e834a092ac6de4b9ae6738089e7b19c5eef6a009caab701",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/final-compatibility-raw-hash.patch",
+      "bytes": 1016,
+      "sha256": "6305a9d64b249a1eba35cbf0e0867931fb5f6619a065ac40461c6aea16068f6a",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/final-red-green-cycle2-failed.patch",
+      "bytes": 12092,
+      "sha256": "ed33383aa6c1eabfd64add32eab4cd6fdcf89ec9618a751b892c86d33ba8e42f",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/hard-stop-command-result.json",
+      "bytes": 5341,
+      "sha256": "49eee9ba0d0046d9dc8f305466bb515af98e7536102242a48e27b2edb1d50e88",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/preservation-verification.json",
+      "bytes": 4817,
+      "sha256": "2a2319876b10a0849336903487c841402a8a8fc0d38a5bf9fd1710fecdc8a592",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/protected-test-compatibility.patch",
+      "bytes": 2371,
+      "sha256": "fa8d1cd3a1b5a91183282fd9c265c7452e4687a1f35f321063eee18bd73365d5",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/qa-review.txt",
+      "bytes": 2784,
+      "sha256": "9ecefd5c8dc89debe606f7519c96a0849330ed2c791acac2a51cb7a1b5ebbe1c",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/ingress-regression/compatibility-continuation/terminal-source-identities.json",
+      "bytes": 1472,
+      "sha256": "1436c1e951ff969a9f002c25ab009ba62a0dafc908de00435bfeb206dd4c7586",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 54966,
+      "sha256": "e5ce551a32eaa08e12050b316fffe67de2fd3ff5632777ff7132521fed5d0069",
+      "remote_byte_equal": true
+    },
+    {
+      "path": "docs/work-packages/active.md",
+      "bytes": 7328,
+      "sha256": "ffa2b20ac48f89ea7587b2f4a5ac34b4ffaaf22b4852bfb90c17f93e809fa098",
+      "remote_byte_equal": true
+    }
+  ],
+  "pass": true,
+  "scope": "small compatibility patches and failed regression evidence only; full source and corpus local"
+}
