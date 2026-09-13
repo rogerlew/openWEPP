@@ -1,0 +1,39 @@
+{
+  "evidence_class": "Ran: final offline QA verification",
+  "cwd": "/workdir/openWEPP",
+  "candidate": {
+    "check_witness.py": "5825859be0f75dfe24e3c6345f68b45f52b4b8f7ae56a59096a2d36c95a2eed9",
+    "test_check_witness.py": "3a962825129ec39e41afb7498a9061e97599067678ae446ae380895df589ca45"
+  },
+  "commands": [
+    {
+      "argv": ["./.venv/bin/python", "-m", "py_compile", "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py", "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py"],
+      "exit_code": 0,
+      "stdout": "predicate-correction-fresh-qa-syntax.stdout",
+      "stderr": "predicate-correction-fresh-qa-syntax.stderr"
+    },
+    {
+      "argv": ["./.venv/bin/python", "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py"],
+      "exit_code": 0,
+      "stdout": "predicate-correction-fresh-qa-suite.stdout",
+      "stderr": "predicate-correction-fresh-qa-suite.stderr",
+      "named_case_outcomes": {"finite": 70, "direct_u128": 5, "pass": 75, "fail": 0, "error": 0}
+    },
+    {
+      "argv": ["./.venv/bin/python", "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py", "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/current-run-boundary-packet.json", "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/receipt.json", "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/run.json", "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/openwepp_runner-identity-stamped.frozen", "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/compiled-listing-identity-stamped.stdout", "--output", "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa-current-result.json"],
+      "exit_code": 0,
+      "stdout": "predicate-correction-fresh-qa-checker.stdout",
+      "stderr": "predicate-correction-fresh-qa-checker.stderr",
+      "result": "predicate-correction-fresh-qa-current-result.json",
+      "result_sha256": "32a362e6b1f49261e157edbca4281862c0a5c61a51cee9fc9ed4ad55abdb01a4"
+    }
+  ],
+  "current_evidence": {
+    "packet_sha256": "d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76",
+    "raw_observation_sha256_reused": "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9",
+    "frozen_binary_sha256": "958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f",
+    "checker_verdict": "LIMITED_CHECKER_PASS_PENDING_REVIEW",
+    "runner_verdict": "FAIL",
+    "witness_acceptance": "pending independent disposition"
+  }
+}

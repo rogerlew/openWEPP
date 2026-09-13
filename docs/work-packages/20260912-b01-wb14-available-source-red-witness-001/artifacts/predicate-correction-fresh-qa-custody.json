@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: offline small-file custody; stream membership and corpus hash reused unchanged from qa-replacement-current-custody.txt",
+  "all_checks_pass": true,
+  "checks": {
+    "binary_join": true,
+    "fail_state": true,
+    "index_small": true,
+    "observation_receipt": true,
+    "packet_digest": true,
+    "packet_receipt": true,
+    "packet_run": true,
+    "raw_hash_reused": true,
+    "receipt_run": true
+  },
+  "small_files": {
+    "inputs.json": {"bytes": 1356, "sha256": "feac1e37b6a082ee1c193f11894766aac26eff1346ab4ca954e8c86b9d5cb273"},
+    "receipt.json": {"bytes": 2923, "sha256": "5240bef80cf9cbd4f7e030fff8a5316d65253e0274fbd32c5a6315579f24d7a9"},
+    "run.json": {"bytes": 40029, "sha256": "d22e3e16b844a3f1525b217efc1a413ad0403473c469b40a07d9402fc5de44c3"},
+    "started.json": {"bytes": 1523, "sha256": "8d997f3e191f1c98d5200e7c2e7097f473c51e4104775cf911eb3c2e03294c1d"}
+  }
+}

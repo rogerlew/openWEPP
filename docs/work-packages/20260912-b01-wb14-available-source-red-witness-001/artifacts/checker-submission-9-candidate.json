@@ -1,0 +1,9 @@
+{
+  "base": "8ceb80d5e18178b66d5bb20332b362a05733dfe6",
+  "patch_sha256": "1edf5d63aeab482d4025cbf4de7a08362a6123bf773eaa23d008b3d9e95015b9",
+  "files": {
+    "check_witness.py": "5825859be0f75dfe24e3c6345f68b45f52b4b8f7ae56a59096a2d36c95a2eed9",
+    "test_check_witness.py": "3a962825129ec39e41afb7498a9061e97599067678ae446ae380895df589ca45"
+  },
+  "verification": "Implementer reported PASS; execution.txt preserves summarized stdout, not full raw per-case stdout. Independent reviewer execution must retain full output before final acceptance."
+}

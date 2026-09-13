@@ -1,0 +1,7 @@
+{
+  "witness_verdict": "LIMITED_CHECKER_PASS_PENDING_REVIEW",
+  "runner_verdict": "FAIL",
+  "observation_sha256": "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9",
+  "failure_row": 123086,
+  "caller_row": 123087
+}

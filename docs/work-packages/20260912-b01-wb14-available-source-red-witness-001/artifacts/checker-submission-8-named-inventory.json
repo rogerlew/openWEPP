@@ -1,0 +1,302 @@
+{
+  "evidence_class": "Static inventory extracted from preserved submission8 source, joined to already-observed unittest failure transcript; no test execution",
+  "cases": [
+    {
+      "name": "current_packet_positive",
+      "expected": "positive",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "missing_record",
+      "expected": "records",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "wrong_boundary_valid_json",
+      "expected": "input",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "raw_pair_mismatch",
+      "expected": "input_pair",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "capture_mismatch",
+      "expected": "capture",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "overflow_observation_loss",
+      "expected": "observation",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "poisoned_observation_loss",
+      "expected": "observation",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "truncated_input",
+      "expected": "typed",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "generic_panic",
+      "expected": "error",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "timeout_only",
+      "expected": "receipt",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "wrong_binary",
+      "expected": "receipt",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "zero_exit",
+      "expected": "receipt",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "infrastructure",
+      "expected": "receipt",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "run_hash",
+      "expected": "receipt",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "artifact_hash",
+      "expected": "receipt",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "wrong_argv",
+      "expected": "selection",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "zero_listing",
+      "expected": "selection",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "missing_beginning",
+      "expected": "typed",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "missing_parent",
+      "expected": "typed",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "missing_working",
+      "expected": "typed",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "missing_ofe",
+      "expected": "ofe",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "extra_ofe",
+      "expected": "ofe",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "wrong_ofe_guard_scalar",
+      "expected": "guard",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "support",
+      "expected": "support",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "authority_support_start",
+      "expected": "support",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "ordinal",
+      "expected": "ordinal",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "prior_receipt",
+      "expected": "ordinal",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "upper_bound",
+      "expected": "support",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "u128_out_of_domain",
+      "expected": "input",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "transaction_authority_only",
+      "expected": "identity",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "transaction_prefix_only",
+      "expected": "identity",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "transaction_binding_only",
+      "expected": "identity",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "missing_accepted_slab",
+      "expected": "identity",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "malformed_accepted_slab",
+      "expected": "identity",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "zero_accepted_slab",
+      "expected": "identity",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "missing_parent_id",
+      "expected": "identity",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "malformed_parent_id",
+      "expected": "identity",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "beginning_cumulative_supply_m_owner_copy",
+      "expected": "beginning",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "beginning_cumulative_infiltration_m_owner_copy",
+      "expected": "beginning",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "working_cumulative_supply_m_owner_copy",
+      "expected": "parent",
+      "status": "FAIL",
+      "observed_refusal": "cumulative"
+    },
+    {
+      "name": "working_cumulative_infiltration_m_owner_copy",
+      "expected": "parent",
+      "status": "FAIL",
+      "observed_refusal": "cumulative"
+    },
+    {
+      "name": "coherent_cumulative_supply_m_nonzero",
+      "expected": "cumulative",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "coherent_cumulative_supply_m_negative_zero",
+      "expected": "cumulative",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "coherent_cumulative_supply_m_nonfinite",
+      "expected": "cumulative",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "coherent_cumulative_supply_m_nonnumeric",
+      "expected": "cumulative",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "coherent_cumulative_infiltration_m_nonzero",
+      "expected": "cumulative",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "coherent_cumulative_infiltration_m_negative_zero",
+      "expected": "cumulative",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "coherent_cumulative_infiltration_m_nonfinite",
+      "expected": "cumulative",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    },
+    {
+      "name": "coherent_cumulative_infiltration_m_nonnumeric",
+      "expected": "cumulative",
+      "status": "PASS_INFERRED",
+      "observed_refusal": null
+    }
+  ],
+  "separate_u128_assertion": "PASS_INFERRED from method completion",
+  "unexecuted_in_declared_table": [],
+  "omitted_required_cases": "Original persistent/candidate/cursor/scalar coordinate controls and shared negative values are missing acceptance, not passed."
+}

@@ -1,0 +1,46 @@
+Evidence class: Ran: preserved transcript of the one already-completed submission-8 verification. This file was written after the result; the command was not rerun.
+
+cwd: /workdir/openWEPP
+command:
+.venv/bin/python -m py_compile docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py && cd docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts && /workdir/openWEPP/.venv/bin/python -m unittest -v test_check_witness.py
+
+observed_wall_time_seconds: 0.291182624
+exit_code: 1
+stdout: ""
+stderr:
+test_named_finite_case_table (test_check_witness.WitnessCases.test_named_finite_case_table) ... 
+  test_named_finite_case_table (test_check_witness.WitnessCases.test_named_finite_case_table) (case='working_cumulative_supply_m_owner_copy') ... FAIL
+  test_named_finite_case_table (test_check_witness.WitnessCases.test_named_finite_case_table) (case='working_cumulative_infiltration_m_owner_copy') ... FAIL
+
+======================================================================
+FAIL: test_named_finite_case_table (test_check_witness.WitnessCases.test_named_finite_case_table) (case='working_cumulative_supply_m_owner_copy')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py", line 119, in test_named_finite_case_table
+    with self.subTest(case=name): self.run_case(name, expected, *edits)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workdir/openWEPP/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py", line 76, in run_case
+    self.assertEqual(caught.exception.code, expected, name)
+AssertionError: 'cumulative' != 'parent'
+- cumulative
++ parent
+ : working_cumulative_supply_m_owner_copy
+
+======================================================================
+FAIL: test_named_finite_case_table (test_check_witness.WitnessCases.test_named_finite_case_table) (case='working_cumulative_infiltration_m_owner_copy')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py", line 119, in test_named_finite_case_table
+    with self.subTest(case=name): self.run_case(name, expected, *edits)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workdir/openWEPP/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py", line 76, in run_case
+    self.assertEqual(caught.exception.code, expected, name)
+AssertionError: 'cumulative' != 'parent'
+- cumulative
++ parent
+ : working_cumulative_infiltration_m_owner_copy
+
+----------------------------------------------------------------------
+Ran 1 test in 0.362s
+
+FAILED (failures=2)

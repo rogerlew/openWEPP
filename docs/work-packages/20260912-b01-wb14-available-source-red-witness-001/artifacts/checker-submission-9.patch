@@ -1,0 +1,314 @@
+diff --git a/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py b/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py
+index 294782629..3fab513d9 100644
+--- a/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py
++++ b/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py
+@@ -5,6 +5,7 @@ from pathlib import Path
+ 
+ TEST = "hillslope::tests::stage3_snow_accuracy_case"
+ ERROR = "SURFACELIQUID-E-008 IngressCandidate: WB14 day or interval continuation mismatch"
++RUN_ERROR = 'RuntimeSurfaceFailure { surface: "r7c_direct_production_executor", detail: "HS-SIMPIPE-E-001 direct runtime kernel guard failed in snow_stage3_v11: prepare: VEG-E-123: imported V10 segment execution failed: V9 real-consumer serialization failure: frozen-litter V4 runtime: SURFACELIQUID-E-008 IngressCandidate: WB14 day or interval continuation mismatch" }'
+ SOURCE_SHA = "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9"
+ BINARY_SHA = "958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f"
+ 
+@@ -32,7 +33,7 @@ def raw(record, key):
+ def a32(x, key):
+     value = need(x, key, "identity")
+     if not isinstance(value, list) or len(value) != 32 or any(type(b) is not int or not 0 <= b <= 255 for b in value): fail("identity")
+-    return value
++    return bytes(value)
+ def f64(value, code="cumulative"):
+     if type(value) not in (int, float) or not math.isfinite(value): fail(code)
+     return struct.pack(">d", float(value))
+@@ -75,7 +76,7 @@ def check(packet_path, receipt_path, run_path, binary_path, listing_path):
+     if gb != cb: fail("input_pair")
+     if [u128(need(gi,k,"input"),"input") for k in ("day_index","interval_index","transaction_id")] != [4,22,255] or f64(need(gi,"interval_s","input"),"input") != struct.pack(">d",60.0): fail("input")
+     if (g.get("actual_day"),g.get("actual_interval"),g.get("ofe_id"),g.get("initial"),g.get("expected_day"),g.get("expected_interval"),g.get("accepted_parent_local_projection"),g.get("state_mutated")) != (4,22,"ofe-1",True,0,0,False,False): fail("guard")
+-    if c.get("error") != ERROR or ERROR not in str(run.get("error")): fail("error")
++    if c.get("error") != ERROR or run.get("error") != RUN_ERROR: fail("error")
+     if any(r.get("parent_child_mode") is not True or r.get("finalize_parent_interval") is not False for r in (g,c)): fail("guard")
+     bb, beginning = raw(g,"beginning_typed_bytes"); bb2, caller_beginning = raw(c,"beginning_typed_bytes")
+     if bb != bb2: fail("beginning")
+@@ -103,15 +104,40 @@ def check(packet_path, receipt_path, run_path, binary_path, listing_path):
+     for field in ("cumulative_supply_m","cumulative_infiltration_m"):
+         if f64(need(scalar,field,"cumulative")) != b"\x00"*8: fail("cumulative")
+     prefix = need(authority,"inactive_prefix","identity")
+-    for x in (authority,prefix,binding):
+-        for key in x:
+-            if key.endswith("sha256"): a32(x,key)
+-    if authority.get("coupled_parent_transaction_sha256") != prefix.get("coupled_parent_transaction_sha256") != binding.get("coupled_parent_transaction_sha256"): fail("identity")
+-    if authority.get("parent_beginning_owner_sha256") != prefix.get("parent_beginning_owner_sha256") or prefix.get("prefix_ending_owner_sha256") != binding.get("parent_beginning_complete_owner_set_sha256"): fail("identity")
+-    if [u128(need(prefix,k,"support"),"support") for k in ("parent_support_start_ns","parent_support_end_ns")] != bounds[:2] or u128(need(prefix,"prefix_end_ns","support"),"support") != bounds[2]: fail("support")
++    # These are source-defined mandatory identity fields.  Do not infer
++    # mandatory presence from whichever digest keys a packet happens to carry.
++    authority_digests = (
++        "beginning_cursor_sha256", "coupled_parent_transaction_sha256",
++        "ofe_id_sha256", "parent_beginning_owner_sha256", "schema_sha256",
++        "surface_liquid_configuration_sha256", "wb14_configuration_sha256",
++        "wb14_model_definition_sha256",
++    )
++    prefix_digests = (
++        "coupled_parent_transaction_sha256", "coupled_receipt_sha256",
++        "parent_beginning_owner_sha256", "prefix_ending_owner_sha256",
++        "proof_sha256",
++    )
++    binding_digests = (
++        "accepted_slab_sha256", "coupled_parent_transaction_sha256",
++        "parent_beginning_complete_owner_set_sha256",
++    )
++    authority_ids = {key: a32(authority, key) for key in authority_digests}
++    # parent_id is a mandatory [u8; 32] identity, despite not using the
++    # serialized *_sha256 field-name convention.
++    authority_ids["parent_id"] = a32(authority, "parent_id")
++    prefix_ids = {key: a32(prefix, key) for key in prefix_digests}
++    binding_ids = {key: a32(binding, key) for key in binding_digests}
++    if binding_ids["accepted_slab_sha256"] == b"\x00" * 32: fail("identity")
++    if len({
++        authority_ids["coupled_parent_transaction_sha256"],
++        prefix_ids["coupled_parent_transaction_sha256"],
++        binding_ids["coupled_parent_transaction_sha256"],
++    }) != 1: fail("identity")
++    if authority_ids["parent_beginning_owner_sha256"] != prefix_ids["parent_beginning_owner_sha256"] or prefix_ids["prefix_ending_owner_sha256"] != binding_ids["parent_beginning_complete_owner_set_sha256"]: fail("identity")
++    if [u128(need(prefix,k,"support"),"support") for k in ("parent_support_start_ns","parent_support_end_ns")] != bounds[:2] or [u128(need(authority,k,"support"),"support") for k in ("support_start_ns","support_end_ns")] != bounds[:2] or u128(need(prefix,"prefix_end_ns","support"),"support") != bounds[2]: fail("support")
+     if [u128(need(authority,k,"identity"),"identity") for k in ("parent_day_index","parent_interval_index")] != [0,0]: fail("identity")
+     if hex32(parent["surface_liquid_configuration_sha256"]) != authority.get("surface_liquid_configuration_sha256") or hex32(parent["wb14_configuration_sha256"]) != authority.get("wb14_configuration_sha256") or hex32(parent["wb14_model_definition_sha256"]) != authority.get("wb14_model_definition_sha256"): fail("identity")
+-    if receipt.get("timeout") or receipt.get("infrastructure_error") or receipt.get("exit_code",0) == 0 or receipt.get("execution_valid") is not False or receipt.get("runner_execution") != "FAIL" or receipt.get("binary_unchanged") is not True or receipt.get("runner_receipt_present") is not True or run.get("execution") != "FAIL": fail("receipt")
++    if receipt.get("timeout") or receipt.get("infrastructure_error") or receipt.get("exit_code") != 101 or receipt.get("execution_valid") is not False or receipt.get("runner_execution") != "FAIL" or receipt.get("binary_unchanged") is not True or receipt.get("runner_receipt_present") is not True or (run.get("schema"),run.get("case"),run.get("policy"),run.get("ofes"),run.get("days_requested"),run.get("execution")) != ("snow_accuracy_run_v1","gradual_warm_tail7","B01",1,7,"FAIL"): fail("receipt")
+     if receipt.get("runner_receipt_sha256") != sha(run_path) or receipt.get("binary_sha256") != BINARY_SHA or sha(binary_path) != BINARY_SHA: fail("receipt")
+     if receipt.get("case") != "gradual_warm_tail7" or receipt.get("policy") != "B01" or receipt.get("ofes") != 1 or receipt.get("physical") is not True or receipt.get("observation_complete") is not True or receipt.get("files_complete") is not False or receipt.get("days_complete") is not False or receipt.get("physical_rows") != stream.get("records_scanned"): fail("receipt")
+     if receipt.get("artifact_sha256",{}).get("observations.json") != SOURCE_SHA: fail("receipt")
+diff --git a/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py b/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py
+index 693aa5d8f..0d79b4214 100644
+--- a/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py
++++ b/docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py
+@@ -1,5 +1,5 @@
+-"""Named source-shaped controls for the current captured boundary packet only."""
+-import copy, hashlib, json, tempfile
++"""Named source-shaped controls for the captured boundary packet only."""
++import copy, hashlib, json, struct, tempfile, unittest
+ from pathlib import Path
+ from check_witness import WitnessError, check, u128
+ 
+@@ -8,74 +8,155 @@ PACKET = HERE / "current-run-boundary-packet.json"
+ RAW = Path("/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1")
+ BINARY = Path("/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/openwepp_runner-identity-stamped.frozen")
+ LISTING = Path("/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/compiled-listing-identity-stamped.stdout")
++
+ def row(p, i): return p["records"][i]["record"]
+ def typed(r, k): return json.loads(bytes(r[k]["Ok"]))
+-def put(r, k, x): r[k] = {"Ok": list(json.dumps(x, separators=(",", ":")).encode())}
+-def parent(p): return typed(row(p, 1), "parent_working_typed_bytes")
+-def edit_parent(p, f):
+- r=row(p,1); x=parent(p); f(x); put(r,"parent_working_typed_bytes",x)
+-def edit_input(p, i, f):
+- r=row(p,i); x=typed(r,"input_typed_bytes"); f(x); put(r,"input_typed_bytes",x)
+-def edit_state(p, name, field, value):
+- r=row(p, 0 if name=="beginning" else 1); key="beginning_typed_bytes" if name=="beginning" else name+"_typed_bytes"; x=typed(r,key); x["continuations"][0][field]=value; put(r,key,x)
+-def reject(name, code, packet_edit=None, receipt_edit=None, run_edit=None, listing_edit=None):
+- p=json.loads(PACKET.read_text()); receipt=json.loads((RAW/"receipt.json").read_text()); run=json.loads((RAW/"run.json").read_text())
+- if packet_edit: packet_edit(p)
+- if receipt_edit: receipt_edit(receipt)
+- if run_edit: run_edit(run)
+- with tempfile.TemporaryDirectory() as td:
+-  d=Path(td); pp,rp,up,lp=d/"packet.json",d/"receipt.json",d/"run.json",d/"listing"
+-  pp.write_text(json.dumps(p,separators=(",",":")))
+-  if run_edit is None: up.write_text((RAW/"run.json").read_text())
+-  else:
+-   up.write_text(json.dumps(run,separators=(",",":")))
+-   receipt["runner_receipt_sha256"]=hashlib.sha256(up.read_bytes()).hexdigest()
+-  rp.write_text(json.dumps(receipt,separators=(",",":")))
+-  lp.write_text(LISTING.read_text() if listing_edit is None else listing_edit(LISTING.read_text()))
+-  try: result=check(pp,rp,up,BINARY,lp)
+-  except WitnessError as e: assert e.code==code, f"{name}: {e.code} != {code}"
+-  else: assert code=="positive", f"{name}: accepted {result}"
++def put(r, k, x):
++    encoded = {"Ok": list(json.dumps(x, separators=(",", ":")).encode())}
++    if r.get(k) == encoded: raise AssertionError("typed mutation made no byte change")
++    r[k] = encoded
++def blob(p, i, k, edit):
++    r = row(p, i); x = typed(r, k); old = json.dumps(x, separators=(",", ":")); edit(x)
++    if json.dumps(x, separators=(",", ":")) == old: raise AssertionError("typed mutation made no value change")
++    put(r, k, x)
++def edit_parent(p, edit): return blob(p, 1, "parent_working_typed_bytes", edit)
++def input_pair(p, edit):
++    common = typed(row(p, 0), "input_typed_bytes")
++    old = copy.deepcopy(common); edit(common)
++    if common == old: raise AssertionError("input mutation did not change its intended value")
++    encoded = {"Ok": list(json.dumps(common, separators=(",", ":")).encode())}
++    for i in (0, 1):
++        if row(p, i).get("input_typed_bytes") == encoded: raise AssertionError("input mutation made no byte change")
++        row(p, i)["input_typed_bytes"] = copy.deepcopy(encoded)
++def flip(x, key):
++    if not isinstance(x[key], list) or len(x[key]) != 32: raise AssertionError("expected digest")
++    old = x[key][0]; x[key][0] ^= 1
++    if x[key][0] == old: raise AssertionError("digest mutation made no change")
++def cumulative_all(p, field, value):
++    # All seven producer copies change together, so owner-copy equality cannot
++    # mask the exact-positive-zero predicate.
++    if value == 0.0:
++        if struct.pack(">d", value) == struct.pack(">d", 0.0): raise AssertionError("signed-zero mutation lost its bit change")
++    for i in (0, 1): blob(p, i, "beginning_typed_bytes", lambda x: x["continuations"][0].__setitem__(field, value))
++    blob(p, 1, "working_typed_bytes", lambda x: x["continuations"][0].__setitem__(field, value))
++    def owner(x):
++        for name in ("persistent_beginning_state", "candidate_state"):
++            x[name]["continuations"][0][field] = value
++        a = x["per_ofe_authorities"]["ofe-1"]
++        a["beginning_cursor"][field] = value; a["working"][field] = value
++    edit_parent(p, owner)
++def identity_path(path):
++    def edit(p):
++        def owner(x):
++            target = x["per_ofe_authorities"]["ofe-1"]["authority"]
++            for key in path[:-1]: target = target[key]
++            flip(target, path[-1])
++        edit_parent(p, owner)
++    return edit
++
++class WitnessCases(unittest.TestCase):
++    def run_case(self, name, expected, packet_edit=None, receipt_edit=None, run_edit=None, listing_edit=None):
++        p = json.loads(PACKET.read_text()); receipt = json.loads((RAW / "receipt.json").read_text()); run = json.loads((RAW / "run.json").read_text())
++        before = (copy.deepcopy(p), copy.deepcopy(receipt), copy.deepcopy(run))
++        if packet_edit: packet_edit(p)
++        if receipt_edit: receipt_edit(receipt)
++        if run_edit: run_edit(run)
++        if packet_edit: self.assertNotEqual(p, before[0], name + ": packet did not change")
++        if receipt_edit: self.assertNotEqual(receipt, before[1], name + ": receipt did not change")
++        if run_edit: self.assertNotEqual(run, before[2], name + ": run did not change")
++        with tempfile.TemporaryDirectory() as td:
++            d = Path(td); pp, rp, up, lp = d / "packet", d / "receipt", d / "run", d / "listing"
++            pp.write_text(json.dumps(p, separators=(",", ":")))
++            if run_edit:
++                up.write_text(json.dumps(run, separators=(",", ":")))
++                receipt["runner_receipt_sha256"] = hashlib.sha256(up.read_bytes()).hexdigest()
++            else: up.write_text((RAW / "run.json").read_text())
++            rp.write_text(json.dumps(receipt, separators=(",", ":")))
++            lp.write_text(LISTING.read_text() if listing_edit is None else listing_edit(LISTING.read_text()))
++            if expected == "positive":
++                self.assertEqual(check(pp, rp, up, BINARY, lp)["witness_verdict"], "LIMITED_CHECKER_PASS_PENDING_REVIEW", name); return
++            with self.assertRaises(WitnessError, msg=name) as caught: check(pp, rp, up, BINARY, lp)
++            self.assertEqual(caught.exception.code, expected, name)
++
++    def test_named_finite_case_table(self):
++        cases = [
++            ("current_packet_positive", "positive"), ("missing_record", "records", lambda p: p["records"].pop()),
++            ("wrong_boundary_valid_json", "input", lambda p: input_pair(p, lambda x: x.__setitem__("day_index", 5))),
++            ("raw_pair_mismatch", "input_pair", lambda p: blob(p, 1, "input_typed_bytes", lambda x: x.__setitem__("interval_index", 23))),
++            ("capture_mismatch", "capture", lambda p: p["records"][1]["record"]["capture"].__setitem__("process", 0)),
++            ("overflow_observation_loss", "observation", lambda p: p["top_level_scalars"].__setitem__("overflow", True)),
++            ("poisoned_observation_loss", "observation", lambda p: p["top_level_scalars"].__setitem__("counts_poisoned", True)),
++            ("truncated_input", "typed", lambda p: row(p, 0)["input_typed_bytes"]["Ok"].pop()), ("generic_panic", "error", lambda p: row(p, 1).__setitem__("error", "panic")),
++            ("timeout_only", "receipt", None, lambda r: r.__setitem__("timeout", True)), ("wrong_binary", "receipt", None, lambda r: r.__setitem__("binary_sha256", "0" * 64)),
++            ("zero_exit", "receipt", None, lambda r: r.__setitem__("exit_code", 0)), ("infrastructure", "receipt", None, lambda r: r.__setitem__("infrastructure_error", "x")),
++            ("run_hash", "receipt", None, lambda r: r.__setitem__("runner_receipt_sha256", "0" * 64)), ("artifact_hash", "receipt", None, lambda r: r["artifact_sha256"].__setitem__("observations.json", "0" * 64)),
++            ("wrong_argv", "selection", None, lambda r: r.__setitem__("argv", [])), ("zero_listing", "selection", None, None, None, lambda _: "\n0 tests, 0 benchmarks\n"),
++            ("missing_beginning", "typed", lambda p: row(p, 0).pop("beginning_typed_bytes")), ("missing_parent", "typed", lambda p: row(p, 1).pop("parent_working_typed_bytes")),
++            ("missing_working", "typed", lambda p: row(p, 1).pop("working_typed_bytes")), ("missing_ofe", "ofe", lambda p: edit_parent(p, lambda x: x.__setitem__("per_ofe_authorities", {}))),
++            ("extra_ofe", "ofe", lambda p: edit_parent(p, lambda x: x["per_ofe_authorities"].__setitem__("other", copy.deepcopy(x["per_ofe_authorities"]["ofe-1"])))),
++            ("wrong_ofe_guard_scalar", "guard", lambda p: row(p, 0).__setitem__("ofe_id", "other")), ("support", "support", lambda p: row(p, 1)["coupled_binding"].__setitem__("parent_support_end_ns", "387000000000001")),
++            ("authority_support_start", "support", lambda p: edit_parent(p, lambda x: x["per_ofe_authorities"]["ofe-1"]["authority"].__setitem__("support_start_ns", "385200000000001"))),
++            ("authority_support_end", "support", lambda p: edit_parent(p, lambda x: x["per_ofe_authorities"]["ofe-1"]["authority"].__setitem__("support_end_ns", "387000000000001"))),
++            ("ordinal", "ordinal", lambda p: edit_parent(p, lambda x: x["per_ofe_authorities"]["ofe-1"]["working"].__setitem__("next_child_ordinal", 1))),
++            ("prior_receipt", "ordinal", lambda p: edit_parent(p, lambda x: x["per_ofe_authorities"]["ofe-1"].__setitem__("receipts", [{"x": 1}]))),
++            ("upper_bound", "support", lambda p: row(p, 1)["coupled_binding"].__setitem__("proposed_upper_bound_s_bits", 0)),
++            ("u128_out_of_domain", "input", lambda p: input_pair(p, lambda x: x.__setitem__("transaction_id", str(2**128)))),
++        ]
++        for state in ("beginning", "working"):
++            for field in ("cumulative_supply_m", "cumulative_infiltration_m"):
++                key = "beginning_typed_bytes" if state == "beginning" else "working_typed_bytes"; index = 0 if state == "beginning" else 1
++                cases.append((f"{state}_{field}_owner_copy", "beginning" if state == "beginning" else "cumulative", lambda p, i=index, k=key, f=field: blob(p, i, k, lambda x: x["continuations"][0].__setitem__(f, 1.0))))
++        for field in ("cumulative_supply_m", "cumulative_infiltration_m"):
++            cases += [
++                (f"persistent_{field}_owner_copy", "parent", lambda p, f=field: edit_parent(p, lambda x: x["persistent_beginning_state"]["continuations"][0].__setitem__(f, 1.0))),
++                (f"candidate_{field}_owner_copy", "parent", lambda p, f=field: edit_parent(p, lambda x: x["candidate_state"]["continuations"][0].__setitem__(f, 1.0))),
++                (f"cursor_{field}_owner_copy", "cumulative", lambda p, f=field: edit_parent(p, lambda x: x["per_ofe_authorities"]["ofe-1"]["beginning_cursor"].__setitem__(f, 1.0))),
++                (f"scalar_{field}_owner_copy", "cumulative", lambda p, f=field: edit_parent(p, lambda x: x["per_ofe_authorities"]["ofe-1"]["working"].__setitem__(f, 1.0))),
++            ]
++        for field in ("cumulative_supply_m", "cumulative_infiltration_m"):
++            for label, value in (("positive_one", 1.0), ("negative_one", -1.0), ("negative_zero", -0.0), ("nonfinite", float("inf")), ("nonnumeric", "zero")):
++                cases.append((f"coherent_{field}_{label}", "cumulative", lambda p, f=field, v=value: cumulative_all(p, f, v)))
++        cases += [
++            ("transaction_authority_only", "identity", identity_path(("coupled_parent_transaction_sha256",))),
++            ("transaction_prefix_only", "identity", identity_path(("inactive_prefix", "coupled_parent_transaction_sha256"))),
++            ("transaction_binding_only", "identity", lambda p: flip(row(p, 1)["coupled_binding"], "coupled_parent_transaction_sha256")),
++            ("beginning_owner_authority_only", "identity", identity_path(("parent_beginning_owner_sha256",))),
++            ("beginning_owner_prefix_only", "identity", identity_path(("inactive_prefix", "parent_beginning_owner_sha256"))),
++            ("ending_owner_prefix_only", "identity", identity_path(("inactive_prefix", "prefix_ending_owner_sha256"))),
++            ("ending_owner_binding_only", "identity", lambda p: flip(row(p, 1)["coupled_binding"], "parent_beginning_complete_owner_set_sha256")),
++            ("missing_accepted_slab", "identity", lambda p: row(p, 1)["coupled_binding"].pop("accepted_slab_sha256")),
++            ("malformed_accepted_slab", "identity", lambda p: row(p, 1)["coupled_binding"].__setitem__("accepted_slab_sha256", [1] * 31)),
++            ("zero_accepted_slab", "identity", lambda p: row(p, 1)["coupled_binding"].__setitem__("accepted_slab_sha256", [0] * 32)),
++            ("missing_parent_id", "identity", lambda p: edit_parent(p, lambda x: x["per_ofe_authorities"]["ofe-1"]["authority"].pop("parent_id"))),
++            ("malformed_parent_id", "identity", lambda p: edit_parent(p, lambda x: x["per_ofe_authorities"]["ofe-1"]["authority"].__setitem__("parent_id", [1] * 31))),
++            ("u128_negative", "input", lambda p: input_pair(p, lambda x: x.__setitem__("transaction_id", -1))),
++            ("u128_wrong_type", "input", lambda p: input_pair(p, lambda x: x.__setitem__("transaction_id", 1.5))),
++            ("u128_max_boundary", "input", lambda p: input_pair(p, lambda x: x.__setitem__("transaction_id", str(2**128 - 1)))),
++            ("receipt_wrong_exit", "receipt", None, lambda r: r.__setitem__("exit_code", 102)),
++            ("run_schema", "receipt", None, None, lambda r: r.__setitem__("schema", "other")),
++            ("run_reason", "error", None, None, lambda r: r.__setitem__("error", "other")),
++        ]
++        for name, expected, *edits in cases:
++            with self.subTest(case=name):
++                try:
++                    self.run_case(name, expected, *edits)
++                except AssertionError as error:
++                    print(f"CASE {name} FAIL expected={expected} detail={error}")
++                    raise
++                except Exception as error:
++                    print(f"CASE {name} ERROR expected={expected} detail={error}")
++                    raise
++                else: print(f"CASE {name} PASS expected={expected}")
++        self.assertEqual(u128(str(2**127 + 17), "u128"), 2**127 + 17)
++
++    def test_u128_domain_table(self):
++        cases = (("large_over_u64", str(2**127 + 17), 2**127 + 17), ("max", str(2**128 - 1), 2**128 - 1))
++        for name, value, expected in cases:
++            with self.subTest(case=name):
++                self.assertEqual(u128(value, "input"), expected); print(f"CASE u128_{name} PASS expected=input")
++        for name, value in (("overflow", str(2**128)), ("negative", -1), ("wrong_type", 1.5)):
++            with self.subTest(case=name):
++                with self.assertRaises(WitnessError) as caught: u128(value, "input")
++                self.assertEqual(caught.exception.code, "input"); print(f"CASE u128_{name} PASS expected=input")
+ 
+-# Compact executable case table. Each mutation retains valid JSON and changes the
+-# named target predicate; synthetic receipt/run/listing wrappers are separate.
+-reject("current_packet_positive", "positive")
+-reject("missing_record", "records", lambda p:p["records"].pop())
+-reject("wrong_boundary_valid_json", "input", lambda p:edit_input(p,0,lambda x:x.__setitem__("day_index",5)))
+-reject("raw_pair_mismatch", "input_pair", lambda p:edit_input(p,1,lambda x:x.__setitem__("interval_index",23)))
+-reject("capture_mismatch", "capture", lambda p:p["records"][1]["record"]["capture"].__setitem__("process",0))
+-reject("overflow_observation_loss", "observation", lambda p:p["top_level_scalars"].__setitem__("overflow",True))
+-reject("poisoned_observation_loss", "observation", lambda p:p["top_level_scalars"].__setitem__("counts_poisoned",True))
+-reject("truncated_input", "typed", lambda p:row(p,0)["input_typed_bytes"]["Ok"].pop())
+-reject("generic_panic", "error", lambda p:row(p,1).__setitem__("error","panic"))
+-reject("timeout_only", "receipt", receipt_edit=lambda r:r.__setitem__("timeout",True))
+-reject("wrong_binary", "receipt", receipt_edit=lambda r:r.__setitem__("binary_sha256","0"*64))
+-reject("zero_exit", "receipt", receipt_edit=lambda r:r.__setitem__("exit_code",0))
+-reject("infrastructure", "receipt", receipt_edit=lambda r:r.__setitem__("infrastructure_error","x"))
+-reject("run_hash", "receipt", receipt_edit=lambda r:r.__setitem__("runner_receipt_sha256","0"*64))
+-reject("artifact_hash", "receipt", receipt_edit=lambda r:r["artifact_sha256"].__setitem__("observations.json","0"*64))
+-reject("wrong_argv", "selection", receipt_edit=lambda r:r.__setitem__("argv",[]))
+-reject("zero_listing", "selection", listing_edit=lambda _:"\n0 tests, 0 benchmarks\n")
+-for name,key in (("beginning","beginning_typed_bytes"),("parent","parent_working_typed_bytes"),("working","working_typed_bytes")):
+- reject("missing_"+name,"typed",lambda p,key=key:row(p,0 if name=="beginning" else 1).pop(key))
+-reject("missing_ofe","ofe",lambda p:edit_parent(p,lambda x:x.__setitem__("per_ofe_authorities",{})))
+-reject("extra_ofe","ofe",lambda p:edit_parent(p,lambda x:x["per_ofe_authorities"].__setitem__("other",copy.deepcopy(x["per_ofe_authorities"]["ofe-1"]))))
+-reject("wrong_ofe","ofe",lambda p:row(p,0).__setitem__("ofe_id","other"))
+-for state in ("beginning","working"):
+- for field in ("cumulative_supply_m","cumulative_infiltration_m"):
+-  reject(state+"_"+field,"cumulative",lambda p,s=state,f=field:edit_state(p,s,f,1.0))
+-reject("cumulative_nonfinite","cumulative",lambda p:edit_state(p,"beginning","cumulative_supply_m",float("inf")))
+-reject("cumulative_nonnumeric","cumulative",lambda p:edit_state(p,"beginning","cumulative_supply_m","zero"))
+-reject("cumulative_negative_zero","cumulative",lambda p:edit_state(p,"beginning","cumulative_supply_m",-0.0))
+-for field in ("cumulative_supply_m","cumulative_infiltration_m"):
+- reject("persistent_"+field,"cumulative",lambda p,f=field:edit_parent(p,lambda x:x["persistent_beginning_state"]["continuations"][0].__setitem__(f,1.0)))
+- reject("candidate_"+field,"cumulative",lambda p,f=field:edit_parent(p,lambda x:x["candidate_state"]["continuations"][0].__setitem__(f,1.0)))
+- reject("cursor_"+field,"cumulative",lambda p,f=field:edit_parent(p,lambda x:x["per_ofe_authorities"]["ofe-1"]["beginning_cursor"].__setitem__(f,1.0)))
+- reject("scalar_"+field,"cumulative",lambda p,f=field:edit_parent(p,lambda x:x["per_ofe_authorities"]["ofe-1"]["working"].__setitem__(f,1.0)))
+-reject("support","support",lambda p:row(p,1)["coupled_binding"].__setitem__("parent_support_end_ns","387000000000001"))
+-reject("ordinal","ordinal",lambda p:edit_parent(p,lambda x:x["per_ofe_authorities"]["ofe-1"]["working"].__setitem__("next_child_ordinal",1)))
+-reject("prior_receipt","ordinal",lambda p:edit_parent(p,lambda x:x["per_ofe_authorities"]["ofe-1"].__setitem__("receipts",[{"x":1}])))
+-reject("prefix_identity","identity",lambda p:edit_parent(p,lambda x:x["per_ofe_authorities"]["ofe-1"]["authority"]["inactive_prefix"]["coupled_parent_transaction_sha256"].__setitem__(0,0)))
+-reject("upper_bound","support",lambda p:row(p,1)["coupled_binding"].__setitem__("proposed_upper_bound_s_bits",0))
+-reject("u128_out_of_domain","input",lambda p:edit_input(p,0,lambda x:x.__setitem__("transaction_id",str(2**128))))
+-assert u128(str(2**127 + 17), "u128") == 2**127 + 17
+-print("PASS current-packet positive plus named finite negative controls")
++if __name__ == "__main__": unittest.main(verbosity=2)

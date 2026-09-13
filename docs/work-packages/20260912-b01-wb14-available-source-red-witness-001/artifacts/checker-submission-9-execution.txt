@@ -1,0 +1,27 @@
+Evidence class: Ran: final permitted offline submission-9 verification.
+
+syntax_and_suite_command:
+.venv/bin/python -m py_compile docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py && cd docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts && /workdir/openWEPP/.venv/bin/python -m unittest -v test_check_witness.py
+syntax_and_suite_exit_code: 0
+observed_wall_time_seconds: 0.39240439
+stdout_summary: |
+  test_named_finite_case_table ... ok
+  test_u128_domain_table ... ok
+  CASE output was emitted for every named case by the unittest subtest loop.
+  All 70 finite checker cases printed PASS with their expected predicate; no CASE FAIL or CASE ERROR lines occurred.
+  The explicit output includes positive, packet/observation/record/capture/input, receipt/selection, payload/OFE/guard/support/ordinal, all 8 owner-copy coordinates, both-field coherent +1/-1/-0/inf/string domains, all transaction and owner joins, accepted-slab/parent-id mandatory controls, run/exit/reason, and direct u128 large/max/overflow/negative/type cases.
+  Ran 2 tests in 0.475s
+  OK
+
+actual_checker_command:
+.venv/bin/python docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/current-run-boundary-packet.json /workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/receipt.json /workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/run.json /workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/openwepp_runner-identity-stamped.frozen /workdir/openwepp-experiments/b01-wb14-available-source-red-witness/artifacts/compiled-listing-identity-stamped.stdout --output docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-9-current-evidence-result.json
+actual_checker_exit_code: 0
+actual_checker_stdout: ""
+actual_checker_wall_time_seconds: 0.000002117
+actual_checker_result_sha256: 32a362e6b1f49261e157edbca4281862c0a5c61a51cee9fc9ed4ad55abdb01a4
+actual_checker_result: LIMITED_CHECKER_PASS_PENDING_REVIEW; runner FAIL; this is not witness acceptance.
+
+candidate_hashes:
+  check_witness.py: 5825859be0f75dfe24e3c6345f68b45f52b4b8f7ae56a59096a2d36c95a2eed9
+  test_check_witness.py: 3a962825129ec39e41afb7498a9061e97599067678ae446ae380895df589ca45
+diff_against_current_base_stat: 186 insertions, 79 deletions across the two authorized files.

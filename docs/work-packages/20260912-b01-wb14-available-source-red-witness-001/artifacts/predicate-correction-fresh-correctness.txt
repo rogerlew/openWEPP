@@ -1,0 +1,123 @@
+Static/Ran: fresh affected-scope correctness review by
+`/root/witness_correctness_fresh` (Sol/high). This is an owner-authorized fresh
+conversation after the prior reviewer conversations were culled; it does not
+claim same-conversation continuity. I made no checker, test, package, Rust,
+source, fixture, packet, raw-corpus, binary, collector, or authority edits.
+
+Reviewed exact submission-9 cut:
+
+- repository evidence base identified by the package as
+  `76d6d17cf09ddb2a2a6d150c91eb409128305af7`, with the retained candidate
+  record in `checker-submission-9-candidate.json`;
+- `check_witness.py` SHA-256
+  `5825859be0f75dfe24e3c6345f68b45f52b4b8f7ae56a59096a2d36c95a2eed9`;
+- `test_check_witness.py` SHA-256
+  `3a962825129ec39e41afb7498a9061e97599067678ae446ae380895df589ca45`;
+- current packet SHA-256
+  `d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76`;
+- actual runtime source `reconciled-available145-r1`, distinct from the
+  repository evidence revision, with accepted actual 927-entry map SHA-256
+  `c7aea0707d0c6a0876ec4bee5a7fcf15e751a092e086f517ced7edba8282b71e`;
+- frozen binary SHA-256
+  `958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f`;
+- retained author execution/result evidence
+  `checker-submission-9-execution.txt` and
+  `checker-submission-9-current-evidence-result.json`.
+
+Primary source inspected in the actual runtime source: cadence guard and caller
+observation construction in
+`crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs`;
+initial-continuation validation in `surface_liquid_ingress_preflight.rs`;
+`DirectWb14ParentAuthorityV1`, `ValidatedNativeInactiveWb14PrefixV1`,
+`validate_for`, and `validate_successor_binding` in
+`surface_liquid_wb14.rs` and `surface_liquid_ingress_coordinator.rs`; and the
+claim-bearing run record construction in
+`crates/openwepp-runner/src/hillslope/tests03/snow_accuracy_experiment.rs`.
+I also inspected the adopted predicate-correction authorization, owning package,
+preserved correctness/QA findings, package-review procedure, and applicable
+testing-strategy sections 7-10 and 18.
+
+Findings
+
+No blocking correctness findings on the exact submission-9 cut.
+
+Fix verification
+
+1. B01-CONT-011 is resolved. Coherent input mutations decode and edit one common
+   value, encode it once, and install identical bytes in guard and caller. The
+   separate one-copy mutation reaches `input_pair`. Guard/caller beginning bytes
+   remain paired. Independent mutations cover both cumulative coordinates in
+   guard beginning, caller working, parent persistent/candidate, authority cursor,
+   and scalar working. Coherent controls cover `+1.0`, `-1.0`, binary64 `-0.0`,
+   nonfinite, and nonnumeric values without an earlier owner-copy mismatch masking
+   the exact initial `+0.0` requirement. The checker preserves producer guard
+   precedence rather than reordering predicates to satisfy tests.
+
+2. B01-CONT-012 is resolved. `a32` returns bytes, so the accepted-slab all-zero
+   check and the three-way set comparison have consistent hashable types. The
+   checker explicitly requires every source-carried digest field in the authority,
+   inactive prefix, and coupled binding, including the mandatory `parent_id` that
+   lacks a `_sha256` suffix. `accepted_slab_sha256` is required, 32-byte typed,
+   and nonzero. Authority, prefix, and binding coupled-parent transaction digests
+   must all be equal. Authority and prefix beginning-owner digests form one
+   equality group; prefix ending-owner and binding complete-owner digests form the
+   second, distinct group. Focused tests mutate every side of both owner joins.
+
+3. Source-defined chronology/state joins are present. Parent, prefix, authority,
+   and binding support bounds join the observed parent interval; prefix end joins
+   parent/scalar accepted-until and child start; child end and the exact 60-second
+   upper-bound bits are checked. Parent day/interval, authority cursor day/interval,
+   exact OFE membership, ordinal zero, empty prior receipts, parent parameters,
+   configuration/model identities, and unchanged persistent/candidate/working
+   states are checked. These predicates match the source-defined relationships
+   relevant to the captured pre-mutation E008 boundary.
+
+4. Current-result correlation is fail-closed for this claim. The checker requires
+   the exact guard error and retained Debug-formatted run error; run schema, case,
+   policy, OFE count, seven requested days, and FAIL state; child exit 101; no
+   timeout or infrastructure error; `execution_valid=false`; exact receipt/run,
+   observation, binary, argv, and compiled-listing joins; and the preserved
+   observation completeness/poisoning posture. The internal result remains
+   `LIMITED_CHECKER_PASS_PENDING_REVIEW`, correctly separated from final witness
+   acceptance and the unchanged runner FAIL.
+
+Ran evidence
+
+I independently ran, from `/workdir/openWEPP`:
+
+`.venv/bin/python -m py_compile <checker> <tests> && cd <artifact-directory> && /workdir/openWEPP/.venv/bin/python -m unittest -v test_check_witness.py`
+
+Exit was 0. Both unittest methods passed. The output reported PASS for all 70
+finite checker cases and five additional direct u128 domain controls, including
+the source-shaped positive, every retained negative inventory class, full-width
+u128 maximum/overflow/type handling, all state coordinates, all three transaction
+digest positions, all four owner-join positions, accepted-slab/parent-id
+presence and shape, exact run reason/exit, argv, listing, binary, receipt, and
+observation joins. No Rust test, build, binary execution/listing, collector,
+simulation, raw-corpus hash, or packet re-export was run.
+
+Residual risk and missing tests
+
+- The author execution record summarizes rather than preserves its complete
+  per-case stdout. My independent run supplies correctness confirmation; the
+  assigned QA reviewer still owns final execution/evidence verification.
+- The suite uses one tuple-branch negative for the source-defined run metadata;
+  static inspection confirms every claim-bearing tuple member is exact. Separate
+  expectations for dynamic timing, CPU/RSS, carrier, LSE, parent telemetry, and
+  snapshot fields are intentionally absent because they are not part of this
+  bounded witness claim.
+- The checker does not recompute `parent_id`, inactive-prefix proof, receipt-chain,
+  or complete-owner cryptography. Unchanged QA raw-stream custody and prior
+  source/build/selection evidence remain prerequisites. Therefore this review
+  does not establish complete prefix authentication, rollback, conservation,
+  restart correctness, cadence sufficiency, source equivalence, or production
+  readiness. The two source substitutions retain their recorded UNKNOWN semantic
+  differences.
+
+Verdict
+
+PASS for the assigned affected correctness scope on submission 9. B01-CONT-011
+and B01-CONT-012 are correctly resolved, and the corrected checker accepts the
+retained current packet only with the bounded E008 evidence relationships above.
+Overall witness acceptance remains contingent on the distinct QA/evidence verdict
+and parent disposition; the runner remains FAIL with `execution_valid=false`.

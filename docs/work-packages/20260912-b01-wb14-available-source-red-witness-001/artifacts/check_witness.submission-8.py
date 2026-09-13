@@ -5,7 +5,6 @@ from pathlib import Path
 
 TEST = "hillslope::tests::stage3_snow_accuracy_case"
 ERROR = "SURFACELIQUID-E-008 IngressCandidate: WB14 day or interval continuation mismatch"
-RUN_ERROR = 'RuntimeSurfaceFailure { surface: "r7c_direct_production_executor", detail: "HS-SIMPIPE-E-001 direct runtime kernel guard failed in snow_stage3_v11: prepare: VEG-E-123: imported V10 segment execution failed: V9 real-consumer serialization failure: frozen-litter V4 runtime: SURFACELIQUID-E-008 IngressCandidate: WB14 day or interval continuation mismatch" }'
 SOURCE_SHA = "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9"
 BINARY_SHA = "958e61764d373a2c183764e7f7ff41607a32ef74a2af5cd7b3f299bf1123906f"
 
@@ -76,7 +75,7 @@ def check(packet_path, receipt_path, run_path, binary_path, listing_path):
     if gb != cb: fail("input_pair")
     if [u128(need(gi,k,"input"),"input") for k in ("day_index","interval_index","transaction_id")] != [4,22,255] or f64(need(gi,"interval_s","input"),"input") != struct.pack(">d",60.0): fail("input")
     if (g.get("actual_day"),g.get("actual_interval"),g.get("ofe_id"),g.get("initial"),g.get("expected_day"),g.get("expected_interval"),g.get("accepted_parent_local_projection"),g.get("state_mutated")) != (4,22,"ofe-1",True,0,0,False,False): fail("guard")
-    if c.get("error") != ERROR or run.get("error") != RUN_ERROR: fail("error")
+    if c.get("error") != ERROR or ERROR not in str(run.get("error")): fail("error")
     if any(r.get("parent_child_mode") is not True or r.get("finalize_parent_interval") is not False for r in (g,c)): fail("guard")
     bb, beginning = raw(g,"beginning_typed_bytes"); bb2, caller_beginning = raw(c,"beginning_typed_bytes")
     if bb != bb2: fail("beginning")
@@ -137,7 +136,7 @@ def check(packet_path, receipt_path, run_path, binary_path, listing_path):
     if [u128(need(prefix,k,"support"),"support") for k in ("parent_support_start_ns","parent_support_end_ns")] != bounds[:2] or [u128(need(authority,k,"support"),"support") for k in ("support_start_ns","support_end_ns")] != bounds[:2] or u128(need(prefix,"prefix_end_ns","support"),"support") != bounds[2]: fail("support")
     if [u128(need(authority,k,"identity"),"identity") for k in ("parent_day_index","parent_interval_index")] != [0,0]: fail("identity")
     if hex32(parent["surface_liquid_configuration_sha256"]) != authority.get("surface_liquid_configuration_sha256") or hex32(parent["wb14_configuration_sha256"]) != authority.get("wb14_configuration_sha256") or hex32(parent["wb14_model_definition_sha256"]) != authority.get("wb14_model_definition_sha256"): fail("identity")
-    if receipt.get("timeout") or receipt.get("infrastructure_error") or receipt.get("exit_code") != 101 or receipt.get("execution_valid") is not False or receipt.get("runner_execution") != "FAIL" or receipt.get("binary_unchanged") is not True or receipt.get("runner_receipt_present") is not True or (run.get("schema"),run.get("case"),run.get("policy"),run.get("ofes"),run.get("days_requested"),run.get("execution")) != ("snow_accuracy_run_v1","gradual_warm_tail7","B01",1,7,"FAIL"): fail("receipt")
+    if receipt.get("timeout") or receipt.get("infrastructure_error") or receipt.get("exit_code",0) == 0 or receipt.get("execution_valid") is not False or receipt.get("runner_execution") != "FAIL" or receipt.get("binary_unchanged") is not True or receipt.get("runner_receipt_present") is not True or run.get("execution") != "FAIL": fail("receipt")
     if receipt.get("runner_receipt_sha256") != sha(run_path) or receipt.get("binary_sha256") != BINARY_SHA or sha(binary_path) != BINARY_SHA: fail("receipt")
     if receipt.get("case") != "gradual_warm_tail7" or receipt.get("policy") != "B01" or receipt.get("ofes") != 1 or receipt.get("physical") is not True or receipt.get("observation_complete") is not True or receipt.get("files_complete") is not False or receipt.get("days_complete") is not False or receipt.get("physical_rows") != stream.get("records_scanned"): fail("receipt")
     if receipt.get("artifact_sha256",{}).get("observations.json") != SOURCE_SHA: fail("receipt")

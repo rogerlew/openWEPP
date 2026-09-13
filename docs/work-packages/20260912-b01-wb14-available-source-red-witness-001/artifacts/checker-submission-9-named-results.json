@@ -1,0 +1,534 @@
+{
+  "evidence_class": "Ran: parsed retained independent QA stdout; no rerun",
+  "source": "predicate-correction-fresh-qa-suite.stdout",
+  "finite_cases": 70,
+  "direct_u128_cases": 5,
+  "cases": [
+    {
+      "sequence": 1,
+      "name": "current_packet_positive",
+      "status": "PASS",
+      "expected": "positive",
+      "detail": ""
+    },
+    {
+      "sequence": 2,
+      "name": "missing_record",
+      "status": "PASS",
+      "expected": "records",
+      "detail": ""
+    },
+    {
+      "sequence": 3,
+      "name": "wrong_boundary_valid_json",
+      "status": "PASS",
+      "expected": "input",
+      "detail": ""
+    },
+    {
+      "sequence": 4,
+      "name": "raw_pair_mismatch",
+      "status": "PASS",
+      "expected": "input_pair",
+      "detail": ""
+    },
+    {
+      "sequence": 5,
+      "name": "capture_mismatch",
+      "status": "PASS",
+      "expected": "capture",
+      "detail": ""
+    },
+    {
+      "sequence": 6,
+      "name": "overflow_observation_loss",
+      "status": "PASS",
+      "expected": "observation",
+      "detail": ""
+    },
+    {
+      "sequence": 7,
+      "name": "poisoned_observation_loss",
+      "status": "PASS",
+      "expected": "observation",
+      "detail": ""
+    },
+    {
+      "sequence": 8,
+      "name": "truncated_input",
+      "status": "PASS",
+      "expected": "typed",
+      "detail": ""
+    },
+    {
+      "sequence": 9,
+      "name": "generic_panic",
+      "status": "PASS",
+      "expected": "error",
+      "detail": ""
+    },
+    {
+      "sequence": 10,
+      "name": "timeout_only",
+      "status": "PASS",
+      "expected": "receipt",
+      "detail": ""
+    },
+    {
+      "sequence": 11,
+      "name": "wrong_binary",
+      "status": "PASS",
+      "expected": "receipt",
+      "detail": ""
+    },
+    {
+      "sequence": 12,
+      "name": "zero_exit",
+      "status": "PASS",
+      "expected": "receipt",
+      "detail": ""
+    },
+    {
+      "sequence": 13,
+      "name": "infrastructure",
+      "status": "PASS",
+      "expected": "receipt",
+      "detail": ""
+    },
+    {
+      "sequence": 14,
+      "name": "run_hash",
+      "status": "PASS",
+      "expected": "receipt",
+      "detail": ""
+    },
+    {
+      "sequence": 15,
+      "name": "artifact_hash",
+      "status": "PASS",
+      "expected": "receipt",
+      "detail": ""
+    },
+    {
+      "sequence": 16,
+      "name": "wrong_argv",
+      "status": "PASS",
+      "expected": "selection",
+      "detail": ""
+    },
+    {
+      "sequence": 17,
+      "name": "zero_listing",
+      "status": "PASS",
+      "expected": "selection",
+      "detail": ""
+    },
+    {
+      "sequence": 18,
+      "name": "missing_beginning",
+      "status": "PASS",
+      "expected": "typed",
+      "detail": ""
+    },
+    {
+      "sequence": 19,
+      "name": "missing_parent",
+      "status": "PASS",
+      "expected": "typed",
+      "detail": ""
+    },
+    {
+      "sequence": 20,
+      "name": "missing_working",
+      "status": "PASS",
+      "expected": "typed",
+      "detail": ""
+    },
+    {
+      "sequence": 21,
+      "name": "missing_ofe",
+      "status": "PASS",
+      "expected": "ofe",
+      "detail": ""
+    },
+    {
+      "sequence": 22,
+      "name": "extra_ofe",
+      "status": "PASS",
+      "expected": "ofe",
+      "detail": ""
+    },
+    {
+      "sequence": 23,
+      "name": "wrong_ofe_guard_scalar",
+      "status": "PASS",
+      "expected": "guard",
+      "detail": ""
+    },
+    {
+      "sequence": 24,
+      "name": "support",
+      "status": "PASS",
+      "expected": "support",
+      "detail": ""
+    },
+    {
+      "sequence": 25,
+      "name": "authority_support_start",
+      "status": "PASS",
+      "expected": "support",
+      "detail": ""
+    },
+    {
+      "sequence": 26,
+      "name": "authority_support_end",
+      "status": "PASS",
+      "expected": "support",
+      "detail": ""
+    },
+    {
+      "sequence": 27,
+      "name": "ordinal",
+      "status": "PASS",
+      "expected": "ordinal",
+      "detail": ""
+    },
+    {
+      "sequence": 28,
+      "name": "prior_receipt",
+      "status": "PASS",
+      "expected": "ordinal",
+      "detail": ""
+    },
+    {
+      "sequence": 29,
+      "name": "upper_bound",
+      "status": "PASS",
+      "expected": "support",
+      "detail": ""
+    },
+    {
+      "sequence": 30,
+      "name": "u128_out_of_domain",
+      "status": "PASS",
+      "expected": "input",
+      "detail": ""
+    },
+    {
+      "sequence": 31,
+      "name": "beginning_cumulative_supply_m_owner_copy",
+      "status": "PASS",
+      "expected": "beginning",
+      "detail": ""
+    },
+    {
+      "sequence": 32,
+      "name": "beginning_cumulative_infiltration_m_owner_copy",
+      "status": "PASS",
+      "expected": "beginning",
+      "detail": ""
+    },
+    {
+      "sequence": 33,
+      "name": "working_cumulative_supply_m_owner_copy",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 34,
+      "name": "working_cumulative_infiltration_m_owner_copy",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 35,
+      "name": "persistent_cumulative_supply_m_owner_copy",
+      "status": "PASS",
+      "expected": "parent",
+      "detail": ""
+    },
+    {
+      "sequence": 36,
+      "name": "candidate_cumulative_supply_m_owner_copy",
+      "status": "PASS",
+      "expected": "parent",
+      "detail": ""
+    },
+    {
+      "sequence": 37,
+      "name": "cursor_cumulative_supply_m_owner_copy",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 38,
+      "name": "scalar_cumulative_supply_m_owner_copy",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 39,
+      "name": "persistent_cumulative_infiltration_m_owner_copy",
+      "status": "PASS",
+      "expected": "parent",
+      "detail": ""
+    },
+    {
+      "sequence": 40,
+      "name": "candidate_cumulative_infiltration_m_owner_copy",
+      "status": "PASS",
+      "expected": "parent",
+      "detail": ""
+    },
+    {
+      "sequence": 41,
+      "name": "cursor_cumulative_infiltration_m_owner_copy",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 42,
+      "name": "scalar_cumulative_infiltration_m_owner_copy",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 43,
+      "name": "coherent_cumulative_supply_m_positive_one",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 44,
+      "name": "coherent_cumulative_supply_m_negative_one",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 45,
+      "name": "coherent_cumulative_supply_m_negative_zero",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 46,
+      "name": "coherent_cumulative_supply_m_nonfinite",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 47,
+      "name": "coherent_cumulative_supply_m_nonnumeric",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 48,
+      "name": "coherent_cumulative_infiltration_m_positive_one",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 49,
+      "name": "coherent_cumulative_infiltration_m_negative_one",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 50,
+      "name": "coherent_cumulative_infiltration_m_negative_zero",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 51,
+      "name": "coherent_cumulative_infiltration_m_nonfinite",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 52,
+      "name": "coherent_cumulative_infiltration_m_nonnumeric",
+      "status": "PASS",
+      "expected": "cumulative",
+      "detail": ""
+    },
+    {
+      "sequence": 53,
+      "name": "transaction_authority_only",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 54,
+      "name": "transaction_prefix_only",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 55,
+      "name": "transaction_binding_only",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 56,
+      "name": "beginning_owner_authority_only",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 57,
+      "name": "beginning_owner_prefix_only",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 58,
+      "name": "ending_owner_prefix_only",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 59,
+      "name": "ending_owner_binding_only",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 60,
+      "name": "missing_accepted_slab",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 61,
+      "name": "malformed_accepted_slab",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 62,
+      "name": "zero_accepted_slab",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 63,
+      "name": "missing_parent_id",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 64,
+      "name": "malformed_parent_id",
+      "status": "PASS",
+      "expected": "identity",
+      "detail": ""
+    },
+    {
+      "sequence": 65,
+      "name": "u128_negative",
+      "status": "PASS",
+      "expected": "input",
+      "detail": ""
+    },
+    {
+      "sequence": 66,
+      "name": "u128_wrong_type",
+      "status": "PASS",
+      "expected": "input",
+      "detail": ""
+    },
+    {
+      "sequence": 67,
+      "name": "u128_max_boundary",
+      "status": "PASS",
+      "expected": "input",
+      "detail": ""
+    },
+    {
+      "sequence": 68,
+      "name": "receipt_wrong_exit",
+      "status": "PASS",
+      "expected": "receipt",
+      "detail": ""
+    },
+    {
+      "sequence": 69,
+      "name": "run_schema",
+      "status": "PASS",
+      "expected": "receipt",
+      "detail": ""
+    },
+    {
+      "sequence": 70,
+      "name": "run_reason",
+      "status": "PASS",
+      "expected": "error",
+      "detail": ""
+    },
+    {
+      "sequence": 71,
+      "name": "u128_large_over_u64",
+      "status": "PASS",
+      "expected": "input",
+      "detail": ""
+    },
+    {
+      "sequence": 72,
+      "name": "u128_max",
+      "status": "PASS",
+      "expected": "input",
+      "detail": ""
+    },
+    {
+      "sequence": 73,
+      "name": "u128_overflow",
+      "status": "PASS",
+      "expected": "input",
+      "detail": ""
+    },
+    {
+      "sequence": 74,
+      "name": "u128_negative",
+      "status": "PASS",
+      "expected": "input",
+      "detail": ""
+    },
+    {
+      "sequence": 75,
+      "name": "u128_wrong_type",
+      "status": "PASS",
+      "expected": "input",
+      "detail": ""
+    }
+  ],
+  "unexecuted_cases": []
+}

@@ -1,0 +1,53 @@
+{
+  "evidence_class": "Ran: read-only small-file custody check",
+  "base": "8ceb80d5e18178b66d5bb20332b362a05733dfe6",
+  "checks": {
+    "current-run-boundary-packet.json": {
+      "sha256": "d8f1fe07d73ac09a6eb002b1a49a714cad7a0af1bb58ffab7612282ea002cc76",
+      "unchanged_from_base": true
+    },
+    "extract_current_pair.py": {
+      "sha256": "f15d3215dfd825e9c3e57943a1074cf198a8022f4a01705dc2130a66f6632336",
+      "unchanged_from_base": true
+    },
+    "correctness-replacement-review.txt": {
+      "sha256": "aa4d222756bc6271f4f5805deffb581235a19511489136d6c0d16b7e95ceb126",
+      "unchanged_from_base": true
+    },
+    "qa-replacement-review.txt": {
+      "sha256": "c1d047a7effdc76ec43ea0869cbc78ff49da612d1a5f8db65ed4dcf333d505aa",
+      "unchanged_from_base": true
+    },
+    "qa-replacement-current-custody.txt": {
+      "sha256": "bde43b721b7364b55c9d696ca11fd04f1e4a160773c90be188a7fd9d74071f72",
+      "unchanged_from_base": true
+    },
+    "raw-capture-index.json": {
+      "sha256": "84cb214655adcce8477c6399d0535a1221f9ae1b816632d1a4e7b05d1400679c",
+      "unchanged_from_base": true
+    },
+    "build-evidence-index.json": {
+      "sha256": "ff2ea6114c00f904dea98b682156761bd691bec7670ca9a812b6b1f002eccb07",
+      "unchanged_from_base": true
+    },
+    "checker-submission-7-result.json": {
+      "sha256": "9a682de132972d3133671fdbe4f19543c5117e78e67c82363efa95ae59463c2b",
+      "unchanged_from_base": true
+    },
+    "checker-submission-7-execution.txt": {
+      "sha256": "be250ffb584507173968d95bdad0df51deb7db363fbf2f03112e8483154e2ae2",
+      "unchanged_from_base": true
+    }
+  },
+  "actual_receipt_run_joins": {
+    "receipt": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "run": {
+      "bytes_match": true,
+      "sha256_match": true
+    }
+  },
+  "raw_corpus": "Reused unchanged qa-replacement-current-custody.txt; no corpus rehash/re-export"
+}

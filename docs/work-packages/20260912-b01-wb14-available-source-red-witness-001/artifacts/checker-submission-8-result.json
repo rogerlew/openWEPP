@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: result transcribed from checker-submission-8-execution.txt; no rerun",
+  "command_exit_code": 1,
+  "syntax": "PASS (the chained command reached unittest)",
+  "suite": "FAIL",
+  "candidate": {
+    "base_revision": "8ceb80d5e",
+    "check_witness_path": "artifacts/check_witness.py",
+    "check_witness_sha256": "e39eb2705cc83cf98aeeb708cf0f88ca52d3c9b405f5671033dfb14b3a1999aa",
+    "test_check_witness_path": "artifacts/test_check_witness.py",
+    "test_check_witness_sha256": "48a5cd2240126b4881f0dfcffc5d8d72ea2c41fa01a7fa0c1913fda2c7932b0d",
+    "source_custody": "The two named paths hold the exact failed candidate at this preservation cut; parent must snapshot or commit them before any correction. The prior git diff was displayed and its files/hashes are bound above."
+  },
+  "named_case_results": {
+    "working_cumulative_supply_m_owner_copy": {"status": "FAIL", "expected": "parent", "actual": "cumulative"},
+    "working_cumulative_infiltration_m_owner_copy": {"status": "FAIL", "expected": "parent", "actual": "cumulative"},
+    "all_other_named_cases": {"status": "PASS_INFERRED", "basis": "unittest subtests emitted only failures; the single test method completed all subtests and reported exactly two failures"}
+  },
+  "unexecuted_cases": [],
+  "next_action": "STOP: failure consumes the cycle; no correction or further verification is included in this submission."
+}

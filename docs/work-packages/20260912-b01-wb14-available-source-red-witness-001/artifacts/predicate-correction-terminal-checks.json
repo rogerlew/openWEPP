@@ -1,0 +1,53 @@
+{
+  "evidence_class": "Ran: terminal scoped preservation checks",
+  "base": "8ceb80d5e18178b66d5bb20332b362a05733dfe6",
+  "tracked_paths": [
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.py",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.py",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/package.md",
+    "docs/work-packages/active.md"
+  ],
+  "new_paths": [
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/check_witness.submission-8.py",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-8-execution.txt",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-8-named-inventory.json",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-8-result.json",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-9-candidate.json",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-9-current-evidence-result.json",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-9-execution.txt",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-9-named-results.json",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/checker-submission-9.patch",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-correctness.txt",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa-checker.stderr",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa-checker.stdout",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa-current-result.json",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa-custody.json",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa-result.json",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa-suite.stderr",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa-suite.stdout",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa-syntax.stderr",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa-syntax.stdout",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-fresh-qa.txt",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/predicate-correction-resume-custody.json",
+    "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/test_check_witness.submission-8.py"
+  ],
+  "immutable_small_files_unchanged": {
+    "current-run-boundary-packet.json": true,
+    "extract_current_pair.py": true,
+    "correctness-replacement-review.txt": true,
+    "qa-replacement-review.txt": true,
+    "qa-replacement-current-custody.txt": true,
+    "raw-capture-index.json": true,
+    "build-evidence-index.json": true,
+    "checker-submission-7-result.json": true,
+    "checker-submission-7-execution.txt": true
+  },
+  "json_files_parsed": 38,
+  "missing_package_links": [],
+  "candidate_patch_reverse_check": "git apply --reverse --check exited0; no apply performed",
+  "witness": "PASS",
+  "correctness": "PASS",
+  "qa": "PASS",
+  "source_or_runtime_changes": false,
+  "raw_corpus_rehash_or_export": false
+}

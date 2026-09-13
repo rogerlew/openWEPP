@@ -1,0 +1,41 @@
+Fresh QA final review — submission 9
+
+Reviewer: /root/witness_qa_fresh, independent QA/evidence scope.
+
+Ran: `predicate-correction-fresh-qa-result.json` records exact cwd, argv, exit
+codes, candidate hashes, output paths, and current-evidence result. Python syntax
+passed. The full source-shaped suite passed: all 70 finite named cases and all 5
+direct u128 cases emitted `CASE ... PASS`; zero emitted FAIL or ERROR. Raw suite
+stdout/stderr and checker stdout/stderr are retained as
+`predicate-correction-fresh-qa-{suite,checker}.{stdout,stderr}`. The actual
+checker against the retained packet, receipt, run, frozen binary, and compiled
+listing exited 0 and returned `LIMITED_CHECKER_PASS_PENDING_REVIEW`; the runner
+remains FAIL. That internal checker result is distinct from witness acceptance.
+
+Static: submission 9 restores the eight required per-coordinate cumulative
+owner-copy controls (persistent, candidate, beginning cursor, and scalar/working)
+for both coordinates, while retaining coherent +1/-1/-0/nonfinite/nonnumeric
+domain controls. It also supplies targeted transaction, beginning-owner, and
+ending-owner identity joins, mandatory accepted-slab/parent-id controls, exact
+OFE membership/payload/receipt/listing predicates, and direct full-u128 domain
+controls. Each mutation asserts an actual change and its intended refusal code.
+
+Custody: `predicate-correction-fresh-qa-custody.json` records PASS for packet,
+receipt, run, started, inputs, index, observation-receipt, and frozen-binary
+joins. The accepted unchanged `qa-replacement-current-custody.txt` remains the
+evidence for complete 123,088-record stream membership and the 3.7-GB raw hash
+`7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9`; this
+review did not rehash, parse, or re-export that corpus.
+
+Findings
+
+None.
+
+Non-blocking debt/follow-ups
+
+- The checker result properly remains pending-review wording in durable evidence;
+  package witness acceptance depends on both independent review scopes.
+
+QA PASS: the corrected offline checker/test inventory and current evidence joins
+meet this QA scope. No Rust build/test, binary execution/listing, collector,
+simulation, or raw-corpus rehash/re-export was run.

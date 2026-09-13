@@ -7,7 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
-| B01 WB14 available-source red witness (adjudication blocked) | [record](20260912-b01-wb14-available-source-red-witness-001/package.md) | Predicate correction adopted; failures 7/9, no added time. Both required same-reviewer followup calls returned live agent path not found; stopped before edits/tests. Invocation 1/1, runner FAIL; witness NOT EVALUATED, checker/package HOLD. Historical overrun and custody retained. |
+| B01 WB14 available-source red witness (complete limited witness) | [record](20260912-b01-wb14-available-source-red-witness-001/package.md) | Witness PASS after corrected checker, 75 named controls and distinct correctness/QA PASS. Runner FAIL, execution_valid=false; invocation1/1 exhausted. Failures8/9 preserved. No cadence/source adoption or broader qualification; raw custody retained. |
 | B01 WB14 evidence interface design (incomplete, stopped) | [record](20260911-b01-wb14-evidence-interface-design-001/package.md) | Two unsuccessful correction cycles exhausted; implementation envelope not recommended for adoption. Source/cadence/release HOLD. |
 | B01 WB14 source reconciliation (assessment complete) | [record](20260911-b01-wb14-source-reconciliation-001/package.md) | HOLD recommendation: available source recoverable; source/test adoption awaits a concrete real-runner injection and total-physics observation bridge. |
 | B01 WB14 verified cadence repair (HOLD) | [record](20260911-b01-wb14-verified-cadence-repair-001/package.md) | Exact recovery stopped at 925/927 file matches; two required test-file byte sequences unavailable. No candidate or authentic runs. |
