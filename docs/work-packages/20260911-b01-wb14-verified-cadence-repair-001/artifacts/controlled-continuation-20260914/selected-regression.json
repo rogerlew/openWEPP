@@ -1,0 +1,10 @@
+{
+  "selection_from_compiled_listing": [
+    {
+      "binary_id": "openwepp-hillslope-orchestrator",
+      "name": "v9_real_consumer_shadow::tests::b01_current_context_importer_restores_fixture_without_physics",
+      "binary": "/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab"
+    }
+  ],
+  "scope": "Existing helper regression only; no full file API fixture exists"
+}

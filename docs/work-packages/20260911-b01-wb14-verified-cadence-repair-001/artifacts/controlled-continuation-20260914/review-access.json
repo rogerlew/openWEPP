@@ -1,0 +1,22 @@
+{
+  "recorded_utc": "2026-09-14T02:29:48.678711+00:00",
+  "correctness": {
+    "identity": "/root/controlled_correctness",
+    "requested_role": "rust_code_reviewer",
+    "requested_model": "gpt-5.6-sol/high",
+    "tool_result": "Agent errored: Selected model is at capacity. Please try a different model.",
+    "review": "Static initial and final HOLD; same-scope followup succeeded",
+    "report": "correctness-review.txt"
+  },
+  "qa": {
+    "requested_identity": "/root/controlled_qa",
+    "requested_role": "rust_qa_reviewer",
+    "requested_model": "gpt-5.6-terra/medium",
+    "tool_result": "collab spawn failed: agent thread limit reached",
+    "conversation_created": false,
+    "review": "NOT RUN"
+  },
+  "independent_approvals": 0,
+  "fallback_model_used": false,
+  "repeated_thread_limit_dispatch": false
+}

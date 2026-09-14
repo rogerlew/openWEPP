@@ -1,0 +1,17 @@
+{
+  "utc": "2026-09-14T02:15:44.451123+00:00",
+  "session_start_conservative": "2026-09-14T02:13:00Z",
+  "deadline_no_wait_deductions": "2026-09-14T02:50:51Z",
+  "carried_seconds": 12129,
+  "failed_corrections": 10,
+  "primary_head": "f7ae678512d80464c0612bd18646c92ebbb603e0",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "files": {
+    "crates/openwepp-hillslope-orchestrator/src/lib.rs": "13cb587e3fb4964aeab1f678d8237dc12ffa8bb61ce0e00579f8b2650e8742e6",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs": "646ef885bec670d3401ba4da0c8c7597b35bc4cbecd458e6ecee33661c401b87",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs": "f916f9bcab98d9324e0a7e7bfc4b070e3b7bb946bd9aee22716a63938af3574d",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs": "65989fe36e73fe385978e9828d2063bc97344efbf802aabef2c49269519fd4e3",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs": "2ca20b6599f9e857a3eec2ed8206133600f3949af752539e5a268f4e9304ccb9"
+  },
+  "all_match": true
+}

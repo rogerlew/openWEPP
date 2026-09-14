@@ -1,0 +1,5 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/current-context-capture-20260913-e61beb50c546
+  scratch: /tmp/openwepp-roger-current-context-capture-20260913-e61beb50c546
+  cache:   /workdir/.cache/openwepp
+cargo 1.95.0 (f2d3ce0bd 2026-03-21)
