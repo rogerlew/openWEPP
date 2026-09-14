@@ -1,0 +1,20 @@
+{
+  "utc": "2026-09-14T01:13:04.768334+00:00",
+  "evidence_class": "Ran: exact source preservation and observed failed commands; no final-source behavior qualification",
+  "carried_active_seconds": 10805,
+  "current_session_charged_seconds": 1204,
+  "cumulative_active_seconds": 12009,
+  "ceiling_seconds": 14400,
+  "pure_wait_deductions_seconds": 0,
+  "historical_overrun_seconds_included": 5,
+  "new_ceiling_overrun_seconds": 0,
+  "unsuccessful_corrections": 10,
+  "correction_ceiling": 10,
+  "checkpoint": "INCOMPLETE / HOLD",
+  "capture_invocations": 0,
+  "probe_invocations": 0,
+  "witness_invocations": 1,
+  "final_correctness": "UNAVAILABLE / NOT RUN: agent thread limit reached",
+  "final_qa": "UNAVAILABLE / NOT RUN: agent thread limit reached",
+  "publication": "PENDING; final publication time charged separately in local terminal receipt"
+}

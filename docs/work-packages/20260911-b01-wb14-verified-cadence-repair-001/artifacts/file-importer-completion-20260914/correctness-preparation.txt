@@ -1,0 +1,25 @@
+Reviewer: /root/file_importer_correctness (rust_code_reviewer, Sol/high), authorized replacement for unavailable /root/capture_importer_correctness. Original final response follows.
+
+Static preparation only; moving source is **HOLD / NOT ACCEPTED**.
+
+Final frozen-cut correctness acceptance requires:
+
+- Actual prepared provider day passed through `PreChildContext` and the production hook, with provider plus all 48 supports recorded from real producer objects.
+- File-path consumer requiring only independently pinned configuration/authority inputs; no live producer-side consumer, prepared day, parent, or clock.
+- Typed owned restored context returned for the probe.
+- Canonical provider restoration and exact ordered 48-support binding, including lane/destination coverage, day and cursor joins.
+- Negative controls for duplicate-valid, omitted/replaced, reordered, and wrong-day supports.
+- `canonical_parent_forcing_digest` derived from the restored provider-bound support; recorded forcing used only for comparison.
+- Consumer restored from native owners, accepted history/event handoffs, configuration, provider state, and cursor.
+- Distinct consumer, parent, and clock projections joined through their source-defined representations.
+- Parent staged owners, transaction/support, accepted cursor/segment, slab/event chronology, and inactive prefix joined to clock and consumer history.
+- Every terminal parcel validated as exact `ProducedUnconsumed` custody and left unconsumed.
+- Canonical provisional construction performed on an exact clock clone with independently captured real-producer reduction, ledger, receipt, and binding evidence.
+- Duplicated provisional-constructor and scalar/enum mappings centralized or explicitly justified with source-bound parity tests.
+- Exact run/topology/parent/child selector, once-only recording, and missing/duplicate/conflicting row rejection.
+- Disabled/non-target zero-work behavior and observational recorder-failure isolation.
+- Zero constitutive, ingress, WB14, physical owner, time, and custody mutation during import; fresh process-local capabilities minted only after validation.
+- B01-CONT-015/016 retained; B01-CONT-017 lifetime and historical E0382 corrections verified on the final source.
+- Frozen-source build, nonzero composed file test, poison cases reaching intended predicates, formatting, matched lint attribution, and real producer/file-consumer evidence.
+
+The checklist preserves all prior high and medium findings and the named SC-COUPLEDTIME-001, SC-SURFACELIQUID-001, and SC-SNOWENERGY-001 obligations. Predecessor test passes cannot qualify the final cut.

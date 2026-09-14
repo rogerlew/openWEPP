@@ -1,0 +1,5 @@
+start=2026-09-14T01:08:49Z
+command=cargo check -p openwepp-hillslope-orchestrator --features persisted-restart-v1,restart-authority-evidence
+/bin/bash: line 1: cargo: command not found
+end=2026-09-14T01:08:49Z
+exit=127

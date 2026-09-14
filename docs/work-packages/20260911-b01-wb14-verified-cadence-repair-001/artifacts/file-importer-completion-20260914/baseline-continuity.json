@@ -1,0 +1,31 @@
+{
+  "utc": "2026-09-14T00:59:32.666940+00:00",
+  "evidence_class": "Ran: retained reconstruction baseline subset hash verification",
+  "files": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/lib.rs",
+      "sha256": "489cb0bf3e6b271e4bb23908e56cf92f45782389b7234265f74e38bf31aca1f6",
+      "matches": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "sha256": null,
+      "matches": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+      "sha256": "575cd3958e3860c5bac3ba0514f04d8ef203bd4a13a49ec4f41cb2b93952f78c",
+      "matches": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+      "sha256": "61b4d622dabfef7604891a22a5d86c6fe803409fc2eab3fd1a5306ed3e9867b4",
+      "matches": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "sha256": "af5deef99b53455ed1e2fc5b797651ee6d3e64435dafd07bc9f0ad772d682117",
+      "matches": true
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Ran: preserved failed command log, not a compiler or test execution",
+  "command_text": "cargo check -p openwepp-hillslope-orchestrator --features persisted-restart-v1,restart-authority-evidence",
+  "start_utc": "2026-09-14T01:08:49Z",
+  "end_utc": "2026-09-14T01:08:49Z",
+  "exit": 127,
+  "cwd": "UNAVAILABLE in raw log; writer source was detached diagnostic copy",
+  "log": "file-importer-developmental-check.log",
+  "original_log_path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/file-importer-completion-20260914/file-importer-developmental-check.log",
+  "source": "terminal-source-recovery.json",
+  "deviation": "Plain cargo invoked outside explicitly required Nix/manifest/target/stack command; cargo absent; no compiler ran",
+  "failure_cycles": 10
+}

@@ -1,0 +1,35 @@
+{
+  "evidence_class": "Ran: all five source hashes and patch verified before writer dispatch",
+  "primary_head": "6dcb16fed8023e340d8d8f317ac778dfd54926bc",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "files": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/lib.rs",
+      "adopted_sha256": "13cb587e3fb4964aeab1f678d8237dc12ffa8bb61ce0e00579f8b2650e8742e6"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "adopted_sha256": "3496d7ebc70620f7ac1bd1ad8d4c7b6c7b156ef6fbc29ea7c89c648856ba5820"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+      "adopted_sha256": "a17bed40225a821636bdb207c83d210f39e9281bb9db5858cafc2001ef1da4c4"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+      "adopted_sha256": "3ffce676c80e312e9b61c01f6b5002383f188d3e04900ca9f0815812ed6d536e"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "adopted_sha256": "646ef885bec670d3401ba4da0c8c7597b35bc4cbecd458e6ecee33661c401b87"
+    }
+  ],
+  "patch_sha256": "66c7ab9d3241ce70f1fa90a867a403cc5d12d6cf30326710261e1c445ffc23c0",
+  "session_start_utc": "2026-09-14T00:53:00+00:00",
+  "deadline_utc": "2026-09-14T01:52:55+00:00",
+  "carried_active_seconds": 10805,
+  "carried_unsuccessful_corrections": 8,
+  "active_ceiling_seconds": 14400,
+  "correction_ceiling": 10
+}

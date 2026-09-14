@@ -1,0 +1,19 @@
+Reviewer: /root/file_importer_qa (rust_qa_reviewer, Terra/medium), authorized replacement for unavailable /root/capture_importer_qa. Original final response follows. Parent note: the command was still completing its evidence at inspection; later command/end/exit sidecars are preserved without rewriting the original finding.
+
+Static preparation review — `/root/file_importer_qa`, independent of writer and correctness scope. No builds, tests, source inspection, edits, capture, or probe run.
+
+Findings:
+
+- HIGH — Current evidence cannot support final-source acceptance or launch. The only new execution record is a pre-focused compile failure with eight errors; no test body ran. Final composed controls, `rustfmt --check`, both matched `clippy -D warnings` comparisons, final source/binary/command identities, and final independent reviews remain absent.
+
+- HIGH — Prior B01-CONT-015/016 findings remain open. The retained final reviews establish the old cut lacked a wired producer-to-file-consumer path, full 48-support reconstruction, real-consumer/parent/prefix/custody joins, independent producer agreement, and prescribed poison/zero-physics controls. Nothing in the new evidence resolves these findings.
+
+- MEDIUM — The failed pre-focused record has a start timestamp and source hash, but lacks preserved exact argv, numeric exit sidecar, and end timestamp. Its full log proves compilation failed, but it cannot serve as complete gate/budget evidence. Preserve this limitation rather than reconstructing it.
+
+Non-blocking follow-ups:
+
+- Initial five adopted source hashes and all 17 retained input identities are recorded as matching. This supports starting provenance only; the writer’s moving source requires a fresh frozen-cut identity set before any acceptance or launch.
+
+- Cargo-deny and authority-suite anti-evasion remain conditionally not applicable only if terminal reconciliation confirms no dependency, manifest, fixture, required-case, or authority-suite-posture changes.
+
+QA preparation verdict: HOLD / NOT ACCEPTED. The capture and fresh-process probe remain blocked pending a frozen final cut, successful nonzero composed file-backed controls with required negatives and zero-physics observation, formatting, matched lint attribution, final identity custody, and the two accepted independent scopes.

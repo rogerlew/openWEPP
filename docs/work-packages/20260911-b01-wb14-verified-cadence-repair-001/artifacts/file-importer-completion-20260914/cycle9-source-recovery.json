@@ -1,0 +1,37 @@
+{
+  "evidence_class": "Ran: reconstruction of failed correction9 full five-file source subset",
+  "utc": "2026-09-14T01:07:08.136002+00:00",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+  "prior_patch": "../importer-continuation-20260913/terminal-source.patch",
+  "replacement_file_patch": "writer-post-failure-cut.patch",
+  "method": "Apply retained prior five-file patch to exact base; replace newly-added capture module with full zero-origin addition body from failed-cut patch.",
+  "reconstruction": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/file-importer-cycle9-reconstruction",
+  "files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/lib.rs",
+      "sha256": "13cb587e3fb4964aeab1f678d8237dc12ffa8bb61ce0e00579f8b2650e8742e6",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "sha256": "dad13fe7e48a09a75980243fbbab7526964471bce5d7d2bdab8c16ae01280b79",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+      "sha256": "a17bed40225a821636bdb207c83d210f39e9281bb9db5858cafc2001ef1da4c4",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+      "sha256": "3ffce676c80e312e9b61c01f6b5002383f188d3e04900ca9f0815812ed6d536e",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "sha256": "646ef885bec670d3401ba4da0c8c7597b35bc4cbecd458e6ecee33661c401b87",
+      "matches": true
+    }
+  ],
+  "all_match": true
+}
