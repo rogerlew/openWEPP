@@ -1,0 +1,273 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling syn v2.0.117
+   Compiling num-traits v0.2.19
+   Compiling zerocopy v0.8.48
+   Compiling libc v0.2.186
+   Compiling getrandom v0.3.4
+   Compiling ahash v0.8.12
+    Checking lexical-util v1.0.7
+    Checking bytes v1.11.1
+   Compiling semver v1.0.28
+    Checking iana-time-zone v0.1.65
+    Checking once_cell v1.21.4
+    Checking arrow-schema v54.3.1
+    Checking hashbrown v0.15.5
+   Compiling paste v1.0.15
+   Compiling snap v1.1.1
+    Checking bitflags v1.3.2
+    Checking static_assertions v1.1.0
+    Checking byteorder v1.5.0
+    Checking integer-encoding v3.0.4
+    Checking twox-hash v1.6.3
+   Compiling rustc_version v0.4.1
+   Compiling seq-macro v0.3.6
+    Checking toml_write v0.1.2
+    Checking winnow v0.7.15
+    Checking lexical-parse-integer v1.0.6
+    Checking lexical-write-integer v1.0.6
+    Checking powerfmt v0.2.0
+    Checking openwepp-comparator-metadata v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-comparator-metadata)
+    Checking num-conv v0.2.2
+    Checking time-core v0.1.8
+    Checking deranged v0.5.8
+    Checking openwepp-legacy-bridge v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-legacy-bridge)
+    Checking lexical-parse-float v1.0.6
+    Checking openwepp-summary-accumulator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-summary-accumulator)
+   Compiling rustix v1.1.4
+    Checking bitflags v2.13.0
+    Checking linux-raw-sys v0.12.1
+   Compiling flatbuffers v24.12.23
+    Checking lexical-write-float v1.0.6
+    Checking lexical-core v1.0.6
+    Checking num-integer v0.1.46
+    Checking num-complex v0.4.6
+    Checking chrono v0.4.44
+    Checking ordered-float v2.10.1
+    Checking atoi v2.0.0
+    Checking num-bigint v0.4.6
+    Checking num-iter v0.1.45
+    Checking thrift v0.17.0
+    Checking time v0.3.47
+    Checking num-rational v0.4.2
+    Checking num v0.4.3
+   Compiling serde_derive v1.0.228
+   Compiling zerocopy-derive v0.8.48
+    Checking serde v1.0.228
+    Checking openwepp-kernel-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-kernel-contract)
+    Checking serde_yaml v0.9.34+deprecated
+    Checking openwepp-coupled-time v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-coupled-time)
+    Checking toml_datetime v0.6.11
+    Checking serde_spanned v0.6.9
+    Checking toml_edit v0.22.27
+    Checking openwepp-land-surface-energy v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-land-surface-energy)
+    Checking openwepp-biogeochemistry v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-biogeochemistry)
+    Checking openwepp-management-schema v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-management-schema)
+    Checking openwepp-vegetation v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-vegetation)
+    Checking toml v0.8.23
+    Checking half v2.7.1
+    Checking arrow-buffer v54.3.1
+    Checking openwepp-input-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-input-contract)
+    Checking arrow-data v54.3.1
+    Checking arrow-array v54.3.1
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-climate-runtime-adapter)
+    Checking arrow-select v54.3.1
+    Checking arrow-ipc v54.3.1
+    Checking openwepp-watershed-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-watershed-orchestrator)
+    Checking arrow-cast v54.3.1
+    Checking parquet v54.3.1
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-watershed-output v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-watershed-output)
+    Checking openwepp-hillslope-output v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-output)
+error[E0433]: cannot find `snow_stage3_v11_production_qualification` in `crate`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1793:16
+     |
+1793 |         crate::snow_stage3_v11_production_qualification::SnowStage3V11QualificationDayDeltaV1,
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `snow_stage3_v11_production_qualification` in the crate root
+
+error[E0433]: cannot find `snow_stage3_v11_production_qualification` in `crate`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1889:37
+     |
+1889 |     let qualification_delta: crate::snow_stage3_v11_production_qualification::
+     |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `snow_stage3_v11_production_qualification` in the crate root
+
+error[E0277]: `?` couldn't convert the error to `v9_real_consumer_shadow::DirectV10RealConsumerError`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1793:40
+     |
+1759 | ) -> Result<RestoredStage3PublicationDayEvidenceV1, DirectV10RealConsumerError> {
+     |      -------------------------------------------------------------------------- expected `v9_real_consumer_shadow::DirectV10RealConsumerError` because of this
+...
+1793 |         .collect::<Result<Vec<_>, _>>()?;
+     |          ------------------------------^ the trait `From<v9_real_consumer_shadow::DirectV11RealConsumerError>` is not implemented for `v9_real_consumer_shadow::DirectV10RealConsumerError`
+     |          |
+     |          this can't be annotated with `?` because it has type `Result<_, v9_real_consumer_shadow::DirectV11RealConsumerError>`
+     |
+note: `v9_real_consumer_shadow::DirectV10RealConsumerError` needs to implement `From<v9_real_consumer_shadow::DirectV11RealConsumerError>`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:947:1
+     |
+ 947 | pub enum DirectV10RealConsumerError {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+     = help: the following other types implement trait `From<T>`:
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<DirectSurfaceLiquidError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LandSurfaceEnergyError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LseV2StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LseV3StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<SnowFreeHalfHourForcingError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<V10StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<surface_liquid_owner_v3_exact_enthalpy::LseSurfaceEnthalpyErrorV1>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<v9_real_consumer_shadow::DirectV9RealConsumerError>`
+
+error[E0277]: `?` couldn't convert the error to `v9_real_consumer_shadow::DirectV10RealConsumerError`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1812:61
+     |
+1759 | ) -> Result<RestoredStage3PublicationDayEvidenceV1, DirectV10RealConsumerError> {
+     |      -------------------------------------------------------------------------- expected `v9_real_consumer_shadow::DirectV10RealConsumerError` because of this
+...
+1812 |     restored.replace(supports.clone(), &wire.event_handoffs)?;
+     |              -----------------------------------------------^ the trait `From<v9_real_consumer_shadow::DirectV11RealConsumerError>` is not implemented for `v9_real_consumer_shadow::DirectV10RealConsumerError`
+     |              |
+     |              this can't be annotated with `?` because it has type `Result<_, v9_real_consumer_shadow::DirectV11RealConsumerError>`
+     |
+note: `v9_real_consumer_shadow::DirectV10RealConsumerError` needs to implement `From<v9_real_consumer_shadow::DirectV11RealConsumerError>`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:947:1
+     |
+ 947 | pub enum DirectV10RealConsumerError {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+     = help: the following other types implement trait `From<T>`:
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<DirectSurfaceLiquidError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LandSurfaceEnergyError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LseV2StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LseV3StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<SnowFreeHalfHourForcingError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<V10StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<surface_liquid_owner_v3_exact_enthalpy::LseSurfaceEnthalpyErrorV1>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<v9_real_consumer_shadow::DirectV9RealConsumerError>`
+
+error[E0277]: `?` couldn't convert the error to `v9_real_consumer_shadow::DirectV10RealConsumerError`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1813:57
+     |
+1759 | ) -> Result<RestoredStage3PublicationDayEvidenceV1, DirectV10RealConsumerError> {
+     |      -------------------------------------------------------------------------- expected `v9_real_consumer_shadow::DirectV10RealConsumerError` because of this
+...
+1813 |     if restored.validate_cached_tail_against_full_scan()? != Some(wire.ending_owner_set_sha256)
+     |                 ----------------------------------------^ the trait `From<v9_real_consumer_shadow::DirectV11RealConsumerError>` is not implemented for `v9_real_consumer_shadow::DirectV10RealConsumerError`
+     |                 |
+     |                 this can't be annotated with `?` because it has type `Result<_, v9_real_consumer_shadow::DirectV11RealConsumerError>`
+     |
+note: `v9_real_consumer_shadow::DirectV10RealConsumerError` needs to implement `From<v9_real_consumer_shadow::DirectV11RealConsumerError>`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:947:1
+     |
+ 947 | pub enum DirectV10RealConsumerError {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+     = help: the following other types implement trait `From<T>`:
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<DirectSurfaceLiquidError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LandSurfaceEnergyError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LseV2StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LseV3StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<SnowFreeHalfHourForcingError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<V10StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<surface_liquid_owner_v3_exact_enthalpy::LseSurfaceEnthalpyErrorV1>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<v9_real_consumer_shadow::DirectV9RealConsumerError>`
+
+error[E0277]: `?` couldn't convert the error to `v9_real_consumer_shadow::DirectV10RealConsumerError`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1793:40
+     |
+1759 | ) -> Result<RestoredStage3PublicationDayEvidenceV1, DirectV10RealConsumerError> {
+     |      -------------------------------------------------------------------------- expected `v9_real_consumer_shadow::DirectV10RealConsumerError` because of this
+...
+1793 |         .collect::<Result<Vec<_>, _>>()?;
+     |          ------------------------------^ the trait `From<v9_real_consumer_shadow::DirectV11RealConsumerError>` is not implemented for `v9_real_consumer_shadow::DirectV10RealConsumerError`
+     |          |
+     |          this can't be annotated with `?` because it has type `Result<_, v9_real_consumer_shadow::DirectV11RealConsumerError>`
+     |
+note: `v9_real_consumer_shadow::DirectV10RealConsumerError` needs to implement `From<v9_real_consumer_shadow::DirectV11RealConsumerError>`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:947:1
+     |
+ 947 | pub enum DirectV10RealConsumerError {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+     = help: the following other types implement trait `From<T>`:
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LseV3StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<V10StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<openwepp_land_surface_energy::LandSurfaceEnergyError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<openwepp_land_surface_energy::LseV2StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<runtime_inputs::SnowFreeHalfHourForcingError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<surface_liquid_owner::DirectSurfaceLiquidError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<surface_liquid_owner_v3_exact_enthalpy::LseSurfaceEnthalpyErrorV1>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<v9_real_consumer_shadow::DirectV9RealConsumerError>`
+
+error[E0277]: `?` couldn't convert the error to `v9_real_consumer_shadow::DirectV10RealConsumerError`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1812:61
+     |
+1759 | ) -> Result<RestoredStage3PublicationDayEvidenceV1, DirectV10RealConsumerError> {
+     |      -------------------------------------------------------------------------- expected `v9_real_consumer_shadow::DirectV10RealConsumerError` because of this
+...
+1812 |     restored.replace(supports.clone(), &wire.event_handoffs)?;
+     |              -----------------------------------------------^ the trait `From<v9_real_consumer_shadow::DirectV11RealConsumerError>` is not implemented for `v9_real_consumer_shadow::DirectV10RealConsumerError`
+     |              |
+     |              this can't be annotated with `?` because it has type `Result<_, v9_real_consumer_shadow::DirectV11RealConsumerError>`
+     |
+note: `v9_real_consumer_shadow::DirectV10RealConsumerError` needs to implement `From<v9_real_consumer_shadow::DirectV11RealConsumerError>`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:947:1
+     |
+ 947 | pub enum DirectV10RealConsumerError {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+     = help: the following other types implement trait `From<T>`:
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LseV3StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<V10StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<openwepp_land_surface_energy::LandSurfaceEnergyError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<openwepp_land_surface_energy::LseV2StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<runtime_inputs::SnowFreeHalfHourForcingError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<surface_liquid_owner::DirectSurfaceLiquidError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<surface_liquid_owner_v3_exact_enthalpy::LseSurfaceEnthalpyErrorV1>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<v9_real_consumer_shadow::DirectV9RealConsumerError>`
+
+error[E0277]: `?` couldn't convert the error to `v9_real_consumer_shadow::DirectV10RealConsumerError`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1813:57
+     |
+1759 | ) -> Result<RestoredStage3PublicationDayEvidenceV1, DirectV10RealConsumerError> {
+     |      -------------------------------------------------------------------------- expected `v9_real_consumer_shadow::DirectV10RealConsumerError` because of this
+...
+1813 |     if restored.validate_cached_tail_against_full_scan()? != Some(wire.ending_owner_set_sha256)
+     |                 ----------------------------------------^ the trait `From<v9_real_consumer_shadow::DirectV11RealConsumerError>` is not implemented for `v9_real_consumer_shadow::DirectV10RealConsumerError`
+     |                 |
+     |                 this can't be annotated with `?` because it has type `Result<_, v9_real_consumer_shadow::DirectV11RealConsumerError>`
+     |
+note: `v9_real_consumer_shadow::DirectV10RealConsumerError` needs to implement `From<v9_real_consumer_shadow::DirectV11RealConsumerError>`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:947:1
+     |
+ 947 | pub enum DirectV10RealConsumerError {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+     = help: the following other types implement trait `From<T>`:
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<LseV3StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<V10StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<openwepp_land_surface_energy::LandSurfaceEnergyError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<openwepp_land_surface_energy::LseV2StateError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<runtime_inputs::SnowFreeHalfHourForcingError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<surface_liquid_owner::DirectSurfaceLiquidError>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<surface_liquid_owner_v3_exact_enthalpy::LseSurfaceEnthalpyErrorV1>`
+               `v9_real_consumer_shadow::DirectV10RealConsumerError` implements `From<v9_real_consumer_shadow::DirectV9RealConsumerError>`
+
+error[E0282]: type annotations needed for `Vec<_>`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2360:9
+     |
+2360 |     let mut authenticated_archived_days = Vec::with_capacity(B01_DAY_INDEX);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2389 |                 != previous.publication.cumulative_support_count
+     |                    -------------------- type must be known at this point
+     |
+help: consider giving `authenticated_archived_days` an explicit type, where the type for type parameter `T` is specified
+     |
+2360 |     let mut authenticated_archived_days: Vec<T> = Vec::with_capacity(B01_DAY_INDEX);
+     |                                        ++++++++
+
+Some errors have detailed explanations: E0277, E0282, E0433.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 6 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 6 previous errors

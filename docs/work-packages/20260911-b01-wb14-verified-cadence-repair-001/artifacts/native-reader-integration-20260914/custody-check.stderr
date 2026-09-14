@@ -1,0 +1,182 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+error[E0277]: the trait bound `DirectSnowStage3V11ParentReceipt: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1423:12
+     |
+1423 |           Ok(serde_json::json!({
+     |  ____________^
+1424 | |             "kind":"b01_wb14_prepared_day_current_context_v1",
+1425 | |             "day_index":day.day_index(),
+1426 | |             "static_run_identity":context.run_identity,
+...    |
+1436 | |             "capture_posture":"before physical ingress; diagnostic no-publication wrapper"
+1437 | |         }))
+     | |          ^
+     | |          |
+     | |__________unsatisfied trait bound
+     |            required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `DirectSnowStage3V11ParentReceipt`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs:696:1
+     |
+ 696 | pub struct DirectSnowStage3V11ParentReceipt {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `DirectSnowStage3V11ParentReceipt` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 776 others
+     = note: required for `Vec<DirectSnowStage3V11ParentReceipt>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&Vec<DirectSnowStage3V11ParentReceipt>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `DirectSnowStage3V11ParentReceipt: serde::Deserialize<'de>` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2153:25
+     |
+2153 |       let receipt_chain = serde_json::from_value(
+     |  _________________________^
+2154 | |         day.get("committed_receipt_chain")
+2155 | |             .ok_or("captured committed receipt chain missing")?
+2156 | |             .clone(),
+2157 | |     )
+     | |_____^ unsatisfied trait bound
+     |
+help: the trait `Deserialize<'_>` is not implemented for `DirectSnowStage3V11ParentReceipt`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs:696:1
+     |
+ 696 | pub struct DirectSnowStage3V11ParentReceipt {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `DirectSnowStage3V11ParentReceipt` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 670 others
+     = note: required for `Vec<DirectSnowStage3V11ParentReceipt>` to implement `for<'de> Deserialize<'de>`
+     = note: required for `Vec<DirectSnowStage3V11ParentReceipt>` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-15306600141144600522.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `DirectSnowStage3V11ParentReceipt: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1423:12
+     |
+1423 |           Ok(serde_json::json!({
+     |  ____________^
+1424 | |             "kind":"b01_wb14_prepared_day_current_context_v1",
+1425 | |             "day_index":day.day_index(),
+1426 | |             "static_run_identity":context.run_identity,
+...    |
+1436 | |             "capture_posture":"before physical ingress; diagnostic no-publication wrapper"
+1437 | |         }))
+     | |          ^
+     | |          |
+     | |__________unsatisfied trait bound
+     |            required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `DirectSnowStage3V11ParentReceipt`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs:696:1
+     |
+ 696 | pub struct DirectSnowStage3V11ParentReceipt {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `DirectSnowStage3V11ParentReceipt` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 780 others
+     = note: required for `Vec<DirectSnowStage3V11ParentReceipt>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&Vec<DirectSnowStage3V11ParentReceipt>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-10766326040226293121.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `DirectSnowStage3V11ParentReceipt: serde::Deserialize<'de>` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2153:25
+     |
+2153 |       let receipt_chain = serde_json::from_value(
+     |  _________________________^
+2154 | |         day.get("committed_receipt_chain")
+2155 | |             .ok_or("captured committed receipt chain missing")?
+2156 | |             .clone(),
+2157 | |     )
+     | |_____^ unsatisfied trait bound
+     |
+help: the trait `Deserialize<'_>` is not implemented for `DirectSnowStage3V11ParentReceipt`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs:696:1
+     |
+ 696 | pub struct DirectSnowStage3V11ParentReceipt {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `DirectSnowStage3V11ParentReceipt` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 673 others
+     = note: required for `Vec<DirectSnowStage3V11ParentReceipt>` to implement `for<'de> Deserialize<'de>`
+     = note: required for `Vec<DirectSnowStage3V11ParentReceipt>` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-17553054169033916308.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 2 previous errors
