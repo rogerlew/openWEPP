@@ -1,0 +1,240 @@
+{
+  "utc": "2026-09-14T04:08:08.341266+00:00",
+  "commit": "ec6570b9871ca9aa83266cf76180af95808775d9",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/continuity.json",
+      "bytes": 9226,
+      "sha256": "7fc9caff018e9f54fb3c74a1d80598426e89970dc3bf9c39a52cd5d1af4242cb",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/correctness-review.txt",
+      "bytes": 8011,
+      "sha256": "e9173ac14aeb275193184c3f06f53fb54c9ab08a3f82f08010a17323a61778c4",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/exploratory-preservation.json",
+      "bytes": 2940,
+      "sha256": "af5c9ad5638a680b675807bcbcc28aa01d9fdf9081a1e57274f7853a89bc1722",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/exploratory-preservation.source.patch",
+      "bytes": 167732,
+      "sha256": "b60e667b3544ff85a24cac386439aebed3ea4411afc7d4b174ca5a3c659507b2",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/exploratory-preservation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/exploratory-preservation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/input-continuity.json",
+      "bytes": 4350,
+      "sha256": "51aabd5afd17a916c52b154f8dfac910004f113ae37a6dc0217905f03beae60a",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-context-check.json",
+      "bytes": 3371,
+      "sha256": "9ecc5a5306c74d8036c05a64f975617bf2869a27ee212228709b8a606ba4b175",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-context-check.source.patch",
+      "bytes": 153209,
+      "sha256": "9df2e22e9842b33cfdd7ac2532f7e8e0f7c16852581d4484d90a9b85654fcc08",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-context-check.stderr",
+      "bytes": 11152,
+      "sha256": "02a5adc7ff5df98b418928669f67ca792413704219faa785789568e278320013",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-context-check.stdout",
+      "bytes": 222,
+      "sha256": "4ec698c07911f9025b399c13494bf72c9dd792dc4171c03c0d79e772c969fef0",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-developmental-check.json",
+      "bytes": 3369,
+      "sha256": "bf2ce18b999eae2c69d2579c059ec526a75a5425a25efb186bcdc25fcaa84d75",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-developmental-check.source.patch",
+      "bytes": 147173,
+      "sha256": "4ea9c262d7f4509a64285205bcfa4c815ecbae13b7fdab875131773620288619",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-developmental-check.stderr",
+      "bytes": 6284,
+      "sha256": "e2895c92f4569f3fb682dccbd42fe586e94085eed27bf49d05334bb82a3c03dd",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-developmental-check.stdout",
+      "bytes": 222,
+      "sha256": "4ec698c07911f9025b399c13494bf72c9dd792dc4171c03c0d79e772c969fef0",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-format-check.json",
+      "bytes": 5342,
+      "sha256": "514d2b94d283aed1e64df8028f114e3e4edc87e1deaf45e162f472ad5d2636f0",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-format-check.source.patch",
+      "bytes": 192892,
+      "sha256": "37a9e1eabf0749bca728f5a4f3d98bd76faf1c8c8b7bfd036c0bfa62181ce526",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-format-check.stderr",
+      "bytes": 47,
+      "sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-format-check.stdout",
+      "bytes": 222,
+      "sha256": "4ec698c07911f9025b399c13494bf72c9dd792dc4171c03c0d79e772c969fef0",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-format.json",
+      "bytes": 5328,
+      "sha256": "50cb59d2f888ab9dd69aa22ec0c1b539884f462fa42d4f8d8e3b5f958e17dd0e",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-format.source.patch",
+      "bytes": 183465,
+      "sha256": "a25126f14b74076da85c9acf40bc50650d653c59b946b11f840bc987a292928a",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-format.stderr",
+      "bytes": 47,
+      "sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-format.stdout",
+      "bytes": 222,
+      "sha256": "4ec698c07911f9025b399c13494bf72c9dd792dc4171c03c0d79e772c969fef0",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-terminal-check.json",
+      "bytes": 3979,
+      "sha256": "ee717f1125df1eb1f008a70aaa28787cb1b90e8cb06cfbb6678e9e0cd49d4977",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-terminal-check.source.patch",
+      "bytes": 192892,
+      "sha256": "37a9e1eabf0749bca728f5a4f3d98bd76faf1c8c8b7bfd036c0bfa62181ce526",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-terminal-check.stderr",
+      "bytes": 30219,
+      "sha256": "5b45296b6ad10c05014e7f682269f1895c84bf6217cc106d946cc2c2c7d909bf",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/native-terminal-check.stdout",
+      "bytes": 222,
+      "sha256": "4ec698c07911f9025b399c13494bf72c9dd792dc4171c03c0d79e772c969fef0",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/qa-review.txt",
+      "bytes": 1875,
+      "sha256": "a8f3443624bf297042d9b3dbabe41c40bfe2bbd3fa3685389c0f11d2de932394",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/review-access.json",
+      "bytes": 1103,
+      "sha256": "2e73cff782751c09d5a0863455583eb8b989b69af05d3dea0988b96e8ac0c9da",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/run-recorded.py",
+      "bytes": 2609,
+      "sha256": "52636780de754e2fa2f72cd10929c1641f6458762dc30d659a48327e411dd7e5",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/terminal-recovery-and-stop.json",
+      "bytes": 9487,
+      "sha256": "9f6aedf251f0765b1947fe59fd70a77f6de0ca33129346145cc27640967a0a90",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-file-roundtrip-20260914/writer-reassignment.json",
+      "bytes": 1548,
+      "sha256": "fd2ec7bc43017d25e9b6dabcab2eff7fbabfcd3b6c99c964d2a02c0b0670649d",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 191991,
+      "sha256": "298bfbb04291536b4121508a075a9aaa1a4cbbd2b8b3b5f73cd1b5690ff23dff",
+      "matches": true,
+      "lfs_pointer": false
+    }
+  ],
+  "all_match": true,
+  "total_bytes": 1340751,
+  "scope": "Small patch/evidence bytes only; full detached source and raw corpus remain local."
+}
