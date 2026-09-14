@@ -1,0 +1,13 @@
+{
+  "changed_since_adopted_cut": [
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs"
+  ],
+  "final_changed_against_baseline": 15,
+  "primary_rust_changed": false,
+  "manifests_or_lock_or_toolchain_changed": false,
+  "source_tree_sha256": "3ddd919cf5857dfc4e2c9cd74078de2f23f3c4b1c394e127f77589f291368a0a",
+  "source_scope": "compiler annotations/V11 archive error domain; local native test fixture and helper; formatting",
+  "verification_after_hard_stop": "source/evidence preservation only"
+}

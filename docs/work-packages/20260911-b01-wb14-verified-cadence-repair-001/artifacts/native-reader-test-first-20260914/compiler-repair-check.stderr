@@ -1,0 +1,20 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+error[E0282]: type annotations needed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2332:9
+     |
+2332 |     let archived_receipt_prefix = serde_json::from_value(
+     |         ^^^^^^^^^^^^^^^^^^^^^^^
+...
+2430 |     archived_receipt_prefix
+     |     ----------------------- type must be known at this point
+     |
+help: consider giving `archived_receipt_prefix` an explicit type
+     |
+2332 |     let archived_receipt_prefix: /* Type */ = serde_json::from_value(
+     |                                ++++++++++++
+
+For more information about this error, try `rustc --explain E0282`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error

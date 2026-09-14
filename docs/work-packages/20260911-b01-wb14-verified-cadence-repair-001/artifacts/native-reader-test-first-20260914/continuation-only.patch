@@ -1,0 +1,397 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
+@@ -1789,8 +1789,7 @@
+     pub canonical_record: Vec<u8>,
+     pub parent_receipt: crate::DirectSnowStage3V11ParentReceipt,
+     pub publication: crate::v9_real_consumer_shadow::RestoredStage3PublicationDayEvidenceV1,
+-    pub qualification_delta:
+-        crate::snow_stage3_v11_production_qualification::SnowStage3V11QualificationDayDeltaV1,
++    pub qualification_delta: crate::SnowStage3V11QualificationDayDeltaV1,
+ }
+ 
+ #[cfg(feature = "persisted-restart-v1")]
+@@ -1886,9 +1885,8 @@
+     reader.exact(&entry.ending_accepted_until_ns.to_be_bytes())?;
+     reader.exact(&entry.ending_next_parent_sequence.to_be_bytes())?;
+     let qualification_bytes = reader.blob()?;
+-    let qualification_delta: crate::snow_stage3_v11_production_qualification::
+-        SnowStage3V11QualificationDayDeltaV1 = serde_json::from_slice(qualification_bytes)
+-        .map_err(|error| error.to_string())?;
++    let qualification_delta: crate::SnowStage3V11QualificationDayDeltaV1 =
++        serde_json::from_slice(qualification_bytes).map_err(|error| error.to_string())?;
+     if serde_json::to_vec(&qualification_delta).map_err(|error| error.to_string())?
+         != qualification_bytes
+         || qualification_delta.receipt_sha256() != entry.qualification_day_delta_sha256
+@@ -2331,7 +2329,7 @@
+     if day.get("committed_receipt_tail_count") != Some(&serde_json::json!(0)) {
+         return Err("captured B01 committed receipt tail must be archived".into());
+     }
+-    let archived_receipt_prefix = serde_json::from_value(
++    let archived_receipt_prefix: crate::Stage3ArchivedReceiptPrefixV1 = serde_json::from_value(
+         day.get("archived_receipt_prefix")
+             .ok_or("captured archived receipt prefix missing")?
+             .clone(),
+@@ -2357,7 +2355,8 @@
+         context.topology_identity,
+     )
+     .map_err(|error| error.to_string())?;
+-    let mut authenticated_archived_days = Vec::with_capacity(B01_DAY_INDEX);
++    let mut authenticated_archived_days: Vec<AuthenticatedArchivedDayV1> =
++        Vec::with_capacity(B01_DAY_INDEX);
+     for expected_day in 0..B01_DAY_INDEX {
+         let matches = archived_rows
+             .iter()
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs
+@@ -1756,19 +1756,10 @@
+ ))]
+ pub(crate) fn restart_authority_restore_archived_publication_day_v1(
+     bytes: &[u8],
+-) -> Result<RestoredStage3PublicationDayEvidenceV1, DirectV10RealConsumerError> {
+-    let wire: Stage3AcceptedPublicationDayEvidenceWireV1 =
+-        serde_json::from_slice(bytes).map_err(|_| {
+-            DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                "archived publication day decoding".to_owned(),
+-            ))
+-        })?;
++) -> Result<RestoredStage3PublicationDayEvidenceV1, DirectV11RealConsumerError> {
++    let wire: Stage3AcceptedPublicationDayEvidenceWireV1 = serde_json::from_slice(bytes)?;
+     if wire.schema_version != 1
+-        || serde_json::to_vec(&wire).map_err(|_| {
+-            DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                "archived publication day canonicalization".to_owned(),
+-            ))
+-        })? != bytes
++        || serde_json::to_vec(&wire)? != bytes
+         || wire.supports.is_empty()
+         || wire.prefix_support_count.checked_add(wire.supports.len())
+             != Some(wire.cumulative_support_count)
+@@ -1781,8 +1772,8 @@
+             .iter()
+             .any(|support| support.day_index != wire.day_index)
+     {
+-        return Err(DirectV10RealConsumerError::Runtime(
+-            DirectV9RealConsumerError::Identity("archived publication day wire"),
++        return Err(DirectV11RealConsumerError::Identity(
++            "archived publication day wire",
+         ));
+     }
+     let supports = wire
+@@ -1791,11 +1782,13 @@
+         .cloned()
+         .map(Stage3AcceptedPublicationSupportV1::try_from_wire)
+         .collect::<Result<Vec<_>, _>>()?;
+-    let first = supports.first().ok_or(DirectV10RealConsumerError::Runtime(
+-        DirectV9RealConsumerError::Identity("archived publication day beginning"),
+-    ))?;
+-    let last = supports.last().ok_or(DirectV10RealConsumerError::Runtime(
+-        DirectV9RealConsumerError::Identity("archived publication day ending"),
++    let first = supports
++        .first()
++        .ok_or(DirectV11RealConsumerError::Identity(
++            "archived publication day beginning",
++        ))?;
++    let last = supports.last().ok_or(DirectV11RealConsumerError::Identity(
++        "archived publication day ending",
+     ))?;
+     let beginning_owner_set_sha256 = wire
+         .event_handoffs
+@@ -1814,8 +1807,8 @@
+         || beginning_owner_set_sha256 == Digest32::zero()
+         || last.ending_complete_owner_set_sha256 != wire.ending_owner_set_sha256
+     {
+-        return Err(DirectV10RealConsumerError::Runtime(
+-            DirectV9RealConsumerError::Identity("archived publication day chronology"),
++        return Err(DirectV11RealConsumerError::Identity(
++            "archived publication day chronology",
+         ));
+     }
+     let mut ordered = Vec::with_capacity((supports.len() + wire.event_handoffs.len()) * 33 + 64);
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
+@@ -481,6 +481,43 @@
+         });
+         input.precipitation_m = 0.0;
+         input.effective_temperature_c = 7.5;
++        input
++    }
++
++    fn publication_input_from_constructor(
++        day_index: usize,
++        constructor: &crate::DirectDayConstructorInputs,
++    ) -> DirectPublicationDayInput {
++        let mut input = DirectPublicationDayInput::calendar_only(DirectPublicationCalendarDay {
++            year: 2000,
++            julian_day: u16::try_from(172 + day_index).expect("fixture Julian day"),
++            month: 6,
++            day_of_month: i8::try_from(20 + day_index).expect("fixture day of month"),
++            water_year: 2000,
++        });
++        input.precipitation_m = constructor.forcing.precipitation_m;
++        input.effective_temperature_c = constructor.forcing.effective_temperature_c;
++        input.interception_m = constructor.interception_m;
++        input.storage_input_inputs = Some(constructor.storage_input_inputs.clone());
++        input.liquid_input_inputs = Some(constructor.liquid_input_inputs.clone());
++        input.percolation_inputs = Some(constructor.percolation_inputs.clone());
++        input.infiltration_depression_inputs =
++            Some(constructor.infiltration_depression_inputs.clone());
++        input.subsurface_compute_inputs = Some(constructor.subsurface_compute_inputs.clone());
++        input.decomposition_inputs = Some(constructor.decomposition_inputs.clone());
++        input.residue_partition_inputs = Some(constructor.residue_partition_inputs.clone());
++        input.evapotranspiration_compute_inputs =
++            Some(constructor.evapotranspiration_compute_inputs.clone());
++        input.annual_growth_inputs = Some(constructor.annual_growth_inputs.clone());
++        input.perennial_growth_inputs = Some(constructor.perennial_growth_inputs.clone());
++        input.snow_coupling_inputs = Some(constructor.snow_coupling_inputs.clone());
++        input.hydrology_projection_inputs = Some(constructor.hydrology_projection_inputs);
++        input.erosion_inputs = Some(constructor.erosion_inputs.clone());
++        input.frost_storage_liquid_delta_m = constructor.frost_storage_liquid_delta_m;
++        input.winter_frost_compute_inputs = constructor.winter_frost_compute_inputs.clone();
++        input.winter_frost_outcome = constructor.winter_frost_outcome.clone();
++        input.frost_layer_carry_projection = constructor.frost_layer_carry_projection.clone();
++        input.frost_runtime_carry = constructor.frost_runtime_carry.clone();
+         input
+     }
+ 
+@@ -991,6 +1028,241 @@
+     }
+ 
+     #[test]
++    fn native_recorder_file_owned_reader_restores_local_fixture() {
++        const CLIMATE: &str = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 2.5 180.0 -15.0\n21 6 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 2.5 180.0 -15.0\n22 6 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 2.5 180.0 -15.0\n23 6 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 2.5 180.0 -15.0\n24 6 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 2.5 180.0 -15.0\n";
++        let root = std::env::temp_dir().join(format!(
++            "openwepp_native_owned_reader_{}",
++            std::process::id()
++        ));
++        std::fs::create_dir(&root).expect("unique local fixture directory");
++        let observations = root.join("observations.json");
++
++        crate::snow_accuracy_observer::begin(true);
++        let (
++            context,
++            pinned_provider,
++            pinned_lse,
++            pinned_frozen_litter_lse,
++            pinned_hydrology,
++            expected_prefix,
++        ) = {
++            let (mut shadow, _) =
++                super::direct_v10_soil_thermal_v2_tests::native_v2_shadow_for_parent('b');
++            let fixture = endpoint_fixture();
++            let mut expanded_hydrology = shadow
++                .diagnostic_hydrology_constructor_inputs_v1()
++                .expect("native hydrology constructor authority")
++                .as_ref()
++                .clone();
++            expanded_hydrology.identity.day_count = 5;
++            for lane in &mut expanded_hydrology.lanes {
++                let first = lane
++                    .day_inputs
++                    .first()
++                    .expect("native hydrology seed day")
++                    .clone();
++                lane.day_inputs = vec![first; 5];
++            }
++            let continuation_inputs = expanded_hydrology
++                .lanes
++                .iter()
++                .map(|lane| lane.day_inputs.clone())
++                .collect::<Vec<_>>();
++            shadow
++                .restart_authority_install_hydrology_continuation_inputs_v3(&continuation_inputs)
++                .expect("actual five-day hydrology continuation");
++            shadow.diagnostic_install_hydrology_constructor_inputs_v1(std::sync::Arc::new(
++                expanded_hydrology,
++            ));
++            let (physical_litter, exact_litter) =
++                super::v3_publication_retention_tests::native_v4_resident_pair_fixture(&shadow);
++            let pinned_frozen_litter_lse = physical_litter.lse_configuration().clone();
++            shadow
++                .install_frozen_litter_v4_resident(physical_litter, exact_litter)
++                .expect("paired native V3/V4 litter residents");
++            let pinned_provider = shadow.provider_static_configuration().clone();
++            let pinned_lse = shadow.lse_configuration().clone();
++            let pinned_hydrology = shadow
++                .diagnostic_hydrology_constructor_inputs_v1()
++                .expect("observer retained hydrology constructor pins")
++                .as_ref()
++                .clone();
++            let lane_id = fixture.hydrology.beginning_frame().lanes[0].lane_id;
++            let beginning_snow = attachment_stage3_inputs();
++            let beginning_stage3 = Wb11HydrologyKernel::initialize_stage3_persistent_state(
++                lane_id,
++                beginning_snow.snow_layers.clone(),
++            )
++            .expect("controlled local Stage-3 beginning");
++            let configuration =
++                crate::snow_stage3_v11_attachment::DirectSnowStage3V11ProductionConfigurationV1 {
++                    run_identity: digest(1),
++                    topology_identity: digest(9),
++                    calendar_receipt: digest(2),
++                    controller_policy: digest(5),
++                    surface_liquid_configuration: fixture.surface_configuration.clone(),
++                    wb14_parameters: fixture
++                        .lse_configuration
++                        .ofes
++                        .iter()
++                        .map(|ofe| crate::DirectOfeWb14Parameters {
++                            ofe_id: ofe.ofe_id.clone(),
++                            effective_conductivity_m_s: 1.0e-6,
++                            matric_potential_m: 0.1,
++                            infiltration_storage_capacity_m: 0.04,
++                        })
++                        .collect(),
++                };
++            let mut attachment = crate::DirectSnowStage3V11ShadowAttachment::new_production(
++                configuration,
++                BTreeMap::from([(lane_id, beginning_stage3)]),
++                shadow,
++            )
++            .expect("controlled local native producer");
++            let climate = parse_climate_from_str(CLIMATE, ParserMode::Strict)
++                .expect("controlled local climate");
++            let request =
++                build_hillslope_climate_runtime_request(&climate).expect("local climate request");
++            let template = day_input(&fixture).intervals[0].clone();
++
++            for day_index in 0..4 {
++                let provider = attachment
++                    .prepare_repository_provider_day(&request, day_index)
++                    .expect("local provider day");
++                let prepared = PreparedStage3V11DayV1::bind_provider_day(
++                    &provider,
++                    day_index,
++                    attachment_supports(&provider, &template, lane_id, day_index),
++                )
++                .expect("local provider-bound Stage-3 day");
++                attachment
++                    .stage_prepared_day(&prepared)
++                    .expect("local staged native day");
++                let publication_inputs = pinned_hydrology
++                    .lanes
++                    .iter()
++                    .map(|lane| {
++                        publication_input_from_constructor(day_index, &lane.day_inputs[day_index])
++                    })
++                    .collect::<Vec<_>>();
++                attachment
++                    .restart_authority_complete_commit_and_stage_archive_day_v3(&publication_inputs)
++                    .expect("actual completed, committed, and archived native day");
++                let pending = attachment
++                    .pending_committed_day_evidence_v1()
++                    .expect("pending archive evidence");
++                let entry = pending.entry().clone();
++                let mut canonical_record = Vec::new();
++                attachment
++                    .write_pending_committed_day_evidence_v1(&mut canonical_record)
++                    .expect("actual archive canonical writer");
++                crate::snow_accuracy_observer::record(serde_json::json!({
++                    "kind":"b01_wb14_committed_day_archive_record_v1",
++                    "day_index":day_index,
++                    "static_run_identity":digest(1),
++                    "static_topology_identity":digest(9),
++                    "archive_entry":entry.clone(),
++                    "canonical_record":canonical_record,
++                    "fixture_provenance":"controlled-local-native-reader-v1",
++                }));
++                attachment
++                    .acknowledge_committed_day_archive_v1(entry.record_sha256)
++                    .expect("actual archive acknowledgement");
++            }
++
++            let provider = attachment
++                .prepare_repository_provider_day(&request, 4)
++                .expect("target local provider day");
++            let prepared = PreparedStage3V11DayV1::bind_provider_day(
++                &provider,
++                4,
++                attachment_supports(&provider, &template, lane_id, 4),
++            )
++            .expect("target local provider-bound Stage-3 day");
++            let context = attachment.static_context.clone();
++            let expected_prefix = attachment.archived_receipt_prefix_v1().clone();
++            attachment
++                .stage_prepared_day(&prepared)
++                .expect("actual target producer and recorder path");
++            crate::snow_accuracy_observer::finish_to_file(&observations)
++                .expect("actual observation recorder file");
++            (
++                context,
++                pinned_provider,
++                pinned_lse,
++                pinned_frozen_litter_lse,
++                pinned_hydrology,
++                expected_prefix,
++            )
++        };
++
++        let _audit_guard =
++            crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
++        let restored = crate::snow_stage3_v11_current_context_capture::
++            restore_provider_bound_context_from_file(
++                &observations,
++                &context,
++                &pinned_provider,
++                &pinned_lse,
++                &pinned_frozen_litter_lse,
++                pinned_hydrology.clone(),
++            )
++            .expect("owned native context restored only from file and immutable pins");
++        let audit = crate::v9_real_consumer_shadow::take_covered_native_physical_path_audit_v1();
++        assert_eq!(audit.snow_free_litter_physics_call_count, 0);
++        assert_eq!(audit.snow_free_surface_physics_call_count, 0);
++        assert_eq!(audit.snow_free_wb14_physics_call_count, 0);
++        assert_eq!(restored.prepared_day.day_index(), 4);
++        assert_eq!(restored.prepared_day.supports().len(), 48);
++        assert_eq!(restored.authenticated_archived_days.len(), 4);
++        assert_eq!(restored.archived_receipt_prefix, expected_prefix);
++        assert_eq!(restored.archived_receipt_prefix.archived_day_count, 4);
++        assert!(restored.consumer.diagnostic_native_soil_v2().is_ok());
++        assert!(restored.consumer.frozen_litter_v3_resident().is_some());
++        assert!(restored.consumer.frozen_litter_v4_resident().is_some());
++        assert!(
++            restored
++                .captured
++                .beginning_snow_enthalpy_material_owner
++                .is_some()
++        );
++
++        let mut non_native: serde_json::Value =
++            serde_json::from_slice(&std::fs::read(&observations).expect("recorded native bundle"))
++                .expect("recorded bundle JSON");
++        let target = non_native["physical"]
++            .as_array_mut()
++            .expect("physical rows")
++            .iter_mut()
++            .find(|row| row["kind"] == "b01_wb14_pre_child_current_context_v1")
++            .expect("target row");
++        target["native_consumer_constructor_operands"]["frozen_litter_residents"] =
++            serde_json::Value::Null;
++        let non_native_path = root.join("non-native-v1-observations.json");
++        std::fs::write(
++            &non_native_path,
++            serde_json::to_vec(&non_native).expect("non-native control bytes"),
++        )
++        .expect("non-native control file");
++        let refusal = crate::snow_stage3_v11_current_context_capture::
++            restore_provider_bound_context_from_file(
++                &non_native_path,
++                &context,
++                &pinned_provider,
++                &pinned_lse,
++                &pinned_frozen_litter_lse,
++                pinned_hydrology,
++            );
++        assert!(
++            refusal
++                .as_ref()
++                .is_err_and(|error| error.contains("frozen-litter")),
++            "V1/non-native control must reach paired native-litter refusal: {:?}",
++            refusal.err()
++        );
++    }
++
++    #[test]
+     fn b01_current_context_importer_restores_fixture_without_physics() {
+         // The capture records native V2 custody.  Build it through the
+         // canonical V2 migration/admission fixture rather than asking the
