@@ -1,0 +1,670 @@
+{
+  "exit": 2,
+  "violations": [
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:82: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:87: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:95: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:148: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:157: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:165: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:188: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:227: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:277: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:3316: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:3380: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:3395: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:3445: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:3457: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:3492: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:4217: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:4225: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:4242: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:4706: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:4734: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:4834: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:4869: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:4928: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:4961: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:4971: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5006: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5020: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5073: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5095: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5110: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5131: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5182: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5190: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5211: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5257: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5490: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5634: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5638: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:5886: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.source.patch:6400: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-connected.stderr:107: trailing whitespace.",
+      "content": "+  Cancelling due to test failure: "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:82: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:87: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:95: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:148: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:157: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:165: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:188: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:227: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:277: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:3316: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:3380: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:3395: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:3445: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:3457: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:3492: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:4217: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:4225: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:4242: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:4706: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:4734: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:4834: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:4869: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:4928: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:4961: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:4971: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5006: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5020: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5073: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5095: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5110: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5131: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5182: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5190: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5211: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5257: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5490: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5634: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5638: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:5886: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format-check.source.patch:6400: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:82: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:87: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:95: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:148: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:157: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:165: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:188: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:227: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:277: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:3316: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:3380: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:3395: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:3445: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:3457: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:3492: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:4217: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:4225: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:4242: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:4706: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:4734: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:4834: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:4869: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:4928: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:4961: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:4971: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5006: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5020: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5073: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5095: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5110: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5131: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5182: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5190: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5211: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5257: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5490: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5634: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5638: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:5886: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-format.source.patch:6405: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:82: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:87: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:95: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:148: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:157: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:165: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:188: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:227: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:277: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:3316: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:3380: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:3395: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:3445: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:3457: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:3492: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:4217: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:4225: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:4242: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:4706: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:4734: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:4834: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:4869: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:4928: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:4961: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:4971: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5006: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5020: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5073: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5095: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5110: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5131: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5182: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5190: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5211: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5257: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5490: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5634: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5638: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:5886: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/binding-list.source.patch:6400: trailing whitespace.",
+      "content": "+ "
+    },
+    {
+      "location": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/binding-phase-20260914/continuation-only.patch:75: trailing whitespace.",
+      "content": "+ "
+    }
+  ],
+  "classification": "Required unified-patch blank context lines and verbatim runtime stderr; raw evidence preserved without normalization."
+}

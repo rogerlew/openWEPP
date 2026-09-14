@@ -1,0 +1,97 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
+@@ -939,14 +939,70 @@
+                     identities.values().map(Vec::len).sum::<usize>(),
+                     expected_destinations.len()
+                 );
++                let materialized_destinations =
++                    represented.keys().cloned().collect::<BTreeSet<_>>();
++                let declared_destinations = materialized_destinations
++                    .union(open)
++                    .cloned()
++                    .collect::<BTreeSet<_>>();
+                 assert_eq!(
+-                    represented.keys().cloned().collect::<BTreeSet<_>>(),
+-                    expected_destinations
++                    declared_destinations, expected_destinations,
++                    "native fixture declared destinations on day {day_index} interval {interval_index}"
+                 );
+-                assert!(open.is_subset(&expected_destinations));
+                 prepared
+             })
+             .collect()
++    }
++
++    fn assert_bound_native_destinations_materialized(
++        attachment: &crate::DirectSnowStage3V11ShadowAttachment,
++        prepared: &crate::DirectSnowStage3V11PreparedDay,
++        interval_template: &DirectV9ShadowIntervalInput,
++        day_index: usize,
++    ) {
++        assert_eq!(interval_template.wb14_parameters.len(), 1);
++        let lane_ofe = &interval_template.wb14_parameters[0].ofe_id;
++        let configured_ofe = attachment
++            .committed
++            .real_consumer
++            .lse_configuration()
++            .ofes
++            .iter()
++            .find(|ofe| &ofe.ofe_id == lane_ofe)
++            .expect("native fixture bound lane/OFE configuration");
++        let expected_destinations = configured_ofe
++            .tiles
++            .iter()
++            .map(|tile| (configured_ofe.ofe_id.clone(), tile.tile_id.clone()))
++            .collect::<BTreeSet<_>>();
++
++        for (support_index, support) in prepared.supports().iter().enumerate() {
++            let bounds = support.support();
++            let (_, _, _, _, _, _, materialized, _) = support
++                .diagnostic_capture_parts_v1()
++                .unwrap_or_else(|error| {
++                    panic!(
++                        "native fixture bound destination diagnostics on day {day_index} support {support_index} [{}..{}): {error}",
++                        bounds.start_ns().get(),
++                        bounds.end_ns().get()
++                    )
++                });
++            let actual_destinations = materialized.keys().cloned().collect::<BTreeSet<_>>();
++            let missing_destinations = expected_destinations
++                .difference(&actual_destinations)
++                .cloned()
++                .collect::<BTreeSet<_>>();
++            let extra_destinations = actual_destinations
++                .difference(&expected_destinations)
++                .cloned()
++                .collect::<BTreeSet<_>>();
++            assert!(
++                missing_destinations.is_empty() && extra_destinations.is_empty(),
++                "native fixture bound materialized destinations on day {day_index} support {support_index} [{}..{}): missing={missing_destinations:?} extra={extra_destinations:?}",
++                bounds.start_ns().get(),
++                bounds.end_ns().get()
++            );
++        }
+     }
+ 
+     fn child2c_support(
+@@ -1474,6 +1530,12 @@
+                     ),
+                 )
+                 .expect("complete local production provider-bound Stage-3 day");
++                assert_bound_native_destinations_materialized(
++                    &attachment,
++                    &prepared,
++                    &template,
++                    day_index,
++                );
+                 let live_initial_storage = attachment
+                     .committed
+                     .real_consumer
+@@ -1538,6 +1600,7 @@
+                 native_complete_attachment_supports(&attachment, &provider, &template, lane_id, 4),
+             )
+             .expect("complete target production provider-bound Stage-3 day");
++            assert_bound_native_destinations_materialized(&attachment, &prepared, &template, 4);
+             let context = attachment.static_context.clone();
+             let expected_prefix = attachment.archived_receipt_prefix_v1().clone();
+             attachment

@@ -1,0 +1,23 @@
+Static + supplied Ran evidence: B01-CONT-020 binding-phase correctness review
+
+Reviewer: /root/fixture_seed_correctness, independent conversation, Sol/high correctness role.
+
+Evidence attribution: Static means this reviewer inspected the affected frozen source and relevant lifecycle declarations. This reviewer ran no Rust, build, listing, or test commands. Ran evidence refers only to the source-bound command logs executed and supplied by Astra, which this reviewer assessed for the verdict below.
+
+Findings
+
+No blocking finding remains in the affected phase-correct destination assertions. The prior HIGH finding is resolved: before provider binding, native_complete_attachment_supports now compares the union of materialized covered destinations and deferred open requests with the independently configured LSE destination set. After each production binder call, assert_bound_native_destinations_materialized compares materialized forcing-map keys alone with that independently configured set for every support and reports day, support index, support bounds, missing destinations, and extra destinations. The helper is invoked at both native-fixture binding call sites and does not incorrectly require the retained open-request set to be empty.
+
+The frozen change preserves the canonical construction and lifecycle seams. Forest and open classification remains derived from installed LSE/vegetation topology; covered forcing and identity share the exact provider interval and carrier; open identity uses the exact support/provider interval; BTree maps preserve unique canonical destination ordering; from_dual_regime_production_inputs retains both interval regimes; and bind_production_provider_day remains the sole materialization/validation path. No production physics, guard, API, climate, chronology, owner, selector, or fixture-day construction changed in this affected correction.
+
+Residual risk and missing tests
+
+The supplied first connected result demonstrates that the corrected pre-bind predicate, production binding, and all 48 post-bind materialized-destination checks passed for day 0. The run then failed during day-0 staging in the covered direct 60-second AdaptiveTrial phase with LandSurface NumericalBacktrackingLimit / LsebE034 JointCanopyGround Potential for ofe-1/forest, transaction 41, after 6 iterations and 65 backtracking attempts. That is a new downstream physical hard stop, outside this assertion-only correction; it was not diagnosed or repaired under this review.
+
+Because staging did not complete, this cut supplies no completed day, publication/archive/file, target-day, reader-entry, restoration, or custody evidence. It also does not close the original native-reader milestone, B01-CONT-015/016, scientific qualification, independent producer comparisons, poison/refusal coverage, observation isolation, or the other previously preserved omissions. B01-CONT-019's accepted fixture-day correction remains unchanged.
+
+Validation evidence supplied by the owner: frozen source tree 01c34f56dd32e0b9502a74801e6c961012441dbbce6205f33934db79aa49284c; test file dfe0da9d2be9984b43334eed80fa1b9fe3892dd9993de1869e4ddcd940f2b594; full patch 39b9d9701a435d9937f143d12ea589b7c27e009264a4e466300b80bff2c36574. Formatting and format-check passed. Exact listing selected one nonignored test. The first connected run exited 100 with one selected, one executed, zero passed, one failed, and 1,468 skipped; source remained unchanged. This is unsuccessful correction 21/22.
+
+Verdict
+
+No correctness blocker remains in the affected binding-phase assertion correction. The prior phase-predicate defect is resolved by static inspection and the supplied execution evidence. The package and native-reader milestone remain HOLD because the first connected run reached a new covered-path numerical failure before completing staging or any reader evidence.

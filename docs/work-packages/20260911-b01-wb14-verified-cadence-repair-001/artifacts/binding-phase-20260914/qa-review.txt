@@ -1,0 +1,16 @@
+Reviewer: `/root/fixture_seed_qa`, same independent QA reviewer continuing the B01-CONT-020 binding-phase predicate/evidence scope. Earlier original replacements remain historic; prior seed and destination-boundary findings remain retained. **Static:** inspected the adopted scope, detached test change, source/input custody, and supplied command records. **Ran:** no commands by this reviewer.
+
+## Findings
+
+1. **HIGH — the connected fixture remains HOLD at a new staging physics failure** — `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1565`; `binding-connected.stderr`. The exact test ran once (1 selected, 1 executed, 0 passed, 1 failed; exit 100) on final frozen tree `01c34f56dd32e0b9502a74801e6c961012441dbbce6205f33934db79aa49284c` and file `dfe0da9d2be9984b43334eed80fa1b9fe3892dd9993de1869e4ddcd940f2b594`. It reached `local staged native day 0 after 48 complete destination-checked supports`, then returned an `AdaptiveTrial` covered-direct `NumericalBacktrackingLimit` (`LsebE034`) for `ofe-1/forest`, support 0..60 seconds. This is a staging physics failure, not an importer result; publication/archive, recorder file, producer-scope exit, reader entry, restoration, and reader assertions were not reached.
+
+2. **HIGH — no behavioral retry is authorized by this result** — `binding-connected.json`. The connected result is the required hard return for this phase correction. Do not infer a remedy from the large numerical diagnostic or change climate, chronology, constants, selector, seals, or production behavior within this review scope.
+
+3. **MEDIUM — milestone quality controls remain open** — prior B01-CONT-019/020 review findings. Canonical/provisional comparison, cross-owner/provider joins, poison/refusal reachability, state/observer isolation, zero-physics import evidence, and matched owning/runner lint remain unproved. The connected stderr also retains eight existing dead-code warnings; no clippy success is claimed.
+
+## Non-blocking debt/follow-ups
+
+- The phase correction itself is statically coherent: pre-binding validation compares declared capabilities (`materialized ∪ open`) with independently configured destinations, while both bound-day call sites check materialized forcing keys only after `bind_production_provider_day`, with day/support/bounds and missing/extra diagnostics.
+- Supplied `rustfmt --check` and exact selected listing PASS on the same final frozen identity. The preceding formatter transition from preformat file `4dadded…` is separately recorded; the postformat check reports unchanged source. No dependency, manifest, lockfile, toolchain, authority-suite, or required-case binding changed, so no deny or anti-evasion trigger was introduced.
+
+QA disposition: **HOLD / INCOMPLETE.** The binding-phase assertion correction is evidenced as passed far enough to reach native staging; it does not establish the original reader milestone or a successful physics/staging path.
