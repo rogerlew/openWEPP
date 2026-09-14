@@ -31,6 +31,10 @@ Authentic baseline capture/probe remain **0/1 each reserved and prohibited**, ol
 
 Staged whitespace inspection reports 163 required unified-patch blank-context lines and 1 verbatim stderr line. Raw evidence is retained unchanged; no source formatting or lint failure is waived.
 
+Publication: scoped evidence commit `c4b7c1ece21154369267647bc113c85f779df35b` pushed to existing `origin/main`, exit0. [Exact-commit remote verification](artifacts/fixture-seed-20260914/remote-verification.json) matches all28 files,1,856,418 bytes, without LFS pointers. This verifies the small published evidence/patches only; full detached source/base and raw corpus remain local. The custody supplement is separately committed/pushed and verified before final return. Its final charged ledger and remote-byte receipt will remain at `/workdir/openwepp-experiments/b01-wb14-cadence/logs/fixture-seed-terminal-publication.json`, avoiding recursive publication claims.
+
+At **16:42:40 UTC**, cumulative charge is **399.719648 minutes (23983.178858 seconds)/411min**, failures **19/20**; no waits deducted. No post-stop source/Rust/physics command occurred. **HOLD / INCOMPLETE**; next support-boundary repair requires further owner direction because the explicit downstream return condition was reached.
+
 ## Native reader test-first terminal disposition — 2026-09-14
 
 **HARD STOP at06:53:24UTC:18/18 unsuccessful corrections. B01-WB14-CURRENT-CONTEXT-CAPTURE remains INCOMPLETE / HOLD.** One connected test was selected and executed, **0 passed /1 failed**. [Exact run](artifacts/native-reader-test-first-20260914/native-fixture-run.json) **FAIL exit100**,06:53:23–06:53:24UTC, source unchanged; [raw stderr](artifacts/native-reader-test-first-20260914/native-fixture-run.stderr) preserves the panic at `v9_real_consumer_shadow_tests.rs:1062`, **`native hydrology seed day`**. The fixture calls `lane.day_inputs.first().cloned().expect(...)` on an empty retained native constructor day list. This is ordinary fixture setup/integration failure and consumes correction18; it is **not an executed canonical-restoration, physical, receipt or custody failure**. No repair or rerun follows.

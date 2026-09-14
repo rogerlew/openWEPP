@@ -1,0 +1,204 @@
+{
+  "commit": "c4b7c1ece21154369267647bc113c85f779df35b",
+  "verified_utc": "2026-09-14T16:42:08.136055+00:00",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/continuation-only.patch",
+      "bytes": 11954,
+      "sha256": "b8d0c4a6d92693ccedd84bc7059a5beab22692ec0b13101a01ff9690e09529e0",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/continuity.json",
+      "bytes": 688,
+      "sha256": "e4105fa2459f571a2d5dfa79040fbdd90503089e4d938b53e39485ef9ca45105",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/correctness-review.txt",
+      "bytes": 5274,
+      "sha256": "db906e726bf1e7a722a87f6f6482847f0877903d1fde0a7d6149bc43c2e53d90",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.json",
+      "bytes": 5608,
+      "sha256": "28b49e037fd8c6d74a1671fce1836682c2bb0524e5f28a2b0eea782d1751f780",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "bytes": 300861,
+      "sha256": "88d53d0907e66e79f6ed00d5f84c14f4e499092b6d028fd3fb27100125afa29b",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.stderr",
+      "bytes": 6108,
+      "sha256": "95bd1d2fb5c3f3dbfa5c1068fda37a10f8350f4969482384d0429b992bb7f470",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.stdout",
+      "bytes": 222,
+      "sha256": "4ec698c07911f9025b399c13494bf72c9dd792dc4171c03c0d79e772c969fef0",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.json",
+      "bytes": 5477,
+      "sha256": "e5f14985e86365c011f99e66594ea706a85b19387d031fda5457a3f614bae6a7",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "bytes": 300861,
+      "sha256": "88d53d0907e66e79f6ed00d5f84c14f4e499092b6d028fd3fb27100125afa29b",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.stderr",
+      "bytes": 47,
+      "sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.stdout",
+      "bytes": 222,
+      "sha256": "4ec698c07911f9025b399c13494bf72c9dd792dc4171c03c0d79e772c969fef0",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.json",
+      "bytes": 5463,
+      "sha256": "3f2913e7b266abc39921ca74c1fd1788038fc32b7171941126ca2b1af0709a19",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "bytes": 300984,
+      "sha256": "2273b45e5ca1a959a21bb492932306ee0d48f8dcff410b46eab348130522d89c",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.stderr",
+      "bytes": 47,
+      "sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.stdout",
+      "bytes": 222,
+      "sha256": "4ec698c07911f9025b399c13494bf72c9dd792dc4171c03c0d79e772c969fef0",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.json",
+      "bytes": 5612,
+      "sha256": "102f2e41852b188ec16f5aa7887f9144d69d42b51edf310f0e8143fe505a4d86",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "bytes": 300861,
+      "sha256": "88d53d0907e66e79f6ed00d5f84c14f4e499092b6d028fd3fb27100125afa29b",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.stderr",
+      "bytes": 4048,
+      "sha256": "e64d154b69c315b1144f6227c3ef046b1ccbcd245b580a17291c9d137240cebb",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.stdout",
+      "bytes": 310424,
+      "sha256": "76df74cd0df54c26f2d70f067cfd2f49083a3ff481b3a393b1da33bdb1e9d9ef",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/input-continuity.json",
+      "bytes": 4350,
+      "sha256": "2d18c351ea85dc705d161c2437d99fb5084769a4e17fc86f30d41c7942fd0c11",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/qa-review.txt",
+      "bytes": 4139,
+      "sha256": "9cf0c379d5dda60bca33679021023f6673e109ffc3f4d83b8a8d26744071cb94",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/record-checks.json",
+      "bytes": 2000,
+      "sha256": "c07945e52776fad2be0e13d6e7872b0cf9915ce769c274869d5b558219f10eae",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/run-recorded.py",
+      "bytes": 2609,
+      "sha256": "52636780de754e2fa2f72cd10929c1641f6458762dc30d659a48327e411dd7e5",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/selected-commands.json",
+      "bytes": 2014,
+      "sha256": "7b8248b21479c1d6c5cbe412d7eea8eb3752b4d38a612b4bc20f09beebb6f207",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/selection.json",
+      "bytes": 293,
+      "sha256": "d53a345c2df8a1685c1a04e058b7a6cb3b8e3eb8c8210f87fc9508439ab4bbee",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/staged-whitespace.json",
+      "bytes": 38019,
+      "sha256": "66f1c367b4d9a7f02de09885bb3387129cae69731f24715712ddce8e9db6490a",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/terminal-recovery-and-stop.json",
+      "bytes": 7503,
+      "sha256": "190d00e3ad8c2d06b322a135eae9bc42c790a81d43887a94916aaaa478a9826b",
+      "matches": true,
+      "lfs_pointer": false
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 230508,
+      "sha256": "e81a71373e434d139db872f617a2b191d3bf5a7adeabe074f3ce5539cc715db4",
+      "matches": true,
+      "lfs_pointer": false
+    }
+  ],
+  "all_match": true,
+  "scope": "Published small evidence bytes only; no full source/corpus remote custody"
+}
