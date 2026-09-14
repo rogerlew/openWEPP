@@ -1,0 +1,830 @@
+{
+  "exit": 2,
+  "classifications": {
+    "verbatim_command_stderr": 1,
+    "unified_patch_blank_context": 163
+  },
+  "diagnostics": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/continuation-only.patch",
+      "line": 106,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/continuation-only.patch",
+      "line": 122,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/continuation-only.patch",
+      "line": 226,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 82,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 87,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 95,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 148,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 157,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 165,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 188,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 227,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 277,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 3316,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 3380,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 3395,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 3445,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 3457,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 3492,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 4217,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 4225,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 4242,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 4706,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 4734,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 4834,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 4869,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 4928,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 4961,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 4971,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5006,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5020,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5073,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5095,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5110,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5131,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5182,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5190,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5211,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5257,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5490,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5634,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 5638,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.source.patch",
+      "line": 6131,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.stderr",
+      "line": 107,
+      "classification": "verbatim_command_stderr"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 82,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 87,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 95,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 148,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 157,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 165,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 188,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 227,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 277,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 3316,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 3380,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 3395,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 3445,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 3457,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 3492,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 4217,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 4225,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 4242,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 4706,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 4734,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 4834,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 4869,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 4928,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 4961,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 4971,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5006,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5020,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5073,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5095,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5110,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5131,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5182,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5190,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5211,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5257,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5490,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5634,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 5638,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.source.patch",
+      "line": 6131,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 82,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 87,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 95,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 148,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 157,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 165,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 188,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 227,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 277,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 3316,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 3380,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 3395,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 3445,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 3457,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 3492,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 4217,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 4225,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 4242,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 4706,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 4734,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 4834,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 4869,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 4928,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 4961,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 4971,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5006,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5020,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5073,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5095,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5110,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5131,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5182,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5190,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5211,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5257,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5490,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5637,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 5641,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.source.patch",
+      "line": 6131,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 82,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 87,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 95,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 148,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 157,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 165,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 188,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 227,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 277,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 3316,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 3380,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 3395,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 3445,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 3457,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 3492,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 4217,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 4225,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 4242,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 4706,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 4734,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 4834,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 4869,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 4928,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 4961,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 4971,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5006,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5020,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5073,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5095,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5110,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5131,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5182,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5190,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5211,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5257,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5490,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5634,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 5638,
+      "classification": "unified_patch_blank_context"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.source.patch",
+      "line": 6131,
+      "classification": "unified_patch_blank_context"
+    }
+  ],
+  "disposition": "Raw evidence bytes retained; all reported whitespace is unified patch context or verbatim command stderr."
+}

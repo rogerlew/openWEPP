@@ -1,0 +1,33 @@
+Reviewer: `/root/fixture_seed_qa`, independent replacement; no continuity claim. Scope: B01-CONT-019 test-only fixture seed correction and its evidence. **Static:** inspected source, authorization, role guidance, retained QA review, and supplied records. **Ran:** no commands by this reviewer.
+
+Findings:
+
+1. **HIGH — milestone remains HOLD** — `v9_real_consumer_shadow_tests.rs`; retained `native-reader-test-first-20260914/qa-review.txt`. The connected test has not yet produced a result. Predicate-specific poison reachability, full canonical/provisional comparison, state/observer isolation, and matched owning/runner lint remain unproved. No result may claim restoration acceptance.
+
+2. **MEDIUM — required quality gates remain pending** — `artifacts/fixture-seed-20260914/selected-commands.json`. `rustfmt --check` and the selected `nextest list` are supplied PASS evidence; clippy with `-D warnings`, deny, and the connected selected test are not evidenced. The list compiled 1,469 cases and selected the exact test, but executed zero.
+
+Non-blocking debt/follow-ups:
+
+- The new `native_archive_day_input` follows the cited nonzero archive pattern: it derives profile/subsurface operands from preserved lane layers, binds actual climate forcing, validates reconstructed inputs before installation, and checks installed-frame and immutable-pin agreement. No maintainability or API concern found.
+- The rustfmt transition is custody-explained: preformat file `1932dcdf…`/tree `16cc…`; postformat frozen file `1243a31b…`/tree `35031e4…`. Supplied format-check and list records both use the postformat identity and report unchanged source.
+
+QA pass for the bounded seed correction’s static design and supplied format/list evidence. Milestone acceptance remains HOLD pending the first connected-test result and all retained mandatory controls/gates.
+
+---
+
+Reviewer: `/root/fixture_seed_qa`, same independent replacement reviewer. **Static:** inspected preserved connected-result and stop records. **Ran:** no commands by this reviewer.
+
+Findings:
+
+1. **HIGH — B01-CONT-019 stops incomplete at native staging** — `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1311`; `snow_stage3_v11_attachment.rs:2204`. The exact connected test ran once and failed `Support("active snow lane requires complete destination boundary set")`. It is a new downstream staging/support failure, so the required stop applies at 19/20 unsuccessful corrections. No loop day index appears in the panic; do not attribute it to a specific day or claim an earlier publication completed.
+
+2. **HIGH — reader lifecycle and restoration remain unexecuted** — `artifacts/fixture-seed-20260914/fixture-connected.stderr`. The failure occurred before completed stage/publication/archive. `finish_to_file`, successful producer-scope exit, reader entry, canonical restoration, and reader assertions were not reached. The retained process fixture directory is empty; no observation bundle exists.
+
+3. **MEDIUM — mandatory milestone controls remain open** — retained `native-reader-test-first-20260914/qa-review.txt`. Predicate-specific poisons, independent canonical/provisional comparisons, state/observer isolation, zero-physics result, and matched owning/runner lint remain unproved. No dependency, manifest, lockfile, toolchain, authority-suite, or required-case binding changed, so this continuation introduces no cargo-deny or anti-evasion trigger.
+
+Non-blocking debt/follow-ups:
+
+- The explicit five-day construction passed its pre-staging assertions: actual-layer profile/subsurface operands, climate forcing, constructor validation, installed-frame and immutable-pin equality, and cardinality checks.
+- Supplied `rustfmt --check` and selected listing PASS remain valid for final postformat file `1243a31b…` and tree `35031e4…`. The connected result is source-custodied: 1 selected, 1 executed, 0 passed, 1 failed; exit 100; source unchanged.
+
+QA disposition: **HOLD / INCOMPLETE.** This supersedes the prior pending-connected-result statement while retaining all original milestone gaps and accepted fixes.

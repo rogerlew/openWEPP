@@ -1,0 +1,14 @@
+{
+  "utc": "2026-09-14T16:28:50.463370+00:00",
+  "source_tree_with_adopted_test_hash": "3ddd919cf5857dfc4e2c9cd74078de2f23f3c4b1c394e127f77589f291368a0a",
+  "matches_adopted_tree": true,
+  "test_path_excluded_from_live_comparison_during_assigned_write": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+  "base_mismatches": [],
+  "old_patch_sha256": "b1d4a1d80cc834f4c25206d39bfceeaba1ff4c60bdeda232338d615ca06c7b55",
+  "prior_publication_active_seconds": 22922.625445,
+  "charged_carry_seconds": 22923,
+  "continuation_start": "2026-09-14T16:25:00+00:00",
+  "deadline": "2026-09-14T16:53:57+00:00",
+  "failed_corrections": 18,
+  "ceiling_corrections": 20
+}

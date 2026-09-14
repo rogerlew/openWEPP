@@ -1,0 +1,28 @@
+{
+  "evidence_class": "Ran: documentation/evidence custody checks only after mandatory stop",
+  "utc": "2026-09-14T16:41:21.471999+00:00",
+  "json_parsed": [
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/continuity.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-connected.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format-check.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-format.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/fixture-list.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/input-continuity.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/selected-commands.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/selection.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/terminal-recovery-and-stop.json"
+  ],
+  "current_section_links_checked": 12,
+  "all_links_exist": true,
+  "source_unchanged_since_connected_result": true,
+  "primary_status": " M docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md\n?? docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/fixture-seed-20260914/\n",
+  "failed_corrections": 19,
+  "active_seconds": 23904.471999,
+  "ceiling_seconds": 24660,
+  "pure_wait_seconds_deducted": 0,
+  "reviewers": {
+    "correctness": "HOLD / NOT ACCEPTED; empty-seed prerequisite accepted",
+    "qa": "HOLD / INCOMPLETE; same-reviewer connected-result update complete"
+  },
+  "publication": "pending scoped commit/push and exact remote byte verification"
+}

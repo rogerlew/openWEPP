@@ -1,0 +1,267 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
+@@ -68,7 +68,7 @@
+     use crate::land_surface_energy_shadow::strict_v8_endpoint::endpoint_rollback_tests::two_ofe_routed_endpoint_fixture;
+     use crate::land_surface_energy_shadow::{EndpointFixture, endpoint_fixture};
+     use crate::runtime_inputs::{
+-        PreparedSnowFreeGsiDayV1, SnowFreeHalfHourProviderCursor,
++        HillslopeDirectClimateDayForcing, PreparedSnowFreeGsiDayV1, SnowFreeHalfHourProviderCursor,
+         SnowFreeHalfHourStaticConfiguration, build_hillslope_climate_runtime_request,
+     };
+     use crate::{
+@@ -518,6 +518,94 @@
+         input.winter_frost_outcome = constructor.winter_frost_outcome.clone();
+         input.frost_layer_carry_projection = constructor.frost_layer_carry_projection.clone();
+         input.frost_runtime_carry = constructor.frost_runtime_carry.clone();
++        input
++    }
++
++    // Test-local adaptation of the a3100159 nonzero archive fixture in
++    // openwepp-persisted-restart-v1/src/snow_stage3_v11_v3_tests.rs. The
++    // profile and subsurface operands come from this lane's actual initial
++    // layers; the zero constructor supplies only the controlled test baseline.
++    fn native_archive_day_input(
++        lane: &crate::DirectLaneFrame,
++        forcing: &HillslopeDirectClimateDayForcing,
++    ) -> crate::DirectDayConstructorInputs {
++        let profile_depth_m = lane
++            .subsurface_layers
++            .iter()
++            .map(|layer| layer.depth_m)
++            .sum::<f64>();
++        let mut day = crate::DirectDayConstructorInputs::zero();
++        day.forcing.precipitation_m = forcing.prcp_m;
++        day.forcing.effective_temperature_c = f64::midpoint(forcing.tmax_c, forcing.tmin_c);
++        day.hydrology_projection_inputs = crate::DirectHydrologyProjectionInputs {
++            aggregate_storage_tolerance_m: 1.0e-9,
++            profile_depth_m: Some(profile_depth_m),
++            profile_porosity_cap_m: Some(
++                lane.subsurface_layers
++                    .iter()
++                    .map(|layer| layer.porosity * layer.depth_m)
++                    .sum(),
++            ),
++            profile_field_capacity_m: Some(
++                lane.subsurface_layers
++                    .iter()
++                    .map(|layer| layer.field_capacity_m)
++                    .sum(),
++            ),
++            profile_wilting_point_m: Some(
++                lane.subsurface_layers
++                    .iter()
++                    .map(|layer| layer.residual_theta * layer.depth_m)
++                    .sum(),
++            ),
++            ..crate::DirectHydrologyProjectionInputs::zero()
++        };
++        day.subsurface_compute_inputs = crate::DirectSubsurfaceComputeInputs {
++            soil_depth_m: profile_depth_m,
++            layers: lane
++                .subsurface_layers
++                .iter()
++                .cloned()
++                .map(Into::into)
++                .collect(),
++            ..crate::DirectSubsurfaceComputeInputs::neutral()
++        };
++        day
++    }
++
++    fn validated_native_archive_publication_input(
++        day_index: usize,
++        constructor: &crate::DirectDayConstructorInputs,
++        forcing: &HillslopeDirectClimateDayForcing,
++        initial_soil_water_m: f64,
++    ) -> DirectPublicationDayInput {
++        let mut input = publication_input_from_constructor(day_index, constructor);
++        input.initial_soil_water_m = Some(initial_soil_water_m);
++        assert_eq!(input.calendar.year, forcing.year);
++        assert_eq!(i32::from(input.calendar.month), forcing.month);
++        assert_eq!(i32::from(input.calendar.day_of_month), forcing.day);
++        assert_eq!(input.precipitation_m, forcing.prcp_m);
++        assert_eq!(
++            input.effective_temperature_c,
++            f64::midpoint(forcing.tmax_c, forcing.tmin_c)
++        );
++        assert_eq!(
++            input.hydrology_projection_inputs,
++            Some(constructor.hydrology_projection_inputs)
++        );
++        assert_eq!(
++            input.subsurface_compute_inputs.as_ref(),
++            Some(&constructor.subsurface_compute_inputs)
++        );
++        assert!(initial_soil_water_m.is_finite());
++        assert!(initial_soil_water_m >= 0.0);
++        assert!(
++            initial_soil_water_m
++                <= constructor
++                    .hydrology_projection_inputs
++                    .profile_porosity_cap_m
++                    .expect("configured profile porosity cap")
++        );
+         input
+     }
+ 
+@@ -1036,6 +1124,17 @@
+         ));
+         std::fs::create_dir(&root).expect("unique local fixture directory");
+         let observations = root.join("observations.json");
++        let climate =
++            parse_climate_from_str(CLIMATE, ParserMode::Strict).expect("controlled local climate");
++        let request =
++            build_hillslope_climate_runtime_request(&climate).expect("local climate request");
++        let declared_forcing = (0..5)
++            .map(|day_index| {
++                request
++                    .direct_day_forcing(day_index)
++                    .expect("declared local climate day")
++            })
++            .collect::<Vec<_>>();
+ 
+         crate::snow_accuracy_observer::begin(true);
+         let (
+@@ -1055,14 +1154,33 @@
+                 .as_ref()
+                 .clone();
+             expanded_hydrology.identity.day_count = 5;
+-            for lane in &mut expanded_hydrology.lanes {
+-                let first = lane
+-                    .day_inputs
+-                    .first()
+-                    .expect("native hydrology seed day")
+-                    .clone();
+-                lane.day_inputs = vec![first; 5];
++            let initial_hydrology = shadow.restart_authority_hydrology_frame().clone();
++            assert_eq!(
++                expanded_hydrology.lanes.len(),
++                initial_hydrology.lanes.len()
++            );
++            for (lane, initial_lane) in expanded_hydrology
++                .lanes
++                .iter_mut()
++                .zip(&initial_hydrology.lanes)
++            {
++                assert_eq!(lane.lane_id, initial_lane.lane_id);
++                assert_eq!(lane.area_m2, initial_lane.area_m2);
++                assert_eq!(lane.water, initial_lane.water);
++                assert_eq!(lane.subsurface_layers, initial_lane.subsurface_layers);
++                lane.day_inputs = declared_forcing
++                    .iter()
++                    .map(|forcing| native_archive_day_input(initial_lane, forcing))
++                    .collect();
++                assert_eq!(lane.day_inputs.len(), 5);
+             }
++            let validated_hydrology =
++                crate::DirectRunFrame::from_constructor_inputs(expanded_hydrology.clone())
++                    .expect("validated five-day hydrology constructor inputs");
++            assert_eq!(
++                validated_hydrology.diagnostic_constructor_inputs_snapshot_v1(),
++                expanded_hydrology
++            );
+             let continuation_inputs = expanded_hydrology
+                 .lanes
+                 .iter()
+@@ -1071,8 +1189,14 @@
+             shadow
+                 .restart_authority_install_hydrology_continuation_inputs_v3(&continuation_inputs)
+                 .expect("actual five-day hydrology continuation");
++            assert_eq!(
++                shadow
++                    .restart_authority_hydrology_frame()
++                    .diagnostic_constructor_inputs_snapshot_v1(),
++                expanded_hydrology
++            );
+             shadow.diagnostic_install_hydrology_constructor_inputs_v1(std::sync::Arc::new(
+-                expanded_hydrology,
++                expanded_hydrology.clone(),
+             ));
+             let (physical_litter, exact_litter) =
+                 super::v3_publication_retention_tests::native_v4_resident_pair_fixture(&shadow);
+@@ -1087,6 +1211,34 @@
+                 .expect("observer retained hydrology constructor pins")
+                 .as_ref()
+                 .clone();
++            assert_eq!(pinned_hydrology, expanded_hydrology);
++            assert_eq!(pinned_hydrology.identity.day_count, 5);
++            assert!(
++                pinned_hydrology
++                    .lanes
++                    .iter()
++                    .all(|lane| lane.day_inputs.len() == 5)
++            );
++            assert_eq!(
++                shadow
++                    .restart_authority_hydrology_frame()
++                    .diagnostic_constructor_inputs_snapshot_v1(),
++                pinned_hydrology
++            );
++            for (pinned_lane, installed_lane) in pinned_hydrology
++                .lanes
++                .iter()
++                .zip(&shadow.restart_authority_hydrology_frame().lanes)
++            {
++                for (day_index, forcing) in declared_forcing.iter().enumerate() {
++                    let _ = validated_native_archive_publication_input(
++                        day_index,
++                        &pinned_lane.day_inputs[day_index],
++                        forcing,
++                        installed_lane.water.soil_water_m,
++                    );
++                }
++            }
+             let lane_id = fixture.hydrology.beginning_frame().lanes[0].lane_id;
+             let beginning_snow = attachment_stage3_inputs();
+             let beginning_stage3 = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+@@ -1119,10 +1271,6 @@
+                 shadow,
+             )
+             .expect("controlled local native producer");
+-            let climate = parse_climate_from_str(CLIMATE, ParserMode::Strict)
+-                .expect("controlled local climate");
+-            let request =
+-                build_hillslope_climate_runtime_request(&climate).expect("local climate request");
+             let template = day_input(&fixture).intervals[0].clone();
+ 
+             for day_index in 0..4 {
+@@ -1135,16 +1283,32 @@
+                     attachment_supports(&provider, &template, lane_id, day_index),
+                 )
+                 .expect("local provider-bound Stage-3 day");
++                let live_initial_storage = attachment
++                    .committed
++                    .real_consumer
++                    .restart_authority_hydrology_frame()
++                    .lanes
++                    .iter()
++                    .map(|lane| lane.water.soil_water_m)
++                    .collect::<Vec<_>>();
++                let publication_inputs = pinned_hydrology
++                    .lanes
++                    .iter()
++                    .zip(live_initial_storage)
++                    .map(|(lane, initial_soil_water_m)| {
++                        let constructor = &lane.day_inputs[day_index];
++                        let forcing = &declared_forcing[day_index];
++                        validated_native_archive_publication_input(
++                            day_index,
++                            constructor,
++                            forcing,
++                            initial_soil_water_m,
++                        )
++                    })
++                    .collect::<Vec<_>>();
+                 attachment
+                     .stage_prepared_day(&prepared)
+                     .expect("local staged native day");
+-                let publication_inputs = pinned_hydrology
+-                    .lanes
+-                    .iter()
+-                    .map(|lane| {
+-                        publication_input_from_constructor(day_index, &lane.day_inputs[day_index])
+-                    })
+-                    .collect::<Vec<_>>();
+                 attachment
+                     .restart_authority_complete_commit_and_stage_archive_day_v3(&publication_inputs)
+                     .expect("actual completed, committed, and archived native day");
