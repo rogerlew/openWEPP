@@ -1,0 +1,19 @@
+Reviewer: /root/fixture_seed_qa, same independent Terra/medium conversation.
+Initial static response accepted bounded construction pending connected result and reported eight inherited dead-code warnings; no green lint, dependency or authority-suite trigger. The following same-reviewer terminal amendment withdraws its coverage acceptance.
+
+Terminal QA amendment for B01-CONT-020. Static: inspected the preserved connected failure. Ran: no commands by this reviewer.
+
+Findings:
+
+1. HIGH — hard-stop test failure at the new pre-binding diagnostic assertion — v9_real_consumer_shadow_tests.rs:942. The exact connected run failed exit 100 at 17:06:37.887074: represented destinations contain only ofe-1/forest, while expected also contains ofe-1/open. This is before bind_production_provider_day, staging, publication/archive, file recording, or reader entry.
+
+2. HIGH — static acceptance of complete destination coverage is withdrawn — v9_real_consumer_shadow_tests.rs:935-946. The assertion treats the pre-binding represented snow-surface map as the complete capability set. The available evidence is consistent with open requests being materialized during bind_provider_atmosphere; therefore the assertion does not validate the intended production phase and fails before it. No claim that the original destination-boundary Support is fixed is supported.
+
+3. HIGH — mandatory terminal HOLD — artifacts/destination-boundary-20260914/boundary-connected.stderr. The sole connected attempt is 1 selected, 1 run, 0 passed, 1 failed, 1468 skipped. It consumes correction 20/20; no repair or retry is permitted.
+
+Non-blocking debt/follow-ups:
+
+- Formatter and selected-list evidence remain attributable to tree 474fa60e…, test file 3d7b4923…, and patch 2280bbb8….
+- All prior B01-CONT-019 findings remain open, including reader lifecycle, restoration, comparisons, poisons, isolation, zero-physics, and matched lint.
+
+QA disposition: HOLD / INCOMPLETE, terminal.

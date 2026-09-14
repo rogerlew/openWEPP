@@ -1,0 +1,256 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
+@@ -760,6 +760,191 @@
+                     BTreeMap::from([(lane_id, identities)]),
+                 )
+                 .expect("runner-built attachment support")
++            })
++            .collect()
++    }
++
++    // Test-local adaptation of the production dual-regime support builder.
++    // Capability and identity are derived together from each exact provider
++    // interval; canopy coverage comes from the installed LSE/vegetation join.
++    fn native_complete_attachment_supports(
++        attachment: &crate::DirectSnowStage3V11ShadowAttachment,
++        provider: &PreparedSnowFreeGsiDayV1,
++        interval_template: &DirectV9ShadowIntervalInput,
++        lane_id: u32,
++        day_index: usize,
++    ) -> Vec<PreparedStage3V11SupportV1> {
++        let intervals = attachment
++            .prepare_repository_v11_intervals(provider, interval_template)
++            .expect("native fixture repository V11 intervals");
++        assert_eq!(intervals.len(), INTERVALS_PER_DAY);
++        let consumer = &attachment.committed.real_consumer;
++        let configured_lse = consumer.lse_configuration();
++        let configured_vegetation = consumer.vegetation_configuration();
++        assert_eq!(interval_template.wb14_parameters.len(), 1);
++        let lane_ofe = &interval_template.wb14_parameters[0].ofe_id;
++        let configured_ofe = configured_lse
++            .ofes
++            .iter()
++            .find(|ofe| &ofe.ofe_id == lane_ofe)
++            .expect("native fixture lane/OFE configuration");
++        let configured_destinations = configured_ofe
++            .tiles
++            .iter()
++            .map(|tile| (configured_ofe.ofe_id.clone(), tile.tile_id.clone()))
++            .collect::<BTreeSet<_>>();
++        assert!(!configured_destinations.is_empty());
++
++        intervals
++            .into_iter()
++            .enumerate()
++            .map(|(interval_index, (snow_free_interval, snow_surface_interval))| {
++                let provider_intervals = provider
++                    .forcing_receipts()
++                    .receipts()
++                    .iter()
++                    .map(|destination_day| {
++                        &destination_day.intervals[interval_index]
++                    })
++                    .collect::<Vec<_>>();
++                let provider_destinations = provider_intervals
++                    .iter()
++                    .map(|interval| {
++                        (
++                            OfeId::try_new(interval.ofe_id.clone())
++                                .expect("native fixture provider OFE"),
++                            TileId::try_new(interval.tile_id.clone())
++                                .expect("native fixture provider tile"),
++                        )
++                    })
++                    .collect::<BTreeSet<_>>();
++                assert_eq!(
++                    provider_destinations, configured_destinations,
++                    "native fixture configured/provider destinations on day {day_index} interval {interval_index}"
++                );
++                let lane_interval = *provider_intervals
++                    .first()
++                    .expect("native fixture provider destination");
++                let support_start = day_index as u128 * 86_400_000_000_000
++                    + interval_index as u128 * 1_800_000_000_000;
++                let support = TimeSupport::new(
++                    ModelTimeNs::new(support_start),
++                    ModelTimeNs::new(support_start + 1_800_000_000_000),
++                )
++                .expect("native fixture 1,800-second support");
++                let mut destination_capabilities = BTreeMap::new();
++                let mut identity_by_destination = BTreeMap::new();
++                for provider_interval in provider_intervals {
++                    let configured_ofe = configured_lse
++                        .ofes
++                        .iter()
++                        .find(|ofe| ofe.ofe_id.as_str() == provider_interval.ofe_id)
++                        .expect("native fixture configured provider OFE");
++                    let configured_tile = configured_ofe
++                        .tiles
++                        .iter()
++                        .find(|tile| tile.tile_id.as_str() == provider_interval.tile_id)
++                        .expect("native fixture configured provider tile");
++                    let destination = (
++                        configured_ofe.ofe_id.clone(),
++                        configured_tile.tile_id.clone(),
++                    );
++                    let canopy_covered = configured_vegetation.strata.iter().any(|stratum| {
++                        stratum.tile_ids.contains(&configured_tile.vegetation_tile_id)
++                    });
++                    let (identity, capability) = if canopy_covered {
++                        let carrier = SealedCoveredCarrierForcing::try_from_repository_interval(
++                            provider_interval,
++                            1.2,
++                            1_005.0,
++                            attachment_stage3_inputs().canopy_cover_fraction,
++                        )
++                        .expect("native fixture covered provider carrier");
++                        (
++                            PreparedStage3V11SupportIdentityV1::from_provider_covered_interval(
++                                provider_interval,
++                                &carrier,
++                            )
++                            .expect("native fixture covered provider identity"),
++                            crate::snow_stage3_v11_attachment::DirectSnowStage3V11DestinationCapabilityV1::CanopyCovered(carrier),
++                        )
++                    } else {
++                        (
++                            PreparedStage3V11SupportIdentityV1::from_provider_open_interval(
++                                support,
++                                provider_interval,
++                            )
++                            .expect("native fixture open provider identity"),
++                            crate::snow_stage3_v11_attachment::DirectSnowStage3V11DestinationCapabilityV1::OpenProviderProjection,
++                        )
++                    };
++                    assert!(
++                        identity_by_destination
++                            .insert(destination.clone(), identity)
++                            .is_none(),
++                        "duplicate native fixture destination on day {day_index} interval {interval_index}"
++                    );
++                    assert!(
++                        destination_capabilities
++                            .insert(destination, capability)
++                            .is_none(),
++                        "duplicate native fixture capability on day {day_index} interval {interval_index}"
++                    );
++                }
++                let expected_destinations = configured_destinations.clone();
++                let represented_destinations = destination_capabilities
++                    .keys()
++                    .cloned()
++                    .collect::<BTreeSet<_>>();
++                assert_eq!(
++                    represented_destinations, expected_destinations,
++                    "native fixture destination coverage on day {day_index} interval {interval_index}"
++                );
++                assert!(!expected_destinations.is_empty());
++
++                let mut snow_inputs = attachment_stage3_inputs();
++                snow_inputs.wind_m_s = lane_interval.wind_m_s;
++                snow_inputs.dewpoint_c = lane_interval.dew_point_c;
++                snow_inputs.surface_energy_options.atmospheric_pressure_pa =
++                    lane_interval.pressure_kpa * 1_000.0;
++                let prepared = crate::DirectSnowStage3V11PreparedSupport::from_dual_regime_production_inputs(
++                    support,
++                    crate::snow_stage3_v11_attachment::DirectSnowStage3V11DualRegimeSupportInputsV1 {
++                        snow_inputs_by_lane: BTreeMap::from([(lane_id, snow_inputs)]),
++                        support_forcing_by_lane: BTreeMap::from([(
++                            lane_id,
++                            DirectSnowStage3SupportInput {
++                                forcing: DirectSnowHourlyForcing {
++                                    air_temperature_c: lane_interval.air_temperature_c,
++                                    ..DirectSnowHourlyForcing::zero()
++                                },
++                                duration_seconds: 1_800.0,
++                            },
++                        )]),
++                        snow_free_v11_interval: snow_free_interval,
++                        snow_surface_v11_interval: snow_surface_interval,
++                        support_identity_by_lane: BTreeMap::from([(
++                            lane_id,
++                            identity_by_destination.into_values().collect(),
++                        )]),
++                        destination_capabilities,
++                        hard_boundaries: Vec::new(),
++                    },
++                )
++                .expect("complete native fixture production support");
++                let (_, _, _, _, _, identities, represented, open) = prepared
++                    .diagnostic_capture_parts_v1()
++                    .expect("complete native fixture diagnostic support");
++                assert_eq!(
++                    identities.values().map(Vec::len).sum::<usize>(),
++                    expected_destinations.len()
++                );
++                assert_eq!(
++                    represented.keys().cloned().collect::<BTreeSet<_>>(),
++                    expected_destinations
++                );
++                assert!(open.is_subset(&expected_destinations));
++                prepared
+             })
+             .collect()
+     }
+@@ -1277,12 +1462,18 @@
+                 let provider = attachment
+                     .prepare_repository_provider_day(&request, day_index)
+                     .expect("local provider day");
+-                let prepared = PreparedStage3V11DayV1::bind_provider_day(
++                let prepared = PreparedStage3V11DayV1::bind_production_provider_day(
+                     &provider,
+                     day_index,
+-                    attachment_supports(&provider, &template, lane_id, day_index),
++                    native_complete_attachment_supports(
++                        &attachment,
++                        &provider,
++                        &template,
++                        lane_id,
++                        day_index,
++                    ),
+                 )
+-                .expect("local provider-bound Stage-3 day");
++                .expect("complete local production provider-bound Stage-3 day");
+                 let live_initial_storage = attachment
+                     .committed
+                     .real_consumer
+@@ -1308,7 +1499,11 @@
+                     .collect::<Vec<_>>();
+                 attachment
+                     .stage_prepared_day(&prepared)
+-                    .expect("local staged native day");
++                    .unwrap_or_else(|error| {
++                        panic!(
++                            "local staged native day {day_index} after 48 complete destination-checked supports: {error:?}"
++                        )
++                    });
+                 attachment
+                     .restart_authority_complete_commit_and_stage_archive_day_v3(&publication_inputs)
+                     .expect("actual completed, committed, and archived native day");
+@@ -1337,17 +1532,21 @@
+             let provider = attachment
+                 .prepare_repository_provider_day(&request, 4)
+                 .expect("target local provider day");
+-            let prepared = PreparedStage3V11DayV1::bind_provider_day(
++            let prepared = PreparedStage3V11DayV1::bind_production_provider_day(
+                 &provider,
+                 4,
+-                attachment_supports(&provider, &template, lane_id, 4),
+-            )
+-            .expect("target local provider-bound Stage-3 day");
++                native_complete_attachment_supports(&attachment, &provider, &template, lane_id, 4),
++            )
++            .expect("complete target production provider-bound Stage-3 day");
+             let context = attachment.static_context.clone();
+             let expected_prefix = attachment.archived_receipt_prefix_v1().clone();
+             attachment
+                 .stage_prepared_day(&prepared)
+-                .expect("actual target producer and recorder path");
++                .unwrap_or_else(|error| {
++                    panic!(
++                        "actual target day 4 producer after 48 complete destination-checked supports: {error:?}"
++                    )
++                });
+             crate::snow_accuracy_observer::finish_to_file(&observations)
+                 .expect("actual observation recorder file");
+             (
