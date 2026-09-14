@@ -1,0 +1,153 @@
+{
+  "posture": "Prospective unchanged acceptance; NOT EXECUTED. Freeze final field mapping on stable schema before launch.",
+  "target": {
+    "day_index": 4,
+    "interval_index": 22,
+    "child_support_ns": [
+      385920000000000,
+      385980000000000
+    ],
+    "parent_support_ns": [
+      385200000000000,
+      387000000000000
+    ]
+  },
+  "original_reference": "../incoming-context-20260913/raw-current-context-ordinal123085.json",
+  "original_source": {
+    "array_prefix": "physical.item",
+    "bytes": 3699473934,
+    "path": "/workdir/openwepp-experiments/b01-wb14-available-source-red-witness/raw-capture-20260912-1/observations.json",
+    "sha256_previously_verified": "7a944817acf43be2ba018f670efbd3490a0cf1f3629b0011ae26449de2332ba9"
+  },
+  "run_identity": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9",
+  "canonical_comparison_obligations": [
+    "One unambiguous target context; preserve all target/error records and reject duplicate/conflicting captures at collection boundary.",
+    "New beginning clock owners match original current clock owner identities/digests; compare canonical bytes from original raw row when source defines same representation.",
+    "Captured consumer owners compare with original consumer projection, not unlike clock/native owner view.",
+    "Original parent support/transaction, accepted prefix endpoint and terminal ProducedUnconsumed parcel custody remain exact.",
+    "New importer independently restores actual prepared/provider/context objects and validates their canonical projections and input/configuration identities.",
+    "New provisional binding/reduction/ledger/receipt compared with independently obtained real producer values; helper round trip alone insufficient.",
+    "Baseline model E008 retained separately from capture status; no changed model result accepted.",
+    "Probe reads only NEW collected bundle in a separate process; zero constitutive/ingress/WB14 entry and unchanged canonical beginning bytes."
+  ],
+  "stable_reference": {
+    "clock_owner_set_sha256": "bb7a55e254c6206e3e579d76c0b2c9a00856d730b7601a932f895fd8777288b1",
+    "clock_owners": [
+      {
+        "digest": "b9933ca19331e9fbbb0daa6c273c4a45c60289221040973098b2a14532be6aeb",
+        "owner_id": "bgc"
+      },
+      {
+        "digest": "124054cd3c1ef9b0052d4d5f10c4af70859490a7eac45baa87c1cf1086363819",
+        "owner_id": "hydrology"
+      },
+      {
+        "digest": "ace2a96ab772387e2f0dbbc8b7dd2bb6a4416eb433903dacbd7cca039ef29850",
+        "owner_id": "land_surface_energy"
+      },
+      {
+        "digest": "5d421ef684a57257568664c41b3d9d12aacb8e66a0dca51ce26a94fe90ebaaf5",
+        "owner_id": "snow"
+      },
+      {
+        "digest": "9049413f4f5fc2767df155d6c2d4cc73cec916d142d2ddebd9add6d1ca839e3f",
+        "owner_id": "soil_thermal"
+      },
+      {
+        "digest": "0fabede42941f39017a2907eb476a1b63eb2e828fcb01fb058e10af711d48f0d",
+        "owner_id": "surface_liquid"
+      },
+      {
+        "digest": "b5f9b0d86995f53281c3b5e91bdc6f1dd20f6b659f76481414f571b10eab4ce9",
+        "owner_id": "vegetation"
+      }
+    ],
+    "parent_support": {
+      "end_ns": "387000000000000",
+      "start_ns": "385200000000000"
+    },
+    "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+    "time_ns": "385920000000000",
+    "owners_canonical_json_inventory": {
+      "bgc": {
+        "sha256": "b9933ca19331e9fbbb0daa6c273c4a45c60289221040973098b2a14532be6aeb",
+        "utf8_bytes": 572
+      },
+      "hydrology": {
+        "sha256": "4a37f6f8f668669caf9bda7db998f2905ad3140017ff8b38fecb81f2d8dad704",
+        "utf8_bytes": 1183
+      },
+      "land_surface_energy": {
+        "sha256": "ace2a96ab772387e2f0dbbc8b7dd2bb6a4416eb433903dacbd7cca039ef29850",
+        "utf8_bytes": 9421
+      },
+      "snow": {
+        "sha256": "c1c123441a440a179210e62a356bbde391ec1821d15208b3d4ad68e43ad94d22",
+        "utf8_bytes": 821
+      },
+      "soil_thermal": {
+        "sha256": "9049413f4f5fc2767df155d6c2d4cc73cec916d142d2ddebd9add6d1ca839e3f",
+        "utf8_bytes": 2499
+      },
+      "surface_liquid": {
+        "sha256": "a64d5cd3dec70bac8f079d0256ad063af49063dab9d8a96414b6999b5c5f963f",
+        "utf8_bytes": 1065
+      },
+      "vegetation": {
+        "sha256": "d9b2ba9a3dde54ed0d245ab86efc431143660c19b179a4cc69a57a7281a8dcce",
+        "utf8_bytes": 3826
+      }
+    }
+  },
+  "terminal_custody": {
+    "fa7bbeb8e27bf236ceacf249663ce045c5c1ae8b870ccdb7404514fc4f7692e4": {
+      "destination_ofe_id": "ofe-1",
+      "event_ordinal": 0,
+      "event_result_digest": "162db5439e6020b499f7839024f154cc62161531a9b76d94983933441ff22f7e",
+      "mass_kg_m2_tile_ground": "1.1325407132005754",
+      "parcel_digest": "fa7bbeb8e27bf236ceacf249663ce045c5c1ae8b870ccdb7404514fc4f7692e4",
+      "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+      "posture": "ProducedUnconsumed",
+      "receiver_destinations": [
+        {
+          "destination_fraction": "0.38",
+          "destination_ofe_id": "ofe-1",
+          "destination_tile_id": "forest"
+        },
+        {
+          "destination_fraction": "0.62",
+          "destination_ofe_id": "ofe-1",
+          "destination_tile_id": "open"
+        }
+      ],
+      "receiver_topology_sha256": "fd203ccdb571cd7b1a1eb5a878101fa35ca5cf193372d67f29005e66842ee4e9",
+      "source_lane_id": 1,
+      "specific_liquid_enthalpy_j_kg": "4758.8160095468065",
+      "support": {
+        "end_ns": "385920000000000",
+        "start_ns": "385620000000000"
+      },
+      "temperature_k": "274.27821621847954",
+      "terminal_event_proposal_core_id": "aa0fe905a1a8d2f0a70c3de13ef8505497e34d2adda2562bad0d4739ea473532"
+    }
+  },
+  "excluded_from_stable_identity": [
+    "per-run timing/process/session/thread identifiers",
+    "output paths",
+    "recording-build identity stamps",
+    "old skipped live capabilities",
+    "raw observer ordinal"
+  ],
+  "capture_protocol": {
+    "collector": "docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/collect.py",
+    "policy": "B01",
+    "case": "gradual_warm_tail7",
+    "ofes": 1,
+    "physical": true,
+    "day_zero": true,
+    "timeout_s": 3600,
+    "cpu": 0,
+    "cases": "docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json"
+  },
+  "launch_requires": "Complete composed small tests, formatting, matched lint, exact source/input/build identities and both independent observation-only prelaunch acceptance dispositions. This predicate is not launch authority."
+}

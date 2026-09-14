@@ -1,0 +1,50 @@
+{
+  "evidence_class": "Ran: stable five-path source preservation and exact baseline+patch reconstruction, not behavioral validation",
+  "utc": "2026-09-14T00:22:37.709374+00:00",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "reconstructed_subset": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/importer-continuation-reconstruction-20260914",
+  "files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/lib.rs",
+      "baseline_sha256": "489cb0bf3e6b271e4bb23908e56cf92f45782389b7234265f74e38bf31aca1f6",
+      "capture_sha256": "13cb587e3fb4964aeab1f678d8237dc12ffa8bb61ce0e00579f8b2650e8742e6"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "baseline_sha256": null,
+      "capture_sha256": "3496d7ebc70620f7ac1bd1ad8d4c7b6c7b156ef6fbc29ea7c89c648856ba5820"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+      "baseline_sha256": "575cd3958e3860c5bac3ba0514f04d8ef203bd4a13a49ec4f41cb2b93952f78c",
+      "capture_sha256": "a17bed40225a821636bdb207c83d210f39e9281bb9db5858cafc2001ef1da4c4"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+      "baseline_sha256": "61b4d622dabfef7604891a22a5d86c6fe803409fc2eab3fd1a5306ed3e9867b4",
+      "capture_sha256": "3ffce676c80e312e9b61c01f6b5002383f188d3e04900ca9f0815812ed6d536e"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "baseline_sha256": "af5deef99b53455ed1e2fc5b797651ee6d3e64435dafd07bc9f0ad772d682117",
+      "capture_sha256": "646ef885bec670d3401ba4da0c8c7597b35bc4cbecd458e6ecee33661c401b87"
+    }
+  ],
+  "patch_sha256": "66c7ab9d3241ce70f1fa90a867a403cc5d12d6cf30326710261e1c445ffc23c0",
+  "patch_exit": 0,
+  "patch_stdout": "patching file crates/openwepp-hillslope-orchestrator/src/lib.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs\n",
+  "patch_stderr": "",
+  "reconstructed_matches": {
+    "crates/openwepp-hillslope-orchestrator/src/lib.rs": true,
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs": true,
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs": true,
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs": true,
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs": true
+  },
+  "failure_cycles": 8,
+  "cycle_ceiling": 9,
+  "capture_invocations": 0,
+  "probe_invocations": 0,
+  "source_qualified": false
+}

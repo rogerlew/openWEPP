@@ -1,0 +1,7 @@
+{
+  "evidence_class": "Ran: source hashes stable, all new JSON parse, continuation links resolve; no Rust validation",
+  "utc": "2026-09-14T00:24:45.931274+00:00",
+  "source_hashes_stable": true,
+  "json_parse": true,
+  "continuation_links": true
+}

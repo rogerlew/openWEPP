@@ -1,0 +1,40 @@
+{
+  "evidence_class": "Ran: stable actual source tree scope comparison against accepted baseline; diff exit1 means expected byte differences, not failed corrective behavioral verification",
+  "utc": "2026-09-14T00:23:46.642159+00:00",
+  "roots": [
+    {
+      "argv": [
+        "diff",
+        "-qr",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates"
+      ],
+      "exit": 1,
+      "stdout": "Files /workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/lib.rs and /workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/lib.rs differ\nFiles /workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs and /workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs differ\nOnly in /workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src: snow_stage3_v11_current_context_capture.rs\nFiles /workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs and /workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs differ\nFiles /workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs and /workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs differ\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "diff",
+        "-qr",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/tests",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/tests"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "diff",
+        "-qr",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red/tools",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/tools"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "baseline_capture_module_absent_expected": true
+}

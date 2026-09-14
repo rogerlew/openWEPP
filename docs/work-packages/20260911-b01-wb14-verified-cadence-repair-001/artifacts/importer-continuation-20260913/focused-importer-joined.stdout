@@ -1,0 +1,10 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/current-context-capture-20260913-e61beb50c546
+  scratch: /tmp/openwepp-roger-current-context-capture-20260913-e61beb50c546
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test v9_real_consumer_shadow::tests::b01_current_context_importer_restores_fixture_without_physics ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1467 filtered out; finished in 0.10s
+

@@ -1,0 +1,21 @@
+Replacement QA final review: /root/capture_importer_qa (Terra/medium), continuing the same independent QA scope after supported sequencing. This is not a new review wave.
+
+Evidence class: Static review of the frozen source-preservation records, terminal patch, three supplied test-command records/logs, selected lint record, package frozen-source state, and prior QA/correctness findings. I ran no source edit, build, test, formatter, lint, replay, capture, restore, or probe.
+
+Findings:
+
+- HIGH — Acceptance-bearing verification is missing on the five-path stable cut. `terminal-source-recovery.json` proves byte reconstruction only and explicitly marks the source unqualified. The supplied narrow tests do not validate the final composed capture/importer source; the later compiler failure consumes correction 8/9. Formatting and both matched candidate lint commands remain NOT RUN. A preservation diff cannot establish source quality, behavior, or no-new-relevant-diagnostics attribution.
+
+- HIGH — The stable implementation does not meet the usable-bundle/consumer boundary. The frozen-source evidence identifies unused new provider/prepared-support helpers, no complete 48-support capture/restoration, no file-consuming fresh-process consumer, and no actual producer integration. Thus the original findings on real producer agreement, provider/forcing custody, complete owner/parent/prefix joins, and zero-physics import remain open. The prior bare selector failure is preserved accurately: compilation failed before selection; the bare exact selector would have selected zero after compilation. The later fully qualified narrow ownership test PASS 1/1 resolves only that selector defect.
+
+- HIGH — The single-run custody prerequisites are unmet. Stable five-path source identity and tree scope are preserved, with tests/tools unchanged, but there is no final executable/binary identity, successful composed pre-run suite, formatter/lint assessment, or accepted independent review of the completed behavior. Capture remains 0/1; fresh-process probe remains 0/1; witness remains exhausted 1/1. Launching either remaining allowance would violate the adopted launch condition.
+
+- MEDIUM — The new 823-line private capture module combines DTO definitions, serialization, capture, reconstruction, validation, and test-facing behavior. Its compressed one-line declarations and the presently unused helper path make the flow difficult to audit. This is material maintainability debt if the feature is resumed, but the missing behavior evidence independently blocks acceptance.
+
+Non-blocking debt / follow-ups:
+
+- `terminal-tree-comparison.json` and `terminal-source-recovery.json` adequately preserve five authorized Rust-path differences against `baseline-red`; they do not replace terminal diff reconciliation for cargo-deny/authority-suite anti-evasion applicability.
+
+- Starts/timestamps for the supplied three narrow command records are UNAVAILABLE. Preserve that limitation; do not reconstruct active-time evidence from the test output.
+
+QA verdict: HOLD / NOT ACCEPTED. No capture or probe is authorized from this review. Preserve the frozen five-path cut, raw command failures, 8/9 failed-correction ledger, and missing acceptance evidence; the wider cadence candidate remains HOLD.

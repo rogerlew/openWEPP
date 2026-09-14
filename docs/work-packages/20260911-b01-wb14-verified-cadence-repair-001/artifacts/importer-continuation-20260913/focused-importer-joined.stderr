@@ -1,0 +1,4 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.19s
+     Running unittests src/lib.rs (/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab)

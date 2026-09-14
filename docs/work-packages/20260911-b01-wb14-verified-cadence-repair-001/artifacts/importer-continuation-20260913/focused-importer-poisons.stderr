@@ -1,0 +1,21 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+error[E0382]: use of moved value: `row`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1109:29
+     |
+1073 |         let row = crate::snow_stage3_v11_current_context_capture::capture_row_for_test(
+     |             --- move occurs because `row` has type `Value`, which does not implement the `Copy` trait
+...
+1101 |         let mut missing_lse = row;
+     |                               --- value moved here
+...
+1109 |         let mut wrong_run = row;
+     |                             ^^^ value used here after move
+     |
+help: consider cloning the value if the performance cost is acceptable
+     |
+1101 |         let mut missing_lse = row.clone();
+     |                                  ++++++++
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error
