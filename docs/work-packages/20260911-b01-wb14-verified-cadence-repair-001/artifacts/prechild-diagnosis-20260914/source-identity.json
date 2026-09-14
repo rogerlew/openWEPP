@@ -1,0 +1,115 @@
+{
+  "evidence_class": "Ran: read-only source snapshot; no Rust execution",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/baseline-red",
+  "source_tree_sha256": "01c34f56dd32e0b9502a74801e6c961012441dbbce6205f33934db79aa49284c",
+  "patch_sha256": "39b9d9701a435d9937f143d12ea589b7c27e009264a4e466300b80bff2c36574",
+  "snapshot_entries": 740,
+  "branches": {
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs": "1826924b199e8a1ff7a42776ac99713b0b1bb01ab8207a1ea508cc1539096c29",
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_preflight.rs": "b0d362563f6fda1ae49cac2be9b011bbb3d83f497f399e2b6c29524f98af1ae3",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs": "77e8035d8d7b5d490883d50892721c757cfa0a3fdf4b1dfc2fac37d96fe9ba0b",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs": "a3dfd35c775d6911c45483696319eaa75361bfcdbc2e96c11957ad9c926a0586",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs": "377684b7411b9056c4d24a0f591e20b0a5dba331439e9a675424b1b3c2fa7d2a",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs": "088c046409e348a9abc2217fc7a4cb049d87edb0ba927be58f02e2b269ade888",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs": "732ae7952afca307b9085512b79d6436ed0e87092f12a96b23adaa6088beed10",
+    "crates/openwepp-hillslope-orchestrator/src/v11_covered/regime.rs": "31b71ea06f98dff63c81ec318320eb4407381f05c9c4e8664b538e81e0347816"
+  },
+  "changes": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
+      "baseline_sha256": "1ab5fa82391f617e1c8713e4b3fcd5894b2b6fb34da054c297da03eb8ccc427b",
+      "source_sha256": "08a2ef5de6ef7e7abdbebe353133235c9c8a12d3ae523205db629bc49c1e2782"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2.rs",
+      "baseline_sha256": "82a9abc05c72977852771be867a95b11dbf112694efd2cb10daa2fcea1fbc9c1",
+      "source_sha256": "2e996209209a8e2310d17127bd08c927d3c82b4fafde3c1c5d194feb58481d8f"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/lib.rs",
+      "baseline_sha256": "489cb0bf3e6b271e4bb23908e56cf92f45782389b7234265f74e38bf31aca1f6",
+      "source_sha256": "13cb587e3fb4964aeab1f678d8237dc12ffa8bb61ce0e00579f8b2650e8742e6"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "baseline_sha256": "af5deef99b53455ed1e2fc5b797651ee6d3e64435dafd07bc9f0ad772d682117",
+      "source_sha256": "692e18c120a7cdb6eb175bb636f04ef3789f9908e1b218b34bdf64a455d70f8d"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs",
+      "baseline_sha256": "56448fb008e4870f5e0ee2563cd2188c642201b4e3d15bb21694c2689f1af330",
+      "source_sha256": "f5d488e4915d345576128a51df43f4f00f69a662ae28f37155b37ec0dab31bd3"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "baseline_sha256": null,
+      "source_sha256": "377684b7411b9056c4d24a0f591e20b0a5dba331439e9a675424b1b3c2fa7d2a"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_forcing_digest.rs",
+      "baseline_sha256": "686bdb2b8529473a00f7d54ab36febec639ef2b8c09703390a6875d3c254d164",
+      "source_sha256": "89b33103c336b155617a9f34f4cfc9427d13d1a4be1c3b3c3640bd77a87e7497"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+      "baseline_sha256": "df3381653313efdce1db7e2bb48c54b4fb8bda81bb49a45365050c39a849df1d",
+      "source_sha256": "1e01658ec37d72cec22cc795f4e8f4e17b94a8258351340babc8f693c06e0c90"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+      "baseline_sha256": "575cd3958e3860c5bac3ba0514f04d8ef203bd4a13a49ec4f41cb2b93952f78c",
+      "source_sha256": "732ae7952afca307b9085512b79d6436ed0e87092f12a96b23adaa6088beed10"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+      "baseline_sha256": "72415fa5e73f8157c49641f4c82b4a475b6a4a7a8124dafa8611a73ada328d4e",
+      "source_sha256": "764600841a7cbb2e09a8b5cfde00419936fa8444c36dafd4be0051630d301bfc"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/direct_v9_real_consumer_shadow_impl.rs",
+      "baseline_sha256": "220759c31f400eac155f1200f5168e76cb9412f4e235c2ef906b74a762b2810e",
+      "source_sha256": "7ff9b6b9a760947c96878200587f7b3ea17ebcce086071f46b3e3807f1cf7569"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+      "baseline_sha256": "dc665974ddaa7c00340534d7b0eea46463f9a7a1386f055f24dcbd78d37aa91b",
+      "source_sha256": "87bd0851a525624df78f7e79a0f78be532ab698e711b97e2c6b78861b85c7207"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs",
+      "baseline_sha256": "0b16ba30139a6701682dbea372024c5c347e1f01b36c8af32c7733ea6d690d87",
+      "source_sha256": "61f73e0db5cf1d35a3462b8e017e79e19be83a2d62543ca33fbc1abf22868b35"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+      "baseline_sha256": "61b4d622dabfef7604891a22a5d86c6fe803409fc2eab3fd1a5306ed3e9867b4",
+      "source_sha256": "dfe0da9d2be9984b43334eed80fa1b9fe3892dd9993de1869e4ddcd940f2b594"
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs",
+      "baseline_sha256": "a1bcea3155c3724dea21678e4227af0be69fe1de6f272fdf820370b6c0ed6975",
+      "source_sha256": "8239c6b674dbc1866924b0a7ff151289c7c348db6028588a07a13b5558a0ae80"
+    }
+  ],
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-recorder-20260914.frozen",
+  "binary_sha256": "0f286b43ef8a30412b41f27414732e0c6ea4cbec7fb5e7e90913197c79687c55",
+  "raw_stat_matches_accepted_inventory": true,
+  "raw_stat": {
+    "st_dev": 64514,
+    "st_ino": 86055144,
+    "st_size": 8236702644,
+    "st_mtime_ns": 1789415160181925279,
+    "st_ctime_ns": 1789415160181925279
+  },
+  "baseline_branch_equality": {
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs": true,
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_preflight.rs": true,
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs": true,
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs": true,
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs": false,
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs": true,
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs": false,
+    "crates/openwepp-hillslope-orchestrator/src/v11_covered/regime.rs": true
+  }
+}

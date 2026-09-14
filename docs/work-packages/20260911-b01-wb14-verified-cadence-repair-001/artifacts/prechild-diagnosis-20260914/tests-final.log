@@ -1,0 +1,11 @@
+test_byte_validation (test_select_pair.SelectTests.test_byte_validation) ... ok
+test_identity_count_missing_target (test_select_pair.SelectTests.test_identity_count_missing_target) ... ok
+test_large_unselected_late_kind (test_select_pair.SelectTests.test_large_unselected_late_kind) ... ok
+test_malformed_truncated_trailing (test_select_pair.SelectTests.test_malformed_truncated_trailing) ... ok
+test_missing_duplicate_wrong_kind (test_select_pair.SelectTests.test_missing_duplicate_wrong_kind) ... ok
+test_target_exact_numbers_and_member_order (test_select_pair.SelectTests.test_target_exact_numbers_and_member_order) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 1.114s
+
+OK

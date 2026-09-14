@@ -1,0 +1,22 @@
+{
+  "status": "HARD STOP / INCOMPLETE",
+  "utc": "2026-09-14T23:35:40.541780+00:00",
+  "prior_owner_supplement_seconds": 1077,
+  "conservative_pickup_seconds": 1080,
+  "continuation_seconds": 460.54178,
+  "supplement_charge_seconds": 1540.54178,
+  "supplement_ceiling_seconds": 3600,
+  "prior_cumulative_seconds": 26451.729575,
+  "cumulative_charge_seconds": 27992.271355,
+  "cumulative_ceiling_seconds": 30051.729575,
+  "failed_corrections_prior": 21,
+  "failed_corrections_added": 1,
+  "failed_corrections": 22,
+  "failure_ceiling": 23,
+  "selective_pass": "1/1 failed; zero target bytes; no retry",
+  "capture": "1/1 exhausted",
+  "witness": "1/1 exhausted",
+  "probe": "0/1 reserved and prohibited",
+  "no_wait_deductions": true,
+  "reason": "real extraction root-shape failure; safe preservation only"
+}

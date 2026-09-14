@@ -1,0 +1,19 @@
+{
+  "status": "INCOMPLETE",
+  "expected_source_sha256": "709dc4992b2fd08fd8bae755c730a5a01341a9a18cee8a0817ca76a249974e03",
+  "targets": {
+    "123091": "surface_liquid_wb14_cadence_failure",
+    "123092": "surface_liquid_wb14_cadence_caller_failure"
+  },
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/observations.json",
+  "started_utc": "2026-09-14T23:33:59.161356+00:00",
+  "format": "ordered [physical_ordinal,event,value]; numbers encoded as exact decimal text; terminal COMPLETE required",
+  "error": "ValueError: expected one top-level array",
+  "elapsed_s": 0.0007824860513210297,
+  "selected_event_bytes": 0,
+  "peak_rss_kib": 22232,
+  "rlimit_as": [
+    1073741824,
+    1073741824
+  ]
+}

@@ -1,0 +1,17 @@
+test_byte_validation (test_select_pair.SelectTests.test_byte_validation) ... ok
+test_identity_count_missing_target (test_select_pair.SelectTests.test_identity_count_missing_target) ... ok
+test_large_unselected_late_kind (test_select_pair.SelectTests.test_large_unselected_late_kind) ... /workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/prechild-diagnosis-20260914/select_pair.py:127: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp9c49r8ak/out/events.provisional.jsonl' mode='r' encoding='UTF-8'>
+  for line in path.open():
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_malformed_truncated_trailing (test_select_pair.SelectTests.test_malformed_truncated_trailing) ... ok
+test_missing_duplicate_wrong_kind (test_select_pair.SelectTests.test_missing_duplicate_wrong_kind) ... ok
+test_target_exact_numbers_and_member_order (test_select_pair.SelectTests.test_target_exact_numbers_and_member_order) ... /workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/prechild-diagnosis-20260914/select_pair.py:127: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpd2hy0ydu/out/events.provisional.jsonl' mode='r' encoding='UTF-8'>
+  for line in path.open():
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 1.138s
+
+OK

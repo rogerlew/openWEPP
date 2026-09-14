@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/prechild-diagnosis-20260914/select_pair.py", line 169, in <module>
+    print(json.dumps(select(args.source,args.destination,
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/prechild-diagnosis-20260914/select_pair.py", line 55, in select
+    raise ValueError('expected one top-level array')
+ValueError: expected one top-level array
