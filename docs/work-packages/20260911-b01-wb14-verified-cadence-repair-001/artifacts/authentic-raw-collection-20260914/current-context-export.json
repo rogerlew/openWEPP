@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: attempted bounded export, INCOMPLETE",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/observations.json",
+  "source_collector_sha256": "709dc4992b2fd08fd8bae755c730a5a01341a9a18cee8a0817ca76a249974e03",
+  "helper": "docs/work-packages/20260912-b01-wb14-available-source-red-witness-001/artifacts/extract_current_pair.py",
+  "method": "ijson.items physical.item use_float=False; enumerate zero-based; select b01_wb14_* or cadence guard/caller or day4 provider_precipitation_phase; helper.lossless_json complete payload",
+  "exit_code": 130,
+  "stop": "SIGINT to extraction process3552378 only to bound work and preserve publication allowance; original wrapper/collector/runner already terminal and not signaled",
+  "observed_rss_kib": 8221944,
+  "traceback": "KeyboardInterrupt in existing lossless_json helper lines53/55/57 during selected payload encoding; no repair/retry",
+  "export_bytes": 0,
+  "records_scanned": null,
+  "selected_kind": null,
+  "actual_positions": null,
+  "expected_payload_presence": "NOT ESTABLISHED: day/provider, archive, pre-child, cadence guard/caller, capture-error rows; no absent-row inference",
+  "utc": "2026-09-14T21:11:53.208778+00:00"
+}

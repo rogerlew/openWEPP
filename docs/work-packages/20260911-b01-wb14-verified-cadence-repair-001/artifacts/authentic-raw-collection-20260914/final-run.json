@@ -1,0 +1,1593 @@
+{
+  "carrier": {
+    "counts": [
+      {
+        "completed": 96,
+        "errors": 0,
+        "started": 96
+      },
+      {
+        "completed": 7168,
+        "errors": 0,
+        "started": 7168
+      },
+      {
+        "completed": 12844,
+        "errors": 0,
+        "started": 12844
+      },
+      {
+        "completed": 12844,
+        "errors": 0,
+        "started": 12844
+      },
+      {
+        "completed": 0,
+        "errors": 0,
+        "started": 0
+      }
+    ],
+    "dropped_records": 0,
+    "records": []
+  },
+  "case": "gradual_warm_tail7",
+  "clock_hz": 100,
+  "cpu_ticks_end": 141921,
+  "cpu_ticks_start": 2,
+  "days_requested": 7,
+  "error": "RuntimeSurfaceFailure { surface: \"r7c_direct_production_executor\", detail: \"HS-SIMPIPE-E-001 direct runtime kernel guard failed in snow_stage3_v11: prepare: VEG-E-123: imported V10 segment execution failed: V9 real-consumer serialization failure: frozen-litter V4 runtime: SURFACELIQUID-E-008 IngressCandidate: WB14 day or interval continuation mismatch\" }",
+  "execution": "FAIL",
+  "lse": {
+    "complete": {
+      "completions": 6329538,
+      "errors": 0,
+      "starts": 6329538
+    },
+    "component_replay": {
+      "completions": 0,
+      "errors": 0,
+      "starts": 0
+    },
+    "dropped_events": 0,
+    "evaluations": {
+      "completions": 6756952,
+      "errors": 0,
+      "starts": 6756952
+    },
+    "events": [],
+    "identity_anchor": {
+      "completions": 2369976,
+      "errors": 0,
+      "starts": 2369976
+    },
+    "iterations": 239068,
+    "leaf_calls": 27027808,
+    "maps": {
+      "completions": 67027,
+      "errors": 0,
+      "starts": 67027
+    },
+    "overflow": false,
+    "probes": {
+      "completions": 8699514,
+      "errors": 0,
+      "starts": 8699514
+    },
+    "solves": {
+      "completions": 134056,
+      "errors": 0,
+      "starts": 134056
+    },
+    "sweeps": {
+      "completions": 169300,
+      "errors": 0,
+      "starts": 169300
+    }
+  },
+  "ofes": 1,
+  "parents": [
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.663725921,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.755109329,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.725762338,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.66466,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.418015355,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.436508555,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.483078135,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.489779795,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.557479538,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.555892417,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.587825849,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.503835736,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.538203674,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.559767205,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.670286108,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.615413289,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.800441025,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.772300065,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.9488357499999998,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.931450072,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.9808129880000003,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.975407031,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.015749683,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.008443082,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.049047118,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.070038855,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.079236364,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.102344388,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.112149553,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.146788519,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.189825798,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.197389791,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.18412192,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.129126359,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.154831728,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.207332819,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.20223121,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.236914952,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.292957626,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.264671482,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.284727426,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.320829925,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.325189871,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.333269781,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.354353106,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.370186463,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.406460443,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.405974819,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.636204871,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.661245366,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.540653088,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.5525706169999998,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.580034564,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.600376481,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.614754475,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.6332514700000003,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.6724654770000003,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.699835089,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.764361888,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.818389813,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.828617442,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.856613045,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.844589897,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.80219649,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.981040198,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.901208967,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.037455346,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.980948047,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.064877773,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.002865712,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.075154411,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.954324448,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.771675462,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.878033959,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.944165653,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.972364904,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.017137457,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.058431915,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.544746179,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.451375076,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.63063336,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.52683041,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.59870119,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.661484962,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.761283901,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.798810038,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.853615961,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.899344016,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.956807254,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.995342046,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.066979893,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.081016763,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.148324693,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.1949258369999995,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.259897464,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.293053392,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 3.997822394,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.05077484,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.178500358,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.020297822,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.047812084,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.0598145,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.074922037,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.074357587,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.087199228,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.109162177,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.120100478,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.12932132,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.154724063,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.154679734,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.187447328,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.199025469,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.239243137,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.154143727,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.510627178,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.701082207,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.7205292629999995,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.749381577,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.795029051,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.809457068,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.834293328,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.8528344709999995,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.905684936,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.916647408,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.9430364319999995,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.985854771,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.035863531,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.082682604,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.124254198,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.150160742,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.205821725,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.236892554,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.2985964469999995,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.332566151,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.373023881,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.425477142,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.474920429,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.508943501,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.844680761,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.837760736,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.000316159,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.991854167,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.042351301,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.051563202,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.516501594,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.557822271,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.583043097,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.658621387,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.435933393,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.411316498,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.456376418,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.452268866,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.481886882,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.509343262,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.50131554,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.511560489,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.528755275,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.555907324,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.594431633,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.5636728170000005,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.595092247,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.394963369,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.447535838,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.415575367,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.438472485,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.447222771,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.47156515,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.499569344,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.532919629,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.5813317829999995,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.617966718,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.662379647,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.717197783,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.750658689,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 28,
+      "direct_trials": 57,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 6.839956293,
+      "split_child_trials": 62
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 9.48894051,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.111600249,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.139994515,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.12835201,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.139916461,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.155726042,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.168736527,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.196936186,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.198419788,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.209565312,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.233309958,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.299973257,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.308763748,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.334392298,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.373672276,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.43089373,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.435764001999999,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 15.340031214,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 15.62541252,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 15.558790668,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 15.602652251,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.417144165,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.036653722,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 5.01588032,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.976673936,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.9699385320000005,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.9395043990000005,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.92678457,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.849544793,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.863507268,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.851530711,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.878988071,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.893687081,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.97181207,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 4.948515875,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 30,
+      "direct_trials": 62,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 7.179651677,
+      "split_child_trials": 64
+    },
+    {
+      "accepted_microsteps": 5,
+      "direct_trials": 9,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 9.595777873,
+      "split_child_trials": 16
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.467995375,
+      "split_child_trials": 2
+    },
+    {
+      "accepted_microsteps": 1,
+      "direct_trials": 1,
+      "fixed_point_evaluations": 0,
+      "parent_seconds": 14.537298636,
+      "split_child_trials": 2
+    }
+  ],
+  "policy": "B01",
+  "rss_kib": 1287756,
+  "runner_wall_s": 1419.886614878,
+  "schema": "snow_accuracy_run_v1",
+  "snapshot": null
+}

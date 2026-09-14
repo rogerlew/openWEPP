@@ -1,0 +1,198 @@
+{
+  "observed_utc": "2026-09-14T21:08:07.649233+00:00",
+  "files": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/comparisons.txt",
+      "bytes": 7179032,
+      "mtime_ns": 1789415160278930349,
+      "device": 64514,
+      "inode": 86055146,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/configuration.json",
+      "bytes": 9519,
+      "mtime_ns": 1789413737468572834,
+      "device": 64514,
+      "inode": 86055139,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/fixture-path.txt",
+      "bytes": 124,
+      "mtime_ns": 1789413737468572834,
+      "device": 64514,
+      "inode": 86055140,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/inputs.json",
+      "bytes": 1356,
+      "mtime_ns": 1789413737468572834,
+      "device": 64514,
+      "inode": 86055141,
+      "collector_sha256": "feac1e37b6a082ee1c193f11894766aac26eff1346ab4ca954e8c86b9d5cb273"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/observations.json",
+      "bytes": 8236702644,
+      "mtime_ns": 1789415160181925279,
+      "device": 64514,
+      "inode": 86055144,
+      "collector_sha256": "709dc4992b2fd08fd8bae755c730a5a01341a9a18cee8a0817ca76a249974e03"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/physical-rows.jsonpart",
+      "bytes": 8211732473,
+      "mtime_ns": 1789415157614791110,
+      "device": 64514,
+      "inode": 86055142,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/receipt.json",
+      "bytes": 2868,
+      "mtime_ns": 1789415401812738330,
+      "device": 64514,
+      "inode": 86055147,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/run.json",
+      "bytes": 40031,
+      "mtime_ns": 1789415160255929146,
+      "device": 64514,
+      "inode": 86055145,
+      "collector_sha256": "0402c06a657fdced80d46a7f57940722ffa029dc70aec5158aca0b343e70f637"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/started.json",
+      "bytes": 1465,
+      "mtime_ns": 1789413737443781533,
+      "device": 64514,
+      "inode": 86055122,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/stderr.log",
+      "bytes": 642,
+      "mtime_ns": 1789415160279930401,
+      "device": 64514,
+      "inode": 86055124,
+      "collector_sha256": "2b3bb8b6af248fccd36209fd4f1422318e3f2eb003eba5ecd560776e82d45ae7"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/stdout.log",
+      "bytes": 28974,
+      "mtime_ns": 1789415160331933119,
+      "device": 64514,
+      "inode": 86055123,
+      "collector_sha256": "b21822cf0947f1797790afa081010332ba70cf311ee4a0b768d24d477d648c35"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/README.md",
+      "bytes": 1250,
+      "mtime_ns": 1789413737448063393,
+      "device": 64514,
+      "inode": 86055135,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/case.man.yaml",
+      "bytes": 2715,
+      "mtime_ns": 1789413737448370152,
+      "device": 64514,
+      "inode": 86055137,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/case.run",
+      "bytes": 532,
+      "mtime_ns": 1789413737460572416,
+      "device": 64514,
+      "inode": 86055136,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/case.run.snow_stage3_v11_owner_seed.json",
+      "bytes": 36209,
+      "mtime_ns": 1789413737460572416,
+      "device": 64514,
+      "inode": 86055138,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/frost.txt",
+      "bytes": 43,
+      "mtime_ns": 1789413737448055149,
+      "device": 64514,
+      "inode": 86055134,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/p102.cli",
+      "bytes": 1003,
+      "mtime_ns": 1789413737448370152,
+      "device": 64514,
+      "inode": 86055131,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/p102.man",
+      "bytes": 3467,
+      "mtime_ns": 1789413737448063393,
+      "device": 64514,
+      "inode": 86055127,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/p102.run",
+      "bytes": 343,
+      "mtime_ns": 1789413737447922139,
+      "device": 64514,
+      "inode": 86055126,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/p102.slp",
+      "bytes": 75,
+      "mtime_ns": 1789413737448370152,
+      "device": 64514,
+      "inode": 86055133,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/p102.sol",
+      "bytes": 1136,
+      "mtime_ns": 1789413737448370152,
+      "device": 64514,
+      "inode": 86055129,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/pmetpara.txt",
+      "bytes": 2690,
+      "mtime_ns": 1789413737447953139,
+      "device": 64514,
+      "inode": 86055128,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/snow.txt",
+      "bytes": 87,
+      "mtime_ns": 1789413737448037674,
+      "device": 64514,
+      "inode": 86055132,
+      "collector_sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/wepp_ui.txt",
+      "bytes": 0,
+      "mtime_ns": 1789413737447961339,
+      "device": 64514,
+      "inode": 86055130,
+      "collector_sha256": null
+    }
+  ],
+  "hash_scope": "Collector final digests copied, not independently rehashed; null means no collector digest. Raw and generated files retained in place, local only."
+}

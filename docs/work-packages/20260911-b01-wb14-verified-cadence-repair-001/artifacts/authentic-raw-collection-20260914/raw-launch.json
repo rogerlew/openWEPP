@@ -1,0 +1,37 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/collect.py",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-recorder-20260914.frozen",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1",
+    "--policy",
+    "B01",
+    "--case",
+    "gradual_warm_tail7",
+    "--ofes",
+    "1",
+    "--cases",
+    "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+    "--cpu",
+    "0",
+    "--timeout",
+    "3600"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "environment_overrides": {
+    "TMPDIR": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "binary_sha256": "0f286b43ef8a30412b41f27414732e0c6ea4cbec7fb5e7e90913197c79687c55",
+  "source_tree_sha256": "01c34f56dd32e0b9502a74801e6c961012441dbbce6205f33934db79aa49284c",
+  "capture_allowance": "one invocation only; no retry",
+  "authentic_probe": "RESERVED AND PROHIBITED",
+  "state": "RETURNED",
+  "timeout_s": 3600,
+  "start_utc": "2026-09-14T19:22:17.359328+00:00",
+  "wrapper_pid": 3461100,
+  "collector_pid": 3461101,
+  "capture_runs": 1,
+  "collector_exit": 0,
+  "end_utc": "2026-09-14T19:50:01.817943+00:00"
+}
