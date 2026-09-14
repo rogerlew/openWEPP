@@ -1,0 +1,187 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+error[E0614]: type `openwepp_coupled_time::Digest32` cannot be dereferenced
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1369:48
+     |
+1369 |             || parcel.parent_transaction_id != *clock.parent_transaction_id().digest()
+     |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ can't be dereferenced
+
+error[E0277]: the trait bound `ConstraintReductionReceiptV1: serde::Deserialize<'de>` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1394:20
+     |
+1394 |         reduction: serde_json::from_slice(&reduction_bytes).map_err(|error| error.to_string())?,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Deserialize<'_>` is not implemented for `ConstraintReductionReceiptV1`
+     |
+     = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `ConstraintReductionReceiptV1` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 659 others
+note: required by a bound in `from_slice`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/de.rs:2669:8
+     |
+2667 | pub fn from_slice<'a, T>(v: &'a [u8]) -> Result<T>
+     |        ---------- required by a bound in this function
+2668 | where
+2669 |     T: de::Deserialize<'a>,
+     |        ^^^^^^^^^^^^^^^^^^^ required by this bound in `from_slice`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-5355736534522156466.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `LedgerEntryV1: serde::Deserialize<'de>` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1395:17
+     |
+1395 |         ledger: serde_json::from_slice(&ledger_bytes).map_err(|error| error.to_string())?,
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Deserialize<'_>` is not implemented for `LedgerEntryV1`
+     |
+     = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `LedgerEntryV1` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 659 others
+note: required by a bound in `from_slice`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/de.rs:2669:8
+     |
+2667 | pub fn from_slice<'a, T>(v: &'a [u8]) -> Result<T>
+     |        ---------- required by a bound in this function
+2668 | where
+2669 |     T: de::Deserialize<'a>,
+     |        ^^^^^^^^^^^^^^^^^^^ required by this bound in `from_slice`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-5355736534522156466.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `AcceptedSlabReceiptV1: serde::Deserialize<'de>` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1396:18
+     |
+1396 |         receipt: serde_json::from_slice(&receipt_bytes).map_err(|error| error.to_string())?,
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Deserialize<'_>` is not implemented for `AcceptedSlabReceiptV1`
+     |
+     = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `AcceptedSlabReceiptV1` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 659 others
+note: required by a bound in `from_slice`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/de.rs:2669:8
+     |
+2667 | pub fn from_slice<'a, T>(v: &'a [u8]) -> Result<T>
+     |        ---------- required by a bound in this function
+2668 | where
+2669 |     T: de::Deserialize<'a>,
+     |        ^^^^^^^^^^^^^^^^^^^ required by this bound in `from_slice`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-5355736534522156466.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+Some errors have detailed explanations: E0277, E0614.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...
+error[E0277]: the trait bound `ConstraintReductionReceiptV1: serde::Deserialize<'de>` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1394:20
+     |
+1394 |         reduction: serde_json::from_slice(&reduction_bytes).map_err(|error| error.to_string())?,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Deserialize<'_>` is not implemented for `ConstraintReductionReceiptV1`
+     |
+     = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `ConstraintReductionReceiptV1` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 662 others
+note: required by a bound in `from_slice`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/de.rs:2669:8
+     |
+2667 | pub fn from_slice<'a, T>(v: &'a [u8]) -> Result<T>
+     |        ---------- required by a bound in this function
+2668 | where
+2669 |     T: de::Deserialize<'a>,
+     |        ^^^^^^^^^^^^^^^^^^^ required by this bound in `from_slice`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-14488457360539100164.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `openwepp_coupled_time::LedgerEntryV1: serde::Deserialize<'de>` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1395:17
+     |
+1395 |         ledger: serde_json::from_slice(&ledger_bytes).map_err(|error| error.to_string())?,
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Deserialize<'_>` is not implemented for `openwepp_coupled_time::LedgerEntryV1`
+     |
+     = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `openwepp_coupled_time::LedgerEntryV1` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 662 others
+note: required by a bound in `from_slice`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/de.rs:2669:8
+     |
+2667 | pub fn from_slice<'a, T>(v: &'a [u8]) -> Result<T>
+     |        ---------- required by a bound in this function
+2668 | where
+2669 |     T: de::Deserialize<'a>,
+     |        ^^^^^^^^^^^^^^^^^^^ required by this bound in `from_slice`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-14488457360539100164.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `AcceptedSlabReceiptV1: serde::Deserialize<'de>` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1396:18
+     |
+1396 |         receipt: serde_json::from_slice(&receipt_bytes).map_err(|error| error.to_string())?,
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Deserialize<'_>` is not implemented for `AcceptedSlabReceiptV1`
+     |
+     = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `AcceptedSlabReceiptV1` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 662 others
+note: required by a bound in `from_slice`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/de.rs:2669:8
+     |
+2667 | pub fn from_slice<'a, T>(v: &'a [u8]) -> Result<T>
+     |        ---------- required by a bound in this function
+2668 | where
+2669 |     T: de::Deserialize<'a>,
+     |        ^^^^^^^^^^^^^^^^^^^ required by this bound in `from_slice`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-14488457360539100164.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 4 previous errors

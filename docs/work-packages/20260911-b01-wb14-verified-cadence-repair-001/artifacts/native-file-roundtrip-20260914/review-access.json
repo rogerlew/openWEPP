@@ -1,0 +1,29 @@
+{
+  "utc": "2026-09-14T04:04:54.723151+00:00",
+  "correctness": {
+    "identity": "/root/native_correctness",
+    "route": "rust_code_reviewer / Sol high",
+    "prior_conversation": "/root/controlled_correctness unavailable: live agent path not found",
+    "final": "HOLD / NOT ACCEPTED; same replacement conversation reviewed frozen terminal source"
+  },
+  "qa": {
+    "identity": "/root/native_qa",
+    "route": "rust_qa_reviewer / Terra medium",
+    "initial": "Static exploratory HOLD, preserved qa-review.txt",
+    "final": "UNAVAILABLE / NOT RUN on final cut",
+    "attempts": [
+      {
+        "condition": "writer completed, final correctness active",
+        "result": "agent thread limit reached"
+      },
+      {
+        "condition": "writer and correctness completed; one sequenced same-QA followup",
+        "result": "agent thread limit reached"
+      }
+    ],
+    "further_dispatch": false,
+    "fallback_model": false,
+    "replacement_after_access_failures": false
+  },
+  "independence": "Both assigned reviewers distinct from all three source writers and root design/orchestration."
+}

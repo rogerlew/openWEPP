@@ -1,0 +1,135 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+warning: associated function `diagnostic_restore_native_lane_maps_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:473:19
+    |
+454 | impl DirectV10RealConsumerShadow {
+    | -------------------------------- associated function in this implementation
+...
+473 |     pub(crate) fn diagnostic_restore_native_lane_maps_v1(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1193:9
+     |
+1173 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1193 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: function `restore_covered_interval` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:133:4
+    |
+133 | fn restore_covered_interval(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_destination_capability` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:149:4
+    |
+149 | fn restore_destination_capability(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `provider_interval_for_destination` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:197:4
+    |
+197 | fn provider_interval_for_destination<'a>(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_prepared_support` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:235:4
+    |
+235 | fn restore_prepared_support(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_support_forcing` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:353:4
+    |
+353 | fn restore_support_forcing(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `active_snow_restore` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:466:4
+    |
+466 | fn active_snow_restore(
+    |    ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `PreparedDayCaptureV1` is never constructed
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:668:8
+    |
+668 | struct PreparedDayCaptureV1 {
+    |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_prepared_day` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:676:4
+    |
+676 | fn capture_prepared_day(
+    |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_prepared_day` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:693:4
+    |
+693 | fn validate_prepared_day(
+    |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_provider_day` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:752:4
+    |
+752 | fn restore_provider_day(
+    |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_coupled_clock` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:989:15
+    |
+989 | pub(crate) fn restore_coupled_clock(
+    |               ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_parent_with_configured_bgc_scope` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1001:15
+     |
+1001 | pub(crate) fn restore_parent_with_configured_bgc_scope(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `reconstruct_provisional_on_clone` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1019:15
+     |
+1019 | pub(crate) fn reconstruct_provisional_on_clone(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `import_and_reconstruct_pre_child_context` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1085:15
+     |
+1085 | pub(crate) fn import_and_reconstruct_pre_child_context(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_captured_prepared_support_from_provider` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1252:15
+     |
+1252 | pub(crate) fn restore_captured_prepared_support_from_provider(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RestoredProviderBoundContextV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1273:19
+     |
+1273 | pub(crate) struct RestoredProviderBoundContextV1 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_provider_bound_context_from_rows` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1287:15
+     |
+1287 | pub(crate) fn restore_provider_bound_context_from_rows(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_provider_bound_context_from_file` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1470:15
+     |
+1470 | pub(crate) fn restore_provider_bound_context_from_file(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 20 warnings
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 15 warnings (15 duplicates)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.23s

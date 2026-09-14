@@ -1,0 +1,54 @@
+Reviewer: `/root/native_correctness` — initial independent correctness assessment of the exploratory, unfrozen native file restoration cut. Static review only; no build, test, lint, formatter, capture, or probe was run.
+
+Findings, ordered by severity:
+
+- **HIGH — Current source is incomplete and statically non-compilable.** [v9_real_consumer_shadow.rs](/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:458) serializes `DirectRunFrame`, which does not implement `Serialize`. The exploratory code also directly reads a private `FrozenLitterV4Resident` field. No file round-trip test exists in the changed test source. This is an interim cut, not executable evidence.
+
+- **HIGH — Parent/clock restoration does not restore the usable parent history.** [snow_stage3_v11_current_context_capture.rs](/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1462) restores the parent checkpoint and clock but joins only their parent transaction IDs. `V11ParentTransaction::restore_with_bgc_scope` deliberately leaves its evaluator cache empty until `restore_evaluator_cache_from_accepted_slabs` authenticates it against the independently restored clock receipts. The cut neither performs that replay nor compares parent staged owner bytes, accepted cursor, and event chronology with the clock.
+
+- **HIGH — Scheduler and provider position are lost.** The new consumer capture/restoration in [v9_real_consumer_shadow.rs](/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:458) omits `accepted_interval_count` and the installed provider GSI receipt. Native construction initializes those values rather than restoring the target posture. Existing canonical install/validation hooks are not exercised. Canonical owner-byte comparison does not cover these scheduling coordinates.
+
+- **HIGH — Active lanes still come from untrusted file state.** [snow_stage3_v11_current_context_capture.rs](/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1404) decodes `beginning_stage3_canonical_json` and applies a duplicated lane predicate before joining that snow state to the restored clock’s authenticated snow owner. A substituted state map can select a self-consistent lane subset. The prior correctness finding remains open.
+
+- **HIGH — Required custody and provisional context remain partial.** `RestoredProviderBoundContextV1` retains the prepared day, consumer, parent, clock, Stage-3 map, and raw parcel map, but still omits the attachment receipt chain/archive prefix and provisional reduction, ledger, receipt, and binding. Pending `ProducedUnconsumed` parcels are merely deserialized; their canonical digest, parent/event/proposal/support/topology joins are not validated. B01-CONT-015/016 and the coupled-time inactive-prefix obligations remain unmet.
+
+- **HIGH — Consumer authority remains partly self-supplied.** The reader validates the provider-day DTO against pinned provider configuration, but the consumer’s vegetation, surface, provider/GSI, hydrology, root-zone, and LSE operands are independently decoded from the same row and are not comprehensively joined to the supplied static context, pinned provider, restored prepared day, parent, or clock. The final owner comparison uses another value from that same file and therefore cannot reject a consistently substituted bundle.
+
+- **MEDIUM — Substantial mirrored restoration logic is accumulating.** The new manual consumer field transport/restoration joins the existing manual active-snow scalar/enum mappings and duplicated active-lane predicate. Any required private hydrology-frame projection would add another large mirror. This is permitted by the adopted scope, but under the duplication policy it requires explicit justification plus exact producer parity and distinguishing poison evidence because drift can silently change restored scientific state.
+
+- **MEDIUM — Returned provider custody is duplicated.** The result owns both `provider` and `prepared_day`, although the validated prepared day already owns its provider day. These copies can diverge after return and conflict with the single-custody intent.
+
+- **MEDIUM — Some restoration errors are misclassified.** Frozen-litter canonical identity and custody failures are remapped to generic serialization errors in the exploratory consumer restore, obscuring the existing typed error taxonomy.
+
+Residual risk and missing tests: no production-recorder-to-observation-file-to-owned-context test; no producer-lifetime separation; no independent provisional comparison; no V1 refusal; no owner/history/prefix/parcel/provider/support poison matrix; no zero constitutive, ingress, WB14, or accepted-state mutation evidence; and no matched lint evidence.
+
+The reported hydrology-frame dependency cycle is real tooling friction, but it is **not an established out-of-envelope architectural blocker**. The adopted scope explicitly permits immediately necessary private restoration/accessor plumbing, and local constructors/install validators remain available. Exact private projection would carry the duplication risk above and requires parity evidence.
+
+Initial verdict on this exploratory cut: **HOLD / NOT ACCEPTED**. Preserve this conversation for review of the later frozen source and executed evidence.
+
+Final same-reviewer response — frozen terminal cut:
+
+Reviewer: `/root/native_correctness`
+Evidence class: **Static frozen-cut review plus supplied command artifacts.**
+
+Findings:
+
+- **HIGH — frozen source does not compile.** `native-terminal-check.json` records exit 101 against source tree `d9ce07a1…` / patch `37a9e1ea…`. Seven `E0277` errors arise from serializing/deserializing non-Serde native types in [`v9_real_consumer_shadow.rs`](/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:475), including surface configuration, GSI state, provider configuration, and provider cursor. This is the terminal 14/14 stop.
+
+- **HIGH — frozen-litter custody remains absent.** The DTO still omits `frozen_litter_v3/v4`; native construction resets both to `None`.
+
+- **HIGH — active-lane restoration remains a reduced duplicate.** [`snow_stage3_v11_current_context_capture.rs:1958`](/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1958) still bypasses canonical topology, forcing, and terminal-parcel admission checks.
+
+- **HIGH — attachment prefix/history remains absent.** No archived receipt prefix, attachment receipt chain, lane/tile receipt custody, or snow-enthalpy chronology is transported.
+
+- **MEDIUM — mirrored dynamic-frame restoration remains drift-prone.** Lane values now pass through the constructor, closing part of the earlier fail-closed concern. Transfer ledgers and other post-constructor assignments remain manually mirrored and lack demonstrated canonical poison coverage.
+
+Reconciled closed findings:
+
+- Scheduler count and provider GSI receipt are now captured and installed.
+- The actual reader now invokes `import_and_reconstruct_pre_child_context`, restoring the previously skipped binding and consumer-owner manifest checks.
+- Format and format-check passed unchanged-source checks.
+
+Residual evidence is absent: no successful compilation, tests, actual producer-to-file roundtrip, lifetime separation, poison controls, zero-work/mutation proof, or lint run.
+
+**Verdict: HOLD / NOT ACCEPTED.** The frozen cut fails compilation and retains unresolved native owner/prefix/active-lane blockers.

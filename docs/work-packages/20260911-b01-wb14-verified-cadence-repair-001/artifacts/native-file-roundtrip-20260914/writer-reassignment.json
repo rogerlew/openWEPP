@@ -1,0 +1,43 @@
+{
+  "utc": "2026-09-14T03:28:30.333054+00:00",
+  "source_restored_to_original": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/lib.rs",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_forcing_digest.rs",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+      "matches": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+      "matches": true
+    }
+  ],
+  "first_writer": "/root/native_implementer",
+  "replacement_writer": "/root/native_frame_writer",
+  "one_active_source_writer": true,
+  "reason": "First writer returned repeatedly without delivering authorized private frame restoration; both independent reviews reject claimed architecture stop. First writer restored two exploratory files, exploratory patch preserved.",
+  "failed_corrections": 12,
+  "new_compiler_test_lint_format_invocations": 0
+}

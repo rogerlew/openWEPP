@@ -1,0 +1,526 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+error[E0277]: the trait bound `surface_liquid_owner::DirectSurfaceLiquidConfiguration: serde::Serialize` is not satisfied
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:475:12
+    |
+475 |           Ok(serde_json::json!({
+    |  ____________^
+476 | |             "vegetation_configuration": self.vegetation_configuration,
+477 | |             "vegetation_state": self.vegetation_state,
+478 | |             "vegetation_owner_id": self.inner.vegetation_owner_id,
+...   |
+492 | |             "wb14_parent": self.restart_authority_wb14_parent_canonical_bytes()?,
+493 | |         }))
+    | |          ^
+    | |          |
+    | |__________unsatisfied trait bound
+    |            required by a bound introduced by this call
+    |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `surface_liquid_owner::DirectSurfaceLiquidConfiguration`
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs:562:1
+    |
+562 | pub struct DirectSurfaceLiquidConfiguration {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `surface_liquid_owner::DirectSurfaceLiquidConfiguration` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 771 others
+    = note: required for `&surface_liquid_owner::DirectSurfaceLiquidConfiguration` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+   --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+    |
+995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+    |        -------- required by a bound in this function
+996 | where
+997 |     T: Serialize,
+    |        ^^^^^^^^^ required by this bound in `to_value`
+    = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-4808386732904237697.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `GsiState: serde::Serialize` is not satisfied
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:475:12
+    |
+475 |           Ok(serde_json::json!({
+    |  ____________^
+476 | |             "vegetation_configuration": self.vegetation_configuration,
+477 | |             "vegetation_state": self.vegetation_state,
+478 | |             "vegetation_owner_id": self.inner.vegetation_owner_id,
+...   |
+492 | |             "wb14_parent": self.restart_authority_wb14_parent_canonical_bytes()?,
+493 | |         }))
+    | |          ^
+    | |          |
+    | |__________the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `GsiState`
+    |            required by a bound introduced by this call
+    |
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `GsiState` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 771 others
+    = note: required for `&GsiState` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+   --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+    |
+995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+    |        -------- required by a bound in this function
+996 | where
+997 |     T: Serialize,
+    |        ^^^^^^^^^ required by this bound in `to_value`
+    = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-4808386732904237697.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `SnowFreeHalfHourStaticConfiguration: serde::Serialize` is not satisfied
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:475:12
+    |
+475 |           Ok(serde_json::json!({
+    |  ____________^
+476 | |             "vegetation_configuration": self.vegetation_configuration,
+477 | |             "vegetation_state": self.vegetation_state,
+478 | |             "vegetation_owner_id": self.inner.vegetation_owner_id,
+...   |
+492 | |             "wb14_parent": self.restart_authority_wb14_parent_canonical_bytes()?,
+493 | |         }))
+    | |          ^
+    | |          |
+    | |__________unsatisfied trait bound
+    |            required by a bound introduced by this call
+    |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `SnowFreeHalfHourStaticConfiguration`
+   --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/09_snow_free_half_hour_forcing.rs:36:1
+    |
+ 36 | pub struct SnowFreeHalfHourStaticConfiguration {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `SnowFreeHalfHourStaticConfiguration` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 771 others
+    = note: required for `&SnowFreeHalfHourStaticConfiguration` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+   --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+    |
+995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+    |        -------- required by a bound in this function
+996 | where
+997 |     T: Serialize,
+    |        ^^^^^^^^^ required by this bound in `to_value`
+    = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-4808386732904237697.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `surface_liquid_owner::DirectSurfaceLiquidConfiguration: serde::de::DeserializeOwned` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:548:13
+     |
+ 548 |             serde_json::from_value(get("surface_configuration")?).map_err(|e| {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `for<'de> Deserialize<'de>` is not implemented for `surface_liquid_owner::DirectSurfaceLiquidConfiguration`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs:562:1
+     |
+ 562 | pub struct DirectSurfaceLiquidConfiguration {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 661 others
+     = note: required for `surface_liquid_owner::DirectSurfaceLiquidConfiguration` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-4400684441236585156.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `GsiState: serde::de::DeserializeOwned` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:569:25
+     |
+ 569 |         let gsi_state = serde_json::from_value(get("gsi_state")?).map_err(|e| {
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `for<'de> Deserialize<'de>` is not implemented for `GsiState`
+     |
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 661 others
+     = note: required for `GsiState` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-4400684441236585156.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `SnowFreeHalfHourStaticConfiguration: serde::de::DeserializeOwned` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:575:13
+     |
+ 575 |             serde_json::from_value(get("provider_static_configuration")?).map_err(|e| {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `for<'de> Deserialize<'de>` is not implemented for `SnowFreeHalfHourStaticConfiguration`
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/09_snow_free_half_hour_forcing.rs:36:1
+     |
+  36 | pub struct SnowFreeHalfHourStaticConfiguration {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 661 others
+     = note: required for `SnowFreeHalfHourStaticConfiguration` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-4400684441236585156.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `SnowFreeHalfHourProviderCursor: serde::de::DeserializeOwned` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:580:31
+     |
+ 580 |         let provider_cursor = serde_json::from_value(get("provider_cursor")?).map_err(|e| {
+     |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `for<'de> Deserialize<'de>` is not implemented for `SnowFreeHalfHourProviderCursor`
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/09_snow_free_half_hour_forcing.rs:392:1
+     |
+ 392 | pub struct SnowFreeHalfHourProviderCursor {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 661 others
+     = note: required for `SnowFreeHalfHourProviderCursor` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-a295334e4a313a86.long-type-4400684441236585156.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `surface_liquid_owner::DirectSurfaceLiquidConfiguration: serde::Serialize` is not satisfied
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:475:12
+    |
+475 |           Ok(serde_json::json!({
+    |  ____________^
+476 | |             "vegetation_configuration": self.vegetation_configuration,
+477 | |             "vegetation_state": self.vegetation_state,
+478 | |             "vegetation_owner_id": self.inner.vegetation_owner_id,
+...   |
+492 | |             "wb14_parent": self.restart_authority_wb14_parent_canonical_bytes()?,
+493 | |         }))
+    | |          ^
+    | |          |
+    | |__________unsatisfied trait bound
+    |            required by a bound introduced by this call
+    |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `surface_liquid_owner::DirectSurfaceLiquidConfiguration`
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs:562:1
+    |
+562 | pub struct DirectSurfaceLiquidConfiguration {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `surface_liquid_owner::DirectSurfaceLiquidConfiguration` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 775 others
+    = note: required for `&surface_liquid_owner::DirectSurfaceLiquidConfiguration` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+   --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+    |
+995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+    |        -------- required by a bound in this function
+996 | where
+997 |     T: Serialize,
+    |        ^^^^^^^^^ required by this bound in `to_value`
+    = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-880169594579634749.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `openwepp_plant_phenology::GsiState: serde::Serialize` is not satisfied
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:475:12
+    |
+475 |           Ok(serde_json::json!({
+    |  ____________^
+476 | |             "vegetation_configuration": self.vegetation_configuration,
+477 | |             "vegetation_state": self.vegetation_state,
+478 | |             "vegetation_owner_id": self.inner.vegetation_owner_id,
+...   |
+492 | |             "wb14_parent": self.restart_authority_wb14_parent_canonical_bytes()?,
+493 | |         }))
+    | |          ^
+    | |          |
+    | |__________the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `openwepp_plant_phenology::GsiState`
+    |            required by a bound introduced by this call
+    |
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `openwepp_plant_phenology::GsiState` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 775 others
+    = note: required for `&openwepp_plant_phenology::GsiState` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+   --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+    |
+995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+    |        -------- required by a bound in this function
+996 | where
+997 |     T: Serialize,
+    |        ^^^^^^^^^ required by this bound in `to_value`
+    = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-880169594579634749.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `SnowFreeHalfHourStaticConfiguration: serde::Serialize` is not satisfied
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:475:12
+    |
+475 |           Ok(serde_json::json!({
+    |  ____________^
+476 | |             "vegetation_configuration": self.vegetation_configuration,
+477 | |             "vegetation_state": self.vegetation_state,
+478 | |             "vegetation_owner_id": self.inner.vegetation_owner_id,
+...   |
+492 | |             "wb14_parent": self.restart_authority_wb14_parent_canonical_bytes()?,
+493 | |         }))
+    | |          ^
+    | |          |
+    | |__________unsatisfied trait bound
+    |            required by a bound introduced by this call
+    |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `SnowFreeHalfHourStaticConfiguration`
+   --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/09_snow_free_half_hour_forcing.rs:36:1
+    |
+ 36 | pub struct SnowFreeHalfHourStaticConfiguration {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `SnowFreeHalfHourStaticConfiguration` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 775 others
+    = note: required for `&SnowFreeHalfHourStaticConfiguration` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+   --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+    |
+995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+    |        -------- required by a bound in this function
+996 | where
+997 |     T: Serialize,
+    |        ^^^^^^^^^ required by this bound in `to_value`
+    = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-880169594579634749.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `surface_liquid_owner::DirectSurfaceLiquidConfiguration: serde::de::DeserializeOwned` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:548:13
+     |
+ 548 |             serde_json::from_value(get("surface_configuration")?).map_err(|e| {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `for<'de> Deserialize<'de>` is not implemented for `surface_liquid_owner::DirectSurfaceLiquidConfiguration`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs:562:1
+     |
+ 562 | pub struct DirectSurfaceLiquidConfiguration {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 664 others
+     = note: required for `surface_liquid_owner::DirectSurfaceLiquidConfiguration` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-10285965080582100306.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `openwepp_plant_phenology::GsiState: serde::de::DeserializeOwned` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:569:25
+     |
+ 569 |         let gsi_state = serde_json::from_value(get("gsi_state")?).map_err(|e| {
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `for<'de> Deserialize<'de>` is not implemented for `openwepp_plant_phenology::GsiState`
+     |
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 664 others
+     = note: required for `openwepp_plant_phenology::GsiState` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-10285965080582100306.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `SnowFreeHalfHourStaticConfiguration: serde::de::DeserializeOwned` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:575:13
+     |
+ 575 |             serde_json::from_value(get("provider_static_configuration")?).map_err(|e| {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `for<'de> Deserialize<'de>` is not implemented for `SnowFreeHalfHourStaticConfiguration`
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/09_snow_free_half_hour_forcing.rs:36:1
+     |
+  36 | pub struct SnowFreeHalfHourStaticConfiguration {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 664 others
+     = note: required for `SnowFreeHalfHourStaticConfiguration` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-10285965080582100306.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `SnowFreeHalfHourProviderCursor: serde::de::DeserializeOwned` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:580:31
+     |
+ 580 |         let provider_cursor = serde_json::from_value(get("provider_cursor")?).map_err(|e| {
+     |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `for<'de> Deserialize<'de>` is not implemented for `SnowFreeHalfHourProviderCursor`
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/09_snow_free_half_hour_forcing.rs:392:1
+     |
+ 392 | pub struct SnowFreeHalfHourProviderCursor {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 664 others
+     = note: required for `SnowFreeHalfHourProviderCursor` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/debug/deps/openwepp_hillslope_orchestrator-ef6d985bf0881ad9.long-type-10285965080582100306.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 7 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 7 previous errors
