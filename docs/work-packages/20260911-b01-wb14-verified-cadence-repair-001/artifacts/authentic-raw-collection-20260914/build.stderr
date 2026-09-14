@@ -1,0 +1,353 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling libm v0.2.16
+   Compiling autocfg v1.5.1
+   Compiling version_check v0.9.5
+   Compiling cfg-if v1.0.4
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling typenum v1.20.0
+   Compiling zerocopy v0.8.48
+   Compiling itoa v1.0.18
+   Compiling cpufeatures v0.2.17
+   Compiling hashbrown v0.17.1
+   Compiling libc v0.2.186
+   Compiling ryu v1.0.23
+   Compiling openwepp-sim-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-sim-contract)
+   Compiling equivalent v1.0.2
+   Compiling getrandom v0.3.4
+   Compiling openwepp-unit-boundary v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-unit-boundary)
+   Compiling crc32fast v1.5.0
+   Compiling bytes v1.11.1
+   Compiling generic-array v0.14.7
+   Compiling ahash v0.8.12
+   Compiling lexical-util v1.0.7
+   Compiling thiserror v2.0.20
+   Compiling once_cell v1.21.4
+   Compiling num-traits v0.2.19
+   Compiling adler2 v2.0.1
+   Compiling unsafe-libyaml v0.2.11
+   Compiling iana-time-zone v0.1.65
+   Compiling semver v1.0.28
+   Compiling base64 v0.22.1
+   Compiling zmij v1.0.21
+   Compiling simd-adler32 v0.3.9
+   Compiling indexmap v2.14.0
+   Compiling arrow-schema v54.3.1
+   Compiling rustc_version v0.4.1
+   Compiling miniz_oxide v0.8.9
+   Compiling serde_json v1.0.150
+   Compiling hashbrown v0.15.5
+   Compiling flatbuffers v24.12.23
+   Compiling syn v2.0.117
+   Compiling syn v3.0.3
+   Compiling lexical-write-integer v1.0.6
+   Compiling flate2 v1.1.9
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling lexical-parse-integer v1.0.6
+   Compiling memchr v2.8.0
+   Compiling lexical-write-float v1.0.6
+   Compiling digest v0.10.7
+   Compiling bitflags v1.3.2
+   Compiling snap v1.1.1
+   Compiling lexical-parse-float v1.0.6
+   Compiling paste v1.0.15
+   Compiling sha2 v0.10.9
+   Compiling openwepp-topology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-topology)
+   Compiling byteorder v1.5.0
+   Compiling integer-encoding v3.0.4
+   Compiling lexical-core v1.0.6
+   Compiling static_assertions v1.1.0
+   Compiling twox-hash v1.6.3
+   Compiling num-integer v0.1.46
+   Compiling num-complex v0.4.6
+   Compiling chrono v0.4.44
+   Compiling atoi v2.0.0
+   Compiling ordered-float v2.10.1
+   Compiling num-bigint v0.4.6
+   Compiling num-iter v0.1.45
+   Compiling thrift v0.17.0
+   Compiling seq-macro v0.3.6
+   Compiling toml_write v0.1.2
+   Compiling winnow v0.7.15
+   Compiling openwepp-plant-phenology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-plant-phenology)
+   Compiling powerfmt v0.2.0
+   Compiling rustix v1.1.4
+   Compiling linux-raw-sys v0.12.1
+   Compiling deranged v0.5.8
+   Compiling time-core v0.1.8
+   Compiling bitflags v2.13.0
+   Compiling num-conv v0.2.2
+   Compiling openwepp-comparator-metadata v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-comparator-metadata)
+   Compiling openwepp-legacy-bridge v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-legacy-bridge)
+   Compiling openwepp-summary-accumulator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-summary-accumulator)
+   Compiling thiserror-impl v2.0.20
+   Compiling num-rational v0.4.2
+   Compiling time v0.3.47
+   Compiling serde_derive v1.0.228
+   Compiling zerocopy-derive v0.8.48
+   Compiling num v0.4.3
+   Compiling openwepp-meteorology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-meteorology)
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling openwepp-kernel-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-kernel-contract)
+   Compiling openwepp-coupled-time v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-coupled-time)
+   Compiling serde_spanned v0.6.9
+   Compiling toml_datetime v0.6.11
+   Compiling toml_edit v0.22.27
+   Compiling openwepp-biogeochemistry v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-biogeochemistry)
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-land-surface-energy)
+   Compiling openwepp-management-schema v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-management-schema)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-vegetation)
+   Compiling toml v0.8.23
+   Compiling half v2.7.1
+   Compiling arrow-buffer v54.3.1
+   Compiling arrow-data v54.3.1
+   Compiling openwepp-input-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-input-contract)
+   Compiling arrow-array v54.3.1
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-watershed-orchestrator)
+   Compiling arrow-select v54.3.1
+   Compiling arrow-ipc v54.3.1
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+   Compiling arrow-cast v54.3.1
+   Compiling parquet v54.3.1
+   Compiling openwepp-hillslope-output v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-output)
+   Compiling openwepp-watershed-output v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-watershed-output)
+warning: method `restart_authority_state_derived_active_snow_lanes_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:971:19
+    |
+963 | impl DirectSnowStage3V11PreparedSupport {
+    | --------------------------------------- method in this implementation
+...
+971 |     pub(crate) fn restart_authority_state_derived_active_snow_lanes_v1(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `diagnostic_restore_parent_receipt_archive_with_configured_scope_v3` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs:1792:15
+     |
+1792 | pub(crate) fn diagnostic_restore_parent_receipt_archive_with_configured_scope_v3(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated functions `diagnostic_restore_native_consumer_v1` and `diagnostic_restore_native_lane_maps_v1` are never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:576:19
+    |
+485 | impl DirectV10RealConsumerShadow {
+    | -------------------------------- associated functions in this implementation
+...
+576 |     pub(crate) fn diagnostic_restore_native_consumer_v1(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+871 |     pub(crate) fn diagnostic_restore_native_lane_maps_v1(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RestoredStage3PublicationDayEvidenceV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1731:19
+     |
+1731 | pub(crate) struct RestoredStage3PublicationDayEvidenceV1 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restart_authority_restore_archived_publication_day_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1757:15
+     |
+1757 | pub(crate) fn restart_authority_restore_archived_publication_day_v1(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `diagnostic_install_hydrology_constructor_inputs_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2971:19
+     |
+2052 | impl DirectV10RealConsumerShadow {
+     | -------------------------------- method in this implementation
+...
+2971 |     pub(crate) fn diagnostic_install_hydrology_constructor_inputs_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `restart_authority_from_canonical_bytes` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2.rs:207:19
+    |
+161 | impl SurfaceLiquidOwnerModelDefinitionV2 {
+    | ---------------------------------------- associated function in this implementation
+...
+207 |     pub(crate) fn restart_authority_from_canonical_bytes(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1193:9
+     |
+1173 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1193 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: function `restore_covered_interval` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:527:4
+    |
+527 | fn restore_covered_interval(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_destination_capability` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:543:4
+    |
+543 | fn restore_destination_capability(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `provider_interval_for_destination` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:591:4
+    |
+591 | fn provider_interval_for_destination<'a>(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_prepared_support` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:629:4
+    |
+629 | fn restore_prepared_support(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_support_forcing` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:747:4
+    |
+747 | fn restore_support_forcing(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `active_snow_restore` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:860:4
+    |
+860 | fn active_snow_restore(
+    |    ^^^^^^^^^^^^^^^^^^^
+
+warning: method `validate_against` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1084:19
+     |
+1062 | impl ProviderStaticConfigurationCaptureV1 {
+     | ----------------------------------------- method in this implementation
+...
+1084 |     pub(crate) fn validate_against(
+     |                   ^^^^^^^^^^^^^^^^
+
+warning: struct `PreparedDayCaptureV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1118:8
+     |
+1118 | struct PreparedDayCaptureV1 {
+     |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_prepared_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1126:4
+     |
+1126 | fn capture_prepared_day(
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_prepared_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1143:4
+     |
+1143 | fn validate_prepared_day(
+     |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_provider_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1189:4
+     |
+1189 | fn restore_provider_day(
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_coupled_clock` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1485:15
+     |
+1485 | pub(crate) fn restore_coupled_clock(
+     |               ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_parent_with_configured_bgc_scope` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1497:15
+     |
+1497 | pub(crate) fn restore_parent_with_configured_bgc_scope(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `reconstruct_provisional_on_clone` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1515:15
+     |
+1515 | pub(crate) fn reconstruct_provisional_on_clone(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `import_and_reconstruct_pre_child_context` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1581:15
+     |
+1581 | pub(crate) fn import_and_reconstruct_pre_child_context(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_captured_prepared_support_from_provider` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1748:15
+     |
+1748 | pub(crate) fn restore_captured_prepared_support_from_provider(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RestoredProviderBoundContextV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1766:19
+     |
+1766 | pub(crate) struct RestoredProviderBoundContextV1 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `AuthenticatedArchivedDayV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1787:19
+     |
+1787 | pub(crate) struct AuthenticatedArchivedDayV1 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `CommittedDayFrameReaderV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1796:8
+     |
+1796 | struct CommittedDayFrameReaderV1<'a> {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `take`, `exact`, and `blob` are never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1803:8
+     |
+1802 | impl<'a> CommittedDayFrameReaderV1<'a> {
+     | -------------------------------------- methods in this implementation
+1803 |     fn take(&mut self, length: usize) -> Result<&'a [u8], String> {
+     |        ^^^^
+...
+1816 |     fn exact(&mut self, expected: &[u8]) -> Result<(), String> {
+     |        ^^^^^
+...
+1823 |     fn blob(&mut self) -> Result<&'a [u8], String> {
+     |        ^^^^
+
+warning: function `authenticate_archived_day_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1835:4
+     |
+1835 | fn authenticate_archived_day_v1(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RestoredCapturedPreChildContextV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1931:19
+     |
+1931 | pub(crate) struct RestoredCapturedPreChildContextV1 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_captured_pre_child_context` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1945:4
+     |
+1945 | fn restore_captured_pre_child_context(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_provider_bound_context_from_rows` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2069:15
+     |
+2069 | pub(crate) fn restore_provider_bound_context_from_rows(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_provider_bound_context_from_file` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2464:15
+     |
+2464 | pub(crate) fn restore_provider_bound_context_from_file(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+   Compiling openwepp-persisted-restart-v1 v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-persisted-restart-v1)
+warning: `openwepp-hillslope-orchestrator` (lib) generated 33 warnings
+   Compiling openwepp-runner v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-runner)
+    Finished `release` profile [optimized] target(s) in 5m 08s

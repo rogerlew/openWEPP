@@ -1,0 +1,35 @@
+{
+  "reason": "compiler-artifact",
+  "package_id": "path+file:///workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-runner#0.1.0",
+  "manifest_path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-runner/Cargo.toml",
+  "target": {
+    "kind": [
+      "lib"
+    ],
+    "crate_types": [
+      "lib"
+    ],
+    "name": "openwepp_runner",
+    "src_path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-runner/src/lib.rs",
+    "edition": "2024",
+    "doc": true,
+    "doctest": true,
+    "test": true
+  },
+  "profile": {
+    "opt_level": "1",
+    "debuginfo": 0,
+    "debug_assertions": false,
+    "overflow_checks": false,
+    "test": true
+  },
+  "features": [
+    "default",
+    "test-fixture-authority"
+  ],
+  "filenames": [
+    "/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/release/deps/openwepp_runner-5f2e45c674e868ff"
+  ],
+  "executable": "/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/release/deps/openwepp_runner-5f2e45c674e868ff",
+  "fresh": false
+}

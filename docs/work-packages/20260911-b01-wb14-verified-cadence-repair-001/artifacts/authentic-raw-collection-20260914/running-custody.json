@@ -1,0 +1,213 @@
+{
+  "utc": "2026-09-14T19:23:27.178995+00:00",
+  "state": "RUNNING",
+  "processes": [
+    {
+      "pid": 3461100,
+      "exists": true,
+      "cmdline": "/workdir/openWEPP/.venv/bin/python /workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authentic-raw-collection-20260914/launch.py ",
+      "stat": "3461100 (python) S 1 3461100 3461100 0 -1 4194304 1723 0 0 0 1 0 0 0 20 0 1 0 248283939 23527424 3602 18446744073709551615 99127768809472 99127768809817 140735667177440 0 0 0 0 16781312 2 1 0 0 17 12 0 0 0 0 0 99127768821080 99127768821776 99128141021184 140735667179196 140735667179368 140735667179368 140735667183573 0\n"
+    },
+    {
+      "pid": 3461101,
+      "exists": true,
+      "cmdline": "/workdir/openWEPP/.venv/bin/python /workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/collect.py /workdir/openwepp-experiments/b01-wb14-cadence/authentic-recorder-20260914.frozen /workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1 --policy B01 --case gradual_warm_tail7 --ofes 1 --cases /workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json --cpu 0 --timeout 3600 ",
+      "stat": "3461101 (python) S 3461100 3461101 3461101 0 -1 4194304 14827 0 1 0 12 4 0 0 20 0 1 0 248283941 35102720 5587 18446744073709551615 101867754696704 101867754697049 140734920107312 0 0 0 0 16781312 2 1 0 0 17 6 0 0 0 0 0 101867754708312 101867754709008 101868262547456 140734920109320 140734920109815 140734920109815 140734920114133 0\n"
+    },
+    {
+      "pid": 3461118,
+      "exists": true,
+      "cmdline": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-recorder-20260914.frozen hillslope::tests::stage3_snow_accuracy_case --ignored --exact --nocapture --test-threads=1 ",
+      "stat": "3461118 (authentic-recor) S 3461101 3461118 3461118 0 -1 4194304 66655 75 2 0 6943 26 0 0 20 0 2 0 248283949 400171008 70345 18446744073709551615 94572227964928 94572261931981 140720727666896 0 0 0 0 4096 1088 0 0 0 17 0 0 0 0 0 0 94572268814256 94572269485232 94572328984576 140720727673935 140720727674108 140720727674108 140720727678886 0\n"
+    }
+  ],
+  "raw": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1",
+  "fixture": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1",
+  "current_file_inventory": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/configuration.json",
+      "bytes_at_observation": 9519,
+      "mtime_ns": 1789413737468572834,
+      "active_file": false,
+      "sha256": "b9b86193ee61350fc21ea687161e1a2048f9ab6abc22d0f77b1e51d57c2fa91a"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/fixture-path.txt",
+      "bytes_at_observation": 124,
+      "mtime_ns": 1789413737468572834,
+      "active_file": false,
+      "sha256": "6b256ac8815fd66ad640501c7e3fa87188cb1997a7d7e0977ba78e15b463f877"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/inputs.json",
+      "bytes_at_observation": 1356,
+      "mtime_ns": 1789413737468572834,
+      "active_file": false,
+      "sha256": "feac1e37b6a082ee1c193f11894766aac26eff1346ab4ca954e8c86b9d5cb273"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/physical-rows.jsonpart",
+      "bytes_at_observation": 285206079,
+      "mtime_ns": 1789413807178215958,
+      "active_file": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/started.json",
+      "bytes_at_observation": 1465,
+      "mtime_ns": 1789413737443781533,
+      "active_file": false,
+      "sha256": "6b4554b3a2045446bc8cc752c4c671aaab0100f65aab7b0deee4417d0b335433"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/stderr.log",
+      "bytes_at_observation": 0,
+      "mtime_ns": 1789413737443781533,
+      "active_file": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/stdout.log",
+      "bytes_at_observation": 69,
+      "mtime_ns": 1789413737446571684,
+      "active_file": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/README.md",
+      "bytes_at_observation": 1250,
+      "mtime_ns": 1789413737448063393,
+      "active_file": false,
+      "sha256": "8a4e18ec84a0e88bd21a627929cfff42cf997c1ce77f459099830631acfb96bc"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/case.man.yaml",
+      "bytes_at_observation": 2715,
+      "mtime_ns": 1789413737448370152,
+      "active_file": false,
+      "sha256": "661f8e1576b2dffe0909283677242893298d58ebcf02aa18abe4282b5b1be7ad"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/case.run",
+      "bytes_at_observation": 532,
+      "mtime_ns": 1789413737460572416,
+      "active_file": false,
+      "sha256": "5f4b7f0f74efeac97b917cfe5ee8d5aa3b2a08ca9fe1e109dd01f7ac046da23a"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/case.run.snow_stage3_v11_owner_seed.json",
+      "bytes_at_observation": 36209,
+      "mtime_ns": 1789413737460572416,
+      "active_file": false,
+      "sha256": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/frost.txt",
+      "bytes_at_observation": 43,
+      "mtime_ns": 1789413737448055149,
+      "active_file": false,
+      "sha256": "b6f81ef2040b029e361b63be4bd9591dbc3a151b9ecae927805152e365521e53"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/output/.H83.pass.parquet.openwepp-3461118-1789413737471130788.spool",
+      "bytes_at_observation": 0,
+      "mtime_ns": 1789413737484573670,
+      "active_file": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/output/.H83.wat-subhourly.parquet.openwepp-3461118-1789413737471130788.parquet.tmp.3461118",
+      "bytes_at_observation": 0,
+      "mtime_ns": 1789413737487573827,
+      "active_file": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/output/.H83.wat.parquet.openwepp-3461118-1789413737471130788.spool",
+      "bytes_at_observation": 0,
+      "mtime_ns": 1789413737482573566,
+      "active_file": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/output/.openwepp_hillslope_run_manifest.json.stage3-v11-evidence-v1.bin.openwepp-3461118-1789413737471130788.spool",
+      "bytes_at_observation": 31,
+      "mtime_ns": 1789413737487573827,
+      "active_file": true
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/p102.cli",
+      "bytes_at_observation": 1003,
+      "mtime_ns": 1789413737448370152,
+      "active_file": false,
+      "sha256": "5af208853205300ab2cc606070407fccccba3b4c8d770f5e242613033fa2508a"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/p102.man",
+      "bytes_at_observation": 3467,
+      "mtime_ns": 1789413737448063393,
+      "active_file": false,
+      "sha256": "6abc78f34c8900fd11d243ef5916b9acf89fa25fd087bddc64d9c02b7517ce5f"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/p102.run",
+      "bytes_at_observation": 343,
+      "mtime_ns": 1789413737447922139,
+      "active_file": false,
+      "sha256": "1cabf3319ccf83baaf00d4c94c6de6804a09918307f162275b58fc6ea64b577f"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/p102.slp",
+      "bytes_at_observation": 75,
+      "mtime_ns": 1789413737448370152,
+      "active_file": false,
+      "sha256": "be38e0a111db3708ca73bf9d207fd799ddd3c67bff4fecaabbfbab3956d12d74"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/p102.sol",
+      "bytes_at_observation": 1136,
+      "mtime_ns": 1789413737448370152,
+      "active_file": false,
+      "sha256": "e0a86be22d7c819ac963620648b844ed18d1ac78ee867ea34587dad7ef225dca"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/pmetpara.txt",
+      "bytes_at_observation": 2690,
+      "mtime_ns": 1789413737447953139,
+      "active_file": false,
+      "sha256": "7f67616e491e293a41ef3a79940108cf5de5cb0b780ab9728234ee1eb2aaf9b2"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/snow.txt",
+      "bytes_at_observation": 87,
+      "mtime_ns": 1789413737448037674,
+      "active_file": false,
+      "sha256": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-fixture-20260914-1/snow_accuracy_continuous_1789413737447872301/wepp_ui.txt",
+      "bytes_at_observation": 0,
+      "mtime_ns": 1789413737447961339,
+      "active_file": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_tree_sha256": "01c34f56dd32e0b9502a74801e6c961012441dbbce6205f33934db79aa49284c",
+  "binary_sha256": "0f286b43ef8a30412b41f27414732e0c6ea4cbec7fb5e7e90913197c79687c55",
+  "carried_active_seconds": 25188.8,
+  "continuation_elapsed_seconds": 777.178995,
+  "active_seconds": 25965.978994999998,
+  "ceiling_seconds": 26460,
+  "failed_corrections": 21,
+  "ceiling_corrections": 22,
+  "capture_runs": 1,
+  "capture_ceiling": 1,
+  "probe_runs": 0,
+  "probe_status": "RESERVED AND PROHIBITED",
+  "old_witness_runs": 1,
+  "runner_result": "PENDING; no run.json/receipt.json yet",
+  "execution_valid": false,
+  "complete_context": "NOT EVALUATED",
+  "checkpoint": "INCOMPLETE/HOLD",
+  "preservation_rule": "Leave sole bounded child alive; no duplicate/restart. Existing unchanged collector writes receipt.json and hashes upon return; launch wrapper records actual collector exit in raw-launch.json. Read retained files only; do not invoke launch.py again.",
+  "result_collection_command": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "-c",
+    "import json,pathlib; p=pathlib.Path('/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1'); print((p/'receipt.json').read_text()); print((p/'run.json').read_text())"
+  ],
+  "inventory_limit": "Live file sizes are observations, not final hashes or complete collection. Full stream remains local. No native reader/probe executed."
+}

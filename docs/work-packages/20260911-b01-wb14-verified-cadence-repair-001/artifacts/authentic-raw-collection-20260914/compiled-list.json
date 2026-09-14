@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-recorder-20260914.frozen",
+    "hillslope::tests::stage3_snow_accuracy_case",
+    "--ignored",
+    "--exact",
+    "--list"
+  ],
+  "exit": 0,
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-recorder-20260914.frozen",
+  "compiler_artifact": "/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913/release/deps/openwepp_runner-5f2e45c674e868ff",
+  "binary_sha256": "0f286b43ef8a30412b41f27414732e0c6ea4cbec7fb5e7e90913197c79687c55",
+  "bytes": 49174944,
+  "utc": "2026-09-14T19:21:26.353176+00:00",
+  "listing_only": true,
+  "tests_executed": 0
+}
