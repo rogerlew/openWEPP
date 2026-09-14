@@ -23,6 +23,10 @@ Preservation at **06:56:55UTC**: cumulative charged time **379m55.27s/411min**, 
 
 Staged whitespace inspection flags only280 required unified-patch blank-context lines and1 raw stderr line. Raw evidence bytes remain unchanged; other staged content is whitespace-clean.
 
+Publication: scoped evidence commit `e332eb8f336133903b1273c64eafce0167f336a2` pushed to existing `origin/main`, exit0. [Exact-commit remote verification](artifacts/native-reader-test-first-20260914/remote-verification.json) matches all39 published files,3,003,699 bytes, with no LFS pointers. This verifies only the published small files; full detached source/base and raw corpus remain local. This custody supplement is separately committed/pushed and verified before return; its receipt and final charged ledger remain in the local publication record named above.
+
+At **06:58:28UTC**, cumulative charge is **381m28.57s/411min**, failures **18/18**, no wait deductions. Source remains frozen; no post-stop build, formatter, test, lint, capture or probe occurred. **HOLD / INCOMPLETE**.
+
 ## Native reader test-first continuation adopted — 2026-09-14
 
 Owner execution of `/tmp/openwepp_b01_wb14_native_reader_test_first_authorization.md` adopts the same checkpoint scope and **411 active minute /18 unsuccessful-correction** ceilings. Carry exact latest ledger **351m00s /16 failures**, including the historical five-second overrun. Conservative start **06:28:00UTC**, deadline **07:28:00UTC**, no wait deductions. Authentic capture/probe remain **0/1 each reserved and prohibited here**; old witness **1/1 exhausted**. Cadence remains suspended.
