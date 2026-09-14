@@ -1,0 +1,16 @@
+test_caps_and_string_preview (test_inventory.InventoryTests.test_caps_and_string_preview) ... ok
+test_count_mismatch_is_incomplete (test_inventory.InventoryTests.test_count_mismatch_is_incomplete) ... ok
+test_duplicate_physical_member_rejected (test_inventory.InventoryTests.test_duplicate_physical_member_rejected) ... ok
+test_error_instead_of_success_and_ordinals (test_inventory.InventoryTests.test_error_instead_of_success_and_ordinals) ... ok
+test_hash_mismatch_is_incomplete (test_inventory.InventoryTests.test_hash_mismatch_is_incomplete) ... ok
+test_integer_decimal_and_ambiguous_names (test_inventory.InventoryTests.test_integer_decimal_and_ambiguous_names) ... ok
+test_large_late_kind_bounded_process (test_inventory.InventoryTests.test_large_late_kind_bounded_process) ... ok
+test_malformed_trailing_document (test_inventory.InventoryTests.test_malformed_trailing_document) ... ok
+test_missing_duplicate_kind_and_shapes (test_inventory.InventoryTests.test_missing_duplicate_kind_and_shapes) ... ok
+test_truncation_retains_completed_entries (test_inventory.InventoryTests.test_truncation_retains_completed_entries) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 1.706s
+
+OK
+large_control: {"source_bytes": 33554530, "elements": 8388609, "peak_rss_kib": 24712, "metadata_bytes": 1148, "rlimit_as_bytes": [1073741824, 1073741824]}

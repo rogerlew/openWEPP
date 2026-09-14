@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: scoped static/evidence checks",
+  "checks": {
+    "utility_unchanged_since_pass": true,
+    "json_parse": true,
+    "python_ast_parse": true,
+    "current_links_resolve": true,
+    "historical_zero_output_preserved": true,
+    "only_current_package_section_changed": true,
+    "git_diff_check": true
+  },
+  "link_count": 10,
+  "runtime_checks": "NOT RUN; prohibited/outside offline utility scope"
+}

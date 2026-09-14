@@ -1,0 +1,1186 @@
+{
+  "evidence_class": "Ran: metadata-only reconciliation after complete original-source traversal",
+  "source_sha256_verified": "709dc4992b2fd08fd8bae755c730a5a01341a9a18cee8a0817ca76a249974e03",
+  "source_bytes_verified": 8236702644,
+  "physical_rows": 123093,
+  "kind_counts": {
+    "accepted_day": 4,
+    "b01_wb14_committed_day_archive_record_v1": 4,
+    "b01_wb14_prepared_day_current_context_v1": 1,
+    "candidate_subslab_primitives": 13768,
+    "canonical_budget_rejection": 41,
+    "inner_accepted_state": 12024,
+    "native_preterminal_donor_bridge": 4,
+    "native_wat5_source_projection": 1814,
+    "provider_precipitation_phase": 480,
+    "retained_lse_final_operands": 27536,
+    "soil_trial_primitive": 67027,
+    "surface_liquid_wb14_cadence_caller_failure": 1,
+    "surface_liquid_wb14_cadence_failure": 1,
+    "validated_inactive_parent_endpoint": 384,
+    "wat5_native_source_before_after": 4
+  },
+  "selected_rows": 487,
+  "index_sha256": "d241c05f6848bc1f295acaaacf1359f5bd766739e8ba1016e98dfe0dcf69d6b4",
+  "index_bytes": 1655474,
+  "capture_coordinate_sets": [
+    [
+      3461118,
+      1,
+      "ThreadId(2)"
+    ]
+  ],
+  "selected_capture_ordinals_equal_physical_ordinals": true,
+  "provider_by_day": {
+    "0": {
+      "count": 96,
+      "interval_counts": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 2,
+        "16": 2,
+        "17": 2,
+        "18": 2,
+        "19": 2,
+        "20": 2,
+        "21": 2,
+        "22": 2,
+        "23": 2,
+        "24": 2,
+        "25": 2,
+        "26": 2,
+        "27": 2,
+        "28": 2,
+        "29": 2,
+        "30": 2,
+        "31": 2,
+        "32": 2,
+        "33": 2,
+        "34": 2,
+        "35": 2,
+        "36": 2,
+        "37": 2,
+        "38": 2,
+        "39": 2,
+        "40": 2,
+        "41": 2,
+        "42": 2,
+        "43": 2,
+        "44": 2,
+        "45": 2,
+        "46": 2,
+        "47": 2
+      },
+      "first_ordinal": 0,
+      "last_ordinal": 95,
+      "ordinals_contiguous": true
+    },
+    "1": {
+      "count": 96,
+      "interval_counts": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 2,
+        "16": 2,
+        "17": 2,
+        "18": 2,
+        "19": 2,
+        "20": 2,
+        "21": 2,
+        "22": 2,
+        "23": 2,
+        "24": 2,
+        "25": 2,
+        "26": 2,
+        "27": 2,
+        "28": 2,
+        "29": 2,
+        "30": 2,
+        "31": 2,
+        "32": 2,
+        "33": 2,
+        "34": 2,
+        "35": 2,
+        "36": 2,
+        "37": 2,
+        "38": 2,
+        "39": 2,
+        "40": 2,
+        "41": 2,
+        "42": 2,
+        "43": 2,
+        "44": 2,
+        "45": 2,
+        "46": 2,
+        "47": 2
+      },
+      "first_ordinal": 27432,
+      "last_ordinal": 27527,
+      "ordinals_contiguous": true
+    },
+    "2": {
+      "count": 96,
+      "interval_counts": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 2,
+        "16": 2,
+        "17": 2,
+        "18": 2,
+        "19": 2,
+        "20": 2,
+        "21": 2,
+        "22": 2,
+        "23": 2,
+        "24": 2,
+        "25": 2,
+        "26": 2,
+        "27": 2,
+        "28": 2,
+        "29": 2,
+        "30": 2,
+        "31": 2,
+        "32": 2,
+        "33": 2,
+        "34": 2,
+        "35": 2,
+        "36": 2,
+        "37": 2,
+        "38": 2,
+        "39": 2,
+        "40": 2,
+        "41": 2,
+        "42": 2,
+        "43": 2,
+        "44": 2,
+        "45": 2,
+        "46": 2,
+        "47": 2
+      },
+      "first_ordinal": 54079,
+      "last_ordinal": 54174,
+      "ordinals_contiguous": true
+    },
+    "3": {
+      "count": 96,
+      "interval_counts": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 2,
+        "16": 2,
+        "17": 2,
+        "18": 2,
+        "19": 2,
+        "20": 2,
+        "21": 2,
+        "22": 2,
+        "23": 2,
+        "24": 2,
+        "25": 2,
+        "26": 2,
+        "27": 2,
+        "28": 2,
+        "29": 2,
+        "30": 2,
+        "31": 2,
+        "32": 2,
+        "33": 2,
+        "34": 2,
+        "35": 2,
+        "36": 2,
+        "37": 2,
+        "38": 2,
+        "39": 2,
+        "40": 2,
+        "41": 2,
+        "42": 2,
+        "43": 2,
+        "44": 2,
+        "45": 2,
+        "46": 2,
+        "47": 2
+      },
+      "first_ordinal": 79223,
+      "last_ordinal": 79318,
+      "ordinals_contiguous": true
+    },
+    "4": {
+      "count": 96,
+      "interval_counts": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 2,
+        "16": 2,
+        "17": 2,
+        "18": 2,
+        "19": 2,
+        "20": 2,
+        "21": 2,
+        "22": 2,
+        "23": 2,
+        "24": 2,
+        "25": 2,
+        "26": 2,
+        "27": 2,
+        "28": 2,
+        "29": 2,
+        "30": 2,
+        "31": 2,
+        "32": 2,
+        "33": 2,
+        "34": 2,
+        "35": 2,
+        "36": 2,
+        "37": 2,
+        "38": 2,
+        "39": 2,
+        "40": 2,
+        "41": 2,
+        "42": 2,
+        "43": 2,
+        "44": 2,
+        "45": 2,
+        "46": 2,
+        "47": 2
+      },
+      "first_ordinal": 107937,
+      "last_ordinal": 108032,
+      "ordinals_contiguous": true
+    }
+  },
+  "target_records": [
+    {
+      "physical_ordinal": 27431,
+      "kind": "b01_wb14_committed_day_archive_record_v1",
+      "capture": {
+        "ordinal": 27431,
+        "process": 3461118,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      },
+      "top_fields": [
+        {
+          "path": [
+            {
+              "member": "archive_entry",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 17
+        },
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "type": "array",
+          "element_count": 307105003,
+          "elements_not_indexed": 307104995
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 2
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 3
+            }
+          ],
+          "type": "number",
+          "value": 0
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 4
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_committed_day_archive_record_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 5
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        }
+      ],
+      "binding_scalar_metadata": [],
+      "nested_fields_omitted": 0
+    },
+    {
+      "physical_ordinal": 54078,
+      "kind": "b01_wb14_committed_day_archive_record_v1",
+      "capture": {
+        "ordinal": 54078,
+        "process": 3461118,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      },
+      "top_fields": [
+        {
+          "path": [
+            {
+              "member": "archive_entry",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 17
+        },
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "type": "array",
+          "element_count": 376086364,
+          "elements_not_indexed": 376086356
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 2
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 3
+            }
+          ],
+          "type": "number",
+          "value": 1
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 4
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_committed_day_archive_record_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 5
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        }
+      ],
+      "binding_scalar_metadata": [],
+      "nested_fields_omitted": 0
+    },
+    {
+      "physical_ordinal": 79222,
+      "kind": "b01_wb14_committed_day_archive_record_v1",
+      "capture": {
+        "ordinal": 79222,
+        "process": 3461118,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      },
+      "top_fields": [
+        {
+          "path": [
+            {
+              "member": "archive_entry",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 17
+        },
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "type": "array",
+          "element_count": 373891449,
+          "elements_not_indexed": 373891441
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 2
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 3
+            }
+          ],
+          "type": "number",
+          "value": 2
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 4
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_committed_day_archive_record_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 5
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        }
+      ],
+      "binding_scalar_metadata": [],
+      "nested_fields_omitted": 0
+    },
+    {
+      "physical_ordinal": 107936,
+      "kind": "b01_wb14_committed_day_archive_record_v1",
+      "capture": {
+        "ordinal": 107936,
+        "process": 3461118,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      },
+      "top_fields": [
+        {
+          "path": [
+            {
+              "member": "archive_entry",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 17
+        },
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "type": "array",
+          "element_count": 273071144,
+          "elements_not_indexed": 273071136
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 2
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 3
+            }
+          ],
+          "type": "number",
+          "value": 3
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 4
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_committed_day_archive_record_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 5
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        }
+      ],
+      "binding_scalar_metadata": [],
+      "nested_fields_omitted": 0
+    },
+    {
+      "physical_ordinal": 108033,
+      "kind": "b01_wb14_prepared_day_current_context_v1",
+      "capture": {
+        "ordinal": 108033,
+        "process": 3461118,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      },
+      "top_fields": [
+        {
+          "path": [
+            {
+              "member": "archived_receipt_prefix",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 16
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 1
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "capture_posture",
+              "position": 2
+            }
+          ],
+          "type": "string",
+          "value": "before physical ingress; diagnostic no-publication wrapper"
+        },
+        {
+          "path": [
+            {
+              "member": "committed_clock_restart_canonical_json",
+              "position": 3
+            }
+          ],
+          "type": "array",
+          "element_count": 67900,
+          "elements_not_indexed": 67892
+        },
+        {
+          "path": [
+            {
+              "member": "committed_next_parent_sequence",
+              "position": 4
+            }
+          ],
+          "type": "number",
+          "value": 192
+        },
+        {
+          "path": [
+            {
+              "member": "committed_receipt_tail_count",
+              "position": 5
+            }
+          ],
+          "type": "number",
+          "value": 0
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 6
+            }
+          ],
+          "type": "number",
+          "value": 4
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 7
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_prepared_day_current_context_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "native_committed_bootstrap_lane_map_constructor_operands",
+              "position": 8
+            }
+          ],
+          "type": "array",
+          "element_count": 1,
+          "elements_not_indexed": 0
+        },
+        {
+          "path": [
+            {
+              "member": "native_committed_bootstrap_soil_v2_constructor_operands",
+              "position": 9
+            }
+          ],
+          "type": "map",
+          "member_count": 3
+        },
+        {
+          "path": [
+            {
+              "member": "ordered_support_constructor_operands",
+              "position": 10
+            }
+          ],
+          "type": "array",
+          "element_count": 48,
+          "elements_not_indexed": 40
+        },
+        {
+          "path": [
+            {
+              "member": "provider_constructor_operands",
+              "position": 11
+            }
+          ],
+          "type": "map",
+          "member_count": 6
+        },
+        {
+          "path": [
+            {
+              "member": "snow_enthalpy_material_residents",
+              "position": 12
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 13
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 14
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        }
+      ],
+      "binding_scalar_metadata": [],
+      "nested_fields_omitted": 3600
+    },
+    {
+      "physical_ordinal": 123091,
+      "kind": "surface_liquid_wb14_cadence_failure",
+      "capture": {
+        "ordinal": 123091,
+        "process": 3461118,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      },
+      "top_fields": [
+        {
+          "path": [
+            {
+              "member": "accepted_parent_local_projection",
+              "position": 0
+            }
+          ],
+          "type": "boolean",
+          "value": false
+        },
+        {
+          "path": [
+            {
+              "member": "actual_day",
+              "position": 1
+            }
+          ],
+          "type": "number",
+          "value": 4
+        },
+        {
+          "path": [
+            {
+              "member": "actual_interval",
+              "position": 2
+            }
+          ],
+          "type": "number",
+          "value": 22
+        },
+        {
+          "path": [
+            {
+              "member": "beginning_typed_bytes",
+              "position": 3
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 4
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "expected_day",
+              "position": 5
+            }
+          ],
+          "type": "number",
+          "value": 0
+        },
+        {
+          "path": [
+            {
+              "member": "expected_interval",
+              "position": 6
+            }
+          ],
+          "type": "number",
+          "value": 0
+        },
+        {
+          "path": [
+            {
+              "member": "finalize_parent_interval",
+              "position": 7
+            }
+          ],
+          "type": "boolean",
+          "value": false
+        },
+        {
+          "path": [
+            {
+              "member": "initial",
+              "position": 8
+            }
+          ],
+          "type": "boolean",
+          "value": true
+        },
+        {
+          "path": [
+            {
+              "member": "input_typed_bytes",
+              "position": 9
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 10
+            }
+          ],
+          "type": "string",
+          "value": "surface_liquid_wb14_cadence_failure"
+        },
+        {
+          "path": [
+            {
+              "member": "ofe_id",
+              "position": 11
+            }
+          ],
+          "type": "string",
+          "value": "ofe-1"
+        },
+        {
+          "path": [
+            {
+              "member": "parent_child_mode",
+              "position": 12
+            }
+          ],
+          "type": "boolean",
+          "value": true
+        },
+        {
+          "path": [
+            {
+              "member": "state_mutated",
+              "position": 13
+            }
+          ],
+          "type": "boolean",
+          "value": false
+        }
+      ],
+      "binding_scalar_metadata": [],
+      "nested_fields_omitted": 0
+    },
+    {
+      "physical_ordinal": 123092,
+      "kind": "surface_liquid_wb14_cadence_caller_failure",
+      "capture": {
+        "ordinal": 123092,
+        "process": 3461118,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      },
+      "top_fields": [
+        {
+          "path": [
+            {
+              "member": "beginning_typed_bytes",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 1
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 2
+            }
+          ],
+          "type": "map",
+          "member_count": 8
+        },
+        {
+          "path": [
+            {
+              "member": "error",
+              "position": 3
+            }
+          ],
+          "type": "string",
+          "value": "SURFACELIQUID-E-008 IngressCandidate: WB14 day or interval continuation mismatch"
+        },
+        {
+          "path": [
+            {
+              "member": "finalize_parent_interval",
+              "position": 4
+            }
+          ],
+          "type": "boolean",
+          "value": false
+        },
+        {
+          "path": [
+            {
+              "member": "input_typed_bytes",
+              "position": 5
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "surface_liquid_wb14_cadence_caller_failure"
+        },
+        {
+          "path": [
+            {
+              "member": "parent_child_mode",
+              "position": 7
+            }
+          ],
+          "type": "boolean",
+          "value": true
+        },
+        {
+          "path": [
+            {
+              "member": "parent_working_typed_bytes",
+              "position": 8
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        },
+        {
+          "path": [
+            {
+              "member": "working_typed_bytes",
+              "position": 9
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        }
+      ],
+      "binding_scalar_metadata": [
+        {
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 2
+            },
+            {
+              "member": "child_support_end_ns",
+              "position": 1
+            }
+          ],
+          "type": "string",
+          "value": "385980000000000"
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 2
+            },
+            {
+              "member": "child_support_start_ns",
+              "position": 2
+            }
+          ],
+          "type": "string",
+          "value": "385920000000000"
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 2
+            },
+            {
+              "member": "parent_support_end_ns",
+              "position": 5
+            }
+          ],
+          "type": "string",
+          "value": "387000000000000"
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 2
+            },
+            {
+              "member": "parent_support_start_ns",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "385200000000000"
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 2
+            },
+            {
+              "member": "proposed_upper_bound_s_bits",
+              "position": 7
+            }
+          ],
+          "type": "number",
+          "value": 4633641066610819072
+        }
+      ],
+      "nested_fields_omitted": 0
+    }
+  ],
+  "capped_records": [
+    {
+      "physical_ordinal": 108033,
+      "nested_fields_omitted": 3600
+    }
+  ],
+  "absence_scope": "All physical row kinds inspected through EOF, without decoding any embedded byte payload.",
+  "absent_kinds": [
+    "b01_wb14_pre_child_current_context_v1",
+    "b01_wb14_pre_child_current_context_capture_error_v1",
+    "b01_wb14_prepared_day_current_context_capture_error_v1",
+    "b01_wb14_committed_day_archive_record_capture_error_v1"
+  ],
+  "diagnostic_error_present": "surface_liquid_wb14_cadence_caller_failure.error preserves E008; no explicit capture/serialization-error kind observed",
+  "not_inspected": [
+    "canonical payloads inside byte arrays",
+    "nested fields beyond capped previews",
+    "unselected record fields",
+    "transaction ordinal255 inside typed/canonical payloads",
+    "cross-object consistency or canonical payload authentication"
+  ],
+  "scope_result": "Inventory complete only; reader/witness/complete-context semantics NOT EVALUATED; checkpoint/cadence INCOMPLETE/HOLD"
+}

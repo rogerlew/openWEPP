@@ -1,0 +1,4 @@
+RESOURCE DESCRIPTION               SOFT       HARD UNITS
+AS       address space limit 1073741824 1073741824 bytes
+    PID   RSS    VSZ     ELAPSED %CPU
+3630302 24500  35316       01:00 99.9

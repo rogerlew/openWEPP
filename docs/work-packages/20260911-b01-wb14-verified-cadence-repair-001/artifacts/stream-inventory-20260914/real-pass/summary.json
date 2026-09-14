@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "status": "COMPLETE",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/observations.json",
+  "expected_sha256": "709dc4992b2fd08fd8bae755c730a5a01341a9a18cee8a0817ca76a249974e03",
+  "expected_bytes": 8236702644,
+  "expected_physical_rows": 123093,
+  "physical_rows": 123093,
+  "completed_rows": 123093,
+  "selected_rows": 487,
+  "kind_counts": {
+    "accepted_day": 4,
+    "b01_wb14_committed_day_archive_record_v1": 4,
+    "b01_wb14_prepared_day_current_context_v1": 1,
+    "candidate_subslab_primitives": 13768,
+    "canonical_budget_rejection": 41,
+    "inner_accepted_state": 12024,
+    "native_preterminal_donor_bridge": 4,
+    "native_wat5_source_projection": 1814,
+    "provider_precipitation_phase": 480,
+    "retained_lse_final_operands": 27536,
+    "soil_trial_primitive": 67027,
+    "surface_liquid_wb14_cadence_caller_failure": 1,
+    "surface_liquid_wb14_cadence_failure": 1,
+    "validated_inactive_parent_endpoint": 384,
+    "wat5_native_source_before_after": 4
+  },
+  "anomaly_counts": {},
+  "syntax_complete": true,
+  "eof": true,
+  "metadata": {
+    "nested_field_cap": 1024,
+    "array_preview_elements": 8,
+    "string_preview_characters": 256,
+    "locators": "source SHA + physical ordinal + member-position path",
+    "payload_authentication": "NOT EVALUATED"
+  },
+  "ijson": {
+    "version": "3.4.0",
+    "backend": "yajl2_c"
+  },
+  "rlimit_as_bytes": [
+    1073741824,
+    1073741824
+  ],
+  "source_stat_before": {
+    "st_dev": 64514,
+    "st_ino": 86055144,
+    "st_size": 8236702644,
+    "st_mtime_ns": 1789415160181925279,
+    "st_ctime_ns": 1789415160181925279
+  },
+  "source_stat_after": {
+    "st_dev": 64514,
+    "st_ino": 86055144,
+    "st_size": 8236702644,
+    "st_mtime_ns": 1789415160181925279,
+    "st_ctime_ns": 1789415160181925279
+  },
+  "source_path_stat_after": {
+    "st_dev": 64514,
+    "st_ino": 86055144,
+    "st_size": 8236702644,
+    "st_mtime_ns": 1789415160181925279,
+    "st_ctime_ns": 1789415160181925279
+  },
+  "bytes_supplied": 8236702644,
+  "sha256_supplied": "709dc4992b2fd08fd8bae755c730a5a01341a9a18cee8a0817ca76a249974e03",
+  "elapsed_seconds": 387.8630320210941,
+  "peak_rss_kib": 26792,
+  "argv": [
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/stream-inventory-20260914/inventory.py",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/observations.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/stream-inventory-20260914/real-pass",
+    "--sha256",
+    "709dc4992b2fd08fd8bae755c730a5a01341a9a18cee8a0817ca76a249974e03",
+    "--bytes",
+    "8236702644",
+    "--rows",
+    "123093"
+  ],
+  "utility_sha256": "776c40a07cba35a50118625830f952dc26cff3b06300e9cb544b00cf5a127605"
+}

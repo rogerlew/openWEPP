@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/stream-inventory-20260914/process-memory.log",
+    "timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "2700s",
+    "prlimit",
+    "--as=1073741824:1073741824",
+    "/workdir/openWEPP/.venv/bin/python",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/stream-inventory-20260914/inventory.py",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/observations.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/stream-inventory-20260914/real-pass",
+    "--sha256",
+    "709dc4992b2fd08fd8bae755c730a5a01341a9a18cee8a0817ca76a249974e03",
+    "--bytes",
+    "8236702644",
+    "--rows",
+    "123093"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-09-14T22:38:34.463478+00:00",
+  "utility_sha256": "776c40a07cba35a50118625830f952dc26cff3b06300e9cb544b00cf5a127605",
+  "memory_mechanism": "Linux RLIMIT_AS soft=hard1073741824 bytes; kernel enforced virtual address space (stricter than resident memory)",
+  "real_pass_allowance": 1,
+  "wrapper_pid": 3630300
+}
