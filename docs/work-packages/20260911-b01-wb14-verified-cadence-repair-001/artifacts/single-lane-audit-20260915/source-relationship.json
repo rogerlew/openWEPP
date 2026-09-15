@@ -1,0 +1,54 @@
+{
+  "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915": {
+    "dispatcher": [
+      [
+        939,
+        "    if active_lanes.len() > 1 && !terminal_lanes.is_empty() {"
+      ],
+      [
+        941,
+        "            try_actual_terminal_batch_subslab_v2("
+      ],
+      [
+        961,
+        "        try_actual_terminal_single_subslab_with_evidence::<M>("
+      ],
+      [
+        1526,
+        "fn try_actual_terminal_single_subslab_with_evidence<M>("
+      ]
+    ],
+    "audit": [
+      [
+        651,
+        "            entries.push(TerminalBatchProductionAuditV2 {"
+      ]
+    ]
+  },
+  "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915": {
+    "dispatcher": [
+      [
+        939,
+        "    if active_lanes.len() > 1 && !terminal_lanes.is_empty() {"
+      ],
+      [
+        941,
+        "            try_actual_terminal_batch_subslab_v2("
+      ],
+      [
+        961,
+        "        try_actual_terminal_single_subslab_with_evidence::<M>("
+      ],
+      [
+        1526,
+        "fn try_actual_terminal_single_subslab_with_evidence<M>("
+      ]
+    ],
+    "audit": [
+      [
+        651,
+        "            entries.push(TerminalBatchProductionAuditV2 {"
+      ]
+    ]
+  }
+}

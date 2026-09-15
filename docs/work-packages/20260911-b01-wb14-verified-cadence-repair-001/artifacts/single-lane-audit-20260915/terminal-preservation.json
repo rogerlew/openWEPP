@@ -1,0 +1,8 @@
+{
+  "reference_source_frozen": true,
+  "reference_patch_hash": true,
+  "reference_only_authorized_postcondition": true,
+  "candidate_source_frozen": true,
+  "candidate_patch_hash": true,
+  "candidate_only_authorized_postcondition": true
+}

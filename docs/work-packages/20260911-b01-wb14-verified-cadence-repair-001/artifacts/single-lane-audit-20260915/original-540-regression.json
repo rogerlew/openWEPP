@@ -1,0 +1,127 @@
+{
+  "argv": [
+    "bash",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+    "/tmp/openwepp-b01-wb14-cadence-targets/snowfree-recorder-20260915",
+    "nextest",
+    "run",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/Cargo.toml",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "--lib",
+    "--locked",
+    "--features",
+    "persisted-restart-v1,restart-authority-evidence",
+    "-E",
+    "test(=v9_real_consumer_shadow::tests::interior_terminal_event_runs_covered_event_and_snow_free_remainder)",
+    "--no-tests",
+    "fail",
+    "--retries",
+    "0",
+    "--no-capture"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "source_tree_sha256": "3f2e7f08ed121836b9854539ce9f3f1fc2dd6eae073fd14baaf83d4a71bb8aa5",
+  "changed_files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs",
+      "base_sha256": "77e8035d8d7b5d490883d50892721c757cfa0a3fdf4b1dfc2fac37d96fe9ba0b",
+      "source_sha256": "8ecab9ac31c8ab12b6c5180c7f9b1c8eac80add31b4ed2f84eb3557de97afc75"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+      "base_sha256": "a3dfd35c775d6911c45483696319eaa75361bfcdbc2e96c11957ad9c926a0586",
+      "source_sha256": "cf5bca8d9d5586cf6e46edeced50963c743e32c1bfaff3bc2947cfbf1537a925"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_frontend.rs",
+      "base_sha256": "a9a633d1dd5d82938dcf417b7c557431e6477455fbf884a61e911b9f53c0a6b9",
+      "source_sha256": "3d904ff6e35af03ee282905ac33cce7e63cd99fa7af6e8df2565f183c23a2838"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+      "base_sha256": "361de4aac012b1e9f08c3290d5d29ce29bbd48631342f42e79b68f40475ba189",
+      "source_sha256": "bf9f4a62aee86e4d796b046642e36ad42fe6ddce5204b72805f70a757007b8fd"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "base_sha256": "692e18c120a7cdb6eb175bb636f04ef3789f9908e1b218b34bdf64a455d70f8d",
+      "source_sha256": "ce71b10384618700cbd0f48e4ac99c9e031b72db99f3154cc4fe55088bafe371"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs",
+      "base_sha256": "f5d488e4915d345576128a51df43f4f00f69a662ae28f37155b37ec0dab31bd3",
+      "source_sha256": "f68e197acdfe28a5d60f742ae77e3d66f88d8f4dff9f4dc0589c7fe912f52d48"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "base_sha256": "377684b7411b9056c4d24a0f591e20b0a5dba331439e9a675424b1b3c2fa7d2a",
+      "source_sha256": "c075c5793f23025a16e7f6f2d99ab343cabd99fa9f650872c6813d7865d1e781"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs",
+      "base_sha256": "088c046409e348a9abc2217fc7a4cb049d87edb0ba927be58f02e2b269ade888",
+      "source_sha256": "ae83646f5466a7e1134bf5ad4a7262edbf4aacd3cd668d9b7c23e3b9d7eb3ad6"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+      "base_sha256": "732ae7952afca307b9085512b79d6436ed0e87092f12a96b23adaa6088beed10",
+      "source_sha256": "2d298233b1ece8aed2ca789255ffb0e96316c4764d98d8bab1c73d22541badfe"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_unpublished_continuation.rs",
+      "base_sha256": "a2a9b8fe893c3e53cb268824bd628d02c80444537b45ad5a3535cdc8edce02b4",
+      "source_sha256": "273b52d706e0837f5b986a7147c2204db6fa5492c97fc64fdbeeb207b56ad35c"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+      "base_sha256": "dfe0da9d2be9984b43334eed80fa1b9fe3892dd9993de1869e4ddcd940f2b594",
+      "source_sha256": "66ee7a6ad602fdc6f67614af53d9a7704d7ffac0e0b2c4576cd34db6fa6f75bb"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs",
+      "base_sha256": "81ba8b1ad828c235a25062a77453a1699673f9c2b4157e820caf42ca6911bf17",
+      "source_sha256": "7d7e85f800e20af4dbc14594749f4496804f2d8983d11c30dafa56ebc5d4ac36"
+    }
+  ],
+  "patch": "source-d24b0b28bb90e263501bef1c0c935cf8859b068d35efe450a530e7000bc61c66.patch",
+  "patch_sha256": "d24b0b28bb90e263501bef1c0c935cf8859b068d35efe450a530e7000bc61c66",
+  "start_utc": "2026-09-15T15:52:12.526427+00:00",
+  "execution_input_custody": "../reference-input-recovery-20260915/input-custody.json",
+  "execution_input_custody_sha256": "2e9e27eeb0a355672e7a74c8fd645a2ce95182ae88bf78741bc8f98ecac9b082",
+  "timeout_seconds": 192.182411,
+  "executed_argv": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "192.182411s",
+    "bash",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+    "/tmp/openwepp-b01-wb14-cadence-targets/snowfree-recorder-20260915",
+    "nextest",
+    "run",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/Cargo.toml",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "--lib",
+    "--locked",
+    "--features",
+    "persisted-restart-v1,restart-authority-evidence",
+    "-E",
+    "test(=v9_real_consumer_shadow::tests::interior_terminal_event_runs_covered_event_and_snow_free_remainder)",
+    "--no-tests",
+    "fail",
+    "--retries",
+    "0",
+    "--no-capture"
+  ],
+  "end_utc": "2026-09-15T15:52:13.531642+00:00",
+  "exit": 100,
+  "source_unchanged_during_command": true
+}

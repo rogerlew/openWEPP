@@ -1,0 +1,18 @@
+{
+  "status": "INCOMPLETE/HOLD",
+  "stop_utc": "2026-09-15T15:52:13.531642+00:00",
+  "reason": "Original540 regression failed before timing assertion: Executor(AdaptiveRefinement(\"canonical covered evaluation budget\")) at wb14_tests.rs1042",
+  "failed_corrections": 31,
+  "failure_ceiling": 31,
+  "pair": "PASS exact full disabled payload bytes",
+  "reference_new_invocations": 1,
+  "candidate_invocations": 1,
+  "original_regression": "FAIL0/1 exit100",
+  "recorder_controls_lint": "NOT RUN",
+  "format": "PASS both frozen files",
+  "carried_seconds": 35547.775493,
+  "continuation_seconds_so_far": 388.429597,
+  "cumulative_seconds_so_far": 35936.20509,
+  "ceiling_seconds": 36117.485508,
+  "wait_deductions_seconds": 0
+}

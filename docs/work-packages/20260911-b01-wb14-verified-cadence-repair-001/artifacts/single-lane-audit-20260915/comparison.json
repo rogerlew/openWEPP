@@ -1,0 +1,219 @@
+{
+  "both_invocations_exit0": true,
+  "reference_tests": {
+    "run": 1,
+    "passed": 1,
+    "skipped": 1469
+  },
+  "candidate_tests": {
+    "run": 1,
+    "passed": 1,
+    "skipped": 1471
+  },
+  "entire_payload_bytes_equal": true,
+  "reference_payload_bytes": 7707305,
+  "candidate_payload_bytes": 7707305,
+  "reference_payload_sha256": "fa01f2a111ddb331bee942f604dee1fe3af230a6d8b5f4e225234f98146e6845",
+  "candidate_payload_sha256": "fa01f2a111ddb331bee942f604dee1fe3af230a6d8b5f4e225234f98146e6845",
+  "diagnostics": {
+    "reference": {
+      "legacy_default_fixture_expected_tick_ns": 540000000000,
+      "native_fixture_observed_tick_ns": 360000000000,
+      "performance_elapsed_ns": [
+        69069997,
+        66743616,
+        15144339,
+        156116569,
+        69342731,
+        66811182,
+        15125473,
+        160609087,
+        71642881,
+        71515807,
+        15137633,
+        167829935,
+        68569588,
+        68758662,
+        15170300,
+        161772553,
+        71777022,
+        68775565,
+        15222764,
+        164612370,
+        82906794,
+        78027659,
+        15483891,
+        187419719,
+        73383550,
+        70170444,
+        15375307,
+        168424651,
+        75726895,
+        71408477,
+        15430877,
+        172878968,
+        78505722,
+        73067053,
+        15584976,
+        178806025
+      ],
+      "publication_elapsed_ns": [
+        {
+          "initial_seal": 1518603,
+          "projection": 487100,
+          "total": 2096403,
+          "validation": 90700
+        },
+        {
+          "initial_seal": 1518056,
+          "projection": 621299,
+          "total": 2227667,
+          "validation": 88312
+        },
+        {
+          "initial_seal": 1537225,
+          "projection": 628319,
+          "total": 2257478,
+          "validation": 91934
+        },
+        {
+          "initial_seal": 1566388,
+          "projection": 707934,
+          "total": 2360161,
+          "validation": 85839
+        },
+        {
+          "initial_seal": 1528030,
+          "projection": 624686,
+          "total": 2242985,
+          "validation": 90269
+        },
+        {
+          "initial_seal": 1998936,
+          "projection": 628237,
+          "total": 2716779,
+          "validation": 89606
+        },
+        {
+          "initial_seal": 1545450,
+          "projection": 621101,
+          "total": 2256206,
+          "validation": 89655
+        },
+        {
+          "initial_seal": 1534262,
+          "projection": 620888,
+          "total": 2244133,
+          "validation": 88983
+        },
+        {
+          "initial_seal": 1546329,
+          "projection": 631430,
+          "total": 2270557,
+          "validation": 92798
+        }
+      ],
+      "timing_disposition": "diagnostic_fixture_mismatch_not_acceptance_oracle"
+    },
+    "candidate": {
+      "legacy_default_fixture_expected_tick_ns": 540000000000,
+      "native_fixture_observed_tick_ns": 360000000000,
+      "performance_elapsed_ns": [
+        74341324,
+        66396741,
+        15357970,
+        161401822,
+        71011619,
+        68213217,
+        15153024,
+        163879819,
+        71127135,
+        68194487,
+        15011949,
+        163150372,
+        69297212,
+        66966926,
+        15053274,
+        160613971,
+        70840019,
+        68146620,
+        15044034,
+        162731733,
+        84089552,
+        80920249,
+        16329766,
+        192331439,
+        73354959,
+        72431858,
+        15425601,
+        170786303,
+        76055000,
+        71646506,
+        15249681,
+        173273383,
+        83552407,
+        74725358,
+        17221024,
+        187193330
+      ],
+      "publication_elapsed_ns": [
+        {
+          "initial_seal": 1520888,
+          "projection": 509968,
+          "total": 2120584,
+          "validation": 89728
+        },
+        {
+          "initial_seal": 1512976,
+          "projection": 628109,
+          "total": 2232984,
+          "validation": 91899
+        },
+        {
+          "initial_seal": 1522268,
+          "projection": 628317,
+          "total": 2237753,
+          "validation": 87168
+        },
+        {
+          "initial_seal": 1524963,
+          "projection": 630617,
+          "total": 2245200,
+          "validation": 89620
+        },
+        {
+          "initial_seal": 1510308,
+          "projection": 625197,
+          "total": 2223244,
+          "validation": 87739
+        },
+        {
+          "initial_seal": 2129810,
+          "projection": 718891,
+          "total": 2959004,
+          "validation": 110303
+        },
+        {
+          "initial_seal": 1576089,
+          "projection": 651025,
+          "total": 2318608,
+          "validation": 91494
+        },
+        {
+          "initial_seal": 1500424,
+          "projection": 935685,
+          "total": 2519815,
+          "validation": 83706
+        },
+        {
+          "initial_seal": 1586128,
+          "projection": 630154,
+          "total": 2311131,
+          "validation": 94849
+        }
+      ],
+      "timing_disposition": "diagnostic_fixture_mismatch_not_acceptance_oracle"
+    }
+  },
+  "scope": "Disabled-posture entire canonical payload only; no scientific tick or enabled recorder acceptance"
+}

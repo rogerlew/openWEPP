@@ -1,0 +1,101 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning: struct `PreparedDayCaptureV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1175:8
+     |
+1175 | struct PreparedDayCaptureV1 {
+     |        ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `capture_prepared_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1183:4
+     |
+1183 | fn capture_prepared_day(
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_prepared_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1200:4
+     |
+1200 | fn validate_prepared_day(
+     |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_prepared_day_row_for_test` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1728:15
+     |
+1728 | pub(crate) fn capture_prepared_day_row_for_test(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_captured_prepared_support_from_provider` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2506:15
+     |
+2506 | pub(crate) fn restore_captured_prepared_support_from_provider(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `prepared_support`, `forcing_receipt`, and `snow_enthalpy_material_resident` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2529:9
+     |
+2524 | pub(crate) struct RestoredProviderBoundContextV1 {
+     |                   ------------------------------ fields in this struct
+...
+2529 |     pub prepared_support: crate::DirectSnowStage3V11PreparedSupport,
+     |         ^^^^^^^^^^^^^^^^
+2530 |     pub forcing_receipt: openwepp_coupled_time::Digest32,
+     |         ^^^^^^^^^^^^^^^
+...
+2533 |     pub snow_enthalpy_material_resident:
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `entry`, `canonical_record`, `parent_receipt`, and `qualification_delta` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2546:9
+     |
+2545 | pub(crate) struct AuthenticatedArchivedDayV1 {
+     |                   -------------------------- fields in this struct
+2546 |     pub entry: crate::Stage3CommittedDayArchiveEntryV1,
+     |         ^^^^^
+2547 |     pub canonical_record: Vec<u8>,
+     |         ^^^^^^^^^^^^^^^^
+2548 |     pub parent_receipt: crate::DirectSnowStage3V11ParentReceipt,
+     |         ^^^^^^^^^^^^^^
+2549 |     pub publication: crate::v9_real_consumer_shadow::RestoredStage3PublicationDayEvidenceV1,
+2550 |     pub qualification_delta: crate::SnowStage3V11QualificationDayDeltaV1,
+     |         ^^^^^^^^^^^^^^^^^^^
+
+warning: fields `parent`, `pending_terminal_parcels`, `reduction`, `ledger`, `receipt`, and `binding` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2690:9
+     |
+2689 | pub(crate) struct RestoredCapturedPreChildContextV1 {
+     |                   --------------------------------- fields in this struct
+2690 |     pub parent: V11ParentTransaction,
+     |         ^^^^^^
+...
+2693 |     pub pending_terminal_parcels:
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2697 |     pub reduction: ConstraintReductionReceiptV1,
+     |         ^^^^^^^^^
+2698 |     pub ledger: LedgerEntryV1,
+     |         ^^^^^^
+2699 |     pub receipt: AcceptedSlabReceiptV1,
+     |         ^^^^^^^
+2700 |     pub binding: serde_json::Value,
+     |         ^^^^^^^
+
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 8 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+────────────
+ Nextest run ID a24856f3-0a06-4e15-9b09-ba242e1809c2 with nextest profile: default
+    Starting 1 test across 1 binary (1471 tests skipped)
+       START [         ] (1/1) openwepp-hillslope-orchestrator v9_real_consumer_shadow::tests::interior_terminal_event_runs_covered_event_and_snow_free_remainder
+
+thread 'interior-terminal-event-owner-path' (367992) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs:1042:14:
+real mixed covered/open OFE execution: Executor(AdaptiveRefinement("canonical covered evaluation budget"))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'v9_real_consumer_shadow::tests::interior_terminal_event_runs_covered_event_and_snow_free_remainder' (367991) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_covered_physical_tests.rs:1467:10:
+join interior terminal-event fixture: Any { .. }
+        FAIL [   0.455s] (1/1) openwepp-hillslope-orchestrator v9_real_consumer_shadow::tests::interior_terminal_event_runs_covered_event_and_snow_free_remainder
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.459s] 1 test run: 0 passed, 1 failed, 1471 skipped
+        FAIL [   0.455s] (1/1) openwepp-hillslope-orchestrator v9_real_consumer_shadow::tests::interior_terminal_event_runs_covered_event_and_snow_free_remainder
+error: test run failed

@@ -1,0 +1,15 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
+@@ -512,8 +512,10 @@
+         .expect("native parent support")
+     );
+     assert!(!production.0.accepted_microsteps.is_empty());
+-    assert!(!production.2.is_empty());
+-    assert!(production.2.iter().all(|batch| batch.lane_ids == vec![1]));
++    assert!(
++        production.2.is_empty(),
++        "single-lane terminal fixture must not execute the multi-lane batch path"
++    );
+     assert_eq!(
+         fixture.ending_clock_accepted_until,
+         openwepp_coupled_time::ModelTimeNs::new(1_800_000_000_000)

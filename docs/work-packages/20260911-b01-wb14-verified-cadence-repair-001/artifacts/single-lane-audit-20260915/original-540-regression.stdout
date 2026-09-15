@@ -1,0 +1,15 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/snowfree-recorder-candidate-20260915-629fa4ac9140
+  scratch: /tmp/openwepp-roger-snowfree-recorder-candidate-20260915-629fa4ac9140
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test v9_real_consumer_shadow::tests::interior_terminal_event_runs_covered_event_and_snow_free_remainder ... FAILED
+
+failures:
+
+failures:
+    v9_real_consumer_shadow::tests::interior_terminal_event_runs_covered_event_and_snow_free_remainder
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1471 filtered out; finished in 0.45s
+
