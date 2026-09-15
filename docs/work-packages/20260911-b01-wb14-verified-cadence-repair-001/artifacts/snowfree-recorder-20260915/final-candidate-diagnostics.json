@@ -1,0 +1,358 @@
+{
+  "messages": [
+    {
+      "code": "clippy::similar_names",
+      "level": "error",
+      "message": "binding's name is too similar to existing binding",
+      "site": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/strict_v8_endpoint_tests.rs:836:9"
+    },
+    {
+      "code": "clippy::unnested_or_patterns",
+      "level": "error",
+      "message": "unnested or-patterns",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs:1315:13"
+    },
+    {
+      "code": "clippy::unnested_or_patterns",
+      "level": "error",
+      "message": "unnested or-patterns",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs:1322:13"
+    },
+    {
+      "code": "clippy::similar_names",
+      "level": "error",
+      "message": "binding's name is too similar to existing binding",
+      "site": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_wat5.rs:626:9"
+    },
+    {
+      "code": "clippy::similar_names",
+      "level": "error",
+      "message": "binding's name is too similar to existing binding",
+      "site": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_wat5.rs:627:9"
+    },
+    {
+      "code": "clippy::similar_names",
+      "level": "error",
+      "message": "binding's name is too similar to existing binding",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2866:9"
+    },
+    {
+      "code": "clippy::similar_names",
+      "level": "error",
+      "message": "binding's name is too similar to existing binding",
+      "site": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/strict_v8_endpoint_tests.rs:836:9"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_boundary_receiver.rs:692:54"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_boundary_receiver.rs:693:51"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_boundary_receiver.rs:694:54"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_boundary_receiver.rs:695:51"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:198:30"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:199:33"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:200:28"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:201:31"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:202:36"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:204:29"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:206:32"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:209:36"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:213:37"
+    },
+    {
+      "code": "clippy::similar_names",
+      "level": "error",
+      "message": "binding's name is too similar to existing binding",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_parent_chronology_tests.rs:466:9"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs:1421:46"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:3045:68"
+    },
+    {
+      "code": "clippy::inconsistent_digit_grouping",
+      "level": "error",
+      "message": "digits grouped inconsistently by underscores",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:3130:49"
+    },
+    {
+      "code": "clippy::inconsistent_digit_grouping",
+      "level": "error",
+      "message": "digits grouped inconsistently by underscores",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:3131:49"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:3133:52"
+    },
+    {
+      "code": "clippy::inconsistent_digit_grouping",
+      "level": "error",
+      "message": "digits grouped inconsistently by underscores",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:3137:27"
+    },
+    {
+      "code": "clippy::inconsistent_digit_grouping",
+      "level": "error",
+      "message": "digits grouped inconsistently by underscores",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:3137:46"
+    },
+    {
+      "code": "clippy::inconsistent_digit_grouping",
+      "level": "error",
+      "message": "digits grouped inconsistently by underscores",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:3138:10"
+    },
+    {
+      "code": "clippy::inconsistent_digit_grouping",
+      "level": "error",
+      "message": "digits grouped inconsistently by underscores",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:3138:29"
+    },
+    {
+      "code": "clippy::inconsistent_digit_grouping",
+      "level": "error",
+      "message": "digits grouped inconsistently by underscores",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:3139:10"
+    },
+    {
+      "code": "clippy::inconsistent_digit_grouping",
+      "level": "error",
+      "message": "digits grouped inconsistently by underscores",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:3139:29"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:2491:44"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:2528:32"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:2532:30"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs:1216:17"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs:1217:20"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs:1218:17"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs:1220:49"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs:1222:32"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs:1224:28"
+    },
+    {
+      "code": "clippy::unnested_or_patterns",
+      "level": "error",
+      "message": "unnested or-patterns",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs:1315:13"
+    },
+    {
+      "code": "clippy::unnested_or_patterns",
+      "level": "error",
+      "message": "unnested or-patterns",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs:1322:13"
+    },
+    {
+      "code": "clippy::similar_names",
+      "level": "error",
+      "message": "binding's name is too similar to existing binding",
+      "site": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_covered_physical_tests.rs:884:21"
+    },
+    {
+      "code": "clippy::similar_names",
+      "level": "error",
+      "message": "binding's name is too similar to existing binding",
+      "site": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_wat5.rs:626:9"
+    },
+    {
+      "code": "clippy::similar_names",
+      "level": "error",
+      "message": "binding's name is too similar to existing binding",
+      "site": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_wat5.rs:627:9"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests_tail.rs:27:27"
+    },
+    {
+      "code": "clippy::unreadable_literal",
+      "level": "error",
+      "message": "long literal lacking separators",
+      "site": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests_tail.rs:28:31"
+    },
+    {
+      "code": "clippy::needless_raw_string_hashes",
+      "level": "error",
+      "message": "unnecessary hashes around raw string literal",
+      "site": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests.rs:751:72"
+    },
+    {
+      "code": "clippy::similar_names",
+      "level": "error",
+      "message": "binding's name is too similar to existing binding",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2866:9"
+    },
+    {
+      "code": "E0277",
+      "level": "error",
+      "message": "the trait bound `std::sync::Arc<direct_runtime::DirectRunConstructorInputs>: serde::Serialize` is not satisfied",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1562:8"
+    },
+    {
+      "code": "E0425",
+      "level": "error",
+      "message": "cannot find function `capture_test_active_snow_raw` in this scope",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1920:38"
+    },
+    {
+      "code": "E0277",
+      "level": "error",
+      "message": "the trait bound `std::sync::Arc<direct_runtime::DirectRunConstructorInputs>: serde::Serialize` is not satisfied",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1562:8"
+    },
+    {
+      "code": "E0277",
+      "level": "error",
+      "message": "the trait bound `std::sync::Arc<direct_runtime::DirectRunConstructorInputs>: serde::Serialize` is not satisfied",
+      "site": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2045:5"
+    },
+    {
+      "code": null,
+      "level": "failure-note",
+      "message": "Some errors have detailed explanations: E0277, E0425.",
+      "site": null
+    },
+    {
+      "code": null,
+      "level": "failure-note",
+      "message": "For more information about an error, try `rustc --explain E0277`.",
+      "site": null
+    },
+    {
+      "code": null,
+      "level": "failure-note",
+      "message": "For more information about this error, try `rustc --explain E0277`.",
+      "site": null
+    }
+  ],
+  "counts": {
+    "clippy::similar_names": 10,
+    "clippy::unnested_or_patterns": 4,
+    "clippy::unreadable_literal": 27,
+    "clippy::inconsistent_digit_grouping": 8,
+    "clippy::needless_raw_string_hashes": 1,
+    "E0277": 3,
+    "E0425": 1,
+    "None": 3
+  },
+  "full_structured_log": "candidate-orchestrator-clippy-final.stdout",
+  "interpretation": "FAIL: new compiler errors prevent complete lint comparison; no no-new-diagnostics acceptance"
+}

@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "bash",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+    "/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913",
+    "clippy",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/Cargo.toml",
+    "-p",
+    "openwepp-runner",
+    "--all-targets",
+    "--locked",
+    "--features",
+    "openwepp-runner/test-fixture-authority,openwepp-hillslope-orchestrator/persisted-restart-v1,openwepp-hillslope-orchestrator/restart-authority-evidence",
+    "--message-format=json",
+    "--",
+    "--no-deps",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "source_tree_sha256": "114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5",
+  "changed_files": [],
+  "patch": "source-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.patch",
+  "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "start_utc": "2026-09-15T02:19:44.570893+00:00",
+  "end_utc": "2026-09-15T02:20:17.434162+00:00",
+  "exit": 101,
+  "source_unchanged_during_command": true
+}

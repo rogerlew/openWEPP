@@ -1,0 +1,21 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-kernel-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-kernel-contract)
+    Checking openwepp-management-schema v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-management-schema)
+    Checking openwepp-coupled-time v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-coupled-time)
+    Checking openwepp-comparator-metadata v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-comparator-metadata)
+    Checking openwepp-legacy-bridge v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-legacy-bridge)
+    Checking openwepp-hillslope-output v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-output)
+    Checking openwepp-summary-accumulator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-summary-accumulator)
+    Checking openwepp-land-surface-energy v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-land-surface-energy)
+    Checking openwepp-biogeochemistry v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-biogeochemistry)
+    Checking openwepp-vegetation v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-vegetation)
+    Checking openwepp-input-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-input-contract)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-watershed-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-watershed-orchestrator)
+    Checking openwepp-watershed-output v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-watershed-output)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-persisted-restart-v1 v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-persisted-restart-v1)
+    Checking openwepp-runner v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-runner)
+error: could not compile `openwepp-runner` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-runner` (lib test) due to 79 previous errors

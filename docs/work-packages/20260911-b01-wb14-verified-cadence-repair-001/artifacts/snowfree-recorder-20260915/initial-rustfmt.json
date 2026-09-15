@@ -1,0 +1,111 @@
+{
+  "argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "rustfmt",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_unpublished_continuation.rs"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "source_tree_sha256": "b2a5ef0197ccc5b2628365ebb2eb30bfefad1f5292610f7c069d42d03f5d7250",
+  "changed_files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs",
+      "base_sha256": "77e8035d8d7b5d490883d50892721c757cfa0a3fdf4b1dfc2fac37d96fe9ba0b",
+      "source_sha256": "97800a637a8115b420767ba1b11599d75b793513c18881caea3dced8130113f4"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+      "base_sha256": "a3dfd35c775d6911c45483696319eaa75361bfcdbc2e96c11957ad9c926a0586",
+      "source_sha256": "c35ad7c29a3abf2a8a533312efec36f36f46f13c6ab933730990d48178f2e8dd"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+      "base_sha256": "361de4aac012b1e9f08c3290d5d29ce29bbd48631342f42e79b68f40475ba189",
+      "source_sha256": "f545bab74e7e4fb7c49538650ffa86918c7b3d5b39edab86c721a26915fdab69"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "base_sha256": "692e18c120a7cdb6eb175bb636f04ef3789f9908e1b218b34bdf64a455d70f8d",
+      "source_sha256": "ce71b10384618700cbd0f48e4ac99c9e031b72db99f3154cc4fe55088bafe371"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs",
+      "base_sha256": "f5d488e4915d345576128a51df43f4f00f69a662ae28f37155b37ec0dab31bd3",
+      "source_sha256": "f68e197acdfe28a5d60f742ae77e3d66f88d8f4dff9f4dc0589c7fe912f52d48"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "base_sha256": "377684b7411b9056c4d24a0f591e20b0a5dba331439e9a675424b1b3c2fa7d2a",
+      "source_sha256": "e3fef5a168506150657c2e10b8056fe27dfc393576654800103b310db0cb9a00"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs",
+      "base_sha256": "088c046409e348a9abc2217fc7a4cb049d87edb0ba927be58f02e2b269ade888",
+      "source_sha256": "eacdc0989bef90ca9ec1652dce3ebbed17abef4068198c207bda04bd33d8af6c"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+      "base_sha256": "732ae7952afca307b9085512b79d6436ed0e87092f12a96b23adaa6088beed10",
+      "source_sha256": "e07ad643ccb907761b11cd049bb34afa158cd6d672e65e650a564f2581ac1cb5"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_unpublished_continuation.rs",
+      "base_sha256": "a2a9b8fe893c3e53cb268824bd628d02c80444537b45ad5a3535cdc8edce02b4",
+      "source_sha256": "66b9b5262a107040152f8bf383a6610c0a770b940c296d3fadc3fcb689b24a2c"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+      "base_sha256": "dfe0da9d2be9984b43334eed80fa1b9fe3892dd9993de1869e4ddcd940f2b594",
+      "source_sha256": "82349bc2561c7864a2d23844135531521ac017c1e0e8beec24bf5b339f87f86f"
+    }
+  ],
+  "patch": "source-d7c13014cce3ee89d82a702f62ce0ee0a67481d0f61457d1f2c94fcf42d3aeef.patch",
+  "patch_sha256": "d7c13014cce3ee89d82a702f62ce0ee0a67481d0f61457d1f2c94fcf42d3aeef",
+  "start_utc": "2026-09-15T02:39:51.515730+00:00",
+  "timeout_seconds": 2013.484151,
+  "executed_argv": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "2013.484151s",
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "rustfmt",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_unpublished_continuation.rs"
+  ],
+  "end_utc": "2026-09-15T02:40:03.235433+00:00",
+  "exit": 0,
+  "source_unchanged_during_command": false
+}

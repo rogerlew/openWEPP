@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-15T02:24:36.178341+00:00",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "source_membership": "all files under crates plus Cargo.toml/Cargo.lock/flake.nix/flake.lock/rust-toolchain.toml/clippy.toml",
+  "source_entries": 741,
+  "source_tree_sha256": "114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5",
+  "changed_files": [],
+  "copy_command": "cp -a --reflink=auto current-context-capture-20260913 snowfree-recorder-candidate-20260915",
+  "copy_exit": 0,
+  "build_target": "/tmp/openwepp-b01-wb14-cadence-targets/snowfree-recorder-20260915"
+}

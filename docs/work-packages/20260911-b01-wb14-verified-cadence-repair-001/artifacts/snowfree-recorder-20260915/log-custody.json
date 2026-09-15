@@ -1,0 +1,45 @@
+{
+  "evidence_class": "Ran: byte-preserving compression with durable raw copies",
+  "logs": [
+    {
+      "logical_file": "baseline-orchestrator-clippy.stdout",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/snowfree-recorder-20260915/baseline-orchestrator-clippy.stdout",
+      "raw_bytes": 13810564,
+      "raw_sha256": "fefc715d8e49e9ab38f3d9ff9c2789617452b706b1ea2f70d6148a27053a67de",
+      "published_gzip": "baseline-orchestrator-clippy.stdout.gz",
+      "gzip_bytes": 584619,
+      "gzip_sha256": "6949d8abb10b676f802186ffeafe9bd488e25dc687a6212808e6fc110605c141",
+      "lossless_verified": true
+    },
+    {
+      "logical_file": "baseline-runner-clippy.stdout",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/snowfree-recorder-20260915/baseline-runner-clippy.stdout",
+      "raw_bytes": 392056,
+      "raw_sha256": "8c8a9638aee538223ce274d108a03eaefe17464e7e53d6f8448dc5f5271b6af7",
+      "published_gzip": "baseline-runner-clippy.stdout.gz",
+      "gzip_bytes": 24161,
+      "gzip_sha256": "e7071afffba21f70e7c6912f87220e3670ae4fa97072903e10b6715d99911874",
+      "lossless_verified": true
+    },
+    {
+      "logical_file": "candidate-orchestrator-clippy-final.stdout",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/snowfree-recorder-20260915/candidate-orchestrator-clippy-final.stdout",
+      "raw_bytes": 783099,
+      "raw_sha256": "afeb95ab842ea410eca3dfc357dd81232cee8d4d82f4d957f2b7ad5024f9128b",
+      "published_gzip": "candidate-orchestrator-clippy-final.stdout.gz",
+      "gzip_bytes": 33975,
+      "gzip_sha256": "addf953a2aa40c82b10d034ab58ab92aa878824b235b27618e01e60156d4500f",
+      "lossless_verified": true
+    },
+    {
+      "logical_file": "candidate-orchestrator-clippy.stdout",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/snowfree-recorder-20260915/candidate-orchestrator-clippy.stdout",
+      "raw_bytes": 224979,
+      "raw_sha256": "bde47c0eeaea4a619ce73cb87e11048e57e7b6e44baec46c34374befda95037c",
+      "published_gzip": "candidate-orchestrator-clippy.stdout.gz",
+      "gzip_bytes": 15072,
+      "gzip_sha256": "ebdb39b8d0fb2352f022689e28041bf189e1a425cfce8441903070a854e0438c",
+      "lossless_verified": true
+    }
+  ]
+}
