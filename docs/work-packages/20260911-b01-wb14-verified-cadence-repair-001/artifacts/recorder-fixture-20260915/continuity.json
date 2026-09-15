@@ -1,0 +1,14 @@
+{
+  "start_utc": "2026-09-15T05:26:20Z",
+  "deadline_utc": "2026-09-15T06:26:20Z",
+  "carried_active_seconds": 32517.485508000005,
+  "supplement_cap_seconds": 3600,
+  "cumulative_ceiling_seconds": 36117.485508000005,
+  "carried_failures": 25,
+  "failure_ceiling": 27,
+  "candidate_source_tree_sha256": "59a5d8a318d068c7d7237c046c8ab4e829016ddd44db33470db6d7d3483dc461",
+  "candidate_patch_sha256": "53dc8e972a34cc1063a5a6679a0c1600ed307a0eed7ce8c255f58f8b1eec49ec",
+  "candidate_matches_all_741_entries": true,
+  "base_matches_prior_741_entries": true,
+  "wait_deductions_seconds": 0
+}

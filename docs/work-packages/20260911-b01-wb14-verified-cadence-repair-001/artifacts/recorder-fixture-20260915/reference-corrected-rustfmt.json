@@ -1,0 +1,62 @@
+{
+  "argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "rustfmt",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_frontend.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "source_tree_sha256": "b71e7336ab4b0ff2eaab8573a02bb9ed4b23ceaeba351d0ff990f0def0c7f9a8",
+  "changed_files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_frontend.rs",
+      "base_sha256": "a9a633d1dd5d82938dcf417b7c557431e6477455fbf884a61e911b9f53c0a6b9",
+      "source_sha256": "3d904ff6e35af03ee282905ac33cce7e63cd99fa7af6e8df2565f183c23a2838"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+      "base_sha256": "361de4aac012b1e9f08c3290d5d29ce29bbd48631342f42e79b68f40475ba189",
+      "source_sha256": "851940f076915f2fc6bbe8ba63cd7abf49e5848994bd04e8f8a163cd51472489"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs",
+      "base_sha256": "81ba8b1ad828c235a25062a77453a1699673f9c2b4157e820caf42ca6911bf17",
+      "source_sha256": "98be1ba8772d517ea3752a5ab14721e5e843ef58c6872e5711928096d702a737"
+    }
+  ],
+  "patch": "source-a139ba213c3f9d95d576652b73236e2c9d297b7ec8ce000f3dc106461a2d51af.patch",
+  "patch_sha256": "a139ba213c3f9d95d576652b73236e2c9d297b7ec8ce000f3dc106461a2d51af",
+  "start_utc": "2026-09-15T05:52:36.938077+00:00",
+  "timeout_seconds": 1933.061829,
+  "executed_argv": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "1933.061829s",
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "rustfmt",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_frontend.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs"
+  ],
+  "end_utc": "2026-09-15T05:52:47.752186+00:00",
+  "exit": 0,
+  "source_unchanged_during_command": false
+}

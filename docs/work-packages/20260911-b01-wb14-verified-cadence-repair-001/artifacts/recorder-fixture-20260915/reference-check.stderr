@@ -1,0 +1,4 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915/crates/openwepp-hillslope-orchestrator)
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

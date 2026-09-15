@@ -1,0 +1,9 @@
+{
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "source_tree_sha256": "114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5",
+  "identical_to_producing_cut_before_harness_edits": true,
+  "build_target": "/tmp/openwepp-b01-wb14-cadence-targets/recorder-fixture-reference-20260915",
+  "target_cache_origin": "independent cp -a --reflink=auto of retained producing target; Cargo explicit new manifest will rebuild affected source",
+  "source_membership": "741 entries: crates files plus six retained build/config files; .cargo/.config copied unchanged if present"
+}

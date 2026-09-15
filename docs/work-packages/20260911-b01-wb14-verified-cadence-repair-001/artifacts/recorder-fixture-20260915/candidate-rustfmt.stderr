@@ -1,0 +1,2 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+error (ignored): SQLite database '/home/roger/.cache/nix/eval-cache-v6/f6d37f213fa51015a36dcdf05843c4476baad5adf4885f211ad12fb99dc3e0b6.sqlite' is busy

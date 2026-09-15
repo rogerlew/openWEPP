@@ -1,0 +1,28 @@
+{
+  "evidence_class": "Static: terminal source comparison and original caller identity; not behavior acceptance",
+  "candidate_changes_since_compile_cut": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_frontend.rs",
+      "before_sha256": "a9a633d1dd5d82938dcf417b7c557431e6477455fbf884a61e911b9f53c0a6b9",
+      "after_sha256": "3d904ff6e35af03ee282905ac33cce7e63cd99fa7af6e8df2565f183c23a2838"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+      "before_sha256": "67242e9fc74e130f907e8b8e8fd0f670b12731f81aa43e9cac3393ad6368dbd9",
+      "after_sha256": "f2016fd28b66b31c1fbfce69edcb891a7a921849b2b895502de2a0bb88680649"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs",
+      "before_sha256": "81ba8b1ad828c235a25062a77453a1699673f9c2b4157e820caf42ca6911bf17",
+      "after_sha256": "7d7e85f800e20af4dbc14594749f4496804f2d8983d11c30dafa56ebc5d4ac36"
+    }
+  ],
+  "common_harness_files_exactly_equal": {
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_frontend.rs": true,
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs": true
+  },
+  "native_characterization_block_exactly_equal": true,
+  "native_characterization_block_sha256": "da8ac0a6fc7a295635f28a1ea1f0babc76f76a48edb5fb47af5a66d5199b9288",
+  "original_caller_file_unchanged": true,
+  "selector_module_unchanged": true
+}

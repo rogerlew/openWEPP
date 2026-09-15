@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/recorder-fixture-reference-20260915-6aee6103e399
+  scratch: /tmp/openwepp-roger-recorder-fixture-reference-20260915-6aee6103e399
+  cache:   /workdir/.cache/openwepp

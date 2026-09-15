@@ -1,0 +1,178 @@
+{
+  "command": "candidate-check.json",
+  "source_tree_sha256": "202edbc6b88b8b8eeaa4464e85462003b8ac6be486e9e8ef35ab3a44769a9141",
+  "errors": [
+    {
+      "rendered": "error[E0433]: cannot find type `ModelTimeNs` in this scope\n   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:487:13\n    |\n487 |             ModelTimeNs::new(0),\n    |             ^^^^^^^^^^^ use of undeclared type `ModelTimeNs`\n\n",
+      "$message_type": "diagnostic",
+      "children": [],
+      "level": "error",
+      "message": "cannot find type `ModelTimeNs` in this scope",
+      "spans": [
+        {
+          "byte_end": 19347,
+          "byte_start": 19336,
+          "column_end": 24,
+          "column_start": 13,
+          "expansion": null,
+          "file_name": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+          "is_primary": true,
+          "label": "use of undeclared type `ModelTimeNs`",
+          "line_end": 487,
+          "line_start": 487,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 24,
+              "highlight_start": 13,
+              "text": "            ModelTimeNs::new(0),"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "E0433",
+        "explanation": "An undeclared crate, module, or type was used.\n\nErroneous code example:\n\n```compile_fail,E0433\nlet map = HashMap::new();\n// error: failed to resolve: use of undeclared type `HashMap`\n```\n\nPlease verify you didn't misspell the type/module's name or that you didn't\nforget to import it:\n\n```\nuse std::collections::HashMap; // HashMap has been imported.\nlet map: HashMap<u32, u32> = HashMap::new(); // So it can be used!\n```\n\nIf you've expected to use a crate name:\n\n```compile_fail\nuse ferris_wheel::BigO;\n// error: failed to resolve: use of undeclared module or unlinked crate\n```\n\nMake sure the crate has been added as a dependency in `Cargo.toml`.\n\nTo use a module from your current crate, add the `crate::` prefix to the path.\n"
+      }
+    },
+    {
+      "rendered": "error[E0433]: cannot find type `ModelTimeNs` in this scope\n   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:488:13\n    |\n488 |             ModelTimeNs::new(1_800_000_000_000)\n    |             ^^^^^^^^^^^ use of undeclared type `ModelTimeNs`\n\n",
+      "$message_type": "diagnostic",
+      "children": [],
+      "level": "error",
+      "message": "cannot find type `ModelTimeNs` in this scope",
+      "spans": [
+        {
+          "byte_end": 19380,
+          "byte_start": 19369,
+          "column_end": 24,
+          "column_start": 13,
+          "expansion": null,
+          "file_name": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+          "is_primary": true,
+          "label": "use of undeclared type `ModelTimeNs`",
+          "line_end": 488,
+          "line_start": 488,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 24,
+              "highlight_start": 13,
+              "text": "            ModelTimeNs::new(1_800_000_000_000)"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "E0433",
+        "explanation": "An undeclared crate, module, or type was used.\n\nErroneous code example:\n\n```compile_fail,E0433\nlet map = HashMap::new();\n// error: failed to resolve: use of undeclared type `HashMap`\n```\n\nPlease verify you didn't misspell the type/module's name or that you didn't\nforget to import it:\n\n```\nuse std::collections::HashMap; // HashMap has been imported.\nlet map: HashMap<u32, u32> = HashMap::new(); // So it can be used!\n```\n\nIf you've expected to use a crate name:\n\n```compile_fail\nuse ferris_wheel::BigO;\n// error: failed to resolve: use of undeclared module or unlinked crate\n```\n\nMake sure the crate has been added as a dependency in `Cargo.toml`.\n\nTo use a module from your current crate, add the `crate::` prefix to the path.\n"
+      }
+    },
+    {
+      "rendered": "error[E0433]: cannot find type `ModelTimeNs` in this scope\n   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:497:9\n    |\n497 |         ModelTimeNs::new(1_800_000_000_000)\n    |         ^^^^^^^^^^^ use of undeclared type `ModelTimeNs`\n\n",
+      "$message_type": "diagnostic",
+      "children": [],
+      "level": "error",
+      "message": "cannot find type `ModelTimeNs` in this scope",
+      "spans": [
+        {
+          "byte_end": 19714,
+          "byte_start": 19703,
+          "column_end": 20,
+          "column_start": 9,
+          "expansion": null,
+          "file_name": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+          "is_primary": true,
+          "label": "use of undeclared type `ModelTimeNs`",
+          "line_end": 497,
+          "line_start": 497,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 20,
+              "highlight_start": 9,
+              "text": "        ModelTimeNs::new(1_800_000_000_000)"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "E0433",
+        "explanation": "An undeclared crate, module, or type was used.\n\nErroneous code example:\n\n```compile_fail,E0433\nlet map = HashMap::new();\n// error: failed to resolve: use of undeclared type `HashMap`\n```\n\nPlease verify you didn't misspell the type/module's name or that you didn't\nforget to import it:\n\n```\nuse std::collections::HashMap; // HashMap has been imported.\nlet map: HashMap<u32, u32> = HashMap::new(); // So it can be used!\n```\n\nIf you've expected to use a crate name:\n\n```compile_fail\nuse ferris_wheel::BigO;\n// error: failed to resolve: use of undeclared module or unlinked crate\n```\n\nMake sure the crate has been added as a dependency in `Cargo.toml`.\n\nTo use a module from your current crate, add the `crate::` prefix to the path.\n"
+      }
+    },
+    {
+      "rendered": "error[E0433]: cannot find type `ModelTimeNs` in this scope\n   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:521:56\n    |\n521 |     assert_eq!(fixture.subslabs[0].support.start_ns(), ModelTimeNs::new(0));\n    |                                                        ^^^^^^^^^^^ use of undeclared type `ModelTimeNs`\n\n",
+      "$message_type": "diagnostic",
+      "children": [],
+      "level": "error",
+      "message": "cannot find type `ModelTimeNs` in this scope",
+      "spans": [
+        {
+          "byte_end": 20590,
+          "byte_start": 20579,
+          "column_end": 67,
+          "column_start": 56,
+          "expansion": null,
+          "file_name": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+          "is_primary": true,
+          "label": "use of undeclared type `ModelTimeNs`",
+          "line_end": 521,
+          "line_start": 521,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 67,
+              "highlight_start": 56,
+              "text": "    assert_eq!(fixture.subslabs[0].support.start_ns(), ModelTimeNs::new(0));"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "E0433",
+        "explanation": "An undeclared crate, module, or type was used.\n\nErroneous code example:\n\n```compile_fail,E0433\nlet map = HashMap::new();\n// error: failed to resolve: use of undeclared type `HashMap`\n```\n\nPlease verify you didn't misspell the type/module's name or that you didn't\nforget to import it:\n\n```\nuse std::collections::HashMap; // HashMap has been imported.\nlet map: HashMap<u32, u32> = HashMap::new(); // So it can be used!\n```\n\nIf you've expected to use a crate name:\n\n```compile_fail\nuse ferris_wheel::BigO;\n// error: failed to resolve: use of undeclared module or unlinked crate\n```\n\nMake sure the crate has been added as a dependency in `Cargo.toml`.\n\nTo use a module from your current crate, add the `crate::` prefix to the path.\n"
+      }
+    },
+    {
+      "rendered": "error[E0433]: cannot find type `ModelTimeNs` in this scope\n   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:571:9\n    |\n571 |         ModelTimeNs::new(1_800_000_000_000)\n    |         ^^^^^^^^^^^ use of undeclared type `ModelTimeNs`\n\n",
+      "$message_type": "diagnostic",
+      "children": [],
+      "level": "error",
+      "message": "cannot find type `ModelTimeNs` in this scope",
+      "spans": [
+        {
+          "byte_end": 22475,
+          "byte_start": 22464,
+          "column_end": 20,
+          "column_start": 9,
+          "expansion": null,
+          "file_name": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+          "is_primary": true,
+          "label": "use of undeclared type `ModelTimeNs`",
+          "line_end": 571,
+          "line_start": 571,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 20,
+              "highlight_start": 9,
+              "text": "        ModelTimeNs::new(1_800_000_000_000)"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "E0433",
+        "explanation": "An undeclared crate, module, or type was used.\n\nErroneous code example:\n\n```compile_fail,E0433\nlet map = HashMap::new();\n// error: failed to resolve: use of undeclared type `HashMap`\n```\n\nPlease verify you didn't misspell the type/module's name or that you didn't\nforget to import it:\n\n```\nuse std::collections::HashMap; // HashMap has been imported.\nlet map: HashMap<u32, u32> = HashMap::new(); // So it can be used!\n```\n\nIf you've expected to use a crate name:\n\n```compile_fail\nuse ferris_wheel::BigO;\n// error: failed to resolve: use of undeclared module or unlinked crate\n```\n\nMake sure the crate has been added as a dependency in `Cargo.toml`.\n\nTo use a module from your current crate, add the `crate::` prefix to the path.\n"
+      }
+    }
+  ],
+  "failed_corrections": 26,
+  "failure_ceiling": 27
+}

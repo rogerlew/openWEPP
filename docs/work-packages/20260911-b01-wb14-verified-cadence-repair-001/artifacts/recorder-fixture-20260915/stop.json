@@ -1,0 +1,28 @@
+{
+  "status": "INCOMPLETE/HOLD",
+  "stop_reason": "Failure ceiling27/27; reference compilation missing retained test include omitted by root copy",
+  "start_utc": "2026-09-15T05:26:20+00:00",
+  "hard_stop_utc": "2026-09-15T05:54:04.853018+00:00",
+  "preservation_utc": "2026-09-15T05:56:08.330037+00:00",
+  "carried_active_seconds": 32517.485508000005,
+  "supplement_active_seconds_prepublication": 1788.330037,
+  "supplement_cap_seconds": 3600,
+  "cumulative_active_seconds_prepublication": 34305.815545000005,
+  "cumulative_ceiling_seconds": 36117.485508000005,
+  "failed_corrections": 27,
+  "failure_ceiling": 27,
+  "wait_deductions_seconds": 0,
+  "unrun": [
+    "compiled listing",
+    "native reference/candidate pair",
+    "original timing regression",
+    "producer recording and mode controls",
+    "terminal rustfmt --check",
+    "candidate owning and separate runner Clippy",
+    "matched lint comparison"
+  ],
+  "capture": "1/1 exhausted",
+  "witness": "1/1 exhausted",
+  "probe": "0/1 RESERVED AND PROHIBITED",
+  "final_ledger": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/recorder-fixture-publication.json"
+}

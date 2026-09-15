@@ -1,0 +1,22 @@
+{
+  "final-source.json": {
+    "all_source_entries_unchanged": true,
+    "patch_matches": true
+  },
+  "reference-final-source.json": {
+    "all_source_entries_unchanged": true,
+    "patch_matches": true
+  },
+  "candidate-check-corrected.json": {
+    "source_binds_final": true,
+    "source_unchanged_during_command": true,
+    "exit": 0
+  },
+  "reference-check.json": {
+    "source_binds_final": true,
+    "source_unchanged_during_command": true,
+    "exit": 101
+  },
+  "all_json_parse": true,
+  "python_helpers_compile": true
+}

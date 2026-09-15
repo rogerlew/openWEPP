@@ -1,0 +1,38 @@
+{
+  "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913": {
+    ".cargo": {
+      "exists": false,
+      "files": {}
+    },
+    ".config": {
+      "exists": true,
+      "files": {
+        ".config/nextest.toml": "d793e296952c607ec2136a41dc05ecd780437b2a6fcd8cc669386c5c5b4984cb"
+      }
+    }
+  },
+  "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915": {
+    ".cargo": {
+      "exists": false,
+      "files": {}
+    },
+    ".config": {
+      "exists": true,
+      "files": {
+        ".config/nextest.toml": "d793e296952c607ec2136a41dc05ecd780437b2a6fcd8cc669386c5c5b4984cb"
+      }
+    }
+  },
+  "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915": {
+    ".cargo": {
+      "exists": false,
+      "files": {}
+    },
+    ".config": {
+      "exists": true,
+      "files": {
+        ".config/nextest.toml": "d793e296952c607ec2136a41dc05ecd780437b2a6fcd8cc669386c5c5b4984cb"
+      }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "command": "reference-check.json",
+  "source_tree_sha256": "996e87f5a4aad77fc906691dc1d0ce466eb769767af87c32bd83b849cc593016",
+  "errors": [
+    {
+      "rendered": "error: couldn't read `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/../../../../tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs`: No such file or directory (os error 2)\n  --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs:78:1\n   |\n78 | mod raw_boundary_contract_tests;\n   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n",
+      "$message_type": "diagnostic",
+      "children": [],
+      "level": "error",
+      "message": "couldn't read `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/../../../../tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs`: No such file or directory (os error 2)",
+      "spans": [
+        {
+          "byte_end": 4130,
+          "byte_start": 4098,
+          "column_end": 33,
+          "column_start": 1,
+          "expansion": null,
+          "file_name": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs",
+          "is_primary": true,
+          "label": null,
+          "line_end": 78,
+          "line_start": 78,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 33,
+              "highlight_start": 1,
+              "text": "mod raw_boundary_contract_tests;"
+            }
+          ]
+        }
+      ],
+      "code": null
+    }
+  ],
+  "stderr": "warning: Git tree '/workdir/openWEPP' is dirty\n    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915/crates/openwepp-hillslope-orchestrator)\nerror: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error\nwarning: build failed, waiting for other jobs to finish...\n",
+  "required_include": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs",
+  "include_custody": {
+    "current-context-capture-20260913": {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs",
+      "exists": true,
+      "sha256": "5bd1ed07e3712bb1bc023de5eb1a47677806fc0a7d9d197dea420f4d42d4a47e",
+      "tests_directory_exists": true
+    },
+    "snowfree-recorder-candidate-20260915": {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs",
+      "exists": true,
+      "sha256": "5bd1ed07e3712bb1bc023de5eb1a47677806fc0a7d9d197dea420f4d42d4a47e",
+      "tests_directory_exists": true
+    },
+    "recorder-fixture-reference-20260915": {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915/tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs",
+      "exists": false,
+      "sha256": null,
+      "tests_directory_exists": false
+    }
+  },
+  "responsibility": "Root prepared reference with crates and root build/config files but omitted tests; failed reference remains unchanged.",
+  "failure_class": "ordinary diagnostic harness/source-copy integration failure, not a physics/capture failure",
+  "failed_corrections": 27,
+  "failure_ceiling": 27,
+  "hard_stop_utc": "2026-09-15T05:54:04.853018+00:00",
+  "comparison_status": "NOT RUN"
+}
