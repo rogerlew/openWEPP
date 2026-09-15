@@ -1,0 +1,16 @@
+{
+  "status": "INCOMPLETE/HOLD",
+  "stop_utc": "2026-09-15T15:20:47.772697+00:00",
+  "recorded_utc": "2026-09-15T15:22:04.947039+00:00",
+  "stop_reason": "snow_stage3_v11_adaptive_production_tests.rs:216 assert!(!production.2.is_empty())",
+  "failed_corrections": 30,
+  "failure_ceiling": 31,
+  "carried_seconds": 35250.490919,
+  "continuation_seconds_so_far": 194.947039,
+  "cumulative_seconds_so_far": 35445.437958,
+  "ceiling_seconds": 36117.485508,
+  "wait_deductions_seconds": 0,
+  "capture": "1/1 exhausted",
+  "witness": "1/1 exhausted",
+  "probe": "0/1 RESERVED AND PROHIBITED"
+}

@@ -1,0 +1,15 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/recorder-fixture-reference-20260915-6aee6103e399
+  scratch: /tmp/openwepp-roger-recorder-fixture-reference-20260915-6aee6103e399
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_characterization_payload ... FAILED
+
+failures:
+
+failures:
+    v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_characterization_payload
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1469 filtered out; finished in 9.97s
+

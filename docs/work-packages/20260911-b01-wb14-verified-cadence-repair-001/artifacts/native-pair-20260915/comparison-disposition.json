@@ -1,0 +1,38 @@
+{
+  "evidence_class": "Ran: one reference test invocation; static extraction from complete original stdout/stderr",
+  "reference_exit": 100,
+  "reference_test_count": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 1469,
+  "reference_start_utc": "2026-09-15T15:20:25.940250+00:00",
+  "reference_end_utc": "2026-09-15T15:20:47.772697+00:00",
+  "reference_test_seconds": 9.98,
+  "first_failure": "snow_stage3_v11_adaptive_production_tests.rs:216 assert!(!production.2.is_empty())",
+  "operand_type": "production.2: Vec<TerminalBatchProductionAuditV2>",
+  "secondary_failure": "test thread join at line431 propagates original panic",
+  "comparison_payload_count": 0,
+  "diagnostic_payload_count": 0,
+  "candidate": "NOT RUN: first new test failure hard stop",
+  "full_comparison": "NOT POSSIBLE: reference emitted no payload; no candidate invocation",
+  "native_tick": "NOT OBSERVED in emitted payload; historical360-versus540 remains unresolved",
+  "run_allowance": {
+    "reference_invocations": 1,
+    "candidate_invocations": 0,
+    "retries": 0
+  },
+  "failed_corrections": 30,
+  "failure_ceiling": 31,
+  "stop_rule": "First new test failure stops independently of remaining cycle/time balance",
+  "original_regression_recorder_controls_format_lint": "NOT RUN in this continuation",
+  "logs": {
+    "reference-native.stdout": {
+      "bytes": 627,
+      "sha256": "daabbb27b7b7eda8fa3eecc44614fa56a4b2b7ad0ed603330bd02862dbba0c92"
+    },
+    "reference-native.stderr": {
+      "bytes": 5344,
+      "sha256": "65f658ab58fa4db05ec1409eb29999d423f0e13c6d2689d50244fecd33c7c4c3"
+    }
+  }
+}

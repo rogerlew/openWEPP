@@ -1,0 +1,11 @@
+{
+  "source_and_support_checks": {
+    "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915": true,
+    "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915/support": true,
+    "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915": true,
+    "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/support": true
+  },
+  "symlinks_matrix_config_unchanged": true,
+  "input_custody": "../reference-input-recovery-20260915/input-custody.json",
+  "input_custody_sha256": "2e9e27eeb0a355672e7a74c8fd645a2ce95182ae88bf78741bc8f98ecac9b082"
+}
