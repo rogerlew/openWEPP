@@ -1,0 +1,17 @@
+{
+  "status": "INCOMPLETE/HOLD",
+  "stop_utc": "2026-09-15T19:52:10.944237+00:00",
+  "stop_reason": "First new behavioral failure; remaining cycle/time allowance does not authorize continuation",
+  "failed_corrections": 34,
+  "failure_ceiling": 35,
+  "carried_seconds": 36423.256131,
+  "continuation_seconds_so_far": 216.744999,
+  "cumulative_seconds_so_far": 36640.001130000004,
+  "cumulative_ceiling_seconds": 39618.746904,
+  "wait_deductions_seconds": 0,
+  "recorder_control_invocations": 1,
+  "quality_commands": 0,
+  "capture": "1/1 exhausted",
+  "witness": "1/1 exhausted",
+  "probe": "0/1 RESERVED AND PROHIBITED"
+}

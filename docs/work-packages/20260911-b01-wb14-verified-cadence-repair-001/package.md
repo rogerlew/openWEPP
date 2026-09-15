@@ -1,15 +1,123 @@
 # B01 WB14 verified parent cadence repair
 
-**Status: INCOMPLETE / HOLD.** The original regression now fails at the same
-preliminary direct-segment operation on both the immutable producing cut and the
-candidate. The earlier corrected native pair remains a limited PASS. Execution
-stopped at **33 / 33 unsuccessful verifications/corrections**; recorder controls
-and lint remain unrun. See B01-CONT-028 below for the attribution and stop reason.
+**Status: INCOMPLETE / HOLD.** The combined recorder-control test failed with
+`canonical covered dependent-output instability`. Execution stopped on that new
+behavioral failure at **34 / 35 unsuccessful verifications/corrections**.
+Formatting and lint remain unrun in this continuation. The original regression
+remains FAIL on baseline and candidate; the earlier native pair remains a limited
+PASS. See the recorder-controls continuation below.
 
 Authentic capture and witness allowances are exhausted (**1 / 1** each).
 The authentic probe remains **0 / 1, RESERVED AND PROHIBITED**. Cadence is suspended.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Recorder-controls continuation adopted — 2026-09-15
+
+The owner directly authorized the retained combined recorder-control test once,
+followed by the selected quality checks if it passes. The failure ceiling rises
+from **33 to 35**; no active time is added. No source edits or retries are allowed.
+Any new behavioral failure stops execution. Reuse the accepted baseline attribution,
+native pair and the same independent reviewers. The original regression remains
+**FAIL**, and recorder preparation remains **HOLD** regardless of this limited result.
+
+### Frozen execution plan
+
+Run the current candidate's exact test:
+
+```text
+v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_covered_and_snow_free_producers_record_phase_correct_operands_without_model_effect
+```
+
+Use the retained Nix wrapper, candidate manifest and distinct existing target,
+locked features `persisted-restart-v1,restart-authority-evidence`, and
+`--no-tests fail --retries 0 --no-capture`. This one combined invocation retains
+the covered and first-snow-free producer controls, disabled/enabled/non-target/
+forced-error modes, wrong-phase and omission guards, independent operands and
+complete model/custody comparisons. Do not rerun the original regression, native
+pair or accepted selector test.
+
+After a pass, check formatting of the affected candidate Rust files without
+mutation. Run the already-selected owning-crate and separate-runner Clippy commands
+with their original all-targets, locked feature and warnings-denied flags. Reuse
+unchanged baseline lint logs and the existing complete structured-diagnostic
+comparison. Historical/current lint failures remain FAIL; new or unattributable
+diagnostics or incomplete target coverage prevent quality acceptance. No source
+cleanup, suppression or command narrowing is authorized.
+
+[Continuity](artifacts/recorder-controls-20260915/continuity.json) binds the unchanged
+candidate tree `3f2e7f08ed121836b9854539ce9f3f1fc2dd6eae073fd14baaf83d4a71bb8aa5`
+and cumulative patch `d24b0b28bb90e263501bef1c0c935cf8859b068d35efe450a530e7000bc61c66`.
+Restored input custody and prior accepted evidence remain separately bound.
+
+Carry **36,423.256131 / 39,618.746904 charged seconds** and **33 failures**.
+The remaining balance is **3,195.490773 seconds**. Conservative start:
+**19:50:30 UTC**; deadline: **20:43:45.490773 UTC** on 2026-09-15.
+All work/review/preservation counts, with no wait deductions and a 90-second
+preservation reserve. [Ledger](artifacts/recorder-controls-20260915/ledger-start.json).
+Capture/witness remain **1 / 1 exhausted**; probe **0 / 1 RESERVED AND PROHIBITED**.
+No authentic acquisition, reader or cadence run is released.
+
+### Recorder-control result and disposition
+
+**Ran:** the [sole combined recorder-control invocation](artifacts/recorder-controls-20260915/recorder-controls.json)
+ran from **19:51:48.913400 to 19:52:10.944237 UTC on 2026-09-15**.
+It returned **FAIL, exit 100**: one test executed, zero passed, one failed,
+1,471 skipped, and no retries. The test took **10.322 seconds**. Source was
+unchanged during the command.
+
+The [complete stderr](artifacts/recorder-controls-20260915/recorder-controls.stderr)
+records the first panic at `v9_real_consumer_shadow_wb14_tests.rs:2259`, while
+unwrapping the synchronized covered parent cadence result:
+
+```text
+AdaptiveTrial {
+    phase: "covered direct",
+    start_ns: 0,
+    end_ns: 60000000000,
+    duration_ns: 60000000000,
+    source: V11(Executor(AdaptiveRefinement(
+        "canonical covered dependent-output instability"
+    )))
+}
+```
+
+The shared fixture thread join at `snow_stage3_v11_adaptive_production_tests.rs:146`
+propagated the panic. The failing trial spans **0 to 60 seconds**. This is a new
+behavioral failure, distinct from the previously attributed preliminary
+`canonical covered evaluation budget` failure. The log does not directly identify
+the active recorder submode; no separate submode success or full model-isolation
+claim is inferred from the aggregate failed test.
+
+**Hard stop at 19:52:10.944237 UTC:** the new failure consumes verification
+**34 / 35**. The first-behavioral-failure rule stops work despite the remaining
+cycle and time balance. No retry, source correction or quality command followed.
+[Control result](artifacts/recorder-controls-20260915/control-result.json).
+
+| Requirement | Reached result |
+| --- | --- |
+| Combined recorder-control test | FAIL; complete control-matrix acceptance is not established |
+| Affected formatting | NOT RUN in this continuation |
+| Matched owning-crate lint | NOT RUN in this continuation |
+| Matched separate-runner lint | NOT RUN in this continuation |
+| Original regression | Retained FAIL on baseline and candidate; neither rerun |
+| Disabled native pair | Reused limited PASS; not rerun |
+
+The same independent [correctness](artifacts/recorder-controls-20260915/correctness-review.md)
+and [QA](artifacts/recorder-controls-20260915/qa-review.md) reviewers assess the
+actual failure and remaining acceptance. Recorder preparation stays **HOLD**.
+The shared baseline attribution and accepted native pair do not excuse this
+new failure. No source, fixture, assertion, solver budget or tolerance changed.
+
+Current-context acquisition, native restoration, scientific/conservation/restart
+qualification and cadence remain incomplete. The manual-projection and
+dynamic-hydrology oracle limitations, outer 4/22 versus nested 0/0 defect and
+original E008 remain unchanged. No authentic run is released.
+
+The [stop ledger](artifacts/recorder-controls-20260915/stop.json) is a
+pre-publication lower bound. Final charged consumption, including review,
+preservation and publication, is retained at
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/recorder-controls-publication.json`.
 
 ## Legacy baseline attribution adopted — B01-CONT-028
 

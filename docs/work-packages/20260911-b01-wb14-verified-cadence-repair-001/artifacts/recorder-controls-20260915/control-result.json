@@ -1,0 +1,32 @@
+{
+  "status": "FAIL / INCOMPLETE",
+  "command": "recorder-controls.json",
+  "exit": 100,
+  "selected": 1,
+  "executed": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 1471,
+  "automatic_retries": 0,
+  "test_seconds": 10.322,
+  "first_panic": {
+    "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs",
+    "line": 2259,
+    "context": "synchronized covered parent cadence",
+    "typed_error": "AdaptiveTrial { phase: \"covered direct\", start_ns: 0, end_ns: 60000000000, duration_ns: 60000000000, source: V11(Executor(AdaptiveRefinement(\"canonical covered dependent-output instability\"))) }"
+  },
+  "secondary_join": {
+    "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+    "line": 146
+  },
+  "active_recorder_submode": "NOT DIRECTLY REPORTED; shared fixture/helper used across modes",
+  "control_matrix_acceptance": "NOT ESTABLISHED by failed combined test",
+  "comparison_to_legacy_failure": "Different typed error/operation: dependent-output instability in adaptive covered trial versus budget error at preliminary direct segment",
+  "source_unchanged": true,
+  "failed_corrections": 34,
+  "failure_ceiling": 35,
+  "stop_reason": "First new behavioral failure; remaining cycle/time allowance does not authorize continuation",
+  "format_owning_runner_lint": "NOT RUN in this continuation",
+  "original_regression": "Retained FAIL on immutable baseline and candidate",
+  "accepted_native_pair": "Reused limited PASS, not rerun"
+}

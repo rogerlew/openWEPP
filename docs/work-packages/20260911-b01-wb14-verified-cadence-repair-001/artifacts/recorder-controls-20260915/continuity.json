@@ -1,0 +1,10 @@
+{
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "source_tree_sha256": "3f2e7f08ed121836b9854539ce9f3f1fc2dd6eae073fd14baaf83d4a71bb8aa5",
+  "patch_sha256": "d24b0b28bb90e263501bef1c0c935cf8859b068d35efe450a530e7000bc61c66",
+  "source_matches_accepted_receipt": true,
+  "support_custody_sha256": "2e9e27eeb0a355672e7a74c8fd645a2ce95182ae88bf78741bc8f98ecac9b082",
+  "support_evidence_reused": "../legacy-baseline-attribution-20260915/continuity.json and preservation-checks.json; no intervening support writes",
+  "accepted_native_pair_reused": "../single-lane-audit-20260915/comparison.json",
+  "baseline_attribution_reused": "../legacy-baseline-attribution-20260915/attribution.json"
+}

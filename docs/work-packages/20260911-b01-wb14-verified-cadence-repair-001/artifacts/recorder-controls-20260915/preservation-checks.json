@@ -1,0 +1,9 @@
+{
+  "candidate_source_unchanged": true,
+  "reference_source_unchanged": true,
+  "baseline_source_unchanged": true,
+  "output_hashes": {
+    "recorder-controls.stdout": "d7dcdadadb360b45b40e241d360dc9d6c619c3e70f6e0c2d37bedfcd6ea6ee58",
+    "recorder-controls.stderr": "f5c39f9194ba912b525689901aba6f848bb280481dccf8ce4246a2c65f38453e"
+  }
+}

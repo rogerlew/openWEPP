@@ -1,0 +1,2782 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs
+@@ -46,14 +46,23 @@
+         // The V1 clock projection is not a second physical inventory and omits
+         // native ice. Observe the actual V2 owner separately without changing
+         // the canonical clock owner set or inventing a digest member.
+-        let native_surface_owner_canonical_json = consumer.frozen_litter_v3_resident()
++        let native_surface_owner_canonical_json = consumer
++            .frozen_litter_v3_resident()
+             .map(|physical| {
+                 let configuration = physical.surface_configuration();
+-                let bytes = physical.surface_owner().canonical_bytes(
+-                    configuration.parent(), Some(configuration))
+-                    .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("cycle native surface canonical bytes"))?;
+-                String::from_utf8(bytes).map_err(|_| DirectSnowStage3V11AttachmentError::Identity("cycle native surface UTF-8"))
+-            }).transpose()?;
++                let bytes = physical
++                    .surface_owner()
++                    .canonical_bytes(configuration.parent(), Some(configuration))
++                    .map_err(|_| {
++                        DirectSnowStage3V11AttachmentError::Identity(
++                            "cycle native surface canonical bytes",
++                        )
++                    })?;
++                String::from_utf8(bytes).map_err(|_| {
++                    DirectSnowStage3V11AttachmentError::Identity("cycle native surface UTF-8")
++                })
++            })
++            .transpose()?;
+         let clock_owners = clock
+             .owners()
+             .iter()
+@@ -2210,6 +2219,13 @@
+                     forcing_receipt,
+                     ending_snow_owner_bytes,
+                     native_inactive_wb14_prefix,
++                    crate::snow_stage3_v11_current_context_capture::SnowFreePreChildHistoryV1 {
++                        owner_joins: &owner_joins,
++                        event_groups: &event_groups,
++                        current_stage3: &stage3,
++                        current_snow_enthalpy_material_owner: snow_enthalpy_material_owner.as_ref(),
++                        pending_terminal_parcels: &pending_terminal_parcels,
++                    },
+                     deferred_native_v2_soil_custody.clone(),
+                 )?;
+                 // A deferred soil candidate is custody, not state. Keep it
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs
+@@ -33,6 +33,7 @@
+     forcing_receipt: Digest32,
+     ending_snow_owner_bytes: Vec<u8>,
+     native_inactive_wb14_prefix: Option<crate::direct_runtime::ValidatedNativeInactiveWb14PrefixV1>,
++    recorder_history: crate::snow_stage3_v11_current_context_capture::SnowFreePreChildHistoryV1<'_>,
+     deferred_native_v2_soil_custody: Option<
+         crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1,
+     >,
+@@ -49,6 +50,7 @@
+         forcing_receipt,
+         ending_snow_owner_bytes,
+         native_inactive_wb14_prefix,
++        recorder_history,
+         deferred_native_v2_soil_custody,
+         false,
+     )?;
+@@ -1426,8 +1428,14 @@
+ 
+ impl PendingParentPhysicalPostureV1 {
+     pub(crate) fn expected_record_source(&self, predecessor: u128, source: u128) -> Option<u128> {
+-        if predecessor.checked_add(1) != Some(source) { return None; }
+-        Some(if self.retained_predecessor { predecessor } else { source })
++        if predecessor.checked_add(1) != Some(source) {
++            return None;
++        }
++        Some(if self.retained_predecessor {
++            predecessor
++        } else {
++            source
++        })
+     }
+ }
+ 
+@@ -1442,17 +1450,31 @@
+     // The consumer is not its own physical authority: join the exact active
+     // BGC and composite LSE protocols to the independent live clock owners.
+     let consumer_owners = consumer.canonical_owner_state_bytes()?;
+-    let bgc = consumer_owners.get("bgc").ok_or(DirectSnowStage3V11AttachmentError::Identity(
+-        "pending parent consumer BGC owner missing"))?;
+-    let lse = consumer.canonical_v11_lse_owner_bytes()
++    let bgc = consumer_owners
++        .get("bgc")
++        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
++            "pending parent consumer BGC owner missing",
++        ))?;
++    let lse = consumer
++        .canonical_v11_lse_owner_bytes()
+         .map_err(crate::v9_real_consumer_shadow::DirectV11RealConsumerError::Runtime)?;
+-    for (owner_id, bytes) in [("bgc", bgc.as_slice()), ("land_surface_energy", lse.as_slice())] {
+-        let mut owners = clock.owners().iter().filter(|owner| owner.owner_id() == owner_id);
+-        let owner = owners.next().ok_or(DirectSnowStage3V11AttachmentError::Identity(
+-            "pending parent physical clock owner missing"))?;
++    for (owner_id, bytes) in [
++        ("bgc", bgc.as_slice()),
++        ("land_surface_energy", lse.as_slice()),
++    ] {
++        let mut owners = clock
++            .owners()
++            .iter()
++            .filter(|owner| owner.owner_id() == owner_id);
++        let owner = owners
++            .next()
++            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
++                "pending parent physical clock owner missing",
++            ))?;
+         if owners.next().is_some() || owner.state_bytes() != bytes {
+             return Err(DirectSnowStage3V11AttachmentError::Identity(
+-                "pending parent consumer physical clock owner mismatch"));
++                "pending parent consumer physical clock owner mismatch",
++            ));
+         }
+     }
+     endpoint.validate()?;
+@@ -1464,32 +1486,56 @@
+         || endpoint.owner_join.parent_transaction_sha256 != clock.parent_transaction_id().digest()
+         || endpoint.wb14_ofe_topology != context.surface_liquid_configuration.ofe_topology
+     {
+-        return Err(DirectSnowStage3V11AttachmentError::Identity("pending parent physical posture endpoint"));
++        return Err(DirectSnowStage3V11AttachmentError::Identity(
++            "pending parent physical posture endpoint",
++        ));
+     }
+     let inactive = crate::direct_runtime::stage3_covered_native_inactive_child_custody_binding(
+-        &endpoint.wb14_child_replay_bytes, &context.surface_liquid_configuration.ofe_topology,
+-    ).map_err(|_| DirectSnowStage3V11AttachmentError::Identity("pending parent physical posture replay"))?;
++        &endpoint.wb14_child_replay_bytes,
++        &context.surface_liquid_configuration.ofe_topology,
++    )
++    .map_err(|_| {
++        DirectSnowStage3V11AttachmentError::Identity("pending parent physical posture replay")
++    })?;
+     // validate() above authenticates either canonical inactive custody or the
+     // actual WB14 child and parent replay. Require the parent discriminator.
+-    if inactive.is_none() && (endpoint.wb14_parent_replay_bytes.is_none()
+-        || endpoint.wb14_parent_receipt_set_sha256.is_none()) {
+-        return Err(DirectSnowStage3V11AttachmentError::Identity("pending parent advanced physical replay missing"));
++    if inactive.is_none()
++        && (endpoint.wb14_parent_replay_bytes.is_none()
++            || endpoint.wb14_parent_receipt_set_sha256.is_none())
++    {
++        return Err(DirectSnowStage3V11AttachmentError::Identity(
++            "pending parent advanced physical replay missing",
++        ));
+     }
+     let publications = consumer.accepted_publication_supports_for_day(day_index)?;
+-    let mut matches = publications.iter().copied().filter(|p|
+-        p.parent_transaction_id() == clock.parent_transaction_id() && p.support() == endpoint.support);
+-    let publication = matches.next().ok_or(DirectSnowStage3V11AttachmentError::Identity(
+-        "pending parent physical publication missing"))?;
+-    if matches.next().is_some() || publication.ending_complete_owner_set_sha256()
+-        != endpoint.owner_join.ending_complete_owner_set_sha256 {
+-        return Err(DirectSnowStage3V11AttachmentError::Identity("pending parent physical publication join"));
++    let mut matches = publications.iter().copied().filter(|p| {
++        p.parent_transaction_id() == clock.parent_transaction_id()
++            && p.support() == endpoint.support
++    });
++    let publication = matches
++        .next()
++        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
++            "pending parent physical publication missing",
++        ))?;
++    if matches.next().is_some()
++        || publication.ending_complete_owner_set_sha256()
++            != endpoint.owner_join.ending_complete_owner_set_sha256
++    {
++        return Err(DirectSnowStage3V11AttachmentError::Identity(
++            "pending parent physical publication join",
++        ));
+     }
+     let chain = consumer.accepted_publication_ordered_owner_chain(publication)?;
+     if !chain.contains(&endpoint.effective_ending_complete_owner_set_sha256())
+-        || chain.last() != Some(&complete_owner_set_digest(clock.owners())?) {
+-        return Err(DirectSnowStage3V11AttachmentError::Identity("pending parent physical publication event chain"));
+-    }
+-    Ok(PendingParentPhysicalPostureV1 { retained_predecessor: inactive.is_some() })
++        || chain.last() != Some(&complete_owner_set_digest(clock.owners())?)
++    {
++        return Err(DirectSnowStage3V11AttachmentError::Identity(
++            "pending parent physical publication event chain",
++        ));
++    }
++    Ok(PendingParentPhysicalPostureV1 {
++        retained_predecessor: inactive.is_some(),
++    })
+ }
+ 
+ #[cfg(test)]
+@@ -1498,9 +1544,16 @@
+     #[test]
+     fn pending_parent_physical_posture_requires_exact_successor() {
+         for retained_predecessor in [false, true] {
+-            let posture = PendingParentPhysicalPostureV1 { retained_predecessor };
+-            assert_eq!(posture.expected_record_source(40, 41), Some(if retained_predecessor {40} else {41}));
+-            for invalid in [0, 39, 40, 42] { assert_eq!(posture.expected_record_source(40, invalid), None); }
++            let posture = PendingParentPhysicalPostureV1 {
++                retained_predecessor,
++            };
++            assert_eq!(
++                posture.expected_record_source(40, 41),
++                Some(if retained_predecessor { 40 } else { 41 })
++            );
++            for invalid in [0, 39, 40, 42] {
++                assert_eq!(posture.expected_record_source(40, invalid), None);
++            }
+             assert_eq!(posture.expected_record_source(u128::MAX, 0), None);
+         }
+     }
+@@ -1633,8 +1686,11 @@
+         ));
+     }
+ 
+-    let endpoint = owner_joins.last().ok_or(DirectSnowStage3V11AttachmentError::Identity(
+-        "pending parent physical endpoint missing"))?;
++    let endpoint = owner_joins
++        .last()
++        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
++            "pending parent physical endpoint missing",
++        ))?;
+     let physical_posture = authenticate_pending_parent_physical_posture_v1(
+         context, prepared, consumer, clock, day_index, endpoint,
+     )?;
+@@ -1646,8 +1702,12 @@
+             let poisoned = consumer.pending_parent_physical_bgc_poison_for_evidence()?;
+             if authenticate_pending_parent_physical_posture_v1(
+                 context, prepared, &poisoned, clock, day_index, endpoint,
+-            ).is_ok() {
+-                return Err(DirectSnowStage3V11AttachmentError::Identity("physical BGC poison was admitted"));
++            )
++            .is_ok()
++            {
++                return Err(DirectSnowStage3V11AttachmentError::Identity(
++                    "physical BGC poison was admitted",
++                ));
+             }
+             let mut checks = 1;
+             for poison_kind in 0..4 {
+@@ -1661,17 +1721,25 @@
+                 // Singleton topology reversal is not a poison; require the
+                 // actual mixed topology for this explicit evidence harness.
+                 if poisoned == *endpoint {
+-                    return Err(DirectSnowStage3V11AttachmentError::Identity("pending parent poison was vacuous"));
++                    return Err(DirectSnowStage3V11AttachmentError::Identity(
++                        "pending parent poison was vacuous",
++                    ));
+                 }
+                 if authenticate_pending_parent_physical_posture_v1(
+                     context, prepared, consumer, clock, day_index, &poisoned,
+-                ).is_ok() {
+-                    return Err(DirectSnowStage3V11AttachmentError::Identity("pending parent replay poison was admitted"));
++                )
++                .is_ok()
++                {
++                    return Err(DirectSnowStage3V11AttachmentError::Identity(
++                        "pending parent replay poison was admitted",
++                    ));
+                 }
+                 checks += 1;
+             }
+             if consumer.canonical_owner_state_bytes()? != original {
+-                return Err(DirectSnowStage3V11AttachmentError::Identity("pending parent poison mutated original"));
++                return Err(DirectSnowStage3V11AttachmentError::Identity(
++                    "pending parent poison mutated original",
++                ));
+             }
+             crate::snow_accuracy_observer::record(serde_json::json!({
+                 "kind":"pending_parent_actual_poison_checks", "passed":checks,
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_frontend.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_frontend.rs
+@@ -1,3 +1,24 @@
++#[cfg(test)]
++std::thread_local! {
++    static SNOW_FREE_SUCCESSOR_FIXTURE_AUDIT_V1:
++        std::cell::RefCell<Option<Vec<Stage3SnowFreeSuccessorReceiptV1>>> =
++        const { std::cell::RefCell::new(None) };
++}
++
++#[cfg(test)]
++pub(crate) fn begin_snow_free_successor_fixture_audit_v1() {
++    SNOW_FREE_SUCCESSOR_FIXTURE_AUDIT_V1.with(|audit| {
++        *audit.borrow_mut() = Some(Vec::new());
++    });
++}
++
++#[cfg(test)]
++pub(crate) fn take_snow_free_successor_fixture_audit_v1() -> Vec<Stage3SnowFreeSuccessorReceiptV1> {
++    SNOW_FREE_SUCCESSOR_FIXTURE_AUDIT_V1
++        .with(|audit| audit.borrow_mut().take())
++        .unwrap_or_default()
++}
++
+ #[cfg(test)]
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ pub(crate) struct AdaptiveControllerTestPolicyV1 {
+@@ -539,7 +560,7 @@
+         groups,
+         parcels,
+         _adaptive_support_receipt,
+-        _snow_free_successor_receipts,
++        snow_free_successor_receipts,
+     )) = execute_covered_real_v11_parent_with_evidence::<crate::hydrology::NoEvidence>(
+         context,
+         beginning_parent,
+@@ -569,6 +590,11 @@
+             receipts.push(_adaptive_support_receipt);
+         }
+     });
++    SNOW_FREE_SUCCESSOR_FIXTURE_AUDIT_V1.with(|audit| {
++        if audit.borrow().is_some() {
++            *audit.borrow_mut() = Some(snow_free_successor_receipts);
++        }
++    });
+     Ok((
+         parent, consumer, clock, finalized, stage3, receipts, groups, parcels,
+     ))
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
+@@ -1,13 +1,13 @@
++use crate::STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+ use crate::snow_stage3_v11_attachment::{
++    AcceptedPublicationCaptureAuditV1, AcceptedPublicationCaptureRegimeV1,
++    AdaptiveControllerTestPolicyV1, Stage3AdaptiveStepDecisionV1,
+     begin_adaptive_comparison_test_audit, begin_adaptive_controller_test_audit,
+     begin_adaptive_performance_test_audit, begin_terminal_batch_production_audit,
+     take_accepted_publication_capture_audit, take_adaptive_comparison_test_audit,
+     take_adaptive_controller_test_audit, take_adaptive_performance_test_audit,
+-    take_terminal_batch_production_audit, AcceptedPublicationCaptureAuditV1,
+-    AcceptedPublicationCaptureRegimeV1, AdaptiveControllerTestPolicyV1,
+-    Stage3AdaptiveStepDecisionV1,
++    take_terminal_batch_production_audit,
+ };
+-use crate::STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+ 
+ const MINIMUM_STEP_NS: u128 = STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+ 
+@@ -39,8 +39,8 @@
+     static CANONICAL_PARITY_CASE: std::cell::Cell<Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1>> = const { std::cell::Cell::new(None) };
+ }
+ 
+-pub(super) fn canonical_parity_case_requested(
+-) -> Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1> {
++pub(super) fn canonical_parity_case_requested()
++-> Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1> {
+     CANONICAL_PARITY_CASE.with(std::cell::Cell::get)
+ }
+ 
+@@ -62,8 +62,8 @@
+     FINAL_PHYSICAL_COMPARISON.with(|value| *value.borrow_mut() = Some(comparison));
+ }
+ 
+-fn take_final_physical_comparison(
+-) -> crate::v9_real_consumer_shadow::AdaptiveCompleteOwnerComparisonV1 {
++fn take_final_physical_comparison()
++-> crate::v9_real_consumer_shadow::AdaptiveCompleteOwnerComparisonV1 {
+     FINAL_PHYSICAL_COMPARISON
+         .with(|value| value.borrow_mut().take())
+         .expect("final complete-owner physical comparison")
+@@ -94,6 +94,305 @@
+         .expect("join adaptive production coverage")
+ }
+ 
++struct PreChildRecorderProductionOutcomeV1 {
++    production: AdaptiveProductionOutcomeV1,
++    fixture: Option<serde_json::Value>,
++}
++
++fn run_with_pre_child_recorder(
++    mode: crate::snow_stage3_v11_current_context_capture::PreChildRecorderTestModeV1,
++    snow_free_successor: bool,
++) -> (
++    PreChildRecorderProductionOutcomeV1,
++    crate::snow_stage3_v11_current_context_capture::PreChildRecorderTestAuditV1,
++) {
++    std::thread::Builder::new()
++        .name("adaptive-pre-child-recorder".to_owned())
++        .stack_size(64 * 1024 * 1024)
++        .spawn(move || {
++            use crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1 as Case;
++
++            CANONICAL_PARITY_CASE.with(|slot| slot.set(Some(Case::NativeMixedPhase)));
++            crate::snow_stage3_v11_current_context_capture::begin_pre_child_recorder_test_audit_v1(
++                mode,
++            );
++            let outcome = if snow_free_successor {
++                SHORT_SUPPORT_DURATION_NS.with(|value| value.set(1_800_000_000_000));
++                let native = run_native_mixed_phase_terminal_on_large_stack();
++                PreChildRecorderProductionOutcomeV1 {
++                    fixture: Some(native.fixture.canonical_comparison_payload()),
++                    production: native.production,
++                }
++            } else {
++                SHORT_SUPPORT_DURATION_NS.with(|value| value.set(60_000_000_000));
++                PreChildRecorderProductionOutcomeV1 {
++                    production: run_complete_owner_on_large_stack(
++                        0.02,
++                        None,
++                        None,
++                        false,
++                        AdaptiveControllerTestPolicyV1::default(),
++                        true,
++                    ),
++                    fixture: None,
++                }
++            };
++            let audit = crate::snow_stage3_v11_current_context_capture::
++                take_pre_child_recorder_test_audit_v1();
++            (outcome, audit)
++        })
++        .expect("spawn pre-child recorder production fixture")
++        .join()
++        .expect("join pre-child recorder production fixture")
++}
++
++fn assert_recorder_preserved_model_result(
++    expected: &PreChildRecorderProductionOutcomeV1,
++    actual: &PreChildRecorderProductionOutcomeV1,
++) {
++    assert_eq!(
++        expected.fixture, actual.fixture,
++        "recorder changed native fixture result"
++    );
++    let expected = &expected.production;
++    let actual = &actual.production;
++    assert_eq!(
++        serde_json::to_vec(&expected.0).expect("expected receipt bytes"),
++        serde_json::to_vec(&actual.0).expect("actual receipt bytes"),
++        "recorder changed adaptive receipt/proof work",
++    );
++    assert_eq!(expected.1, actual.1, "recorder changed physical supports");
++    assert_eq!(expected.2, actual.2, "recorder changed terminal result");
++    assert_eq!(
++        expected.4, actual.4,
++        "recorder changed complete owner state"
++    );
++    assert_eq!(
++        expected.6, actual.6,
++        "recorder changed comparison proof work"
++    );
++    let performance_topology =
++        |spans: &[crate::snow_stage3_v11_attachment::AdaptivePerformanceSpanV1]| {
++            spans
++                .iter()
++                .map(|span| (span.label, span.support_duration_ns))
++                .collect::<Vec<_>>()
++        };
++    assert_eq!(
++        performance_topology(&expected.5),
++        performance_topology(&actual.5),
++        "recorder changed controller evaluation topology",
++    );
++    let topology = |captures: &[AcceptedPublicationCaptureAuditV1]| {
++        captures
++            .iter()
++            .map(|capture| (capture.support, capture.regime))
++            .collect::<Vec<_>>()
++    };
++    assert_eq!(
++        topology(&expected.3),
++        topology(&actual.3),
++        "recorder changed publication topology",
++    );
++}
++
++type PreChildAuditV1 = crate::snow_stage3_v11_current_context_capture::PreChildRecorderTestAuditV1;
++
++fn assert_common_pre_child_row(row: &serde_json::Value, live: &serde_json::Value, phase: &str) {
++    assert_eq!(row["support"], live["support"]);
++    assert_eq!(
++        row["provisional_receipt_canonical_json"],
++        live["receipt_canonical_json"]
++    );
++    assert_eq!(row["coupled_binding"], live["binding"]);
++    assert_eq!(
++        row["provisional_constructor_inputs"]["forcing_receipt"],
++        live["forcing_receipt"]
++    );
++    for field in [
++        "parent_checkpoint_canonical_json",
++        "clock_complete_owner_canonical_bytes",
++        "parent_support",
++        "accepted_until",
++        "beginning_stage3_canonical_json",
++        "complete_owner_canonical_bytes",
++        "prepared_support_constructor_operands",
++        "native_consumer_constructor_operands",
++        "beginning_snow_enthalpy_material_owner",
++        "constraint_reduction_canonical_json",
++        "complete_owner_ledger_canonical_json",
++        "provider_cursor_canonical_json",
++        "native_lane_map_constructor_operands",
++        "native_soil_v2_constructor_operands",
++        "native_hydrology_constructor_inputs",
++        "surface_liquid_configuration_canonical_json",
++        "vegetation_configuration_canonical_json",
++        "lse_configuration_canonical_json",
++        "terminal_parcels_produced_unconsumed_canonical_json",
++    ] {
++        assert_eq!(row[field], live[field], "{phase} {field}");
++    }
++}
++
++fn assert_actual_covered_recorder_controls() {
++    use crate::snow_stage3_v11_current_context_capture::PreChildRecorderTestModeV1 as Mode;
++    let (covered_disabled_result, covered_disabled) =
++        run_with_pre_child_recorder(Mode::Disabled, false);
++    assert!(covered_disabled.live_inputs.is_empty() && covered_disabled.recorded_rows.is_empty());
++    let (covered_enabled_result, covered) =
++        run_with_pre_child_recorder(Mode::EnabledCovered, false);
++    let (covered_failure_result, covered_failure) =
++        run_with_pre_child_recorder(Mode::ForcedCoveredCaptureFailure, false);
++    assert_recorder_preserved_model_result(&covered_disabled_result, &covered_enabled_result);
++    assert_recorder_preserved_model_result(&covered_disabled_result, &covered_failure_result);
++    assert_eq!(
++        covered.live_inputs.len(),
++        1,
++        "covered live producer selection"
++    );
++    assert_eq!(covered.recorded_rows.len(), 1, "covered recorder row");
++    let covered_live = &covered.live_inputs[0];
++    let covered_row = &covered.recorded_rows[0];
++    assert_eq!(covered_row["capture_phase"], "covered");
++    assert_eq!(
++        covered_row["provisional_constructor_inputs"]["constraint_source_owner_id"],
++        "v11-snow-covered-real-consumer"
++    );
++    assert!(covered_row["prepared_support_constructor_operands"]["covered_interval"].is_object());
++    assert_common_pre_child_row(covered_row, covered_live, "covered");
++    assert_eq!(covered_failure.live_inputs.len(), 1);
++    assert_eq!(covered_failure.recorded_rows.len(), 1);
++    assert_eq!(
++        covered_failure.recorded_rows[0]["kind"],
++        "b01_wb14_pre_child_current_context_capture_error_v1"
++    );
++    assert_eq!(covered_failure.recorded_rows[0]["capture_phase"], "covered");
++}
++
++fn assert_snow_free_enabled_row(enabled: &PreChildAuditV1) {
++    let live = &enabled.live_inputs[0];
++    let row = &enabled.recorded_rows[0];
++    assert_eq!(
++        row["kind"],
++        "b01_wb14_snow_free_pre_child_current_context_v1"
++    );
++    assert_eq!(row["capture_phase"], "snow_free");
++    assert_eq!(
++        row["provisional_constructor_inputs"]["constraint_source_owner_id"],
++        "v11-real-consumer"
++    );
++    assert!(row["prepared_support_constructor_operands"]["covered_projection"].is_null());
++    assert_common_pre_child_row(row, live, "snow-free");
++    for field in [
++        "ordered_owner_joins",
++        "ordered_owner_join_support_liquid_custody_v2",
++        "ordered_event_groups",
++        "ordered_event_group_terminal_liquid_custody_v2",
++        "validated_native_inactive_wb14_prefix",
++        "current_stage3",
++        "current_snow_enthalpy_material_owner",
++        "pending_terminal_parcels",
++        "ending_snow_owner_canonical_bytes",
++        "deferred_native_v2_soil_custody",
++    ] {
++        assert_eq!(
++            row["phase_diagnostics"][field], live["phase_live"][field],
++            "{field}"
++        );
++    }
++    assert_eq!(
++        row["phase_diagnostics"]["prefix_validation_parent_support"],
++        live["parent_support"]
++    );
++    assert_eq!(
++        row["phase_diagnostics"]["prefix_validation_surface_configuration_canonical_json"],
++        live["surface_liquid_configuration_canonical_json"]
++    );
++    assert!(row["phase_diagnostics"]["validated_native_inactive_wb14_prefix"].is_object());
++    assert!(
++        row["phase_diagnostics"]["ordered_owner_joins"]
++            .as_array()
++            .is_some_and(|rows| !rows.is_empty())
++    );
++    assert!(
++        row["phase_diagnostics"]["ordered_event_groups"]
++            .as_array()
++            .is_some_and(|rows| !rows.is_empty())
++    );
++}
++
++fn assert_actual_snow_free_recorder_controls(
++    non_target_result: &PreChildRecorderProductionOutcomeV1,
++) {
++    use crate::snow_stage3_v11_current_context_capture::PreChildRecorderTestModeV1 as Mode;
++    let (disabled_result, disabled) = run_with_pre_child_recorder(Mode::Disabled, true);
++    assert!(disabled.live_inputs.is_empty() && disabled.recorded_rows.is_empty());
++    assert_recorder_preserved_model_result(&disabled_result, non_target_result);
++    let (enabled_result, enabled) = run_with_pre_child_recorder(Mode::EnabledSnowFree, true);
++    let (failure_result, failure) =
++        run_with_pre_child_recorder(Mode::ForcedSnowFreeCaptureFailure, true);
++    let (wrong_phase_result, wrong_phase) =
++        run_with_pre_child_recorder(Mode::ForcedSnowFreeWrongPhaseFailure, true);
++    let (omission_result, omission) =
++        run_with_pre_child_recorder(Mode::ForcedSnowFreeRequiredOmissionFailure, true);
++    assert_recorder_preserved_model_result(&disabled_result, &enabled_result);
++    assert_recorder_preserved_model_result(&disabled_result, &failure_result);
++    assert_recorder_preserved_model_result(&disabled_result, &wrong_phase_result);
++    assert_recorder_preserved_model_result(&disabled_result, &omission_result);
++    assert_eq!(
++        enabled.live_inputs.len(),
++        1,
++        "snow-free live producer selection"
++    );
++    assert_eq!(enabled.recorded_rows.len(), 1, "snow-free recorder row");
++    assert_snow_free_enabled_row(&enabled);
++    assert_eq!(
++        failure.live_inputs.len(),
++        1,
++        "forced-failure live selection"
++    );
++    assert_eq!(
++        failure.recorded_rows.len(),
++        1,
++        "forced-failure diagnostic row"
++    );
++    assert_eq!(
++        failure.recorded_rows[0]["kind"],
++        "b01_wb14_pre_child_current_context_capture_error_v1"
++    );
++    assert_eq!(failure.recorded_rows[0]["capture_phase"], "snow_free");
++    for rejected in [&wrong_phase, &omission] {
++        assert_eq!(rejected.live_inputs.len(), 1);
++        assert_eq!(rejected.recorded_rows.len(), 1);
++        assert_eq!(
++            rejected.recorded_rows[0]["kind"],
++            "b01_wb14_pre_child_current_context_capture_error_v1"
++        );
++        assert_eq!(rejected.recorded_rows[0]["capture_phase"], "snow_free");
++    }
++    assert!(
++        wrong_phase.recorded_rows[0]["detail"]
++            .as_str()
++            .is_some_and(|detail| detail.contains("covered"))
++    );
++    assert!(
++        omission.recorded_rows[0]["detail"]
++            .as_str()
++            .is_some_and(|detail| detail.contains("missing transformed prepared support"))
++    );
++}
++
++#[test]
++fn actual_covered_and_snow_free_producers_record_phase_correct_operands_without_model_effect() {
++    use crate::snow_stage3_v11_current_context_capture::PreChildRecorderTestModeV1 as Mode;
++    let (non_target_result, non_target) =
++        run_with_pre_child_recorder(Mode::ProductionNonTargetObserverEnabled, true);
++    assert!(non_target.producer_calls > 0);
++    assert!(non_target.live_inputs.is_empty() && non_target.recorded_rows.is_empty());
++    assert_actual_covered_recorder_controls();
++    assert_actual_snow_free_recorder_controls(&non_target_result);
++}
++
+ fn run_equilibrium_complete_owner() -> AdaptiveProductionOutcomeV1 {
+     run_equilibrium_complete_owner_with_policy(AdaptiveControllerTestPolicyV1::default())
+ }
+@@ -113,6 +412,335 @@
+     Vec<crate::snow_stage3_v11_attachment::AdaptivePerformanceSpanV1>,
+     Vec<crate::snow_stage3_v11_attachment::AdaptiveComparisonAuditV1>,
+ );
++
++struct NativeMixedPhaseFixtureOutcomeV1 {
++    production: AdaptiveProductionOutcomeV1,
++    fixture: super::CompleteWb14CadenceFixtureResultV1,
++}
++
++fn run_native_mixed_phase_terminal_on_large_stack() -> NativeMixedPhaseFixtureOutcomeV1 {
++    SHORT_SUPPORT_REQUESTED.with(|value| value.set(false));
++    SHORT_SUPPORT_DURATION_NS.with(|value| value.set(1_800_000_000_000));
++    begin_adaptive_controller_test_audit(AdaptiveControllerTestPolicyV1::default());
++    begin_adaptive_performance_test_audit();
++    begin_adaptive_comparison_test_audit();
++    crate::v9_real_consumer_shadow::v11_covered::begin_covered_carrier_support_audit();
++    crate::v9_real_consumer_shadow::v11_covered::begin_covered_carrier_live_consumption_audit();
++    begin_terminal_batch_production_audit();
++    crate::snow_stage3_v11_attachment::begin_snow_free_successor_fixture_audit_v1();
++
++    let fixture =
++        super::execute_complete_wb14_cadence_fixture(super::CompleteWb14CadenceFixtureRequestV1 {
++            runtime_swe_m: 0.000_6,
++            initial_cold_delta_k: 0.0,
++            include_child_17: false,
++            hard_boundary_ns: Some(60_000_000_000),
++            expect_dynamic_proposal: false,
++            second_lane_swe_m: None,
++            terminal_event: true,
++            capture_terminal_failure: false,
++            solid_reappearance: false,
++            production_only: true,
++        })
++        .expect("native mixed-phase terminal fixture result");
++
++    let receipts = take_adaptive_controller_test_audit();
++    let carrier_supports =
++        crate::v9_real_consumer_shadow::v11_covered::take_covered_carrier_support_audit();
++    let batches = take_terminal_batch_production_audit();
++    let publication_captures = take_accepted_publication_capture_audit();
++    let performance_spans = take_adaptive_performance_test_audit();
++    let comparison_audits = take_adaptive_comparison_test_audit();
++    let _live_carrier_audit =
++        crate::v9_real_consumer_shadow::v11_covered::take_covered_carrier_live_consumption_audit();
++    let receipt = receipts
++        .last()
++        .cloned()
++        .expect("native mixed-phase adaptive production receipt");
++    let production = (
++        receipt,
++        carrier_supports,
++        batches,
++        publication_captures,
++        take_final_physical_comparison(),
++        performance_spans,
++        comparison_audits,
++    );
++    assert_native_mixed_phase_terminal_fixture(&production, &fixture);
++    NativeMixedPhaseFixtureOutcomeV1 {
++        production,
++        fixture,
++    }
++}
++
++fn assert_native_mixed_phase_terminal_fixture(
++    production: &AdaptiveProductionOutcomeV1,
++    fixture: &super::CompleteWb14CadenceFixtureResultV1,
++) {
++    assert_eq!(
++        fixture.fixture_inputs["parity_profile"],
++        "native-mixed-phase"
++    );
++    assert_eq!(
++        fixture.fixture_inputs["runtime_swe_m_bits"],
++        serde_json::json!(0.000_6_f64.to_bits())
++    );
++    assert_eq!(
++        fixture.fixture_inputs["hard_boundary_ns"],
++        serde_json::json!(60_000_000_000_u128)
++    );
++    assert_eq!(fixture.beginning_stage3_lane_count, 1);
++    assert!(fixture.beginning_native_v3_resident_present);
++    assert!(fixture.beginning_native_v4_resident_present);
++    assert!(
++        fixture
++            .beginning_complete_owner_canonical_bytes
++            .contains_key("soil_thermal")
++    );
++    assert!(
++        fixture
++            .beginning_complete_owner_canonical_bytes
++            .contains_key("land_surface_energy")
++    );
++    assert_native_mixed_phase_transition(fixture);
++    assert_eq!(
++        production.0.parent_support,
++        openwepp_coupled_time::TimeSupport::new(
++            openwepp_coupled_time::ModelTimeNs::new(0),
++            openwepp_coupled_time::ModelTimeNs::new(1_800_000_000_000)
++        )
++        .expect("native parent support")
++    );
++    assert!(!production.0.accepted_microsteps.is_empty());
++    assert!(
++        production.2.is_empty(),
++        "single-lane terminal fixture must not execute the multi-lane batch path"
++    );
++    assert_eq!(
++        fixture.ending_clock_accepted_until,
++        openwepp_coupled_time::ModelTimeNs::new(1_800_000_000_000)
++    );
++}
++
++fn assert_native_mixed_phase_transition(fixture: &super::CompleteWb14CadenceFixtureResultV1) {
++    assert_eq!(fixture.event_groups.len(), 1);
++    let group = &fixture.event_groups[0];
++    let accepted_event = group
++        .accepted_event_receipt
++        .as_ref()
++        .expect("native terminal event receipt");
++    assert_eq!(accepted_event.tick(), group.tick);
++    assert_eq!(fixture.terminal_parcels.len(), 1);
++    let parcel = &fixture.terminal_parcels[0];
++    assert_eq!(
++        parcel.posture,
++        crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcelPosture::Consumed
++    );
++    assert!(
++        group
++            .produced_unconsumed_parcel_digests
++            .contains(&parcel.parcel_digest)
++    );
++    assert!(!fixture.subslabs.is_empty());
++    assert_eq!(
++        fixture.subslabs[0].support.start_ns(),
++        openwepp_coupled_time::ModelTimeNs::new(0)
++    );
++    assert!(fixture.subslabs.iter().all(|receipt| {
++        receipt.lane_receipts.len() == 1 && receipt.lane_receipts.contains_key(&1)
++    }));
++    assert!(
++        fixture
++            .subslabs
++            .windows(2)
++            .all(|pair| pair[0].support.end_ns() == pair[1].support.start_ns())
++    );
++    assert_eq!(
++        fixture
++            .subslabs
++            .last()
++            .expect("terminal native subslab")
++            .support
++            .end_ns(),
++        group.tick
++    );
++    let first_successor = fixture
++        .snow_free_successor_receipts
++        .first()
++        .expect("first snow-free successor receipt");
++    assert_eq!(first_successor.successor_ordinal, 0);
++    assert_eq!(first_successor.support.start_ns(), group.tick);
++    assert_eq!(
++        first_successor.beginning_complete_owner_set_sha256,
++        accepted_event.ending_owner_set_digest()
++    );
++    assert!(first_successor.receiver_pending);
++    assert_ne!(
++        first_successor.beginning_pending_terminal_parcel_set_sha256,
++        first_successor.ending_pending_terminal_parcel_set_sha256
++    );
++    assert!(fixture.snow_free_successor_receipts.windows(2).all(|pair| {
++        pair[0].successor_ordinal + 1 == pair[1].successor_ordinal
++            && pair[0].support.end_ns() == pair[1].support.start_ns()
++            && pair[0].ending_complete_owner_set_sha256
++                == pair[1].beginning_complete_owner_set_sha256
++            && pair[0].ending_snow_owner_sha256 == pair[1].beginning_snow_owner_sha256
++            && pair[0].ending_pending_terminal_parcel_set_sha256
++                == pair[1].beginning_pending_terminal_parcel_set_sha256
++    }));
++    assert_eq!(
++        fixture
++            .snow_free_successor_receipts
++            .last()
++            .expect("ending snow-free successor receipt")
++            .support
++            .end_ns(),
++        openwepp_coupled_time::ModelTimeNs::new(1_800_000_000_000)
++    );
++}
++
++fn adaptive_discrete_surface_kind_tag(
++    kind: crate::v9_real_consumer_shadow::AdaptiveDiscreteSurfaceKindV1,
++) -> &'static str {
++    use crate::v9_real_consumer_shadow::AdaptiveDiscreteSurfaceKindV1 as Kind;
++    match kind {
++        Kind::ActiveSet => "active-set",
++        Kind::DerivedIntegrityCache => "derived-integrity-cache",
++        Kind::ExactBinary64 => "exact-binary64",
++        Kind::Identity => "identity",
++        Kind::Membership => "membership",
++        Kind::NumericalWarmStart => "numerical-warm-start",
++        Kind::Ordering => "ordering",
++        Kind::Posture => "posture",
++        Kind::ReceiptLineage => "receipt-lineage",
++        Kind::ReceiptOrdering => "receipt-ordering",
++        Kind::Schema => "schema",
++        Kind::Topology => "topology",
++    }
++}
++
++fn adaptive_complete_owner_comparison_payload(
++    comparison: &crate::v9_real_consumer_shadow::AdaptiveCompleteOwnerComparisonV1,
++) -> serde_json::Value {
++    serde_json::json!({
++        "scalars": comparison.scalars.iter().map(|scalar| serde_json::json!({
++            "owner_id": scalar.owner_id,
++            "path": scalar.path,
++            "value_bits": scalar.value.to_bits(),
++            "contract_id": scalar.tolerance_authority.contract_id,
++            "tolerance_id": scalar.tolerance_authority.tolerance_id,
++            "absolute_tolerance_bits": scalar.absolute_tolerance.to_bits(),
++            "relative_tolerance_bits": scalar.relative_tolerance.to_bits(),
++        })).collect::<Vec<_>>(),
++        "exact_discrete_surfaces": comparison.exact_discrete_surfaces.iter().map(|surface| serde_json::json!({
++            "owner_id": surface.owner_id,
++            "path": surface.path,
++            "kind": adaptive_discrete_surface_kind_tag(surface.kind),
++            "exact_value": surface.exact_value,
++        })).collect::<Vec<_>>(),
++        "exact_discrete_sha256": comparison.exact_discrete_sha256,
++    })
++}
++
++fn native_mixed_phase_comparison_payload(
++    value: &NativeMixedPhaseFixtureOutcomeV1,
++) -> serde_json::Value {
++    let production = &value.production;
++    serde_json::json!({
++        "observer_posture": "disabled",
++        "pre_child_recorder_posture": "disabled",
++        "controller_policy": {
++            "initial_proposal_quanta": serde_json::Value::Null,
++            "growth_factor": 2,
++        },
++        "fixture": value.fixture.canonical_comparison_payload(),
++        "adaptive_receipt": production.0,
++        "carrier_supports": production.1,
++        "terminal_batches": production.2.iter().map(|batch| serde_json::json!({
++            "support": batch.support,
++            "lane_ids": batch.lane_ids,
++            "event_ticks": batch.event_ticks,
++            "ending_terminal_lanes": batch.ending_terminal_lanes,
++            "ending_surviving_lanes": batch.ending_surviving_lanes,
++            "provider_call_count": batch.provider_call_count,
++            "join_call_count": batch.join_call_count,
++            "beginning_joint_sha256": batch.beginning_joint_sha256,
++            "ending_joint_sha256": batch.ending_joint_sha256,
++        })).collect::<Vec<_>>(),
++        "publication_topology": production.3.iter().map(|capture| {
++            let regime = match capture.regime {
++                AcceptedPublicationCaptureRegimeV1::Standalone => "standalone",
++                AcceptedPublicationCaptureRegimeV1::ProvisionalClock => "provisional-clock",
++                AcceptedPublicationCaptureRegimeV1::FinalClock => "final-clock",
++            };
++            serde_json::json!({"support": capture.support, "regime": regime})
++        }).collect::<Vec<_>>(),
++        "complete_owner_comparison": adaptive_complete_owner_comparison_payload(&production.4),
++        "performance_topology": production.5.iter().map(|span| {
++            serde_json::json!({
++                "label": span.label,
++                "support_duration_ns": span.support_duration_ns,
++            })
++        }).collect::<Vec<_>>(),
++        "comparison_audits": production.6.iter().map(|audit| serde_json::json!({
++            "support": audit.support,
++            "maximum_owner_id": audit.maximum_owner_id,
++            "maximum_path": audit.maximum_path,
++            "maximum_tolerance_authority": audit.maximum_tolerance_authority,
++            "maximum_direct_value_bits": audit.maximum_direct_value.map(f64::to_bits),
++            "maximum_composed_value_bits": audit.maximum_composed_value.map(f64::to_bits),
++            "maximum_tolerance_denominator_bits": audit.maximum_tolerance_denominator.map(f64::to_bits),
++            "maximum_scaled_error_bits": audit.maximum_scaled_error.to_bits(),
++            "first_discrete_surface_kind": audit.first_discrete_surface_kind,
++            "first_discrete_surface_delta": audit.first_discrete_surface_delta,
++        })).collect::<Vec<_>>(),
++    })
++}
++
++fn native_mixed_phase_diagnostic_payload(
++    value: &NativeMixedPhaseFixtureOutcomeV1,
++) -> serde_json::Value {
++    serde_json::json!({
++        "timing_disposition": "diagnostic_fixture_mismatch_not_acceptance_oracle",
++        "legacy_default_fixture_expected_tick_ns": 540_000_000_000_u128,
++        "native_fixture_observed_tick_ns": value.fixture.event_groups[0].tick.get(),
++        "performance_elapsed_ns": value.production.5.iter().map(|span| {
++            span.elapsed.as_nanos()
++        }).collect::<Vec<_>>(),
++        "publication_elapsed_ns": value.production.3.iter().map(|capture| serde_json::json!({
++            "projection": capture.projection_elapsed.as_nanos(),
++            "initial_seal": capture.initial_seal_elapsed.as_nanos(),
++            "validation": capture.validation_elapsed.as_nanos(),
++            "total": capture.total_elapsed.as_nanos(),
++        })).collect::<Vec<_>>(),
++    })
++}
++
++#[test]
++fn native_mixed_phase_fixture_characterization_payload() {
++    let value = std::thread::Builder::new()
++        .name("native-mixed-phase-characterization".to_owned())
++        .stack_size(64 * 1024 * 1024)
++        .spawn(|| {
++            use crate::v9_real_consumer_shadow::v11_covered::
++                CanonicalCoveredPhysicalParityCaseV1 as Case;
++            CANONICAL_PARITY_CASE.with(|slot| slot.set(Some(Case::NativeMixedPhase)));
++            run_native_mixed_phase_terminal_on_large_stack()
++        })
++        .expect("spawn native mixed-phase characterization")
++        .join()
++        .expect("join native mixed-phase characterization");
++    println!(
++        "B01_NATIVE_COMPARISON_PAYLOAD {}",
++        serde_json::to_string(&native_mixed_phase_comparison_payload(&value))
++            .expect("native comparison payload")
++    );
++    println!(
++        "B01_NATIVE_DIAGNOSTIC {}",
++        serde_json::to_string(&native_mixed_phase_diagnostic_payload(&value))
++            .expect("native diagnostic payload")
++    );
++}
+ 
+ fn run_equilibrium_complete_owner_for_duration(
+     duration_ns: u128,
+@@ -194,7 +822,8 @@
+     crate::v9_real_consumer_shadow::CoveredNativePhysicalPathAuditV1,
+     crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredMapRoleAuditV1,
+ ) {
+-    let native_context_assertions = crate::v9_real_consumer_shadow::v11_covered::native_context_assertions_requested_for_test();
++    let native_context_assertions =
++        crate::v9_real_consumer_shadow::v11_covered::native_context_assertions_requested_for_test();
+     std::thread::Builder::new()
+         .name("canonical-covered-physical-prefix-capture".to_owned())
+         .stack_size(64 * 1024 * 1024)
+@@ -550,8 +1179,8 @@
+         .expect("join adaptive transient production coverage")
+ }
+ 
+-fn run_full_duration_complete_owner_qualification(
+-) -> crate::snow_stage3_v11_attachment::Stage3AdaptiveSupportReceiptV1 {
++fn run_full_duration_complete_owner_qualification()
++-> crate::snow_stage3_v11_attachment::Stage3AdaptiveSupportReceiptV1 {
+     std::thread::Builder::new()
+         .name("adaptive-full-parent-qualification".to_owned())
+         .stack_size(64 * 1024 * 1024)
+@@ -717,12 +1346,16 @@
+         comparison_audits,
+     ) = run_equilibrium_complete_owner();
+     assert!(comparison_audits.is_empty());
+-    assert!(performance_spans
+-        .iter()
+-        .any(|span| span.label == "complete_owner_direct_trial"));
+-    assert!(!performance_spans
+-        .iter()
+-        .any(|span| span.label == "complete_owner_composed_trial"));
++    assert!(
++        performance_spans
++            .iter()
++            .any(|span| span.label == "complete_owner_direct_trial")
++    );
++    assert!(
++        !performance_spans
++            .iter()
++            .any(|span| span.label == "complete_owner_composed_trial")
++    );
+     receipt
+         .validate()
+         .expect("stable adaptive receipt validates");
+@@ -917,8 +1550,13 @@
+ }
+ 
+ pub(crate) fn run_equilibrium_with_canonical_covered_poison_audit(
+-    poison: Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredFinalConvergencePoisonV1>,
+-) -> (bool, crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredMapRoleAuditV1) {
++    poison: Option<
++        crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredFinalConvergencePoisonV1,
++    >,
++) -> (
++    bool,
++    crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredMapRoleAuditV1,
++) {
+     std::thread::Builder::new()
+         .name("canonical-covered-role-audit".to_owned())
+         .stack_size(64 * 1024 * 1024)
+@@ -1617,9 +2255,11 @@
+             .map(|(ofe_id, _)| ofe_id)
+             .collect::<std::collections::BTreeSet<_>>();
+         assert!(!lower_boundary_ofes.is_empty());
+-        assert!(lower_boundary_ofes
+-            .iter()
+-            .all(|ofe_id| topology.contains(ofe_id)));
++        assert!(
++            lower_boundary_ofes
++                .iter()
++                .all(|ofe_id| topology.contains(ofe_id))
++        );
+         let binding = crate::direct_runtime::stage3_covered_native_inactive_child_custody_binding(
+             &endpoint.wb14_child_replay_bytes,
+             &topology,
+@@ -1918,17 +2558,23 @@
+             .rejected_candidate_count
+             >= 1
+     );
+-    assert!(receipt.accepted_microsteps.iter().any(|accepted| accepted
+-        .context
+-        .step_support
+-        .duration_ns()
+-        == MINIMUM_STEP_NS));
+-    assert!(carrier_supports
+-        .iter()
+-        .all(|support| support.duration_ns() >= MINIMUM_STEP_NS));
+-    assert!(comparison_audits
+-        .iter()
+-        .any(|audit| audit.maximum_scaled_error > 1.0));
++    assert!(
++        receipt.accepted_microsteps.iter().any(|accepted| accepted
++            .context
++            .step_support
++            .duration_ns()
++            == MINIMUM_STEP_NS)
++    );
++    assert!(
++        carrier_supports
++            .iter()
++            .all(|support| support.duration_ns() >= MINIMUM_STEP_NS)
++    );
++    assert!(
++        comparison_audits
++            .iter()
++            .any(|audit| audit.maximum_scaled_error > 1.0)
++    );
+ }
+ 
+ #[test]
+@@ -2104,9 +2750,11 @@
+     assert!(batches.iter().any(|batch| {
+         batch.ending_terminal_lanes == vec![1] && batch.ending_surviving_lanes == vec![2]
+     }));
+-    assert!(carrier_supports
+-        .iter()
+-        .all(|support| support.duration_ns() >= MINIMUM_STEP_NS));
++    assert!(
++        carrier_supports
++            .iter()
++            .all(|support| support.duration_ns() >= MINIMUM_STEP_NS)
++    );
+ }
+ 
+ #[test]
+@@ -2114,8 +2762,8 @@
+ #[ignore = "contract-first expected red: retained 52-map terminal-parent validation audit is not implemented"]
+ fn carrier_parent_static_and_same_map_validation_once_has_authentic_1_52_52_counts() {
+     use crate::v9_real_consumer_shadow::v11_covered::{
+-        begin_carrier_parent_validation_once_audit_v1,
+-        take_carrier_parent_validation_once_audit_v1, CarrierValidationCallStageV1 as Stage,
++        CarrierValidationCallStageV1 as Stage, begin_carrier_parent_validation_once_audit_v1,
++        take_carrier_parent_validation_once_audit_v1,
+     };
+ 
+     let (outcome, audit) = std::thread::Builder::new()
+@@ -2185,9 +2833,8 @@
+ #[ignore = "contract-first expected red: forced-full versus admitted validation oracle is not implemented"]
+ fn carrier_validation_once_is_bitwise_equal_for_every_role_path_and_regime() {
+     use crate::v9_real_consumer_shadow::v11_covered::{
+-        carrier_parent_validation_once_parity_for_test,
+         CanonicalCoveredPhysicalParityCaseV1 as Case, CarrierValidationMapPathV1 as Path,
+-        CarrierValidationRoleV1 as Role,
++        CarrierValidationRoleV1 as Role, carrier_parent_validation_once_parity_for_test,
+     };
+ 
+     for case in [
+@@ -2279,9 +2926,9 @@
+ #[ignore = "contract-first expected red: validation-once poison injection is not implemented"]
+ fn carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback() {
+     use crate::v9_real_consumer_shadow::v11_covered::{
++        CarrierParentValidationOncePoisonV1 as Poison,
+         carrier_parent_validation_once_competing_poisons_for_test,
+         carrier_parent_validation_once_poison_for_test,
+-        CarrierParentValidationOncePoisonV1 as Poison,
+     };
+ 
+     for poison in [
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs
+@@ -999,6 +999,42 @@
+             self.covered_v11_interval
+                 .as_ref()
+                 .ok_or_else(|| "capture covered support missing V11 interval".to_owned())?,
++            &self.hard_boundaries,
++            &self.support_identity_by_lane,
++            &self.snow_surface_forcing_by_destination,
++            &self.open_snow_destination_requests,
++        ))
++    }
++
++    /// Immutable diagnostic view of the transformed snow-free successor.
++    /// Unlike `diagnostic_capture_parts_v1`, this requires the covered
++    /// projection to be genuinely absent and therefore cannot let a recorder
++    /// silently substitute covered forcing for the successor's live inputs.
++    pub(crate) fn diagnostic_snow_free_capture_parts_v1(
++        &self,
++    ) -> Result<
++        (
++            &BTreeMap<u32, DirectActiveSnowPartitionInputs>,
++            &BTreeMap<u32, DirectSnowStage3SupportInput>,
++            &DirectV9ShadowIntervalInput,
++            &[ModelTimeNs],
++            &BTreeMap<u32, Vec<PreparedStage3V11SupportIdentityV1>>,
++            &BTreeMap<(OfeId, TileId), SealedStage3TileBoundaryForcingV1>,
++            &BTreeSet<(OfeId, TileId)>,
++        ),
++        String,
++    > {
++        if self.covered_v11_interval.is_some()
++            || !self.snow_surface_forcing_by_destination.is_empty()
++            || !self.open_snow_destination_requests.is_empty()
++            || !self.atmospheric_receipt_by_destination.is_empty()
++        {
++            return Err("capture snow-free successor retained covered projection".to_owned());
++        }
++        Ok((
++            &self.snow_inputs_by_lane,
++            &self.support_forcing_by_lane,
++            &self.v11_interval,
+             &self.hard_boundaries,
+             &self.support_identity_by_lane,
+             &self.snow_surface_forcing_by_destination,
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs
+@@ -1178,6 +1178,15 @@
+                         forcing_receipt,
+                         ending_snow_owner_bytes,
+                         None,
++                        crate::snow_stage3_v11_current_context_capture::SnowFreePreChildHistoryV1 {
++                            owner_joins: &coupled_subslabs,
++                            event_groups: &terminal_event_groups,
++                            current_stage3: &candidate.stage3_by_lane,
++                            current_snow_enthalpy_material_owner: candidate
++                                .snow_enthalpy_material_owner
++                                .as_ref(),
++                            pending_terminal_parcels: &candidate.terminal_parcels,
++                        },
+                         None,
+                         true,
+                     )?;
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
+@@ -522,6 +522,63 @@
+         destination_capabilities: capabilities.iter().map(|((ofe, tile), capability)| { let destination=DestinationCaptureV1 { ofe_id:ofe.as_str().to_owned(), tile_id:tile.as_str().to_owned() }; match capability { crate::snow_stage3_open_boundary::SealedStage3TileBoundaryForcingV1::V11CanopyCovered(value) => DestinationCapabilityCaptureV1::Covered { destination, rho_air_kg_m3:value.rho_air_kg_m3, cp_air_j_kg_k:value.cp_air_j_kg_k, effective_canopy_cover:value.effective_canopy_cover }, crate::snow_stage3_open_boundary::SealedStage3TileBoundaryForcingV1::OpenSnow(_) => DestinationCapabilityCaptureV1::Open { destination } } }).collect(),
+         open_snow_destinations: open_requests.iter().map(|(ofe,tile)| DestinationCaptureV1 { ofe_id:ofe.as_str().to_owned(), tile_id:tile.as_str().to_owned() }).collect(),
+     })
++}
++
++fn capture_snow_free_prepared_support(
++    support: &crate::DirectSnowStage3V11PreparedSupport,
++) -> Result<serde_json::Value, String> {
++    let (active, forcing, snow_free, hard_boundaries, identities, represented, open_requests) =
++        support.diagnostic_snow_free_capture_parts_v1()?;
++    let active = active
++        .iter()
++        .map(|(lane, value)| (*lane, active_snow_capture(value)))
++        .collect::<BTreeMap<_, _>>();
++    let forcing = forcing
++        .iter()
++        .map(|(lane, value)| {
++            (
++                *lane,
++                SupportForcingCaptureV1 {
++                    hourly: SnowHourlyCaptureV1 {
++                        values: [
++                            value.forcing.active_precipitation_m,
++                            value.forcing.rain_m,
++                            value.forcing.snowfall_m,
++                            value.forcing.radiation_mj_m2,
++                            value.forcing.air_temperature_c,
++                            value.forcing.cloud_fraction,
++                            value.forcing.rain_fraction,
++                            value.forcing.snow_fraction,
++                        ],
++                        phase_model: value.forcing.phase_model.id().into(),
++                        hydrometeor_temperature_c: value.forcing.hydrometeor_temperature_c,
++                    },
++                    duration_seconds: value.duration_seconds,
++                },
++            )
++        })
++        .collect::<BTreeMap<_, _>>();
++    let identities = identities
++        .iter()
++        .map(|(lane, values)| {
++            serde_json::to_vec(values)
++                .map(|bytes| (*lane, bytes))
++                .map_err(|error| error.to_string())
++        })
++        .collect::<Result<BTreeMap<_, _>, _>>()?;
++    Ok(serde_json::json!({
++        "support": support.support(),
++        "active_snow_by_lane": active,
++        "support_forcing_by_lane": forcing,
++        "snow_free_interval": snow_free,
++        "covered_projection": null,
++        "hard_boundaries": hard_boundaries,
++        "identities_by_lane": identities,
++        "destination_capabilities": [],
++        "destination_capability_count": represented.len(),
++        "open_snow_destinations": [],
++        "open_snow_destination_count": open_requests.len(),
++    }))
+ }
+ 
+ fn restore_covered_interval(
+@@ -1231,7 +1288,64 @@
+         && support.end_ns().get() == B01_CHILD_END_NS
+ }
+ 
++#[cfg(test)]
++#[test]
++fn b01_pre_child_selector_requires_every_exact_coordinate() {
++    let target = TimeSupport::new(
++        openwepp_coupled_time::ModelTimeNs::new(B01_CHILD_START_NS),
++        openwepp_coupled_time::ModelTimeNs::new(B01_CHILD_END_NS),
++    )
++    .expect("target support");
++    assert!(is_target(B01_DAY_INDEX, B01_INTERVAL_INDEX, target));
++    assert!(!is_target(B01_DAY_INDEX - 1, B01_INTERVAL_INDEX, target));
++    assert!(!is_target(B01_DAY_INDEX, B01_INTERVAL_INDEX - 1, target));
++    assert!(!is_target(
++        B01_DAY_INDEX,
++        B01_INTERVAL_INDEX,
++        TimeSupport::new(
++            openwepp_coupled_time::ModelTimeNs::new(B01_CHILD_START_NS - 1),
++            openwepp_coupled_time::ModelTimeNs::new(B01_CHILD_END_NS),
++        )
++        .expect("wrong-start support"),
++    ));
++    assert!(!is_target(
++        B01_DAY_INDEX,
++        B01_INTERVAL_INDEX,
++        TimeSupport::new(
++            openwepp_coupled_time::ModelTimeNs::new(B01_CHILD_START_NS),
++            openwepp_coupled_time::ModelTimeNs::new(B01_CHILD_END_NS + 1),
++        )
++        .expect("wrong-end support"),
++    ));
++}
++
++#[derive(Clone, Copy)]
++pub(crate) struct SnowFreePreChildHistoryV1<'a> {
++    pub owner_joins: &'a [crate::snow_stage3_v11_attachment::Stage3CoupledSubslabReceiptV1],
++    pub event_groups: &'a [crate::snow_stage3_v11_attachment::Stage3V11TerminalEventGroupV1],
++    pub current_stage3: &'a BTreeMap<u32, crate::DirectSnowStage3PersistentState>,
++    pub current_snow_enthalpy_material_owner: Option<
++        &'a crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
++    >,
++    pub pending_terminal_parcels:
++        &'a BTreeMap<openwepp_coupled_time::Digest32, crate::DirectSnowStage3V11TerminalParcel>,
++}
++
++#[derive(Clone, Copy)]
++pub(crate) enum PreChildCapturePhaseV1<'a> {
++    Covered,
++    SnowFree {
++        history: SnowFreePreChildHistoryV1<'a>,
++        validated_native_inactive_wb14_prefix:
++            Option<&'a crate::direct_runtime::ValidatedNativeInactiveWb14PrefixV1>,
++        ending_snow_owner_bytes: &'a [u8],
++        deferred_native_v2_soil_custody:
++            Option<&'a crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1>,
++    },
++}
++
+ pub(crate) struct PreChildContext<'a> {
++    pub phase: PreChildCapturePhaseV1<'a>,
+     pub context: &'a DirectSnowStage3V11StaticContext,
+     pub parent: &'a V11ParentTransaction,
+     pub consumer: &'a DirectV10RealConsumerShadow,
+@@ -1256,8 +1370,113 @@
+     pub interval: usize,
+ }
+ 
++/// Producer-local test oracle inputs, populated before the recorder context is
++/// constructed so a recorder wiring mistake cannot define its own expectation.
++#[cfg(test)]
++pub(crate) struct PreChildProducerSnapshotInputsV1<'a> {
++    pub phase: PreChildCapturePhaseV1<'a>,
++    pub context: &'a DirectSnowStage3V11StaticContext,
++    pub parent: &'a V11ParentTransaction,
++    pub consumer: &'a DirectV10RealConsumerShadow,
++    pub clock: &'a CoupledClockStateV1,
++    pub prepared_support: Option<&'a crate::DirectSnowStage3V11PreparedSupport>,
++    pub beginning_stage3: &'a BTreeMap<u32, crate::DirectSnowStage3PersistentState>,
++    pub beginning_snow_enthalpy_material_owner: Option<
++        &'a crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
++    >,
++    pub support: TimeSupport,
++    pub reduction: &'a ConstraintReductionReceiptV1,
++    pub ledger: &'a LedgerEntryV1,
++    pub receipt: &'a AcceptedSlabReceiptV1,
++    pub binding: &'a crate::direct_runtime::DirectWb14CoupledChildBindingV1,
++    pub pending_terminal_parcels:
++        &'a BTreeMap<openwepp_coupled_time::Digest32, crate::DirectSnowStage3V11TerminalParcel>,
++    pub forcing_receipt: openwepp_coupled_time::Digest32,
++}
++
++fn capture_soil_trial_v2(
++    trial: &openwepp_land_surface_energy::SoilThermalTrialStateV2,
++) -> serde_json::Value {
++    serde_json::json!({
++        "transaction_id": trial.transaction_id(),
++        "predecessor_transaction_id": trial.predecessor_transaction_id(),
++        "support_start_ns": trial.support_start_ns(),
++        "support_end_ns": trial.support_end_ns(),
++        "beginning_state_sha256": trial.beginning_state_sha256(),
++        "accepted_predecessor_receipt_chain_sha256": trial.accepted_predecessor_receipt_chain_sha256(),
++        "unpublished_predecessor_trial_sha256": trial.unpublished_predecessor_trial_sha256(),
++        "numerical_coordinate_set_sha256": trial.numerical_coordinate_set_sha256(),
++        "numerical_coordinate_authority_sha256": trial.numerical_coordinate_authority_sha256(),
++        "ending_state": trial.ending_state(),
++        "layer_credits": trial.layer_credits(),
++        "unpublished_trial_sha256": trial.unpublished_trial_sha256(),
++    })
++}
++
++fn capture_deferred_native_v2_soil_custody(
++    custody: Option<&crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1>,
++) -> Result<Option<serde_json::Value>, String> {
++    custody
++        .map(|custody| {
++            let candidate = custody
++                .candidate()
++                .v2()
++                .map_err(|error| error.to_string())?;
++            let continuation = custody.continuation().map(|continuation| {
++                serde_json::json!({
++                    "original_beginning_owner": continuation.original_prepared().beginning_owner(),
++                    "physical_trial": capture_soil_trial_v2(continuation.physical_trial()),
++                    "accumulated_operands": continuation.accumulated_operands(),
++                    "ordered_layer_credit_chain": continuation.diagnostic_layer_credit_chain(),
++                })
++            });
++            Ok(serde_json::json!({
++                "posture": "reconstructible_operands_not_installable_capability",
++                "candidate": capture_soil_trial_v2(candidate),
++                "continuation": continuation,
++            }))
++        })
++        .transpose()
++}
++
++fn capture_direct_run_constructor_inputs(
++    inputs: &crate::DirectRunConstructorInputs,
++) -> serde_json::Value {
++    let lanes = inputs
++        .lanes
++        .iter()
++        .map(|lane| {
++            serde_json::json!({
++                "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
++                "downstream_lane_id": lane.downstream_lane_id,
++                "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
++                "runoff_publication_q_scale": lane.runoff_publication_q_scale,
++                "runoff_publication_qofe_scale": lane.runoff_publication_qofe_scale,
++                "runoff_publication_efflen_m": lane.runoff_publication_efflen_m,
++                "runoff_publication_cumulative_length_m": lane.runoff_publication_cumulative_length_m,
++                "runoff_publication_ofe_length_m": lane.runoff_publication_ofe_length_m,
++                "water": [lane.water.soil_water_m, lane.water.infiltration_m, lane.water.runoff_m, lane.water.evapotranspiration_m, lane.water.drainage_m, lane.water.lateral_flow_m],
++                "transfer": { "surface_carry_m": lane.transfer.surface_carry_m, "surface_hourly_weights": lane.transfer.surface_hourly_weights, "lateral_carry_m": lane.transfer.lateral_carry_m, "upstream_flow_m": lane.transfer.upstream_flow_m, "subsurface_input_m": lane.transfer.subsurface_input_m },
++                "publication": lane.publication, "subsurface_layers": lane.subsurface_layers,
++                "evapotranspiration_stage_state": lane.evapotranspiration_stage_state,
++                "plant_growth_state": lane.plant_growth_state, "plant_water_stress": lane.plant_water_stress,
++                "winter_snow": crate::DirectSnowRuntimeCarry::from(lane.winter_column.snow.clone()),
++                "winter_frost": crate::DirectFrostRuntimeCarry::from(lane.winter_column.frost.clone()),
++                "snow_runtime_carry": lane.snow_runtime_carry, "frost_runtime_carry": lane.frost_runtime_carry,
++                "day_inputs": lane.day_inputs,
++            })
++        })
++        .collect::<Vec<_>>();
++    serde_json::json!({
++        "identity": { "run_id": inputs.identity.run_id, "hillslope_id": inputs.identity.hillslope_id, "lane_count": inputs.identity.lane_count, "day_count": inputs.identity.day_count },
++        "phase_plan_ranks": inputs.phase_plan.phases().iter().map(|phase| phase.rank()).collect::<Vec<_>>(),
++        "lanes": lanes,
++    })
++}
++
+ fn capture_row(input: &PreChildContext<'_>) -> Result<serde_json::Value, String> {
+     let PreChildContext {
++        phase,
+         context,
+         parent,
+         consumer,
+@@ -1309,52 +1528,95 @@
+     let native_soil = consumer
+         .diagnostic_native_soil_v2()
+         .map_err(|error| error.to_string())?;
++    let surface_configuration = context
++        .surface_liquid_configuration
++        .canonical_bytes()
++        .map_err(|error| error.to_string())?;
++    let native_hydrology_constructor_inputs = consumer
++        .diagnostic_hydrology_constructor_inputs_v1()
++        .ok_or("captured native hydrology constructor pin missing")?;
+     let hydrology_frame_dynamic = capture_direct_run_frame_dynamic(
+         consumer.restart_authority_hydrology_frame(),
+-        consumer
+-            .diagnostic_hydrology_constructor_inputs_v1()
+-            .ok_or("captured native hydrology constructor pin missing")?
+-            .as_ref(),
++        native_hydrology_constructor_inputs.as_ref(),
+         &context.surface_liquid_configuration,
+     )?;
+     let native_consumer_constructor_operands = consumer
+         .diagnostic_native_consumer_constructor_operands_v1()
+         .map_err(|error| error.to_string())?;
+-    let prepared_support = prepared_support
+-        .map(capture_prepared_support)
+-        .transpose()?
+-        .map(serde_json::to_value)
+-        .transpose()
+-        .map_err(|e| e.to_string())?;
++    let (kind, phase_name, constraint_source_owner_id, prepared_support, phase_diagnostics) =
++        match phase {
++            PreChildCapturePhaseV1::Covered => (
++                "b01_wb14_pre_child_current_context_v1",
++                "covered",
++                "v11-snow-covered-real-consumer",
++                prepared_support
++                    .map(capture_prepared_support)
++                    .transpose()?
++                    .map(serde_json::to_value)
++                    .transpose()
++                    .map_err(|error| error.to_string())?,
++                serde_json::Value::Null,
++            ),
++            PreChildCapturePhaseV1::SnowFree {
++                history,
++                validated_native_inactive_wb14_prefix,
++                ending_snow_owner_bytes,
++                deferred_native_v2_soil_custody,
++            } => {
++                let prepared_support = prepared_support
++                    .ok_or("snow-free capture missing transformed prepared support")?;
++                let deferred_native_v2_soil_custody =
++                    capture_deferred_native_v2_soil_custody(*deferred_native_v2_soil_custody)?;
++                (
++                    "b01_wb14_snow_free_pre_child_current_context_v1",
++                    "snow_free",
++                    "v11-real-consumer",
++                    Some(capture_snow_free_prepared_support(prepared_support)?),
++                    serde_json::json!({
++                        "ordered_owner_joins": history.owner_joins,
++                        "ordered_owner_join_support_liquid_custody_v2": history.owner_joins.iter().map(|receipt| receipt.support_liquid_custody_v2()).collect::<Vec<_>>(),
++                        "ordered_event_groups": history.event_groups,
++                        "ordered_event_group_terminal_liquid_custody_v2": history.event_groups.iter().map(|group| group.terminal_receiver_custody_v2()).collect::<Vec<_>>(),
++                        "prefix_validation_parent_support": clock.parent_support(),
++                        "prefix_validation_surface_configuration_canonical_json": surface_configuration.clone(),
++                        "validated_native_inactive_wb14_prefix": validated_native_inactive_wb14_prefix,
++                        "current_stage3": history.current_stage3,
++                        "current_snow_enthalpy_material_owner": history.current_snow_enthalpy_material_owner,
++                        "pending_terminal_parcels": history.pending_terminal_parcels,
++                        "ending_snow_owner_canonical_bytes": ending_snow_owner_bytes,
++                        "deferred_native_v2_soil_custody": deferred_native_v2_soil_custody,
++                        "history_posture": "actual_ordered_prefix_inputs_and_result; no fabricated receipts or installable capability",
++                    }),
++                )
++            }
++        };
+     let beginning_stage3 = serde_json::to_vec(beginning_stage3).map_err(|e| e.to_string())?;
+     if let Some(owner) = beginning_snow_enthalpy_material_owner {
+         owner.validate().map_err(|error| error.to_string())?;
+     }
+     Ok(serde_json::json!({
+-        "kind":"b01_wb14_pre_child_current_context_v1", "day_index":day, "interval_index":interval,
++        "kind":kind, "capture_phase":phase_name, "day_index":day, "interval_index":interval,
+         "support":support, "parent_support":clock.parent_support(), "accepted_until":clock.accepted_until(),
+         "parent_checkpoint_canonical_json":parent_checkpoint, "complete_owner_canonical_bytes":owners,
+         "clock_complete_owner_canonical_bytes":clock_owners,
+         "coupled_clock_restart_canonical_json":restart, "coupled_clock_restart_model_sha256":digest_bytes(CLOCK_MODEL_DOMAIN), "coupled_clock_restart_authority_sha256":digest_bytes(CLOCK_AUTHORITY_DOMAIN), "coupled_clock_restart_policy_sha256":context.controller_policy,
+         "vegetation_configuration_canonical_json":vegetation, "lse_configuration_canonical_json":lse,
++        "surface_liquid_configuration_canonical_json":surface_configuration,
+         "constraint_reduction_canonical_json":reduction, "complete_owner_ledger_canonical_json":ledger, "provisional_receipt_canonical_json":receipt,
+-        "provisional_constructor_inputs":{"constraint_source_owner_id":"v11-snow-covered-real-consumer","constraint_class":"hard_boundary","forcing_receipt":forcing_receipt,"calendar_receipt":context.calendar_receipt,"controller_policy":context.controller_policy,"ledger_flux_id":"complete-owner-custody","ledger_units":"canonical-owner-state","ledger_child_support_start_ns":support.start_ns().get(),"ledger_child_support_end_ns":support.end_ns().get()},
++        "provisional_constructor_inputs":{"constraint_source_owner_id":constraint_source_owner_id,"constraint_class":"hard_boundary","forcing_receipt":forcing_receipt,"calendar_receipt":context.calendar_receipt,"controller_policy":context.controller_policy,"ledger_flux_id":"complete-owner-custody","ledger_units":"canonical-owner-state","ledger_child_support_start_ns":support.start_ns().get(),"ledger_child_support_end_ns":support.end_ns().get()},
+         "coupled_binding":{"proposed_upper_bound_s_bits":binding.proposed_upper_bound_s_bits,"coupled_parent_transaction_sha256":binding.coupled_parent_transaction_sha256,"accepted_slab_sha256":binding.accepted_slab_sha256,"parent_beginning_complete_owner_set_sha256":binding.parent_beginning_complete_owner_set_sha256,"parent_support_start_ns":binding.parent_support_start_ns,"parent_support_end_ns":binding.parent_support_end_ns,"child_support_start_ns":binding.child_support_start_ns,"child_support_end_ns":binding.child_support_end_ns},
+         "provider_cursor_canonical_json":provider, "terminal_parcels_produced_unconsumed_canonical_json":terminal_custody, "static_run_identity":context.run_identity, "static_topology_identity":context.topology_identity,
+         "prepared_support_constructor_operands":prepared_support,
+         "native_lane_map_constructor_operands":native_lane_maps,
+         "native_soil_v2_constructor_operands":native_soil,
+         "native_hydrology_frame_dynamic_constructor_operands":hydrology_frame_dynamic,
++        "native_hydrology_constructor_inputs":capture_direct_run_constructor_inputs(native_hydrology_constructor_inputs.as_ref()),
+         "native_consumer_constructor_operands":native_consumer_constructor_operands,
+         "beginning_stage3_canonical_json":beginning_stage3,
+         "beginning_snow_enthalpy_material_owner":beginning_snow_enthalpy_material_owner,
++        "phase_diagnostics":phase_diagnostics,
+         "capture_posture":"before physical ingress; diagnostic no-publication wrapper"
+     }))
+-}
+-
+-fn capture(input: &PreChildContext<'_>) -> Result<(), String> {
+-    crate::snow_accuracy_observer::record(capture_row(input)?);
+-    Ok(())
+ }
+ 
+ /// Record the actual provider-bound day once, before its supports enter the
+@@ -1470,15 +1732,511 @@
+     capture_prepared_day_row(day, attachment)
+ }
+ 
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub(crate) enum PreChildRecorderTestModeV1 {
++    Disabled,
++    ProductionNonTargetObserverEnabled,
++    EnabledCovered,
++    ForcedCoveredCaptureFailure,
++    EnabledSnowFree,
++    ForcedSnowFreeCaptureFailure,
++    ForcedSnowFreeWrongPhaseFailure,
++    ForcedSnowFreeRequiredOmissionFailure,
++}
++
++#[cfg(test)]
++#[derive(Clone, Debug, Default, PartialEq)]
++pub(crate) struct PreChildRecorderTestAuditV1 {
++    pub producer_calls: usize,
++    pub live_inputs: Vec<serde_json::Value>,
++    pub recorded_rows: Vec<serde_json::Value>,
++}
++
++#[cfg(test)]
++struct PreChildRecorderTestStateV1 {
++    mode: PreChildRecorderTestModeV1,
++    producer_recorded: bool,
++    selected_once: bool,
++    audit: PreChildRecorderTestAuditV1,
++}
++
++#[cfg(test)]
++std::thread_local! {
++    static PRE_CHILD_RECORDER_TEST_STATE_V1: std::cell::RefCell<Option<PreChildRecorderTestStateV1>> = const { std::cell::RefCell::new(None) };
++}
++
++#[cfg(test)]
++pub(crate) fn begin_pre_child_recorder_test_audit_v1(mode: PreChildRecorderTestModeV1) {
++    PRE_CHILD_RECORDER_TEST_STATE_V1.with(|slot| {
++        *slot.borrow_mut() = Some(PreChildRecorderTestStateV1 {
++            mode,
++            producer_recorded: false,
++            selected_once: false,
++            audit: PreChildRecorderTestAuditV1::default(),
++        });
++    });
++}
++
++#[cfg(test)]
++pub(crate) fn take_pre_child_recorder_test_audit_v1() -> PreChildRecorderTestAuditV1 {
++    PRE_CHILD_RECORDER_TEST_STATE_V1
++        .with(|slot| slot.borrow_mut().take())
++        .map_or_else(PreChildRecorderTestAuditV1::default, |state| state.audit)
++}
++
++#[cfg(test)]
++fn test_recorder_selection_v1(
++    phase: PreChildCapturePhaseV1<'_>,
++) -> Option<PreChildRecorderTestModeV1> {
++    PRE_CHILD_RECORDER_TEST_STATE_V1.with(|slot| {
++        let mut slot = slot.borrow_mut();
++        let state = slot.as_mut()?;
++        let phase_matches = matches!(
++            (state.mode, phase),
++            (
++                PreChildRecorderTestModeV1::EnabledCovered
++                    | PreChildRecorderTestModeV1::ForcedCoveredCaptureFailure,
++                PreChildCapturePhaseV1::Covered,
++            ) | (
++                PreChildRecorderTestModeV1::EnabledSnowFree
++                    | PreChildRecorderTestModeV1::ForcedSnowFreeCaptureFailure
++                    | PreChildRecorderTestModeV1::ForcedSnowFreeWrongPhaseFailure
++                    | PreChildRecorderTestModeV1::ForcedSnowFreeRequiredOmissionFailure,
++                PreChildCapturePhaseV1::SnowFree { .. }
++            )
++        );
++        if !phase_matches || state.selected_once {
++            return None;
++        }
++        state.selected_once = true;
++        Some(state.mode)
++    })
++}
++
++#[cfg(not(test))]
++fn test_recorder_selection_v1(_: PreChildCapturePhaseV1<'_>) -> Option<()> {
++    None
++}
++
++#[cfg(test)]
++fn record_test_recorder_result_v1(_input: &PreChildContext<'_>, row: &serde_json::Value) {
++    PRE_CHILD_RECORDER_TEST_STATE_V1.with(|slot| {
++        if let Some(state) = slot.borrow_mut().as_mut() {
++            state.audit.recorded_rows.push(row.clone());
++        }
++    });
++}
++
++#[cfg(test)]
++fn capture_test_direct_run_constructor_inputs_raw(
++    inputs: &crate::DirectRunConstructorInputs,
++) -> serde_json::Value {
++    let lanes = inputs
++        .lanes
++        .iter()
++        .map(|lane| {
++            serde_json::json!({
++                "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
++                "downstream_lane_id": lane.downstream_lane_id,
++                "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
++                "runoff_publication_q_scale": lane.runoff_publication_q_scale,
++                "runoff_publication_qofe_scale": lane.runoff_publication_qofe_scale,
++                "runoff_publication_efflen_m": lane.runoff_publication_efflen_m,
++                "runoff_publication_cumulative_length_m": lane.runoff_publication_cumulative_length_m,
++                "runoff_publication_ofe_length_m": lane.runoff_publication_ofe_length_m,
++                "water": [lane.water.soil_water_m, lane.water.infiltration_m, lane.water.runoff_m, lane.water.evapotranspiration_m, lane.water.drainage_m, lane.water.lateral_flow_m],
++                "transfer": { "surface_carry_m": lane.transfer.surface_carry_m, "surface_hourly_weights": lane.transfer.surface_hourly_weights, "lateral_carry_m": lane.transfer.lateral_carry_m, "upstream_flow_m": lane.transfer.upstream_flow_m, "subsurface_input_m": lane.transfer.subsurface_input_m },
++                "publication": lane.publication, "subsurface_layers": lane.subsurface_layers,
++                "evapotranspiration_stage_state": lane.evapotranspiration_stage_state,
++                "plant_growth_state": lane.plant_growth_state, "plant_water_stress": lane.plant_water_stress,
++                "winter_snow": crate::DirectSnowRuntimeCarry::from(lane.winter_column.snow.clone()),
++                "winter_frost": crate::DirectFrostRuntimeCarry::from(lane.winter_column.frost.clone()),
++                "snow_runtime_carry": lane.snow_runtime_carry, "frost_runtime_carry": lane.frost_runtime_carry,
++                "day_inputs": lane.day_inputs,
++            })
++        })
++        .collect::<Vec<_>>();
++    serde_json::json!({
++        "identity": { "run_id": inputs.identity.run_id, "hillslope_id": inputs.identity.hillslope_id, "lane_count": inputs.identity.lane_count, "day_count": inputs.identity.day_count },
++        "phase_plan_ranks": inputs.phase_plan.phases().iter().map(|phase| phase.rank()).collect::<Vec<_>>(),
++        "lanes": lanes,
++    })
++}
++
++#[cfg(test)]
++fn capture_test_active_snow_raw(
++    value: &crate::hydrology::DirectActiveSnowPartitionInputs,
++) -> ActiveSnowPartitionCaptureV1 {
++    ActiveSnowPartitionCaptureV1 {
++        scalars: [
++            value.hyetograph_rainfall_m,
++            value.rst_c,
++            value.newsnw_kg_m3,
++            value.ssd_kg_m3,
++            value.runtime_swe_m,
++            value.runtime_depth_m,
++            value.runtime_density_kg_m3,
++            value.runtime_settle_day_count,
++            value.liquid_water_retained_m,
++            value.tmax_c,
++            value.tmin_c,
++            value.canopy_cover_fraction,
++            value.wind_m_s,
++            value.dewpoint_c,
++            value.coe_boundary_depth_m,
++            value.coe_boundary_density_kg_m3,
++            value.coe_boundary_settle_day_count,
++        ],
++        snow_melt_model: value.snow_melt_model.id().into(),
++        snow_density_model: value.snow_density_model.id().into(),
++        liquid_routing_model: value.stage3_liquid_routing_model.id().into(),
++        surface_energy: SurfaceEnergyCaptureV1 {
++            longwave: value.surface_energy_options.longwave_model.id().into(),
++            sublimation: value.surface_energy_options.sublimation_model.id().into(),
++            values: [
++                value.surface_energy_options.daily_solar_radiation_mj_m2,
++                value
++                    .surface_energy_options
++                    .daily_extraterrestrial_radiation_mj_m2,
++                value.surface_energy_options.atmospheric_pressure_pa,
++                value
++                    .surface_energy_options
++                    .turbulent_geometry
++                    .air_temperature_height_m,
++                value
++                    .surface_energy_options
++                    .turbulent_geometry
++                    .vapor_pressure_height_m,
++                value
++                    .surface_energy_options
++                    .turbulent_geometry
++                    .wind_speed_height_m,
++                value
++                    .surface_energy_options
++                    .turbulent_geometry
++                    .aerodynamic_roughness_length_m,
++            ],
++            daylight: value.surface_energy_options.daylight,
++            complete_carrier_shadow: value.surface_energy_options.complete_carrier_shadow,
++        },
++        sturm_climate_class: value.sturm_climate_class.map(|x| x.id().into()),
++        sturm_day_of_year: value.sturm_day_of_year,
++        snow_albedo_model: value.snow_albedo_model.map(|x| x.id().into()),
++        snow_albedo_state: value.snow_albedo_state.map(|x| SnowAlbedoCaptureV1 {
++            model: x.model.id().into(),
++            albedo: x.albedo,
++            accumulated_positive_temperature_c_day: x.accumulated_positive_temperature_c_day,
++        }),
++        snow_layers: value.snow_layers.clone(),
++        underlying_surface_albedo: value.underlying_surface_albedo,
++        hourly: value
++            .hourly
++            .iter()
++            .map(|x| SnowHourlyCaptureV1 {
++                values: [
++                    x.active_precipitation_m,
++                    x.rain_m,
++                    x.snowfall_m,
++                    x.radiation_mj_m2,
++                    x.air_temperature_c,
++                    x.cloud_fraction,
++                    x.rain_fraction,
++                    x.snow_fraction,
++                ],
++                phase_model: x.phase_model.id().into(),
++                hydrometeor_temperature_c: x.hydrometeor_temperature_c,
++            })
++            .collect(),
++    }
++}
++
++#[cfg(test)]
++fn capture_test_prepared_support_raw(
++    support: &crate::DirectSnowStage3V11PreparedSupport,
++) -> Result<PreparedSupportCaptureV1, String> {
++    let (
++        active,
++        forcing,
++        snow_free,
++        covered,
++        hard_boundaries,
++        identities,
++        capabilities,
++        open_requests,
++    ) = support.diagnostic_capture_parts_v1()?;
++    Ok(PreparedSupportCaptureV1 {
++        support: support.support(),
++        active_snow_by_lane: active
++            .iter()
++            .map(|(lane, value)| (*lane, capture_test_active_snow_raw(value)))
++            .collect(),
++        support_forcing_by_lane: forcing.iter().map(|(lane, value)| (*lane, SupportForcingCaptureV1 { hourly: SnowHourlyCaptureV1 { values:[value.forcing.active_precipitation_m,value.forcing.rain_m,value.forcing.snowfall_m,value.forcing.radiation_mj_m2,value.forcing.air_temperature_c,value.forcing.cloud_fraction,value.forcing.rain_fraction,value.forcing.snow_fraction],phase_model:value.forcing.phase_model.id().into(),hydrometeor_temperature_c:value.forcing.hydrometeor_temperature_c }, duration_seconds:value.duration_seconds })).collect(),
++        snow_free_interval: snow_free.clone(),
++        covered_interval: CoveredIntervalCaptureV1 { source: crate::v9_real_consumer_shadow::DirectV9ShadowIntervalInput { lse_forcing:covered.lse_forcing.clone(), vegetation_forcing:covered.vegetation_forcing.clone(), wb14_parameters:covered.wb14_parameters.clone() } },
++        hard_boundaries: hard_boundaries.to_vec(),
++        identities_by_lane: identities.iter().map(|(lane, values)| serde_json::to_vec(values).map(|bytes| (*lane, bytes))).collect::<Result<_,_>>().map_err(|error| error.to_string())?,
++        destination_capabilities: capabilities.iter().map(|((ofe, tile), capability)| { let destination=DestinationCaptureV1 { ofe_id:ofe.as_str().to_owned(), tile_id:tile.as_str().to_owned() }; match capability { crate::snow_stage3_open_boundary::SealedStage3TileBoundaryForcingV1::V11CanopyCovered(value) => DestinationCapabilityCaptureV1::Covered { destination, rho_air_kg_m3:value.rho_air_kg_m3, cp_air_j_kg_k:value.cp_air_j_kg_k, effective_canopy_cover:value.effective_canopy_cover }, crate::snow_stage3_open_boundary::SealedStage3TileBoundaryForcingV1::OpenSnow(_) => DestinationCapabilityCaptureV1::Open { destination } } }).collect(),
++        open_snow_destinations: open_requests.iter().map(|(ofe,tile)| DestinationCaptureV1 { ofe_id:ofe.as_str().to_owned(), tile_id:tile.as_str().to_owned() }).collect(),
++    })
++}
++
++#[cfg(test)]
++fn capture_test_snow_free_prepared_support_raw(
++    support: &crate::DirectSnowStage3V11PreparedSupport,
++) -> Result<serde_json::Value, String> {
++    let (active, forcing, snow_free, hard_boundaries, identities, represented, open_requests) =
++        support.diagnostic_snow_free_capture_parts_v1()?;
++    let active = active
++        .iter()
++        .map(|(lane, value)| (*lane, capture_test_active_snow_raw(value)))
++        .collect::<BTreeMap<_, _>>();
++    let forcing = forcing
++        .iter()
++        .map(|(lane, value)| {
++            (
++                *lane,
++                SupportForcingCaptureV1 {
++                    hourly: SnowHourlyCaptureV1 {
++                        values: [
++                            value.forcing.active_precipitation_m,
++                            value.forcing.rain_m,
++                            value.forcing.snowfall_m,
++                            value.forcing.radiation_mj_m2,
++                            value.forcing.air_temperature_c,
++                            value.forcing.cloud_fraction,
++                            value.forcing.rain_fraction,
++                            value.forcing.snow_fraction,
++                        ],
++                        phase_model: value.forcing.phase_model.id().into(),
++                        hydrometeor_temperature_c: value.forcing.hydrometeor_temperature_c,
++                    },
++                    duration_seconds: value.duration_seconds,
++                },
++            )
++        })
++        .collect::<BTreeMap<_, _>>();
++    let identities = identities
++        .iter()
++        .map(|(lane, values)| {
++            serde_json::to_vec(values)
++                .map(|bytes| (*lane, bytes))
++                .map_err(|error| error.to_string())
++        })
++        .collect::<Result<BTreeMap<_, _>, _>>()?;
++    Ok(serde_json::json!({
++        "support": support.support(),
++        "active_snow_by_lane": active,
++        "support_forcing_by_lane": forcing,
++        "snow_free_interval": snow_free,
++        "covered_projection": null,
++        "hard_boundaries": hard_boundaries,
++        "identities_by_lane": identities,
++        "destination_capabilities": [],
++        "destination_capability_count": represented.len(),
++        "open_snow_destinations": [],
++        "open_snow_destination_count": open_requests.len(),
++    }))
++}
++
++#[cfg(test)]
++fn capture_test_soil_trial_raw(
++    trial: &openwepp_land_surface_energy::SoilThermalTrialStateV2,
++) -> serde_json::Value {
++    serde_json::json!({
++        "transaction_id": trial.transaction_id(), "predecessor_transaction_id": trial.predecessor_transaction_id(),
++        "support_start_ns": trial.support_start_ns(), "support_end_ns": trial.support_end_ns(),
++        "beginning_state_sha256": trial.beginning_state_sha256(),
++        "accepted_predecessor_receipt_chain_sha256": trial.accepted_predecessor_receipt_chain_sha256(),
++        "unpublished_predecessor_trial_sha256": trial.unpublished_predecessor_trial_sha256(),
++        "numerical_coordinate_set_sha256": trial.numerical_coordinate_set_sha256(),
++        "numerical_coordinate_authority_sha256": trial.numerical_coordinate_authority_sha256(),
++        "ending_state": trial.ending_state(), "layer_credits": trial.layer_credits(),
++        "unpublished_trial_sha256": trial.unpublished_trial_sha256(),
++    })
++}
++
++#[cfg(test)]
++fn capture_test_phase_live(
++    input: &PreChildProducerSnapshotInputsV1<'_>,
++) -> (&'static str, serde_json::Value) {
++    match input.phase {
++        PreChildCapturePhaseV1::Covered => ("covered", serde_json::Value::Null),
++        PreChildCapturePhaseV1::SnowFree {
++            history,
++            validated_native_inactive_wb14_prefix,
++            ending_snow_owner_bytes,
++            deferred_native_v2_soil_custody,
++        } => (
++            "snow_free",
++            serde_json::json!({
++                "ordered_owner_joins": history.owner_joins,
++                "ordered_owner_join_support_liquid_custody_v2": history.owner_joins.iter().map(|receipt| receipt.support_liquid_custody_v2()).collect::<Vec<_>>(),
++                "ordered_event_groups": history.event_groups,
++                "ordered_event_group_terminal_liquid_custody_v2": history.event_groups.iter().map(|group| group.terminal_receiver_custody_v2()).collect::<Vec<_>>(),
++                "validated_native_inactive_wb14_prefix": validated_native_inactive_wb14_prefix,
++                "current_stage3": history.current_stage3,
++                "current_snow_enthalpy_material_owner": history.current_snow_enthalpy_material_owner,
++                "pending_terminal_parcels": history.pending_terminal_parcels,
++                "ending_snow_owner_canonical_bytes": ending_snow_owner_bytes,
++                "deferred_native_v2_soil_custody": deferred_native_v2_soil_custody.map(|custody| {
++                    let candidate = custody.candidate().v2().expect("test live deferred soil candidate");
++                    let continuation = custody.continuation().map(|continuation| serde_json::json!({
++                        "original_beginning_owner": continuation.original_prepared().beginning_owner(),
++                        "physical_trial": capture_test_soil_trial_raw(continuation.physical_trial()),
++                        "accumulated_operands": continuation.accumulated_operands(),
++                        "ordered_layer_credit_chain": continuation.diagnostic_layer_credit_chain(),
++                    }));
++                    serde_json::json!({
++                        "posture": "reconstructible_operands_not_installable_capability",
++                        "candidate": capture_test_soil_trial_raw(candidate),
++                        "continuation": continuation,
++                    })
++                }),
++            }),
++        ),
++    }
++}
++
++#[cfg(test)]
++fn capture_test_producer_live_row(
++    input: &PreChildProducerSnapshotInputsV1<'_>,
++) -> serde_json::Value {
++    let prepared_support = input.prepared_support.map(|prepared| match input.phase {
++        PreChildCapturePhaseV1::Covered => serde_json::to_value(
++            capture_test_prepared_support_raw(prepared)
++                .expect("test live covered support operands"),
++        )
++        .expect("test live covered support serialization"),
++        PreChildCapturePhaseV1::SnowFree { .. } => {
++            capture_test_snow_free_prepared_support_raw(prepared)
++                .expect("test live snow-free support operands")
++        }
++    });
++    let (phase, phase_live) = capture_test_phase_live(input);
++    serde_json::json!({
++        "capture_phase": phase, "support": input.support,
++        "receipt_canonical_json": serde_json::to_vec(input.receipt).expect("test live receipt serialization"),
++        "binding": { "proposed_upper_bound_s_bits": input.binding.proposed_upper_bound_s_bits, "coupled_parent_transaction_sha256": input.binding.coupled_parent_transaction_sha256, "accepted_slab_sha256": input.binding.accepted_slab_sha256, "parent_beginning_complete_owner_set_sha256": input.binding.parent_beginning_complete_owner_set_sha256, "parent_support_start_ns": input.binding.parent_support_start_ns, "parent_support_end_ns": input.binding.parent_support_end_ns, "child_support_start_ns": input.binding.child_support_start_ns, "child_support_end_ns": input.binding.child_support_end_ns },
++        "prepared_support_constructor_operands": prepared_support,
++        "parent_checkpoint_canonical_json": serde_json::to_vec(&input.parent.checkpoint()).expect("test live parent checkpoint serialization"),
++        "clock_complete_owner_canonical_bytes": input.clock.owners().iter().map(|owner| (owner.owner_id().to_owned(), owner.state_bytes().to_vec())).collect::<BTreeMap<_, _>>(),
++        "complete_owner_canonical_bytes": input.consumer.canonical_v11_parent_owner_state_bytes().expect("test live complete owner bytes"),
++        "native_consumer_constructor_operands": input.consumer.diagnostic_native_consumer_constructor_operands_v1().expect("test live native consumer operands"),
++        "parent_support": input.clock.parent_support(), "accepted_until": input.clock.accepted_until(),
++        "beginning_stage3_canonical_json": serde_json::to_vec(input.beginning_stage3).expect("test live stage3 serialization"),
++        "beginning_snow_enthalpy_material_owner": input.beginning_snow_enthalpy_material_owner,
++        "pending_terminal_parcels": input.pending_terminal_parcels,
++        "terminal_parcels_produced_unconsumed_canonical_json": serde_json::to_vec(input.pending_terminal_parcels).expect("test live terminal parcel serialization"),
++        "constraint_reduction_canonical_json": serde_json::to_vec(input.reduction).expect("test live reduction serialization"),
++        "complete_owner_ledger_canonical_json": serde_json::to_vec(input.ledger).expect("test live ledger serialization"),
++        "forcing_receipt": input.forcing_receipt,
++        "surface_liquid_configuration_canonical_json": input.context.surface_liquid_configuration.canonical_bytes().expect("test live surface configuration canonical bytes"),
++        "vegetation_configuration_canonical_json": serde_json::to_vec(&input.context.vegetation_configuration).expect("test live vegetation configuration serialization"),
++        "lse_configuration_canonical_json": serde_json::to_vec(input.consumer.lse_configuration()).expect("test live LSE configuration serialization"),
++        "provider_cursor_canonical_json": serde_json::to_vec(input.consumer.provider_cursor()).expect("test live provider cursor serialization"),
++        "native_lane_map_constructor_operands": input.consumer.diagnostic_native_lane_maps_v1(),
++        "native_soil_v2_constructor_operands": input.consumer.diagnostic_native_soil_v2().expect("test live native soil diagnostics"),
++        "native_hydrology_constructor_inputs": capture_test_direct_run_constructor_inputs_raw(input.consumer.diagnostic_hydrology_constructor_inputs_v1().expect("test live hydrology constructor pin").as_ref()),
++        "phase_live": phase_live,
++    })
++}
++
++#[cfg(test)]
++pub(crate) fn record_pre_child_producer_live_inputs_v1(
++    input: &PreChildProducerSnapshotInputsV1<'_>,
++) {
++    PRE_CHILD_RECORDER_TEST_STATE_V1.with(|slot| {
++        let mut slot = slot.borrow_mut();
++        let Some(state) = slot.as_mut() else {
++            return;
++        };
++        state.audit.producer_calls += 1;
++        let selected = matches!(
++            (state.mode, input.phase),
++            (
++                PreChildRecorderTestModeV1::EnabledCovered
++                    | PreChildRecorderTestModeV1::ForcedCoveredCaptureFailure,
++                PreChildCapturePhaseV1::Covered
++            ) | (
++                PreChildRecorderTestModeV1::EnabledSnowFree
++                    | PreChildRecorderTestModeV1::ForcedSnowFreeCaptureFailure
++                    | PreChildRecorderTestModeV1::ForcedSnowFreeWrongPhaseFailure
++                    | PreChildRecorderTestModeV1::ForcedSnowFreeRequiredOmissionFailure,
++                PreChildCapturePhaseV1::SnowFree { .. }
++            )
++        );
++        if selected && !state.producer_recorded {
++            state.producer_recorded = true;
++            state
++                .audit
++                .live_inputs
++                .push(capture_test_producer_live_row(input));
++        }
++    });
++}
++
++#[cfg(not(test))]
++fn record_test_recorder_result_v1(_: &PreChildContext<'_>, _: &serde_json::Value) {}
++
+ pub(crate) fn record_pre_child_context(input: PreChildContext<'_>) {
+-    if crate::snow_accuracy_observer::physical_global_enabled()
+-        && is_target(input.day, input.interval, input.support)
+-    {
+-        if let Err(detail) = capture(&input) {
+-            crate::snow_accuracy_observer::record(
+-                serde_json::json!({"kind":"b01_wb14_pre_child_current_context_capture_error_v1","detail":detail,"day_index":input.day,"interval_index":input.interval,"support":input.support}),
+-            );
++    #[cfg(test)]
++    let mut input = input;
++    #[cfg(test)]
++    let test_physical_observer_enabled = PRE_CHILD_RECORDER_TEST_STATE_V1.with(|slot| {
++        slot.borrow().as_ref().is_some_and(|state| {
++            state.mode == PreChildRecorderTestModeV1::ProductionNonTargetObserverEnabled
++        })
++    });
++    #[cfg(not(test))]
++    let test_physical_observer_enabled = false;
++    let production_selected = (crate::snow_accuracy_observer::physical_global_enabled()
++        || test_physical_observer_enabled)
++        && is_target(input.day, input.interval, input.support);
++    let test_mode = test_recorder_selection_v1(input.phase);
++    if !production_selected && test_mode.is_none() {
++        return;
++    }
++    let reported_phase = match input.phase {
++        PreChildCapturePhaseV1::Covered => "covered",
++        PreChildCapturePhaseV1::SnowFree { .. } => "snow_free",
++    };
++    #[cfg(test)]
++    match test_mode {
++        Some(PreChildRecorderTestModeV1::ForcedSnowFreeWrongPhaseFailure) => {
++            input.phase = PreChildCapturePhaseV1::Covered;
+         }
++        Some(PreChildRecorderTestModeV1::ForcedSnowFreeRequiredOmissionFailure) => {
++            input.prepared_support = None;
++        }
++        _ => {}
++    }
++    #[cfg(test)]
++    let forced_failure = matches!(
++        test_mode,
++        Some(
++            PreChildRecorderTestModeV1::ForcedCoveredCaptureFailure
++                | PreChildRecorderTestModeV1::ForcedSnowFreeCaptureFailure
++        )
++    );
++    #[cfg(not(test))]
++    let forced_failure = false;
++    let captured = if forced_failure {
++        Err("forced capture-only recorder failure".to_owned())
++    } else {
++        capture_row(&input)
++    };
++    let row = match captured {
++        Ok(row) => row,
++        Err(detail) => serde_json::json!({
++            "kind":"b01_wb14_pre_child_current_context_capture_error_v1",
++            "capture_phase":reported_phase,
++            "detail":detail,"day_index":input.day,"interval_index":input.interval,"support":input.support
++        }),
++    };
++    record_test_recorder_result_v1(&input, &row);
++    if crate::snow_accuracy_observer::physical_global_enabled() {
++        crate::snow_accuracy_observer::record(row);
+     }
+ }
+ 
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs
+@@ -14,6 +14,7 @@
+     forcing_receipt: Digest32,
+     ending_snow_owner_bytes: Vec<u8>,
+     native_inactive_wb14_prefix: Option<crate::direct_runtime::ValidatedNativeInactiveWb14PrefixV1>,
++    recorder_history: crate::snow_stage3_v11_current_context_capture::SnowFreePreChildHistoryV1<'_>,
+     deferred_native_v2_soil_custody: Option<
+         crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1,
+     >,
+@@ -113,22 +114,78 @@
+     let provisional_receipt = accept_slab(&mut provisional_clock, provisional_slab)?;
+     drop(provisional_custody_cost);
+     let provisional_parent = beginning_parent.clone();
++    let provisional_binding = crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
++        proposed_upper_bound_s_bits: support.duration_s_bits(),
++        coupled_parent_transaction_sha256: *parent_id.digest().as_bytes(),
++        accepted_slab_sha256: *provisional_receipt.slab_id().digest().as_bytes(),
++        parent_beginning_complete_owner_set_sha256: *ledger_digest.as_bytes(),
++        parent_support_start_ns: beginning_clock.parent_support().start_ns().get(),
++        parent_support_end_ns: beginning_clock.parent_support().end_ns().get(),
++        child_support_start_ns: support.start_ns().get(),
++        child_support_end_ns: support.end_ns().get(),
++    };
++    #[cfg(test)]
++    crate::snow_stage3_v11_current_context_capture::record_pre_child_producer_live_inputs_v1(
++        &crate::snow_stage3_v11_current_context_capture::PreChildProducerSnapshotInputsV1 {
++            phase:
++                crate::snow_stage3_v11_current_context_capture::PreChildCapturePhaseV1::SnowFree {
++                    history: recorder_history,
++                    validated_native_inactive_wb14_prefix: native_inactive_wb14_prefix.as_ref(),
++                    ending_snow_owner_bytes: &ending_snow_owner_bytes,
++                    deferred_native_v2_soil_custody: deferred_native_v2_soil_custody.as_ref(),
++                },
++            context,
++            parent: beginning_parent,
++            consumer: beginning_consumer,
++            clock: beginning_clock,
++            prepared_support: Some(prepared),
++            beginning_stage3: recorder_history.current_stage3,
++            beginning_snow_enthalpy_material_owner: recorder_history
++                .current_snow_enthalpy_material_owner,
++            support,
++            reduction: &reduction,
++            ledger: &ledger,
++            receipt: &provisional_receipt,
++            binding: &provisional_binding,
++            pending_terminal_parcels: recorder_history.pending_terminal_parcels,
++            forcing_receipt,
++        },
++    );
++    crate::snow_stage3_v11_current_context_capture::record_pre_child_context(
++        crate::snow_stage3_v11_current_context_capture::PreChildContext {
++            phase:
++                crate::snow_stage3_v11_current_context_capture::PreChildCapturePhaseV1::SnowFree {
++                    history: recorder_history,
++                    validated_native_inactive_wb14_prefix: native_inactive_wb14_prefix.as_ref(),
++                    ending_snow_owner_bytes: &ending_snow_owner_bytes,
++                    deferred_native_v2_soil_custody: deferred_native_v2_soil_custody.as_ref(),
++                },
++            context,
++            parent: beginning_parent,
++            consumer: beginning_consumer,
++            clock: beginning_clock,
++            prepared_support: Some(prepared),
++            beginning_stage3: recorder_history.current_stage3,
++            beginning_snow_enthalpy_material_owner: recorder_history
++                .current_snow_enthalpy_material_owner,
++            support,
++            reduction: &reduction,
++            ledger: &ledger,
++            receipt: &provisional_receipt,
++            binding: &provisional_binding,
++            pending_terminal_parcels: recorder_history.pending_terminal_parcels,
++            forcing_receipt,
++            day: day_index,
++            interval: interval_index,
++        },
++    );
+     let provisional_stack = DirectV11RealConsumerStack::new_parent_child_with_ending_snow_owner(
+         beginning_consumer,
+         &prepared.v11_interval,
+         day_index,
+         interval_index,
+         support.end_ns() == beginning_clock.parent_support().end_ns(),
+-        crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+-            proposed_upper_bound_s_bits: support.duration_s_bits(),
+-            coupled_parent_transaction_sha256: *parent_id.digest().as_bytes(),
+-            accepted_slab_sha256: *provisional_receipt.slab_id().digest().as_bytes(),
+-            parent_beginning_complete_owner_set_sha256: *ledger_digest.as_bytes(),
+-            parent_support_start_ns: beginning_clock.parent_support().start_ns().get(),
+-            parent_support_end_ns: beginning_clock.parent_support().end_ns().get(),
+-            child_support_start_ns: support.start_ns().get(),
+-            child_support_end_ns: support.end_ns().get(),
+-        },
++        provisional_binding,
+         ending_snow_owner_bytes.clone(),
+     );
+     let provisional_stack = match native_inactive_wb14_prefix {
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs
+@@ -2349,8 +2349,29 @@
+         child_support_start_ns: support.start_ns().get() as u128,
+         child_support_end_ns: support.end_ns().get() as u128,
+     };
++    #[cfg(test)]
++    crate::snow_stage3_v11_current_context_capture::record_pre_child_producer_live_inputs_v1(
++        &crate::snow_stage3_v11_current_context_capture::PreChildProducerSnapshotInputsV1 {
++            phase: crate::snow_stage3_v11_current_context_capture::PreChildCapturePhaseV1::Covered,
++            context,
++            parent: beginning_parent,
++            consumer: beginning_consumer,
++            clock: beginning_clock,
++            prepared_support: Some(prepared),
++            beginning_stage3: &beginning_stage3,
++            beginning_snow_enthalpy_material_owner,
++            support,
++            reduction: &reduction,
++            ledger: &ledger,
++            receipt: &provisional_receipt,
++            binding: &provisional_binding,
++            forcing_receipt,
++            pending_terminal_parcels,
++        },
++    );
+     crate::snow_stage3_v11_current_context_capture::record_pre_child_context(
+         crate::snow_stage3_v11_current_context_capture::PreChildContext {
++            phase: crate::snow_stage3_v11_current_context_capture::PreChildCapturePhaseV1::Covered,
+             context,
+             parent: beginning_parent,
+             consumer: beginning_consumer,
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_unpublished_continuation.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_unpublished_continuation.rs
+@@ -159,9 +159,11 @@
+                 DirectV9RealConsumerError::OwnerClosure("V2 chained continuation unpublished trial")
+             },
+         )?;
+-        prior.compose_accepted_outer_candidate(configuration).map_err(|_| {
+-            DirectV9RealConsumerError::OwnerClosure("V2 chained continuation prior replay")
+-        })?;
++        prior
++            .compose_accepted_outer_candidate(configuration)
++            .map_err(|_| {
++                DirectV9RealConsumerError::OwnerClosure("V2 chained continuation prior replay")
++            })?;
+         Ok(Self {
+             original_prepared: original_prepared.clone(),
+             retained_trial: trial.clone(),
+@@ -500,6 +502,14 @@
+         &self.accumulated_operands
+     }
+ 
++    /// Read-only diagnostic projection of the complete ordered credit chain.
++    /// This exposes reconstructible operands, never an install authority.
++    pub(crate) fn diagnostic_layer_credit_chain(
++        &self,
++    ) -> &[Vec<openwepp_land_surface_energy::SoilThermalLayerEnergyCreditV2>] {
++        &self.layer_credit_chain
++    }
++
+     pub fn compose_accepted_outer_candidate(
+         &self,
+         configuration: &LandSurfaceEnergyConfiguration,
+@@ -516,7 +526,12 @@
+             && self
+                 .physical_trial
+                 .accepted_predecessor_receipt_chain_sha256()
+-                == Some(&self.original_prepared.beginning_owner().receipt_chain_sha256)
++                == Some(
++                    &self
++                        .original_prepared
++                        .beginning_owner()
++                        .receipt_chain_sha256,
++                )
+             && self.layer_credit_chain.len() == 1
+             && self.layer_credit_chain.first().map(Vec::as_slice)
+                 == Some(self.physical_trial.layer_credits())
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
+@@ -1776,6 +1776,8 @@
+         let beginning_stage3 = BTreeMap::new();
+         let row = crate::snow_stage3_v11_current_context_capture::capture_row_for_test(
+             &crate::snow_stage3_v11_current_context_capture::PreChildContext {
++                phase:
++                    crate::snow_stage3_v11_current_context_capture::PreChildCapturePhaseV1::Covered,
+                 context: &context,
+                 parent: &parent,
+                 consumer: &shadow,
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs
+@@ -24,11 +24,147 @@
+     REAL_NATIVE_INACTIVE_PREFIX_V1.with(|fixture| fixture.borrow_mut().take())
+ }
+ 
+-#[allow(
+-    clippy::cast_possible_truncation,
+-    clippy::cast_sign_loss,
+-    clippy::too_many_lines
+-)]
++pub(super) struct CompleteWb14CadenceFixtureResultV1 {
++    pub fixture_inputs: serde_json::Value,
++    pub beginning_parent_checkpoint_canonical_json: Vec<u8>,
++    pub beginning_complete_owner_canonical_bytes: BTreeMap<String, Vec<u8>>,
++    pub beginning_clock_canonical_json: Vec<u8>,
++    pub beginning_stage3_owner_canonical_bytes: Vec<u8>,
++    pub beginning_surface_configuration_canonical_bytes: Vec<u8>,
++    pub beginning_stage3_lane_count: usize,
++    pub beginning_native_v3_resident_present: bool,
++    pub beginning_native_v4_resident_present: bool,
++    pub ending_parent_checkpoint_canonical_json: Vec<u8>,
++    pub finalized_accepted_segment_count: usize,
++    pub finalized_parent_canonical_projection: serde_json::Value,
++    pub ending_complete_owner_canonical_bytes: BTreeMap<String, Vec<u8>>,
++    pub ending_clock_canonical_json: Vec<u8>,
++    pub ending_clock_accepted_until: ModelTimeNs,
++    pub ending_stage3_owner_canonical_bytes: Vec<u8>,
++    pub subslabs: Vec<crate::snow_stage3_v11_attachment::Stage3CoupledSubslabReceiptV1>,
++    pub subslab_liquid_custody_canonical_json: Vec<Option<Vec<u8>>>,
++    pub event_groups: Vec<crate::snow_stage3_v11_attachment::Stage3V11TerminalEventGroupV1>,
++    pub event_group_terminal_custody_canonical_json: Vec<Option<Vec<u8>>>,
++    pub terminal_parcels: Vec<crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcel>,
++    pub snow_free_successor_receipts:
++        Vec<crate::snow_stage3_v11_attachment::Stage3SnowFreeSuccessorReceiptV1>,
++}
++
++fn v11_parent_candidate_canonical_projection(candidate: &V11ParentCandidate) -> serde_json::Value {
++    serde_json::json!({
++        "parent_transaction_id": candidate.parent_transaction_id,
++        "beginning_state_sha256": candidate.beginning_state_sha256,
++        "ending_state": candidate.ending_state,
++        "accepted_segments": candidate.accepted_segments.iter().map(|segment| {
++            serde_json::json!({
++                "accepted_slab_receipt": segment.accepted_slab_receipt,
++                "lse_support_receipt": segment.lse_support_receipt,
++                "beginning_state_sha256": segment.beginning_state_sha256,
++                "ending_state": segment.ending_state,
++                "resource_debits": segment.resource_debits,
++                "admitted_resource_fluxes": segment.admitted_resource_fluxes,
++                "shared_resource_transitions": segment.shared_resource_transitions,
++                "complete_owner_candidates": segment.complete_owner_candidates,
++                "material_transfers": segment.material_transfers,
++                "ending_resource_owners": segment.ending_resource_owners,
++            })
++        }).collect::<Vec<_>>(),
++        "accepted_segment_checkpoints": candidate.accepted_segment_checkpoints,
++        "cumulative_debits": candidate.cumulative_debits.iter().map(
++            |((owner_id, resource_key), value)| {
++                serde_json::json!({
++                    "owner_id": owner_id,
++                    "resource_key": resource_key,
++                    "value_bits": value.to_bits(),
++                })
++            }
++        ).collect::<Vec<_>>(),
++        "material_transfers": candidate.material_transfers,
++        "beginning_complete_owners": candidate.beginning_complete_owners,
++        "ending_complete_owners": candidate.ending_complete_owners,
++    })
++}
++
++impl CompleteWb14CadenceFixtureResultV1 {
++    pub(super) fn canonical_comparison_payload(&self) -> serde_json::Value {
++        serde_json::json!({
++            "fixture_inputs": self.fixture_inputs,
++            "beginning_parent_checkpoint_canonical_json": self.beginning_parent_checkpoint_canonical_json,
++            "beginning_complete_owner_canonical_bytes": self.beginning_complete_owner_canonical_bytes,
++            "beginning_clock_canonical_json": self.beginning_clock_canonical_json,
++            "beginning_stage3_owner_canonical_bytes": self.beginning_stage3_owner_canonical_bytes,
++            "beginning_surface_configuration_canonical_bytes": self.beginning_surface_configuration_canonical_bytes,
++            "beginning_stage3_lane_count": self.beginning_stage3_lane_count,
++            "beginning_native_v3_resident_present": self.beginning_native_v3_resident_present,
++            "beginning_native_v4_resident_present": self.beginning_native_v4_resident_present,
++            "ending_parent_checkpoint_canonical_json": self.ending_parent_checkpoint_canonical_json,
++            "finalized_accepted_segment_count": self.finalized_accepted_segment_count,
++            "finalized_parent_canonical_projection": self.finalized_parent_canonical_projection,
++            "ending_complete_owner_canonical_bytes": self.ending_complete_owner_canonical_bytes,
++            "ending_clock_canonical_json": self.ending_clock_canonical_json,
++            "ending_clock_accepted_until": self.ending_clock_accepted_until,
++            "ending_stage3_owner_canonical_bytes": self.ending_stage3_owner_canonical_bytes,
++            "subslabs": self.subslabs.iter().map(|receipt| {
++                let mut core = receipt.clone();
++                core.destination_receipts.clear();
++                serde_json::json!({
++                    "core_without_destination_receipts": core,
++                    "ordered_destination_receipts": receipt.destination_receipts.iter().map(
++                        |((ofe_id, tile_id), boundary)| {
++                            serde_json::json!({
++                                "ofe_id": ofe_id,
++                                "tile_id": tile_id,
++                                "boundary_receipt": boundary,
++                            })
++                        }
++                    ).collect::<Vec<_>>(),
++                })
++            }).collect::<Vec<_>>(),
++            "subslab_liquid_custody_canonical_json": self.subslab_liquid_custody_canonical_json,
++            "event_groups": self.event_groups,
++            "event_group_terminal_custody_canonical_json": self.event_group_terminal_custody_canonical_json,
++            "terminal_parcels": self.terminal_parcels,
++            "snow_free_successor_receipts": self.snow_free_successor_receipts,
++        })
++    }
++}
++
++fn assert_legacy_single_lane_terminal_fixture(result: &CompleteWb14CadenceFixtureResultV1) {
++    // The parent returns retained custody evidence, not pending custody. One terminal event occurs at 540 seconds and its produced parcel is consumed by the immediately following receiver support.
++    assert_eq!(result.event_groups.len(), 1);
++    let group = &result.event_groups[0];
++    assert_eq!(group.tick, ModelTimeNs::new(540_000_000_000));
++    let accepted_event = group
++        .accepted_event_receipt
++        .as_ref()
++        .expect("accepted terminal event evidence");
++    assert_eq!(accepted_event.tick(), group.tick);
++    assert_eq!(result.terminal_parcels.len(), 1);
++    let parcel = &result.terminal_parcels[0];
++    assert_eq!(
++        parcel.posture,
++        crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcelPosture::Consumed
++    );
++    assert!(
++        group
++            .produced_unconsumed_parcel_digests
++            .contains(&parcel.parcel_digest)
++    );
++}
++
++struct CompleteWb14CadenceFixtureRequestV1 {
++    runtime_swe_m: f64,
++    initial_cold_delta_k: f64,
++    include_child_17: bool,
++    hard_boundary_ns: Option<u128>,
++    expect_dynamic_proposal: bool,
++    second_lane_swe_m: Option<f64>,
++    terminal_event: bool,
++    capture_terminal_failure: bool,
++    solid_reappearance: bool,
++    production_only: bool,
++}
++
+ fn exercise_complete_wb14_cadence(
+     runtime_swe_m: f64,
+     initial_cold_delta_k: f64,
+@@ -41,6 +177,44 @@
+     solid_reappearance: bool,
+     production_only: bool,
+ ) {
++    if let Some(result) =
++        execute_complete_wb14_cadence_fixture(CompleteWb14CadenceFixtureRequestV1 {
++            runtime_swe_m,
++            initial_cold_delta_k,
++            include_child_17,
++            hard_boundary_ns,
++            expect_dynamic_proposal,
++            second_lane_swe_m,
++            terminal_event,
++            capture_terminal_failure,
++            solid_reappearance,
++            production_only,
++        })
++    {
++        assert_legacy_single_lane_terminal_fixture(&result);
++    }
++}
++
++#[allow(
++    clippy::cast_possible_truncation,
++    clippy::cast_sign_loss,
++    clippy::too_many_lines
++)]
++fn execute_complete_wb14_cadence_fixture(
++    request: CompleteWb14CadenceFixtureRequestV1,
++) -> Option<CompleteWb14CadenceFixtureResultV1> {
++    let CompleteWb14CadenceFixtureRequestV1 {
++        runtime_swe_m,
++        initial_cold_delta_k,
++        include_child_17,
++        hard_boundary_ns,
++        expect_dynamic_proposal,
++        second_lane_swe_m,
++        terminal_event,
++        capture_terminal_failure,
++        solid_reappearance,
++        production_only,
++    } = request;
+     let equilibrium_fixture = adaptive_production_path_coverage::equilibrium_fixture_requested();
+     let parity_case = adaptive_production_path_coverage::canonical_parity_case_requested();
+     let positive_covered_rain = runtime_swe_m.to_bits() == 0.005_f64.to_bits()
+@@ -409,22 +583,42 @@
+         let resident = shadow
+             .frozen_litter_v3_resident()
+             .expect("native parity V3 resident");
+-        let lse_bytes = &owners.get("land_surface_energy")
+-            .expect("native parity LSE owner").state_bytes;
+-        let native_lse_bytes = if openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().identity() == Some(14) {
+-            let transport = openwepp_coupled_time::Policy14LseOwnerTransport::from_canonical_bytes(lse_bytes)
+-                .expect("canonical B01 composite LSE transport");
+-            assert_eq!(transport.active_covered_runtime_lse_v1,
+-                serde_json::to_vec(&shadow.inner.lse_state).expect("active LSE bytes"));
+-            assert_eq!(transport.native_litter_lse_v3,
+-                serde_json::to_vec(resident.lse_state()).expect("native LSE bytes"));
+-            assert_eq!(transport.native_exact_surface_enthalpy_v4,
+-                shadow.frozen_litter_v4_resident().expect("native exact resident")
+-                    .exact_surface_owner().canonical_bytes().expect("native exact owner bytes"));
+-            transport.native_litter_lse_v3
+-        } else { lse_bytes.clone() };
+-        let lse_owner: serde_json::Value = serde_json::from_slice(&native_lse_bytes)
+-            .expect("native parity LSE component JSON");
++        let lse_bytes = &owners
++            .get("land_surface_energy")
++            .expect("native parity LSE owner")
++            .state_bytes;
++        let native_lse_bytes =
++            if openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().identity()
++                == Some(14)
++            {
++                let transport =
++                    openwepp_coupled_time::Policy14LseOwnerTransport::from_canonical_bytes(
++                        lse_bytes,
++                    )
++                    .expect("canonical B01 composite LSE transport");
++                assert_eq!(
++                    transport.active_covered_runtime_lse_v1,
++                    serde_json::to_vec(&shadow.inner.lse_state).expect("active LSE bytes")
++                );
++                assert_eq!(
++                    transport.native_litter_lse_v3,
++                    serde_json::to_vec(resident.lse_state()).expect("native LSE bytes")
++                );
++                assert_eq!(
++                    transport.native_exact_surface_enthalpy_v4,
++                    shadow
++                        .frozen_litter_v4_resident()
++                        .expect("native exact resident")
++                        .exact_surface_owner()
++                        .canonical_bytes()
++                        .expect("native exact owner bytes")
++                );
++                transport.native_litter_lse_v3
++            } else {
++                lse_bytes.clone()
++            };
++        let lse_owner: serde_json::Value =
++            serde_json::from_slice(&native_lse_bytes).expect("native parity LSE component JSON");
+         assert_eq!(
+             lse_owner
+                 .get("configuration_sha256")
+@@ -1426,7 +1620,7 @@
+             assert_eq!(shadow, rollback_consumer);
+             assert_eq!(beginning_clock, rollback_clock);
+             assert_eq!(stage3_beginning, rollback_stage3);
+-            return;
++            return None;
+         }
+         fn is_refinement_source(error: &DirectSnowStage3V11AttachmentError) -> bool {
+             match error {
+@@ -1465,7 +1659,7 @@
+             assert_eq!(shadow, rollback_consumer);
+             assert_eq!(beginning_clock, rollback_clock);
+             assert_eq!(stage3_beginning, rollback_stage3);
+-            return;
++            return None;
+         }
+         assert!(
+             matches!(
+@@ -1576,11 +1770,9 @@
+         assert!(evidence.coupling_iterations.iter().all(|iteration| {
+             let request = &iteration.hook.request;
+             let comparison_shape = if request.coupling_iteration == 0 {
+-                iteration.hook.comparisons.is_none()
+-                    && request.ending_snow_hint.is_none()
++                iteration.hook.comparisons.is_none() && request.ending_snow_hint.is_none()
+             } else {
+-                iteration.hook.comparisons.is_some()
+-                    && request.ending_snow_hint.is_some()
++                iteration.hook.comparisons.is_some() && request.ending_snow_hint.is_some()
+             };
+             comparison_shape
+                 && evidence
+@@ -1590,8 +1782,7 @@
+                         call.request.support == request.support
+                             && call.request.role == request.role
+                             && call.request.attempt_ordinal == request.attempt_ordinal
+-                            && call.request.coupling_iteration
+-                                == request.coupling_iteration
++                            && call.request.coupling_iteration == request.coupling_iteration
+                             && call.request.lane_id == request.lane_id
+                             && call.request.beginning_joint.receipt_sha256()
+                                 == request.beginning_joint.receipt_sha256()
+@@ -1997,7 +2188,7 @@
+         assert_eq!(shadow, rollback_consumer);
+         assert_eq!(beginning_clock, rollback_clock);
+         assert_eq!(stage3_beginning, rollback_stage3);
+-        return;
++        return None;
+     }
+     let execution = execute_covered_real_v11_parent(
+         &context,
+@@ -2014,8 +2205,8 @@
+     );
+     if crate::v9_real_consumer_shadow::v11_covered::canonical_covered_parity_poison_active_for_test(
+     ) {
+-        let active_poison = crate::v9_real_consumer_shadow::v11_covered::
+-            canonical_covered_parity_poison_v1();
++        let active_poison =
++            crate::v9_real_consumer_shadow::v11_covered::canonical_covered_parity_poison_v1();
+         if let Err(error) = &execution {
+             crate::v9_real_consumer_shadow::v11_covered::
+                 record_canonical_covered_outer_attachment_rejection_for_test(error);
+@@ -2054,10 +2245,10 @@
+             .is_ok_and(|bytes| bytes == rollback_stage3_bytes);
+         crate::v9_real_consumer_shadow::v11_covered::
+             record_canonical_covered_parity_rollback_for_test(rollback);
+-        return;
++        return None;
+     }
+     let (
+-        _,
++        ending_parent,
+         ending_consumer,
+         ending_clock,
+         finalized_parent,
+@@ -2097,33 +2288,99 @@
+         }
+     });
+     if terminal_event {
+-        if second_lane_swe_m.is_none() {
+-            // The parent returns retained custody evidence, not pending
+-            // custody. One terminal event occurs at 540 seconds and its
+-            // produced parcel is consumed by the immediately following
+-            // receiver support.
+-            assert_eq!(event_groups.len(), 1);
+-            let group = &event_groups[0];
+-            assert_eq!(group.tick, ModelTimeNs::new(540_000_000_000));
+-            let accepted_event = group
+-                .accepted_event_receipt
+-                .as_ref()
+-                .expect("accepted terminal event evidence");
+-            assert_eq!(accepted_event.tick(), group.tick);
+-            assert_eq!(terminal_parcels.len(), 1);
+-            let parcel = &terminal_parcels[0];
+-            assert_eq!(
+-                parcel.posture,
+-                crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcelPosture::Consumed,
+-            );
+-            assert!(
++        if second_lane_swe_m.is_some() {
++            return None;
++        }
++        let snow_free_successor_receipts =
++            crate::snow_stage3_v11_attachment::take_snow_free_successor_fixture_audit_v1();
++        let subslab_liquid_custody_canonical_json = subslabs
++            .iter()
++            .map(|receipt| {
++                receipt.support_liquid_custody_v2().map(|custody| {
++                    serde_json::to_vec(custody).expect("support-liquid custody bytes")
++                })
++            })
++            .collect();
++        let event_group_terminal_custody_canonical_json = event_groups
++            .iter()
++            .map(|group| {
+                 group
+-                    .produced_unconsumed_parcel_digests
+-                    .contains(&parcel.parcel_digest)
+-            );
+-        }
+-        return;
+-    }
++                    .terminal_receiver_custody_v2()
++                    .map(|custody| serde_json::to_vec(custody).expect("terminal custody bytes"))
++            })
++            .collect();
++        let parity_profile = match parity_case {
++            Some(crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1::Ordinary) => "ordinary",
++            Some(crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1::NativeFrozen) => "native-frozen",
++            Some(crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1::NativeMixedPhase) => "native-mixed-phase",
++            Some(crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1::NativeThawRefreeze) => "native-thaw-refreeze",
++            Some(crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1::NativeWetCanopy) => "native-wet-canopy",
++            Some(crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1::NativeMultiOfe) => "native-multi-ofe",
++            None => "default",
++        };
++        return Some(CompleteWb14CadenceFixtureResultV1 {
++            fixture_inputs: serde_json::json!({
++                "runtime_swe_m_bits": runtime_swe_m.to_bits(),
++                "initial_cold_delta_k_bits": initial_cold_delta_k.to_bits(),
++                "include_child_17": include_child_17,
++                "hard_boundary_ns": hard_boundary_ns,
++                "expect_dynamic_proposal": expect_dynamic_proposal,
++                "second_lane_swe_m_bits": second_lane_swe_m.map(f64::to_bits),
++                "terminal_event": terminal_event,
++                "capture_terminal_failure": capture_terminal_failure,
++                "solid_reappearance": solid_reappearance,
++                "production_only": production_only,
++                "parity_profile": parity_profile,
++                "parent_support": support,
++            }),
++            beginning_parent_checkpoint_canonical_json: serde_json::to_vec(&parent.checkpoint())
++                .expect("beginning parent checkpoint bytes"),
++            beginning_complete_owner_canonical_bytes: shadow
++                .canonical_v11_parent_owner_state_bytes()
++                .expect("beginning complete owner bytes"),
++            beginning_clock_canonical_json: serde_json::to_vec(&beginning_clock)
++                .expect("beginning clock bytes"),
++            beginning_stage3_owner_canonical_bytes:
++                crate::v9_real_consumer_shadow::v11_covered::canonical_stage3_snow_owner_bytes_v11(
++                    &stage3_beginning_by_lane,
++                )
++                .expect("beginning Stage3 owner bytes"),
++            beginning_surface_configuration_canonical_bytes: shadow
++                .inner
++                .surface_configuration
++                .canonical_bytes()
++                .expect("beginning surface configuration bytes"),
++            beginning_stage3_lane_count: stage3_beginning_by_lane.len(),
++            beginning_native_v3_resident_present: shadow.frozen_litter_v3.is_some(),
++            beginning_native_v4_resident_present: shadow.frozen_litter_v4.is_some(),
++            ending_parent_checkpoint_canonical_json: serde_json::to_vec(
++                &ending_parent.checkpoint(),
++            )
++            .expect("ending parent checkpoint bytes"),
++            finalized_accepted_segment_count: finalized_parent.accepted_segments.len(),
++            finalized_parent_canonical_projection: v11_parent_candidate_canonical_projection(
++                &finalized_parent,
++            ),
++            ending_complete_owner_canonical_bytes: ending_consumer
++                .canonical_v11_parent_owner_state_bytes()
++                .expect("ending complete owner bytes"),
++            ending_clock_canonical_json: serde_json::to_vec(&ending_clock)
++                .expect("ending clock bytes"),
++            ending_clock_accepted_until: ending_clock.accepted_until(),
++            ending_stage3_owner_canonical_bytes:
++                crate::v9_real_consumer_shadow::v11_covered::canonical_stage3_snow_owner_bytes_v11(
++                    &ending_stage3,
++                )
++                .expect("ending Stage3 owner bytes"),
++            subslabs,
++            subslab_liquid_custody_canonical_json,
++            event_groups,
++            event_group_terminal_custody_canonical_json,
++            terminal_parcels,
++            snow_free_successor_receipts,
++        });
++    }
++
+     assert_eq!(ending_clock.accepted_until(), support.end_ns());
+     assert!(!subslabs.is_empty());
+     assert!(
+@@ -2251,10 +2508,10 @@
+         // placeholder and does not execute the canonical zero-duration
+         // reappearance event. The adaptive assertions above are the real owner
+         // path for this fixture.
+-        return;
++        return None;
+     }
+     if production_only {
+-        return;
++        return None;
+     }
+     let lane_receipt = executor
+         .stack
+@@ -2276,7 +2533,7 @@
+     }
+ 
+     if second_lane_swe_m.is_some() {
+-        return;
++        return None;
+     }
+ 
+     let mut open_shadow = shadow.clone();
+@@ -2675,6 +2932,7 @@
+         execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut poisoned).is_err()
+     );
+     assert!(poisoned.stack.take_staged_ending().is_none());
++    None
+ }
+ 
+ include!("v9_real_consumer_shadow_wb14_routing_tests.rs");
