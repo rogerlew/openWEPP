@@ -1,0 +1,42 @@
+{
+  "evidence_class": "Static: exact detached caller and preliminary operation inspection",
+  "sources": {
+    "baseline": {
+      "caller_path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_covered_physical_tests.rs",
+      "caller_sha256": "3790d2379c81898b5a369d6ef3927dfc1fb28c2543f420269d07894ee2f9e8f7",
+      "fixture_path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs",
+      "fixture_sha256": "81ba8b1ad828c235a25062a77453a1699673f9c2b4157e820caf42ca6911bf17",
+      "preliminary_operation_start_line": 846,
+      "preliminary_operation": "    if !production_only {\n        execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)\n            .expect(\"real mixed covered/open OFE execution\");",
+      "first_error_operation": "execute_direct_v11_segment",
+      "guard": "!production_only"
+    },
+    "candidate": {
+      "caller_path": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_covered_physical_tests.rs",
+      "caller_sha256": "3790d2379c81898b5a369d6ef3927dfc1fb28c2543f420269d07894ee2f9e8f7",
+      "fixture_path": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs",
+      "fixture_sha256": "7d7e85f800e20af4dbc14594749f4496804f2d8983d11c30dafa56ebc5d4ac36",
+      "preliminary_operation_start_line": 1040,
+      "preliminary_operation": "    if !production_only {\n        execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)\n            .expect(\"real mixed covered/open OFE execution\");",
+      "first_error_operation": "execute_direct_v11_segment",
+      "guard": "!production_only"
+    }
+  },
+  "original_caller_files_identical": true,
+  "preliminary_operation_text_identical": true,
+  "original_fixture_inputs": {
+    "runtime_swe_m": "0.0006",
+    "initial_cold_delta_k": "0.0",
+    "include_child_17": false,
+    "hard_boundary_ns": null,
+    "expect_dynamic_proposal": false,
+    "second_lane_swe_m": null,
+    "terminal_event": true,
+    "capture_terminal_failure": false,
+    "solid_reappearance": false,
+    "production_only": false
+  },
+  "candidate_wrapper": "Unchanged caller arguments forwarded field-for-field into CompleteWb14CadenceFixtureRequestV1",
+  "native_characterization_production_only": true,
+  "internal_solver_site_residuals_map_count": "NOT OBSERVED; same error text has multiple emitters"
+}

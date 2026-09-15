@@ -1,14 +1,129 @@
 # B01 WB14 verified parent cadence repair
 
-**Status: INCOMPLETE / HOLD.** The corrected native reference and candidate
-produced identical complete comparison payloads. The original 540-second
-regression then failed before reaching its timing assertion. Execution stopped
-at **31 / 31 unsuccessful corrections**; recorder controls and lint remain unrun.
+**Status: INCOMPLETE / HOLD.** The original regression now fails at the same
+preliminary direct-segment operation on both the immutable producing cut and the
+candidate. The earlier corrected native pair remains a limited PASS. Execution
+stopped at **33 / 33 unsuccessful verifications/corrections**; recorder controls
+and lint remain unrun. See B01-CONT-028 below for the attribution and stop reason.
 
 Authentic capture and witness allowances are exhausted (**1 / 1** each).
 The authentic probe remains **0 / 1, RESERVED AND PROHIBITED**. Cadence is suspended.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Legacy baseline attribution adopted — B01-CONT-028
+
+The owner adopted `/tmp/openwepp_b01_wb14_legacy_baseline_attribution_authorization.md`
+for execution-only attribution against the immutable producing cut. No Rust,
+fixture, input, solver, assertion, dependency or configuration changes are allowed.
+The accepted native pair remains closed for its limited disabled-posture claim.
+
+### Prospective protocol and limits
+
+Run the original `interior_terminal_event_runs_covered_event_and_snow_free_remainder`
+regression once on `current-context-capture-20260913`, using its existing separate
+target, retained Nix wrapper, locked features and explicit manifest. Preserve
+`--no-tests fail --retries 0 --no-capture`; do not repeat the candidate regression.
+
+Only a baseline failure at the same preliminary direct-segment operation, with
+the same typed budget error and matching original inputs/configuration, permits
+shared-failure attribution. That outcome remains **FAIL** and consumes one failed
+verification. Baseline PASS, a different failure or ambiguous attribution stops
+execution. The conditional ordering amendment permits one retained recorder-control
+invocation and selected quality checks after a precise reproduction only if the
+remaining hard limits allow it. It never waives the original regression or permits
+recorder-preparation completion while that requirement remains failed.
+
+Carry **36,018.746904 seconds** and **31 failures**. The adopted supplement is at
+most 3,600 charged seconds and two further failed verifications; cumulative limits
+are **39,618.746904 seconds** and **33 failures**. The independent action cap starts
+conservatively at **19:32:35 UTC on 2026-09-15** and ends at **20:32:35 UTC**.
+All work and preservation count, with no wait deductions or reclaimed old balance.
+[Ledger](artifacts/legacy-baseline-attribution-20260915/ledger-start.json).
+
+### Continuity and operation selection
+
+The producing cut matches its retained **741-entry** baseline Clippy identity,
+`114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5`.
+The historical 740-entry identity remains a separate receipt. Parent bookkeeping
+initially compared the existing 741-entry snapshot to that historical 740-entry
+hash and rejected it. This was a namespace-selection error, with no observed
+source drift; it is conservatively charged as verification **32 / 33**.
+[Continuity](artifacts/legacy-baseline-attribution-20260915/continuity.json) preserves
+the failed statement and confirms unchanged candidate/reference sources and
+matching baseline/candidate support inputs, symlinks, matrix and configuration.
+A reproduced baseline failure will therefore reach 33 / 33 and prevent controls.
+
+**Static:** the original caller is unchanged and passes SWE 0.0006 m, cold delta
+0 K, no hard boundary, one lane, terminal-event enabled and `production_only=false`.
+The candidate's preliminary `execute_direct_v11_segment` operation at lines
+1040–1042 corresponds to baseline lines 846–848, inside `if !production_only`.
+The accepted native characterization uses `production_only: true` and does not
+exercise that operation. The same error text can arise at more than one solver
+site; this attribution will not infer internal map count, residuals, exact error
+site or an insufficient budget from stderr alone.
+
+Capture and witness remain **1 / 1 exhausted**; the probe remains **0 / 1,
+RESERVED AND PROHIBITED**. No authentic acquisition, native reader or cadence run
+is released. Same independent correctness and QA reviewers assess the attribution
+and reached disposition; prior accepted review findings remain intact.
+
+### Attribution result and hard stop
+
+**Ran:** the sole [baseline regression invocation](artifacts/legacy-baseline-attribution-20260915/baseline-original-regression.json)
+ran from **19:35:51.128350 to 19:36:03.456201 UTC on 2026-09-15**.
+It returned **FAIL, exit 100**: one test executed, zero passed, one failed,
+1,468 skipped, and no retries. The test took 0.510 seconds.
+
+| Evidence | Immutable producing cut | Retained candidate result |
+| --- | --- | --- |
+| Original regression | FAIL, exit 100 | FAIL, exit 100; not rerun |
+| First failing operation | Preliminary `execute_direct_v11_segment` | Same operation |
+| Panic location in `v9_real_consumer_shadow_wb14_tests.rs` | Line 848 | Line 1042 |
+| Typed failure | `Executor(AdaptiveRefinement("canonical covered evaluation budget"))` | Same typed failure |
+| 540-second assertion reached | No | No |
+
+[Complete baseline stderr](artifacts/legacy-baseline-attribution-20260915/baseline-original-regression.stderr),
+[operation/input relationship](artifacts/legacy-baseline-attribution-20260915/operation-relationship.json)
+and the [attribution record](artifacts/legacy-baseline-attribution-20260915/attribution.json)
+support a **shared observed baseline failure**. The original caller files are
+byte-identical; candidate argument forwarding preserves the original inputs.
+The baseline ran from the immutable producing cut, not the newer native-pair
+reference containing shared harness edits.
+
+This reproduces prospective outcome 1. Both test results remain **FAIL**; the
+reproduction establishes neither an acceptable numerical result nor permission
+to discard the regression. The exact internal solver error site, map count and
+residuals remain unobserved. The successful native characterization excludes
+this preliminary path and supplies no evidence about its numerical failure.
+
+The reproduction consumes verification **33 / 33**. The preceding parent
+namespace-selection mistake consumed 32 / 33, so the hard ceiling prevents the
+conditionally permitted recorder controls and quality measurements. No candidate
+regression rerun, native-pair rerun, recorder-control test, formatting or lint
+command ran in this continuation. No source correction followed the stop.
+
+### Disposition and preservation
+
+**Baseline attribution is supported; recorder preparation remains INCOMPLETE /
+HOLD.** The original regression is still an unmet selected requirement. Required
+recorder producer, mode, negative, omission and independent-operand controls and
+matched owning-crate/separate-runner lint remain unrun. Historical Clippy failures
+and the accepted native pair are unchanged; no acceptance threshold or prior
+review verdict was revised.
+
+The same independent [correctness](artifacts/legacy-baseline-attribution-20260915/correctness-review.md)
+and [QA](artifacts/legacy-baseline-attribution-20260915/qa-review.md) reviewers assess
+this attribution and the reached stop. Current-context acquisition, native
+restoration, scientific/conservation/restart qualification and cadence remain
+incomplete. The manual-projection and dynamic-hydrology coverage limitations,
+outer 4/22 versus nested 0/0 defect and original E008 remain untouched.
+
+The [stop ledger](artifacts/legacy-baseline-attribution-20260915/stop.json) is a
+pre-publication lower bound. Final charged consumption is retained at
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/legacy-baseline-attribution-publication.json`.
+All source and full input custody remains local; scoped evidence publication is
+authorized. No authentic run is released.
 
 ## Single-lane audit correction adopted — B01-CONT-027
 

@@ -1,0 +1,44 @@
+{
+  "evidence_class": "Ran: one baseline invocation; static source/operand relationship and retained candidate log comparison",
+  "baseline": {
+    "command": "baseline-original-regression.json",
+    "exit": 100,
+    "selected": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 1468,
+    "test_seconds": 0.51,
+    "failure_line": 848,
+    "source_tree_sha256": "114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5"
+  },
+  "candidate": {
+    "command": "../single-lane-audit-20260915/original-540-regression.json",
+    "exit": 100,
+    "selected": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 1471,
+    "test_seconds": 0.455,
+    "failure_line": 1042,
+    "source_tree_sha256": "3f2e7f08ed121836b9854539ce9f3f1fc2dd6eae073fd14baaf83d4a71bb8aa5",
+    "rerun": false
+  },
+  "same_typed_error_at_preliminary_operation": true,
+  "same_original_caller": true,
+  "same_preliminary_operation_text": true,
+  "inputs_configuration": "Original fixture args and support/config verified in operation-relationship.json and continuity.json",
+  "attribution": "Shared observed failure on immutable producing cut and candidate; both remain FAIL",
+  "does_not_establish": [
+    "exact solver internal emission site",
+    "residuals",
+    "map count",
+    "insufficient numerical budget",
+    "scientific correctness",
+    "regression waiver",
+    "enabled recorder isolation"
+  ],
+  "conditional_outcome": 1,
+  "failed_corrections": 33,
+  "failure_ceiling": 33,
+  "controls_quality": "NOT RUN: hard correction ceiling overrides conditional ordering permission"
+}

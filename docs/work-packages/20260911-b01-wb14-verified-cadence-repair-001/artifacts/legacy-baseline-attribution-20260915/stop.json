@@ -1,0 +1,18 @@
+{
+  "status": "INCOMPLETE/HOLD",
+  "stop_utc": "2026-09-15T19:36:03.456201+00:00",
+  "reason": "Expected baseline failure reproduced; cumulative verification33/33",
+  "carried_seconds": 36018.746904,
+  "continuation_seconds_so_far": 309.559068,
+  "cumulative_seconds_so_far": 36328.305972,
+  "cumulative_ceiling_seconds": 39618.746904,
+  "independent_cap_seconds": 3600,
+  "failed_corrections": 33,
+  "failure_ceiling": 33,
+  "wait_deductions_seconds": 0,
+  "baseline_invocations": 1,
+  "candidate_regression_new_invocations": 0,
+  "recorder_controls_invocations": 0,
+  "quality_commands": 0,
+  "automatic_retries": 0
+}
