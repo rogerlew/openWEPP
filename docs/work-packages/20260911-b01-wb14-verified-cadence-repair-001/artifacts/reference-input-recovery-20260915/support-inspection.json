@@ -1,0 +1,10 @@
+{
+  "scope": "Owning crate compile inputs, imported land-surface contract family, native fixture and recorder runtime inputs; no repository-wide dependency project",
+  "restored_root_tests": true,
+  "additional_compile_input": "docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/candidate-v22-hermite-gauss-matrix.json",
+  "native_fixture": "in-code identical native construction, no external physical input changes",
+  "config_continuity": "all .cargo absent; retained Nextest config digest verified",
+  "reference_check": "PASS exit0 library and test compilation; proves selected compile support is available, not runtime acceptance",
+  "failed_corrections": 28,
+  "failure_ceiling": 29
+}

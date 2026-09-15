@@ -1,0 +1,9 @@
+{
+  "reference-final-source.json": true,
+  "final-source.json": true,
+  "historical_evidence_unchanged": true,
+  "restored_inputs_unchanged": true,
+  "restored_symlinks_unchanged": true,
+  "additional_support_unchanged": true,
+  "pair_not_started": true
+}

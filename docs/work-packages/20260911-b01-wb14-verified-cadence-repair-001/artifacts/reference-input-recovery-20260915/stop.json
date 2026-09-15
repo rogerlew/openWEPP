@@ -1,0 +1,21 @@
+{
+  "status": "INCOMPLETE/HOLD",
+  "stop_reason": "Parent Nextest listing postprocessing assertion failed; conservative failed verification29/29",
+  "stop_recorded_utc": "2026-09-15T07:00:31.843002+00:00",
+  "failed_corrections": 29,
+  "failure_ceiling": 29,
+  "reference_compile": "PASS exit0",
+  "reference_listing": "PASS exit0, total1470, selected1",
+  "pair": "NOT RUN both sides",
+  "original540_regression": "NOT RUN in this continuation",
+  "recorder_controls": "NOT RUN in this continuation",
+  "format_and_lint": "NOT RUN in this continuation",
+  "carried_active_seconds": 34571.576166000006,
+  "continuation_seconds_so_far": 511.843002,
+  "cumulative_seconds_so_far": 35083.41916800001,
+  "ceiling_seconds": 36117.485508000005,
+  "wait_deductions_seconds": 0,
+  "capture": "1/1 exhausted",
+  "witness": "1/1 exhausted",
+  "probe": "0/1 RESERVED AND PROHIBITED"
+}

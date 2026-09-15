@@ -1,0 +1,294 @@
+crates/openwepp-hillslope-orchestrator/src/terminal_candidate_numerics.rs:642:     const PYTHON_MATRIX: &str = include_str!(concat!(
+crates/openwepp-hillslope-orchestrator/src/terminal_candidate_numerics.rs:643:         env!("CARGO_MANIFEST_DIR"),
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_tests.rs:804:         let source = include_str!("snow_stage3_v11_attachment.rs");
+crates/openwepp-hillslope-orchestrator/src/stage3_mechanism_experiment_audit.rs:413:         let source = include_str!(
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs:291: include!("snow_stage3_v11_subslab_owner_adjacency_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs:1197: #[path = "snow_stage3_v11_terminal_event_ordinal_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs:1879: include!("snow_stage3_v11_integrated_boundary_ledger.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs:1880: include!("snow_stage3_v11_adaptive_receipt_identity.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs:3118: #[path = "snow_stage3_v11_attachment_receipt_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:115: #[path = "canonical_owner_bytes.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:122: #[path = "v11_covered/mod.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:171: include!("v9_real_consumer_shadow_v11_error.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:172: include!("v9_real_consumer_shadow_physical_custody_error.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:173: include!("v9_real_consumer_shadow_serialization.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:353: include!("v9_real_consumer_shadow_forcing.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:354: include!("v9_real_consumer_shadow/v10_soil_thermal_v2.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:355: include!("v9_real_consumer_shadow/native_soil_restart_admission.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:891: include!("v9_real_consumer_shadow_equilibrium_fixture.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:893: include!("v9_real_consumer_shadow_publication_retention.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:894: include!("v9_real_consumer_shadow_root_zone_configuration.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:895: #[path = "v9_real_consumer_shadow/accepted_publication_support_capability.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:907: #[path = "v9_real_consumer_shadow/frozen_litter_v3_adoption.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:911: #[path = "v9_real_consumer_shadow/frozen_litter_v4_adoption.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:914: #[path = "v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:916: #[path = "v9_real_consumer_shadow/snow_free_physical_reuse.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:937: #[path = "v9_real_consumer_shadow/accepted_publication_support_capability_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:940: #[path = "v9_real_consumer_shadow/v3_publication_retention_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1952:         let source = include_str!("v9_real_consumer_shadow.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2001: include!("v9_real_consumer_shadow_v10_accessors.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:3401: include!("v9_real_consumer_shadow/direct_v9_real_consumer_shadow_impl.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:3492: include!("v9_real_consumer_shadow/live_vegetation_forcing.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:3494: include!("v9_real_consumer_shadow_soil_thermal.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:3496: include!("v9_real_consumer_shadow_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:3498: #[path = "v9_real_consumer_shadow/native_snow_liquid_custody.rs"]
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:3501: #[path = "v9_real_consumer_shadow/native_snow_liquid_publication.rs"]
+crates/openwepp-hillslope-orchestrator/src/snow_accuracy_observer.rs:222:         let mut input = std::fs::File::open(spool_path)?;
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs:1: include!("v9_real_consumer_shadow_wb14_covered_physical_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs:2680: include!("v9_real_consumer_shadow_wb14_routing_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:2258: include!("v9_real_consumer_shadow_publication_rotation_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:3167: #[path = "v9_real_consumer_shadow_publication_retention/accepted_snow_liquid_output_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:62:         let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:236:         let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:240:         let executor = include_str!("v11_covered/execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:249:         let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:272:         let attachment = include_str!("snow_stage3_v11_attachment.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:273:         let receipts = include_str!("snow_stage3_v11_attachment_receipts.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:274:         let persistent = include_str!(
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:284:         let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:291:         let source = include_str!("snow_stage3_v11_terminal_boundary_receiver.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:300:         let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:317:         let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:337:         let source = include_str!("snow_stage3_v11_terminal_execution_batch.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:353:         let source = include_str!("v9_real_consumer_shadow.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs:355:         assert!(source.contains("include!(\"v9_real_consumer_shadow_v10_accessors.rs\")"));
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs:4: include!("snow_stage3_v11_production_qualification_record_identity.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs:97:     include!("snow_stage3_v11_production_qualification_route_wire.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs:2491:     include!("snow_stage3_v11_qualification_crossjoin_child_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs:2694:     include!("snow_stage3_v11_production_qualification_record_identity_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs:2695:     include!("snow_stage3_v11_production_qualification_route_wire_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs:2696:     include!("snow_stage3_v11_production_qualification_accumulator_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs:2697:     include!("snow_stage3_v11_qualification_crossjoin_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_covered_physical_tests.rs:1486:     include!("snow_stage3_v11_adaptive_production_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_soil_thermal.rs:1059:     include!("v9_real_consumer_shadow/soil_thermal_exact_carry_v2_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:156: include!("snow_stage3_v11_terminal_execution_test_controls.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:172: include!("snow_stage3_v11_terminal_closure.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:173: include!("snow_stage3_v11_terminal_boundary_receiver.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:175: include!("snow_stage3_v11_terminal_precomputed_package.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:177: include!("snow_stage3_v11_terminal_execution_carrier_phase.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:372: include!("snow_stage3_v11_terminal_execution_binding.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:894: include!("snow_stage3_v11_terminal_execution_batch.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:897: include!("snow_stage3_discrete_endpoint_evidence.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:899: include!("snow_stage3_v11_terminal_preterminal_disposition.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:900: include!("snow_stage3_v11_terminal_discovery_order.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:982: include!("snow_stage3_v11_terminal_execution_preterminal_replay.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:1955: include!("snow_stage3_v11_terminal_event_application.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:1956: include!("snow_stage3_v11_terminal_receiver_topology.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:1958: include!("snow_stage3_v11_terminal_proposal_core.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:3174:         let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:3194: include!("snow_stage3_v11_terminal_execution_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:3196: include!("snow_stage3_v11_attachment_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs:150:         let controller = include_str!("v11_covered/open_snow.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs:151:         let canonical = include_str!("v11_covered/canonical_covered_solver.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs:158:         let controller = include_str!("v11_covered/open_snow.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs:159:         let canonical = include_str!("v11_covered/canonical_covered_solver.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs:176:         let controller = include_str!("v11_covered/open_snow.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs:177:         let solver = include_str!("v11_covered/canonical_covered_solver.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs:91: include!("snow_stage3_v11_restart_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:67:         let terminal = include_str!("snow_stage3_v11_terminal_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:80:         let custody = include_str!("v11_covered/execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:91:         let restart = include_str!("snow_stage3_v11_restart.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:97:         let source = include_str!("snow_stage3_v11_adaptive_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:114:         let source = include_str!("snow_stage3_v11_adaptive_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:130:         let helpers = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:141:         let adaptive = include_str!("snow_stage3_v11_adaptive_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:152:         let adaptive = include_str!("snow_stage3_v11_adaptive_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:177:         let helpers = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:194:         let adaptive = include_str!("snow_stage3_v11_adaptive_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:213:         let adaptive = include_str!("snow_stage3_v11_adaptive_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:234:         let source = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:268:         let source = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:307:         let source = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:326:         let source = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:10: #[path = "snow_stage3_v11_profile.rs"]
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:746: include!("snow_stage3_v11_attachment_error.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:871: include!("snow_stage3_v11_precipitation.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:872: include!("snow_stage3_v11_snow_soil_heat.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:873: include!("snow_stage3_v11_terminal_chronology.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:875: include!("snow_stage3_v11_terminal_receiver_custody.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:876: include!("stage3_parent_atmosphere.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2310: include!("snow_stage3_v11_prepared_support_identity.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2687: include!("snow_stage3_v11_snow_free_successor.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2688: include!("snow_stage3_v11_attachment_receipts.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2689: include!("snow_stage3_v11_adaptive_identity.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2881: include!("snow_stage3_v11_attachment_runtime.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2882: include!("snow_stage3_v11_production_qualification.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2883: include!("snow_stage3_v11_committed_day_archive.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2986: include!("snow_stage3_v11_forcing_digest.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2988: include!("snow_stage3_v11_real_parent_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2989: include!("snow_stage3_v11_adaptive_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2991: include!("snow_stage3_v11_restart.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2992: include!("snow_stage3_v11_terminal_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2994: include!("snow_stage3_v11_attachment_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2996: #[path = "snow_stage3_v11_parent_chronology_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1123:     let source = include_str!("v11_covered/canonical_covered_solver.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1268:     let solver = include_str!("v11_covered/canonical_covered_solver.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1269:     let audit = include_str!("v11_covered/canonical_covered_solver_test_audit.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1270:     let v8 = include_str!("land_surface_energy_shadow/covered_v8_owner.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1271:     let carrier = include_str!("v11_covered/carrier_phase.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1272:     let finalizer = include_str!("v11_covered/owner_finalization.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2396:         include_str!("snow_stage3_v11_terminal_execution.rs"),
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2397:         include_str!("snow_stage3_v11_adaptive_execution.rs"),
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2398:         include_str!("v11_covered/execution.rs"),
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2399:         include_str!("v11_covered/carrier_phase.rs"),
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2400:         include_str!("land_surface_energy_shadow/covered_parent_structural_admission.rs"),
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2401:         include_str!("land_surface_energy_shadow/strict_v8_endpoint.rs"),
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2402:         include_str!("land_surface_energy_shadow/v8_input_projection.rs"),
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2403:         include_str!("land_surface_energy_shadow/v3_multitile_adoption.rs"),
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2404:         include_str!("v9_real_consumer_shadow/frozen_litter_v3_adoption.rs"),
+crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs:192: #[path = "direct_runtime/surface_liquid_owner/v3_exact_enthalpy.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs:194: #[path = "direct_runtime/surface_liquid_owner/v4_projection.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs:483: include!("direct_runtime/00_core_frames.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs:484: include!("direct_runtime/01_publication.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs:485: include!("direct_runtime/02_state_reports.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs:486: include!("direct_runtime/03_executor.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs:487: include!("direct_runtime/04_audit_error_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:2045:     include!("v9_real_consumer_shadow_wb14_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:3798:     include!("v9_real_consumer_shadow_tests_tail.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs:1: include!("snow_stage3_v11_adaptive_frontend.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs:1515: include!("snow_stage3_v11_adaptive_outcomes.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs:1516: include!("snow_stage3_v11_reappearance_transition.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs:1966: include!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs:2662: include!("snow_stage3_v11_adaptive_execution_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs:1405:         let source = include_str!("snow_free_physical_reuse.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs:1431:             include_str!("../v11_vegetation_consumer.rs")
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs:1438:         let source = include_str!("snow_free_physical_reuse.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability_tests.rs:668:     let capability_source = include_str!("accepted_publication_support_capability.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability_tests.rs:692:     let retention_source = include_str!("../v9_real_consumer_shadow_publication_retention.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2981: include!("v10_soil_thermal_v2_resident_install_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_v49_tests.rs:268:     let source = include_str!("v10_soil_thermal_v2.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_v49_tests.rs:857:     let projection = include_str!("../direct_runtime/surface_liquid_owner/v3_projection.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:716:         let source = include_str!("frozen_litter_v4_adoption.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs:1069: include!("v10_soil_thermal_v2_unpublished_continuation.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs:2984:     include!("v10_soil_thermal_v2_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs:2988:     include!("v10_soil_thermal_v2_v49_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_adoption.rs:1566:         let source = include_str!("frozen_litter_v3_adoption.rs");
+crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_adoption.rs:1602:         let source = include_str!("frozen_litter_v3_adoption.rs");
+crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support.rs:1: include!("03_kernel_support_00_support_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/hydrology/mod.rs:19: include!("02_guard_errors.rs");
+crates/openwepp-hillslope-orchestrator/src/hydrology/mod.rs:20: include!("03_kernel_support.rs");
+crates/openwepp-hillslope-orchestrator/src/hydrology/mod.rs:21: include!("08_snow_albedo.rs");
+crates/openwepp-hillslope-orchestrator/src/hydrology/mod.rs:22: include!("09_snow_density.rs");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/01_management.rs:2357:             include_str!("../../../../tests/fixtures/disturbed_native_route_coefficients/p1.man");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/mod.rs:1: include!("00_core_types.rs");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/mod.rs:2: include!("01_management.rs");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/mod.rs:3: include!("02_soil_slope.rs");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/mod.rs:4: include!("03_climate.rs");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/mod.rs:5: include!("04_snow_frost_irrigation.rs");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/mod.rs:6: include!("05_projection_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/mod.rs:7: include!("06_simimpl28_hourly_forcing.rs");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/mod.rs:8: include!("07_series_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/mod.rs:9: include!("08_forest_lanuse_reconciliation.rs");
+crates/openwepp-hillslope-orchestrator/src/runtime_inputs/mod.rs:10: include!("09_snow_free_half_hour_forcing.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs:2095: #[path = "surface_liquid_wb14_linear_reseal_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs:2973:     include!("surface_liquid_wb14_native_prefix_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs:27: include!("stage3_committed_support_liquid.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs:28: include!("stage3_committed_publication_wat5.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs:971: include!("stage3_committed_publication_event_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs:2708: include!("stage3_committed_publication_numeric_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs:2711: #[path = "stage3_committed_publication_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_tests.rs:2990: include!("surface_liquid_ingress_projection_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:2668: include!("runoff_result_types.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:1359: include!("00_core_frames_test_projection.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs:22: const B01_PACKET: &[u8] = include_bytes!("fixtures/b01_wb14_current_run_boundary_packet.json");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs:23: const B01_OWNER_SEED: &[u8] = include_bytes!("fixtures/b01_wb14_owner_seed.json");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs:5: #[path = "surface_liquid_closure_preflight.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs:7: #[path = "surface_liquid_ending_validation.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs:9: #[path = "surface_liquid_enthalpy_closure.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs:11: #[path = "surface_liquid_raw_parent_closure.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs:13: #[path = "surface_liquid_closure_comparison.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs:50: include!("surface_liquid_closure_projection_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs:1388: include!("surface_liquid_closure_terminal_validation.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs:1948: include!("surface_liquid_closure_receipt_routing.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_projection_tests.rs:438: #[path = "surface_liquid_ingress_terminal_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs:1308: #[path = "tests/erosion_hb01.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests.rs:435:     let source = include_str!("stage3_committed_publication.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests.rs:442:     let executor = include_str!("03_executor.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests.rs:486:     let source = include_str!("stage3_committed_publication.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests.rs:744: include!("stage3_committed_publication_tests_tail.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_continuity.rs:2418: #[path = "tests/erosion_hb04.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs:2936: include!("surface_liquid_owner/validation_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs:2938: include!("surface_liquid_zero_duration_snow.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs:2941: #[path = "surface_liquid_owner_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs:2945: #[path = "surface_liquid_owner/v2_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs:2949: #[path = "surface_liquid_owner/v2_ingress_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs:2952: #[path = "surface_liquid_owner/identity_validation.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs:2469: include!("03_executor_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_cutover_source_guards.rs:3:     let runtime = include_str!("../direct_runtime.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_cutover_source_guards.rs:13:     let core_frames = include_str!("00_core_frames.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:287: include!("surface_liquid_ingress_coordinator.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:1551: include!("surface_liquid_ingress_preflight.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:2990: include!("surface_liquid_ingress_mass_allocation.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:2992: #[path = "surface_liquid_ingress_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:2996: #[path = "surface_liquid_ingress_context_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_tests.rs:2199:     let source = include_str!("../direct_runtime.rs");
+crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs:1938:         let source = include_str!("v3_multitile_adoption.rs");
+crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs:1950:         let source = include_str!("v3_multitile_adoption.rs");
+crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs:1963:         let source = include_str!("v3_multitile_adoption.rs");
+crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/strict_v8_endpoint.rs:1372: #[path = "strict_v8_endpoint_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/strict_v8_endpoint.rs:1411:         let source = include_str!("strict_v8_endpoint.rs");
+crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs:77: #[path = "../../../../tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"]
+crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs:975: include!("real_hydrology_execution.rs");
+crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/strict_v8_endpoint_tests.rs:130:             env!("CARGO_MANIFEST_DIR"),
+crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/strict_v8_endpoint_tests.rs:138:             env!("CARGO_MANIFEST_DIR"),
+crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_tail_tests.rs:221:         include_str!("open_snow_terminal_accepted_endpoint.rs")
+crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_tail_tests.rs:294: #[path = "open_snow_convergence_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs:1050:     let source = include_str!("open_snow.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/canonical_covered_solver.rs:93: include!("canonical_covered_solver_test_audit.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:37: include!("owner_finalization_v50_transition.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:187:         let source = include_str!("owner_finalization.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:266:         let source = include_str!("owner_finalization.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:267:         let consumer = include_str!("../v9_real_consumer_shadow/v10_soil_thermal_v2.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:298:         let source = include_str!("owner_finalization.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:516:         let source = include_str!("owner_finalization.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:2968: include!("owner_finalization_nitrogen_protocol_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:2970: include!("owner_finalization_resource_transitions.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:65: include!("carrier_phase/snow_boundary.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:2791:         let source = include_str!("carrier_phase.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:2815:         let source = include_str!("carrier_phase.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:2843:         let source = include_str!("carrier_phase.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:2949:         let source = include_str!("carrier_phase.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:2972:         let source = include_str!("carrier_phase.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs:71: include!("open_snow_tail_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs:944:         let source = include_str!("carrier_engine.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs:970:         let source = include_str!("carrier_engine.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs:978:         let source = include_str!("carrier_engine.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:3: include!("receipt_sets.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:4: include!("execution.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:5: include!("carrier_engine.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:6: include!("carrier_phase.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:7: include!("regime.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:8: include!("fixed_point.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:9: include!("open_snow_receipt_reseal_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:10: include!("terminal_composition.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:11: include!("open_snow_physical_support.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:12: include!("canonical_covered_solver.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:13: include!("open_snow.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:27: include!("execution_carrier_humidity.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs:100:         let source = include_str!("execution.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization_v50_transition.rs:160:         let source = include_str!("owner_finalization_v50_transition.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:71: include!("open_snow_reuse_gate_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:120: include!("open_snow_physical_reconstruction_helpers.rs");
+crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_support.rs:301: include!("open_snow_terminal_accepted_endpoint.rs");
+crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:2738: include!("runoff_reconciliation/cqr_row5_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_evaluation_validation_tests.rs:643: #[path = "stage3_solver/stage3_evaluation_validation_tests/persistent_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs:3030: include!("stage3_solver_cumulative_order_tests.rs");
+crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs:3033: #[path = "stage3_evaluation_validation_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/stage3_evaluation_validation_tests/persistent_tests.rs:304:     let source = include_str!("../evaluation.rs");
+crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v3_projection.rs:1335: #[path = "v3_projection_tests.rs"]
+crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs:1150:             let path = format!("{}/src/{source_path}", env!("CARGO_MANIFEST_DIR"));
+crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs:1153:                 std::fs::read_to_string(&path).unwrap_or_else(|err| {
+crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs:1469:         env!("CARGO_MANIFEST_DIR")
+crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs:1471:     let source = std::fs::read_to_string(&path)
+crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs:1676: #[path = "direct_runtime_r3_r4.rs"]
+crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs:1679: #[path = "direct_runtime_r3c_r4b.rs"]
+tests/integration/land_surface_energy_real_hydrology_shadow_contract/covered_forest_tests.rs:1126:     let source=fs::read_to_string("crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/strict_v8_endpoint.rs").expect("source");
+tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:36: #[path = "land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs"]
+tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:39: #[path = "land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs"]
+tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:42: #[path = "land_surface_energy_real_hydrology_shadow_contract/snow_preflight_tests.rs"]
+tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:45: #[path = "land_surface_energy_real_hydrology_shadow_contract/finalization_test_support.rs"]
+tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:47: #[path = "land_surface_energy_real_hydrology_shadow_contract/sealed_receiver_context_tests.rs"]
+tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:50: #[path = "land_surface_energy_real_hydrology_shadow_contract/source_binding_tests.rs"]
+tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:52: #[path = "land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs"]
+tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:2759:     let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:2766:         let source = fs::read_to_string(&path).expect("production source");

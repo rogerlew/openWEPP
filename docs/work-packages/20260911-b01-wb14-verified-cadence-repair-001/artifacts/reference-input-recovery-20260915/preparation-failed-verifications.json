@@ -1,0 +1,20 @@
+{
+  "failures": [
+    {
+      "number": 28,
+      "statement": "assert not links, links",
+      "observed": "1318 pre-existing internal tests symlinks",
+      "mutation_before_failure": false,
+      "resolution": "Recorded exact internal targets, verified candidate equality, preserved links in authorized tests copy"
+    },
+    {
+      "number": 29,
+      "statement": "assert d['test-count']==1",
+      "observed": 1470,
+      "correct_interpretation": "Top-level total includes filtered tests; selected filter-match count retained separately",
+      "native_pair_started": false,
+      "resolution": "No corrective verification or rerun; stop at ceiling"
+    }
+  ],
+  "classification": "Conservative unsuccessful verification charges for parent input preparation/postprocessing errors; neither is a scientific failure"
+}

@@ -1,0 +1,9 @@
+{
+  "start_utc": "2026-09-15T06:52:00+00:00",
+  "carried_seconds": 34571.576166000006,
+  "remaining_seconds": 1545.909342,
+  "deadline_utc": "2026-09-15T07:17:45.909342+00:00",
+  "failed_corrections": 27,
+  "failure_ceiling": 29,
+  "wait_deductions_seconds": 0
+}

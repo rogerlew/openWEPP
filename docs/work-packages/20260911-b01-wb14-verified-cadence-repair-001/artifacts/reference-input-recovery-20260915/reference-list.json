@@ -1,0 +1,76 @@
+{
+  "argv": [
+    "bash",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915",
+    "/tmp/openwepp-b01-wb14-cadence-targets/recorder-fixture-reference-20260915",
+    "nextest",
+    "list",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915/Cargo.toml",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "--lib",
+    "--locked",
+    "--features",
+    "persisted-restart-v1,restart-authority-evidence",
+    "-E",
+    "test(=v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_characterization_payload)",
+    "--message-format",
+    "json"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "source_tree_sha256": "996e87f5a4aad77fc906691dc1d0ce466eb769767af87c32bd83b849cc593016",
+  "changed_files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_frontend.rs",
+      "base_sha256": "a9a633d1dd5d82938dcf417b7c557431e6477455fbf884a61e911b9f53c0a6b9",
+      "source_sha256": "3d904ff6e35af03ee282905ac33cce7e63cd99fa7af6e8df2565f183c23a2838"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+      "base_sha256": "361de4aac012b1e9f08c3290d5d29ce29bbd48631342f42e79b68f40475ba189",
+      "source_sha256": "f0916088026e40c8303f011ad40acfcd37dc65fcc9f2c93ead0c8f6bf5f5f36a"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs",
+      "base_sha256": "81ba8b1ad828c235a25062a77453a1699673f9c2b4157e820caf42ca6911bf17",
+      "source_sha256": "7d7e85f800e20af4dbc14594749f4496804f2d8983d11c30dafa56ebc5d4ac36"
+    }
+  ],
+  "patch": "source-e8a700579d6dfad9bac8db2f716b5004104b3215fa2321f52aa71e950f0492b6.patch",
+  "patch_sha256": "e8a700579d6dfad9bac8db2f716b5004104b3215fa2321f52aa71e950f0492b6",
+  "start_utc": "2026-09-15T06:57:38.950828+00:00",
+  "execution_input_custody": "input-custody.json",
+  "execution_input_custody_sha256": "2e9e27eeb0a355672e7a74c8fd645a2ce95182ae88bf78741bc8f98ecac9b082",
+  "timeout_seconds": 1116.955905,
+  "executed_argv": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "1116.955905s",
+    "bash",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915",
+    "/tmp/openwepp-b01-wb14-cadence-targets/recorder-fixture-reference-20260915",
+    "nextest",
+    "list",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/recorder-fixture-reference-20260915/Cargo.toml",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "--lib",
+    "--locked",
+    "--features",
+    "persisted-restart-v1,restart-authority-evidence",
+    "-E",
+    "test(=v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_characterization_payload)",
+    "--message-format",
+    "json"
+  ],
+  "end_utc": "2026-09-15T06:58:43.953388+00:00",
+  "exit": 0,
+  "source_unchanged_during_command": true
+}

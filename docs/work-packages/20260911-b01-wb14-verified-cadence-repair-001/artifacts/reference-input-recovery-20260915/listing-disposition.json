@@ -1,0 +1,22 @@
+{
+  "evidence_class": "Static: interpretation of retained successful exact listing; no new test run",
+  "total_test_count": 1470,
+  "selected_count": 1,
+  "selected": [
+    {
+      "suite": "openwepp-hillslope-orchestrator",
+      "name": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_characterization_payload",
+      "filter_match": {
+        "status": "matches"
+      }
+    }
+  ],
+  "command": "reference-list.json",
+  "postprocessing_failure": {
+    "failed_statement": "assert d['test-count']==1",
+    "actual": 1470,
+    "cause": "Parent confused total tests including filtered cases with selected tests; assertion failed before pair-protocol write or any native invocation",
+    "failed_corrections": 29,
+    "failure_ceiling": 29
+  }
+}
