@@ -1,25 +1,149 @@
 # B01 WB14 verified parent cadence repair
 
-Status: INCOMPLETE/HOLD — corrected native pair PASS with exact full payload equality; original540 regression FAIL at canonical covered evaluation budget before timing assertion. Stop31/31; recorder controls/lint NOT RUN. Capture/witness1/1 exhausted; probe0/1 RESERVED AND PROHIBITED.
+**Status: INCOMPLETE / HOLD.** The corrected native reference and candidate
+produced identical complete comparison payloads. The original 540-second
+regression then failed before reaching its timing assertion. Execution stopped
+at **31 / 31 unsuccessful corrections**; recorder controls and lint remain unrun.
+
+Authentic capture and witness allowances are exhausted (**1 / 1** each).
+The authentic probe remains **0 / 1, RESERVED AND PROHIBITED**. Cadence is suspended.
+
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
 
 ## Single-lane audit correction adopted — B01-CONT-027
 
-Owner execution of `/tmp/openwepp_b01_wb14_single_lane_audit_authorization.md` authorizes only the identical batch-audit postcondition in `assert_native_mixed_phase_terminal_fixture` on detached reference and candidate. Astra is sole writer. Preserve both failed cuts before edits; no production/fixture/input/configuration/assertion changes beyond this exact correction. [Detached source relationship](artifacts/single-lane-audit-20260915/source-relationship.json) confirms multi-lane batch dispatch versus single-lane terminal dispatch and batch-specific audit emission. Preserve every genuine transition/prefix/event/parcel/owner/successor predicate and both original540 assertions/callers, and retain the empty batch vector in the complete comparison payload.
+### Outcome and remaining blocker
 
-Carry35547.775493/36117.485508 seconds and30/31 failures; no added time/cycles. Conservative start15:47:25UTC includes initial missing-file lookup and intervening elapsed time; deadline15:56:54.710015UTC, no wait deductions,90s preservation reserve. [Starting ledger](artifacts/single-lane-audit-20260915/ledger-start.json). Existing reference FAIL1/1 remains consumed. One corrected replacement reference and one still-unspent candidate invocation authorized, no retries. Source edit requires test rebuild; use retained exact native selector, Nix wrapper, manifests, features, distinct targets and `--no-tests fail --retries 0 --no-capture`. Compile via those rebuilt test invocations; frozen-file formatting check first. Full payload/diagnostic pickup and exact complete comparison before original540/recorder controls/quality where bounds permit. Same correctness/QA reviewers assess affected changes/results. Stop at first new failure, drift, mismatch, out-of-scope need,31/31 or time bound. Capture/witness1/1 exhausted; probe0/1 RESERVED AND PROHIBITED; no authentic/cadence release.
+**Ran:** the narrow test correction and the disabled-observer/recorder native
+comparison passed. Recorder preparation remains **INCOMPLETE / HOLD**.
 
-### B01-CONT-027 result and disposition
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Format of both corrected test files | PASS; exit 0 on each source | [Reference](artifacts/single-lane-audit-20260915/reference-format.json), [candidate](artifacts/single-lane-audit-20260915/candidate-format.json) |
+| Replacement reference characterization | PASS; 1 test passed | [Command and source binding](artifacts/single-lane-audit-20260915/reference-native.json) |
+| Candidate characterization | PASS; 1 test passed | [Command and source binding](artifacts/single-lane-audit-20260915/candidate-native.json) |
+| Complete canonical payload comparison | PASS; exact byte equality | [Comparison result](artifacts/single-lane-audit-20260915/comparison.json) |
+| Original 540-second regression | FAIL; 0 passed, 1 failed; exit 100 | [Command](artifacts/single-lane-audit-20260915/original-540-regression.json), [stderr](artifacts/single-lane-audit-20260915/original-540-regression.stderr) |
+| Recorder producer, isolation, negative and independent-operand controls | NOT RUN in this continuation | Stopped after the regression failure |
+| Matched owning-crate and separate-runner lint | NOT RUN in this continuation | Stopped after the regression failure |
 
-**Ran:** both frozen-file format checks **PASS0**; both corrected test binaries rebuilt through exact Nextest commands. [Reference](artifacts/single-lane-audit-20260915/reference-native.json) **PASS1/1**,15:50:20.326109–15:50:47.769068UTC; [candidate](artifacts/single-lane-audit-20260915/candidate-native.json) **PASS1/1**,15:51:02.278629–15:51:44.055216UTC. No retries. Historical failed reference remains FAIL1/1; exactly one newly authorized replacement reference and the one candidate ran. Source stable during every command. New [reference source](artifacts/single-lane-audit-20260915/reference-source.json):741-entry tree3aeeb449f10a725e252276c9523f74bed603228dd80b691b4120e4449b8979d0, cumulative patchc828508beec774f5b826dc89843d3c7f4805441f5d1974fd09333ca8da02edc4. New [candidate source](artifacts/single-lane-audit-20260915/candidate-source.json):tree3f2e7f08ed121836b9854539ce9f3f1fc2dd6eae073fd14baaf83d4a71bb8aa5, patchd24b0b28bb90e263501bef1c0c935cf8859b068d35efe450a530e7000bc61c66. Exact failed test files and narrow correction patches preserved; only the named postcondition changed on each side.
+The regression failed at `v9_real_consumer_shadow_wb14_tests.rs:1042` with:
 
-[Full comparison](artifacts/single-lane-audit-20260915/comparison.json) **PASS**: exactly one complete model and diagnostic payload per side; entire canonical payloads equal byte-for-byte,7,707,305 bytes excluding output newline, SHAfa01f2a111ddb331bee942f604dee1fe3af230a6d8b5f4e225234f98146e6845. Empty batch vector retained. Both native diagnostic ticks360000000000ns are observations, not scientific timing acceptance; elapsed diagnostic values remain outside model comparison. [Lossless output preservation](artifacts/single-lane-audit-20260915/output-preservation.json) binds complete original stdout and extracted JSON in durable local logs plus gzip copies for publication; decompression reproduces exact bytes. No fields normalized or omitted.
+```text
+Executor(AdaptiveRefinement("canonical covered evaluation budget"))
+```
 
-**HARD STOP31/31 at15:52:13.531642UTC:** [original540 regression](artifacts/single-lane-audit-20260915/original-540-regression.json) **FAIL exit100,0/1**,1471 skipped,0.455s test. [stderr](artifacts/single-lane-audit-20260915/original-540-regression.stderr) first panic at `v9_real_consumer_shadow_wb14_tests.rs:1042`: `Executor(AdaptiveRefinement("canonical covered evaluation budget"))`; outer join1467 propagates it. The run did not reach the540 assertion. No repair, rerun, recorder controls or lint follows. Both original540 assertions/callers and historical360-versus540 failure remain unchanged.
+The outer thread join at line 1467 propagated the failure. The test did **not**
+reach its 540-second assertion. It ran for 0.455 seconds, with 1,471 tests skipped.
+The command ended at **15:52:13.531642 UTC on 2026-09-15**, triggering both the
+first-downstream-failure stop and the **31 / 31** correction ceiling. No repair,
+rerun, recorder control or lint command followed.
 
-**Limited single-lane correction and disabled-posture native pair: PASS. Recorder preparation: INCOMPLETE/HOLD.** Required recorder producer/isolation/negative/independent-operand controls and matched owning/runner lint are NOT RUN here; accepted baseline/static/selector/input-recovery evidence is reused without erasing previous failures. Current-context acquisition, native restoration, scientific/conservation/restart/authentic isolation and cadence remain incomplete. Manual projection and dynamic-hydrology oracle limitations, outer4/22 versus nested0/0 and E008 remain untouched. No authentic run released.
+The successful pair establishes only the exercised differential with the observer
+and recorder disabled. It does not establish enabled-recorder isolation or the
+scientific correctness of a terminal time. Current-context acquisition, native
+restoration, conservation, restart, authentic isolation and cadence qualification
+remain incomplete.
 
-Same affected [correctness](artifacts/single-lane-audit-20260915/correctness-review.md) and [QA](artifacts/single-lane-audit-20260915/qa-review.md) reviewers independently assess this limited correction/pair and downstream HOLD; no replacement or extra review wave. [Stop ledger](artifacts/single-lane-audit-20260915/stop.json) is a lower bound; final publication charges retained at `/workdir/openwepp-experiments/b01-wb14-cadence/logs/single-lane-audit-publication.json`.
+### Authorized correction and retained predicates
+
+The owner adopted `/tmp/openwepp_b01_wb14_single_lane_audit_authorization.md` for
+this continuation. Astra was the sole source writer. The authorized change was
+the same test-only postcondition in `assert_native_mixed_phase_terminal_fixture`
+on the detached reference and candidate.
+
+[Inspection of both detached sources](artifacts/single-lane-audit-20260915/source-relationship.json)
+confirmed that the batch path requires more than one active lane and that only
+the batch evaluator appends batch-audit records. The explicitly single-lane
+fixture therefore requires an empty batch-audit vector. The correction replaced
+the contradictory nonempty/singleton assertions with that requirement.
+
+The audit vector remains in the comparison payload, including its empty value.
+All positive transition, prefix, event, parcel, owner and successor predicates
+remain intact, as do both original 540-second assertions and their callers.
+No production behavior, fixture inputs, configuration, dependencies, tolerances
+or other assertions changed. The failed test files and narrow correction patches
+were preserved before editing.
+
+The historical 360-versus-540 assertion failure remains unresolved. The manual
+projection and dynamic-hydrology oracle limitations, the outer 4/22 versus nested
+0/0 defect, and the original E008 remain unchanged. No authentic run is released.
+
+### Comparison protocol and evidence
+
+The corrected test binaries were rebuilt by the retained Nextest invocations.
+Both used the same native fixture, disabled observer/recorder posture, Nix wrapper,
+explicit manifest, locked features and exact selector, with distinct build targets.
+The execution flags remained `--no-tests fail --retries 0 --no-capture`.
+Frozen-file formatting checks preceded execution.
+
+The earlier failed reference invocation remains **FAIL, 1 / 1 consumed**. This
+continuation used exactly one authorized replacement reference invocation and the
+one previously unspent candidate invocation. Neither side was retried.
+
+| Invocation | Start UTC, 2026-09-15 | End UTC, 2026-09-15 |
+| --- | --- | --- |
+| Replacement reference | 15:50:20.326109 | 15:50:47.769068 |
+| Candidate | 15:51:02.278629 | 15:51:44.055216 |
+
+Each side emitted exactly one complete model payload and one diagnostic payload.
+The entire canonical payloads matched byte-for-byte: **7,707,305 bytes**, excluding
+the output newline, with SHA-256:
+
+```text
+fa01f2a111ddb331bee942f604dee1fe3af230a6d8b5f4e225234f98146e6845
+```
+
+Both diagnostic payloads reported a native tick of **360,000,000,000 ns
+(360 seconds)**. That value remains an observation, not a new acceptance oracle.
+Elapsed durations are separate diagnostic evidence. No model fields were omitted
+or normalized to obtain equality.
+
+[Output preservation](artifacts/single-lane-audit-20260915/output-preservation.json)
+binds the complete original stdout and extracted JSON in durable local logs to
+the published gzip copies. Decompression reproduces the exact original bytes.
+
+### Source and review records
+
+The corrected sources remain detached from main. Their historical 741-entry
+source namespace does not include all execution inputs; restored support-file
+custody remains separately bound by the earlier recovery evidence.
+
+| Side | Source tree SHA-256 | Cumulative patch SHA-256 | Full record |
+| --- | --- | --- | --- |
+| Reference | `3aeeb449f10a725e252276c9523f74bed603228dd80b691b4120e4449b8979d0` | `c828508beec774f5b826dc89843d3c7f4805441f5d1974fd09333ca8da02edc4` | [Reference source](artifacts/single-lane-audit-20260915/reference-source.json) |
+| Candidate | `3f2e7f08ed121836b9854539ce9f3f1fc2dd6eae073fd14baaf83d4a71bb8aa5` | `d24b0b28bb90e263501bef1c0c935cf8859b068d35efe450a530e7000bc61c66` | [Candidate source](artifacts/single-lane-audit-20260915/candidate-source.json) |
+
+Source remained stable during every command. Accepted baseline, static, selector
+and input-recovery evidence was reused without erasing prior failures.
+
+The same independent [correctness reviewer](artifacts/single-lane-audit-20260915/correctness-review.md)
+and [QA reviewer](artifacts/single-lane-audit-20260915/qa-review.md) accepted the
+limited correction and native pair. Both retained **HOLD** for recorder
+preparation because the regression failed and required downstream checks remain
+unrun. No replacement reviewer or additional review wave was used.
+
+### Execution limits and ledger
+
+This authorization added no time or correction cycles. It carried
+**35,547.775493 / 36,117.485508 seconds** and **30 / 31 failures** into the
+continuation. The conservative start was **15:47:25 UTC** on 2026-09-15, including
+the initial missing-file lookup and intervening elapsed time. The deadline was
+**15:56:54.710015 UTC**, with a 90-second preservation reserve and no wait deductions.
+See the [starting ledger](artifacts/single-lane-audit-20260915/ledger-start.json).
+
+The authorized sequence was formatting and rebuilt native tests, full comparison,
+then the original regression, recorder controls and quality checks where results
+and bounds permitted. The first new failure, drift, mismatch, out-of-scope need,
+31 / 31 correction ceiling or time limit required a stop.
+
+The [stop ledger](artifacts/single-lane-audit-20260915/stop.json) is a pre-publication
+lower bound. Final publication charges are retained at
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/single-lane-audit-publication.json`.
+
+The sections below retain earlier authorization and execution states. Their
+pending and stopped results describe those earlier continuations; the outcome
+above is the current disposition.
 
 ## Native pair execution adopted — 2026-09-15
 
