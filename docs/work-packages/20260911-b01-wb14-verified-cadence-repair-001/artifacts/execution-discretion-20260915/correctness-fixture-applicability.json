@@ -1,0 +1,6 @@
+{
+  "reviewer": "/root/recovery_correctness",
+  "evidence_class": "Static",
+  "scope": "Positive native-terminal covered fixture applicability and bounded evidence reuse; final corrected-cut review pending",
+  "response": "Static fixture applicability assessment is preserved.\n\nNo new blocker or broader regression obligation is indicated. The corrected cut should retain these focused checks:\n\n- Covered disabled/enabled/forced-error runs preserve the full model result.\n- Enabled covered recording yields exactly one covered-phase live input and row with the expected owner and covered_interval.\n- Forced capture failure produces the expected error row without changing the model result.\n- Snow-free non-target, disabled, enabled, error, wrong-phase, and omission cases preserve full result equality and their existing row/live operand checks.\n- The .02 m/60 s case remains documented as a typed dependent-output rejection, not a positive fixture.\n\nNative-pair and shared original-regression evidence may be reused if the frozen diff confirms the terminal fixture, payload emitter, original regression, solver/runtime paths, and their inputs remain unchanged."
+}

@@ -1,0 +1,12 @@
+--- 
++++ 
+@@ -6,7 +6,8 @@
+     crate::v9_real_consumer_shadow::CoveredNativePhysicalPathAuditV1,
+     crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredMapRoleAuditV1,
+ ) {
+-    let native_context_assertions = crate::v9_real_consumer_shadow::v11_covered::native_context_assertions_requested_for_test();
++    let native_context_assertions =
++        crate::v9_real_consumer_shadow::v11_covered::native_context_assertions_requested_for_test();
+     std::thread::Builder::new()
+         .name("canonical-covered-physical-prefix-capture".to_owned())
+         .stack_size(64 * 1024 * 1024)

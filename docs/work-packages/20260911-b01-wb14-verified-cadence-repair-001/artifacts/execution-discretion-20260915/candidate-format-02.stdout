@@ -1,0 +1,60 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/snowfree-recorder-candidate-20260915-629fa4ac9140
+  scratch: /tmp/openwepp-roger-snowfree-recorder-candidate-20260915-629fa4ac9140
+  cache:   /workdir/.cache/openwepp
+Diff in /workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:126:
+         Mode::EnabledSnowFree => "enabled-snow-free",
+         Mode::ForcedSnowFreeCaptureFailure => "forced-snow-free-capture-failure",
+         Mode::ForcedSnowFreeWrongPhaseFailure => "forced-snow-free-wrong-phase-failure",
+[31m-        Mode::ForcedSnowFreeRequiredOmissionFailure => {
+[m[31m-            "forced-snow-free-required-omission-failure"
+[m[31m-        }
+[m[32m+        Mode::ForcedSnowFreeRequiredOmissionFailure => "forced-snow-free-required-omission-failure",
+[m     }
+ }
+ 
+Diff in /workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:281:
+     let (covered_disabled_result, covered_disabled) =
+         run_with_pre_child_recorder(Mode::Disabled, PreChildRecorderPhaseV1::Covered);
+     assert!(covered_disabled.live_inputs.is_empty() && covered_disabled.recorded_rows.is_empty());
+[31m-    let (covered_enabled_result, covered) = run_with_pre_child_recorder(
+[m[31m-        Mode::EnabledCovered,
+[m[31m-        PreChildRecorderPhaseV1::Covered,
+[m[31m-    );
+[m[32m+    let (covered_enabled_result, covered) =
+[m[32m+        run_with_pre_child_recorder(Mode::EnabledCovered, PreChildRecorderPhaseV1::Covered);
+[m     let (covered_failure_result, covered_failure) = run_with_pre_child_recorder(
+         Mode::ForcedCoveredCaptureFailure,
+         PreChildRecorderPhaseV1::Covered,
+Diff in /workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:371:
+     non_target_result: &PreChildRecorderProductionOutcomeV1,
+ ) {
+     use crate::snow_stage3_v11_current_context_capture::PreChildRecorderTestModeV1 as Mode;
+[31m-    let (disabled_result, disabled) = run_with_pre_child_recorder(
+[m[31m-        Mode::Disabled,
+[m[31m-        PreChildRecorderPhaseV1::FirstSnowFree,
+[m[31m-    );
+[m[32m+    let (disabled_result, disabled) =
+[m[32m+        run_with_pre_child_recorder(Mode::Disabled, PreChildRecorderPhaseV1::FirstSnowFree);
+[m     assert!(disabled.live_inputs.is_empty() && disabled.recorded_rows.is_empty());
+     assert_recorder_preserved_model_result(&disabled_result, non_target_result);
+     let (enabled_result, enabled) = run_with_pre_child_recorder(
+Diff in /workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1507:
+             ending_snow_owner_bytes,
+             deferred_native_v2_soil_custody,
+         } => {
+[31m-            let prepared_support = prepared_support
+[m[31m-                .ok_or("snow-free capture missing transformed prepared support")?;
+[m[32m+            let prepared_support =
+[m[32m+                prepared_support.ok_or("snow-free capture missing transformed prepared support")?;
+[m             let deferred_native_v2_soil_custody =
+                 capture_deferred_native_v2_soil_custody(deferred_native_v2_soil_custody)?;
+[31m-            let owner_joins = crate::snow_stage3_v11_attachment::
+[m[31m-                diagnostic_coupled_subslab_receipts_value_v2(history.owner_joins)?;
+[m[32m+            let owner_joins =
+[m[32m+                crate::snow_stage3_v11_attachment::diagnostic_coupled_subslab_receipts_value_v2(
+[m[32m+                    history.owner_joins,
+[m[32m+                )?;
+[m             Ok(CapturedPreChildPhaseV1 {
+                 kind: "b01_wb14_snow_free_pre_child_current_context_v1",
+                 phase_name: "snow_free",

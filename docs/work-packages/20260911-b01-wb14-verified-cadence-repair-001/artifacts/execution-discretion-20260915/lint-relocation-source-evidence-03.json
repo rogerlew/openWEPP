@@ -1,0 +1,29 @@
+[
+  {
+    "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+    "start": "fn close_deferred_native_v2_soil_at_parent_end_v1",
+    "end_exclusive": "fn finalize_adaptive_parent_execution_state_v1",
+    "whitespace_removed_equal": true,
+    "base_normalized_sha256": "c923c73fc25e01befe52730d6ee4b04210497ce98c336c35544ac3cd8b6f683a",
+    "candidate_normalized_sha256": "c923c73fc25e01befe52730d6ee4b04210497ce98c336c35544ac3cd8b6f683a",
+    "scope": "Whitespace-normalized source, not a Rust lexical proof; exact diff retained for independent review"
+  },
+  {
+    "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+    "start": "fn run_canonical_covered_physical_prefix_capture",
+    "end_exclusive": "fn canonical_covered_physical_poison_fixture_at_optional_map_v1",
+    "whitespace_removed_equal": true,
+    "base_normalized_sha256": "bfafa315156c8a0d921c9d62eb54f6330ce681ad955823db665a0ac9253a52c8",
+    "candidate_normalized_sha256": "bfafa315156c8a0d921c9d62eb54f6330ce681ad955823db665a0ac9253a52c8",
+    "scope": "Whitespace-normalized source, not a Rust lexical proof; exact diff retained for independent review"
+  },
+  {
+    "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs",
+    "start": "fn execute_covered_real_v11_parent_with_evidence<M>",
+    "end": "EOF",
+    "exact_removed_argument": "                    crate::snow_stage3_v11_current_context_capture::SnowFreePreChildHistoryV1 {\n                        owner_joins: &owner_joins,\n                        event_groups: &event_groups,\n                        current_stage3: &stage3,\n                        current_snow_enthalpy_material_owner: snow_enthalpy_material_owner.as_ref(),\n                        pending_terminal_parcels: &pending_terminal_parcels,\n                    },\n",
+    "remaining_byte_equal": true,
+    "base_sha256": "48fe89c1c85e296d2e72ff09c67233472725cce0f92e78397e79be282629f056",
+    "adjusted_candidate_sha256": "48fe89c1c85e296d2e72ff09c67233472725cce0f92e78397e79be282629f056"
+  }
+]

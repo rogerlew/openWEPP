@@ -1,0 +1,118 @@
+{
+  "orchestrator/baseline": {
+    "messages": 2863,
+    "diagnostic_targets": [
+      {
+        "name": "openwepp_hillslope_orchestrator",
+        "kind": [
+          "lib"
+        ],
+        "test_capable": true,
+        "messages": 2863
+      }
+    ],
+    "terminal_target_summaries": [
+      "error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1284 previous errors",
+      "error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1579 previous errors"
+    ],
+    "non_lint_E_codes": [],
+    "build_finished": [
+      {
+        "reason": "build-finished",
+        "success": false
+      }
+    ],
+    "limitations": "Cargo all-targets warning-denied run fails inherited lints; source lib/lib-test summaries preserved. No successful full build claim. Compiler-artifact counts not used as target-completion proof."
+  },
+  "orchestrator/candidate": {
+    "messages": 2868,
+    "diagnostic_targets": [
+      {
+        "name": "openwepp_hillslope_orchestrator",
+        "kind": [
+          "lib"
+        ],
+        "test_capable": true,
+        "messages": 2868
+      }
+    ],
+    "terminal_target_summaries": [
+      "error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1286 previous errors",
+      "error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1582 previous errors"
+    ],
+    "non_lint_E_codes": [],
+    "build_finished": [
+      {
+        "reason": "build-finished",
+        "success": false
+      }
+    ],
+    "limitations": "Cargo all-targets warning-denied run fails inherited lints; source lib/lib-test summaries preserved. No successful full build claim. Compiler-artifact counts not used as target-completion proof."
+  },
+  "runner/baseline": {
+    "messages": 115,
+    "diagnostic_targets": [
+      {
+        "name": "openwepp_hillslope_orchestrator",
+        "kind": [
+          "lib"
+        ],
+        "test_capable": true,
+        "messages": 33
+      },
+      {
+        "name": "openwepp_runner",
+        "kind": [
+          "lib"
+        ],
+        "test_capable": true,
+        "messages": 82
+      }
+    ],
+    "terminal_target_summaries": [
+      "error: could not compile `openwepp-runner` (lib) due to 3 previous errors",
+      "error: could not compile `openwepp-runner` (lib test) due to 79 previous errors"
+    ],
+    "non_lint_E_codes": [],
+    "build_finished": [
+      {
+        "reason": "build-finished",
+        "success": false
+      }
+    ],
+    "limitations": "Cargo all-targets warning-denied run fails inherited lints; source lib/lib-test summaries preserved. No successful full build claim. Compiler-artifact counts not used as target-completion proof."
+  },
+  "runner/candidate": {
+    "messages": 115,
+    "diagnostic_targets": [
+      {
+        "name": "openwepp_hillslope_orchestrator",
+        "kind": [
+          "lib"
+        ],
+        "test_capable": true,
+        "messages": 33
+      },
+      {
+        "name": "openwepp_runner",
+        "kind": [
+          "lib"
+        ],
+        "test_capable": true,
+        "messages": 82
+      }
+    ],
+    "terminal_target_summaries": [
+      "error: could not compile `openwepp-runner` (lib) due to 3 previous errors",
+      "error: could not compile `openwepp-runner` (lib test) due to 79 previous errors"
+    ],
+    "non_lint_E_codes": [],
+    "build_finished": [
+      {
+        "reason": "build-finished",
+        "success": false
+      }
+    ],
+    "limitations": "Cargo all-targets warning-denied run fails inherited lints; source lib/lib-test summaries preserved. No successful full build claim. Compiler-artifact counts not used as target-completion proof."
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "evidence_class": "Ran: package link, JSON, Python syntax and compressed-log comparison checks",
+  "local_links_checked": 458,
+  "missing_links": [],
+  "compressed_log_comparison_unchanged": {
+    "orchestrator": true,
+    "runner": true
+  },
+  "json_files_parsed": 46,
+  "markdown_doc": "NOT RUN: executable unavailable in PATH and existing Nix environment; local checks are not a substitute claim",
+  "git_diff_check": "Initial unstaged package-only check PASS; full staged check FAIL2 on verbatim evidence whitespace",
+  "raw_evidence_posture": "Unified patches require space-prefixed empty context lines; raw stdout retains terminal whitespace. These are data, not authored source, and remain unmodified.",
+  "authored_staged_failed_checks": 2,
+  "review_formatting_correction": "Removed Markdown hard-break trailing spaces only; review findings unchanged",
+  "initial_authored_staged_check": {
+    "argv": [
+      "git",
+      "diff",
+      "--cached",
+      "--check",
+      "--",
+      "*.md",
+      "*.py",
+      "*.json"
+    ],
+    "exit": 2,
+    "stdout": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/execution-discretion-20260915/correctness-review.md:3: trailing whitespace.\n+**Reviewer:** `/root/recovery_correctness` (Sol/high), independent of the author, orchestrator, and QA reviewer  \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/execution-discretion-20260915/correctness-review.md:4: trailing whitespace.\n+**Reviewed source:** candidate tree `ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592`, cumulative patch `4559c7d21fbcdb9314845e6a5c19940d051d0ef861e48c7cb2a4ae7e51020c5d` against `/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913`  \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/execution-discretion-20260915/qa-review.md:3: trailing whitespace.\n+**Reviewer:** `/root/recovery_qa`, independent of the writer and correctness reviewer.  \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/execution-discretion-20260915/qa-review.md:4: trailing whitespace.\n+**Evidence class:** Static source review; Ran command records inspected. The reviewer executed no commands, tests, builds, or lint.  \n",
+    "stderr": ""
+  },
+  "authored_staged_check": {
+    "argv": [
+      "git",
+      "diff",
+      "--cached",
+      "--check",
+      "--",
+      "*.md",
+      "*.py",
+      "*.json"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+}

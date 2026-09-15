@@ -1,0 +1,138 @@
+{
+  "orchestrator": {
+    "command": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/baseline-orchestrator-clippy.json",
+    "source": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+    "source_tree_sha256": "114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5",
+    "exit": 101,
+    "messages": 2863,
+    "build_finished": [
+      {
+        "reason": "build-finished",
+        "success": false
+      }
+    ],
+    "log_sha256": "6949d8abb10b676f802186ffeafe9bd488e25dc687a6212808e6fc110605c141",
+    "top_diagnostics": [
+      [
+        "clippy::result_large_err",
+        1472
+      ],
+      [
+        "clippy::too_many_lines",
+        308
+      ],
+      [
+        "clippy::must_use_candidate",
+        108
+      ],
+      [
+        "clippy::float_cmp",
+        83
+      ],
+      [
+        "clippy::needless_pass_by_value",
+        69
+      ],
+      [
+        "clippy::cast_precision_loss",
+        65
+      ],
+      [
+        "clippy::too_many_arguments",
+        64
+      ],
+      [
+        "clippy::cast_possible_truncation",
+        49
+      ]
+    ],
+    "argv": [
+      "bash",
+      "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+      "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+      "/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913",
+      "clippy",
+      "--manifest-path",
+      "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/Cargo.toml",
+      "-p",
+      "openwepp-hillslope-orchestrator",
+      "--all-targets",
+      "--locked",
+      "--features",
+      "persisted-restart-v1,restart-authority-evidence",
+      "--message-format=json",
+      "--",
+      "--no-deps",
+      "-D",
+      "warnings"
+    ]
+  },
+  "runner": {
+    "command": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/baseline-runner-clippy.json",
+    "source": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+    "source_tree_sha256": "114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5",
+    "exit": 101,
+    "messages": 115,
+    "build_finished": [
+      {
+        "reason": "build-finished",
+        "success": false
+      }
+    ],
+    "log_sha256": "e7071afffba21f70e7c6912f87220e3670ae4fa97072903e10b6715d99911874",
+    "top_diagnostics": [
+      [
+        "clippy::clone_on_copy",
+        50
+      ],
+      [
+        "dead_code",
+        33
+      ],
+      [
+        "clippy::too_many_lines",
+        10
+      ],
+      [
+        "clippy::result_large_err",
+        4
+      ],
+      [
+        "clippy::cast_precision_loss",
+        3
+      ],
+      [
+        "clippy::needless_borrow",
+        2
+      ],
+      [
+        "clippy::format_push_string",
+        2
+      ],
+      [
+        "clippy::drop_non_drop",
+        2
+      ]
+    ],
+    "argv": [
+      "bash",
+      "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+      "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+      "/tmp/openwepp-b01-wb14-cadence-targets/current-context-capture-20260913",
+      "clippy",
+      "--manifest-path",
+      "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/Cargo.toml",
+      "-p",
+      "openwepp-runner",
+      "--all-targets",
+      "--locked",
+      "--features",
+      "openwepp-runner/test-fixture-authority,openwepp-hillslope-orchestrator/persisted-restart-v1,openwepp-hillslope-orchestrator/restart-authority-evidence",
+      "--message-format=json",
+      "--",
+      "--no-deps",
+      "-D",
+      "warnings"
+    ]
+  }
+}

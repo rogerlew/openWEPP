@@ -1,0 +1,111 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-hillslope-orchestrator)
+error[E0277]: the trait bound `subsurface::DirectSubsurfaceLayerState: serde::Deserialize<'de>` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:80:24
+     |
+  80 |     subsurface_layers: Vec<crate::DirectSubsurfaceLayerState>,
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `Deserialize<'_>` is not implemented for `subsurface::DirectSubsurfaceLayerState`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs:713:1
+     |
+ 713 | pub struct DirectSubsurfaceLayerState {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `subsurface::DirectSubsurfaceLayerState` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 673 others
+     = note: required for `Vec<subsurface::DirectSubsurfaceLayerState>` to implement `Deserialize<'_>`
+note: required by a bound in `next_element`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_core-1.0.228/src/de/mod.rs:1771:12
+     |
+1769 |     fn next_element<T>(&mut self) -> Result<Option<T>, Self::Error>
+     |        ------------ required by a bound in this associated function
+1770 |     where
+1771 |         T: Deserialize<'de>,
+     |            ^^^^^^^^^^^^^^^^ required by this bound in `SeqAccess::next_element`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/snowfree-recorder-20260915/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab.long-type-17788480185798250277.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `subsurface::DirectSubsurfaceLayerState: serde::Deserialize<'de>` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:80:24
+     |
+  80 |     subsurface_layers: Vec<crate::DirectSubsurfaceLayerState>,
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `Deserialize<'_>` is not implemented for `subsurface::DirectSubsurfaceLayerState`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs:713:1
+     |
+ 713 | pub struct DirectSubsurfaceLayerState {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `subsurface::DirectSubsurfaceLayerState` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 673 others
+     = note: required for `Vec<subsurface::DirectSubsurfaceLayerState>` to implement `Deserialize<'_>`
+note: required by a bound in `next_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_core-1.0.228/src/de/mod.rs:1916:12
+     |
+1914 |     fn next_value<V>(&mut self) -> Result<V, Self::Error>
+     |        ---------- required by a bound in this associated function
+1915 |     where
+1916 |         V: Deserialize<'de>,
+     |            ^^^^^^^^^^^^^^^^ required by this bound in `MapAccess::next_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/snowfree-recorder-20260915/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab.long-type-17788480185798250277.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `subsurface::DirectSubsurfaceLayerState: serde::Deserialize<'de>` is not satisfied
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:77:24
+    |
+ 77 | #[derive(Clone, Debug, Deserialize, Serialize)]
+    |                        ^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `Deserialize<'_>` is not implemented for `subsurface::DirectSubsurfaceLayerState`
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs:713:1
+    |
+713 | pub struct DirectSubsurfaceLayerState {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `subsurface::DirectSubsurfaceLayerState` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `Deserialize<'de>`:
+              &'a Path
+              &'a [u8]
+              &'a str
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+            and 673 others
+    = note: required for `Vec<subsurface::DirectSubsurfaceLayerState>` to implement `Deserialize<'_>`
+note: required by a bound in `coupled_time_reference::_::_serde::__private228::de::missing_field`
+   --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:26:8
+    |
+ 24 | pub fn missing_field<'de, V, E>(field: &'static str) -> Result<V, E>
+    |        ------------- required by a bound in this function
+ 25 | where
+ 26 |     V: Deserialize<'de>,
+    |        ^^^^^^^^^^^^^^^^ required by this bound in `missing_field`
+    = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-cadence-targets/snowfree-recorder-20260915/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab.long-type-17788480185798250277.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the derive macro `Deserialize` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 3 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-hillslope-orchestrator --lib --features persisted-restart-v1,restart-authority-evidence --locked` exited with code 101

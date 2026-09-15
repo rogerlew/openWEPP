@@ -1,0 +1,33 @@
+{
+  "evidence_class": "Ran: current candidate original regression; Static: exact caller and preliminary operation comparison",
+  "candidate_command": "candidate-original-regression-final.json",
+  "candidate_exit": 100,
+  "candidate_tests": {
+    "executed": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 1473
+  },
+  "baseline_attribution_reused": "../legacy-baseline-attribution-20260915/attribution.json",
+  "caller_sha256": "3790d2379c81898b5a369d6ef3927dfc1fb28c2543f420269d07894ee2f9e8f7",
+  "caller_matches_baseline": true,
+  "preliminary_operation_text_identical": true,
+  "preliminary_operation": "    if !production_only {\n        execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)\n            .expect(\"real mixed covered/open OFE execution\");",
+  "preliminary_operation_start_line": 1065,
+  "same_typed_error_observed": true,
+  "original_fixture_inputs": {
+    "runtime_swe_m": "0.0006",
+    "initial_cold_delta_k": "0.0",
+    "include_child_17": false,
+    "hard_boundary_ns": null,
+    "expect_dynamic_proposal": false,
+    "second_lane_swe_m": null,
+    "terminal_event": true,
+    "capture_terminal_failure": false,
+    "solid_reappearance": false,
+    "production_only": false
+  },
+  "wrapper_change": "Exact bool-to-two-state flag conversion reviewed and current-cut workflow rerun; no physical input change",
+  "source_tree_sha256": "ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592",
+  "disposition": "Original regression remains FAIL on producing baseline and final candidate; no scientific waiver or exact internal solver emitter inference"
+}

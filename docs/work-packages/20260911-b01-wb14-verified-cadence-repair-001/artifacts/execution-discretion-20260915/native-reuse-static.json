@@ -1,0 +1,20 @@
+{
+  "evidence_class": "Static",
+  "accepted_native_receipt": "../single-lane-audit-20260915/candidate-native.json",
+  "reconstruction_all_12_changed_files_match": true,
+  "current_tree_sha256": "cb86bae73db351517a714403fef329d02074ff187c16cec6094ad9e140347583",
+  "changed_paths_since_accepted_native": [
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs"
+  ],
+  "native_fixture_assertions_payload_characterization_region": {
+    "start": "fn run_native_mixed_phase_terminal_on_large_stack(",
+    "end_exclusive": "fn run_equilibrium_complete_owner_for_duration(",
+    "prior_sha256": "b1c7bbdb08f0bd7f3bac093094a8ee9d1ebd391d731112ff66ff6b65e4dd0060",
+    "current_sha256": "b1c7bbdb08f0bd7f3bac093094a8ee9d1ebd391d731112ff66ff6b65e4dd0060",
+    "byte_equal": true
+  },
+  "status": "Production/private diagnostic delta still requires reviewer assessment; no runtime rerun claimed"
+}

@@ -1,0 +1,302 @@
+{
+  "evidence_class": "Ran: Cargo metadata and raw Cargo diagnostic/artifact inspection",
+  "target_inventory_command": "lint-target-inventory-final.json",
+  "inventory": {
+    "openwepp-hillslope-orchestrator": [
+      {
+        "name": "openwepp_hillslope_orchestrator",
+        "kind": [
+          "lib"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "cascade_seam_ledger",
+        "kind": [
+          "example"
+        ],
+        "test": false,
+        "required_features": []
+      },
+      {
+        "name": "dval_case",
+        "kind": [
+          "example"
+        ],
+        "test": false,
+        "required_features": []
+      },
+      {
+        "name": "iwagaki_oracle_dump",
+        "kind": [
+          "example"
+        ],
+        "test": false,
+        "required_features": []
+      },
+      {
+        "name": "steady_probe",
+        "kind": [
+          "example"
+        ],
+        "test": false,
+        "required_features": []
+      }
+    ],
+    "openwepp-runner": [
+      {
+        "name": "openwepp_runner",
+        "kind": [
+          "lib"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "open_wepp_runner",
+        "kind": [
+          "bin"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "openwepp-cli-hill",
+        "kind": [
+          "bin"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "openwepp-cli-totalwatsed3",
+        "kind": [
+          "bin"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "openwepp-cli-watershed",
+        "kind": [
+          "bin"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "openwepp-snowbench",
+        "kind": [
+          "bin"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "mt3_hbp_hourly_consumer_contract",
+        "kind": [
+          "test"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "simimpl04_runner_kernel_execution_contract",
+        "kind": [
+          "test"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "simimpl04_wb13_publication_contract",
+        "kind": [
+          "test"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "simimpl04_wepp_ui_mode_closure_contract",
+        "kind": [
+          "test"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "snowbench_error_contract",
+        "kind": [
+          "test"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "test_fixture_authority_contract",
+        "kind": [
+          "test"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "totalwatsed3_cli_contract",
+        "kind": [
+          "test"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "watershed_cli_behavior_contract",
+        "kind": [
+          "test"
+        ],
+        "test": true,
+        "required_features": []
+      },
+      {
+        "name": "wshedw10_chaninp_absent_default_contract",
+        "kind": [
+          "test"
+        ],
+        "test": true,
+        "required_features": []
+      }
+    ]
+  },
+  "commands": {
+    "orchestrator/baseline": {
+      "messages": 2863,
+      "diagnostic_targets": [
+        {
+          "name": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "messages": 2863
+        }
+      ],
+      "terminal_target_summaries": [
+        "error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1284 previous errors",
+        "error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1579 previous errors"
+      ],
+      "affected_package_artifacts": [],
+      "non_lint_E_codes": [],
+      "build_finished": [
+        {
+          "reason": "build-finished",
+          "success": false
+        }
+      ]
+    },
+    "orchestrator/candidate": {
+      "messages": 2861,
+      "diagnostic_targets": [
+        {
+          "name": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "messages": 2861
+        }
+      ],
+      "terminal_target_summaries": [
+        "error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1284 previous errors",
+        "error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1577 previous errors"
+      ],
+      "affected_package_artifacts": [],
+      "non_lint_E_codes": [],
+      "build_finished": [
+        {
+          "reason": "build-finished",
+          "success": false
+        }
+      ]
+    },
+    "runner/baseline": {
+      "messages": 115,
+      "diagnostic_targets": [
+        {
+          "name": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "messages": 33
+        },
+        {
+          "name": "openwepp_runner",
+          "kind": [
+            "lib"
+          ],
+          "messages": 82
+        }
+      ],
+      "terminal_target_summaries": [
+        "error: could not compile `openwepp-runner` (lib) due to 3 previous errors",
+        "error: could not compile `openwepp-runner` (lib test) due to 79 previous errors"
+      ],
+      "affected_package_artifacts": [
+        {
+          "name": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "fresh": false
+        }
+      ],
+      "non_lint_E_codes": [],
+      "build_finished": [
+        {
+          "reason": "build-finished",
+          "success": false
+        }
+      ]
+    },
+    "runner/candidate": {
+      "messages": 115,
+      "diagnostic_targets": [
+        {
+          "name": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "messages": 33
+        },
+        {
+          "name": "openwepp_runner",
+          "kind": [
+            "lib"
+          ],
+          "messages": 82
+        }
+      ],
+      "terminal_target_summaries": [
+        "error: could not compile `openwepp-runner` (lib) due to 3 previous errors",
+        "error: could not compile `openwepp-runner` (lib test) due to 79 previous errors"
+      ],
+      "affected_package_artifacts": [
+        {
+          "name": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "fresh": false
+        }
+      ],
+      "non_lint_E_codes": [],
+      "build_finished": [
+        {
+          "reason": "build-finished",
+          "success": false
+        }
+      ]
+    }
+  },
+  "disposition": "Full selected all-target lint coverage BLOCKED: four owning examples, five runner binaries and nine runner integration tests have no compiler messages/artifacts. Both commands reached lib and lib-test summaries; owning/runner inherited library lint errors respectively blocked remaining targets. Emitted diagnostics are attributable but full quality acceptance is not established.",
+  "blocker_scope": "Clearing unrelated inherited runner library lint debt or suppressing denied lints is outside current authorization. No green full-build or all-target coverage claim."
+}

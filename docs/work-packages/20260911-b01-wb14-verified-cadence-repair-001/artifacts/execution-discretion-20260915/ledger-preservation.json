@@ -1,0 +1,14 @@
+{
+  "as_of_utc": "2026-09-15T21:09:16.814083+00:00",
+  "continuation_start_utc": "2026-09-15T20:10:00+00:00",
+  "carried_seconds": 36755.159526,
+  "added_allowance_seconds": 14400,
+  "elapsed_charged_seconds": 3556.814083,
+  "cumulative_charged_seconds": 40311.973609,
+  "hard_ceiling_seconds": 51155.159526,
+  "remaining_seconds": 10843.185916999999,
+  "failures": 55,
+  "publication_time_pending": true,
+  "final_publication_ledger": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/execution-discretion-publication.json",
+  "no_wait_deductions": true
+}

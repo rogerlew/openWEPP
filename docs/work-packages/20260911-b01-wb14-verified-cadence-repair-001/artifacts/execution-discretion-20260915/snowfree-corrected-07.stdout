@@ -1,0 +1,11 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/snowfree-recorder-candidate-20260915-629fa4ac9140
+  scratch: /tmp/openwepp-roger-snowfree-recorder-candidate-20260915-629fa4ac9140
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_first_snow_free_producer_recorder_controls_are_independently_selectable has been running for over 60 seconds
+test v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_first_snow_free_producer_recorder_controls_are_independently_selectable ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1473 filtered out; finished in 60.05s
+

@@ -1,0 +1,37 @@
+{
+  "evidence_class": "Ran: exact structured diagnostic comparison with exact-equal source-line relocation; manual review assigns acceptance",
+  "package": "runner",
+  "reference_messages": 115,
+  "candidate_messages": 115,
+  "matched_messages": 115,
+  "candidate_unmatched": [],
+  "reference_unmatched": [],
+  "candidate_unmapped_spans": [],
+  "reference_build_finished": [
+    {
+      "reason": "build-finished",
+      "success": false
+    }
+  ],
+  "candidate_build_finished": [
+    {
+      "reason": "build-finished",
+      "success": false
+    }
+  ],
+  "reference_banners": [
+    "openWEPP Nix shell",
+    "  target:  /workdir/.cache/openwepp/targets/current-context-capture-20260913-e61beb50c546",
+    "  scratch: /tmp/openwepp-roger-current-context-capture-20260913-e61beb50c546",
+    "  cache:   /workdir/.cache/openwepp"
+  ],
+  "candidate_banners": [
+    "openWEPP Nix shell",
+    "  target:  /workdir/.cache/openwepp/targets/snowfree-recorder-candidate-20260915-629fa4ac9140",
+    "  scratch: /tmp/openwepp-roger-snowfree-recorder-candidate-20260915-629fa4ac9140",
+    "  cache:   /workdir/.cache/openwepp"
+  ],
+  "reference_log_sha256": "e7071afffba21f70e7c6912f87220e3670ae4fa97072903e10b6715d99911874",
+  "candidate_log_sha256": "eccde1fd7128ddbce9070de08ff63c4e0bd02350b9a95a8ea47178ff01d7fd3f",
+  "limits": "Does not waive new/changed diagnostics, complete-target obligations, compiler errors or missing tests. ANSI rendered presentation excluded; all structured diagnostics retained."
+}

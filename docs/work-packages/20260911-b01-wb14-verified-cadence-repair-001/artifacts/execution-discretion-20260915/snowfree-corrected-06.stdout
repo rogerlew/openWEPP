@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/snowfree-recorder-candidate-20260915-629fa4ac9140
+  scratch: /tmp/openwepp-roger-snowfree-recorder-candidate-20260915-629fa4ac9140
+  cache:   /workdir/.cache/openwepp

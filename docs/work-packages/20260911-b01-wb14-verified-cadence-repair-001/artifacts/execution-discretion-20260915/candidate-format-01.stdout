@@ -1,0 +1,15 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/snowfree-recorder-candidate-20260915-629fa4ac9140
+  scratch: /tmp/openwepp-roger-snowfree-recorder-candidate-20260915-629fa4ac9140
+  cache:   /workdir/.cache/openwepp
+Diff in /workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:140:
+         Mode::EnabledSnowFree => "enabled-snow-free",
+         Mode::ForcedSnowFreeCaptureFailure => "forced-snow-free-capture-failure",
+         Mode::ForcedSnowFreeWrongPhaseFailure => "forced-snow-free-wrong-phase-failure",
+[31m-        Mode::ForcedSnowFreeRequiredOmissionFailure => {
+[m[31m-            "forced-snow-free-required-omission-failure"
+[m[31m-        }
+[m[32m+        Mode::ForcedSnowFreeRequiredOmissionFailure => "forced-snow-free-required-omission-failure",
+[m     }
+ }
+ 

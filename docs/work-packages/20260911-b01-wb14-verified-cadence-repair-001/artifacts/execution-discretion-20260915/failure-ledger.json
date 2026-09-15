@@ -1,0 +1,147 @@
+{
+  "historical": 34,
+  "current": 55,
+  "counting": "Conservative count: each failed selected test and failed format/lint invocation; no extra charge for aggregate Nextest exit when test failures are counted",
+  "entries": [
+    {
+      "number": 35,
+      "evidence": "candidate-format-01.json",
+      "classification": "One new mode-label formatting difference",
+      "action": "Writer format correction; no source semantics change"
+    },
+    {
+      "number": 36,
+      "evidence": "split-controls-01.json",
+      "test": "actual_covered_producer_recorder_controls_are_independently_selectable",
+      "classification": "Disabled .02m/60s fixture numerical rejection; existing physical-prefix diagnostic expects this class",
+      "action": "Preserve failed vector and use independently applicable accepted native terminal fixture for positive covered producer"
+    },
+    {
+      "number": 37,
+      "evidence": "split-controls-01.json",
+      "test": "actual_first_snow_free_producer_recorder_controls_are_independently_selectable",
+      "classification": "EnabledSnowFree test-oracle JSON map serialization panics: key must be a string",
+      "action": "Correct private representation with independently obtained expected operands"
+    },
+    {
+      "number": 38,
+      "evidence": "candidate-orchestrator-clippy-01.json",
+      "classification": "Warnings-denied lintFAIL; baseline2863/candidate2868 structured messages,11distinct unmatchedcandidate/8reference",
+      "action": "Fix directly introduced diagnostics; independently adjudicate equivalent relocated inherited messages"
+    },
+    {
+      "number": 39,
+      "evidence": "candidate-runner-clippy-01.json",
+      "classification": "Historical inherited warnings-deniedFAIL; exact115/115messages match",
+      "action": "Retain rawFAIL; limited initial-cut diagnostic equality only"
+    },
+    {
+      "number": 40,
+      "evidence": "candidate-format-02.json",
+      "classification": "Remaining rustfmt layout differences on corrected cut",
+      "action": "Writer to run rustfmt mutation after freeze release"
+    },
+    {
+      "number": 41,
+      "evidence": "combined-controls-02.json",
+      "classification": "EnabledCovered independent oracle exposes missing required hydrology constructor pin",
+      "action": "Preserve required pin in actual recorder and oracle; repair constructor-time observational retention in test harness"
+    },
+    {
+      "number": 42,
+      "evidence": "snowfree-controls-02.json",
+      "classification": "EnabledSnowFree reaches same required constructor-pin absence after tuple-key projection correction",
+      "action": "Retain exact constructor inputs at original fixture consumer construction via test-only observer scope"
+    },
+    {
+      "number": 43,
+      "evidence": "candidate-orchestrator-clippy-02.json",
+      "classification": "Raw warnings-deniedFAIL101;2864messages with2851matched,9distinctcandidateunmatched/8baseline",
+      "action": "Correct new diagnostic request flags; review inherited equivalent line relocations"
+    },
+    {
+      "number": 44,
+      "evidence": "combined-controls-03.json",
+      "classification": "EnabledSnowFree actual capture emits error row; all producer model invocations and model equality completed",
+      "action": "Preserve error detail then independently selected snowfree diagnosis; covered controls passed"
+    },
+    {
+      "number": 45,
+      "evidence": "candidate-orchestrator-clippy-03.json",
+      "classification": "Raw lintFAIL101;2861messages2851matched6distinctcandidateunmatched8baseline",
+      "action": "Independent QA of equivalent inherited relocations"
+    },
+    {
+      "number": 46,
+      "evidence": "candidate-runner-clippy-03.json",
+      "classification": "Raw lintFAIL101;115/115 structured messages exactly matched baseline",
+      "action": "Retain inheritedFAIL and limited diagnostic equality"
+    },
+    {
+      "number": 47,
+      "evidence": "snowfree-diagnostic-04.json",
+      "classification": "EnabledSnowFree recorder detail: unsupported dynamic native hydrology frame state",
+      "action": "Discriminate exact offending live-vs-constructor field; preserve guard and required operands, allow only private observational representation correction"
+    },
+    {
+      "number": 48,
+      "evidence": "snowfree-diagnostic-05.json",
+      "classification": "Same snowfree error; exact frame diff identifies evolved lane subsurface_layers as unsupported",
+      "action": "Capture legitimate dynamic layer operands; retain exact reconstructed-frame equality and independent oracle"
+    },
+    {
+      "number": 49,
+      "evidence": "snowfree-corrected-06.json",
+      "classification": "Compile failure: direct domain layer type lacks Deserialize; no tests executed",
+      "action": "Use explicit private serializable layer capture and exact reconstruction; do not change domain type or public schema"
+    },
+    {
+      "number": 50,
+      "evidence": "candidate-original-regression-final.json",
+      "classification": "Current-cut original regressionFAIL100; same canonical covered evaluation budget at same preliminary operation",
+      "action": "Preserve original regressionFAIL and accepted baseline attribution; outside recorder science scope"
+    },
+    {
+      "number": 51,
+      "evidence": "candidate-orchestrator-clippy-final.json",
+      "classification": "Raw lintFAIL101;2861messages2851exact matches6candidateunmatched8baseline",
+      "action": "Reuse independently adjudicated same six inherited relocation groups; final QA pending"
+    },
+    {
+      "number": 52,
+      "evidence": "candidate-runner-clippy-final.json",
+      "classification": "Raw lintFAIL101;115/115structured messages exactly match baseline",
+      "action": "Retain raw inheritedFAIL; limited no-new-diagnostic evidence"
+    },
+    {
+      "number": 53,
+      "evidence": "documentation-checks.json",
+      "classification": "Whole staged git diff whitespace check exits2 on verbatim unified-patch context lines and raw command output whitespace",
+      "action": "Preserve evidence bytes; validate authored Markdown/Python/JSON separately and retain full-checkFAIL"
+    },
+    {
+      "number": 54,
+      "evidence": "documentation-checks.json",
+      "classification": "Authored staged whitespace check finds Markdown hard-break spaces in independent reviews",
+      "action": "Remove Markdown line-end whitespace only; preserve review findings and raw patch/log bytes"
+    },
+    {
+      "number": 55,
+      "evidence": "documentation-checks.json",
+      "classification": "Repeated authored staged whitespace check confirms same uncorrected review hard-break spaces",
+      "action": "Remove Markdown line-end whitespace only; preserve review findings and raw patch/log bytes"
+    }
+  ],
+  "cycle_ceiling": "superseded",
+  "internal_reassessment": "Behavioral work and reviews complete; continue preservation only. Source-quality coverage remains outside-scope inherited-debt blocker; authored review whitespace corrected. No source or model changes.",
+  "terminal_disposition": {
+    "recorder_controls": "PASS",
+    "native_payload": "PASS exact full payload",
+    "format": "PASS",
+    "emitted_lint_diagnostics": "Inherited; owning relocations independently reviewed, runner exact",
+    "full_source_quality": "BLOCKED by inherited lib/lib-test lint debt before remaining all-targets coverage",
+    "original_regression": "FAIL unchanged baseline-attributed operation",
+    "recorder_preparation": "INCOMPLETE",
+    "overall": "HOLD"
+  }
+}

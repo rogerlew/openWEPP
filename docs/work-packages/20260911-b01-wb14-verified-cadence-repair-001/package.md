@@ -1,16 +1,161 @@
 # B01 WB14 verified parent cadence repair
 
-**Status: INCOMPLETE / HOLD.** The combined recorder-control test failed with
-`canonical covered dependent-output instability`. Execution stopped on that new
-behavioral failure at **34 / 35 unsuccessful verifications/corrections**.
-Formatting and lint remain unrun in this continuation. The original regression
-remains FAIL on baseline and candidate; the earlier native pair remains a limited
-PASS. See the recorder-controls continuation below.
+**Status: INCOMPLETE / HOLD.** Recorder controls pass on the final detached
+candidate, including independent current operands and model isolation. Native
+payload parity and formatting also pass. Full source-quality coverage is blocked
+by inherited lint debt before required examples, binaries and integration tests
+are reached. The original regression remains FAIL on baseline and candidate.
+Both existing reviewers confirm this limited disposition.
 
 Authentic capture and witness allowances are exhausted (**1 / 1** each).
 The authentic probe remains **0 / 1, RESERVED AND PROHIBITED**. Cadence is suspended.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Delegated recorder preparation — final disposition, 2026-09-15
+
+The owner adopted `/tmp/openwepp_b01_wb14_execution_discretion_authorization.md`.
+It superseded the first-local-failure stop, historical failure ceiling, one-run
+restriction and no-edit restriction for this recorder-specific continuation.
+It added four hours to the carried allowance. Earlier failures remain failures.
+No production science, solver, authority, cadence, public API or persisted restart
+schema change was released. Candidate Rust remains detached; main receives only
+this record, source patches and evidence.
+
+### Results and remaining blockers
+
+| Requirement | Final result | Evidence |
+| --- | --- | --- |
+| Combined real-producer controls | **PASS**, 1 / 1; no retries | [Command](artifacts/execution-discretion-20260915/combined-controls-final.json) |
+| Covered recorder | **PASS**: disabled, enabled, forced capture error; current operands and model equality | [Complete log](artifacts/execution-discretion-20260915/combined-controls-final.stderr) |
+| First snow-free recorder | **PASS**: non-target, disabled, enabled, capture error, wrong phase and required omission; current operands and model equality | Same combined control |
+| Native disabled-posture comparison | **PASS**, complete 7,707,305-byte payload equals accepted reference | [Comparison](artifacts/execution-discretion-20260915/native-comparison-final.json) |
+| Formatting | **PASS** on all changed Rust files | [Command](artifacts/execution-discretion-20260915/candidate-format-final.json) |
+| Owning-crate Clippy | Raw **FAIL 101**; emitted diagnostics are inherited or reviewed relocations | [Comparison](artifacts/execution-discretion-20260915/orchestrator-lint-comparison-final.json) |
+| Separate-runner Clippy | Raw **FAIL 101**; all 115 emitted diagnostics match baseline | [Comparison](artifacts/execution-discretion-20260915/runner-lint-comparison-final.json) |
+| Complete selected lint coverage | **BLOCKED**: 4 owning examples, 5 runner binaries and 9 integration tests were not reached | [Inventory and coverage](artifacts/execution-discretion-20260915/final-lint-target-coverage.json) |
+| Original regression | **FAIL**, same typed error at the same preliminary operation as producing baseline | [Attribution](artifacts/execution-discretion-20260915/original-regression-attribution-final.json) |
+
+The full `--all-targets --locked` lint commands retained their prescribed features
+and `--no-deps -D warnings`. They reached library and library-test compilation,
+then stopped on inherited denied lints. Owning summaries report 1,284 / 1,577
+errors; runner summaries report 3 / 79. The runner command successfully built its
+orchestrator dependency. Neither command established coverage of the remaining
+selected targets. Exact emitted-diagnostic comparison is useful attribution,
+**not full source-quality acceptance**. No diagnostic suppression was added.
+
+The owning comparison has 2,863 baseline messages and 2,861 candidate messages:
+2,851 exact matches, with the remaining six candidate groups independently
+adjudicated as inherited relocations. [Source evidence](artifacts/execution-discretion-20260915/lint-relocation-source-evidence-03.json)
+supports formatting-only differences and the private history argument. QA corrected
+its initial arity finding: the baseline already diagnoses the same 10-argument
+helper. QA also withdrew initial full-quality acceptance after the target inventory
+proved the missing coverage. The final reviews below contain the corrected result.
+
+**Supported scope boundary:** removing unrelated historical lint debt, adding
+suppressions, or granting a coverage exception is outside this authorization.
+The selected quality requirement stays unmet. The original numerical regression
+also requires separate scientific disposition; this recorder work neither repairs
+nor waives it. These are the remaining blockers after useful in-scope recorder work.
+
+### What changed and how the failures were resolved
+
+The final combined test keeps the entire obligation set and adds phase, mode,
+fixture, support and operation labels. The original 0.02 m SWE / 60-second vector
+remains an expected dependent-output rejection diagnostic. Positive covered
+recording uses the already-valid native terminal fixture reaching the actual
+covered producer seam; physical inputs were not tuned to obtain acceptance.
+
+The corrections are private observational or test plumbing:
+
+- Tuple-key owner receipts use the existing canonical wire projection; the test
+  independently reconstructs the expected receipt fields and ordered destinations.
+- Every recorder test mode retains the actual hydrology constructor inputs at
+  consumer construction. Non-test production retention remains unchanged.
+- The live oracle now independently compares the current dynamic hydrology state.
+- Evolving subsurface-layer state is explicitly captured and restored through a
+  private 12-field representation. Every value and layer order is preserved without
+  arithmetic, clamping or defaults. Only that newly represented dynamic field is
+  removed from the static-constructor equality check; all other guards and exact
+  reconstructed-frame equality remain.
+- Typed test-request flags, small helpers and rustfmt address introduced source
+  quality defects while preserving caller values and assertions.
+
+The scientific vector and every failed source cut/log remain recoverable. The
+[failure ledger](artifacts/execution-discretion-20260915/failure-ledger.json)
+contains all **55 cumulative failures**, including 34 carried failures and raw
+inherited-lint exits. Important discriminating attempts were:
+
+| Evidence | Observation |
+| --- | --- |
+| [Split controls 01](artifacts/execution-discretion-20260915/split-controls-01.json) | Covered-disabled fixture rejection; snow-free live-oracle tuple-key serialization failure |
+| [Combined 02](artifacts/execution-discretion-20260915/combined-controls-02.json) and [snow-free 02](artifacts/execution-discretion-20260915/snowfree-controls-02.json) | Required constructor pin absent from the test observer scope |
+| [Combined 03](artifacts/execution-discretion-20260915/combined-controls-03.json) | Covered controls and full model equality passed; enabled snow-free capture returned an error row |
+| [Diagnostic 04](artifacts/execution-discretion-20260915/snowfree-diagnostic-04.json) and [05](artifacts/execution-discretion-20260915/snowfree-diagnostic-05.json) | Exact error and frame comparison identified evolving subsurface-layer state |
+| [Correction 06](artifacts/execution-discretion-20260915/snowfree-corrected-06.json) | Compile-only failure: domain layer lacked deserialization; fixed with a private representation |
+| [Correction 07](artifacts/execution-discretion-20260915/snowfree-corrected-07.json) | Isolated snow-free controls passed; final combined verification followed helper extraction |
+
+Each internal reassessment had a concrete new observation and correction. There
+were no automatic retries. The final candidate native characterization was rerun
+because typed flags changed its fixture call. The accepted reference was reused;
+the complete payload still has SHA-256
+`fa01f2a111ddb331bee942f604dee1fe3af230a6d8b5f4e225234f98146e6845`.
+The observed 360-second terminal tick remains diagnostic, not a scientific oracle.
+The original candidate regression was also rerun on the final source: its caller
+and preliminary operation match the accepted baseline, and both retain FAIL.
+
+### Source custody and independent review
+
+Candidate: `/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915`.
+Producing base: `/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913`.
+The [741-entry source manifest](artifacts/execution-discretion-20260915/candidate-source-final.json)
+binds the final source and its recoverable cumulative patch:
+
+```text
+Tree:  ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592
+Patch: 4559c7d21fbcdb9314845e6a5c19940d051d0ef861e48c7cb2a4ae7e51020c5d
+```
+
+Every final command records unchanged source. [Output preservation](artifacts/execution-discretion-20260915/output-preservation.json)
+binds large raw logs retained locally to verified lossless published gzip copies. Restored execution-input custody
+remains separately bound by SHA-256
+`2e9e27eeb0a355672e7a74c8fd645a2ce95182ae88bf78741bc8f98ecac9b082`;
+it is not conflated with either historical source namespace.
+
+The same independent reviewers verified their affected findings and fixes:
+
+- [`/root/recovery_correctness`](artifacts/execution-discretion-20260915/correctness-review.md):
+  behavioral correctness accepted; full recorder preparation incomplete.
+- [`/root/recovery_qa`](artifacts/execution-discretion-20260915/qa-review.md):
+  controls accepted; full selected source quality blocked; overall HOLD.
+
+Their final dispositions preserve the original regression failure and the newly
+confirmed target-coverage limitation. No source-correctness defect remains open
+within the exercised recorder slice. Candidate Rust has not been adopted into main.
+
+[Documentation checks](artifacts/execution-discretion-20260915/documentation-checks.json)
+confirm local links, JSON and Python syntax, lossless log reuse, and clean
+authored Markdown/Python/JSON whitespace. The full staged whitespace check flags
+verbatim patch context and raw-output whitespace; those evidence bytes are preserved.
+`markdown-doc` was unavailable and was not claimed to pass.
+
+### Allowance, preservation and next decision
+
+Carry: **36,755.159526 seconds** and **34 failures**. Added allowance:
+**14,400 seconds**. Cumulative hard ceiling: **51,155.159526 seconds**.
+Start: **20:10:00 UTC, 2026-09-15**; deadline: **00:10:00 UTC, 2026-09-16**.
+All work, review and preservation count, concurrent wall time once, with no wait
+deductions. The failure ceiling is superseded; the final count is **55**.
+[Initial accounting](artifacts/execution-discretion-20260915/ledger-start.json).
+[Preservation accounting](artifacts/execution-discretion-20260915/ledger-preservation.json)
+records consumption before publication; the final local publication ledger adds
+all remaining commit, push, verification and response time.
+
+The next owner decision concerns the inherited lint debt needed to reach all
+selected targets and the separately held original scientific regression. No new
+authentic run is released. Capture and witness remain **1 / 1 exhausted**; the
+probe remains **0 / 1 RESERVED AND PROHIBITED**. The outer day-4/interval-22 versus
+inner 0/0 authority mismatch, E008, and suspended cadence remain unresolved.
 
 ## Recorder-controls continuation adopted — 2026-09-15
 

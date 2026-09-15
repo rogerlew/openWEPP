@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Ran: current candidate characterization; full byte comparison with accepted reference payload",
+  "candidate_command": "candidate-native-final.json",
+  "reference_command": "../single-lane-audit-20260915/reference-native.json",
+  "reference_reused": true,
+  "candidate_exit": 0,
+  "payload_count": 1,
+  "candidate_payload_bytes_excluding_newline": 7707305,
+  "reference_payload_bytes_excluding_newline": 7707305,
+  "candidate_payload_sha256": "fa01f2a111ddb331bee942f604dee1fe3af230a6d8b5f4e225234f98146e6845",
+  "reference_payload_sha256": "fa01f2a111ddb331bee942f604dee1fe3af230a6d8b5f4e225234f98146e6845",
+  "entire_payload_bytes_equal": true,
+  "source_tree_sha256": "ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592",
+  "scope": "Disabled recorder posture; diagnostic 360-second terminal timing is not a scientific acceptance oracle"
+}

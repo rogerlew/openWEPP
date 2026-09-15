@@ -1,0 +1,86 @@
+{
+  "evidence_class": "Ran: raw-copy and lossless gzip byte checks",
+  "outputs": [
+    {
+      "original_name": "candidate-native-final.stdout",
+      "raw_local_path": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/execution-discretion-20260915/candidate-native-final.stdout",
+      "published_gzip": "candidate-native-final.stdout.gz",
+      "bytes": 7709119,
+      "raw_sha256": "2ff3e2fe34f0234411fdd08c967dfe16448b876ec94449e6caf7692f4bf541e2",
+      "gzip_sha256": "830c7684d5d8639e93718f4e50d01dd47e4db78045646b83c34decd0b6196741",
+      "lossless_verified": true
+    },
+    {
+      "original_name": "candidate-orchestrator-clippy-01.stdout",
+      "raw_local_path": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/execution-discretion-20260915/candidate-orchestrator-clippy-01.stdout",
+      "published_gzip": "candidate-orchestrator-clippy-01.stdout.gz",
+      "bytes": 13614790,
+      "raw_sha256": "af7bee4bf08f91ecc883735fd24d5584b59da4303787a82f9079f6571a98ec79",
+      "gzip_sha256": "a0e671b012b06e8399f90c7b6eff050ff2413fe533ebd66cc02ee2fe8b16ff03",
+      "lossless_verified": true
+    },
+    {
+      "original_name": "candidate-orchestrator-clippy-02.stdout",
+      "raw_local_path": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/execution-discretion-20260915/candidate-orchestrator-clippy-02.stdout",
+      "published_gzip": "candidate-orchestrator-clippy-02.stdout.gz",
+      "bytes": 13604956,
+      "raw_sha256": "7c9f74edc8d84388d8201189730ea89df1aa845d0d8f5feccb040fa971a55b18",
+      "gzip_sha256": "76344d01ed0d4bc08cf3782e417905516a71c3a034a8f8d2770841045f5f023e",
+      "lossless_verified": true
+    },
+    {
+      "original_name": "candidate-orchestrator-clippy-03.stdout",
+      "raw_local_path": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/execution-discretion-20260915/candidate-orchestrator-clippy-03.stdout",
+      "published_gzip": "candidate-orchestrator-clippy-03.stdout.gz",
+      "bytes": 13594530,
+      "raw_sha256": "62ed029b76f3f29519c1f046e4034f3a1f1336c5e409ffb46e78896c731e173e",
+      "gzip_sha256": "41361b4a37daaba07cbe83c7309c02f5c15d1287e8420d407358eb2192228f0d",
+      "lossless_verified": true
+    },
+    {
+      "original_name": "candidate-orchestrator-clippy-final.stdout",
+      "raw_local_path": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/execution-discretion-20260915/candidate-orchestrator-clippy-final.stdout",
+      "published_gzip": "candidate-orchestrator-clippy-final.stdout.gz",
+      "bytes": 13594542,
+      "raw_sha256": "7659103cc29b0d137e853e3d79389bdcf2aeeb23eb9978b370260be4ab888120",
+      "gzip_sha256": "e6e7b4440c0a388f8084c5f6af8806b2be3561b7562167d0a2cd421e95f7a8c5",
+      "lossless_verified": true
+    },
+    {
+      "original_name": "candidate-runner-clippy-01.stdout",
+      "raw_local_path": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/execution-discretion-20260915/candidate-runner-clippy-01.stdout",
+      "published_gzip": "candidate-runner-clippy-01.stdout.gz",
+      "bytes": 392811,
+      "raw_sha256": "eccde1fd7128ddbce9070de08ff63c4e0bd02350b9a95a8ea47178ff01d7fd3f",
+      "gzip_sha256": "0837b8eb0f1315b3f72fcbdbdffe1be78cb4da51a6cd6fe6dd4ad859634fd7a7",
+      "lossless_verified": true
+    },
+    {
+      "original_name": "candidate-runner-clippy-03.stdout",
+      "raw_local_path": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/execution-discretion-20260915/candidate-runner-clippy-03.stdout",
+      "published_gzip": "candidate-runner-clippy-03.stdout.gz",
+      "bytes": 392724,
+      "raw_sha256": "0232e507edbbbf91b3382b70f98c96ff63cf09dfb47d5b0c48c49a13bc28b504",
+      "gzip_sha256": "644b2bd8d5b68527b27eae52959ca198df37157dea618987e8e0d9a5224fa779",
+      "lossless_verified": true
+    },
+    {
+      "original_name": "candidate-runner-clippy-final.stdout",
+      "raw_local_path": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/execution-discretion-20260915/candidate-runner-clippy-final.stdout",
+      "published_gzip": "candidate-runner-clippy-final.stdout.gz",
+      "bytes": 392724,
+      "raw_sha256": "fc1d576c81a9fa0dae90f0ff93ceb19d23697a587e64954a3c32f79d9fb034df",
+      "gzip_sha256": "fde2bf7d7bd6992d850b5305a92687b1ae80581abb58f78f1f47c5daf7a50287",
+      "lossless_verified": true
+    },
+    {
+      "original_name": "lint-target-inventory-final.stdout",
+      "raw_local_path": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/execution-discretion-20260915/lint-target-inventory-final.stdout",
+      "published_gzip": "lint-target-inventory-final.stdout.gz",
+      "bytes": 143036,
+      "raw_sha256": "3169e5f19657a11f2659353fa430ba642ce31b03fb6fb78fd591cc36cf2479e9",
+      "gzip_sha256": "0d034d1bc92d4b12c93a755c9d85e5179abc427da8c505b9f6fa1fa2235bd4d5",
+      "lossless_verified": true
+    }
+  ]
+}
