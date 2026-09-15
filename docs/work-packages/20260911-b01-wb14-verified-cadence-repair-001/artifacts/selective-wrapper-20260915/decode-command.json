@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/usr/bin/prlimit",
+    "--as=1073741824:1073741824",
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/selective-wrapper-20260915/decode_pair.py",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/selective-wrapper-20260915/real-pass"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-09-15T01:33:30.038841+00:00",
+  "decoder_sha256": "85246cdf0f431aed59b03f2d3f0a03ffd1ac8d9c26f520fa039816d60723f551",
+  "selected_events_sha256_before_decode": "2525f332e1a3550ec436b3e3d4c7b03984a5abd94320aee46b1fee5565409a9e"
+}

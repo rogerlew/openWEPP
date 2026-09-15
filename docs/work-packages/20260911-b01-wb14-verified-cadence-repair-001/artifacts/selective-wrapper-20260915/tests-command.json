@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "/usr/bin/prlimit",
+    "--as=1073741824:1073741824",
+    "/workdir/openWEPP/.venv/bin/python",
+    "-m",
+    "unittest",
+    "-v",
+    "test_select_pair"
+  ],
+  "cwd": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/selective-wrapper-20260915",
+  "start_utc": "2026-09-15T01:28:34.637918+00:00",
+  "source_sha256": {
+    "select_pair.py": "c8804dfb0b59f7077e9933aee67facfe1701df293a3b4037627f7b8d24f08d84",
+    "decode_pair.py": "85246cdf0f431aed59b03f2d3f0a03ffd1ac8d9c26f520fa039816d60723f551",
+    "test_select_pair.py": "e35e54056550e23534275e683f0f0e3840d247d3f1bf843fef76c464f49792fa"
+  },
+  "exit": 0,
+  "end_utc": "2026-09-15T01:28:35.943676+00:00"
+}

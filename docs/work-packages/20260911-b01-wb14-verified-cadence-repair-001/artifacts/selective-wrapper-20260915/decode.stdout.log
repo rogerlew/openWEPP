@@ -1,0 +1,49 @@
+{
+  "status": "COMPLETE",
+  "payloads": [
+    {
+      "ordinal": 123091,
+      "member": "beginning_typed_bytes",
+      "bytes": 887,
+      "sha256": "9058fd7dad195a9dd75475badf716e6b7c585644180c9ec59a54c9767c6d0b32",
+      "raw_file": "123091.beginning_typed_bytes.raw.json"
+    },
+    {
+      "ordinal": 123091,
+      "member": "input_typed_bytes",
+      "bytes": 2203,
+      "sha256": "9c46a8b867a6a05c45902ae13a43be05bb7fb5d28971f3ab4dd0c89e277c3b55",
+      "raw_file": "123091.input_typed_bytes.raw.json"
+    },
+    {
+      "ordinal": 123092,
+      "member": "beginning_typed_bytes",
+      "bytes": 887,
+      "sha256": "9058fd7dad195a9dd75475badf716e6b7c585644180c9ec59a54c9767c6d0b32",
+      "raw_file": "123092.beginning_typed_bytes.raw.json"
+    },
+    {
+      "ordinal": 123092,
+      "member": "input_typed_bytes",
+      "bytes": 2203,
+      "sha256": "9c46a8b867a6a05c45902ae13a43be05bb7fb5d28971f3ab4dd0c89e277c3b55",
+      "raw_file": "123092.input_typed_bytes.raw.json"
+    },
+    {
+      "ordinal": 123092,
+      "member": "parent_working_typed_bytes",
+      "bytes": 5398,
+      "sha256": "07f50df314daf5d2be2c8019752f34cd49e20c732515c97af4aad424b58163b4",
+      "raw_file": "123092.parent_working_typed_bytes.raw.json"
+    },
+    {
+      "ordinal": 123092,
+      "member": "working_typed_bytes",
+      "bytes": 887,
+      "sha256": "9058fd7dad195a9dd75475badf716e6b7c585644180c9ec59a54c9767c6d0b32",
+      "raw_file": "123092.working_typed_bytes.raw.json"
+    }
+  ],
+  "selected_event_sha256": "2525f332e1a3550ec436b3e3d4c7b03984a5abd94320aee46b1fee5565409a9e",
+  "row_encoding": "re-encoded complete values, not original row lexical bytes"
+}

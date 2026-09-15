@@ -1,0 +1,15 @@
+test_byte_validation_through_wrapper (test_select_pair.SelectTests.test_byte_validation_through_wrapper) ... ok
+test_decoded_duplicate_and_exact_precision (test_select_pair.SelectTests.test_decoded_duplicate_and_exact_precision) ... ok
+test_duplicate_selected_member (test_select_pair.SelectTests.test_duplicate_selected_member) ... ok
+test_export_complete_pair_and_missing_member (test_select_pair.SelectTests.test_export_complete_pair_and_missing_member) ... ok
+test_identity_count_missing_target (test_select_pair.SelectTests.test_identity_count_missing_target) ... ok
+test_large_unselected_late_kind (test_select_pair.SelectTests.test_large_unselected_late_kind) ... ok
+test_malformed_truncated_trailing (test_select_pair.SelectTests.test_malformed_truncated_trailing) ... ok
+test_missing_duplicate_wrong_kind (test_select_pair.SelectTests.test_missing_duplicate_wrong_kind) ... ok
+test_target_exact_numbers_and_member_order (test_select_pair.SelectTests.test_target_exact_numbers_and_member_order) ... ok
+test_wrapper_refusals (test_select_pair.SelectTests.test_wrapper_refusals) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 1.255s
+
+OK

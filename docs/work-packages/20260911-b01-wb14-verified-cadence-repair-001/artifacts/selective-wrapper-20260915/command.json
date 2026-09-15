@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "900s",
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/selective-wrapper-20260915/process-memory.log",
+    "/usr/bin/prlimit",
+    "--as=1073741824:1073741824",
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/selective-wrapper-20260915/select_pair.py",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/observations.json",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/selective-wrapper-20260915/real-pass"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "started_utc": "2026-09-15T01:29:06.298318+00:00",
+  "utility_sha256": "c8804dfb0b59f7077e9933aee67facfe1701df293a3b4037627f7b8d24f08d84",
+  "old_attempt": "1/1 consumed FAIL unchanged",
+  "new_retry": "1/1 consumed by this invocation",
+  "timeout_s": 900,
+  "memory_limit_bytes": 1073741824,
+  "selected_limit_bytes": 2097152
+}

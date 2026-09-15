@@ -1,0 +1,12 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/selective-wrapper-20260915/inspect_pair.py",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/selective-wrapper-20260915/real-pass/decoded"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "exit": 0,
+  "script_sha256": "c9cdc54b55adb8f082e1dbcc267f04c8286ebe6206576380ee10171de1fbb367",
+  "output": "operand-joins.json",
+  "timing": "Not separately instrumented; bounded local inspection after COMPLETE decode. Exit0 observed in terminal."
+}

@@ -1,0 +1,50 @@
+{
+  "status": "COMPLETE",
+  "expected_source_sha256": "709dc4992b2fd08fd8bae755c730a5a01341a9a18cee8a0817ca76a249974e03",
+  "targets": {
+    "123091": "surface_liquid_wb14_cadence_failure",
+    "123092": "surface_liquid_wb14_cadence_caller_failure"
+  },
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/authentic-raw-capture-20260914-1/observations.json",
+  "started_utc": "2026-09-15T01:29:06.335236+00:00",
+  "format": "ordered [physical_ordinal,event,value]; numbers encoded as exact decimal text; terminal COMPLETE required",
+  "source_stat_before": {
+    "st_dev": 64514,
+    "st_ino": 86055144,
+    "st_size": 8236702644,
+    "st_mtime_ns": 1789415160181925279,
+    "st_ctime_ns": 1789415160181925279
+  },
+  "source_stat_after": {
+    "st_dev": 64514,
+    "st_ino": 86055144,
+    "st_size": 8236702644,
+    "st_mtime_ns": 1789415160181925279,
+    "st_ctime_ns": 1789415160181925279
+  },
+  "source_fd_stat_after": {
+    "st_dev": 64514,
+    "st_ino": 86055144,
+    "st_size": 8236702644,
+    "st_mtime_ns": 1789415160181925279,
+    "st_ctime_ns": 1789415160181925279
+  },
+  "actual_source_sha256": "709dc4992b2fd08fd8bae755c730a5a01341a9a18cee8a0817ca76a249974e03",
+  "actual_bytes": 8236702644,
+  "physical_rows": 123093,
+  "selected": {
+    "123091": "surface_liquid_wb14_cadence_failure",
+    "123092": "surface_liquid_wb14_cadence_caller_failure"
+  },
+  "syntax_complete": true,
+  "eof": true,
+  "physical_arrays": 1,
+  "selected_event_sha256": "2525f332e1a3550ec436b3e3d4c7b03984a5abd94320aee46b1fee5565409a9e",
+  "elapsed_s": 244.6199426711537,
+  "selected_event_bytes": 297873,
+  "peak_rss_kib": 26556,
+  "rlimit_as": [
+    1073741824,
+    1073741824
+  ]
+}

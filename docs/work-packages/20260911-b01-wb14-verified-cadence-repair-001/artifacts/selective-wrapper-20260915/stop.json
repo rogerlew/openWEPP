@@ -1,0 +1,20 @@
+{
+  "utc": "2026-09-15T01:38:30.125665+00:00",
+  "start_utc": "2026-09-15T01:24:25+00:00",
+  "prior_supplement_charge_seconds": 1630.152713,
+  "continuation_seconds": 845.125665,
+  "supplement_charge_seconds": 2475.278378,
+  "remaining_supplement_seconds": 1124.721622,
+  "cumulative_charge_seconds": 28927.007953,
+  "cumulative_ceiling_seconds": 30051.729575,
+  "failed_corrections": 22,
+  "failure_ceiling": 23,
+  "wait_deductions": 0,
+  "old_selective_pass": "1/1 consumed FAIL preserved",
+  "new_selective_retry": "1/1 consumed COMPLETE",
+  "authentic_capture": "1/1 exhausted",
+  "old_witness": "1/1 exhausted",
+  "authentic_probe": "0/1 RESERVED AND PROHIBITED",
+  "status": "Bounded extraction and diagnosis COMPLETE; B01-CONT-023/current-context capture INCOMPLETE/HOLD; stop, preservation/publication only",
+  "delegate_token_usage": "UNOBSERVED; concurrent wall time charged once"
+}

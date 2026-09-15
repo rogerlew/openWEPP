@@ -1,0 +1,9 @@
+{
+  "python_ast_files": 4,
+  "json_files": 24,
+  "historical_package_body_unchanged": true,
+  "tracked_diff_only_current_package": true,
+  "old_source_results_inventory_unchanged": true,
+  "observed_editorial_cleanup": "One trailing space in newly written package status removed during preservation. No corrective selector/decode verification failed.",
+  "source_reuse": "No changes to frozen select_pair/decode_pair/test sources after PASS10/10 and real retry."
+}
