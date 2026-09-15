@@ -1,0 +1,103 @@
+{
+  "argv": [
+    "bash",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+    "/tmp/openwepp-b01-wb14-cadence-targets/snowfree-recorder-20260915",
+    "check",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/Cargo.toml",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "--lib",
+    "--tests",
+    "--locked",
+    "--features",
+    "persisted-restart-v1,restart-authority-evidence",
+    "--message-format=json"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "base": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+  "source_tree_sha256": "59a5d8a318d068c7d7237c046c8ab4e829016ddd44db33470db6d7d3483dc461",
+  "changed_files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs",
+      "base_sha256": "77e8035d8d7b5d490883d50892721c757cfa0a3fdf4b1dfc2fac37d96fe9ba0b",
+      "source_sha256": "8ecab9ac31c8ab12b6c5180c7f9b1c8eac80add31b4ed2f84eb3557de97afc75"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+      "base_sha256": "a3dfd35c775d6911c45483696319eaa75361bfcdbc2e96c11957ad9c926a0586",
+      "source_sha256": "cf5bca8d9d5586cf6e46edeced50963c743e32c1bfaff3bc2947cfbf1537a925"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+      "base_sha256": "361de4aac012b1e9f08c3290d5d29ce29bbd48631342f42e79b68f40475ba189",
+      "source_sha256": "67242e9fc74e130f907e8b8e8fd0f670b12731f81aa43e9cac3393ad6368dbd9"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs",
+      "base_sha256": "692e18c120a7cdb6eb175bb636f04ef3789f9908e1b218b34bdf64a455d70f8d",
+      "source_sha256": "ce71b10384618700cbd0f48e4ac99c9e031b72db99f3154cc4fe55088bafe371"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs",
+      "base_sha256": "f5d488e4915d345576128a51df43f4f00f69a662ae28f37155b37ec0dab31bd3",
+      "source_sha256": "f68e197acdfe28a5d60f742ae77e3d66f88d8f4dff9f4dc0589c7fe912f52d48"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "base_sha256": "377684b7411b9056c4d24a0f591e20b0a5dba331439e9a675424b1b3c2fa7d2a",
+      "source_sha256": "c075c5793f23025a16e7f6f2d99ab343cabd99fa9f650872c6813d7865d1e781"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs",
+      "base_sha256": "088c046409e348a9abc2217fc7a4cb049d87edb0ba927be58f02e2b269ade888",
+      "source_sha256": "ae83646f5466a7e1134bf5ad4a7262edbf4aacd3cd668d9b7c23e3b9d7eb3ad6"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs",
+      "base_sha256": "732ae7952afca307b9085512b79d6436ed0e87092f12a96b23adaa6088beed10",
+      "source_sha256": "2d298233b1ece8aed2ca789255ffb0e96316c4764d98d8bab1c73d22541badfe"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_unpublished_continuation.rs",
+      "base_sha256": "a2a9b8fe893c3e53cb268824bd628d02c80444537b45ad5a3535cdc8edce02b4",
+      "source_sha256": "273b52d706e0837f5b986a7147c2204db6fa5492c97fc64fdbeeb207b56ad35c"
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+      "base_sha256": "dfe0da9d2be9984b43334eed80fa1b9fe3892dd9993de1869e4ddcd940f2b594",
+      "source_sha256": "66ee7a6ad602fdc6f67614af53d9a7704d7ffac0e0b2c4576cd34db6fa6f75bb"
+    }
+  ],
+  "patch": "source-53dc8e972a34cc1063a5a6679a0c1600ed307a0eed7ce8c255f58f8b1eec49ec.patch",
+  "patch_sha256": "53dc8e972a34cc1063a5a6679a0c1600ed307a0eed7ce8c255f58f8b1eec49ec",
+  "start_utc": "2026-09-15T03:35:10.628951+00:00",
+  "timeout_seconds": 349.370918,
+  "executed_argv": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "349.370918s",
+    "bash",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+    "/tmp/openwepp-b01-wb14-cadence-targets/snowfree-recorder-20260915",
+    "check",
+    "--manifest-path",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/Cargo.toml",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "--lib",
+    "--tests",
+    "--locked",
+    "--features",
+    "persisted-restart-v1,restart-authority-evidence",
+    "--message-format=json"
+  ],
+  "end_utc": "2026-09-15T03:35:41.090188+00:00",
+  "exit": 0,
+  "source_unchanged_during_command": true
+}

@@ -1,0 +1,16 @@
+{
+  "candidate": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "matched_entries": 741,
+  "source_tree_sha256": "a3fbdfe52d21721b28a4cd5cf2eea790fff291831af483c23b54a8a8356fd31f",
+  "patch_sha256": "353c3c639c45781acfd6a017561dd84153b4a211e8696fb5a7962cba1ed20bba",
+  "candidate_and_patch_match": true,
+  "main_clean_before_edits": true,
+  "carried_active_seconds": 31873.121292000003,
+  "cumulative_ceiling_seconds": 32567.650862000002,
+  "precise_remaining_seconds": 694.52957,
+  "continuation_cap_seconds": 690,
+  "start_utc": "2026-09-15T03:31:00Z",
+  "deadline_utc": "2026-09-15T03:42:30Z",
+  "carried_failures": 24,
+  "failure_ceiling": 26
+}

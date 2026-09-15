@@ -1,0 +1,12 @@
+{
+  "logs": [
+    {
+      "logical_file": "focused-list.stdout",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/recorder-compile-20260915/focused-list.stdout",
+      "raw_bytes": 310838,
+      "raw_sha256": "92346b6f3f4ee560f7a0a81a3385deb86e0f5aa7ae34f3fbeef1a4fb4ca50303",
+      "published_gzip": "focused-list.stdout.gz",
+      "lossless_verified": true
+    }
+  ]
+}

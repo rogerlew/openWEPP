@@ -1,0 +1,23 @@
+{
+  "status": "INCOMPLETE/HOLD",
+  "reason": "First new downstream fixture failure; further source edits and verification prohibited",
+  "failure_command": "producer-test.json",
+  "failure_end_utc": "2026-09-15T03:38:17.172033+00:00",
+  "carried_active_seconds": 31873.121292000003,
+  "continuation_active_seconds_lower_bound": 542.84399,
+  "cumulative_active_seconds_lower_bound": 32415.965282000005,
+  "cumulative_ceiling_seconds": 32567.650862000002,
+  "continuation_cap_seconds": 690,
+  "start_utc": "2026-09-15T03:31:00Z",
+  "deadline_utc": "2026-09-15T03:42:30Z",
+  "ledger_utc": "2026-09-15T03:40:02.843990+00:00",
+  "carried_failed_corrections": 24,
+  "new_failed_corrections": 1,
+  "failed_corrections": 25,
+  "failure_ceiling": 26,
+  "wait_deductions_seconds": 0,
+  "capture": "1/1 exhausted",
+  "witness": "1/1 exhausted",
+  "probe": "0/1 RESERVED AND PROHIBITED",
+  "final_publication_ledger": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/recorder-compile-publication.json"
+}

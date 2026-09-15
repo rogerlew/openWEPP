@@ -1,0 +1,9 @@
+{
+  "prior_tree": "a3fbdfe52d21721b28a4cd5cf2eea790fff291831af483c23b54a8a8356fd31f",
+  "corrected_tree": "59a5d8a318d068c7d7237c046c8ab4e829016ddd44db33470db6d7d3483dc461",
+  "changed_since_prior_candidate": [
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs"
+  ],
+  "other_source_entries_unchanged": true,
+  "final_command_source_matches": true
+}
