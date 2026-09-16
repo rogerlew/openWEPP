@@ -136,8 +136,11 @@ JSON/Python syntax, lossless logs and scoped authored files.
 [Preservation accounting](artifacts/complete-lint-diagnostics-20260916/ledger-preservation.json)
 at **2026-09-16 02:19:37 UTC** records **41634.630302 charged seconds**,
 **9520.529224 seconds remaining**, and **58 cumulative failures**.
-Scoped evidence is being committed/pushed on existing `main`; exact remote-byte
-verification follows. Final additional charged
+Evidence commit `08431b100a24bdaa5961da175b48f6b9f5d4fab6` was pushed to existing
+`origin/main`, exit0. [Remote byte verification](artifacts/complete-lint-diagnostics-20260916/remote-verification.json)
+matched all **28** published files, **7,322,365 bytes**, including complete gzip
+logs. This publication-confirmation supplement is also committed/pushed and
+verified before return; its final identity is in the local terminal receipt below. Final additional charged
 time and exact remote-byte verification will be retained in
 `/workdir/openwepp-experiments/b01-wb14-cadence/logs/complete-lint-diagnostics-publication.json`.
 This local terminal receipt avoids recursive publication claims and preserves the
