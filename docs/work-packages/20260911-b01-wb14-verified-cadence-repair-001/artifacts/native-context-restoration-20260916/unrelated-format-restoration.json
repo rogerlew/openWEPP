@@ -1,0 +1,371 @@
+{
+  "files": [
+    {
+      "path": "crates/openwepp-coupled-time/src/policy14_lse_owner.rs",
+      "before_sha256": "196b27429882eaf217d81f19bc6554578f47d6d54a1ced38bf9164d69647ca18",
+      "original_sha256": "901939d72d3fc22f2d036d1519bb6ae04e2374ac37eafa4d95bd5a5ebfca499b",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-coupled-time/src/transaction.rs",
+      "before_sha256": "4d492d0eaeaf05f4add02ed71f21ce9847a7e9ea36cdd3e30adc8dbc1b3d70fd",
+      "original_sha256": "d25a82ad2b59e1aa80ef64615d6bb2c1dcfc518cc518d5c4916ac1a8a76aa8a3",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs",
+      "before_sha256": "f0e0176b2b83da03e7eb73935ee4793865ce8fdfff13486db350b4911216712a",
+      "original_sha256": "edbe4b7a9b6556af01c41f0afd868313882d0c1ca79872aaf76aba3d43c2d8c3",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs",
+      "before_sha256": "cb18f3f41a33362c50371e5ce45e5800724f9fc7ad704b02a180d74ca7316fcc",
+      "original_sha256": "abc1642dd30dc1336cb73c2c45f3c5fb53517c5c9542c6ff293e4f0d8fc671c3",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs",
+      "before_sha256": "4735130c68f34d50d965fbac99bc87e39f6a1d26538014d456a567e6a7a19206",
+      "original_sha256": "5b442119437f87ab93fd17a3cbd5f3693c2eb16a562f9d56ad426edd507e3e5a",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler_tests.rs",
+      "before_sha256": "874500dee412a38a1df27da3212f38677def76e41aa7b7dc6d5449413bccece6",
+      "original_sha256": "89b9892d69d261416137090b4612d13f83bc21590f755520ae0d6540343b2cc8",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs",
+      "before_sha256": "d76e9bed79d48339c6807dd0af7de21479e9dbeee20fd3413c78a8720aec9a95",
+      "original_sha256": "60d2ec1ca0d0fd4b8b8e1d468cf6dd1047b51901f031023c1a5df013dd469af8",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests.rs",
+      "before_sha256": "7582abb3e98c4f6c52fb675b30b79a5b591ec04152360ac708b46dc144959c12",
+      "original_sha256": "90d940f12ba2dd1685c70a40c5817423952afbd33408c0e1abc226fc5d515b61",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs",
+      "before_sha256": "130cb35477b4546ca206c32d3e070904ff915c56044f21fc06e1291dce4130b0",
+      "original_sha256": "da6ca07b14909865462c5f83dc56ef0dc49bef643f16a0d5d75d4ab08295f589",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs",
+      "before_sha256": "4f7beb29f4c8f8bc9ec40f0b895309f4da7ebec3736b101f71d2e60d468e85af",
+      "original_sha256": "1826924b199e8a1ff7a42776ac99713b0b1bb01ab8207a1ea508cc1539096c29",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_tests.rs",
+      "before_sha256": "7191d4eb9bcee6296c5a48cfe83732ca19d4ea85aed5f3ade99317960498ca6e",
+      "original_sha256": "4f9a801e559b9d47568bef985b2f62540f5b026e4e4da16212219dfbc76e73cb",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2_ingress_adapter.rs",
+      "before_sha256": "667dae077e66085134632e75768add0d7341ecd1e4f310e2ae3223dd62a2a4e1",
+      "original_sha256": "2a3df62629f019f470e299b3665311c91ad2ca063f3cb775f468dbb87b422b69",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2_ingress_tests.rs",
+      "before_sha256": "ef50ae0ffcb0b0f712c9fc99ab0848c5f494ddff86be64a86411d59e46e0a84c",
+      "original_sha256": "3083539199e1901213081e0cf4a383d7f94351ef36f6b99a1119e5d54f88875b",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v3_exact_enthalpy.rs",
+      "before_sha256": "82c6719e9beb810086cfc3e2abba4345eab882c5e62cd387d52f75f06fc8e6dd",
+      "original_sha256": "25797a1ccfc5afe462c54d79190fdee915b8cc391404c417c457930bc8accc7b",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_derived_ingress.rs",
+      "before_sha256": "925bca92ad8dc1ff2c15a04bcb1bfdd723f8954431e86eaea3a5375331586e3e",
+      "original_sha256": "03417d6e296ddc80fff7a34488e97cb48875a058cc06bafc5834853259fffc0e",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_v8_owner.rs",
+      "before_sha256": "cd01e27f5846a6e9e351dbda6086a04d9e99afe2bd4d51306f7879b18ef6e00a",
+      "original_sha256": "d5e2d6cf12f850e426b22ed423694d7ddb6b07d9f84424162eb9db9e33f240e1",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/multi_tile_runtime.rs",
+      "before_sha256": "f8fb1779263190f257734f34df4c7a6f5dc1c08c635815ad587e6087097ee530",
+      "original_sha256": "ea9c2e824ce16c995d505513fc3e7198e7b40126758370157c1e865219b70e80",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_validation.rs",
+      "before_sha256": "ee9cccc4e6ef619d595b003528adca1917bd748fb6a730009ea38cf782b263ec",
+      "original_sha256": "aecf49462ea589ba8b670ffc0702255d672171991a2fe81d5558b6b4cf130cb9",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/unified_entry_preflight.rs",
+      "before_sha256": "c6eca69617d4907f77c49dd8f9da137004a79d84a9e8076688b3b6ebd22cae73",
+      "original_sha256": "50990120d9fb963798c7c6d32c553d492a0a9a44840359b559d28a2372ee8b96",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_input_projection.rs",
+      "before_sha256": "aeff7bc0d14fcd9f3926dfcdde04231c91735173d54bfddd609fdc31e53f4d94",
+      "original_sha256": "5c1456270f281b2d74d516c495dc75af4e13eb8a43abdacd8e9b9aac777835b6",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+      "before_sha256": "efc71c51e76b1dd6e425475aa62b0398169999b03f75849c54aea1a95d2e3e8b",
+      "original_sha256": "8dcab01e47d2130f823f0657f93389e3c463d9ff71ef9eba6c014b4603feffb2",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_tests.rs",
+      "before_sha256": "104ee19becfd424c0ca8d899a207c6a2b6f063119cb642528858482000657f34",
+      "original_sha256": "48a9fc9ed27b9a88386e8bcfadd01d805bce8e14ff69fa8f841b75319ce3e4c7",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_accuracy_bulk.rs",
+      "before_sha256": "312c3d1acc0d9ae587fd811dfe516bb7902e50363520f1c8cbf72fc958d639dd",
+      "original_sha256": "21e1e038e8fd6ad868fcaaa78e02a5fc6a3eb89ce1812ceb9165001f132edd1d",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_accuracy_observer.rs",
+      "before_sha256": "4e123f2cc0d2bb2c9fc537f465eb94c62b5af5ec93d78b795eb26e34d25d469a",
+      "original_sha256": "b46d7a024d25ba0b1acc453515b93ae84f3bb3d7ce72e487f221cef953e12819",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+      "before_sha256": "1786f42deccd2fef70dafb0e9e3440dd66d0179c5a38fbcafcd31c83dfc70db9",
+      "original_sha256": "a35d20da725c8d249a43d8633d38319a3e599479fef2f2623c62eea73acd777b",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v11_covered/physical_outcome_ledger.rs",
+      "before_sha256": "9a99c112a1012de1ef77e86ce18a60e1d4b7176c5194fbac7ed0f7e2c98a9ebc",
+      "original_sha256": "adb498f4624b85ed46dfe9d0677143f79c43d0ba3eeb5556243e9f4d3920fed8",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/composite_lse_owner.rs",
+      "before_sha256": "cc8cbd42b15d88be957bad3d7539e7ab8a44b977a497de277b19ec8b5dbc2742",
+      "original_sha256": "7ccf2fd175918c7551ffc07f3909e55d4ec7dd51fc5245904958fa488ac7396d",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_adoption.rs",
+      "before_sha256": "49fb77b0d54074721f1c8385ab16dbc40e46c7518244459e2ecd08f4de9d372d",
+      "original_sha256": "f05ff244f7e7a2fe44a740da5dbd717ad540def35cb71bd1de2e49dafda644e2",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs",
+      "before_sha256": "ba5f9a54e34a9d59e2e5a57a7f36d273aad0b92b117a7aefb8f7ce838521af78",
+      "original_sha256": "edc2744c6afaafdd4b5b453bb9894cf6208e1f2c15cdaf8acf558d864fbf2190",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_custody.rs",
+      "before_sha256": "9be79c3357e3b607a01ebcb603e678c6030721440c6f9fbf85a18173ed6c5913",
+      "original_sha256": "af1d54e118ec28b54c99b509d164709b523d790a0e6fecb1ae7db4f301ba4f96",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_publication.rs",
+      "before_sha256": "08bf6b7c6c98e2b9d981e7ea1c6f0fc19fbb8fe43469644b90d66c253f54b0b1",
+      "original_sha256": "da07db132c5c316db05245cfa637f40956d3ac8f2c80c0fd7e0fe9f11d785119",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs",
+      "before_sha256": "d520458d2e527e5d0284d482baef7d784b162cbcb3076ff25088e32e020fec76",
+      "original_sha256": "3121a55bc0983bb029ea00a2ff1f58faea18fad0f4619ec70b3a5ab633f220be",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+      "before_sha256": "68e241968cad959ff071479fc78339441b628bd17780832be7e6b4aca1cd179b",
+      "original_sha256": "d5f1895ce7bad415003704b83beb4861903ba9ef224734b853feeead6c44f982",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/covered_liquid.rs",
+      "before_sha256": "5101c08b413031019631e9957c975e3349b946761f579fceab83d0e06bfe38b0",
+      "original_sha256": "4ba07da1ef33ef50cab43a2c857c0b96283716a2b0f00c0ad7e5691a9d52de4e",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/forcing.rs",
+      "before_sha256": "352db4b36206a52d695516b27456118cc388f2f150c329615fcd1b08405afbde",
+      "original_sha256": "5f947f99c284ddd2e0ab93e6d52d99d357c13d181a69477cbec6ede188ca75b0",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver.rs",
+      "before_sha256": "83a1d66f45527b302e02de6ab1b0c09863e55b8820271afb57b3fb5ca365d6d4",
+      "original_sha256": "5f6f2c2d27e1b171fb273dff7e04ff4f9f1ab79dc909659bfde9a2089247491c",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_litter_phase.rs",
+      "before_sha256": "c2a62cb0ca9e6b138d2bc4169313697cb9a5e03c7f99faf893f97f1428bce3b9",
+      "original_sha256": "ae2d80f02c39561e40c4261036ff3922a8408595906b6996d09771d842928225",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_tests.rs",
+      "before_sha256": "22d0968bba6c9b809bb7683bede5a9501e807168ba7d9530f9b69cf37b39da45",
+      "original_sha256": "f4a8d12117a8ec9611e6698116f6f25ff242e1380618655c2c4080f0a92a87ec",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transaction.rs",
+      "before_sha256": "5cf5d89c46402eead4f0cdabd565cdd588352751145c9327a2b36e38e7d91c42",
+      "original_sha256": "39a9d329fa302fc249b6cb668bfa4ea1659c21a671358d8ef57094e86ba8a7d2",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transaction_v3_bridge.rs",
+      "before_sha256": "3660539ac42ddae07ceed1842593925d6908fe488f6651d70f878e6439e28de0",
+      "original_sha256": "44dcb8fd7a475f06904fa65b99c06c23c26ffcfd1886aecb4ff71207575e1bab",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+      "before_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83",
+      "original_sha256": "43ff2f5ec2c9418a1dc8236558a08866fd1b6b091287c1b3538a9a1005779170",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+      "before_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293",
+      "original_sha256": "685ed6f2b5c61cb68d5ad9a27837ea6e6d34e4504d4f909baddf65d5cd70c3ae",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+      "before_sha256": "14a36737aad06528dab0549a3ba674957d263df61a8ea5dcf11c85cab4857748",
+      "original_sha256": "a0ce5ef70a8c4178ae99b351720da098488e5aa96482d1f6efddad0e5bc8edc8",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/checkpoint.rs",
+      "before_sha256": "a32adec71371f3e8c5ee1be2ccc1fe5988b4f302fc43d8a24af93012e344fa2d",
+      "original_sha256": "c82c5ff511ceaf2d16ca63f38b1aed1b065c024afe8f6c91eeb06bf5c9016052",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/evidence_fixture.rs",
+      "before_sha256": "de4e73fdd138d071677227381de26ca8f0b71c2116534ef5f62f6272341f073c",
+      "original_sha256": "c747cb3a88b0b362781011b7c14dd28606e2999f419000238a04103e99cc5d58",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/frozen_litter_v3_tests.rs",
+      "before_sha256": "9b14eaace50c4c591f3bd27c6918cd1e9a271550ede41fc9326bc7252f62eab6",
+      "original_sha256": "b1630de9972143ae1ff619f2eaef96298f9a4ee8eb3752045e852f7b17996c1f",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/host.rs",
+      "before_sha256": "3a63dc07e2ae181f27fb4f76ecd754c3e8e4f08e563590cda64acca6329a6581",
+      "original_sha256": "45fa0f786745386c4440ecc0f97a2fc67abac4f619c1cd6a9462c7007244f616",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/hydrology_restart.rs",
+      "before_sha256": "720164cfb915155f2dca6a0f58a435e21aa8624c82a9467ca2f9896d43fd59a1",
+      "original_sha256": "c2613aa713d291ecce4106d81d30700a5db9466632951719902c9fe4a163a992",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/lib.rs",
+      "before_sha256": "76ed8dafbdb025f288a2250648dde470dd35e52782609cc61f48f3a43dff77c8",
+      "original_sha256": "b42bd4f4ffcdacb9f062f4352c0054783453044087493a3e578d350b7daafa7b",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/projection.rs",
+      "before_sha256": "7e415ac3cca892a499073c6e0bcf74e75472eda5903163981de4a55137f995bb",
+      "original_sha256": "73b1170abd5de668fc86ba47f20d56e6a9e3fb4c78fae256df4f6f453bd7621c",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/projection_v2.rs",
+      "before_sha256": "8506543261417790e7d8420f9943b9bab075ba9c05d0d3bb5da6e01aa556effe",
+      "original_sha256": "03450a5709fc1bc06dd34f8996a3d05df2ee8adf7007e6ac929e305d6faaa1d8",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/scientific_owners.rs",
+      "before_sha256": "3944d8055909ae9f226070c977fba3d566c879931da2452c7f685e7d6ea0bfcf",
+      "original_sha256": "f4dad59d4a1c5041346be0602489e24699e6bc094bdcebabff28f82f28275334",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+      "before_sha256": "84ec9ff7ba18bde3247bbbd9e5d5631d9152f80bf0e625e06b377124aa24befc",
+      "original_sha256": "27d9bb33938759693cd6bcf88cfcc3f63969a850fb2d1950274a6440f09f8867",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_native_custody.rs",
+      "before_sha256": "e2ebae2068bbae1d2a03b9025c12da1bd7c5748ae752d2dbff8d0eba96dc5f79",
+      "original_sha256": "bdc773ff032b5d4308a9c6168ced0cc617b82518b15ac35d379668329be2e1e6",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v3.rs",
+      "before_sha256": "7c970364a0e150d8d1a7d23da18596bc27be40bb2cab12549a47f867b3cb80f0",
+      "original_sha256": "5b76164fd09ff74029f42b855690aaa9715511e2c71e28490d8f8bc8aea9d5b8",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v4_exact_enthalpy.rs",
+      "before_sha256": "b033f069a583a43f364f368fadd9c2b280066678291df6fdb3760fe6fce5087b",
+      "original_sha256": "3ae00a278c8e086b05e41f6282b54f74fc148faca8ca0498e4d655dd1fca8147",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v5_snow_enthalpy.rs",
+      "before_sha256": "07dfc5b427b0c612771ba52078c3b19dbb533824b55a7983cde503c29991f354",
+      "original_sha256": "b328a8d051a2321aa085ccdca0e959b8566dae7706a72ad6780fac6c9eef0c6d",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/native_custody_restart_experiment.rs",
+      "before_sha256": "fd12357915b5dbbf7cd865348c82ef420e00b38f29d2ae55391583405a3a99a6",
+      "original_sha256": "82c77e6d0aa4a1c9b897a6f9453b8d09b7f2f526fcff002accb218bf45fd518f",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/snow_stage3_v11_production_seed.rs",
+      "before_sha256": "6de4ac757e110608831269bde2f2e0663219ff7f51aaf04fd30bc9c8edcf5415",
+      "original_sha256": "b0753f1bb0716b72618b2664495d484aa0f8be20c24cbe7698eaebbf70814a69",
+      "non_whitespace_equal": false
+    },
+    {
+      "path": "crates/openwepp-runner/src/hillslope/snow_stage3_v11_production_seed_v2_bootstrap_tests.rs",
+      "before_sha256": "3a0dad0536b2e0a97d172ad8dbb76a529577f7fa9609fa068e08371c44bd40ce",
+      "original_sha256": "dcf7a707abfa4f56a4178488fd99517aa9a96f56c5febd1e52208f30c1d172fd",
+      "non_whitespace_equal": true
+    },
+    {
+      "path": "crates/openwepp-vegetation/src/v11.rs",
+      "before_sha256": "2a3c77d5e5999ca61841110e5c55b9558af5fc33872587bf2bfd5f9e1311f1dd",
+      "original_sha256": "6a1cbece735e6ddeeafbc57b52c2d992e59873f8ba808fb930a88a53b18f3ffc",
+      "non_whitespace_equal": true
+    }
+  ],
+  "reason": "Terminal diff reconciliation found unrelated detached formatting changes; restored original acquisition bytes outside two authorized reader files. Earlier evidence retains its exact source."
+}

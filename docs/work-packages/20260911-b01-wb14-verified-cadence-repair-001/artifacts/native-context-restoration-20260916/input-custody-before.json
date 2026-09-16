@@ -1,0 +1,405 @@
+{
+  "status": "PASS custody only; no semantic validation",
+  "utc": "2026-09-16T05:24:06.544975+00:00",
+  "elapsed_seconds": 0.9319304758682847,
+  "accepted_summary_sha256": "cf5f6612d65c3b5a2a53583560730e8d5c551795efc73ff6b3fd5735e41c17bb",
+  "raw_inventory_reused": true,
+  "raw_unchanged_stat": true,
+  "raw_sha256_from_accepted_inventory": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+  "member_count": 49,
+  "bytes": 1796372827,
+  "entries": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/27431.events.jsonl",
+      "bytes": 6097,
+      "sha256": "c8b926860b567212ea25f58fb2c05fb769fb4290565d40cc55dd1ba0f9332997",
+      "mtime_ns": 1789531068338841013,
+      "ctime_ns": 1789531068339617739,
+      "inode": 86186565
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/27431.canonical_record.bin",
+      "bytes": 307105003,
+      "sha256": "3d91e0ed544eaf5afc85760a27fa4549a56015a31d9def83abdbe2e0fe4b3452",
+      "mtime_ns": 1789531068337840961,
+      "ctime_ns": 1789531068337840961,
+      "inode": 86186566
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/54078.events.jsonl",
+      "bytes": 6098,
+      "sha256": "7721db7e083ea393f41ba3ade7fb6c5390a6a38e27befaf4d1290211b2c05be2",
+      "mtime_ns": 1789531332895704623,
+      "ctime_ns": 1789531332897169149,
+      "inode": 86186567
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/54078.canonical_record.bin",
+      "bytes": 376086364,
+      "sha256": "41acc940916dfc98326f32fc55ee13de773888acd876a1b0a274f74c5b9ecca0",
+      "mtime_ns": 1789531332895704623,
+      "ctime_ns": 1789531332895704623,
+      "inode": 86186568
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/79222.events.jsonl",
+      "bytes": 6099,
+      "sha256": "b12951552ee382d96d1ec7b8208ba5a1125bc389f214d6b43b3927307ab53299",
+      "mtime_ns": 1789531600497727809,
+      "ctime_ns": 1789531600498957942,
+      "inode": 86186569
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/79222.canonical_record.bin",
+      "bytes": 373891449,
+      "sha256": "7965ae7a3485d727af13c9d530525eaedd367ae7271cc23855cb751265fd38ba",
+      "mtime_ns": 1789531600496727756,
+      "ctime_ns": 1789531600496727756,
+      "inode": 86186570
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/107936.events.jsonl",
+      "bytes": 6102,
+      "sha256": "fb8aa4614cb49045c1d409925f49f02310f7d5b5efa16cca43749dd46956fcae",
+      "mtime_ns": 1789531800701244094,
+      "ctime_ns": 1789531800702025839,
+      "inode": 86186571
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/107936.canonical_record.bin",
+      "bytes": 273071144,
+      "sha256": "a9432f9740f0a505939b77c7cfa8e6465bbeb8bce0e3591ab7b416e43ebfd4d4",
+      "mtime_ns": 1789531800701244094,
+      "ctime_ns": 1789531800701244094,
+      "inode": 86186572
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/108033.events.jsonl",
+      "bytes": 6171,
+      "sha256": "ccd62ec5cebf24f2d12e7dee899c45e4c3424f8296ec66a8773ced6162cedd73",
+      "mtime_ns": 1789531800912781058,
+      "ctime_ns": 1789531800912860294,
+      "inode": 86186573
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/108033.0.json",
+      "bytes": 2834,
+      "sha256": "8900d4d3a36b2f4ad46c631adff2503fea55b1d739185f748c144e932ebd8cd0",
+      "mtime_ns": 1789531800704142761,
+      "ctime_ns": 1789531800704142761,
+      "inode": 86186574
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/108033.3.json",
+      "bytes": 223918,
+      "sha256": "ffe8c5b3b8cddfc972d91b4b562b6d0136fdc47f84f33d5e2b28d016dc81cda8",
+      "mtime_ns": 1789531800769247680,
+      "ctime_ns": 1789531800769247680,
+      "inode": 86186575
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/108033.8.json",
+      "bytes": 111,
+      "sha256": "b490483de1802d99f84c968b6a80f986c2b6d36cf2a3d9468cf94dfd8c1daeb0",
+      "mtime_ns": 1789531800769541002,
+      "ctime_ns": 1789531800769541002,
+      "inode": 86186576
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/108033.9.json",
+      "bytes": 315288,
+      "sha256": "53ef8620f29ef2478a1debf9243d08b96aea899e320f9e59ccd423752b36f8b0",
+      "mtime_ns": 1789531800800249315,
+      "ctime_ns": 1789531800800249315,
+      "inode": 86186577
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/108033.10.json",
+      "bytes": 606393,
+      "sha256": "1d9d17e908a220d9912f14498eda113bd8cdffaaf6dfd705305d7c4c00838081",
+      "mtime_ns": 1789531800900254588,
+      "ctime_ns": 1789531800900254588,
+      "inode": 86186578
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/108033.11.json",
+      "bytes": 134780,
+      "sha256": "7581abdf5250748ff289b61ee3e1bae324a65a88afffd4e01a5cf5a6b83741bc",
+      "mtime_ns": 1789531800912255221,
+      "ctime_ns": 1789531800912255221,
+      "inode": 86186579
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/108033.12.json",
+      "bytes": 160,
+      "sha256": "3b47d47157564740ab8bf2f9285f5e603aae4c08aaecb920b788511d5708a3ed",
+      "mtime_ns": 1789531800912781058,
+      "ctime_ns": 1789531800912781058,
+      "inode": 86186580
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.events.jsonl",
+      "bytes": 15990,
+      "sha256": "228c8a58fbacc1d33d4d26d02ee83bf568d882407f83749798dc65d915664c0a",
+      "mtime_ns": 1789531948669046541,
+      "ctime_ns": 1789531948670252195,
+      "inode": 86186581
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.2.json",
+      "bytes": 2636,
+      "sha256": "10cae8a34e98b4cd58e067c05edbcd9378024f60bdad38168e78b1ef0b1c6e9d",
+      "mtime_ns": 1789531809449705407,
+      "ctime_ns": 1789531809449705407,
+      "inode": 86186582
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.6.json",
+      "bytes": 70510,
+      "sha256": "de5ba0989f4a66c81e7eb1c5b0b5c5e6e75fe36658141608572a9e6032a6e5a6",
+      "mtime_ns": 1789531809471706567,
+      "ctime_ns": 1789531809471706567,
+      "inode": 86186583
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.7.json",
+      "bytes": 60023,
+      "sha256": "fb40ea15c6a88d624ad7ac344d05f936c12aeb9f5b211ff483872511b601a3df",
+      "mtime_ns": 1789531809489707516,
+      "ctime_ns": 1789531809489707516,
+      "inode": 86186584
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.8.json",
+      "bytes": 1089,
+      "sha256": "7e86357cc245a82faafdf53095745c8861f8ab21eb73bf35b92bb1240ad6143a",
+      "mtime_ns": 1789531809490928681,
+      "ctime_ns": 1789531809490928681,
+      "inode": 86186585
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.9.json",
+      "bytes": 2876,
+      "sha256": "e081b414b6b67fd24869f56ae7b09b37eef083a5c1fc09c7b6e9748ae9fea1a6",
+      "mtime_ns": 1789531809491734153,
+      "ctime_ns": 1789531809491734153,
+      "inode": 86186586
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.10.json",
+      "bytes": 665,
+      "sha256": "9e5a3bfd0353528220274a51cae4b253c68d85291aaec7a04471442967aae7a4",
+      "mtime_ns": 1789531809491911804,
+      "ctime_ns": 1789531809491911804,
+      "inode": 86186587
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.12.json",
+      "bytes": 141779,
+      "sha256": "6c59860507007a0ac6f4baebdff76df718352a4e1830623336c329a13aa186a1",
+      "mtime_ns": 1789531809532709783,
+      "ctime_ns": 1789531809532709783,
+      "inode": 86186588
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.18.json",
+      "bytes": 12726,
+      "sha256": "b994450337fbb0f855d0b986fc49ac035579267180ebc9e547f7a671cb2dcad6",
+      "mtime_ns": 1789531809536709994,
+      "ctime_ns": 1789531809536709994,
+      "inode": 86186589
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.19.json",
+      "bytes": 457913228,
+      "sha256": "2e1d9732f67cae8e2291f430645f59aacf1836f00a0beddf82ad0a31bee064ba",
+      "mtime_ns": 1789531946740944871,
+      "ctime_ns": 1789531946740944871,
+      "inode": 86186590
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.20.json",
+      "bytes": 4797,
+      "sha256": "99e9706798db4982ac7ebba2d8576906b6a8f09367b8f3487bb3b8002768a8b1",
+      "mtime_ns": 1789531946742150513,
+      "ctime_ns": 1789531946742150513,
+      "inode": 86186591
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.21.json",
+      "bytes": 6518,
+      "sha256": "e4738c3173d7872f4a7eb478716827ba8a18b15e19d036bedc60b8a33961e3a4",
+      "mtime_ns": 1789531946742944977,
+      "ctime_ns": 1789531946742944977,
+      "inode": 86186592
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.22.json",
+      "bytes": 111,
+      "sha256": "b490483de1802d99f84c968b6a80f986c2b6d36cf2a3d9468cf94dfd8c1daeb0",
+      "mtime_ns": 1789531946743595567,
+      "ctime_ns": 1789531946743595567,
+      "inode": 86186593
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.23.json",
+      "bytes": 315368,
+      "sha256": "ea7f4ce04601b7a62cb88676395a4ea5bfb0ab86a073746caafc9e2ddfec9628",
+      "mtime_ns": 1789531946774946664,
+      "ctime_ns": 1789531946774946664,
+      "inode": 86186594
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.24.json",
+      "bytes": 5997977,
+      "sha256": "09d914ff78012a835833abfed9890cc9a88197effdf10f7c6847edb9886061af",
+      "mtime_ns": 1789531948629044432,
+      "ctime_ns": 1789531948629044432,
+      "inode": 86186595
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.25.json",
+      "bytes": 57,
+      "sha256": "f4a5dfd0b2ddfabfb786a9c2c077949b9f002019567965defee3c4fc3d01622c",
+      "mtime_ns": 1789531948629740266,
+      "ctime_ns": 1789531948629740266,
+      "inode": 86186596
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.26.json",
+      "bytes": 262808,
+      "sha256": "443aa08f5e2d9d11939754901253196d63e74ac9d85481f719e4ac640047e3fd",
+      "mtime_ns": 1789531948657045909,
+      "ctime_ns": 1789531948657045909,
+      "inode": 86186597
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.27.json",
+      "bytes": 11057,
+      "sha256": "febb81ba0e24a8415c4794460c0247016680907ba40bd47da2f67fa59e6ae0e8",
+      "mtime_ns": 1789531948659046014,
+      "ctime_ns": 1789531948659046014,
+      "inode": 86186598
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.28.json",
+      "bytes": 522,
+      "sha256": "ed2dc65ea8db15245f677d6e0a6888567bbe68d8f329f7857b9d9f1c2cc301aa",
+      "mtime_ns": 1789531948659915709,
+      "ctime_ns": 1789531948659915709,
+      "inode": 86186599
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.29.json",
+      "bytes": 518,
+      "sha256": "a232d8da04a80fe26ac52f3c37a8fb684fe9ec9e4dbc2baa76ba9f0e27f77b1a",
+      "mtime_ns": 1789531948660011257,
+      "ctime_ns": 1789531948660011257,
+      "inode": 86186600
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.30.json",
+      "bytes": 3386,
+      "sha256": "6285bf7a879789110f91bf4856cbb3e0a07f28a65f23ad1b65ab1e621fe07e02",
+      "mtime_ns": 1789531948660046067,
+      "ctime_ns": 1789531948660046067,
+      "inode": 86186601
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.34.json",
+      "bytes": 4336,
+      "sha256": "1740eaf412b7a72658d877f46cf075591c270cee31428a1878d30814915c9503",
+      "mtime_ns": 1789531948663046225,
+      "ctime_ns": 1789531948663046225,
+      "inode": 86186602
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.35.json",
+      "bytes": 3505,
+      "sha256": "c9b8ab4f03b34415236514c819e95a0f460085d76828bff02687cd194c0e7f58",
+      "mtime_ns": 1789531948664046278,
+      "ctime_ns": 1789531948664046278,
+      "inode": 86186603
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.36.json",
+      "bytes": 21330,
+      "sha256": "f3c79596f2bcf572de0d98d1392c591b619bdcc25ffb76ae7f31c2f030a73c27",
+      "mtime_ns": 1789531948669046541,
+      "ctime_ns": 1789531948669046541,
+      "inode": 86186604
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123092.events.jsonl",
+      "bytes": 3620,
+      "sha256": "ae3c6fb1b5fd272c862084e8b8e78e7ba1c168679a4a055023927527ed94822e",
+      "mtime_ns": 1789531948673046752,
+      "ctime_ns": 1789531948673433590,
+      "inode": 86186605
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123092.3.json",
+      "bytes": 3142,
+      "sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938",
+      "mtime_ns": 1789531948671247221,
+      "ctime_ns": 1789531948671247221,
+      "inode": 86186606
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123092.9.json",
+      "bytes": 7648,
+      "sha256": "77624723588a92c1b10adc8f94bf7a31852a61d7b88c93a0681918bf3e946620",
+      "mtime_ns": 1789531948672046700,
+      "ctime_ns": 1789531948672046700,
+      "inode": 86186607
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123093.events.jsonl",
+      "bytes": 3940,
+      "sha256": "e4a0237986cab34f63149b74ca220c84a7ecb84cb3077a5b1c7b03263f8ce871",
+      "mtime_ns": 1789531948682047227,
+      "ctime_ns": 1789531948682739582,
+      "inode": 86186608
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123093.0.json",
+      "bytes": 3142,
+      "sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938",
+      "mtime_ns": 1789531948674369525,
+      "ctime_ns": 1789531948674369525,
+      "inode": 86186609
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123093.2.json",
+      "bytes": 673,
+      "sha256": "cc857a2799350e61fc2c12a514cf951411005b23e03e0456b515bfaef1dfb6e0",
+      "mtime_ns": 1789531948674583392,
+      "ctime_ns": 1789531948674583392,
+      "inode": 86186610
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123093.5.json",
+      "bytes": 7648,
+      "sha256": "77624723588a92c1b10adc8f94bf7a31852a61d7b88c93a0681918bf3e946620",
+      "mtime_ns": 1789531948676046911,
+      "ctime_ns": 1789531948676046911,
+      "inode": 86186611
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123093.8.json",
+      "bytes": 18049,
+      "sha256": "bc339feadb3b03f2961185f08d64a771191d5f0cbc49e7eb6344c17ac38c1a5e",
+      "mtime_ns": 1789531948681047174,
+      "ctime_ns": 1789531948681047174,
+      "inode": 86186612
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123093.9.json",
+      "bytes": 3142,
+      "sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938",
+      "mtime_ns": 1789531948682047227,
+      "ctime_ns": 1789531948682047227,
+      "inode": 86186613
+    }
+  ]
+}

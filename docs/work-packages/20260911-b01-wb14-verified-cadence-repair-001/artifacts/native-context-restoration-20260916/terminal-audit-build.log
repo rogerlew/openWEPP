@@ -1,0 +1,96 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-hillslope-orchestrator)
+warning: struct `PreparedDayCaptureV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1250:8
+     |
+1250 | struct PreparedDayCaptureV1 {
+     |        ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `capture_prepared_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1258:4
+     |
+1258 | fn capture_prepared_day(
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_prepared_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1275:4
+     |
+1275 | fn validate_prepared_day(
+     |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_prepared_day_row_for_test` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1832:15
+     |
+1832 | pub(crate) fn capture_prepared_day_row_for_test(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_captured_prepared_support_from_provider` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2832:15
+     |
+2832 | pub(crate) fn restore_captured_prepared_support_from_provider(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `prepared_support`, `forcing_receipt`, and `snow_enthalpy_material_resident` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2855:9
+     |
+2850 | pub(crate) struct RestoredProviderBoundContextV1 {
+     |                   ------------------------------ fields in this struct
+...
+2855 |     pub prepared_support: crate::DirectSnowStage3V11PreparedSupport,
+     |         ^^^^^^^^^^^^^^^^
+2856 |     pub forcing_receipt: openwepp_coupled_time::Digest32,
+     |         ^^^^^^^^^^^^^^^
+...
+2859 |     pub snow_enthalpy_material_resident:
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `entry`, `canonical_record`, `parent_receipt`, and `qualification_delta` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2872:9
+     |
+2871 | pub(crate) struct AuthenticatedArchivedDayV1 {
+     |                   -------------------------- fields in this struct
+2872 |     pub entry: crate::Stage3CommittedDayArchiveEntryV1,
+     |         ^^^^^
+2873 |     pub canonical_record: Vec<u8>,
+     |         ^^^^^^^^^^^^^^^^
+2874 |     pub parent_receipt: crate::DirectSnowStage3V11ParentReceipt,
+     |         ^^^^^^^^^^^^^^
+2875 |     pub publication: crate::v9_real_consumer_shadow::RestoredStage3PublicationDayEvidenceV1,
+2876 |     pub qualification_delta: crate::SnowStage3V11QualificationDayDeltaV1,
+     |         ^^^^^^^^^^^^^^^^^^^
+
+warning: fields `parent`, `pending_terminal_parcels`, `reduction`, `ledger`, `receipt`, and `binding` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3034:9
+     |
+3033 | pub(crate) struct RestoredCapturedPreChildContextV1 {
+     |                   --------------------------------- fields in this struct
+3034 |     pub parent: V11ParentTransaction,
+     |         ^^^^^^
+...
+3037 |     pub pending_terminal_parcels:
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+3041 |     pub reduction: ConstraintReductionReceiptV1,
+     |         ^^^^^^^^^
+3042 |     pub ledger: LedgerEntryV1,
+     |         ^^^^^^
+3043 |     pub receipt: AcceptedSlabReceiptV1,
+     |         ^^^^^^^
+3044 |     pub binding: serde_json::Value,
+     |         ^^^^^^^
+
+warning: function `restore_snow_free_pre_child_context_from_member_export` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3998:15
+     |
+3998 | pub(crate) fn restore_snow_free_pre_child_context_from_member_export(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 9 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 22.06s
+  Executable unittests src/lib.rs (/tmp/openwepp-b01-wb14-native-context-target/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab)

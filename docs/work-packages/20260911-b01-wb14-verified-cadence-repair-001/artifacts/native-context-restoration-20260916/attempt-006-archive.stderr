@@ -1,0 +1,4 @@
+
+thread 'snow_stage3_v11_current_context_capture::member_backed_restore_tests::archive_records_authenticate_sequentially_from_pinned_seed' (1183781) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4303:9:
+archive canonical refusals: [(0, Some("Stage-3/V11 attachment identity failure: covered subslab retained boundary sets")), (1, Some("Stage-3/V11 attachment identity failure: covered subslab retained boundary sets")), (2, Some("Stage-3/V11 attachment identity failure: covered subslab retained boundary sets")), (3, Some("Stage-3/V11 attachment identity failure: covered subslab retained boundary sets"))]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

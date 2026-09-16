@@ -1,18 +1,102 @@
 # B01 WB14 verified parent cadence repair
 
-**Status: INCOMPLETE / HOLD.** The newly authorized diagnostic acquisition is
-**COMPLETE / PASS** under both independent reviews: the genuine snow-free
-pre-child payload and accompanying evidence are retained and structurally
-inspectable. The captured model still fails E008, and native restoration was not
-run. Recorder controls, native payload parity and formatting retain PASS on the
-unchanged candidate; matched-diagnostic lint remains PASS, strict Clippy FAIL,
-and the original baseline/candidate regression FAIL. Cadence remains unresolved.
+**Status: INCOMPLETE / HOLD.** Acquisition remains COMPLETE / PASS. Native diagnostic
+prefix, provisional and prepared-provider components pass with zero recorded
+physical-work counters. All four archives canonically refuse terminal-event
+publication chronology. Full native consumer restoration is unimplemented/unrun;
+production remains inadmissible, original E008/regression FAIL, cadence HOLD.
+No new model execution occurred. Distinct QA remains unavailable and unmet.
 
-Authentic capture and witness allowances are exhausted (**1 / 1** each).
-The additional corrected-recorder diagnostic acquisition is also **1 / 1 consumed**.
-The authentic probe remains **0 / 1, RESERVED AND PROHIBITED**. Cadence is suspended.
+Authentic capture, witness and corrected-recorder acquisition allowances remain
+exhausted (1/1 each). Bounded native diagnostics have executed under the adopted
+amendment below; they do not release a physical successor.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Native context restoration — bounded diagnostic disposition, 2026-09-16
+
+**Ran: partial components PASS; canonical archive refusal; native restoration INCOMPLETE / HOLD.**
+Owner adoption of [the authorization](artifacts/native-context-restoration-20260916/adopted-authorization.md)
+released bounded file-only diagnostic attempts under the unchanged ceiling. No
+original-input model, collector, physical successor or cadence execution occurred.
+The original acquisition source, frozen recorder and all 49 exported members
+remain retained; no candidate Rust is adopted into main.
+
+The reader derives from the authorized 741-entry acquisition tree
+`ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592`.
+Intent was private reader/representation/native constructor adapters and diagnostic
+tests only; canonical validators, schemas, public APIs, dependencies and physical
+processes remain fixed. Astra took source ownership from the writer for the final
+provider component and existing-counter plumbing. Terminal reconciliation restored
+61 unrelated detached files to acquisition bytes; earlier runs retain their exact
+source snapshots and are not silently relabeled as the final cut. The final scope
+is the current-context reader and private restart WireV2 bridge only.
+
+Frozen fresh-process component results and exact source/binary/input identities
+are indexed in [the disposition](artifacts/native-context-restoration-20260916/disposition.json).
+The native clock/parent and independent inactive-prefix validator reconstruct eight
+slabs and one event under the original B01 policy. The provisional component
+matches reduction, complete-owner ledger and provisional receipt bytes; its original
+clock stays unchanged while a private clone constructs provisional authority.
+The provider component restores all 48 supports, binds day 4, and compares interval
+22 parent support and provider-derived forcing identity. Provider configuration is
+captured-member configuration, not independently pinned seed provider authority.
+These components report zero existing solver-mechanism, direct-runtime compute /
+commit / publication, and native litter / surface / WB14 physics counters. They do
+not establish historical physics or conservation. Actual source/input receipts
+and counter output are retained beside each attempt.
+
+All four archives reached the existing canonical refusal in frozen B01 attempt009:
+`V11 actual-consumer identity mismatch: archived publication day chronology`.
+Sequential execution took 216.912693 seconds under a 16GiB address-space and
+1GiB per-output-file limit, with source/binary/export unchanged. The exact refused
+predicate compares the final support ending owner with the day ending owner,
+although accepted terminal events bridge those states. Independent correctness
+traced those event joins on all four days. No validator repair is authorized or
+made. Archive009 predates counter instrumentation: its no-physical-replay evidence
+is static dependency inspection, not runtime counters. Earlier boundary refusals
+were omitted B01 process context, not captured-node defects. The early unbounded
+archive launch and its late resource correction are retained as execution defects.
+
+[Four isolated controls](artifacts/native-context-restoration-20260916/clock-controls-results.json)
+PASS4/4: omitted/reordered slabs and wrong parent support reach typed ERR-CT-015;
+wrong provisional source owner reaches the explicit diagnostic equality guard.
+Their exit101 results are expected negatives, not failed corrections. Prefix/event/
+parcel and provider semantic substitutions remain missing.
+
+Full native consumer/frame/resident restoration is **UNIMPLEMENTED / NOT RUN**:
+the private constructor inverse is unfinished, not unavailable authority and not
+a canonical native refusal. Current Stage3/snow, deferred soil/parcel custody,
+accepted-position and complete native-owner joins remain pending. Archive beginning
+owner and manifest/root-chain admission remain unproved. The outer day4/interval22
+versus nested 0/0 defect and intentional physical predecessor are unchanged.
+
+[Independent correctness](artifacts/native-context-restoration-20260916/correctness-review.md)
+accepts bounded component evidence and archive-refusal attribution, with **HOLD**.
+Distinct independent QA is **UNAVAILABLE / UNMET**: runtime rejected replacement
+creation with `agent thread limit reached`; no close-agent API exists. The writer,
+orchestrator and correctness reviewer do not substitute for QA.
+
+Affected formatting/build and capped diagnostic Clippy collection are retained.
+The complete pre-scope-cleanup comparison had 2,822 matched diagnostics, 67 unmatched
+occurrences (46 unique); it is **not a matched-diagnostic PASS**. Strict Clippy
+remains FAIL. Scope-cleanup format/build PASS; the final capped comparison has 2,855 matched diagnostics and 21 unmatched occurrences (16 unique), so matched diagnostic quality remains NOT PASS. Earlier accepted
+acquisition quality evidence applies to the unchanged acquisition, not automatically
+to this reader. No full regression was run or claimed.
+
+Outcome separation: native restoration **INCOMPLETE**; production admissibility
+**NOT ADMITTED**; original captured E008/regression **FAIL, unchanged and not rerun**;
+new model executions **0**; scientific qualification and cadence **HOLD**. This is
+a bounded diagnostic return with an exact excluded-validator refusal and completed
+independent components, not checkpoint closure or permission for a physical run.
+
+Budget and failed actions are preserved in
+[the final ledger](artifacts/native-context-restoration-20260916/budget-final.json).
+Carry remains 46,879.941357 charged / 51,155.159526 ceiling seconds, 67 historical
+failures; all continuation work/review/preservation counts from 05:21:00 UTC,
+no wait deductions and no new failure-count cutoff. Conservative terminal
+reservation is explicitly distinguished from measured completion time. Original
+acquisition, witness and capture allowances remain exhausted at 1/1 each.
 
 ## Diagnostic-only corrected-recorder acquisition — adopted 2026-09-16
 

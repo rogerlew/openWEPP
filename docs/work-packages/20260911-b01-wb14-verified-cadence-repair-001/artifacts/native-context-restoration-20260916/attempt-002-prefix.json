@@ -1,0 +1,25 @@
+{
+  "label": "member-backed-clock-parent-prefix",
+  "argv": [
+    "/workdir/.cache/openwepp/targets/native-context-restoration-reader-20260916-3b29d2c67dd8/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab",
+    "snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_restores_clock_and_parent_without_native_decode",
+    "--exact",
+    "--nocapture"
+  ],
+  "environment": {
+    "OPENWEPP_B01_MEMBER_EXPORT": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1"
+  },
+  "binary_sha256": "171b57b3392e9417e862b114187c4ab6e3d09b5c9e2ff1a1c793368a16968014",
+  "status": "failed-closed",
+  "result": {
+    "exit_code": 101,
+    "elapsed_seconds": 0.54,
+    "failure": "WB14 child ordinal or receipt-chain identity is invalid"
+  },
+  "notes": [
+    "The first invocation failed earlier while direct receipt deserialization encountered tuple-keyed destination receipts encoded as an ordered sequence.",
+    "The second invocation used the existing canonical restart-wire restoration and reached validate_native_inactive_wb14_prefix_v1.",
+    "Historical inference corrected by attempt-003: the exact V2 custody arrays are all null and cannot explain this refusal."
+  ],
+  "final_binary_sha256": "a778a6a2e25d5e559dbe052dfef117cdca9f8d8a8777909850e46a7802f20c71"
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "case": "clock_omit_slab",
+    "argv": [
+      "/usr/bin/timeout",
+      "--kill-after=5s",
+      "60s",
+      "/workdir/openwepp-experiments/b01-wb14-cadence/frozen-provisional-006.frozen",
+      "snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_reconstructs_provisional_on_clone_from_pinned_seed",
+      "--exact",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "export": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-control-clock_omit_slab",
+    "exit_code": 101,
+    "elapsed_seconds": 0.3047358775511384,
+    "expected_predicate": "ERR-CT-015 invalid restart state",
+    "semantic_control_pass": true,
+    "changed_member": "rows/123091.12.json",
+    "changed_member_sha256": "da2c082bfeb46ace6e18cc156e777a8ca48f3d3879c532556cc610800a8b2867",
+    "qualification": "typed canonical restart refusal"
+  },
+  {
+    "case": "clock_reorder_slabs",
+    "argv": [
+      "/usr/bin/timeout",
+      "--kill-after=5s",
+      "60s",
+      "/workdir/openwepp-experiments/b01-wb14-cadence/frozen-provisional-006.frozen",
+      "snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_reconstructs_provisional_on_clone_from_pinned_seed",
+      "--exact",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "export": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-control-clock_reorder_slabs",
+    "exit_code": 101,
+    "elapsed_seconds": 0.3049041018821299,
+    "expected_predicate": "ERR-CT-015 invalid restart state",
+    "semantic_control_pass": true,
+    "changed_member": "rows/123091.12.json",
+    "changed_member_sha256": "fb68c21e4f3d732fda36fe10303ee1c4d4d2c64e27f6100cbf085436271bd5fd",
+    "qualification": "typed canonical restart refusal"
+  },
+  {
+    "case": "clock_wrong_parent_support",
+    "argv": [
+      "/usr/bin/timeout",
+      "--kill-after=5s",
+      "60s",
+      "/workdir/openwepp-experiments/b01-wb14-cadence/frozen-provisional-006.frozen",
+      "snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_reconstructs_provisional_on_clone_from_pinned_seed",
+      "--exact",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "export": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-control-clock_wrong_parent_support",
+    "exit_code": 101,
+    "elapsed_seconds": 0.3050116770900786,
+    "expected_predicate": "ERR-CT-015 invalid restart state",
+    "semantic_control_pass": true,
+    "changed_member": "rows/123091.12.json",
+    "changed_member_sha256": "9b3bb4c2700664196e07a40ec7b3d48158d5b386cd6c0d16bfc52a90a365477d",
+    "qualification": "typed canonical restart refusal"
+  },
+  {
+    "case": "provisional_wrong_owner",
+    "argv": [
+      "/usr/bin/timeout",
+      "--kill-after=5s",
+      "60s",
+      "/workdir/openwepp-experiments/b01-wb14-cadence/frozen-provisional-006.frozen",
+      "snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_reconstructs_provisional_on_clone_from_pinned_seed",
+      "--exact",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "export": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-control-provisional_wrong_owner",
+    "exit_code": 101,
+    "elapsed_seconds": 0.6058320868760347,
+    "expected_predicate": "assertion `left == right` failed",
+    "semantic_control_pass": true,
+    "changed_member": "rows/123091.29.json",
+    "changed_member_sha256": "0255f15ee73de046d9ba148b4dcb32824eb3f97dc385cb23e8a1cc92e43b418f",
+    "qualification": "diagnostic equality refusal"
+  }
+]

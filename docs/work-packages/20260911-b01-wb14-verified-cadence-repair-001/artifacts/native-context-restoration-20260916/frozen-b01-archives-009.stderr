@@ -1,0 +1,4 @@
+
+thread 'snow_stage3_v11_current_context_capture::member_backed_restore_tests::archive_records_authenticate_sequentially_from_pinned_seed' (1189287) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4306:9:
+archive canonical refusals: [(0, Some("V11 actual-consumer identity mismatch: archived publication day chronology")), (1, Some("V11 actual-consumer identity mismatch: archived publication day chronology")), (2, Some("V11 actual-consumer identity mismatch: archived publication day chronology")), (3, Some("V11 actual-consumer identity mismatch: archived publication day chronology"))]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

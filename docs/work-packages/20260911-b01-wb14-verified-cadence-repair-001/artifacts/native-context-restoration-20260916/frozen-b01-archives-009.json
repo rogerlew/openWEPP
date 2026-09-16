@@ -1,0 +1,48 @@
+{
+  "label": "frozen-b01-archives-009",
+  "start_utc": "2026-09-16T06:05:51.423004+00:00",
+  "argv": [
+    "/workdir/openwepp-experiments/b01-wb14-cadence/frozen-b01-archives-009.frozen",
+    "snow_stage3_v11_current_context_capture::member_backed_restore_tests::archive_records_authenticate_sequentially_from_pinned_seed",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-archives-009.resources",
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "900.0s",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/frozen-b01-archives-009.frozen",
+    "snow_stage3_v11_current_context_capture::member_backed_restore_tests::archive_records_authenticate_sequentially_from_pinned_seed",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/frozen-b01-archives-009.frozen",
+  "binary_sha256": "e3b2b4f04b4e81f06656bdb1d7a65428a2a1bfaff2546cd56838d987b7dd8cd0",
+  "source_tree_sha256": "f4070f68b39d2e2e3a67cb5dbe61f8d67fa01e2262342489b7a556e6f4e295d8",
+  "patch_sha256": "773516b58ff4738a9fd59295fdee223b85c29082eaab992b588b957fd2cb6db8",
+  "seed_sha256": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515",
+  "input_manifest": "input-custody-before.json",
+  "environment": {
+    "OPENWEPP_B01_MEMBER_EXPORT": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1",
+    "OPENWEPP_B01_PINNED_SEED": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/pinned-original-seed.json",
+    "RUST_MIN_STACK": "67108864"
+  },
+  "timeout_seconds": 900.0,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "exit_code": 101,
+  "elapsed_seconds": 216.9126929398626,
+  "end_utc": "2026-09-16T06:09:28.335912+00:00",
+  "source_unchanged": true,
+  "frozen_binary_unchanged": true,
+  "inputs_unchanged": true
+}

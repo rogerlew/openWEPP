@@ -1,0 +1,16 @@
+{
+  "utc": "2026-09-16T06:27:28.555987+00:00",
+  "changed_from_acquisition": [
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs"
+  ],
+  "tree_sha256": "711a4300e5317a78444e4ea1bd91962e6766992d47d58dffde6a7dffaa864c40",
+  "cumulative_patch": "source-d38956e1b14f941642ea05e2f14b50fbc0d655894a6687e38ecc6454438a3c66.patch",
+  "cumulative_patch_sha256": "d38956e1b14f941642ea05e2f14b50fbc0d655894a6687e38ecc6454438a3c66",
+  "incremental_patch_sha256": "aaf8eda3ddab93266ae4886bc324456be941cc8a079dbe6e3f1079c5ab8d1ffe",
+  "incremental_reconstruction_pass": true,
+  "original_source_unchanged": true,
+  "canonical_validator_changes": false,
+  "public_api_schema_dependency_changes": false,
+  "model_executions": 0
+}

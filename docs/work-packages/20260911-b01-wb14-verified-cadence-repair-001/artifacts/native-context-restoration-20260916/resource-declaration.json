@@ -1,0 +1,46 @@
+{
+  "utc": "2026-09-16T05:28:11.684255+00:00",
+  "meminfo": {
+    "MemTotal": "32064532 kB",
+    "MemAvailable": "27512844 kB",
+    "SwapTotal": "8388604 kB",
+    "SwapFree": "3977952 kB"
+  },
+  "cgroup_limits": {
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/tmux-spawn-22e50d58-d059-49d9-97e6-5d4f013b1cd9.scope/memory.max": "max",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/tmux-spawn-22e50d58-d059-49d9-97e6-5d4f013b1cd9.scope/memory.high": "max",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/tmux-spawn-22e50d58-d059-49d9-97e6-5d4f013b1cd9.scope/memory.current": "20173373440",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/tmux-spawn-22e50d58-d059-49d9-97e6-5d4f013b1cd9.scope/memory.swap.max": "max",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/memory.max": "max",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/memory.high": "max",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/memory.current": "25028390912",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/memory.swap.max": "max",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/memory.max": "max",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/memory.high": "max",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/memory.current": "25356873728",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/memory.swap.max": "max",
+    "/sys/fs/cgroup/user.slice/memory.max": "max",
+    "/sys/fs/cgroup/user.slice/memory.high": "max",
+    "/sys/fs/cgroup/user.slice/memory.current": "25358307328",
+    "/sys/fs/cgroup/user.slice/memory.swap.max": "max"
+  },
+  "disk": {
+    "/workdir": {
+      "total": 1426659713024,
+      "used": 1410184822784,
+      "free": 16458113024
+    },
+    "/tmp": {
+      "total": 539961516032,
+      "used": 33066401792,
+      "free": 506878337024
+    }
+  },
+  "diagnostic_bounds": {
+    "address_space_bytes": 17179869184,
+    "incremental_durable_output_bytes": 8589934592,
+    "per_command_timeout_seconds": 900,
+    "large_archives": "sequential",
+    "deadline_utc": "2026-09-16T06:32:15.218169+00:00"
+  }
+}

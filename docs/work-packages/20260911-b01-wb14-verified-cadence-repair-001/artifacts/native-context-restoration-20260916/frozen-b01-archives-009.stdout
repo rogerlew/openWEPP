@@ -1,0 +1,15 @@
+
+running 1 test
+test snow_stage3_v11_current_context_capture::member_backed_restore_tests::archive_records_authenticate_sequentially_from_pinned_seed ... archive-day-0: REFUSAL
+archive-day-1: REFUSAL
+archive-day-2: REFUSAL
+archive-day-3: REFUSAL
+FAILED
+
+failures:
+
+failures:
+    snow_stage3_v11_current_context_capture::member_backed_restore_tests::archive_records_authenticate_sequentially_from_pinned_seed
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1476 filtered out; finished in 216.63s
+

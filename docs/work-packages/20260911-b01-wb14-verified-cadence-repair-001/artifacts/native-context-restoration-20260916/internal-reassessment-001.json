@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-16T05:42:20.782174+00:00",
+  "trigger": "two unsuccessful corrective verifications reported by writer",
+  "failures": [
+    "E0277: DirectSurfaceLiquidConfiguration does not implement Deserialize",
+    "prefix attempt: invalid type sequence expected map for recorded destination_receipts"
+  ],
+  "finding": "Both localized private representation adapters; canonical validators unchanged and small current-clock/parent component already executed successfully",
+  "decision": "CONTINUE in-scope canonical configuration decoder and exact destination-row wire bridge; no authority change",
+  "next": "inspect retained Stage3CoupledSubslabReceiptWireV2 project/restore and preserve exact fields/order/float bits; rerun recorded discriminating prefix probe",
+  "budget_unchanged": true
+}

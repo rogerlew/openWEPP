@@ -1,0 +1,59 @@
+{
+  "evidence_class": "Ran: frozen fresh-process file-only components; Static: archive no-replay dependency attribution",
+  "native_restoration": "INCOMPLETE",
+  "production_admissibility": "NOT ADMITTED",
+  "original_regression": "FAIL unchanged, NOT RERUN",
+  "model_executions": 0,
+  "overall": "HOLD",
+  "components": [
+    {
+      "label": "scoped-prefix-016",
+      "exit_code": 0,
+      "source_tree_sha256": "711a4300e5317a78444e4ea1bd91962e6766992d47d58dffde6a7dffaa864c40",
+      "binary_sha256": "9741b3972937ac2f04642e57d68308cc891ba39fdf420a5b07403088aa420363",
+      "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/scoped-prefix-016.frozen",
+      "elapsed_seconds": 0.8405808238312602,
+      "inputs_unchanged": true,
+      "source_unchanged": true,
+      "frozen_binary_unchanged": true
+    },
+    {
+      "label": "scoped-provisional-017",
+      "exit_code": 0,
+      "source_tree_sha256": "711a4300e5317a78444e4ea1bd91962e6766992d47d58dffde6a7dffaa864c40",
+      "binary_sha256": "9741b3972937ac2f04642e57d68308cc891ba39fdf420a5b07403088aa420363",
+      "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/scoped-provisional-017.frozen",
+      "elapsed_seconds": 0.9535342277958989,
+      "inputs_unchanged": true,
+      "source_unchanged": true,
+      "frozen_binary_unchanged": true
+    },
+    {
+      "label": "scoped-provider-018",
+      "exit_code": 0,
+      "source_tree_sha256": "711a4300e5317a78444e4ea1bd91962e6766992d47d58dffde6a7dffaa864c40",
+      "binary_sha256": "9741b3972937ac2f04642e57d68308cc891ba39fdf420a5b07403088aa420363",
+      "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/scoped-provider-018.frozen",
+      "elapsed_seconds": 0.853396532125771,
+      "inputs_unchanged": true,
+      "source_unchanged": true,
+      "frozen_binary_unchanged": true
+    }
+  ],
+  "archive_result": "Frozen B01 archives009: all4 canonical archived publication day chronology refusal; 216.9126929seconds; no runtime counters on this older attempt",
+  "unimplemented": "Full native constructor inverse/consumer/frame/resident restore and current/deferred/parcel/position joins",
+  "controls": "4/4 existing file controls; further provider/prefix/event/parcel substitutions missing",
+  "qa": "UNAVAILABLE / required independent review unmet",
+  "correctness": "correctness-review.md; HOLD",
+  "terminal_reconciliation": "terminal-reconciliation.json",
+  "quality": {
+    "format": "PASS affected2files with skip_children=true",
+    "lib_no_run_build": "PASS",
+    "capped_all_targets_clippy_exit": 0,
+    "matched_diagnostic_status": "NOT PASS; unmatched diagnostics retained for review",
+    "matched": 2855,
+    "unmatched_occurrences": 21,
+    "unmatched_unique": 16,
+    "strict_clippy": "FAIL retained; capped exit is not strict acceptance"
+  }
+}

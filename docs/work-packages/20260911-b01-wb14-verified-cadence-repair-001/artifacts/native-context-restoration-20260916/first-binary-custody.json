@@ -1,0 +1,9 @@
+{
+  "path": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-first-component.frozen",
+  "sha256": "72e3eb156c71bae77a4c2750cfc8ec124a722a6e151e4d2fea0c621055cd9370",
+  "bytes": 439958864,
+  "read_only": true,
+  "local_only": true,
+  "source_attempt": "writer-component-attempt.md",
+  "limitation": "first exact source bytes were not separately retained; module hash only"
+}

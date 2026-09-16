@@ -1,0 +1,11 @@
+{
+  "as_of_utc": "2026-09-16T06:09:19.307536+00:00",
+  "start_utc": "2026-09-16T05:21:00+00:00",
+  "continuation_seconds": "2899.307536",
+  "cumulative_charged_seconds": "49779.248893",
+  "remaining_seconds": "1375.910633",
+  "ceiling_seconds": "51155.159526",
+  "wait_deductions_seconds": 0,
+  "historical_failures": 67,
+  "new_failure_inventory": "pending reconciliation of retained attempts and writer early-action inventory"
+}

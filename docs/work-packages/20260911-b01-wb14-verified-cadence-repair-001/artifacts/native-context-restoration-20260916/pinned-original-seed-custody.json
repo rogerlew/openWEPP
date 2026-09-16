@@ -1,0 +1,8 @@
+{
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1/snow_accuracy_continuous_1789528435904586137/case.run.snow_stage3_v11_owner_seed.json",
+  "copy": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/pinned-original-seed.json",
+  "bytes": 36209,
+  "sha256": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515",
+  "provenance": "../diagnostic-use-capture-20260916/generated-input-checks.json",
+  "status": "exact unchanged original configuration seed; no live objects"
+}

@@ -1,0 +1,24 @@
+{
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/frozen-provisional-006.frozen",
+  "binary_sha256": "7f485dadbfe9d54a8ebe283e795a1b94c331865d14285f7b1496bd98a2e21aef",
+  "source_tree_sha256": "bf35a72f9bee433c55beac70e0da0451254846cfaba510e4187b540c065e7d92",
+  "cases": [
+    [
+      "clock_omit_slab",
+      "ERR-CT-015 invalid restart state"
+    ],
+    [
+      "clock_reorder_slabs",
+      "ERR-CT-015 invalid restart state"
+    ],
+    [
+      "clock_wrong_parent_support",
+      "ERR-CT-015 invalid restart state"
+    ],
+    [
+      "provisional_wrong_owner",
+      "assertion `left == right` failed"
+    ]
+  ],
+  "rule": "exit101 + declared semantic predicate; JSON/hash failures do not pass"
+}

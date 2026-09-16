@@ -1,0 +1,9 @@
+{
+  "utc": "2026-09-16T05:35:59.056362+00:00",
+  "prior_reviewers_available": false,
+  "correctness_replacement": "/root/restoration_correctness",
+  "qa_spawn_attempt": "/root/restoration_qa",
+  "qa_result": "agent thread limit reached",
+  "qa_status": "UNAVAILABLE / required acceptance unmet",
+  "no_agent_close_tool_exposed": true
+}

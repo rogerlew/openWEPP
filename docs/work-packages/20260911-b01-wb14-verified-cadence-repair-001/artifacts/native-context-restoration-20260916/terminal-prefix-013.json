@@ -1,0 +1,48 @@
+{
+  "label": "terminal-prefix-013",
+  "start_utc": "2026-09-16T06:22:29.289656+00:00",
+  "argv": [
+    "/workdir/openwepp-experiments/b01-wb14-cadence/terminal-prefix-013.frozen",
+    "snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_restores_clock_and_parent_without_native_decode",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-prefix-013.resources",
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "405.92851299999995s",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/terminal-prefix-013.frozen",
+    "snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_restores_clock_and_parent_without_native_decode",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/terminal-prefix-013.frozen",
+  "binary_sha256": "21c87c68d8692a9392b47d044cd9f90d34aef4a838ba7c73d1534dcb516b12ab",
+  "source_tree_sha256": "7dc9dbc45d322140130cb78d62c298dd8cf4cf54fe2306149a6a75d33b2a2258",
+  "patch_sha256": "1a1f78a902d4622c77a484279140ec44eb5f549d656d5a54bf4d1ec27eee2aec",
+  "seed_sha256": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515",
+  "input_manifest": "input-custody-before.json",
+  "environment": {
+    "OPENWEPP_B01_MEMBER_EXPORT": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1",
+    "OPENWEPP_B01_PINNED_SEED": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/pinned-original-seed.json",
+    "RUST_MIN_STACK": "67108864"
+  },
+  "timeout_seconds": 405.92851299999995,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "exit_code": 0,
+  "elapsed_seconds": 0.812994847074151,
+  "end_utc": "2026-09-16T06:22:30.102874+00:00",
+  "source_unchanged": true,
+  "frozen_binary_unchanged": true,
+  "inputs_unchanged": true
+}

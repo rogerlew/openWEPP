@@ -1,0 +1,6 @@
+
+thread 'snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_reconstructs_provisional_on_clone_from_pinned_seed' (1177846) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4140:9:
+assertion `left == right` failed
+  left: String("v11-snow-covered-real-consumer")
+ right: "v11-real-consumer"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

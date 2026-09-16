@@ -1,0 +1,4 @@
+
+thread 'snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_reconstructs_provisional_on_clone_from_pinned_seed' (1177825) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4129:18:
+member-backed clock and parent restoration: "ERR-CT-015 invalid restart state"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

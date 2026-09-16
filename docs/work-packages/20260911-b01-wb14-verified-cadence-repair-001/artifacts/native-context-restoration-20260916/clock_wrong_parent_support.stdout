@@ -1,0 +1,11 @@
+
+running 1 test
+test snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_reconstructs_provisional_on_clone_from_pinned_seed ... FAILED
+
+failures:
+
+failures:
+    snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_reconstructs_provisional_on_clone_from_pinned_seed
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1475 filtered out; finished in 0.28s
+
