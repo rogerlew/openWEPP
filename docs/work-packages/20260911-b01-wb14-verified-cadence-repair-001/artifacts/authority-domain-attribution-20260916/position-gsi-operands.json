@@ -1,0 +1,138 @@
+{
+  "evidence_class": "Ran: read-only streaming JSON selection; no Rust/physics/canonical admission",
+  "members": {
+    "123091.19.json": {
+      "sha256": "2e1d9732f67cae8e2291f430645f59aacf1836f00a0beddf82ad0a31bee064ba",
+      "bytes": 457913228
+    },
+    "108033.11.json": {
+      "sha256": "7581abdf5250748ff289b61ee3e1bae324a65a88afffd4e01a5cf5a6b83741bc",
+      "bytes": 134780
+    }
+  },
+  "accepted_interval_count": 0,
+  "next_day_index": 4,
+  "native_wb14_parent": null,
+  "physical_wb14_parent": null,
+  "surface_owner": {
+    "version": "v2",
+    "schema_sha256": "bb21a5a18a1dc7e2577a3a8fb8e8cf4e20e9c022a934ef52e4e299c3ea5cdfb7",
+    "model_definition_sha256": "450e1cb675bf57fc5651fa480d26855dbe4927f8faad0102cc0e30e2608a4160",
+    "parent_identity_sha256": "fd0cd7c1e596d19618ccb837278b0e103a58429b59d99ff98e044b546880382b",
+    "envelope_sha256": "212617acee892f8cbad5bb65bb640d2cbdf5f9bd50f3c075fd5d20ac2444bd47",
+    "state_bytes_hex": "7b226f776e65725f6964223a2270726f64756374696f6e2d687964726f6c6f6779222c22636f6e66696775726174696f6e5f736861323536223a2266643063643763316535393664313936313863636238333732373862306531303361353834323962353964393966663938653034346235343638383033383262222c226d6f64656c5f646566696e6974696f6e5f736861323536223a2234353065316362363735626635376663353635316661343830643236383535646265343932376638666161643031303263633065333065323630386134313630222c2273746174655f736861323536223a2262663834623831353963336462393731373066636331363239326361386437666363386432313866313334653464396634616536303961656662393065613563222c227265636f726473223a5b7b226b6579223a7b2272756e5f6964223a38332c226f66655f6964223a226f66652d31222c2274696c655f6964223a22666f72657374222c22737572666163655f6964223a22737572666163653a6f66652d313a666f72657374222c22737572666163655f636c617373223a22666f726573745f6c6974746572222c22736f757263655f74797065223a226c69747465725f6c6971756964222c22736f757263655f6964223a226c69717569643a6f66652d313a666f72657374227d2c226c69717569645f6b675f6d325f74696c655f62697473223a2234303138303030303030303030303030222c226c69747465725f6963655f6b675f6d325f74696c655f62697473223a2230303030303030303030303030303030222c22737572666163655f656e7468616c70795f6a5f6d325f74696c655f62697473223a2230303030303030303030303030303030222c226c6173745f61636365707465645f7472616e73616374696f6e5f6964223a6e756c6c7d2c7b226b6579223a7b2272756e5f6964223a38332c226f66655f6964223a226f66652d31222c2274696c655f6964223a226f70656e222c22737572666163655f6964223a22737572666163653a6f66652d313a6f70656e222c22737572666163655f636c617373223a22626172655f6d696e6572616c5f736f696c222c22736f757263655f74797065223a22737572666163655f6c6971756964222c22736f757263655f6964223a226c69717569643a6f66652d313a6f70656e227d2c226c69717569645f6b675f6d325f74696c655f62697473223a2234303038303030303030303030303030222c226c69747465725f6963655f6b675f6d325f74696c655f62697473223a2230303030303030303030303030303030222c22737572666163655f656e7468616c70795f6a5f6d325f74696c655f62697473223a2230303030303030303030303030303030222c226c6173745f61636365707465645f7472616e73616374696f6e5f6964223a6e756c6c7d5d2c22636f6e74696e756174696f6e73223a5b7b226f66655f6964223a226f66652d31222c226461795f696e646578223a302c226e6578745f696e74657276616c5f696e646578223a302c2263756d756c61746976655f737570706c795f6d223a2230303030303030303030303030303030222c2263756d756c61746976655f696e66696c74726174696f6e5f6d223a2230303030303030303030303030303030222c226c6173745f61636365707465645f7472616e73616374696f6e5f6964223a6e756c6c7d5d7d"
+  },
+  "exact_surface_owner": {
+    "owner_tag": "OPENWEPP_LSE_SURFACE_ENTHALPY_OWNER_V1",
+    "schema_sha256": "cfc5118bad0c0aa940fba68b0b0a218c3a13ad09dec676be162126219a1d88e5",
+    "exact_carry_definition_sha256": "add7641bb5e7e60cd4b15243f95d5eef03b45446fe898975bc89c55164b085de",
+    "owner_id": "land-surface-energy-v1::lse-surface-enthalpy-v1",
+    "run_id": "83",
+    "configuration_sha256": "fd0cd7c1e596d19618ccb837278b0e103a58429b59d99ff98e044b546880382b",
+    "frozen_lse_v3_state_sha256": "7a1a72b4d1a02bbab60b0ac880d5f415f53fb1ac44aeb6d72e941cfb0bfc5e36",
+    "frozen_surface_owner_v2_sha256": "212617acee892f8cbad5bb65bb640d2cbdf5f9bd50f3c075fd5d20ac2444bd47",
+    "state_sha256": "932bdaa0bfae97f150a61e7a433cc3d95f435c1e782b088eb17182ffaa594226",
+    "receipt_chain_sha256": "081732fee99f247cfb39f0d4ccd6434352777cadd32259c73350bd8974a450c6",
+    "records": [
+      {
+        "surface_key": {
+          "run_id": 83,
+          "ofe_id": "ofe-1",
+          "tile_id": "forest",
+          "surface_id": "surface:ofe-1:forest",
+          "surface_class": "forest_litter",
+          "source_type": "litter_liquid",
+          "source_id": "liquid:ofe-1:forest"
+        },
+        "enthalpy_hi_j_m2_tile": 0.0,
+        "enthalpy_carry": {
+          "sign": 0,
+          "coefficient_hex": "0",
+          "exponent2": 0
+        },
+        "last_accepted_transaction_id": null
+      },
+      {
+        "surface_key": {
+          "run_id": 83,
+          "ofe_id": "ofe-1",
+          "tile_id": "open",
+          "surface_id": "surface:ofe-1:open",
+          "surface_class": "bare_mineral_soil",
+          "source_type": "surface_liquid",
+          "source_id": "liquid:ofe-1:open"
+        },
+        "enthalpy_hi_j_m2_tile": 0.0,
+        "enthalpy_carry": {
+          "sign": 0,
+          "coefficient_hex": "0",
+          "exponent2": 0
+        },
+        "last_accepted_transaction_id": null
+      }
+    ]
+  },
+  "provider_cursor": {
+    "next_day_index": 4,
+    "configuration_sha256": "28989c0a2d709d9944b06f1096b340491df042542e22d23690c360b899d06ca0",
+    "pending_carry": [],
+    "pending_solid_carry": []
+  },
+  "captured_gsi_receipt": "e1ca5d7e2f8088c68d3acdd0a7a8073bd3b5c7b6a1b632d58782d01ebc961887",
+  "captured_gsi_state": {
+    "history_oldest_first": [
+      {
+        "exact_decimal": "0.0"
+      },
+      {
+        "exact_decimal": "0.0"
+      },
+      {
+        "exact_decimal": "0.0"
+      },
+      {
+        "exact_decimal": "0.0"
+      }
+    ],
+    "last_date": {
+      "ordinal_day": 4,
+      "year": 2001
+    },
+    "state_sha256": "fc2fb42727b01c327018087ce58e40ffdf15575ffcebb391eeb7df86a663dd2a"
+  },
+  "prepared_receipt": {
+    "schema_version": "DIRECT_GSI_DAILY_RECEIPT_V1",
+    "day_index": 4,
+    "receipt_sha256": "85ca53004008e48734b4674eb7e86510f07471d9dbb5db994ddff325ff11ab28",
+    "beginning_state": {
+      "history_oldest_first": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "last_date": {
+        "ordinal_day": 4,
+        "year": 2001
+      },
+      "state_sha256": "fc2fb42727b01c327018087ce58e40ffdf15575ffcebb391eeb7df86a663dd2a"
+    },
+    "ending_state": {
+      "history_oldest_first": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "last_date": {
+        "ordinal_day": 5,
+        "year": 2001
+      },
+      "state_sha256": "c8c5a909ca11e308ab5a5bafc800fd172572fec867f5acaa3b91c0655d3d9ab8"
+    }
+  },
+  "captured_gsi_equals_prepared_beginning": true,
+  "captured_cursor_equals_prepared_beginning": true,
+  "limitation": "No independently retained day3 receipt preimage is reconstructed here. Its association with the captured receipt is source-lifecycle inference, not authenticated receipt replay."
+}

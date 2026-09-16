@@ -1,0 +1,71 @@
+{
+  "evidence_class": "Ran: read-only JSON extraction and exact object comparisons; no Rust or physics",
+  "export": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1",
+  "members": {
+    "123091.23.json": {
+      "sha256": "ea7f4ce04601b7a62cb88676395a4ea5bfb0ab86a073746caafc9e2ddfec9628",
+      "bytes": 315368
+    },
+    "108033.9.json": {
+      "sha256": "53ef8620f29ef2478a1debf9243d08b96aea899e320f9e59ccd423752b36f8b0",
+      "bytes": 315288
+    },
+    "123091.26.json": {
+      "sha256": "443aa08f5e2d9d11939754901253196d63e74ac9d85481f719e4ac640047e3fd",
+      "bytes": 262808
+    },
+    "123091.12.json": {
+      "sha256": "6c59860507007a0ac6f4baebdff76df718352a4e1830623336c329a13aa186a1",
+      "bytes": 141779
+    },
+    "123091.6.json": {
+      "sha256": "de5ba0989f4a66c81e7eb1c5b0b5c5e6e75fe36658141608572a9e6032a6e5a6",
+      "bytes": 70510
+    }
+  },
+  "resident": {
+    "transaction_id": 5762,
+    "expected_predecessor_transaction_id": 5761,
+    "support_start_ns": 383400000000000,
+    "support_end_ns": 385200000000000,
+    "receipt_chain_sha256": "5995d4c555351ad226bd4ea553d181a0398bed0b38bbfa58baf20c42b7df3df8",
+    "run_id": "83"
+  },
+  "resident_has_latest_accepted": true,
+  "bootstrap": {
+    "transaction_id": 5304,
+    "expected_predecessor_transaction_id": 5303,
+    "support_start_ns": 343800000000000,
+    "support_end_ns": 345600000000000,
+    "receipt_chain_sha256": "f97ea6891f6a52121e4f445307a8a599fb385733fb31f801ae5d92d32db124e7",
+    "run_id": "83"
+  },
+  "clock_accepted_until_ns": "385920000000000",
+  "clock_next_slab_ordinal": 8,
+  "accepted_slab_receipt_count": 8,
+  "clock_projection_soil_owner_equals_resident_owner": true,
+  "deferred_posture": "reconstructible_operands_not_installable_capability",
+  "original_prepared_owner": {
+    "transaction_id": 5763,
+    "expected_predecessor_transaction_id": 5762,
+    "support_start_ns": 385200000000000,
+    "support_end_ns": 385920000000000,
+    "receipt_chain_sha256": "5995d4c555351ad226bd4ea553d181a0398bed0b38bbfa58baf20c42b7df3df8",
+    "run_id": "83"
+  },
+  "original_state_equals_resident_state": true,
+  "original_receipt_chain_equals_resident": true,
+  "deferred_candidate_equals_continuation_trial": true,
+  "deferred_trial": {
+    "transaction_id": 5774,
+    "predecessor_transaction_id": 5773,
+    "support_start_ns": 385860000000000,
+    "support_end_ns": 385920000000000,
+    "unpublished_predecessor_trial_sha256": "163f9ce21cc3d2b9cb18802875ae01d55fac8e2a1172d83ce09364d1c9497c5f",
+    "unpublished_trial_sha256": "f4b719260ac51ba1178584bd1789496cd38909eb8ee0bab7b8c65967f5c6a78c"
+  },
+  "ordered_credit_groups": 12,
+  "accumulated_operand_count": 156,
+  "deferred_ending_differs_from_resident": true,
+  "limitation": "These direct object comparisons do not revalidate credits, authenticate a restoration capability, or establish successor success. Prior canonical diagnostic validation is reused."
+}

@@ -1,0 +1,43 @@
+{
+  "utc": "2026-09-16T19:54:52.441780+00:00",
+  "cwd": "/workdir/openWEPP",
+  "evidence_base": "cd3fd25599e99269cf1d179c1fffac4b27c9f0cf",
+  "historical_package_tail_unchanged": true,
+  "new_section_local_links": 5,
+  "json_parse": "PASS",
+  "python_in_memory_syntax": "PASS",
+  "git_diff_check_exit": 0,
+  "frozen_Q_R_tree_and_patch_identity": "PASS",
+  "frozen_terminal_binary_identity": "PASS",
+  "new_rust_builds_tests_physics_runs": 0,
+  "four_large_archive_decodes": 0,
+  "terminal_diff_scope": "package.md plus artifacts/authority-domain-attribution-20260916 only; no production/authority/schema/input change",
+  "failure_floor": 113,
+  "new_failures": [
+    {
+      "classification": "navigation",
+      "count": 3,
+      "detail": "unmatched initial source/contract path searches; corrected read-only lookups"
+    },
+    {
+      "classification": "worker environment",
+      "count": 1,
+      "detail": "node unavailable; subsequent Python extraction succeeds"
+    },
+    {
+      "classification": "agent delivery",
+      "count": 1,
+      "detail": "post-completion extraction-author message delivery rejected; no repeated capacity retry"
+    }
+  ],
+  "budget": {
+    "start_utc": "2026-09-16T19:37:00+00:00",
+    "carry_seconds": 63111.921481,
+    "elapsed_wall_seconds": 1072.44178,
+    "charged_through_checks_seconds": 64184.363261,
+    "ceiling_seconds": 65546.178324,
+    "remaining_seconds": 1361.8150629999946,
+    "wait_deductions_seconds": 0,
+    "return_and_publication_still_chargeable": true
+  }
+}

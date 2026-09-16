@@ -1,0 +1,25 @@
+{
+  "R": {
+    "path": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916",
+    "entries": 743,
+    "tree_sha256": "7c04f52e6cae6327202591b37f0c4e7a5fff3ae34a103255a35c49a3dbdf37ab",
+    "cumulative_patch_sha256": "6f9f1cf01547c96baf229f5d5ac1e7cbec6124f6042053f53b39880d982158b4"
+  },
+  "Q": {
+    "path": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+    "entries": 741,
+    "tree_sha256": "ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592",
+    "cumulative_patch_sha256": "4559c7d21fbcdb9314845e6a5c19940d051d0ef861e48c7cb2a4ae7e51020c5d"
+  },
+  "binary": {
+    "build": "terminal-confirmed-build.json",
+    "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/terminal-focused.frozen",
+    "sha256": "47fd72c2b2c9acb422021659d499be3ba0b29020d94468f084a9846eb89cb631",
+    "source_tree_sha256": "7c04f52e6cae6327202591b37f0c4e7a5fff3ae34a103255a35c49a3dbdf37ab"
+  },
+  "utc": "2026-09-16T19:40:08.981983+00:00",
+  "recipe": "execution-discretion-20260915/run-recorded.py:snapshot; sha256(json.dumps(entries,sort_keys=True).encode())",
+  "result": "PASS",
+  "export_validation": "REUSED; no archive decode or complete export validation repeated",
+  "source_mutations": false
+}

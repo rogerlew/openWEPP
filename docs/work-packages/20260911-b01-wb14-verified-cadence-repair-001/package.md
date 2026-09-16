@@ -1,18 +1,168 @@
 # B01 WB14 verified parent cadence repair
 
-**Status: INCOMPLETE / HOLD; authorized file-only negative diagnostic complete.**
-Acquisition remains COMPLETE / PASS. All 11 terminal focused tests passed,
-including the assertion of the original native authority refusal. The four
-archives authenticate; position/GSI and accepted-soil authority still refuse.
-Physical-work and publication counters are zero. Independent terminal reviews
-and the detailed limits are recorded below. Production, scientific qualification,
-restart, conservation and cadence remain HOLD; historical FAILs remain preserved.
+**Status: INCOMPLETE / HOLD; bounded authority-domain attribution COMPLETE.**
+Position compares different counters; GSI compares prepared and committed phases.
+The prior GSI receipt still needs independent authentication. The deferred soil
+composite has no proven supported restoration path and needs canonical admission
+authority. Both independent attribution reviews accept these bounded conclusions.
+The accepted file-only negative diagnostic and acquisition remain complete;
+production, scientific qualification, restart, conservation and cadence remain HOLD.
 
 Authentic capture, witness and corrected-recorder acquisition allowances remain
 exhausted (1/1 each). Bounded native diagnostics have executed under the adopted
 amendment below; they do not release a physical successor.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Authority-domain attribution — adopted 2026-09-16
+
+Owner execution of `/tmp/openwepp_b01_wb14_authority_domain_attribution_authorization.md`
+adopts this bounded continuation of **B01-WB14-CURRENT-CONTEXT-CAPTURE / A-001**.
+Intent before edits: read exact acquisition Q and reader R, inspect retained operands,
+and attribute position/GSI/soil refusals with proposed correction locations and
+prospective distinguishing tests. Only this maintained record and small read-only
+extraction/evidence files may change. No production, diagnostic Rust, acceptance,
+canonical authority, schema or captured-value changes are planned; no physics,
+build, accepted-control rerun or large archive decode is planned. Checks: frozen
+source/binary continuity, targeted source/operand inspection, document references,
+terminal diff, and two independent correctness and QA/evidence reviews of the new
+claims. Existing archive, no-work and negative-diagnostic evidence is reused only
+for its exact prior claims. All historical physical allowances remain 1/1 exhausted.
+
+Read the external final receipt once: conservative carry **63,111.921481 s**, fixed
+ceiling **65,546.178324 s**, remaining **2,434.256843 s**, failure floor **at least 108**.
+Conservative continuation anchor **2026-09-16 19:37:00 UTC** includes initial reading;
+deadline **20:17:34.256843 UTC**. Charge all elapsed wall time without wait deductions;
+preserve both prior reservations. Stops are the adopted hard cap, owner stop,
+uncontained integrity issue, indispensable unavailable input after bounded recovery,
+or completed attribution with excluded remedies pending. No failure-count cutoff.
+Evidence revision is `cd3fd25599e99269cf1d179c1fffac4b27c9f0cf`; execution source is
+frozen R tree `7c04f52e…` and Q tree `ecc48d52…`, as fully identified below.
+Current agent inventory has no prior `/root/event_correctness` or `/root/event_qa`;
+the authorized attributable-replacement route will retain distinct independent
+reviewers. `/root/domain_trace` (implementer role) performs read-only position/GSI
+tracing; Astra owns soil attribution and this record. The completed reviews and bounded disposition follow.
+
+### Attributed decision (static source; inspected retained execution)
+
+**Attribution COMPLETE; native restoration and production remain HOLD.** Position and GSI compare
+different source-defined domains/phases. Soil identifies a source-representable
+live execution composite for which the current restore constructor supplies no
+admission rule. None of these refusals alone proves a faulty producer transition.
+This refines the earlier use of “position/GSI defects” and “stale accepted support”
+as causal descriptions; the original operands, Err, success-asserting FAIL and
+accepted negative diagnostic remain unchanged.
+
+Here **Q** is `/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915`
+and **R** is its sibling `native-context-restoration-reader-20260916`.
+Source references below are relative to `crates/openwepp-hillslope-orchestrator/src/`
+in the specified tree. `direct_v9_real_consumer_shadow_impl.rs`,
+`native_soil_restart_admission.rs`, `frozen_litter_v3_adoption.rs` and
+`v10_soil_thermal_v2.rs` are under its `v9_real_consumer_shadow/` subdirectory.
+Canonical contract references are at evidence revision
+`cd3fd25599e99269cf1d179c1fffac4b27c9f0cf`. [Continuity](artifacts/authority-domain-attribution-20260916/continuity.json)
+checks both complete source inventories with the actual retained recipe and the
+frozen terminal binary. No main-checkout Rust substitutes for Q or R.
+
+| Refusal / original operands | Governing domain, demonstrated lifecycle and authority | Classification / minimum proposed correction and distinguishing regression |
+| --- | --- | --- |
+| **Position:** outer `214 = 192 + 22`; captured `DirectV9RealConsumerShadow.accepted_interval_count = 0`. The current clock has **8 accepted slab receipts**; deferred soil has **12 physical credit groups**. These are four separate quantities. | Q `direct_v9_real_consumer_shadow_impl.rs:241` initializes zero. Its `accept_envelope` and `accept_envelope_preserving_native_v2_soil` increment only on `advances_persistent_parent_interval()` (:1240,1284); Q `v11_covered/carrier_phase.rs:794,854` separately guards carrier/re-staging increments. The pre-child capture reads the beginning consumer before the successor (`snow_stage3_v11_real_parent_execution.rs:154`). Canonical **SC-LANDSURFACEENERGY-001/soil-custody.md:338–365** defines executed physical parent advancements, permitting zero at nonzero clock only with exact receipt-free physical continuation custody. Actual native WB14 parents are absent and the surface continuation is day0/interval0, no accepted transaction, positive-zero supply/infiltration. **INV-COUPLEDTIME-031** separately governs inactive-prefix chronology and first child ordinal zero; it does not identify any of these counts. R `snow_stage3_v11_member_restoration.rs:463–479,181–191` compares the outer sequence to the physical counter without that domain distinction. | **Misapplied diagnostic equality; no missing producer increment demonstrated.** Proposed surface is R `native_authority_joins` and its scalar-fixture controls: independently authenticate the outer day/interval/clock and original physical-counter custody using the existing inactive-prefix/native scheduler obligations. Never derive/install 214 or equate the counter to child/slab counts. Minimum regression: retained 214/0 with valid exact inactive custody survives the two domain checks; wrong outer position, altered physical count, evolved/reset surface history, nonzero flux bits or populated WB14 refuse. This diagnostic correction needs no new physical-counter authority; any extension beyond existing zero-custody rules does. |
+| **GSI:** prepared provider receipt `85ca53004008e48734b4674eb7e86510f07471d9dbb5db994ddff325ff11ab28`; captured native field `e1ca5d7e2f8088c68d3acdd0a7a8073bd3b5c7b6a1b632d58782d01ebc961887`. | Both fields on this B01 path refer to **DIRECT_GSI_DAILY_RECEIPT_V1**, at different phases. Q `runtime_inputs/09_snow_free_half_hour_forcing.rs:157–220,381–387,2242–2253` defines the preimage: serialized JSON value of schema/owner/run/day/climate, complete beginning/ending state, parameters, forcing, result and their configuration/state/forcing/result digests, removing top-level receipt digest fields and appending one newline before SHA-256. `PreparedSnowFreeGsiDayV1::gsi_receipt_digest` decodes the receipt hex, not a hash of hex text (:607–647). Preparation advances a clone; live GSI/cursor remain beginning values. Q `commit_prepared_provider_day` (:1106–1133 in `v9_real_consumer_shadow_v10_accessors.rs`) installs ending GSI, cursor, next day and receipt only after all48 parent supports (`snow_stage3_v11_attachment_runtime.rs:1241–1252`). Actual captured GSI equals day4 receipt beginning state `fc2fb427…dd2a`, cursor/next day are4. The actual interval preparation calls `prepare_v11_intervals_from_repository` (Q `snow_stage3_v11_attachment_runtime.rs:232`); `project_v11_repository_forcing_on_unpublished_candidate` (Q `v9_real_consumer_shadow.rs:2816–2893`) installs the prepared receipt on a throwaway clone and projects its GSI/forcing into the returned intervals, leaving the live receipt unchanged. The successor consumes that prepared interval (`snow_stage3_v11_real_parent_execution.rs:181–189`); support binding (`snow_stage3_v11_attachment.rs:2392–2543`) and R provisional forcing check (:383–401) authenticate the same current receipt. **SC-SNOWFREEFORCING-001 §7** and **SC-VEGETATION-001:2629–2640** require one daily receipt with segment inputs and scheduled-boundary custody. | **Misapplied cross-phase diagnostic equality; no missing live refresh demonstrated.** Captured e1ca is the prior committed receipt by Q lifecycle inference; its exact day3 preimage is not independently retained here. It is not the captured GSI-state digest. Proposed reader-only correction: authenticate the prior committed receipt using an independently authenticated bootstrap/provider prefix (or equally authoritative retained receipt preimage), then join its beginning GSI/cursor/configuration/next-day tuple; separately authenticate day4 prepared receipt against forcing. Q `restart_authority_native_provider_prefix` (:1238–1261) constructs the expected receipt from bootstrap plus repository climate, and `restart_authority_validate_native_provider_receipt` (:1263–1283) checks both that receipt and the tuple. The tuple alone cannot authenticate e1ca; this specific GSI receipt join remains unresolved pending that evidence. No prefix replay is executed here. Minimum regression: pre-child committed receipt/beginning state and current prepared receipt coexist; swapping either phase, changing cursor/state/configuration or substituting the current receipt into committed custody refuses; only complete-day commit advances the live tuple. No copying one digest into the other. |
+| **Soil:** accepted resident transaction5762 ends `385200000000000 ns`; clock accepts through `385920000000000 ns`. Distinct committed bootstrap transaction5304 ends `345600000000000 ns`. Deferred original prepared transaction5763 spans the resident end to clock boundary; 12 credit groups terminate in unpublished trial5774 (`385860000000000..385920000000000 ns`). | Q `v11_covered/owner_finalization.rs:2137–2152,2188–2226` explicitly retains the beginning resident when native soil installation is deferred; the selected trial leaves as separate transient custody. Q captures resident and complete clock separately (`snow_stage3_v11_current_context_capture.rs:1653–1716`) and the non-owner continuation as `reconstructible_operands_not_installable_capability` (:1491–1512). The clock's soil projection equals the accepted resident, while the continuation retains its original state/receipt chain and a different physical ending. Q `snow_stage3_v11_adaptive_execution.rs:2044–2066` suppresses interruption while deferred custody exists; :2229–2234 passes it separately into the snow-free successor and clears only after success. `v11_covered/regime.rs:28–39` authenticates its separate live input; `v9_real_consumer_shadow.rs:1377–1415` routes it into V4 fixed preparation; `frozen_litter_v3_adoption.rs:1102–1140` / `v10_soil_thermal_v2.rs:684` construct the typed unpublished physical beginning. **INV-LANDSURFACEENERGY-155**, **INV-SURFACELIQUID-027**, and **SC-COUPLEDTIME-001 §8** preserve non-owner/accepted-owner and restart boundaries. R `diagnostic_restore_native_consumer_v1` (:660–674) instead asks `NativeSoilRestartAdmissionV1::authenticate` (:50–59) to admit the resident alone at `InProgressSupportCurrent`; noninitial support equality correctly refuses. The native constructor authority in **soil-custody.md:246–289** establishes the reached between-days rule and exact-bootstrap exception, not a deferred-composite restoration rule. | **Source-representable execution posture, incompatible with current restore API; adequate restoration authority is missing.** This is not proof of physical validity, a successful successor, or a supported restart. The minimum remedy needs canonical deferred-context admission design before a typed constructor/reader implementation; merely relaxing equality is excluded. Minimum tests: independently revalidate the immutable original resident plus complete ordered continuation and exact clock/phase; reject missing/reordered/foreign credits, wrong predecessor/support/carry/state/configuration, duplicate owner, serialized capability, premature promotion and ordinary-entrypoint use, with exact rollback. A successful future inverse must keep deferred custody non-owner until the existing final replay/install boundary. No supported complete restoration path is proven here. |
+
+Static lifecycle qualifications: Q's plain V9 constructor seeds the compatibility
+GSI field from vegetation state hash (`direct_v9_real_consumer_shadow_impl.rs:131`);
+the native V10 constructor starts with64 zeros (`v9_real_consumer_shadow.rs:2628`).
+Ordinary V10 full-day execution temporarily installs the prepared receipt before
+projection (:2731–2743); the actual B01 V11 path instead commits it at day end as above.
+Q diagnostic reconstruction copies captured count/GSI (:827–850), ordinary restart
+position setter requires a positive bounded count (:3186–3198), and the native
+inactive setter uses exact position-bound proof (`native_soil_restart_admission.rs:174–195`).
+Those reconstruction/compatibility assignments are not missing B01 producer
+transitions. R has already removed raw count/GSI assignment; its later constructor
+comparisons (:757–779) are **not reached** by the retained experiment. Correcting
+only the two outer equalities would not establish six-owner restoration success.
+
+The source-defined soil installation boundary is independently distinct from
+capture: Q `v9_real_consumer_shadow.rs:1521–1602` advances the continuation, composes
+from the original prepared owner and accumulated operands, seals and validates
+it, obtains installation authority and installs on the private successor candidate.
+Q's parent-end alternative (`snow_stage3_v11_adaptive_execution_stack_helpers.rs:1650,
+1761–1802,1949–1963`) likewise requires exact endpoint and full replay; it is not
+a pre-child restoration shortcut. A prospective restoration invariant must bind
+unchanged run/build/map allowance, configuration and ordered OFE/layer topology,
+selected phase/position and logical revision, complete clock/owner bytes, original
+accepted resident/custody, original prepared support/transaction/receipt chain,
+ordered child supports/trial seals/high-plus-carry state and every accumulated
+operand, plus the exact next support and unique later promotion boundary. Decode
+may restore inert operands only; it cannot deserialize or mint trusted execution
+custody by assertion. Fresh independent semantic authentication and atomic private
+installation must precede use. Authorizing that design and its tests remains pending.
+
+**Ran:** repository cwd `/workdir/openWEPP`, command
+`.venv/bin/python docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/inspect_soil_operands.py`, exit0.
+[Extraction](artifacts/authority-domain-attribution-20260916/soil-operands.json)
+checks five selected member hashes against their retained event records, exact
+clock-soil/accepted-owner and original-prepared state/receipt-chain equality,
+12 credit groups/156 operands and a distinct deferred ending. This is read-only
+object inspection; it does not rerun canonical credit validation or physics.
+[Position/GSI extraction](artifacts/authority-domain-attribution-20260916/position-gsi-operands.json)
+uses `.venv/bin/python docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/inspect_position_gsi.py`
+from the repository root, exit0: one streaming selection of native member123091.19
+plus prepared-provider member108033.11, with member hash/size bindings. It confirms
+original0/null WB14, surface bytes, live GSI equal to the prepared beginning state,
+and exact captured cursor bytes equal to the prepared beginning cursor. The native
+GSI Decimal lexemes are explicitly encoded in this summary; raw member bytes remain
+the authority. Surface continuations decode from the retained `state_bytes_hex`.
+No day3 GSI receipt is reconstructed or authenticated by this check.
+The prior terminal native-refusal run supplies its reached canonical validation
+and exact negative outcome. New Rust tests/builds, 11 accepted controls and
+four archive decodes are **NOT RUN**, as intentionally outside this attribution's
+selected checks. Critical full correctness, strict lint, original regression,
+conservation/restart and production qualification remain unmet.
+
+Independent acceptance: `/root/event_correctness_attribution` (rust_code_reviewer)
+and `/root/event_qa_attribution` (rust_qa_reviewer) are the single attributable
+replacements for the unavailable original conversations, distinct from each other
+and from `/root/domain_trace`/Astra. Both reviewed the final affected source and
+claims and verified their own fixes. [Correctness](artifacts/authority-domain-attribution-20260916/correctness-review.md)
+required independent prior-receipt evidence beyond a GSI tuple; that fix is accepted
+and verified. [QA](artifacts/authority-domain-attribution-20260916/qa-review.md)
+first saw the pre-row cut, then accepted the completed rows and compact GSI/position
+extraction; its initial blocker and later supplements remain verbatim. Both final
+producer-path addenda pass. Their acceptance covers attribution only, not the
+unreached native six-owner projection or downstream execution. Prior accepted
+archive/negative/no-work results and reviews are not reopened.
+
+Terminal intent reconciliation: only this maintained record and the new small
+attribution evidence/extraction/review artifacts change. No Rust, frozen source,
+input, authority, validator, acceptance predicate, fixture, schema or dependency
+changes. Documentation/link/JSON/Python syntax checks and `git diff --check` are
+selected; Rust formatting/lint/tests, dependency audit and authority-suite guards
+are not applicable to this artifact-only diff. Their broader inherited unmet
+requirements remain recorded above. Three unsuccessful path-discovery probes,
+one worker `node`-unavailable extraction attempt (succeeded subsequently through
+read-only Python), and one unavailable agent-message delivery are conservatively
+charged as five tooling/navigation failures: cumulative floor **at least113**.
+Neither successful extraction had a result-bearing failure; no correction-count
+cutoff or automatic retry is introduced. All three physical allowances remain1/1.
+
+[Terminal checks](artifacts/authority-domain-attribution-20260916/checks.json) PASS:
+both Q/R inventories and cumulative patch identities, frozen binary, JSON parsing,
+Python in-memory syntax, new local links and whitespace; the entire historical
+package tail is byte-identical. At **19:54:52.441780 UTC**, charged consumption is
+**64,184.363261 s**, remaining **1,361.815063 s** under the unchanged ceiling.
+Publication and final return continue charging with no wait deductions. The final
+external receipt will be `/workdir/openwepp-experiments/b01-wb14-cadence/logs/authority-domain-attribution-final-20260916.json`.
+
+**Disposition:** the authorized source-and-operand attribution decision is complete.
+Position/GSI diagnostic remedies are specified but not implemented or authorized
+by this result. Independently authenticate the prior GSI receipt before accepting
+that future diagnostic join. Deferred-soil restoration needs owner-adopted canonical
+admission design binding the immutable composite and final promotion boundary;
+no current API success or producer physics defect is established. Production and
+native restoration remain HOLD. Publication and final charged time are recorded
+in the custody paragraph/receipt below.
 
 ## Event-aware restoration terminal disposition — 2026-09-16
 
