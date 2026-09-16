@@ -1,0 +1,813 @@
+{
+  "evidence_commit": "614e49522b645703ec6b563c857c7c6dbe368822",
+  "start_utc": "2026-09-16T06:29:52.451810+00:00",
+  "end_utc": "2026-09-16T06:29:55.488788+00:00",
+  "method": "Independent HTTPS GET of every changed file at exact GitHub commit; compare response bytes to retained local bytes",
+  "all_match": true,
+  "entries": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/acquisition-source-after.json",
+      "bytes": 1092471,
+      "sha256": "75e2b440f9bcb6e10b1cfecae2f8d5b78ccb6f4e3c532f1d3cbef92f75eba43e",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/acquisition-source-before.json",
+      "bytes": 1092577,
+      "sha256": "9f0020ab028b7e6fdce76c21a98dcfda21c9df67850610a409083e4f4c0a323c",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/adopted-authorization.md",
+      "bytes": 15174,
+      "sha256": "ac2fff85a71420eadea113e23336393e2b7a703a0be9465d67255cc91bf753d2",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/attempt-002-prefix.json",
+      "bytes": 1339,
+      "sha256": "e9f69df26cf99260708f29514f5c56c2de5ea971bd78ee0b5f8c4e034591e5e9",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/attempt-003-prefix-canonical-wire.json",
+      "bytes": 672,
+      "sha256": "49a7494186565ecf018d53901b678214b5959af9cae7e701adefb297ab4c8ab1",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/attempt-004-prefix-gate-localization.json",
+      "bytes": 756,
+      "sha256": "536c191c0487ee825c53cbaf6492f0219ab044065755ff8c0e490906a7ee21b9",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/attempt-005-provisional-clone.json",
+      "bytes": 867,
+      "sha256": "0e6befe060bcd61be552d71f489aea0ce2fd3b0c7e6a9dc000828f8f6f26da2d",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/attempt-006-archive.exit",
+      "bytes": 4,
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/attempt-006-archive.stderr",
+      "bytes": 738,
+      "sha256": "81471edb03f29003c121558aa7f3020f3a4057f6fab41f0ec987f90f758f9fdc",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/attempt-006-archive.stdout",
+      "bytes": 684,
+      "sha256": "f3a8f0633f7890432cbf0ebd0624d1871fe1b733985b0dd2906a613ac5b94a10",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/budget-current.json",
+      "bytes": 431,
+      "sha256": "6dc2b4f31c44013f1f775b5dc638fc6a2d8e492dde65ee0ef31128d03057cc2b",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/budget-final.json",
+      "bytes": 757,
+      "sha256": "5793b424dead22a5d6d8d114d67d7e396eb6063d4228228832ced7feb8c9e70f",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/budget-start.json",
+      "bytes": 283,
+      "sha256": "7cc281a91842f96afb839283939156661fa53835f5135f1148695be0a32a46c6",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock-controls-plan.json",
+      "bytes": 713,
+      "sha256": "7af8e0ba8b03bbad3e7e7449c4e0ab58f058f86ff6e152805728bdc63fb7d7b1",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock-controls-results.json",
+      "bytes": 3605,
+      "sha256": "79e66734e3a689bcb1d191d693969ae91164ea4e72688837305f1f1fe790fb56",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock_omit_slab-member.json",
+      "bytes": 138209,
+      "sha256": "da2c082bfeb46ace6e18cc156e777a8ca48f3d3879c532556cc610800a8b2867",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock_omit_slab.stderr",
+      "bytes": 429,
+      "sha256": "0950d7562c91d62af76b2fa710d78a6d394fbba387bb1fa9dc2aedbbaa2a7eff",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock_omit_slab.stdout",
+      "bytes": 451,
+      "sha256": "d450e8d20f32de74b1738f2c71bcafab65ef16c72965e8163d6d75653947d4f9",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock_reorder_slabs-member.json",
+      "bytes": 141779,
+      "sha256": "fb68c21e4f3d732fda36fe10303ee1c4d4d2c64e27f6100cbf085436271bd5fd",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock_reorder_slabs.stderr",
+      "bytes": 429,
+      "sha256": "6abaf1f35d31c76421dca7da5cf706348d9e8a4b0e71ce1fe76c58eb7ceedf68",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock_reorder_slabs.stdout",
+      "bytes": 451,
+      "sha256": "d1126c9f984096a0074ed7747549f4dabbdd2fdce0bce9a801b1a0b4c82a5be4",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock_wrong_parent_support-member.json",
+      "bytes": 141779,
+      "sha256": "9b3bb4c2700664196e07a40ec7b3d48158d5b386cd6c0d16bfc52a90a365477d",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock_wrong_parent_support.stderr",
+      "bytes": 429,
+      "sha256": "27c488b3dfaff72600b37d3c1b2d98c1a32babca339e83b5d5cddbb45d9ba7bd",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/clock_wrong_parent_support.stdout",
+      "bytes": 451,
+      "sha256": "786952b98f1731a697dc7642cfb72d23fd23829e8b4b65e4598bae6b555b91ca",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/correctness-review.md",
+      "bytes": 12263,
+      "sha256": "ebed1fa4e7adecdb28889ae39f3d030c795c0cb405fc5eb092cb19a11938f53f",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/disposition.json",
+      "bytes": 2799,
+      "sha256": "5f4843f8d37a8279f56655ef28b556f71cf6ac841b3b171b6306cd0762cb800c",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/failure-inventory.json",
+      "bytes": 1702,
+      "sha256": "9606b48f40c33cdb02a69e45af5af4c735edfd089e620ae42874374b891c6933",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/finalize_native_records.py",
+      "bytes": 5116,
+      "sha256": "44ec32c4ea48d34a3e06b8e647f0a2a244466bc339355d943cc631529eebcc65",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/first-binary-custody.json",
+      "bytes": 400,
+      "sha256": "135b4297461eaa49526dde9b0a42d9f60a0a6606fa76bc1ec2e33996dfd76d0c",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-audited-prefix-010-source.json",
+      "bytes": 129964,
+      "sha256": "37b94236de2da4165efacaf22e2af71801f4b17ce2c346fb6b76b55ba362c2b1",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-audited-prefix-010.json",
+      "bytes": 2324,
+      "sha256": "560c7ae084d394ddea47777e55636680cf421aab2ab9ba698ea8cb39fff4bcd0",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-audited-prefix-010.resources",
+      "bytes": 1036,
+      "sha256": "3313e93e694160863035cb1308819aa4da2730327009e10c195eb43a4e22a449",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-audited-prefix-010.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-audited-prefix-010.stdout",
+      "bytes": 1675,
+      "sha256": "2e0ea64386e197f07cdd21ba504d2f80e0637c34c977b341906bd60637abecc1",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-audited-provisional-011-source.json",
+      "bytes": 129964,
+      "sha256": "37b94236de2da4165efacaf22e2af71801f4b17ce2c346fb6b76b55ba362c2b1",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-audited-provisional-011.json",
+      "bytes": 2355,
+      "sha256": "fc8c061ed43a3ab76a2b88c868fc80a27087e96a1b8b0daa1ee0818df1ac19dd",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-audited-provisional-011.resources",
+      "bytes": 1044,
+      "sha256": "5c0c07a105af60a4fa772c6076f7cb9ac86e34cf43321869003647d7b47b8640",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-audited-provisional-011.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-audited-provisional-011.stdout",
+      "bytes": 1678,
+      "sha256": "e03abafaeebd8e6d5ba5aa5837b2038fad2f7c535ea2fe32a59a341bafe9e629",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-archives-009-source.json",
+      "bytes": 129964,
+      "sha256": "a7595d97a2c115691c6936ae922fb5fe16163ee67fc894463886a332fbdf11a5",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-archives-009.json",
+      "bytes": 2279,
+      "sha256": "22047181ca0f49d473ebd421c8f7870af15ba0bbcc1a9c6c331803d915afe221",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-archives-009.resources",
+      "bytes": 1067,
+      "sha256": "90153adf3fc50b19dfc56a33caeba3e28bece013c1c1dc452406f4a44c755ef6",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-archives-009.stderr",
+      "bytes": 718,
+      "sha256": "eb5e27baa75187b3ccfeb6c54eecb18b631d3bfa01148ac188427f838abe5901",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-archives-009.stdout",
+      "bytes": 513,
+      "sha256": "e1feb908c0e6755d7504295097decf709d86c3a738b18595bd335a554c926167",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-prefix-008-source.json",
+      "bytes": 129964,
+      "sha256": "a7595d97a2c115691c6936ae922fb5fe16163ee67fc894463886a332fbdf11a5",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-prefix-008.json",
+      "bytes": 2296,
+      "sha256": "bfaf077f80c53862da08bdab6ce5fd34a8d9428e5c2352d18be6a1655f2384bd",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-prefix-008.resources",
+      "bytes": 1069,
+      "sha256": "b28f1bacda29a0215e30abd1301213b8891acb0f22228b1e54cf9ce95dafe97e",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-prefix-008.stderr",
+      "bytes": 500,
+      "sha256": "a57dccab9c024992b368bc0916aaa3fd8bab4cc81e5439562611e37adc96b6fa",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-b01-prefix-008.stdout",
+      "bytes": 445,
+      "sha256": "da77f79f044ee1c69d73feafc9bbe105000c31cab47e8f8ac708c758b0e00af9",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-prefix-007-source.json",
+      "bytes": 129964,
+      "sha256": "8fb82fdb0f013fd0b7ac4741fa69ec31c15ecf1dcc2b71c8bb0b3dd3ef135175",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-prefix-007.json",
+      "bytes": 2276,
+      "sha256": "695d58b123e23f01d6eceb6c5f3ea357b78c59780fc73a12f6faf9e4618bb7eb",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-prefix-007.resources",
+      "bytes": 1065,
+      "sha256": "df17cabc4b809625240cb5d446f24c99a4387b73362f3d61f01e39cb030f1950",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-prefix-007.stderr",
+      "bytes": 496,
+      "sha256": "004eadd4da3bd3b1591821df03acadd3e4b3fd63071857754af24aa11a407bc5",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-prefix-007.stdout",
+      "bytes": 445,
+      "sha256": "ad9ae9515f222308f2f8402b11043afec425d931373ce286803248fc582690ad",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-provider-012-source.json",
+      "bytes": 129964,
+      "sha256": "b86ea42cdceff169c1a60a9e38139e7cbb040f978403d323a91ea24e893aaf6e",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-provider-012.json",
+      "bytes": 2286,
+      "sha256": "a9a3bbab52e7e50efcb81aabc91c8430fd63df8cc12d86f60fcbff4611db6f06",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-provider-012.resources",
+      "bytes": 1026,
+      "sha256": "7a03d3114a38957f123ecb4751c5db9d9e0d1b747b36df67f9c6ec1ff4fdad93",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-provider-012.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-provider-012.stdout",
+      "bytes": 1748,
+      "sha256": "e72e1ad459e96b540b4a4f6be038911e51947ec2d68659fa9d5b1df33847f50b",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-provisional-006-source.json",
+      "bytes": 129964,
+      "sha256": "8fb82fdb0f013fd0b7ac4741fa69ec31c15ecf1dcc2b71c8bb0b3dd3ef135175",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-provisional-006.json",
+      "bytes": 2305,
+      "sha256": "6f89f4fa84bdcd621c2304a00ba286305561787eac13aaf6d2501b2f60d4cffd",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-provisional-006.resources",
+      "bytes": 1031,
+      "sha256": "23a461cd513719101e4d40442e4898f6f113bb5ec24b3eff2315aa94414d196c",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-provisional-006.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/frozen-provisional-006.stdout",
+      "bytes": 272,
+      "sha256": "99f901c2238c1ac917d50a018e83ede78d6878019cd5a7f6e4d4468c8030b78c",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/input-custody-after.json",
+      "bytes": 487,
+      "sha256": "05a6f134d688a2cd999a98e2c0d83419eaf8e80b8a23c28d51527753b8208347",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/input-custody-before.json",
+      "bytes": 17296,
+      "sha256": "b78f2956b99079d6447aacb51c95e087093b858d90b47f65f601e0b3d53748b3",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/internal-reassessment-001.json",
+      "bytes": 802,
+      "sha256": "f759fbd00ef5277c61c024b4202be9be1fa711bc3ccbb083b016cf2aebcbf154",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/pinned-original-seed-custody.json",
+      "bytes": 613,
+      "sha256": "7a2d00d0abb88bafdc00e466efac1e9a140966d1fdcacfebfaf9e5f23ca425eb",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/pinned-original-seed.json",
+      "bytes": 36209,
+      "sha256": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/pre-scope-reader-incremental.patch",
+      "bytes": 611207,
+      "sha256": "fed7a8c51d8b0935d8d4002ca8edf4d84ae0680fd106a01c6e7958ba41aab674",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/pre-scope-terminal-reconciliation.json",
+      "bytes": 6045,
+      "sha256": "9da76947e893a0e56aea3c926cbedb6729ab4b70041869e5e223c517d135fafa",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/preserve_native_terminal.py",
+      "bytes": 3465,
+      "sha256": "550faf43f13645b1c3e7f36fc2172240b9dede1b9d0889363d9e770045032de5",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/provisional_wrong_owner-member.json",
+      "bytes": 531,
+      "sha256": "0255f15ee73de046d9ba148b4dcb32824eb3f97dc385cb23e8a1cc92e43b418f",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/provisional_wrong_owner.stderr",
+      "bytes": 459,
+      "sha256": "53ebecce3a52cfdfa27cbb121b47c98258f3e6ab1d15a39ea13cd12405ddc836",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/provisional_wrong_owner.stdout",
+      "bytes": 451,
+      "sha256": "de786f8b0c2e762e5ddf08174becb329c3cc0ef1fbc00a8b0afe0e74f103c6d4",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/reader-incremental.patch",
+      "bytes": 47307,
+      "sha256": "aaf8eda3ddab93266ae4886bc324456be941cc8a079dbe6e3f1079c5ab8d1ffe",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/resource-declaration.json",
+      "bytes": 2142,
+      "sha256": "f83e215e60b7c7db854c98915da5a3a11ced4c070b3e65f39cc4052cdafc2280",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/review-availability.json",
+      "bytes": 336,
+      "sha256": "105ec4483204abbd3e4ab2205377229698f1dc18892650ee85c024e0f20ca249",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/run_clock_controls.py",
+      "bytes": 5860,
+      "sha256": "3f7f4e06ffda2809971406b3b67fa68df7d23f837304cde48c7988d12314ee34",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/run_frozen_probe.py",
+      "bytes": 5628,
+      "sha256": "722db73e51fd7eaa4dc4fdef0279974b3813ee6a74482d7e22aab5a9e4f98dc6",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/run_scoped_components.py",
+      "bytes": 820,
+      "sha256": "ef6596cc5eb638da79253a9052c905596b1e244c2e6e13aa6112d300759e7e5a",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-clippy-comparison.json",
+      "bytes": 519487,
+      "sha256": "bd7cb2c21380e687db0377c24a141bd0adc18d7860f80e6b8ae87279d093e1a0",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-clippy.stderr",
+      "bytes": 38170,
+      "sha256": "a407f40faf5bd276f66b2652b185079028f5c91a12a1bbc1e6593d58575f925a",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-clippy.stdout",
+      "bytes": 13689944,
+      "sha256": "c6d6a03b8b984e827714a5f936ca9fbf3106c1a219a2f97491cec82e1568d164",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-format.log",
+      "bytes": 221,
+      "sha256": "43fd0499f49ef6564189b8636fc38973e8f4ee3b489831c01084b89be01f50f7",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-prefix-016-source.json",
+      "bytes": 112621,
+      "sha256": "f2cb74b4222b2774285345308d92cd20e87eb680da50b257050814bce5395966",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-prefix-016.json",
+      "bytes": 2300,
+      "sha256": "0c07fd779c9bf340b2ae4596fd71bdc865641f05d6fc58752e540f0e036d63f2",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-prefix-016.resources",
+      "bytes": 1035,
+      "sha256": "609e932802f90829478919ae5601c7d3d6ccfa692be10d4a34660f1252bb063d",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-prefix-016.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-prefix-016.stdout",
+      "bytes": 1675,
+      "sha256": "b39f399764f7ba14c95796122b30b94621a5c4106fefa7eaa9ef565810a805fe",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-provider-018-source.json",
+      "bytes": 112621,
+      "sha256": "f2cb74b4222b2774285345308d92cd20e87eb680da50b257050814bce5395966",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-provider-018.json",
+      "bytes": 2269,
+      "sha256": "25f19d1188c3991d1b142fdbb96aa96630f05bb6fc4b4bb8c04d03eebcb034eb",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-provider-018.resources",
+      "bytes": 1018,
+      "sha256": "c745cd8a130c8276d6e8c8b1fe43c0d75fff29fca8b9b8bc277acd3ccdbfa157",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-provider-018.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-provider-018.stdout",
+      "bytes": 1748,
+      "sha256": "e36137311102adfa87b008cc0bea3389bcdaeb48b9bc790eedf152c615169822",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-provisional-017-source.json",
+      "bytes": 112621,
+      "sha256": "f2cb74b4222b2774285345308d92cd20e87eb680da50b257050814bce5395966",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-provisional-017.json",
+      "bytes": 2331,
+      "sha256": "04fe5528beff0d4611fb05de6f9c942dd0cd5ea7539ed51b0cde1e0622edb683",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-provisional-017.resources",
+      "bytes": 1051,
+      "sha256": "ebd9798d8031487641d1991008669af5180105f53ce6e2e2544d55800fad6461",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-provisional-017.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-provisional-017.stdout",
+      "bytes": 1678,
+      "sha256": "eee8aaab85fe1878e25a783300842d14cd8050ee90ec4f7312f2900435d9226d",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/scoped-terminal-build.log",
+      "bytes": 5224,
+      "sha256": "a0eb48d78bbf1a92622884d988b52a2c8a3ebde94ba95dfa303bfaaa5569eec6",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/source-1a1f78a902d4622c77a484279140ec44eb5f549d656d5a54bf4d1ec27eee2aec.patch",
+      "bytes": 766211,
+      "sha256": "1a1f78a902d4622c77a484279140ec44eb5f549d656d5a54bf4d1ec27eee2aec",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/source-361289d540fb86ebf70dccbc81d33af49677eef23684f065ce3c9b94cef42b11.patch",
+      "bytes": 752101,
+      "sha256": "361289d540fb86ebf70dccbc81d33af49677eef23684f065ce3c9b94cef42b11",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/source-773516b58ff4738a9fd59295fdee223b85c29082eaab992b588b957fd2cb6db8.patch",
+      "bytes": 759034,
+      "sha256": "773516b58ff4738a9fd59295fdee223b85c29082eaab992b588b957fd2cb6db8",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/source-c1db1e2b54a70b810da1d76c46a6147137a316947bcce31f3b3f82d03edfa983.patch",
+      "bytes": 761641,
+      "sha256": "c1db1e2b54a70b810da1d76c46a6147137a316947bcce31f3b3f82d03edfa983",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/source-d38956e1b14f941642ea05e2f14b50fbc0d655894a6687e38ecc6454438a3c66.patch",
+      "bytes": 202311,
+      "sha256": "d38956e1b14f941642ea05e2f14b50fbc0d655894a6687e38ecc6454438a3c66",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/source-dc773a30acf0e272d8da44f3d5dd5145608a73e2c3922a65eb0baf1a1dec985d.patch",
+      "bytes": 765671,
+      "sha256": "dc773a30acf0e272d8da44f3d5dd5145608a73e2c3922a65eb0baf1a1dec985d",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-audit-build.log",
+      "bytes": 4725,
+      "sha256": "7b2243f91c1146a05051f109addf1ce2a05280a04c6cd1730ec26f3596cf33ab",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-clippy-comparison.json",
+      "bytes": 812904,
+      "sha256": "ce00b28993ff9330b3a559637f33f164d7d3085249cd6efc513f18760360a779",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-clippy.stderr",
+      "bytes": 56891,
+      "sha256": "77400f14e5b0c57a60bbf100e859cc93a92259d9799e31e5a3a8dc91fb39ac9b",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-clippy.stdout",
+      "bytes": 13725336,
+      "sha256": "0b787299d4a4743b4e025e0f3766d5c323c75c84601b71d36fb708fa7156c2e2",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-command-record.json",
+      "bytes": 1557,
+      "sha256": "8120009acbe48a0dfbe695e1416f2e9194a55b0935f665fd00299acca37f5abc",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-format.log",
+      "bytes": 221,
+      "sha256": "43fd0499f49ef6564189b8636fc38973e8f4ee3b489831c01084b89be01f50f7",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-formatted-build.log",
+      "bytes": 4725,
+      "sha256": "8261e83f1c9e2f0a8d2f0893830e95ae935de62414496ba7c30f8c6a1b7d9761",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-prefix-013-source.json",
+      "bytes": 129964,
+      "sha256": "b3d46374656a69f928dfcfe97193ccd75c4b325f619c03cffcce3614a96aae8f",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-prefix-013.json",
+      "bytes": 2309,
+      "sha256": "92bf525e5e6ca58217ce44eb58605aeb12e470c1e4a96417ec5b77bd0e4312ce",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-prefix-013.resources",
+      "bytes": 1037,
+      "sha256": "817eea479c79e2ff0d4c8c74f2c17dc2e60a8666ba13fde24f2f4f20cf5649b4",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-prefix-013.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-prefix-013.stdout",
+      "bytes": 1675,
+      "sha256": "1f8f98a04b87979d5ea9eae75cafbfe3122c8ceb90271ed4b368e26f7b0305a8",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provider-015-source.json",
+      "bytes": 129964,
+      "sha256": "b3d46374656a69f928dfcfe97193ccd75c4b325f619c03cffcce3614a96aae8f",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provider-015.json",
+      "bytes": 2280,
+      "sha256": "965c19f1b56af21b5656cc38a3cfbbb53abde6af2223c7e4d0910b912ee20751",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provider-015.resources",
+      "bytes": 1019,
+      "sha256": "d87967a2d759917c3514ff4d88af8a83ab9a3e5f79e87a37ef2ec5f7b37fc56b",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provider-015.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provider-015.stdout",
+      "bytes": 1748,
+      "sha256": "3243d2e5dc0d6a18b6af60b6a753c49fc9168c2bf36fc437fd6a1c04f0fba43f",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provider-build.log",
+      "bytes": 4725,
+      "sha256": "aee410ae99cdd2c1868f8207ab3b766e6b4b9f738c29cb250a3e534228588144",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provisional-014-source.json",
+      "bytes": 129964,
+      "sha256": "b3d46374656a69f928dfcfe97193ccd75c4b325f619c03cffcce3614a96aae8f",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provisional-014.json",
+      "bytes": 2341,
+      "sha256": "9af632069179c713ce99b141a16ac16cfb8b132e09c3b68ea0173aefb7a8e21a",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provisional-014.resources",
+      "bytes": 1045,
+      "sha256": "8a30e2a1dc50667b1ddb14281f06b9e434a5116dc19fbd27eba747e7295789be",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provisional-014.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-provisional-014.stdout",
+      "bytes": 1678,
+      "sha256": "fcf4095170c41055648f09fb7a2ff6332d1018a13bfa954ee46c4ec91ae743c9",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/terminal-reconciliation.json",
+      "bytes": 831,
+      "sha256": "f0566ee7dcaa61c086fcdf61709c833c89d001ac59a2afbd61cfdd6425270db9",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/unrelated-format-restoration.json",
+      "bytes": 20056,
+      "sha256": "1174e77e5b6fecfe77a38b2f773203de23f594176adff96ff5c200644f54f5ca",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/writer-component-attempt.md",
+      "bytes": 1652,
+      "sha256": "eb62019d4744a82b557e49f8ca5e3e2cdb5ea59717af5b4c092e59e31d14b2d1",
+      "match": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 410387,
+      "sha256": "352f51a72dcbb543c61028854498e25d8e87471d4729ad6065b50e674a8e0ca0",
+      "match": true
+    }
+  ]
+}

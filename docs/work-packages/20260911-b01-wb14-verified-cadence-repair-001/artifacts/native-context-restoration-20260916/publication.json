@@ -1,0 +1,13 @@
+{
+  "utc": "2026-09-16T06:30:36.236967+00:00",
+  "evidence_commit": "614e49522b645703ec6b563c857c7c6dbe368822",
+  "branch": "main",
+  "pushed": true,
+  "remote_byte_verification": "remote-byte-verification.json",
+  "remote_files_verified": 134,
+  "all_match": true,
+  "scope": "Evidence/package/reader patches only; no candidate Rust adoption",
+  "final_reader_tree": "711a4300e5317a78444e4ea1bd91962e6766992d47d58dffde6a7dffaa864c40",
+  "overall": "HOLD",
+  "raw_evidence_diff_check": "unrestricted check flags raw log blank lines and unified patch context spaces; bytes deliberately retained. No green unrestricted diff-check claim."
+}

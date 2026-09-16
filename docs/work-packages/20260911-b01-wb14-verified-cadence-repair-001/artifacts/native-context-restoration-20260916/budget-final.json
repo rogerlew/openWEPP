@@ -1,15 +1,16 @@
 {
-  "recorded_utc": "2026-09-16T06:28:31.581224+00:00",
+  "recorded_utc": "2026-09-16T06:30:36.236967+00:00",
   "conservative_start_utc": "2026-09-16T05:21:00+00:00",
   "deadline_utc": "2026-09-16T06:32:15.218169Z",
   "carry_charged_seconds": "46879.941357",
-  "elapsed_through_record_seconds": "4051.581224",
-  "measured_cumulative_seconds": "50931.522581",
-  "remaining_through_record_seconds": "223.636945",
+  "elapsed_through_record_seconds": "4176.236967",
+  "measured_cumulative_seconds": "51056.178324",
+  "final_publication_and_return_reservation_seconds": "90",
+  "conservative_final_charged_seconds": "51146.178324",
+  "conservative_remaining_seconds": "8.981202",
   "ceiling_seconds": "51155.159526",
   "historical_failures": 67,
   "failure_inventory": "failure-inventory.json",
   "wait_deductions_seconds": 0,
-  "publication_reserve_seconds": "180",
-  "reserve_note": "Reservation is not measured elapsed consumption. All actual publication and verification time continues to count; final publication receipt reconciles its own cutoff within the same ceiling."
+  "note": "90seconds after this record are charged conservatively for receipt commit/push, remote-byte verification and final response. This is explicitly an upper-bound reservation, not invented measured runtime. Finish within that reservation; hard ceiling is unchanged."
 }

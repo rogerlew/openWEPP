@@ -1,7 +1,7 @@
 {
   "historical_failures_carried": 67,
-  "new_recorded_failed_actions_minimum": 20,
-  "cumulative_minimum": 87,
+  "new_recorded_failed_actions_minimum": 21,
+  "cumulative_minimum": 88,
   "new_failed_actions": [
     "host cargo unavailable",
     "host rustfmt unavailable",
@@ -22,7 +22,8 @@
     "frozen-b01-prefix008 refusal B01 still omitted at prefix entry",
     "frozen-b01-archives009 actual canonical chronology refusal",
     "terminal scope reconciliation found unrelated detached formatting",
-    "terminal matched diagnostic comparison has unmatched diagnostics"
+    "terminal matched diagnostic comparison has unmatched diagnostics",
+    "unrestricted staged diff-check reports raw evidence blank lines and literal unified-patch context whitespace; raw bytes preserved"
   ],
   "precision": "Minimum inventory; early writer command records are partial and exact early attempt timing/count cannot be reconstructed reliably. No failure is erased or used as a new cutoff. Related localizations may represent separate executions; see attempt receipts.",
   "expected_negative_controls": 4,

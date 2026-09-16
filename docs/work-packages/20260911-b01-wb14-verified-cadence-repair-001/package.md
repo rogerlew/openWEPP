@@ -98,6 +98,13 @@ no wait deductions and no new failure-count cutoff. Conservative terminal
 reservation is explicitly distinguished from measured completion time. Original
 acquisition, witness and capture allowances remain exhausted at 1/1 each.
 
+Publication: evidence commit `614e49522b645703ec6b563c857c7c6dbe368822` pushed
+to current `main`; independent HTTPS reads verified all 134 changed remote files
+byte-for-byte. [Publication receipt](artifacts/native-context-restoration-20260916/publication.json)
+and final budget retain the evidence cutoff and conservatively charged final
+publication reserve. Unrestricted staged diff-check reports raw log blank lines
+and literal unified-patch context whitespace; those evidence bytes remain exact.
+
 ## Diagnostic-only corrected-recorder acquisition — adopted 2026-09-16
 
 Owner execution of `/tmp/openwepp_b01_wb14_diagnostic_use_capture_authorization.md`
