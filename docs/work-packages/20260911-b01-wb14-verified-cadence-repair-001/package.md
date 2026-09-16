@@ -191,7 +191,10 @@ prepares62 exact or losslessly compressed payload files totaling1,176,572 bytes;
 every gzip is checked against its decompressed source hash. Four archive binaries
 and the large native-consumer operand remain local only, as do the full raw
 stream/spool. The compact copies and manifests do not replace those large
-payloads. Scoped Git publication and remote byte verification remain pending.
+payloads. Evidence commit `911cbad7d874f2482b7be19ae962637b8c1dd928` is pushed to `main`;
+[remote byte verification](artifacts/diagnostic-use-capture-20260916/remote-verification.json)
+matches all140 committed scoped files (5,226,457 bytes), with no LFS pointers.
+The publication supplement records this verification and the ledger subtotal.
 
 Accounting carries **41,786.563411 / 51,155.159526 charged seconds** at conservative
 start **03:03:00 UTC**, with no new allowance and no wait deductions. Deadline is
@@ -201,7 +204,11 @@ continued useful in-scope collection with publication/review time reserved; it
 renewed no budget or invocation. The staged whitespace check found a Markdown hard-break (removed without
 changing reviewer prose) and the original stdout trailing blank line (retained
 byte for byte); final whitespace validation excludes only that raw log. Final
-publication overhead and ledger are still to be reconciled. The current acquisition is exhausted; further model execution,
+publication subtotal is retained in
+[closure-ledger.json](artifacts/diagnostic-use-capture-20260916/closure-ledger.json).
+Final supplement push/remote-verification and response overhead are charged in
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/diagnostic-use-capture-publication.json`,
+which is the final precision ledger for a later continuation. The current acquisition is exhausted; further model execution,
 native restoration/probe, cadence repair or scientific qualification requires
 separate owner-adopted scope.
 

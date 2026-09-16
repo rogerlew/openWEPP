@@ -1,12 +1,12 @@
 {
-  "through_utc": "2026-09-16T04:23:53.151090+00:00",
-  "state": "pre-publication subtotal; final overhead pending",
+  "through_utc": "2026-09-16T04:26:19.311386+00:00",
+  "state": "published evidence and remote verification subtotal; final supplement overhead in named local precision ledger",
   "carry_charged_seconds": 41786.563411,
   "continuation_start_utc": "2026-09-16T03:03:00+00:00",
-  "all_wall_seconds_charged": 4853.15109,
-  "cumulative_charged_seconds": 46639.714501,
+  "all_wall_seconds_charged": 4999.311386,
+  "cumulative_charged_seconds": 46785.874797,
   "cumulative_ceiling_seconds": 51155.159526,
-  "remaining_seconds": 4515.445025,
+  "remaining_seconds": 4369.284729,
   "cumulative_failures": 67,
   "new_failed_verification_invocations": 8,
   "new_failed_model_invocations": 1,
@@ -23,5 +23,7 @@
     "focused_offline": 7,
     "model": 1,
     "initial_staged_whitespace_check": 1
-  }
+  },
+  "evidence_commit": "911cbad7d874f2482b7be19ae962637b8c1dd928",
+  "evidence_remote_files_verified": 140
 }
