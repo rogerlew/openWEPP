@@ -1,0 +1,13 @@
+{
+  "pid": 1018249,
+  "start_utc": "2026-09-16T03:34:32.883480+00:00",
+  "state": "CANCELLED_BEFORE_EXPORT_FOR_BOUNDED_STORAGE_CORRECTION",
+  "model_invocations": 0,
+  "frozen_tools": {
+    "export_selected.py": "49d0ae4f3e1118d85403bdca58326cf75237c081b0f3a2e163dd693866ec43ab",
+    "inspect_exports.py": "77c5a46045f20bc296a33cc385c82771d774a1f7067ea96c85a1fd16df072370"
+  },
+  "end_utc": "2026-09-16T03:44:45.648067+00:00",
+  "export_invocations": 0,
+  "inspection_invocations": 0
+}

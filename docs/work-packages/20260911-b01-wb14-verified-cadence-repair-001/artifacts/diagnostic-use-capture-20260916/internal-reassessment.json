@@ -1,0 +1,34 @@
+{
+  "utc": "2026-09-16T04:03:46.873415+00:00",
+  "elapsed_all_wall_seconds": 3646.873415,
+  "cumulative_charged_seconds": 45433.436826000005,
+  "remaining_seconds": 5721.7227,
+  "cumulative_failures": 66,
+  "decision": "continue authorized bounded export/inspection then independent reviews/publication",
+  "reason": "model+collector and entire inventory complete, one actual target found, reviewed storage-safe exporter active; no unresolved in-scope tooling blocker",
+  "authentic_capture_used": 1,
+  "authentic_capture_maximum": 1,
+  "probe": "0/1 RESERVED AND PROHIBITED",
+  "partial_export_files": [
+    {
+      "name": "27431.canonical_record.bin",
+      "bytes": 307105003
+    },
+    {
+      "name": "27431.events.jsonl",
+      "bytes": 6097
+    },
+    {
+      "name": "54078.canonical_record.bin",
+      "bytes": 376086364
+    },
+    {
+      "name": "54078.events.jsonl",
+      "bytes": 6098
+    },
+    {
+      "name": "79222.canonical_record.bin",
+      "bytes": 105644032
+    }
+  ]
+}

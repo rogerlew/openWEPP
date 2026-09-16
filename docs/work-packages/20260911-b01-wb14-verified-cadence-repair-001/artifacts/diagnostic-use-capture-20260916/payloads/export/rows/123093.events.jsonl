@@ -1,0 +1,36 @@
+{"path":[],"event":"start_map","value":null}
+{"path":[{"member":"beginning_typed_bytes","position":0}],"event":"map_key","value":"beginning_typed_bytes"}
+{"event":"external_json_start","path":[{"member":"beginning_typed_bytes","position":0}],"file":"rows/123093.0.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"beginning_typed_bytes","position":0}],"file":"rows/123093.0.json","bytes":3142,"sha256":"d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938"}
+{"path":[{"member":"capture","position":1}],"event":"map_key","value":"capture"}
+{"path":[],"event":"start_map","value":null}
+{"path":[{"member":"ordinal","position":0}],"event":"map_key","value":"ordinal"}
+{"path":[],"event":"number","value":{"number_lexeme":"123093","encoding":"exact Decimal event"}}
+{"path":[{"member":"process","position":1}],"event":"map_key","value":"process"}
+{"path":[],"event":"number","value":{"number_lexeme":"996446","encoding":"exact Decimal event"}}
+{"path":[{"member":"session","position":2}],"event":"map_key","value":"session"}
+{"path":[],"event":"number","value":{"number_lexeme":"1","encoding":"exact Decimal event"}}
+{"path":[{"member":"thread","position":3}],"event":"map_key","value":"thread"}
+{"path":[],"event":"string","value":"ThreadId(2)"}
+{"path":[],"event":"end_map","value":null}
+{"path":[{"member":"coupled_binding","position":2}],"event":"map_key","value":"coupled_binding"}
+{"event":"external_json_start","path":[{"member":"coupled_binding","position":2}],"file":"rows/123093.2.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"coupled_binding","position":2}],"file":"rows/123093.2.json","bytes":673,"sha256":"cc857a2799350e61fc2c12a514cf951411005b23e03e0456b515bfaef1dfb6e0"}
+{"path":[{"member":"error","position":3}],"event":"map_key","value":"error"}
+{"path":[],"event":"string","value":"SURFACELIQUID-E-008 IngressCandidate: WB14 day or interval continuation mismatch"}
+{"path":[{"member":"finalize_parent_interval","position":4}],"event":"map_key","value":"finalize_parent_interval"}
+{"path":[],"event":"boolean","value":false}
+{"path":[{"member":"input_typed_bytes","position":5}],"event":"map_key","value":"input_typed_bytes"}
+{"event":"external_json_start","path":[{"member":"input_typed_bytes","position":5}],"file":"rows/123093.5.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"input_typed_bytes","position":5}],"file":"rows/123093.5.json","bytes":7648,"sha256":"77624723588a92c1b10adc8f94bf7a31852a61d7b88c93a0681918bf3e946620"}
+{"path":[{"member":"kind","position":6}],"event":"map_key","value":"kind"}
+{"path":[],"event":"string","value":"surface_liquid_wb14_cadence_caller_failure"}
+{"path":[{"member":"parent_child_mode","position":7}],"event":"map_key","value":"parent_child_mode"}
+{"path":[],"event":"boolean","value":true}
+{"path":[{"member":"parent_working_typed_bytes","position":8}],"event":"map_key","value":"parent_working_typed_bytes"}
+{"event":"external_json_start","path":[{"member":"parent_working_typed_bytes","position":8}],"file":"rows/123093.8.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"parent_working_typed_bytes","position":8}],"file":"rows/123093.8.json","bytes":18049,"sha256":"bc339feadb3b03f2961185f08d64a771191d5f0cbc49e7eb6344c17ac38c1a5e"}
+{"path":[{"member":"working_typed_bytes","position":9}],"event":"map_key","value":"working_typed_bytes"}
+{"event":"external_json_start","path":[{"member":"working_typed_bytes","position":9}],"file":"rows/123093.9.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"working_typed_bytes","position":9}],"file":"rows/123093.9.json","bytes":3142,"sha256":"d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938"}
+{"path":[],"event":"end_map","value":null}

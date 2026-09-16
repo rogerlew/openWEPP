@@ -1,0 +1,32 @@
+{
+  "utc": "2026-09-16T04:23:53.150787+00:00",
+  "json_files_valid": 62,
+  "python_syntax": "PASS",
+  "new_section_relative_links": "PASS",
+  "git_diff_check": "PASS for full task diff excluding exact-byte terminal/stdout.log; raw log EOF preserved",
+  "terminal_scope_reconciliation": "only package.md and diagnostic-use-capture-20260916 artifacts; no production Rust/manifest/contract changes",
+  "focused_workflows": {
+    "export-tests.json": 0,
+    "inspect-context-tests.json": 0
+  },
+  "actual_workflows": {
+    "build-command.json": 0,
+    "inventory-command.json": 0,
+    "export-command.json": 0,
+    "inspect-command.json": 0,
+    "context-command.json": 0
+  },
+  "independent_reviews": {
+    "correctness": "PASS bounded acquisition/custody",
+    "qa": "PASS scoped corpus custody/completeness/structural provenance"
+  },
+  "unrun": "No native importer/probe, production scientific regression rerun, or full workspace campaign in this evidence-only scope; unchanged historical FAIL/PASS dispositions retained.",
+  "initial_staged_whitespace_check": {
+    "status": "FAIL",
+    "findings": [
+      "Markdown hard-break trailing spaces in qa-review.md (removed, prose unchanged)",
+      "exact-byte terminal/stdout.log has a trailing blank line (retained as raw evidence)"
+    ],
+    "accounting": "one additional failed verification; cumulative67"
+  }
+}

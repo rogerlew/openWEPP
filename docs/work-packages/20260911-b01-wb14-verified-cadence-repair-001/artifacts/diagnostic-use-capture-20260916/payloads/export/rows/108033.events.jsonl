@@ -1,0 +1,48 @@
+{"path":[],"event":"start_map","value":null}
+{"path":[{"member":"archived_receipt_prefix","position":0}],"event":"map_key","value":"archived_receipt_prefix"}
+{"event":"external_json_start","path":[{"member":"archived_receipt_prefix","position":0}],"file":"rows/108033.0.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"archived_receipt_prefix","position":0}],"file":"rows/108033.0.json","bytes":2834,"sha256":"8900d4d3a36b2f4ad46c631adff2503fea55b1d739185f748c144e932ebd8cd0"}
+{"path":[{"member":"capture","position":1}],"event":"map_key","value":"capture"}
+{"path":[],"event":"start_map","value":null}
+{"path":[{"member":"ordinal","position":0}],"event":"map_key","value":"ordinal"}
+{"path":[],"event":"number","value":{"number_lexeme":"108033","encoding":"exact Decimal event"}}
+{"path":[{"member":"process","position":1}],"event":"map_key","value":"process"}
+{"path":[],"event":"number","value":{"number_lexeme":"996446","encoding":"exact Decimal event"}}
+{"path":[{"member":"session","position":2}],"event":"map_key","value":"session"}
+{"path":[],"event":"number","value":{"number_lexeme":"1","encoding":"exact Decimal event"}}
+{"path":[{"member":"thread","position":3}],"event":"map_key","value":"thread"}
+{"path":[],"event":"string","value":"ThreadId(2)"}
+{"path":[],"event":"end_map","value":null}
+{"path":[{"member":"capture_posture","position":2}],"event":"map_key","value":"capture_posture"}
+{"path":[],"event":"string","value":"before physical ingress; diagnostic no-publication wrapper"}
+{"path":[{"member":"committed_clock_restart_canonical_json","position":3}],"event":"map_key","value":"committed_clock_restart_canonical_json"}
+{"event":"external_json_start","path":[{"member":"committed_clock_restart_canonical_json","position":3}],"file":"rows/108033.3.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"committed_clock_restart_canonical_json","position":3}],"file":"rows/108033.3.json","bytes":223918,"sha256":"ffe8c5b3b8cddfc972d91b4b562b6d0136fdc47f84f33d5e2b28d016dc81cda8"}
+{"path":[{"member":"committed_next_parent_sequence","position":4}],"event":"map_key","value":"committed_next_parent_sequence"}
+{"path":[],"event":"number","value":{"number_lexeme":"192","encoding":"exact Decimal event"}}
+{"path":[{"member":"committed_receipt_tail_count","position":5}],"event":"map_key","value":"committed_receipt_tail_count"}
+{"path":[],"event":"number","value":{"number_lexeme":"0","encoding":"exact Decimal event"}}
+{"path":[{"member":"day_index","position":6}],"event":"map_key","value":"day_index"}
+{"path":[],"event":"number","value":{"number_lexeme":"4","encoding":"exact Decimal event"}}
+{"path":[{"member":"kind","position":7}],"event":"map_key","value":"kind"}
+{"path":[],"event":"string","value":"b01_wb14_prepared_day_current_context_v1"}
+{"path":[{"member":"native_committed_bootstrap_lane_map_constructor_operands","position":8}],"event":"map_key","value":"native_committed_bootstrap_lane_map_constructor_operands"}
+{"event":"external_json_start","path":[{"member":"native_committed_bootstrap_lane_map_constructor_operands","position":8}],"file":"rows/108033.8.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"native_committed_bootstrap_lane_map_constructor_operands","position":8}],"file":"rows/108033.8.json","bytes":111,"sha256":"b490483de1802d99f84c968b6a80f986c2b6d36cf2a3d9468cf94dfd8c1daeb0"}
+{"path":[{"member":"native_committed_bootstrap_soil_v2_constructor_operands","position":9}],"event":"map_key","value":"native_committed_bootstrap_soil_v2_constructor_operands"}
+{"event":"external_json_start","path":[{"member":"native_committed_bootstrap_soil_v2_constructor_operands","position":9}],"file":"rows/108033.9.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"native_committed_bootstrap_soil_v2_constructor_operands","position":9}],"file":"rows/108033.9.json","bytes":315288,"sha256":"53ef8620f29ef2478a1debf9243d08b96aea899e320f9e59ccd423752b36f8b0"}
+{"path":[{"member":"ordered_support_constructor_operands","position":10}],"event":"map_key","value":"ordered_support_constructor_operands"}
+{"event":"external_json_start","path":[{"member":"ordered_support_constructor_operands","position":10}],"file":"rows/108033.10.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"ordered_support_constructor_operands","position":10}],"file":"rows/108033.10.json","bytes":606393,"sha256":"1d9d17e908a220d9912f14498eda113bd8cdffaaf6dfd705305d7c4c00838081"}
+{"path":[{"member":"provider_constructor_operands","position":11}],"event":"map_key","value":"provider_constructor_operands"}
+{"event":"external_json_start","path":[{"member":"provider_constructor_operands","position":11}],"file":"rows/108033.11.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"provider_constructor_operands","position":11}],"file":"rows/108033.11.json","bytes":134780,"sha256":"7581abdf5250748ff289b61ee3e1bae324a65a88afffd4e01a5cf5a6b83741bc"}
+{"path":[{"member":"snow_enthalpy_material_residents","position":12}],"event":"map_key","value":"snow_enthalpy_material_residents"}
+{"event":"external_json_start","path":[{"member":"snow_enthalpy_material_residents","position":12}],"file":"rows/108033.12.json","encoding":"streamed JSON exact Decimal lexemes"}
+{"event":"external_json_end","path":[{"member":"snow_enthalpy_material_residents","position":12}],"file":"rows/108033.12.json","bytes":160,"sha256":"3b47d47157564740ab8bf2f9285f5e603aae4c08aaecb920b788511d5708a3ed"}
+{"path":[{"member":"static_run_identity","position":13}],"event":"map_key","value":"static_run_identity"}
+{"path":[],"event":"string","value":"59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"}
+{"path":[{"member":"static_topology_identity","position":14}],"event":"map_key","value":"static_topology_identity"}
+{"path":[],"event":"string","value":"a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"}
+{"path":[],"event":"end_map","value":null}

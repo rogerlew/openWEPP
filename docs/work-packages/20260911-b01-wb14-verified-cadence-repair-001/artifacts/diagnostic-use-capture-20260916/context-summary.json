@@ -1,0 +1,1047 @@
+{
+  "status": "COMPLETE",
+  "export_summary_sha256": "cf5f6612d65c3b5a2a53583560730e8d5c551795efc73ff6b3fd5735e41c17bb",
+  "rows": [
+    {
+      "physical_ordinal": 27431,
+      "kind": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "role": "related_b01",
+      "top_level_scalars": {
+        "day_index": [
+          "0"
+        ]
+      },
+      "members": [],
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 54078,
+      "kind": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "role": "related_b01",
+      "top_level_scalars": {
+        "day_index": [
+          "1"
+        ]
+      },
+      "members": [],
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 79222,
+      "kind": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "role": "related_b01",
+      "top_level_scalars": {
+        "day_index": [
+          "2"
+        ]
+      },
+      "members": [],
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 107936,
+      "kind": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "role": "related_b01",
+      "top_level_scalars": {
+        "day_index": [
+          "3"
+        ]
+      },
+      "members": [],
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 108033,
+      "kind": [
+        "b01_wb14_prepared_day_current_context_v1"
+      ],
+      "role": "related_b01",
+      "top_level_scalars": {
+        "day_index": [
+          "4"
+        ]
+      },
+      "members": [
+        {
+          "member": "archived_receipt_prefix",
+          "position": 0,
+          "source_file": "rows/108033.0.json",
+          "source_bytes": 2834,
+          "source_sha256": "8900d4d3a36b2f4ad46c631adff2503fea55b1d739185f748c144e932ebd8cd0",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "committed_clock_restart_canonical_json",
+          "position": 3,
+          "source_file": "rows/108033.3.json",
+          "source_bytes": 223918,
+          "source_sha256": "ffe8c5b3b8cddfc972d91b4b562b6d0136fdc47f84f33d5e2b28d016dc81cda8",
+          "decoded_file": "0003-committed_clock_restart_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 67900,
+          "sha256": "8af583ef344975b60ee62be744779c12b4e378d2e67dedbc3f72c2915ad41c72",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "schema",
+            "version",
+            "authority_sha256",
+            "model_definition_sha256",
+            "run_identity_sha256",
+            "calendar_receipt_sha256",
+            "forcing_receipt_sha256",
+            "parent_interval_id",
+            "checkpoint_phase",
+            "parent_transaction_sequence",
+            "next_parent_transaction_sequence",
+            "parent_transaction_id",
+            "parent_support",
+            "accepted_until_ns",
+            "next_segment_ordinal",
+            "next_slab_ordinal",
+            "next_event_ordinal",
+            "last_accepted_step_ns",
+            "active_segment",
+            "complete_owner_state",
+            "begin_complete_owner_set_sha256",
+            "begin_clock_sha256",
+            "accepted_complete_owner_set_sha256",
+            "boundary_modes",
+            "constraint_policy_sha256",
+            "controller_policy_sha256",
+            "accepted_controller_checkpoint",
+            "accepted_slab_receipts",
+            "accepted_event_receipts",
+            "scheduled_once_receipts",
+            "reduction_state",
+            "pending_publication_buffer",
+            "publication_outbox"
+          ],
+          "selected_small_fields": {
+            "accepted_until_ns": "345600000000000"
+          }
+        },
+        {
+          "member": "native_committed_bootstrap_lane_map_constructor_operands",
+          "position": 8,
+          "source_file": "rows/108033.8.json",
+          "source_bytes": 111,
+          "source_sha256": "b490483de1802d99f84c968b6a80f986c2b6d36cf2a3d9468cf94dfd8c1daeb0",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "native_committed_bootstrap_soil_v2_constructor_operands",
+          "position": 9,
+          "source_file": "rows/108033.9.json",
+          "source_bytes": 315288,
+          "source_sha256": "53ef8620f29ef2478a1debf9243d08b96aea899e320f9e59ccd423752b36f8b0",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "ordered_support_constructor_operands",
+          "position": 10,
+          "source_file": "rows/108033.10.json",
+          "source_bytes": 606393,
+          "source_sha256": "1d9d17e908a220d9912f14498eda113bd8cdffaaf6dfd705305d7c4c00838081",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "provider_constructor_operands",
+          "position": 11,
+          "source_file": "rows/108033.11.json",
+          "source_bytes": 134780,
+          "source_sha256": "7581abdf5250748ff289b61ee3e1bae324a65a88afffd4e01a5cf5a6b83741bc",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "snow_enthalpy_material_residents",
+          "position": 12,
+          "source_file": "rows/108033.12.json",
+          "source_bytes": 160,
+          "source_sha256": "3b47d47157564740ab8bf2f9285f5e603aae4c08aaecb920b788511d5708a3ed",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        }
+      ],
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 123091,
+      "kind": [
+        "b01_wb14_snow_free_pre_child_current_context_v1"
+      ],
+      "role": "target_success",
+      "top_level_scalars": {
+        "capture_phase": [
+          "snow_free"
+        ],
+        "day_index": [
+          "4"
+        ],
+        "interval_index": [
+          "22"
+        ]
+      },
+      "members": [
+        {
+          "member": "beginning_stage3_canonical_json",
+          "position": 2,
+          "source_file": "rows/123091.2.json",
+          "source_bytes": 2636,
+          "source_sha256": "10cae8a34e98b4cd58e067c05edbcd9378024f60bdad38168e78b1ef0b1c6e9d",
+          "decoded_file": "0002-beginning_stage3_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 760,
+          "sha256": "c5b04a6696bcf979e671e2f77b260c0cbfedd988068a2ca2a6d1ae6c0aec44a5",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "1"
+          ],
+          "selected_small_fields": {}
+        },
+        {
+          "member": "clock_complete_owner_canonical_bytes",
+          "position": 6,
+          "source_file": "rows/123091.6.json",
+          "source_bytes": 70510,
+          "source_sha256": "de5ba0989f4a66c81e7eb1c5b0b5c5e6e75fe36658141608572a9e6032a6e5a6",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "complete_owner_canonical_bytes",
+          "position": 7,
+          "source_file": "rows/123091.7.json",
+          "source_bytes": 60023,
+          "source_sha256": "fb40ea15c6a88d624ad7ac344d05f936c12aeb9f5b211ff483872511b601a3df",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "complete_owner_ledger_canonical_json",
+          "position": 8,
+          "source_file": "rows/123091.8.json",
+          "source_bytes": 1089,
+          "source_sha256": "7e86357cc245a82faafdf53095745c8861f8ab21eb73bf35b92bb1240ad6143a",
+          "decoded_file": "0008-complete_owner_ledger_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 325,
+          "sha256": "811d1f9231500cd9f912f645f121e1ee61b74691fe94a68782aa4ac2aaf3c69a",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "flux_id",
+            "units",
+            "debit_digest",
+            "credit_digest",
+            "operand_lineage_digest"
+          ],
+          "selected_small_fields": {}
+        },
+        {
+          "member": "constraint_reduction_canonical_json",
+          "position": 9,
+          "source_file": "rows/123091.9.json",
+          "source_bytes": 2876,
+          "source_sha256": "e081b414b6b67fd24869f56ae7b09b37eef083a5c1fc09c7b6e9748ae9fea1a6",
+          "decoded_file": "0009-constraint_reduction_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 862,
+          "sha256": "53f00e9b8d6e922679079069d0dddbbe87b97b1be3b3eddfd06d34063ceca45f",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "parent_transaction_id",
+            "accepted_cursor_ns",
+            "selected_end_ns",
+            "coincident",
+            "pending_event",
+            "digest"
+          ],
+          "selected_small_fields": {}
+        },
+        {
+          "member": "coupled_binding",
+          "position": 10,
+          "source_file": "rows/123091.10.json",
+          "source_bytes": 665,
+          "source_sha256": "9e5a3bfd0353528220274a51cae4b253c68d85291aaec7a04471442967aae7a4",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "coupled_clock_restart_canonical_json",
+          "position": 12,
+          "source_file": "rows/123091.12.json",
+          "source_bytes": 141779,
+          "source_sha256": "6c59860507007a0ac6f4baebdff76df718352a4e1830623336c329a13aa186a1",
+          "decoded_file": "0012-coupled_clock_restart_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 42870,
+          "sha256": "df820ab32d7f899eccedde53b6cf8b3ac66674773c263e71d6f1948aa989477d",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "schema",
+            "version",
+            "authority_sha256",
+            "model_definition_sha256",
+            "run_identity_sha256",
+            "calendar_receipt_sha256",
+            "forcing_receipt_sha256",
+            "parent_interval_id",
+            "checkpoint_phase",
+            "parent_transaction_sequence",
+            "next_parent_transaction_sequence",
+            "parent_transaction_id",
+            "parent_support",
+            "accepted_until_ns",
+            "next_segment_ordinal",
+            "next_slab_ordinal",
+            "next_event_ordinal",
+            "last_accepted_step_ns",
+            "active_segment",
+            "complete_owner_state",
+            "begin_complete_owner_set_sha256",
+            "begin_clock_sha256",
+            "accepted_complete_owner_set_sha256",
+            "boundary_modes",
+            "constraint_policy_sha256",
+            "controller_policy_sha256",
+            "accepted_controller_checkpoint",
+            "accepted_slab_receipts",
+            "accepted_event_receipts",
+            "scheduled_once_receipts",
+            "reduction_state",
+            "pending_publication_buffer",
+            "publication_outbox"
+          ],
+          "selected_small_fields": {
+            "accepted_until_ns": "385920000000000"
+          }
+        },
+        {
+          "member": "lse_configuration_canonical_json",
+          "position": 18,
+          "source_file": "rows/123091.18.json",
+          "source_bytes": 12726,
+          "source_sha256": "b994450337fbb0f855d0b986fc49ac035579267180ebc9e547f7a671cb2dcad6",
+          "decoded_file": "0018-lse_configuration_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 3655,
+          "sha256": "6612aa969faa234cf402f4bdede947c4b720c624b111627270a028815821c454",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "model_version",
+            "model_definition_sha256",
+            "configuration_sha256",
+            "owner_id",
+            "vegetation_configuration",
+            "hydrology_configuration",
+            "soil_thermal_configuration",
+            "numerics",
+            "ofes"
+          ],
+          "selected_small_fields": {}
+        },
+        {
+          "member": "native_consumer_constructor_operands",
+          "position": 19,
+          "source_file": "rows/123091.19.json",
+          "source_bytes": 457913228,
+          "source_sha256": "2e1d9732f67cae8e2291f430645f59aacf1836f00a0beddf82ad0a31bee064ba",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "native_hydrology_constructor_inputs",
+          "position": 20,
+          "source_file": "rows/123091.20.json",
+          "source_bytes": 4797,
+          "source_sha256": "99e9706798db4982ac7ebba2d8576906b6a8f09367b8f3487bb3b8002768a8b1",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "native_hydrology_frame_dynamic_constructor_operands",
+          "position": 21,
+          "source_file": "rows/123091.21.json",
+          "source_bytes": 6518,
+          "source_sha256": "e4738c3173d7872f4a7eb478716827ba8a18b15e19d036bedc60b8a33961e3a4",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "native_lane_map_constructor_operands",
+          "position": 22,
+          "source_file": "rows/123091.22.json",
+          "source_bytes": 111,
+          "source_sha256": "b490483de1802d99f84c968b6a80f986c2b6d36cf2a3d9468cf94dfd8c1daeb0",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "native_soil_v2_constructor_operands",
+          "position": 23,
+          "source_file": "rows/123091.23.json",
+          "source_bytes": 315368,
+          "source_sha256": "ea7f4ce04601b7a62cb88676395a4ea5bfb0ab86a073746caafc9e2ddfec9628",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "parent_checkpoint_canonical_json",
+          "position": 24,
+          "source_file": "rows/123091.24.json",
+          "source_bytes": 5997977,
+          "source_sha256": "09d914ff78012a835833abfed9890cc9a88197effdf10f7c6847edb9886061af",
+          "decoded_file": "0024-parent_checkpoint_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 1925058,
+          "sha256": "4ea53d80dbf3bf857b5b318e74bbfbbce8fc19ed1706726c89769e2fadbe143d",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "schema",
+            "parent_transaction_id",
+            "beginning_state",
+            "staged_state",
+            "accepted_until_ns",
+            "accepted_segments",
+            "accepted_zero_duration_owner_transitions",
+            "cumulative_debits",
+            "beginning_complete_owners",
+            "staged_complete_owners",
+            "finalized"
+          ],
+          "selected_small_fields": {
+            "accepted_until_ns": "385920000000000"
+          }
+        },
+        {
+          "member": "parent_support",
+          "position": 25,
+          "source_file": "rows/123091.25.json",
+          "source_bytes": 57,
+          "source_sha256": "f4a5dfd0b2ddfabfb786a9c2c077949b9f002019567965defee3c4fc3d01622c",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "phase_diagnostics",
+          "position": 26,
+          "source_file": "rows/123091.26.json",
+          "source_bytes": 262808,
+          "source_sha256": "443aa08f5e2d9d11939754901253196d63e74ac9d85481f719e4ac640047e3fd",
+          "top_level_members": [
+            {
+              "member": "current_stage3",
+              "position": 1,
+              "type": "map",
+              "direct_map_member_count": 1
+            },
+            {
+              "member": "deferred_native_v2_soil_custody",
+              "position": 2,
+              "type": "map",
+              "direct_map_member_count": 3
+            },
+            {
+              "member": "ending_snow_owner_canonical_bytes",
+              "position": 3,
+              "type": "array",
+              "direct_array_item_count": 821
+            },
+            {
+              "member": "ordered_event_group_terminal_liquid_custody_v2",
+              "position": 5,
+              "type": "array",
+              "direct_array_item_count": 1
+            },
+            {
+              "member": "ordered_event_groups",
+              "position": 6,
+              "type": "array",
+              "direct_array_item_count": 1
+            },
+            {
+              "member": "ordered_owner_join_support_liquid_custody_v2",
+              "position": 7,
+              "type": "array",
+              "direct_array_item_count": 8
+            },
+            {
+              "member": "ordered_owner_joins",
+              "position": 8,
+              "type": "array",
+              "direct_array_item_count": 8
+            },
+            {
+              "member": "pending_terminal_parcels",
+              "position": 9,
+              "type": "map",
+              "direct_map_member_count": 1
+            },
+            {
+              "member": "prefix_validation_parent_support",
+              "position": 10,
+              "type": "map",
+              "direct_map_member_count": 2
+            },
+            {
+              "member": "prefix_validation_surface_configuration_canonical_json",
+              "position": 11,
+              "type": "array",
+              "direct_array_item_count": 1223
+            },
+            {
+              "member": "validated_native_inactive_wb14_prefix",
+              "position": 12,
+              "type": "map",
+              "direct_map_member_count": 8
+            }
+          ],
+          "top_level_members_truncated": false,
+          "scalar_count": 14124,
+          "container_count": 1020,
+          "selected_small_fields": {
+            "$.ordered_event_groups[0].candidates[0].support.end_ns": "385920000000000",
+            "$.ordered_event_groups[0].candidates[0].support.start_ns": "385620000000000",
+            "$.ordered_event_groups[0].produced_unconsumed_parcels[0].support.end_ns": "385920000000000",
+            "$.ordered_event_groups[0].produced_unconsumed_parcels[0].support.start_ns": "385620000000000",
+            "$.ordered_event_groups[0].terminal_physical_ledger.support.end_ns": "385920000000000",
+            "$.ordered_event_groups[0].terminal_physical_ledger.support.start_ns": "385620000000000",
+            "$.ordered_owner_joins[0].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.end_ns": "385260000000000",
+            "$.ordered_owner_joins[0].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.start_ns": "385200000000000",
+            "$.ordered_owner_joins[0].destination_receipts[0].receipt.V11Canopy.support.end_ns": "385260000000000",
+            "$.ordered_owner_joins[0].destination_receipts[0].receipt.V11Canopy.support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[0].destination_receipts[1].receipt.OpenSnow.candidate.support.end_ns": "385260000000000",
+            "$.ordered_owner_joins[0].destination_receipts[1].receipt.OpenSnow.candidate.support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[0].lane_receipts.1.support.end_ns": "385260000000000",
+            "$.ordered_owner_joins[0].lane_receipts.1.support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[0].owner_join.support.end_ns": "385260000000000",
+            "$.ordered_owner_joins[0].owner_join.support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[0].parent_support.end_ns": "387000000000000",
+            "$.ordered_owner_joins[0].parent_support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[0].support.end_ns": "385260000000000",
+            "$.ordered_owner_joins[0].support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[1].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.end_ns": "385320000000000",
+            "$.ordered_owner_joins[1].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.start_ns": "385260000000000",
+            "$.ordered_owner_joins[1].destination_receipts[0].receipt.V11Canopy.support.end_ns": "385320000000000",
+            "$.ordered_owner_joins[1].destination_receipts[0].receipt.V11Canopy.support.start_ns": "385260000000000",
+            "$.ordered_owner_joins[1].destination_receipts[1].receipt.OpenSnow.candidate.support.end_ns": "385320000000000",
+            "$.ordered_owner_joins[1].destination_receipts[1].receipt.OpenSnow.candidate.support.start_ns": "385260000000000",
+            "$.ordered_owner_joins[1].lane_receipts.1.support.end_ns": "385320000000000",
+            "$.ordered_owner_joins[1].lane_receipts.1.support.start_ns": "385260000000000",
+            "$.ordered_owner_joins[1].owner_join.support.end_ns": "385320000000000",
+            "$.ordered_owner_joins[1].owner_join.support.start_ns": "385260000000000",
+            "$.ordered_owner_joins[1].parent_support.end_ns": "387000000000000",
+            "$.ordered_owner_joins[1].parent_support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[1].support.end_ns": "385320000000000",
+            "$.ordered_owner_joins[1].support.start_ns": "385260000000000",
+            "$.ordered_owner_joins[2].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.end_ns": "385380000000000",
+            "$.ordered_owner_joins[2].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.start_ns": "385320000000000",
+            "$.ordered_owner_joins[2].destination_receipts[0].receipt.V11Canopy.support.end_ns": "385380000000000",
+            "$.ordered_owner_joins[2].destination_receipts[0].receipt.V11Canopy.support.start_ns": "385320000000000",
+            "$.ordered_owner_joins[2].destination_receipts[1].receipt.OpenSnow.candidate.support.end_ns": "385380000000000",
+            "$.ordered_owner_joins[2].destination_receipts[1].receipt.OpenSnow.candidate.support.start_ns": "385320000000000",
+            "$.ordered_owner_joins[2].lane_receipts.1.support.end_ns": "385380000000000",
+            "$.ordered_owner_joins[2].lane_receipts.1.support.start_ns": "385320000000000",
+            "$.ordered_owner_joins[2].owner_join.support.end_ns": "385380000000000",
+            "$.ordered_owner_joins[2].owner_join.support.start_ns": "385320000000000",
+            "$.ordered_owner_joins[2].parent_support.end_ns": "387000000000000",
+            "$.ordered_owner_joins[2].parent_support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[2].support.end_ns": "385380000000000",
+            "$.ordered_owner_joins[2].support.start_ns": "385320000000000",
+            "$.ordered_owner_joins[3].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.end_ns": "385440000000000",
+            "$.ordered_owner_joins[3].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.start_ns": "385380000000000",
+            "$.ordered_owner_joins[3].destination_receipts[0].receipt.V11Canopy.support.end_ns": "385440000000000",
+            "$.ordered_owner_joins[3].destination_receipts[0].receipt.V11Canopy.support.start_ns": "385380000000000",
+            "$.ordered_owner_joins[3].destination_receipts[1].receipt.OpenSnow.candidate.support.end_ns": "385440000000000",
+            "$.ordered_owner_joins[3].destination_receipts[1].receipt.OpenSnow.candidate.support.start_ns": "385380000000000",
+            "$.ordered_owner_joins[3].lane_receipts.1.support.end_ns": "385440000000000",
+            "$.ordered_owner_joins[3].lane_receipts.1.support.start_ns": "385380000000000",
+            "$.ordered_owner_joins[3].owner_join.support.end_ns": "385440000000000",
+            "$.ordered_owner_joins[3].owner_join.support.start_ns": "385380000000000",
+            "$.ordered_owner_joins[3].parent_support.end_ns": "387000000000000",
+            "$.ordered_owner_joins[3].parent_support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[3].support.end_ns": "385440000000000",
+            "$.ordered_owner_joins[3].support.start_ns": "385380000000000",
+            "$.ordered_owner_joins[4].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.end_ns": "385500000000000",
+            "$.ordered_owner_joins[4].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.start_ns": "385440000000000",
+            "$.ordered_owner_joins[4].destination_receipts[0].receipt.V11Canopy.support.end_ns": "385500000000000",
+            "$.ordered_owner_joins[4].destination_receipts[0].receipt.V11Canopy.support.start_ns": "385440000000000",
+            "$.ordered_owner_joins[4].destination_receipts[1].receipt.OpenSnow.candidate.support.end_ns": "385500000000000",
+            "$.ordered_owner_joins[4].destination_receipts[1].receipt.OpenSnow.candidate.support.start_ns": "385440000000000",
+            "$.ordered_owner_joins[4].lane_receipts.1.support.end_ns": "385500000000000",
+            "$.ordered_owner_joins[4].lane_receipts.1.support.start_ns": "385440000000000",
+            "$.ordered_owner_joins[4].owner_join.support.end_ns": "385500000000000",
+            "$.ordered_owner_joins[4].owner_join.support.start_ns": "385440000000000",
+            "$.ordered_owner_joins[4].parent_support.end_ns": "387000000000000",
+            "$.ordered_owner_joins[4].parent_support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[4].support.end_ns": "385500000000000",
+            "$.ordered_owner_joins[4].support.start_ns": "385440000000000",
+            "$.ordered_owner_joins[5].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.end_ns": "385560000000000",
+            "$.ordered_owner_joins[5].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.start_ns": "385500000000000",
+            "$.ordered_owner_joins[5].destination_receipts[0].receipt.V11Canopy.support.end_ns": "385560000000000",
+            "$.ordered_owner_joins[5].destination_receipts[0].receipt.V11Canopy.support.start_ns": "385500000000000",
+            "$.ordered_owner_joins[5].destination_receipts[1].receipt.OpenSnow.candidate.support.end_ns": "385560000000000",
+            "$.ordered_owner_joins[5].destination_receipts[1].receipt.OpenSnow.candidate.support.start_ns": "385500000000000",
+            "$.ordered_owner_joins[5].lane_receipts.1.support.end_ns": "385560000000000",
+            "$.ordered_owner_joins[5].lane_receipts.1.support.start_ns": "385500000000000",
+            "$.ordered_owner_joins[5].owner_join.support.end_ns": "385560000000000",
+            "$.ordered_owner_joins[5].owner_join.support.start_ns": "385500000000000",
+            "$.ordered_owner_joins[5].parent_support.end_ns": "387000000000000",
+            "$.ordered_owner_joins[5].parent_support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[5].support.end_ns": "385560000000000",
+            "$.ordered_owner_joins[5].support.start_ns": "385500000000000",
+            "$.ordered_owner_joins[6].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.end_ns": "385620000000000",
+            "$.ordered_owner_joins[6].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.start_ns": "385560000000000",
+            "$.ordered_owner_joins[6].destination_receipts[0].receipt.V11Canopy.support.end_ns": "385620000000000",
+            "$.ordered_owner_joins[6].destination_receipts[0].receipt.V11Canopy.support.start_ns": "385560000000000",
+            "$.ordered_owner_joins[6].destination_receipts[1].receipt.OpenSnow.candidate.support.end_ns": "385620000000000",
+            "$.ordered_owner_joins[6].destination_receipts[1].receipt.OpenSnow.candidate.support.start_ns": "385560000000000",
+            "$.ordered_owner_joins[6].lane_receipts.1.support.end_ns": "385620000000000",
+            "$.ordered_owner_joins[6].lane_receipts.1.support.start_ns": "385560000000000",
+            "$.ordered_owner_joins[6].owner_join.support.end_ns": "385620000000000",
+            "$.ordered_owner_joins[6].owner_join.support.start_ns": "385560000000000",
+            "$.ordered_owner_joins[6].parent_support.end_ns": "387000000000000",
+            "$.ordered_owner_joins[6].parent_support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[6].support.end_ns": "385620000000000",
+            "$.ordered_owner_joins[6].support.start_ns": "385560000000000",
+            "$.ordered_owner_joins[7].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.end_ns": "385920000000000",
+            "$.ordered_owner_joins[7].destination_receipts[0].receipt.V11Canopy.native_snow_node.exchange.start_ns": "385860000000000",
+            "$.ordered_owner_joins[7].destination_receipts[0].receipt.V11Canopy.support.end_ns": "385920000000000",
+            "$.ordered_owner_joins[7].destination_receipts[0].receipt.V11Canopy.support.start_ns": "385860000000000",
+            "$.ordered_owner_joins[7].destination_receipts[1].receipt.OpenSnow.candidate.support.end_ns": "385920000000000",
+            "$.ordered_owner_joins[7].destination_receipts[1].receipt.OpenSnow.candidate.support.start_ns": "385860000000000",
+            "$.ordered_owner_joins[7].lane_receipts.1.support.end_ns": "385920000000000",
+            "$.ordered_owner_joins[7].lane_receipts.1.support.start_ns": "385860000000000",
+            "$.ordered_owner_joins[7].lane_receipts.1.terminal_bounded_vapor_receipt.support.end_ns": "385920000000000",
+            "$.ordered_owner_joins[7].lane_receipts.1.terminal_bounded_vapor_receipt.support.start_ns": "385860000000000",
+            "$.ordered_owner_joins[7].owner_join.support.end_ns": "385920000000000",
+            "$.ordered_owner_joins[7].owner_join.support.start_ns": "385620000000000",
+            "$.ordered_owner_joins[7].parent_support.end_ns": "387000000000000",
+            "$.ordered_owner_joins[7].parent_support.start_ns": "385200000000000",
+            "$.ordered_owner_joins[7].support.end_ns": "385920000000000",
+            "$.ordered_owner_joins[7].support.start_ns": "385620000000000",
+            "$.pending_terminal_parcels.fa7bbeb8e27bf236ceacf249663ce045c5c1ae8b870ccdb7404514fc4f7692e4.support.end_ns": "385920000000000",
+            "$.pending_terminal_parcels.fa7bbeb8e27bf236ceacf249663ce045c5c1ae8b870ccdb7404514fc4f7692e4.support.start_ns": "385620000000000",
+            "$.prefix_validation_parent_support.end_ns": "387000000000000",
+            "$.prefix_validation_parent_support.start_ns": "385200000000000"
+          },
+          "status": "present/exported/structurally counted/semantically unvalidated"
+        },
+        {
+          "member": "prepared_support_constructor_operands",
+          "position": 27,
+          "source_file": "rows/123091.27.json",
+          "source_bytes": 11057,
+          "source_sha256": "febb81ba0e24a8415c4794460c0247016680907ba40bd47da2f67fa59e6ae0e8",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "provider_cursor_canonical_json",
+          "position": 28,
+          "source_file": "rows/123091.28.json",
+          "source_bytes": 522,
+          "source_sha256": "ed2dc65ea8db15245f677d6e0a6888567bbe68d8f329f7857b9d9f1c2cc301aa",
+          "decoded_file": "0028-provider_cursor_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 154,
+          "sha256": "c6d965a29925dea693b124a81ca22e77dab10e4e762b31e7defb0217e85a090f",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "next_day_index",
+            "configuration_sha256",
+            "pending_carry",
+            "pending_solid_carry"
+          ],
+          "selected_small_fields": {}
+        },
+        {
+          "member": "provisional_constructor_inputs",
+          "position": 29,
+          "source_file": "rows/123091.29.json",
+          "source_bytes": 518,
+          "source_sha256": "a232d8da04a80fe26ac52f3c37a8fb684fe9ec9e4dbc2baa76ba9f0e27f77b1a",
+          "status": "present/exported/not decoded/semantically unvalidated"
+        },
+        {
+          "member": "provisional_receipt_canonical_json",
+          "position": 30,
+          "source_file": "rows/123091.30.json",
+          "source_bytes": 3386,
+          "source_sha256": "6285bf7a879789110f91bf4856cbb3e0a07f28a65f23ad1b65ab1e621fe07e02",
+          "decoded_file": "0030-provisional_receipt_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 1037,
+          "sha256": "a9858bc758dd84ccff07eb78f1040b96205ab15e2ab135f20d1b98149ae185c2",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "receipt_id",
+            "slab_id",
+            "parent_transaction_id",
+            "slab_ordinal",
+            "segment_id",
+            "support",
+            "duration_bits",
+            "constraint_digest",
+            "begin_clock",
+            "end_clock",
+            "begin_owner_set",
+            "end_owner_set",
+            "owner_candidate_set",
+            "ledger_digest"
+          ],
+          "selected_small_fields": {}
+        },
+        {
+          "member": "surface_liquid_configuration_canonical_json",
+          "position": 34,
+          "source_file": "rows/123091.34.json",
+          "source_bytes": 4336,
+          "source_sha256": "1740eaf412b7a72658d877f46cf075591c270cee31428a1878d30814915c9503",
+          "decoded_file": "0034-surface_liquid_configuration_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 1223,
+          "sha256": "13ff1c08d6c66d7d2cd4574df8ad9286199a6c04c9213c3d33fc19254e27523d",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "owner_id",
+            "run_id",
+            "configuration_sha256",
+            "ofe_topology",
+            "ofe_bindings",
+            "records"
+          ],
+          "selected_small_fields": {}
+        },
+        {
+          "member": "terminal_parcels_produced_unconsumed_canonical_json",
+          "position": 35,
+          "source_file": "rows/123091.35.json",
+          "source_bytes": 3505,
+          "source_sha256": "c9b8ab4f03b34415236514c819e95a0f460085d76828bff02687cd194c0e7f58",
+          "decoded_file": "0035-terminal_parcels_produced_unconsumed_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 1027,
+          "sha256": "cacacc7342760c63c9b67bee5f968e5c9fb0448283981d2c6a47449909b766d9",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "fa7bbeb8e27bf236ceacf249663ce045c5c1ae8b870ccdb7404514fc4f7692e4"
+          ],
+          "selected_small_fields": {}
+        },
+        {
+          "member": "vegetation_configuration_canonical_json",
+          "position": 36,
+          "source_file": "rows/123091.36.json",
+          "source_bytes": 21330,
+          "source_sha256": "f3c79596f2bcf572de0d98d1392c591b619bdcc25ffb76ae7f31c2f030a73c27",
+          "decoded_file": "0036-vegetation_configuration_canonical_json.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 6169,
+          "sha256": "8afad0f99d5b806f66085fb989c58f9143761608a517d9d5d3873c1d53cac2e5",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "model_definition_sha256",
+            "configuration_sha256",
+            "initial_state_sha256",
+            "nominal_cadence_ns",
+            "imported_v10"
+          ],
+          "selected_small_fields": {}
+        }
+      ],
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 123092,
+      "kind": [
+        "surface_liquid_wb14_cadence_failure"
+      ],
+      "role": "related_b01",
+      "top_level_scalars": {},
+      "members": [
+        {
+          "member": "beginning_typed_bytes",
+          "position": 3,
+          "source_file": "rows/123092.3.json",
+          "source_bytes": 3142,
+          "source_sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938",
+          "decoded_file": "0003-beginning_typed_bytes.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 887,
+          "sha256": "9058fd7dad195a9dd75475badf716e6b7c585644180c9ec59a54c9767c6d0b32",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "owner_id",
+            "configuration_sha256",
+            "state_sha256",
+            "records",
+            "continuations"
+          ],
+          "selected_small_fields": {},
+          "physical_ordinal": 123092
+        },
+        {
+          "member": "input_typed_bytes",
+          "position": 9,
+          "source_file": "rows/123092.9.json",
+          "source_bytes": 7648,
+          "source_sha256": "77624723588a92c1b10adc8f94bf7a31852a61d7b88c93a0681918bf3e946620",
+          "decoded_file": "0009-input_typed_bytes.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 2203,
+          "sha256": "9c46a8b867a6a05c45902ae13a43be05bb7fb5d28971f3ab4dd0c89e277c3b55",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "transaction_id",
+            "day_index",
+            "interval_index",
+            "interval_s",
+            "tile_ingress",
+            "wb14_parameters"
+          ],
+          "selected_small_fields": {
+            "day_index": "4",
+            "interval_index": "22",
+            "transaction_id": "255"
+          },
+          "physical_ordinal": 123092
+        }
+      ],
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 123093,
+      "kind": [
+        "surface_liquid_wb14_cadence_caller_failure"
+      ],
+      "role": "related_b01",
+      "top_level_scalars": {},
+      "members": [
+        {
+          "member": "beginning_typed_bytes",
+          "position": 0,
+          "source_file": "rows/123093.0.json",
+          "source_bytes": 3142,
+          "source_sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938",
+          "decoded_file": "0000-beginning_typed_bytes.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 887,
+          "sha256": "9058fd7dad195a9dd75475badf716e6b7c585644180c9ec59a54c9767c6d0b32",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "owner_id",
+            "configuration_sha256",
+            "state_sha256",
+            "records",
+            "continuations"
+          ],
+          "selected_small_fields": {},
+          "physical_ordinal": 123093
+        },
+        {
+          "member": "coupled_binding",
+          "position": 2,
+          "source_file": "rows/123093.2.json",
+          "source_bytes": 673,
+          "source_sha256": "cc857a2799350e61fc2c12a514cf951411005b23e03e0456b515bfaef1dfb6e0",
+          "status": "present/exported/not decoded/semantically unvalidated",
+          "physical_ordinal": 123093
+        },
+        {
+          "member": "input_typed_bytes",
+          "position": 5,
+          "source_file": "rows/123093.5.json",
+          "source_bytes": 7648,
+          "source_sha256": "77624723588a92c1b10adc8f94bf7a31852a61d7b88c93a0681918bf3e946620",
+          "decoded_file": "0005-input_typed_bytes.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 2203,
+          "sha256": "9c46a8b867a6a05c45902ae13a43be05bb7fb5d28971f3ab4dd0c89e277c3b55",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "transaction_id",
+            "day_index",
+            "interval_index",
+            "interval_s",
+            "tile_ingress",
+            "wb14_parameters"
+          ],
+          "selected_small_fields": {
+            "day_index": "4",
+            "interval_index": "22",
+            "transaction_id": "255"
+          },
+          "physical_ordinal": 123093
+        },
+        {
+          "member": "parent_working_typed_bytes",
+          "position": 8,
+          "source_file": "rows/123093.8.json",
+          "source_bytes": 18049,
+          "source_sha256": "bc339feadb3b03f2961185f08d64a771191d5f0cbc49e7eb6344c17ac38c1a5e",
+          "decoded_file": "0008-parent_working_typed_bytes.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 5398,
+          "sha256": "07f50df314daf5d2be2c8019752f34cd49e20c732515c97af4aad424b58163b4",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "schema",
+            "parent_day_index",
+            "parent_interval_index",
+            "parent_support_start_ns",
+            "parent_support_end_ns",
+            "surface_liquid_configuration_sha256",
+            "wb14_configuration_sha256",
+            "wb14_model_definition_sha256",
+            "production_lane_ids",
+            "accepted_until_ns",
+            "parameters",
+            "persistent_beginning_state",
+            "candidate_state",
+            "per_ofe_authorities",
+            "parent_finalizations"
+          ],
+          "selected_small_fields": {
+            "parent_interval_index": "22",
+            "accepted_until_ns": "385920000000000",
+            "parent_day_index": "4"
+          },
+          "physical_ordinal": 123093
+        },
+        {
+          "member": "working_typed_bytes",
+          "position": 9,
+          "source_file": "rows/123093.9.json",
+          "source_bytes": 3142,
+          "source_sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938",
+          "decoded_file": "0009-working_typed_bytes.bin",
+          "byte_decode": "strict u8 streamed",
+          "status": "present/exported/byte-decoded/structurally checked/semantically unvalidated",
+          "bytes": 887,
+          "sha256": "9058fd7dad195a9dd75475badf716e6b7c585644180c9ec59a54c9767c6d0b32",
+          "buffer_bytes": 65536,
+          "inner_json": "decoded",
+          "decoded_byte_limit": 8388608,
+          "number_decoding": "exact Decimal",
+          "type": "dict",
+          "top_level_keys": [
+            "owner_id",
+            "configuration_sha256",
+            "state_sha256",
+            "records",
+            "continuations"
+          ],
+          "selected_small_fields": {},
+          "physical_ordinal": 123093
+        }
+      ],
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    }
+  ],
+  "limits": "structural custody only; semantically unvalidated",
+  "operand_joins": {
+    "status": "structural byte equality only; semantically unvalidated",
+    "guard_ordinal": 123092,
+    "caller_ordinal": 123093,
+    "guard_actual_indices": {},
+    "caller_actual_indices": {},
+    "equalities": {
+      "guard_caller_input_exact_bytes": true,
+      "guard_caller_beginning_exact_bytes": true,
+      "caller_beginning_working_exact_bytes": true
+    },
+    "current_input": {
+      "day_index": "4",
+      "interval_index": "22",
+      "transaction_id": "255"
+    },
+    "parent_prefix_operands": {
+      "parent_interval_index": "22",
+      "accepted_until_ns": "385920000000000",
+      "parent_day_index": "4"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+	Command being timed: "/usr/bin/timeout --signal=TERM --kill-after=5s 1200s /usr/bin/prlimit --as=1073741824:1073741824 /workdir/openWEPP/.venv/bin/python /workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/stream-inventory-20260914/inventory.py /workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/observations.json /workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/diagnostic-use-capture-20260916/inventory --sha256 1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c --bytes 8701419029 --rows 123094"
+	User time (seconds): 416.68
+	System time (seconds): 1.68
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:58.29
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 26692
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 3
+	Minor (reclaiming a frame) page faults: 4630
+	Voluntary context switches: 4189
+	Involuntary context switches: 5050
+	Swaps: 0
+	File system inputs: 16995104
+	File system outputs: 3792
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

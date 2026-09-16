@@ -1,0 +1,764 @@
+{
+  "evidence_class": "Ran: bounded recorded-operand comparisons; no native or scientific authentication",
+  "source_observation_sha256": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+  "report_erratum": "inspect-summary archive_integrity.day_index contains a field-name label, not a day value. actual_day_index below is decoded from retained row events and cross-checked against archive_entry.",
+  "archives": [
+    {
+      "physical_ordinal": 27431,
+      "actual_day_index": 0,
+      "archive_entry": {
+        "beginning_owner_set_sha256": "bd181c07f40dbd5b696265e0c7f217eae97afe0f4c2d40bb5dc2c7377615182f",
+        "canonical_uncompressed_len": 307105003,
+        "committed_publication_receipt_sha256": "30d671518d1e406941ca137d799f296e6424692fc871b54a6087ee8ade310517",
+        "content_sha256": "3d91e0ed544eaf5afc85760a27fa4549a56015a31d9def83abdbe2e0fe4b3452",
+        "day_index": 0,
+        "ending_accepted_until_ns": 86400000000000,
+        "ending_next_parent_sequence": 48,
+        "ending_owner_set_sha256": "a802d44d8d7dca06315d0c029a67a22742bc3e516331ebc5930184f94c1531a9",
+        "parent_receipt_sha256": "d3c8a6fd3685ec44bec6e1f91ac7a5687c3090c9afdf3e9b69ff23f950d260df",
+        "previous_archive_content_root_sha256": "85081c24ca40cc46b456d40bf30a2cd605e3b383fc9fe096bf93bdd7d1fc85ff",
+        "previous_ordered_day_chain_sha256": "661f6ac3233d32b2396719bab8d8eca6ddb47c1d2ec81970ec5b37235592e25c",
+        "publication_evidence_sha256": "da205d126f6253f31525518ac77ac22be5ac362b04d5e3ee81d48c09345043de",
+        "qualification_day_delta_sha256": "717773033c86b5631deb7fd939d0268fbc8cdc17a25ff0535c3fc7c66ba0897d",
+        "record_sha256": "4945175395845e61b9619489e0c2cfddaf1c0bbf2359869157960195f0e7ee14",
+        "resulting_archive_content_root_sha256": "e9092ca9dd40bf22acb32905539f7d30cf0e3ea6cac61dfbef957eea0b988c18",
+        "resulting_ordered_day_chain_sha256": "398abf0fcad4051c181b2b596b21871329b749c3ed904c1118ea53d17bbefa94",
+        "schema_version": 1
+      },
+      "binary_file": "rows/27431.canonical_record.bin",
+      "binary_sha256": "3d91e0ed544eaf5afc85760a27fa4549a56015a31d9def83abdbe2e0fe4b3452",
+      "binary_bytes": 307105003,
+      "entry_day_matches_row": true,
+      "entry_length_hash_match_binary": true
+    },
+    {
+      "physical_ordinal": 54078,
+      "actual_day_index": 1,
+      "archive_entry": {
+        "beginning_owner_set_sha256": "a802d44d8d7dca06315d0c029a67a22742bc3e516331ebc5930184f94c1531a9",
+        "canonical_uncompressed_len": 376086364,
+        "committed_publication_receipt_sha256": "3af2728d3c8fae4b9366dd0ce53960ceb6df49d07c522c98b895cf2b47917e04",
+        "content_sha256": "41acc940916dfc98326f32fc55ee13de773888acd876a1b0a274f74c5b9ecca0",
+        "day_index": 1,
+        "ending_accepted_until_ns": 172800000000000,
+        "ending_next_parent_sequence": 96,
+        "ending_owner_set_sha256": "45dbcf5c83118ea4c6da3b55fbd07125c8208341e8aeece957cab02fe1915c7e",
+        "parent_receipt_sha256": "ef3acf3b1643d2dfce3a3468aa25a61187b72484f258c67b58ea3a0f6ab5c4b4",
+        "previous_archive_content_root_sha256": "e9092ca9dd40bf22acb32905539f7d30cf0e3ea6cac61dfbef957eea0b988c18",
+        "previous_ordered_day_chain_sha256": "398abf0fcad4051c181b2b596b21871329b749c3ed904c1118ea53d17bbefa94",
+        "publication_evidence_sha256": "d94c69f1336e923af0a5876cd3c6565a76a545bf8c67b7c6e58ee4dc873be065",
+        "qualification_day_delta_sha256": "59f94666d287b53145d0bf3c16c042a3fbd70b6941f1c0789ab1ef658c8b839f",
+        "record_sha256": "2cbefe1d874c11a3540711bbb3e81590e3bcaf19c49a15f6bffbcbfe8d251e50",
+        "resulting_archive_content_root_sha256": "7d19c90ebc2287335a48d59d07b06ee5b0e5dea8c5c3cd498a47c3f571691fa0",
+        "resulting_ordered_day_chain_sha256": "7f71effb27cbc67e473594c30f8b43a966b7c1a0f162ca2f378fbcdaa6c2c6e6",
+        "schema_version": 1
+      },
+      "binary_file": "rows/54078.canonical_record.bin",
+      "binary_sha256": "41acc940916dfc98326f32fc55ee13de773888acd876a1b0a274f74c5b9ecca0",
+      "binary_bytes": 376086364,
+      "entry_day_matches_row": true,
+      "entry_length_hash_match_binary": true
+    },
+    {
+      "physical_ordinal": 79222,
+      "actual_day_index": 2,
+      "archive_entry": {
+        "beginning_owner_set_sha256": "45dbcf5c83118ea4c6da3b55fbd07125c8208341e8aeece957cab02fe1915c7e",
+        "canonical_uncompressed_len": 373891449,
+        "committed_publication_receipt_sha256": "2fa562a7a3e2f6658ebc8b5803ca7a3ee15618c03973ed7e8855ff5a092ce441",
+        "content_sha256": "7965ae7a3485d727af13c9d530525eaedd367ae7271cc23855cb751265fd38ba",
+        "day_index": 2,
+        "ending_accepted_until_ns": 259200000000000,
+        "ending_next_parent_sequence": 144,
+        "ending_owner_set_sha256": "845455b5ef052c2fce4637f479f9ded4744123889dc90b1513263fef74070994",
+        "parent_receipt_sha256": "f10729cfaf7a158db8116c2db037c75640599870ea481ac7efa3ee1a185fcfa8",
+        "previous_archive_content_root_sha256": "7d19c90ebc2287335a48d59d07b06ee5b0e5dea8c5c3cd498a47c3f571691fa0",
+        "previous_ordered_day_chain_sha256": "7f71effb27cbc67e473594c30f8b43a966b7c1a0f162ca2f378fbcdaa6c2c6e6",
+        "publication_evidence_sha256": "106b84a814b4664b6963efc055500bc9e81051dc3cb10ebcee029208eaba6cce",
+        "qualification_day_delta_sha256": "862061f83a2983d2c485eb23d31495161faee53e71d95a5a781e12590298930d",
+        "record_sha256": "436ca69dd59c5f65109ef6babd1a0fe9afcb472bef22729119e346fefcf5fc1c",
+        "resulting_archive_content_root_sha256": "d043527697e227c078825040fa5188c3c0676723201fd3e8548de305f046638d",
+        "resulting_ordered_day_chain_sha256": "32ca2a97db76c48776c01e1675667d4a6f5d3264cea045c2badc6b62e3fb1cf4",
+        "schema_version": 1
+      },
+      "binary_file": "rows/79222.canonical_record.bin",
+      "binary_sha256": "7965ae7a3485d727af13c9d530525eaedd367ae7271cc23855cb751265fd38ba",
+      "binary_bytes": 373891449,
+      "entry_day_matches_row": true,
+      "entry_length_hash_match_binary": true
+    },
+    {
+      "physical_ordinal": 107936,
+      "actual_day_index": 3,
+      "archive_entry": {
+        "beginning_owner_set_sha256": "845455b5ef052c2fce4637f479f9ded4744123889dc90b1513263fef74070994",
+        "canonical_uncompressed_len": 273071144,
+        "committed_publication_receipt_sha256": "4d5e815c554f58c2214636ec40087c7d44ad792f318fd66856c1ce35a5e8abf5",
+        "content_sha256": "a9432f9740f0a505939b77c7cfa8e6465bbeb8bce0e3591ab7b416e43ebfd4d4",
+        "day_index": 3,
+        "ending_accepted_until_ns": 345600000000000,
+        "ending_next_parent_sequence": 192,
+        "ending_owner_set_sha256": "1acb820ec3ad8ef2676d56a73eb4f29da111184700984738d5a5c11d14af8ee6",
+        "parent_receipt_sha256": "73c557e8e9f690447e7ed964f2587e4d082297bfd310db48daca9871c46236b8",
+        "previous_archive_content_root_sha256": "d043527697e227c078825040fa5188c3c0676723201fd3e8548de305f046638d",
+        "previous_ordered_day_chain_sha256": "32ca2a97db76c48776c01e1675667d4a6f5d3264cea045c2badc6b62e3fb1cf4",
+        "publication_evidence_sha256": "6418304b5bc765d82469353a41f79cc64679e957a3406a15dd8aa84da9923e08",
+        "qualification_day_delta_sha256": "495107c5d2c84eb720f43c4877a592b066573327a07188e244634fcc3c9a95eb",
+        "record_sha256": "508a0d876ab69b7c62826f3fbcacd7725182fb0a6783ed6ab327cea3e86671d7",
+        "resulting_archive_content_root_sha256": "d79df3932e2688347a4834235ade50208e6dfe1e15f6aa14c8ccc7840a0c0bf1",
+        "resulting_ordered_day_chain_sha256": "4d2b10637a28cc70a975667549e45975936ccba7638213808ddb3cb5fa927575",
+        "schema_version": 1
+      },
+      "binary_file": "rows/107936.canonical_record.bin",
+      "binary_sha256": "a9432f9740f0a505939b77c7cfa8e6465bbeb8bce0e3591ab7b416e43ebfd4d4",
+      "binary_bytes": 273071144,
+      "entry_day_matches_row": true,
+      "entry_length_hash_match_binary": true
+    }
+  ],
+  "archive_structural_joins": {
+    "actual_days": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "content_root_links": true,
+    "ordered_day_links": true,
+    "owner_set_links": true,
+    "provider_content_root_matches_last": true,
+    "provider_day_chain_matches_last": true,
+    "provider_last_record_matches_last": true,
+    "provider_owner_set_matches_last": true
+  },
+  "provider": {
+    "physical_ordinal": 108033,
+    "support_count": 48,
+    "archived_prefix": {
+      "accepted_until_ns": 345600000000000,
+      "archive_content_root_sha256": "d79df3932e2688347a4834235ade50208e6dfe1e15f6aa14c8ccc7840a0c0bf1",
+      "archived_day_count": 4,
+      "ending_owner_set_sha256": "1acb820ec3ad8ef2676d56a73eb4f29da111184700984738d5a5c11d14af8ee6",
+      "first_day_index": 0,
+      "last_day_index": 3,
+      "last_day_record_sha256": "508a0d876ab69b7c62826f3fbcacd7725182fb0a6783ed6ab327cea3e86671d7",
+      "last_parent_receipt_sha256": "73c557e8e9f690447e7ed964f2587e4d082297bfd310db48daca9871c46236b8",
+      "next_parent_sequence": 192,
+      "ordered_day_chain_sha256": "4d2b10637a28cc70a975667549e45975936ccba7638213808ddb3cb5fa927575",
+      "qualification_accumulator": {
+        "accepted_publication_support_count": 5760,
+        "accepted_support_receipts": {
+          "ordered_root_sha256": "4b7b3a3bb1e7b32add76a725429615bc21139863e42ed785b192c6f4f1259692",
+          "record_count": 5760
+        },
+        "adaptive_support_receipt_count": 192,
+        "ammonium_resource_use_n": "0.0",
+        "beginning_owner": {
+          "accepted_until_ns": 0,
+          "biogeochemistry_owner_sha256": null,
+          "complete_owner_sha256": null,
+          "coupled_owner_set_sha256": "bd181c07f40dbd5b696265e0c7f217eae97afe0f4c2d40bb5dc2c7377615182f",
+          "soil_thermal_owner_sha256": null
+        },
+        "committed_day_count": 4,
+        "ending_owner": {
+          "accepted_until_ns": 345600000000000,
+          "biogeochemistry_owner_sha256": "4bbd7443cb176783d6ef0bba4bcd5c59fdd12ee94912402c5600ce0693b008f6",
+          "complete_owner_sha256": "f5d6affaf405939d4d2882fc4e26e6f55bbb2a9e93017ecd3cdb33a67da55352",
+          "coupled_owner_set_sha256": "1acb820ec3ad8ef2676d56a73eb4f29da111184700984738d5a5c11d14af8ee6",
+          "soil_thermal_owner_sha256": "8c787ab411edbaeff0150d756e3d7e875e4fac1c30914cd1b272249b24847fb2"
+        },
+        "events": {
+          "ordered_root_sha256": "d618013f2a979d84cfe338215b43ac92a843f0744221188ffae0a097029f07e2",
+          "record_count": 2025
+        },
+        "material_transfers": {
+          "ammonium_n": "0.0",
+          "nitrate_n": "0.0",
+          "receiver_carbon": "0.0",
+          "receiver_dry_matter": "0.0",
+          "receiver_nitrogen": "0.0"
+        },
+        "nitrate_resource_use_n": "0.0",
+        "outlet_runoff": {
+          "enthalpy_j_m2_basis_ofe_ground": "0.0",
+          "mass_kg_m2_basis_ofe_ground": "0.0"
+        },
+        "publication_event_count": 2025,
+        "receipt_sha256": "d5a045fefc362f5da208462f326853bde7c578eec7bb5884e834a8fa75c861d9",
+        "routed_runoff": {
+          "enthalpy_j_m2_basis_ofe_ground": "0.0",
+          "mass_kg_m2_basis_ofe_ground": "0.0"
+        },
+        "schema_version": 1,
+        "snow_free_parent_support_count": 0,
+        "snow_free_successor_receipt_count": 0,
+        "surface_flow_by_route": [],
+        "surface_receipts": {
+          "ordered_root_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "record_count": 0
+        },
+        "terminal_event_count": 0,
+        "total_parent_support_count": 192,
+        "upstream_runon": {
+          "enthalpy_j_m2_basis_ofe_ground": "0.0",
+          "mass_kg_m2_basis_ofe_ground": "0.0"
+        }
+      },
+      "receipt_sha256": "27cc54ba5492c3f4a04d0a723c7458d04cf45c5e02f0869a03b4d8a5cfdde32f",
+      "run_identity": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9",
+      "schema_version": 1,
+      "topology_identity": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75",
+      "total_parent_support_count": 192
+    },
+    "selected_interval_support": {
+      "end_ns": "387000000000000",
+      "start_ns": "385200000000000"
+    }
+  },
+  "target": {
+    "physical_ordinal": 123091,
+    "day_index": 4,
+    "interval_index": 22,
+    "support": {
+      "end_ns": "385980000000000",
+      "start_ns": "385920000000000"
+    },
+    "parent_support": {
+      "end_ns": "387000000000000",
+      "start_ns": "385200000000000"
+    },
+    "capture_phase": "snow_free",
+    "provisional_constructor_inputs": {
+      "calendar_receipt": "9a6c32647a854657bad727425823a9656a73965237ec2f8d90aab39248a961cd",
+      "constraint_class": "hard_boundary",
+      "constraint_source_owner_id": "v11-real-consumer",
+      "controller_policy": "e748a447277a8f7e7a5a3524cfdff405b1c97b498ff8ba1bb1b31336f3a2eba0",
+      "forcing_receipt": "c8e121197344b6de1f6048dfcb0d9f5e4b50384ec0809e52da7d977130c32be5",
+      "ledger_child_support_end_ns": 385980000000000,
+      "ledger_child_support_start_ns": 385920000000000,
+      "ledger_flux_id": "complete-owner-custody",
+      "ledger_units": "canonical-owner-state"
+    },
+    "covered_projection": null,
+    "prepared_support_matches_target": true,
+    "provisional_support_matches_target": true,
+    "provider_parent_support_matches_clock": true,
+    "accepted_until_matches_child_start": true,
+    "accepted_parent_segment_count": 8,
+    "accepted_clock_slab_count": 8
+  },
+  "history": {
+    "owner_join_count": 8,
+    "event_group_count": 1,
+    "ordered_owner_join_supports": [
+      {
+        "end_ns": "385260000000000",
+        "start_ns": "385200000000000"
+      },
+      {
+        "end_ns": "385320000000000",
+        "start_ns": "385260000000000"
+      },
+      {
+        "end_ns": "385380000000000",
+        "start_ns": "385320000000000"
+      },
+      {
+        "end_ns": "385440000000000",
+        "start_ns": "385380000000000"
+      },
+      {
+        "end_ns": "385500000000000",
+        "start_ns": "385440000000000"
+      },
+      {
+        "end_ns": "385560000000000",
+        "start_ns": "385500000000000"
+      },
+      {
+        "end_ns": "385620000000000",
+        "start_ns": "385560000000000"
+      },
+      {
+        "end_ns": "385920000000000",
+        "start_ns": "385620000000000"
+      }
+    ],
+    "join_supports_contiguous": true,
+    "starts_at_parent_start": true,
+    "ends_at_child_start": true,
+    "prefix_validation_parent_matches": true,
+    "validated_native_inactive_wb14_prefix_recorded": {
+      "coupled_parent_transaction_sha256": [
+        149,
+        93,
+        96,
+        113,
+        146,
+        19,
+        215,
+        255,
+        49,
+        122,
+        82,
+        67,
+        199,
+        9,
+        79,
+        168,
+        160,
+        194,
+        13,
+        75,
+        122,
+        254,
+        247,
+        209,
+        134,
+        246,
+        38,
+        191,
+        110,
+        16,
+        157,
+        53
+      ],
+      "coupled_receipt_sha256": [
+        254,
+        178,
+        146,
+        56,
+        31,
+        64,
+        236,
+        87,
+        106,
+        22,
+        116,
+        209,
+        66,
+        8,
+        8,
+        143,
+        30,
+        132,
+        78,
+        252,
+        70,
+        68,
+        172,
+        231,
+        38,
+        49,
+        24,
+        197,
+        191,
+        202,
+        122,
+        198
+      ],
+      "parent_beginning_owner_sha256": [
+        253,
+        131,
+        74,
+        233,
+        76,
+        84,
+        169,
+        46,
+        249,
+        6,
+        248,
+        182,
+        96,
+        172,
+        201,
+        113,
+        165,
+        223,
+        89,
+        93,
+        227,
+        228,
+        237,
+        209,
+        103,
+        146,
+        104,
+        177,
+        239,
+        52,
+        184,
+        87
+      ],
+      "parent_support_end_ns": 387000000000000,
+      "parent_support_start_ns": 385200000000000,
+      "prefix_end_ns": 385920000000000,
+      "prefix_ending_owner_sha256": [
+        187,
+        122,
+        85,
+        226,
+        84,
+        198,
+        32,
+        110,
+        62,
+        87,
+        157,
+        118,
+        192,
+        178,
+        201,
+        160,
+        8,
+        86,
+        215,
+        48,
+        183,
+        96,
+        26,
+        147,
+        47,
+        137,
+        95,
+        216,
+        119,
+        114,
+        136,
+        177
+      ],
+      "proof_sha256": [
+        236,
+        55,
+        123,
+        199,
+        177,
+        85,
+        25,
+        233,
+        69,
+        79,
+        4,
+        220,
+        127,
+        21,
+        251,
+        132,
+        44,
+        243,
+        109,
+        165,
+        65,
+        22,
+        78,
+        6,
+        57,
+        217,
+        73,
+        164,
+        117,
+        206,
+        87,
+        3
+      ]
+    },
+    "deferred_soil_present": true,
+    "pending_terminal_parcels_present": true,
+    "history_posture": "actual_ordered_prefix_inputs_and_result; no fabricated receipts or installable capability"
+  },
+  "unresolved_authority": {
+    "outer_day_interval": [
+      4,
+      22
+    ],
+    "inner_ofe_day_intervals": {
+      "ofe-1": [
+        0,
+        0
+      ]
+    }
+  },
+  "capture_metadata": [
+    {
+      "physical_ordinal": 27431,
+      "capture": {
+        "ordinal": 27431,
+        "process": 996446,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      }
+    },
+    {
+      "physical_ordinal": 54078,
+      "capture": {
+        "ordinal": 54078,
+        "process": 996446,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      }
+    },
+    {
+      "physical_ordinal": 79222,
+      "capture": {
+        "ordinal": 79222,
+        "process": 996446,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      }
+    },
+    {
+      "physical_ordinal": 107936,
+      "capture": {
+        "ordinal": 107936,
+        "process": 996446,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      }
+    },
+    {
+      "physical_ordinal": 108033,
+      "capture": {
+        "ordinal": 108033,
+        "process": 996446,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      }
+    },
+    {
+      "physical_ordinal": 123091,
+      "capture": {
+        "ordinal": 123091,
+        "process": 996446,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      }
+    },
+    {
+      "physical_ordinal": 123092,
+      "capture": {
+        "ordinal": 123092,
+        "process": 996446,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      }
+    },
+    {
+      "physical_ordinal": 123093,
+      "capture": {
+        "ordinal": 123093,
+        "process": 996446,
+        "session": 1,
+        "thread": "ThreadId(2)"
+      }
+    }
+  ],
+  "input_bindings": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/27431/0000-archive_entry.events.jsonl",
+      "sha256": "dd93c81ea282d5d0bb23c89ab633b8644a33edda9e75810f919bf598fa90d452",
+      "physical_ordinal": 27431,
+      "member": "archive_entry"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/27431/0003-day_index.events.jsonl",
+      "sha256": "d5c6c669a744ae3086bc7fd176bc73431b2fc652d0bb02c49c08785283c527d4",
+      "physical_ordinal": 27431,
+      "member": "day_index"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/27431/0003-day_index.events.jsonl",
+      "sha256": "d5c6c669a744ae3086bc7fd176bc73431b2fc652d0bb02c49c08785283c527d4",
+      "physical_ordinal": 27431,
+      "member": "day_index"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/54078/0000-archive_entry.events.jsonl",
+      "sha256": "ffd71caa819a9a1aea0c41ceef694d87c6b4b5069d42e2a6977ed7c48067ec04",
+      "physical_ordinal": 54078,
+      "member": "archive_entry"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/54078/0003-day_index.events.jsonl",
+      "sha256": "9df1edf5f08cb24456e47834235d0e6cd3fcfefe942dab58c63dcf53d0eeb128",
+      "physical_ordinal": 54078,
+      "member": "day_index"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/54078/0003-day_index.events.jsonl",
+      "sha256": "9df1edf5f08cb24456e47834235d0e6cd3fcfefe942dab58c63dcf53d0eeb128",
+      "physical_ordinal": 54078,
+      "member": "day_index"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/79222/0000-archive_entry.events.jsonl",
+      "sha256": "0b164af435e5a0da730a33236d7164f6d5075c41d4155e07c9560f3e56af2902",
+      "physical_ordinal": 79222,
+      "member": "archive_entry"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/79222/0003-day_index.events.jsonl",
+      "sha256": "89e7e5c58418df66988564a16a031e7e19eb2c258e88603cc02c1d9f1b2aeca5",
+      "physical_ordinal": 79222,
+      "member": "day_index"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/79222/0003-day_index.events.jsonl",
+      "sha256": "89e7e5c58418df66988564a16a031e7e19eb2c258e88603cc02c1d9f1b2aeca5",
+      "physical_ordinal": 79222,
+      "member": "day_index"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/107936/0000-archive_entry.events.jsonl",
+      "sha256": "ef1c767730f06574bbc1c3ed79c88b3c00b9ac0c861d22412fdf772884e49112",
+      "physical_ordinal": 107936,
+      "member": "archive_entry"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/107936/0003-day_index.events.jsonl",
+      "sha256": "9d6ab6bd1543faec3167a75cb6b5008d7fa7bab902fbf23d5dc8ef166438509d",
+      "physical_ordinal": 107936,
+      "member": "day_index"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/107936/0003-day_index.events.jsonl",
+      "sha256": "9d6ab6bd1543faec3167a75cb6b5008d7fa7bab902fbf23d5dc8ef166438509d",
+      "physical_ordinal": 107936,
+      "member": "day_index"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/108033.0.json",
+      "sha256": "8900d4d3a36b2f4ad46c631adff2503fea55b1d739185f748c144e932ebd8cd0",
+      "physical_ordinal": 108033,
+      "member": "archived_receipt_prefix"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/108033.10.json",
+      "sha256": "1d9d17e908a220d9912f14498eda113bd8cdffaaf6dfd705305d7c4c00838081",
+      "physical_ordinal": 108033,
+      "member": "ordered_support_constructor_operands"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/123091/0015-day_index.events.jsonl",
+      "sha256": "5543a935f8fd9c0aecf4700d4135c7db9f141e7096e54981c630d2430f80639f",
+      "physical_ordinal": 123091,
+      "member": "day_index"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/123091/0016-interval_index.events.jsonl",
+      "sha256": "1152d878796e6cb4a5aa417e2b9c67098858065f6e8d9c4c40d704871266b9ce",
+      "physical_ordinal": 123091,
+      "member": "interval_index"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/123091/0033-support.events.jsonl",
+      "sha256": "e1139f1dd10aec642d7079e6a77bdc55152e670ea2f194f20a6b4e61c04594bc",
+      "physical_ordinal": 123091,
+      "member": "support"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.25.json",
+      "sha256": "f4a5dfd0b2ddfabfb786a9c2c077949b9f002019567965defee3c4fc3d01622c",
+      "physical_ordinal": 123091,
+      "member": "parent_support"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.27.json",
+      "sha256": "febb81ba0e24a8415c4794460c0247016680907ba40bd47da2f67fa59e6ae0e8",
+      "physical_ordinal": 123091,
+      "member": "prepared_support_constructor_operands"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.26.json",
+      "sha256": "443aa08f5e2d9d11939754901253196d63e74ac9d85481f719e4ac640047e3fd",
+      "physical_ordinal": 123091,
+      "member": "phase_diagnostics"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-context-20260916-1/123091/0012-coupled_clock_restart_canonical_json.bin",
+      "sha256": "df820ab32d7f899eccedde53b6cf8b3ac66674773c263e71d6f1948aa989477d",
+      "physical_ordinal": 123091,
+      "member": "coupled_clock_restart_canonical_json"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-context-20260916-1/123091/0024-parent_checkpoint_canonical_json.bin",
+      "sha256": "4ea53d80dbf3bf857b5b318e74bbfbbce8fc19ed1706726c89769e2fadbe143d",
+      "physical_ordinal": 123091,
+      "member": "parent_checkpoint_canonical_json"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-context-20260916-1/123091/0030-provisional_receipt_canonical_json.bin",
+      "sha256": "a9858bc758dd84ccff07eb78f1040b96205ab15e2ab135f20d1b98149ae185c2",
+      "physical_ordinal": 123091,
+      "member": "provisional_receipt_canonical_json"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-context-20260916-1/123093/0008-parent_working_typed_bytes.bin",
+      "sha256": "07f50df314daf5d2be2c8019752f34cd49e20c732515c97af4aad424b58163b4",
+      "physical_ordinal": 123093,
+      "member": "parent_working_typed_bytes"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/123091/0004-capture_phase.events.jsonl",
+      "sha256": "7a1051e0b1ccdba624ba3177ee45db9f901f97ea9cfa016cee668c3186ea5ad9",
+      "physical_ordinal": 123091,
+      "member": "capture_phase"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.29.json",
+      "sha256": "a232d8da04a80fe26ac52f3c37a8fb684fe9ec9e4dbc2baa76ba9f0e27f77b1a",
+      "physical_ordinal": 123091,
+      "member": "provisional_constructor_inputs"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/27431/0002-capture.events.jsonl",
+      "sha256": "c245c9a1a763444c6c35eb8dc6bb5623379b69bbcbdf52cc957315ae8b0488cc",
+      "physical_ordinal": 27431,
+      "member": "capture"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/54078/0002-capture.events.jsonl",
+      "sha256": "d4465c8cb2e5e05630344875fffd6a92f79aff6c309cbfe50c71ebbcb194a2ff",
+      "physical_ordinal": 54078,
+      "member": "capture"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/79222/0002-capture.events.jsonl",
+      "sha256": "93b0e50c0b075a4373b18fc1f76583260511c51300ccbacda340d2e8d933d650",
+      "physical_ordinal": 79222,
+      "member": "capture"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/107936/0002-capture.events.jsonl",
+      "sha256": "cfc9a0d3c27903bf8071ef1ad8348215e53edac7b9046af2c8a06b9d614d62ae",
+      "physical_ordinal": 107936,
+      "member": "capture"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/108033/0001-capture.events.jsonl",
+      "sha256": "efd2e43a292c6d98fb9cda3deca54cee2efca4a9b6a23b861a6d859fc3df074a",
+      "physical_ordinal": 108033,
+      "member": "capture"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/123091/0003-capture.events.jsonl",
+      "sha256": "a7b1b7bde009047675746a6084af1e355f25fdd1ee5bcd82059be41897d6f7d2",
+      "physical_ordinal": 123091,
+      "member": "capture"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/123092/0004-capture.events.jsonl",
+      "sha256": "0ad1c3f80fbc45f89f83197644f9fbb0b4b4d58c93317a713bcfffccb0774118",
+      "physical_ordinal": 123092,
+      "member": "capture"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-inspection-20260916-1/123093/0001-capture.events.jsonl",
+      "sha256": "8efe2e762b9dc1255c9104099c3c548bf13a9e75b97e228ccb811cb0ec5391b6",
+      "physical_ordinal": 123093,
+      "member": "capture"
+    }
+  ],
+  "limits": "Recorded structure and equality only. No native import, prefix proof recomputation, conservation, restart, model correctness, or cadence acceptance."
+}

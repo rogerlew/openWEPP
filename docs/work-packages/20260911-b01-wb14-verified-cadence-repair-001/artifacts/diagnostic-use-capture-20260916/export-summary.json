@@ -1,0 +1,1250 @@
+{
+  "status": "COMPLETE",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/observations.json",
+  "source_stat_before": {
+    "st_dev": 64514,
+    "st_ino": 85923923,
+    "st_size": 8701419029,
+    "st_mtime_ns": 1789529876314398278,
+    "st_ctime_ns": 1789529876314398278
+  },
+  "inventory": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/diagnostic-use-capture-20260916/inventory",
+  "inventory_records": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/diagnostic-use-capture-20260916/inventory/records.jsonl",
+    "bytes": 1908384,
+    "sha256": "c2602764240e23439546619252e9dda26940172b9e984be53938616898c71f3c",
+    "records": 488
+  },
+  "inventory_source_sha256": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+  "inventory_physical_rows": 123094,
+  "inventory_selected_ordinals": [
+    27431,
+    54078,
+    79222,
+    107936,
+    108033,
+    123091,
+    123092,
+    123093
+  ],
+  "max_export_bytes": 4294967296,
+  "reserve_bytes": 1073741824,
+  "free_bytes_before": 21700472832,
+  "format": "one ordered event JSONL file per physical ordinal; number_lexeme is exact Decimal text",
+  "selection": {
+    "day_index": 4,
+    "interval_index": 22,
+    "capture_phase": "snow_free",
+    "support_start_ns": 385920000000000,
+    "support_end_ns": 385980000000000,
+    "success_kind": "b01_wb14_snow_free_pre_child_current_context_v1",
+    "capture_error_kind": "b01_wb14_pre_child_current_context_capture_error_v1",
+    "related": "all b01_wb14 rows plus named cadence guard/caller failures; no ordinal-based selection"
+  },
+  "rows": [
+    {
+      "ordinal": 27431,
+      "kinds": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "kind_positions": [
+        4
+      ],
+      "scalars": {
+        "day_index": "0"
+      },
+      "support_scalars": {},
+      "support_members": [],
+      "members": [
+        {
+          "member": "archive_entry",
+          "position": 0
+        },
+        {
+          "member": "canonical_record",
+          "position": 1
+        },
+        {
+          "member": "capture",
+          "position": 2
+        },
+        {
+          "member": "day_index",
+          "position": 3
+        },
+        {
+          "member": "kind",
+          "position": 4
+        },
+        {
+          "member": "static_run_identity",
+          "position": 5
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 6
+        }
+      ],
+      "external_byte_arrays": [
+        {
+          "event": "external_byte_array_end",
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "file": "rows/27431.canonical_record.bin",
+          "bytes": 307105003,
+          "sha256": "3d91e0ed544eaf5afc85760a27fa4549a56015a31d9def83abdbe2e0fe4b3452"
+        }
+      ],
+      "selector_member_multiplicity": {
+        "kind": 1,
+        "day_index": 1,
+        "interval_index": 0,
+        "capture_phase": 0,
+        "support": 0,
+        "prepared_support_constructor_operands": 0,
+        "support.start_ns": 0,
+        "support.end_ns": 0
+      },
+      "ambiguous_selector_members": true,
+      "role": "related_b01",
+      "event_file": "rows/27431.events.jsonl",
+      "event_file_bytes": 6097,
+      "event_file_sha256": "c8b926860b567212ea25f58fb2c05fb769fb4290565d40cc55dd1ba0f9332997"
+    },
+    {
+      "ordinal": 54078,
+      "kinds": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "kind_positions": [
+        4
+      ],
+      "scalars": {
+        "day_index": "1"
+      },
+      "support_scalars": {},
+      "support_members": [],
+      "members": [
+        {
+          "member": "archive_entry",
+          "position": 0
+        },
+        {
+          "member": "canonical_record",
+          "position": 1
+        },
+        {
+          "member": "capture",
+          "position": 2
+        },
+        {
+          "member": "day_index",
+          "position": 3
+        },
+        {
+          "member": "kind",
+          "position": 4
+        },
+        {
+          "member": "static_run_identity",
+          "position": 5
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 6
+        }
+      ],
+      "external_byte_arrays": [
+        {
+          "event": "external_byte_array_end",
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "file": "rows/54078.canonical_record.bin",
+          "bytes": 376086364,
+          "sha256": "41acc940916dfc98326f32fc55ee13de773888acd876a1b0a274f74c5b9ecca0"
+        }
+      ],
+      "selector_member_multiplicity": {
+        "kind": 1,
+        "day_index": 1,
+        "interval_index": 0,
+        "capture_phase": 0,
+        "support": 0,
+        "prepared_support_constructor_operands": 0,
+        "support.start_ns": 0,
+        "support.end_ns": 0
+      },
+      "ambiguous_selector_members": true,
+      "role": "related_b01",
+      "event_file": "rows/54078.events.jsonl",
+      "event_file_bytes": 6098,
+      "event_file_sha256": "7721db7e083ea393f41ba3ade7fb6c5390a6a38e27befaf4d1290211b2c05be2"
+    },
+    {
+      "ordinal": 79222,
+      "kinds": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "kind_positions": [
+        4
+      ],
+      "scalars": {
+        "day_index": "2"
+      },
+      "support_scalars": {},
+      "support_members": [],
+      "members": [
+        {
+          "member": "archive_entry",
+          "position": 0
+        },
+        {
+          "member": "canonical_record",
+          "position": 1
+        },
+        {
+          "member": "capture",
+          "position": 2
+        },
+        {
+          "member": "day_index",
+          "position": 3
+        },
+        {
+          "member": "kind",
+          "position": 4
+        },
+        {
+          "member": "static_run_identity",
+          "position": 5
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 6
+        }
+      ],
+      "external_byte_arrays": [
+        {
+          "event": "external_byte_array_end",
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "file": "rows/79222.canonical_record.bin",
+          "bytes": 373891449,
+          "sha256": "7965ae7a3485d727af13c9d530525eaedd367ae7271cc23855cb751265fd38ba"
+        }
+      ],
+      "selector_member_multiplicity": {
+        "kind": 1,
+        "day_index": 1,
+        "interval_index": 0,
+        "capture_phase": 0,
+        "support": 0,
+        "prepared_support_constructor_operands": 0,
+        "support.start_ns": 0,
+        "support.end_ns": 0
+      },
+      "ambiguous_selector_members": true,
+      "role": "related_b01",
+      "event_file": "rows/79222.events.jsonl",
+      "event_file_bytes": 6099,
+      "event_file_sha256": "b12951552ee382d96d1ec7b8208ba5a1125bc389f214d6b43b3927307ab53299"
+    },
+    {
+      "ordinal": 107936,
+      "kinds": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "kind_positions": [
+        4
+      ],
+      "scalars": {
+        "day_index": "3"
+      },
+      "support_scalars": {},
+      "support_members": [],
+      "members": [
+        {
+          "member": "archive_entry",
+          "position": 0
+        },
+        {
+          "member": "canonical_record",
+          "position": 1
+        },
+        {
+          "member": "capture",
+          "position": 2
+        },
+        {
+          "member": "day_index",
+          "position": 3
+        },
+        {
+          "member": "kind",
+          "position": 4
+        },
+        {
+          "member": "static_run_identity",
+          "position": 5
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 6
+        }
+      ],
+      "external_byte_arrays": [
+        {
+          "event": "external_byte_array_end",
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "file": "rows/107936.canonical_record.bin",
+          "bytes": 273071144,
+          "sha256": "a9432f9740f0a505939b77c7cfa8e6465bbeb8bce0e3591ab7b416e43ebfd4d4"
+        }
+      ],
+      "selector_member_multiplicity": {
+        "kind": 1,
+        "day_index": 1,
+        "interval_index": 0,
+        "capture_phase": 0,
+        "support": 0,
+        "prepared_support_constructor_operands": 0,
+        "support.start_ns": 0,
+        "support.end_ns": 0
+      },
+      "ambiguous_selector_members": true,
+      "role": "related_b01",
+      "event_file": "rows/107936.events.jsonl",
+      "event_file_bytes": 6102,
+      "event_file_sha256": "fb8aa4614cb49045c1d409925f49f02310f7d5b5efa16cca43749dd46956fcae"
+    },
+    {
+      "ordinal": 108033,
+      "kinds": [
+        "b01_wb14_prepared_day_current_context_v1"
+      ],
+      "kind_positions": [
+        7
+      ],
+      "scalars": {
+        "day_index": "4"
+      },
+      "support_scalars": {},
+      "support_members": [],
+      "members": [
+        {
+          "member": "archived_receipt_prefix",
+          "position": 0
+        },
+        {
+          "member": "capture",
+          "position": 1
+        },
+        {
+          "member": "capture_posture",
+          "position": 2
+        },
+        {
+          "member": "committed_clock_restart_canonical_json",
+          "position": 3
+        },
+        {
+          "member": "committed_next_parent_sequence",
+          "position": 4
+        },
+        {
+          "member": "committed_receipt_tail_count",
+          "position": 5
+        },
+        {
+          "member": "day_index",
+          "position": 6
+        },
+        {
+          "member": "kind",
+          "position": 7
+        },
+        {
+          "member": "native_committed_bootstrap_lane_map_constructor_operands",
+          "position": 8
+        },
+        {
+          "member": "native_committed_bootstrap_soil_v2_constructor_operands",
+          "position": 9
+        },
+        {
+          "member": "ordered_support_constructor_operands",
+          "position": 10
+        },
+        {
+          "member": "provider_constructor_operands",
+          "position": 11
+        },
+        {
+          "member": "snow_enthalpy_material_residents",
+          "position": 12
+        },
+        {
+          "member": "static_run_identity",
+          "position": 13
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 14
+        }
+      ],
+      "external_json": [
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "archived_receipt_prefix",
+              "position": 0
+            }
+          ],
+          "file": "rows/108033.0.json",
+          "bytes": 2834,
+          "sha256": "8900d4d3a36b2f4ad46c631adff2503fea55b1d739185f748c144e932ebd8cd0"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "committed_clock_restart_canonical_json",
+              "position": 3
+            }
+          ],
+          "file": "rows/108033.3.json",
+          "bytes": 223918,
+          "sha256": "ffe8c5b3b8cddfc972d91b4b562b6d0136fdc47f84f33d5e2b28d016dc81cda8"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "native_committed_bootstrap_lane_map_constructor_operands",
+              "position": 8
+            }
+          ],
+          "file": "rows/108033.8.json",
+          "bytes": 111,
+          "sha256": "b490483de1802d99f84c968b6a80f986c2b6d36cf2a3d9468cf94dfd8c1daeb0"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "native_committed_bootstrap_soil_v2_constructor_operands",
+              "position": 9
+            }
+          ],
+          "file": "rows/108033.9.json",
+          "bytes": 315288,
+          "sha256": "53ef8620f29ef2478a1debf9243d08b96aea899e320f9e59ccd423752b36f8b0"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "ordered_support_constructor_operands",
+              "position": 10
+            }
+          ],
+          "file": "rows/108033.10.json",
+          "bytes": 606393,
+          "sha256": "1d9d17e908a220d9912f14498eda113bd8cdffaaf6dfd705305d7c4c00838081"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "provider_constructor_operands",
+              "position": 11
+            }
+          ],
+          "file": "rows/108033.11.json",
+          "bytes": 134780,
+          "sha256": "7581abdf5250748ff289b61ee3e1bae324a65a88afffd4e01a5cf5a6b83741bc"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "snow_enthalpy_material_residents",
+              "position": 12
+            }
+          ],
+          "file": "rows/108033.12.json",
+          "bytes": 160,
+          "sha256": "3b47d47157564740ab8bf2f9285f5e603aae4c08aaecb920b788511d5708a3ed"
+        }
+      ],
+      "selector_member_multiplicity": {
+        "kind": 1,
+        "day_index": 1,
+        "interval_index": 0,
+        "capture_phase": 0,
+        "support": 0,
+        "prepared_support_constructor_operands": 0,
+        "support.start_ns": 0,
+        "support.end_ns": 0
+      },
+      "ambiguous_selector_members": true,
+      "role": "related_b01",
+      "event_file": "rows/108033.events.jsonl",
+      "event_file_bytes": 6171,
+      "event_file_sha256": "ccd62ec5cebf24f2d12e7dee899c45e4c3424f8296ec66a8773ced6162cedd73"
+    },
+    {
+      "ordinal": 123091,
+      "kinds": [
+        "b01_wb14_snow_free_pre_child_current_context_v1"
+      ],
+      "kind_positions": [
+        17
+      ],
+      "scalars": {
+        "capture_phase": "snow_free",
+        "day_index": "4",
+        "interval_index": "22"
+      },
+      "support_scalars": {
+        "end_ns": "385980000000000",
+        "start_ns": "385920000000000"
+      },
+      "support_members": [
+        "end_ns",
+        "start_ns"
+      ],
+      "members": [
+        {
+          "member": "accepted_until",
+          "position": 0
+        },
+        {
+          "member": "beginning_snow_enthalpy_material_owner",
+          "position": 1
+        },
+        {
+          "member": "beginning_stage3_canonical_json",
+          "position": 2
+        },
+        {
+          "member": "capture",
+          "position": 3
+        },
+        {
+          "member": "capture_phase",
+          "position": 4
+        },
+        {
+          "member": "capture_posture",
+          "position": 5
+        },
+        {
+          "member": "clock_complete_owner_canonical_bytes",
+          "position": 6
+        },
+        {
+          "member": "complete_owner_canonical_bytes",
+          "position": 7
+        },
+        {
+          "member": "complete_owner_ledger_canonical_json",
+          "position": 8
+        },
+        {
+          "member": "constraint_reduction_canonical_json",
+          "position": 9
+        },
+        {
+          "member": "coupled_binding",
+          "position": 10
+        },
+        {
+          "member": "coupled_clock_restart_authority_sha256",
+          "position": 11
+        },
+        {
+          "member": "coupled_clock_restart_canonical_json",
+          "position": 12
+        },
+        {
+          "member": "coupled_clock_restart_model_sha256",
+          "position": 13
+        },
+        {
+          "member": "coupled_clock_restart_policy_sha256",
+          "position": 14
+        },
+        {
+          "member": "day_index",
+          "position": 15
+        },
+        {
+          "member": "interval_index",
+          "position": 16
+        },
+        {
+          "member": "kind",
+          "position": 17
+        },
+        {
+          "member": "lse_configuration_canonical_json",
+          "position": 18
+        },
+        {
+          "member": "native_consumer_constructor_operands",
+          "position": 19
+        },
+        {
+          "member": "native_hydrology_constructor_inputs",
+          "position": 20
+        },
+        {
+          "member": "native_hydrology_frame_dynamic_constructor_operands",
+          "position": 21
+        },
+        {
+          "member": "native_lane_map_constructor_operands",
+          "position": 22
+        },
+        {
+          "member": "native_soil_v2_constructor_operands",
+          "position": 23
+        },
+        {
+          "member": "parent_checkpoint_canonical_json",
+          "position": 24
+        },
+        {
+          "member": "parent_support",
+          "position": 25
+        },
+        {
+          "member": "phase_diagnostics",
+          "position": 26
+        },
+        {
+          "member": "prepared_support_constructor_operands",
+          "position": 27
+        },
+        {
+          "member": "provider_cursor_canonical_json",
+          "position": 28
+        },
+        {
+          "member": "provisional_constructor_inputs",
+          "position": 29
+        },
+        {
+          "member": "provisional_receipt_canonical_json",
+          "position": 30
+        },
+        {
+          "member": "static_run_identity",
+          "position": 31
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 32
+        },
+        {
+          "member": "support",
+          "position": 33
+        },
+        {
+          "member": "surface_liquid_configuration_canonical_json",
+          "position": 34
+        },
+        {
+          "member": "terminal_parcels_produced_unconsumed_canonical_json",
+          "position": 35
+        },
+        {
+          "member": "vegetation_configuration_canonical_json",
+          "position": 36
+        }
+      ],
+      "external_json": [
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "beginning_stage3_canonical_json",
+              "position": 2
+            }
+          ],
+          "file": "rows/123091.2.json",
+          "bytes": 2636,
+          "sha256": "10cae8a34e98b4cd58e067c05edbcd9378024f60bdad38168e78b1ef0b1c6e9d"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "clock_complete_owner_canonical_bytes",
+              "position": 6
+            }
+          ],
+          "file": "rows/123091.6.json",
+          "bytes": 70510,
+          "sha256": "de5ba0989f4a66c81e7eb1c5b0b5c5e6e75fe36658141608572a9e6032a6e5a6"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "complete_owner_canonical_bytes",
+              "position": 7
+            }
+          ],
+          "file": "rows/123091.7.json",
+          "bytes": 60023,
+          "sha256": "fb40ea15c6a88d624ad7ac344d05f936c12aeb9f5b211ff483872511b601a3df"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "complete_owner_ledger_canonical_json",
+              "position": 8
+            }
+          ],
+          "file": "rows/123091.8.json",
+          "bytes": 1089,
+          "sha256": "7e86357cc245a82faafdf53095745c8861f8ab21eb73bf35b92bb1240ad6143a"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "constraint_reduction_canonical_json",
+              "position": 9
+            }
+          ],
+          "file": "rows/123091.9.json",
+          "bytes": 2876,
+          "sha256": "e081b414b6b67fd24869f56ae7b09b37eef083a5c1fc09c7b6e9748ae9fea1a6"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 10
+            }
+          ],
+          "file": "rows/123091.10.json",
+          "bytes": 665,
+          "sha256": "9e5a3bfd0353528220274a51cae4b253c68d85291aaec7a04471442967aae7a4"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "coupled_clock_restart_canonical_json",
+              "position": 12
+            }
+          ],
+          "file": "rows/123091.12.json",
+          "bytes": 141779,
+          "sha256": "6c59860507007a0ac6f4baebdff76df718352a4e1830623336c329a13aa186a1"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "lse_configuration_canonical_json",
+              "position": 18
+            }
+          ],
+          "file": "rows/123091.18.json",
+          "bytes": 12726,
+          "sha256": "b994450337fbb0f855d0b986fc49ac035579267180ebc9e547f7a671cb2dcad6"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "native_consumer_constructor_operands",
+              "position": 19
+            }
+          ],
+          "file": "rows/123091.19.json",
+          "bytes": 457913228,
+          "sha256": "2e1d9732f67cae8e2291f430645f59aacf1836f00a0beddf82ad0a31bee064ba"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "native_hydrology_constructor_inputs",
+              "position": 20
+            }
+          ],
+          "file": "rows/123091.20.json",
+          "bytes": 4797,
+          "sha256": "99e9706798db4982ac7ebba2d8576906b6a8f09367b8f3487bb3b8002768a8b1"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "native_hydrology_frame_dynamic_constructor_operands",
+              "position": 21
+            }
+          ],
+          "file": "rows/123091.21.json",
+          "bytes": 6518,
+          "sha256": "e4738c3173d7872f4a7eb478716827ba8a18b15e19d036bedc60b8a33961e3a4"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "native_lane_map_constructor_operands",
+              "position": 22
+            }
+          ],
+          "file": "rows/123091.22.json",
+          "bytes": 111,
+          "sha256": "b490483de1802d99f84c968b6a80f986c2b6d36cf2a3d9468cf94dfd8c1daeb0"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "native_soil_v2_constructor_operands",
+              "position": 23
+            }
+          ],
+          "file": "rows/123091.23.json",
+          "bytes": 315368,
+          "sha256": "ea7f4ce04601b7a62cb88676395a4ea5bfb0ab86a073746caafc9e2ddfec9628"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "parent_checkpoint_canonical_json",
+              "position": 24
+            }
+          ],
+          "file": "rows/123091.24.json",
+          "bytes": 5997977,
+          "sha256": "09d914ff78012a835833abfed9890cc9a88197effdf10f7c6847edb9886061af"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "parent_support",
+              "position": 25
+            }
+          ],
+          "file": "rows/123091.25.json",
+          "bytes": 57,
+          "sha256": "f4a5dfd0b2ddfabfb786a9c2c077949b9f002019567965defee3c4fc3d01622c"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "phase_diagnostics",
+              "position": 26
+            }
+          ],
+          "file": "rows/123091.26.json",
+          "bytes": 262808,
+          "sha256": "443aa08f5e2d9d11939754901253196d63e74ac9d85481f719e4ac640047e3fd"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "prepared_support_constructor_operands",
+              "position": 27
+            }
+          ],
+          "file": "rows/123091.27.json",
+          "bytes": 11057,
+          "sha256": "febb81ba0e24a8415c4794460c0247016680907ba40bd47da2f67fa59e6ae0e8"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "provider_cursor_canonical_json",
+              "position": 28
+            }
+          ],
+          "file": "rows/123091.28.json",
+          "bytes": 522,
+          "sha256": "ed2dc65ea8db15245f677d6e0a6888567bbe68d8f329f7857b9d9f1c2cc301aa"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "provisional_constructor_inputs",
+              "position": 29
+            }
+          ],
+          "file": "rows/123091.29.json",
+          "bytes": 518,
+          "sha256": "a232d8da04a80fe26ac52f3c37a8fb684fe9ec9e4dbc2baa76ba9f0e27f77b1a"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "provisional_receipt_canonical_json",
+              "position": 30
+            }
+          ],
+          "file": "rows/123091.30.json",
+          "bytes": 3386,
+          "sha256": "6285bf7a879789110f91bf4856cbb3e0a07f28a65f23ad1b65ab1e621fe07e02"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "surface_liquid_configuration_canonical_json",
+              "position": 34
+            }
+          ],
+          "file": "rows/123091.34.json",
+          "bytes": 4336,
+          "sha256": "1740eaf412b7a72658d877f46cf075591c270cee31428a1878d30814915c9503"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "terminal_parcels_produced_unconsumed_canonical_json",
+              "position": 35
+            }
+          ],
+          "file": "rows/123091.35.json",
+          "bytes": 3505,
+          "sha256": "c9b8ab4f03b34415236514c819e95a0f460085d76828bff02687cd194c0e7f58"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "vegetation_configuration_canonical_json",
+              "position": 36
+            }
+          ],
+          "file": "rows/123091.36.json",
+          "bytes": 21330,
+          "sha256": "f3c79596f2bcf572de0d98d1392c591b619bdcc25ffb76ae7f31c2f030a73c27"
+        }
+      ],
+      "selector_member_multiplicity": {
+        "kind": 1,
+        "day_index": 1,
+        "interval_index": 1,
+        "capture_phase": 1,
+        "support": 1,
+        "prepared_support_constructor_operands": 1,
+        "support.start_ns": 1,
+        "support.end_ns": 1
+      },
+      "role": "target_success",
+      "event_file": "rows/123091.events.jsonl",
+      "event_file_bytes": 15990,
+      "event_file_sha256": "228c8a58fbacc1d33d4d26d02ee83bf568d882407f83749798dc65d915664c0a"
+    },
+    {
+      "ordinal": 123092,
+      "kinds": [
+        "surface_liquid_wb14_cadence_failure"
+      ],
+      "kind_positions": [
+        10
+      ],
+      "scalars": {},
+      "support_scalars": {},
+      "support_members": [],
+      "members": [
+        {
+          "member": "accepted_parent_local_projection",
+          "position": 0
+        },
+        {
+          "member": "actual_day",
+          "position": 1
+        },
+        {
+          "member": "actual_interval",
+          "position": 2
+        },
+        {
+          "member": "beginning_typed_bytes",
+          "position": 3
+        },
+        {
+          "member": "capture",
+          "position": 4
+        },
+        {
+          "member": "expected_day",
+          "position": 5
+        },
+        {
+          "member": "expected_interval",
+          "position": 6
+        },
+        {
+          "member": "finalize_parent_interval",
+          "position": 7
+        },
+        {
+          "member": "initial",
+          "position": 8
+        },
+        {
+          "member": "input_typed_bytes",
+          "position": 9
+        },
+        {
+          "member": "kind",
+          "position": 10
+        },
+        {
+          "member": "ofe_id",
+          "position": 11
+        },
+        {
+          "member": "parent_child_mode",
+          "position": 12
+        },
+        {
+          "member": "state_mutated",
+          "position": 13
+        }
+      ],
+      "external_json": [
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "beginning_typed_bytes",
+              "position": 3
+            }
+          ],
+          "file": "rows/123092.3.json",
+          "bytes": 3142,
+          "sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "input_typed_bytes",
+              "position": 9
+            }
+          ],
+          "file": "rows/123092.9.json",
+          "bytes": 7648,
+          "sha256": "77624723588a92c1b10adc8f94bf7a31852a61d7b88c93a0681918bf3e946620"
+        }
+      ],
+      "selector_member_multiplicity": {
+        "kind": 1,
+        "day_index": 0,
+        "interval_index": 0,
+        "capture_phase": 0,
+        "support": 0,
+        "prepared_support_constructor_operands": 0,
+        "support.start_ns": 0,
+        "support.end_ns": 0
+      },
+      "ambiguous_selector_members": true,
+      "role": "related_b01",
+      "event_file": "rows/123092.events.jsonl",
+      "event_file_bytes": 3620,
+      "event_file_sha256": "ae3c6fb1b5fd272c862084e8b8e78e7ba1c168679a4a055023927527ed94822e"
+    },
+    {
+      "ordinal": 123093,
+      "kinds": [
+        "surface_liquid_wb14_cadence_caller_failure"
+      ],
+      "kind_positions": [
+        6
+      ],
+      "scalars": {},
+      "support_scalars": {},
+      "support_members": [],
+      "members": [
+        {
+          "member": "beginning_typed_bytes",
+          "position": 0
+        },
+        {
+          "member": "capture",
+          "position": 1
+        },
+        {
+          "member": "coupled_binding",
+          "position": 2
+        },
+        {
+          "member": "error",
+          "position": 3
+        },
+        {
+          "member": "finalize_parent_interval",
+          "position": 4
+        },
+        {
+          "member": "input_typed_bytes",
+          "position": 5
+        },
+        {
+          "member": "kind",
+          "position": 6
+        },
+        {
+          "member": "parent_child_mode",
+          "position": 7
+        },
+        {
+          "member": "parent_working_typed_bytes",
+          "position": 8
+        },
+        {
+          "member": "working_typed_bytes",
+          "position": 9
+        }
+      ],
+      "external_json": [
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "beginning_typed_bytes",
+              "position": 0
+            }
+          ],
+          "file": "rows/123093.0.json",
+          "bytes": 3142,
+          "sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 2
+            }
+          ],
+          "file": "rows/123093.2.json",
+          "bytes": 673,
+          "sha256": "cc857a2799350e61fc2c12a514cf951411005b23e03e0456b515bfaef1dfb6e0"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "input_typed_bytes",
+              "position": 5
+            }
+          ],
+          "file": "rows/123093.5.json",
+          "bytes": 7648,
+          "sha256": "77624723588a92c1b10adc8f94bf7a31852a61d7b88c93a0681918bf3e946620"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "parent_working_typed_bytes",
+              "position": 8
+            }
+          ],
+          "file": "rows/123093.8.json",
+          "bytes": 18049,
+          "sha256": "bc339feadb3b03f2961185f08d64a771191d5f0cbc49e7eb6344c17ac38c1a5e"
+        },
+        {
+          "event": "external_json_end",
+          "path": [
+            {
+              "member": "working_typed_bytes",
+              "position": 9
+            }
+          ],
+          "file": "rows/123093.9.json",
+          "bytes": 3142,
+          "sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938"
+        }
+      ],
+      "selector_member_multiplicity": {
+        "kind": 1,
+        "day_index": 0,
+        "interval_index": 0,
+        "capture_phase": 0,
+        "support": 0,
+        "prepared_support_constructor_operands": 0,
+        "support.start_ns": 0,
+        "support.end_ns": 0
+      },
+      "ambiguous_selector_members": true,
+      "role": "related_b01",
+      "event_file": "rows/123093.events.jsonl",
+      "event_file_bytes": 3940,
+      "event_file_sha256": "e4a0237986cab34f63149b74ca220c84a7ecb84cb3077a5b1c7b03263f8ce871"
+    }
+  ],
+  "physical_rows": 123094,
+  "syntax_complete": true,
+  "eof": true,
+  "source_stat_after": {
+    "st_dev": 64514,
+    "st_ino": 85923923,
+    "st_size": 8701419029,
+    "st_mtime_ns": 1789529876314398278,
+    "st_ctime_ns": 1789529876314398278
+  },
+  "source_fd_stat_after": {
+    "st_dev": 64514,
+    "st_ino": 85923923,
+    "st_size": 8701419029,
+    "st_mtime_ns": 1789529876314398278,
+    "st_ctime_ns": 1789529876314398278
+  },
+  "source_sha256": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+  "source_bytes": 8701419029,
+  "selected_event_bytes": 54117,
+  "external_json_bytes": 466164750,
+  "external_byte_bytes": 1330153960,
+  "selected_total_bytes": 1796372827,
+  "elapsed_seconds": 1102.8138410719112,
+  "peak_rss_kib": 29676,
+  "rlimit_as_bytes": [
+    1073741824,
+    1073741824
+  ]
+}

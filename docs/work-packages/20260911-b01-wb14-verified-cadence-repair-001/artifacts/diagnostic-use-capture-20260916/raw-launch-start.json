@@ -1,0 +1,146 @@
+{
+  "evidence_class": "Ran: current launch identity/capacity checks; source activation independently inspected",
+  "prepared_utc": "2026-09-16T03:13:55.827289+00:00",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "source_tree_sha256": "ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592",
+  "patch_sha256": "4559c7d21fbcdb9314845e6a5c19940d051d0ef861e48c7cb2a4ae7e51020c5d",
+  "supplemental_custody_sha256": "2e9e27eeb0a355672e7a74c8fd645a2ce95182ae88bf78741bc8f98ecac9b082",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-20260916.frozen",
+  "binary_sha256": "1c733d1ca2fea700b2f34f06cd29a89a6f7d66977a042ddfb371816a320a0955",
+  "build_inputs_sha256": "c8da7f27e2b7c8ee33a38e4a426b84681b1ddecae27efafcd97a7489f62fb71c",
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/collect.py",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-20260916.frozen",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1",
+    "--policy",
+    "B01",
+    "--case",
+    "gradual_warm_tail7",
+    "--ofes",
+    "1",
+    "--cases",
+    "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+    "--cpu",
+    "0",
+    "--timeout",
+    "3600"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "inputs": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/README.md",
+      "sha256": "8a4e18ec84a0e88bd21a627929cfff42cf997c1ce77f459099830631acfb96bc"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/frost.txt",
+      "sha256": "b6f81ef2040b029e361b63be4bd9591dbc3a151b9ecae927805152e365521e53"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.cli",
+      "sha256": "05aec431a2d033f01f0844b7f396b8cf973d03737df8a6acbd652c995cbadf11"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.man",
+      "sha256": "61b696985cc7e382cf3d0b323f1ad30be199a665eabe9c663c30de1ab5cdfa2c"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.run",
+      "sha256": "1cabf3319ccf83baaf00d4c94c6de6804a09918307f162275b58fc6ea64b577f"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.slp",
+      "sha256": "c9a641285332da593a093773960b132cfe1460043f3cf0bf45aac74db45a0e06"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/p102.sol",
+      "sha256": "e66ac38f4d08d00b63190782ccf1d320f710a113df3a683d425a6b78be953b2a"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/pmetpara.txt",
+      "sha256": "7f67616e491e293a41ef3a79940108cf5de5cb0b780ab9728234ee1eb2aaf9b2"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/snow.txt",
+      "sha256": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/erosion_multi_ofe_p102/wepp_ui.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-source-reconciliation/reconstructed-available145/tests/fixtures/cancov_forest/marcell_conifer_mn/p8.man.yaml",
+      "sha256": "5b592a479211418ccc7d6a3390b51294cc67a6e1f1db53f4af8f527ef3126175"
+    },
+    {
+      "path": "/workdir/openWEPP/flake.nix",
+      "sha256": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9"
+    },
+    {
+      "path": "/workdir/openWEPP/flake.lock",
+      "sha256": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6"
+    },
+    {
+      "path": "/workdir/openWEPP/tools/dev/openwepp-env",
+      "sha256": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+    },
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/collect.py",
+      "sha256": "824d60b7667c118cd6c011fad5312ddaec85a4ebf00ce5646a48e79b3d20b2aa"
+    },
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260906-stage3-prospective-mechanism-experiments-001/artifacts/reproduction/run_series.py",
+      "sha256": "f1ea797124f4a4e1cb4e02da049a403ac6db6d8780f839b0b334197b4f348052"
+    },
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+      "sha256": "c48cc560dff31102085ebcf852225b2063a1629ad96cfa9f7283364df44fbf3f"
+    }
+  ],
+  "storage": {
+    "free_durable_bytes": 39087996928,
+    "prior_raw_and_spool_bytes": 16448435117,
+    "additional_context_and_duplicate_spool_bytes": 4294967296,
+    "export_budget_bytes": 4294967296,
+    "headroom_bytes": 4294967296,
+    "free_build_bytes": 506878365696,
+    "required_durable_bytes": 29333337005
+  },
+  "environment_overrides": {
+    "TMPDIR": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "ijson_version": "3.4.0",
+  "child_timeout_seconds": 3600,
+  "automatic_retries": 0,
+  "remaining_seconds_at_check": 8712.769332,
+  "reserved_total_seconds": 6300,
+  "target": {
+    "day_index": 4,
+    "interval_index": 22,
+    "phase": "snow_free",
+    "child_support_ns": [
+      385920000000000,
+      385980000000000
+    ],
+    "historical_transaction_255_is_not_arrival_proof": true
+  },
+  "observer": {
+    "OPENWEPP_ACCURACY_PHYSICAL": "1",
+    "begin_spooled_before_model": true,
+    "finish_to_file_after_result": true,
+    "production_constructor_retention": "physical_enabled"
+  },
+  "capture_allowance": {
+    "name": "CORRECTED-RECORDER-20260916",
+    "used": 1,
+    "maximum": 1
+  },
+  "old_capture": "1/1 consumed",
+  "old_witness": "1/1 exhausted",
+  "authentic_probe": "0/1 RESERVED AND PROHIBITED",
+  "start_utc": "2026-09-16T03:13:55.827612+00:00",
+  "wrapper_pid": 996414,
+  "state": "RUNNING",
+  "collector_pid": 996445
+}

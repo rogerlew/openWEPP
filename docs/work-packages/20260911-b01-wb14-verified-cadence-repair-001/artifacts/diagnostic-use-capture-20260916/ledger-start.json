@@ -1,0 +1,17 @@
+{
+  "start_utc": "2026-09-16T03:03:00+00:00",
+  "carried_seconds": 41786.563411,
+  "ceiling_seconds": 51155.159526,
+  "remaining_seconds": 9368.596115,
+  "deadline_utc": "2026-09-16T05:39:08.596115+00:00",
+  "historical_failures": 58,
+  "wait_deductions_seconds": 0,
+  "new_capture_allowance": {
+    "name": "CORRECTED-RECORDER-20260916",
+    "used": 0,
+    "maximum": 1
+  },
+  "prior_capture_used": 1,
+  "old_witness_used": 1,
+  "authentic_probe": "0/1 RESERVED AND PROHIBITED"
+}

@@ -1,0 +1,1131 @@
+{
+  "source_sha256": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+  "physical_rows": 123094,
+  "inventory_complete": true,
+  "selected_for_export": [
+    {
+      "ordinal": 27431,
+      "kinds": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "fields": [
+        {
+          "path": [
+            {
+              "member": "archive_entry",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 17
+        },
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "type": "array",
+          "element_count": 307105003,
+          "elements_not_indexed": 307104995
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 2
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 3
+            }
+          ],
+          "type": "number",
+          "value": 0
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 4
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_committed_day_archive_record_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 5
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        }
+      ]
+    },
+    {
+      "ordinal": 54078,
+      "kinds": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "fields": [
+        {
+          "path": [
+            {
+              "member": "archive_entry",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 17
+        },
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "type": "array",
+          "element_count": 376086364,
+          "elements_not_indexed": 376086356
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 2
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 3
+            }
+          ],
+          "type": "number",
+          "value": 1
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 4
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_committed_day_archive_record_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 5
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        }
+      ]
+    },
+    {
+      "ordinal": 79222,
+      "kinds": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "fields": [
+        {
+          "path": [
+            {
+              "member": "archive_entry",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 17
+        },
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "type": "array",
+          "element_count": 373891449,
+          "elements_not_indexed": 373891441
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 2
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 3
+            }
+          ],
+          "type": "number",
+          "value": 2
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 4
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_committed_day_archive_record_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 5
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        }
+      ]
+    },
+    {
+      "ordinal": 107936,
+      "kinds": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "fields": [
+        {
+          "path": [
+            {
+              "member": "archive_entry",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 17
+        },
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "type": "array",
+          "element_count": 273071144,
+          "elements_not_indexed": 273071136
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 2
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 3
+            }
+          ],
+          "type": "number",
+          "value": 3
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 4
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_committed_day_archive_record_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 5
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        }
+      ]
+    },
+    {
+      "ordinal": 108033,
+      "kinds": [
+        "b01_wb14_prepared_day_current_context_v1"
+      ],
+      "fields": [
+        {
+          "path": [
+            {
+              "member": "archived_receipt_prefix",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 16
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 1
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "capture_posture",
+              "position": 2
+            }
+          ],
+          "type": "string",
+          "value": "before physical ingress; diagnostic no-publication wrapper"
+        },
+        {
+          "path": [
+            {
+              "member": "committed_clock_restart_canonical_json",
+              "position": 3
+            }
+          ],
+          "type": "array",
+          "element_count": 67900,
+          "elements_not_indexed": 67892
+        },
+        {
+          "path": [
+            {
+              "member": "committed_next_parent_sequence",
+              "position": 4
+            }
+          ],
+          "type": "number",
+          "value": 192
+        },
+        {
+          "path": [
+            {
+              "member": "committed_receipt_tail_count",
+              "position": 5
+            }
+          ],
+          "type": "number",
+          "value": 0
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 6
+            }
+          ],
+          "type": "number",
+          "value": 4
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 7
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_prepared_day_current_context_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "native_committed_bootstrap_lane_map_constructor_operands",
+              "position": 8
+            }
+          ],
+          "type": "array",
+          "element_count": 1,
+          "elements_not_indexed": 0
+        },
+        {
+          "path": [
+            {
+              "member": "native_committed_bootstrap_soil_v2_constructor_operands",
+              "position": 9
+            }
+          ],
+          "type": "map",
+          "member_count": 3
+        },
+        {
+          "path": [
+            {
+              "member": "ordered_support_constructor_operands",
+              "position": 10
+            }
+          ],
+          "type": "array",
+          "element_count": 48,
+          "elements_not_indexed": 40
+        },
+        {
+          "path": [
+            {
+              "member": "provider_constructor_operands",
+              "position": 11
+            }
+          ],
+          "type": "map",
+          "member_count": 6
+        },
+        {
+          "path": [
+            {
+              "member": "snow_enthalpy_material_residents",
+              "position": 12
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 13
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 14
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        }
+      ]
+    },
+    {
+      "ordinal": 123091,
+      "kinds": [
+        "b01_wb14_snow_free_pre_child_current_context_v1"
+      ],
+      "fields": [
+        {
+          "path": [
+            {
+              "member": "accepted_until",
+              "position": 0
+            }
+          ],
+          "type": "string",
+          "value": "385920000000000"
+        },
+        {
+          "path": [
+            {
+              "member": "beginning_snow_enthalpy_material_owner",
+              "position": 1
+            }
+          ],
+          "type": "null",
+          "value": null
+        },
+        {
+          "path": [
+            {
+              "member": "beginning_stage3_canonical_json",
+              "position": 2
+            }
+          ],
+          "type": "array",
+          "element_count": 760,
+          "elements_not_indexed": 752
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 3
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "capture_phase",
+              "position": 4
+            }
+          ],
+          "type": "string",
+          "value": "snow_free"
+        },
+        {
+          "path": [
+            {
+              "member": "capture_posture",
+              "position": 5
+            }
+          ],
+          "type": "string",
+          "value": "before physical ingress; diagnostic no-publication wrapper"
+        },
+        {
+          "path": [
+            {
+              "member": "clock_complete_owner_canonical_bytes",
+              "position": 6
+            }
+          ],
+          "type": "map",
+          "member_count": 7
+        },
+        {
+          "path": [
+            {
+              "member": "complete_owner_canonical_bytes",
+              "position": 7
+            }
+          ],
+          "type": "map",
+          "member_count": 6
+        },
+        {
+          "path": [
+            {
+              "member": "complete_owner_ledger_canonical_json",
+              "position": 8
+            }
+          ],
+          "type": "array",
+          "element_count": 325,
+          "elements_not_indexed": 317
+        },
+        {
+          "path": [
+            {
+              "member": "constraint_reduction_canonical_json",
+              "position": 9
+            }
+          ],
+          "type": "array",
+          "element_count": 862,
+          "elements_not_indexed": 854
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 10
+            }
+          ],
+          "type": "map",
+          "member_count": 8
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_clock_restart_authority_sha256",
+              "position": 11
+            }
+          ],
+          "type": "string",
+          "value": "4d9c214d67752b3f622c5f2b6a96ec456b4ac113a7e70bfff53da853b1d0e699"
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_clock_restart_canonical_json",
+              "position": 12
+            }
+          ],
+          "type": "array",
+          "element_count": 42870,
+          "elements_not_indexed": 42862
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_clock_restart_model_sha256",
+              "position": 13
+            }
+          ],
+          "type": "string",
+          "value": "f57454c2bbe3d8c455ee03ab3d63b518ba0ee14b777b47217fcb575f17e6b251"
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_clock_restart_policy_sha256",
+              "position": 14
+            }
+          ],
+          "type": "string",
+          "value": "e748a447277a8f7e7a5a3524cfdff405b1c97b498ff8ba1bb1b31336f3a2eba0"
+        },
+        {
+          "path": [
+            {
+              "member": "day_index",
+              "position": 15
+            }
+          ],
+          "type": "number",
+          "value": 4
+        },
+        {
+          "path": [
+            {
+              "member": "interval_index",
+              "position": 16
+            }
+          ],
+          "type": "number",
+          "value": 22
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 17
+            }
+          ],
+          "type": "string",
+          "value": "b01_wb14_snow_free_pre_child_current_context_v1"
+        },
+        {
+          "path": [
+            {
+              "member": "lse_configuration_canonical_json",
+              "position": 18
+            }
+          ],
+          "type": "array",
+          "element_count": 3655,
+          "elements_not_indexed": 3647
+        },
+        {
+          "path": [
+            {
+              "member": "native_consumer_constructor_operands",
+              "position": 19
+            }
+          ],
+          "type": "map",
+          "member_count": 18
+        },
+        {
+          "path": [
+            {
+              "member": "native_hydrology_constructor_inputs",
+              "position": 20
+            }
+          ],
+          "type": "map",
+          "member_count": 3
+        },
+        {
+          "path": [
+            {
+              "member": "native_hydrology_frame_dynamic_constructor_operands",
+              "position": 21
+            }
+          ],
+          "type": "map",
+          "member_count": 7
+        },
+        {
+          "path": [
+            {
+              "member": "native_lane_map_constructor_operands",
+              "position": 22
+            }
+          ],
+          "type": "array",
+          "element_count": 1,
+          "elements_not_indexed": 0
+        },
+        {
+          "path": [
+            {
+              "member": "native_soil_v2_constructor_operands",
+              "position": 23
+            }
+          ],
+          "type": "map",
+          "member_count": 3
+        },
+        {
+          "path": [
+            {
+              "member": "parent_checkpoint_canonical_json",
+              "position": 24
+            }
+          ],
+          "type": "array",
+          "element_count": 1925058,
+          "elements_not_indexed": 1925050
+        },
+        {
+          "path": [
+            {
+              "member": "parent_support",
+              "position": 25
+            }
+          ],
+          "type": "map",
+          "member_count": 2
+        },
+        {
+          "path": [
+            {
+              "member": "phase_diagnostics",
+              "position": 26
+            }
+          ],
+          "type": "map",
+          "member_count": 13
+        },
+        {
+          "path": [
+            {
+              "member": "prepared_support_constructor_operands",
+              "position": 27
+            }
+          ],
+          "type": "map",
+          "member_count": 11
+        },
+        {
+          "path": [
+            {
+              "member": "provider_cursor_canonical_json",
+              "position": 28
+            }
+          ],
+          "type": "array",
+          "element_count": 154,
+          "elements_not_indexed": 146
+        },
+        {
+          "path": [
+            {
+              "member": "provisional_constructor_inputs",
+              "position": 29
+            }
+          ],
+          "type": "map",
+          "member_count": 9
+        },
+        {
+          "path": [
+            {
+              "member": "provisional_receipt_canonical_json",
+              "position": 30
+            }
+          ],
+          "type": "array",
+          "element_count": 1037,
+          "elements_not_indexed": 1029
+        },
+        {
+          "path": [
+            {
+              "member": "static_run_identity",
+              "position": 31
+            }
+          ],
+          "type": "string",
+          "value": "59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"
+        },
+        {
+          "path": [
+            {
+              "member": "static_topology_identity",
+              "position": 32
+            }
+          ],
+          "type": "string",
+          "value": "a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"
+        },
+        {
+          "path": [
+            {
+              "member": "support",
+              "position": 33
+            }
+          ],
+          "type": "map",
+          "member_count": 2
+        },
+        {
+          "path": [
+            {
+              "member": "surface_liquid_configuration_canonical_json",
+              "position": 34
+            }
+          ],
+          "type": "array",
+          "element_count": 1223,
+          "elements_not_indexed": 1215
+        },
+        {
+          "path": [
+            {
+              "member": "terminal_parcels_produced_unconsumed_canonical_json",
+              "position": 35
+            }
+          ],
+          "type": "array",
+          "element_count": 1027,
+          "elements_not_indexed": 1019
+        },
+        {
+          "path": [
+            {
+              "member": "vegetation_configuration_canonical_json",
+              "position": 36
+            }
+          ],
+          "type": "array",
+          "element_count": 6169,
+          "elements_not_indexed": 6161
+        }
+      ]
+    },
+    {
+      "ordinal": 123092,
+      "kinds": [
+        "surface_liquid_wb14_cadence_failure"
+      ],
+      "fields": [
+        {
+          "path": [
+            {
+              "member": "accepted_parent_local_projection",
+              "position": 0
+            }
+          ],
+          "type": "boolean",
+          "value": false
+        },
+        {
+          "path": [
+            {
+              "member": "actual_day",
+              "position": 1
+            }
+          ],
+          "type": "number",
+          "value": 4
+        },
+        {
+          "path": [
+            {
+              "member": "actual_interval",
+              "position": 2
+            }
+          ],
+          "type": "number",
+          "value": 22
+        },
+        {
+          "path": [
+            {
+              "member": "beginning_typed_bytes",
+              "position": 3
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 4
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "expected_day",
+              "position": 5
+            }
+          ],
+          "type": "number",
+          "value": 0
+        },
+        {
+          "path": [
+            {
+              "member": "expected_interval",
+              "position": 6
+            }
+          ],
+          "type": "number",
+          "value": 0
+        },
+        {
+          "path": [
+            {
+              "member": "finalize_parent_interval",
+              "position": 7
+            }
+          ],
+          "type": "boolean",
+          "value": false
+        },
+        {
+          "path": [
+            {
+              "member": "initial",
+              "position": 8
+            }
+          ],
+          "type": "boolean",
+          "value": true
+        },
+        {
+          "path": [
+            {
+              "member": "input_typed_bytes",
+              "position": 9
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 10
+            }
+          ],
+          "type": "string",
+          "value": "surface_liquid_wb14_cadence_failure"
+        },
+        {
+          "path": [
+            {
+              "member": "ofe_id",
+              "position": 11
+            }
+          ],
+          "type": "string",
+          "value": "ofe-1"
+        },
+        {
+          "path": [
+            {
+              "member": "parent_child_mode",
+              "position": 12
+            }
+          ],
+          "type": "boolean",
+          "value": true
+        },
+        {
+          "path": [
+            {
+              "member": "state_mutated",
+              "position": 13
+            }
+          ],
+          "type": "boolean",
+          "value": false
+        }
+      ]
+    },
+    {
+      "ordinal": 123093,
+      "kinds": [
+        "surface_liquid_wb14_cadence_caller_failure"
+      ],
+      "fields": [
+        {
+          "path": [
+            {
+              "member": "beginning_typed_bytes",
+              "position": 0
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        },
+        {
+          "path": [
+            {
+              "member": "capture",
+              "position": 1
+            }
+          ],
+          "type": "map",
+          "member_count": 4
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 2
+            }
+          ],
+          "type": "map",
+          "member_count": 8
+        },
+        {
+          "path": [
+            {
+              "member": "error",
+              "position": 3
+            }
+          ],
+          "type": "string",
+          "value": "SURFACELIQUID-E-008 IngressCandidate: WB14 day or interval continuation mismatch"
+        },
+        {
+          "path": [
+            {
+              "member": "finalize_parent_interval",
+              "position": 4
+            }
+          ],
+          "type": "boolean",
+          "value": false
+        },
+        {
+          "path": [
+            {
+              "member": "input_typed_bytes",
+              "position": 5
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        },
+        {
+          "path": [
+            {
+              "member": "kind",
+              "position": 6
+            }
+          ],
+          "type": "string",
+          "value": "surface_liquid_wb14_cadence_caller_failure"
+        },
+        {
+          "path": [
+            {
+              "member": "parent_child_mode",
+              "position": 7
+            }
+          ],
+          "type": "boolean",
+          "value": true
+        },
+        {
+          "path": [
+            {
+              "member": "parent_working_typed_bytes",
+              "position": 8
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        },
+        {
+          "path": [
+            {
+              "member": "working_typed_bytes",
+              "position": 9
+            }
+          ],
+          "type": "map",
+          "member_count": 1
+        }
+      ]
+    }
+  ],
+  "limitation": "Inventory metadata only; payload export/decoding/structural inspection pending; actual semantic selection must traverse source again."
+}

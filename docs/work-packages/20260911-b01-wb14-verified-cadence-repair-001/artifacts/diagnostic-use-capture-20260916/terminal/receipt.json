@@ -1,0 +1,81 @@
+{
+  "schema": "snow_accuracy_process_v1",
+  "argv": [
+    "taskset",
+    "-c",
+    "0",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-20260916.frozen",
+    "hillslope::tests::stage3_snow_accuracy_case",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1",
+  "binary_sha256": "1c733d1ca2fea700b2f34f06cd29a89a6f7d66977a042ddfb371816a320a0955",
+  "cases_sha256": "c48cc560dff31102085ebcf852225b2063a1629ad96cfa9f7283364df44fbf3f",
+  "collector_sha256": "824d60b7667c118cd6c011fad5312ddaec85a4ebf00ce5646a48e79b3d20b2aa",
+  "predecessor_collector_sha256": "f1ea797124f4a4e1cb4e02da049a403ac6db6d8780f839b0b334197b4f348052",
+  "policy": "B01",
+  "case": "gradual_warm_tail7",
+  "ofes": 1,
+  "physical": true,
+  "environment": {
+    "RUST_MIN_STACK": "67108864",
+    "OPENWEPP_EXPERIMENT_OFES": "1",
+    "OPENWEPP_EXPERIMENT_REPEATS": "1",
+    "OPENWEPP_COMPACT_COST": "off",
+    "OPENWEPP_ACCURACY_POLICY": "B01",
+    "OPENWEPP_ACCURACY_CASE": "gradual_warm_tail7",
+    "OPENWEPP_ACCURACY_CASES": "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+    "OPENWEPP_ACCURACY_OUTPUT": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1",
+    "OPENWEPP_ACCURACY_PHYSICAL": "1"
+  },
+  "timeout_s": 3600.0,
+  "timeout": false,
+  "execution_valid": false,
+  "scientific_qualification": "NOT_ASSESSED",
+  "exit_code": 101,
+  "process_user_s": 1420.300883,
+  "process_system_s": 18.50167,
+  "lifetime_peak_rss_kib": 14068640,
+  "binary_unchanged": true,
+  "runner_receipt_present": true,
+  "runner_execution": "FAIL",
+  "runner_wall_s": 1436.63587989,
+  "runner_receipt_sha256": "87ef5c65f0ad133f6784ccf49568eb9dac49b0ab4de223707e41b811086084e5",
+  "policy_identity_valid": true,
+  "completed_days": null,
+  "physical_rows": 123094,
+  "observation_complete": true,
+  "days_complete": false,
+  "counter_errors": {
+    "carrier": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "lse": {
+      "complete": 0,
+      "component_replay": 0,
+      "evaluations": 0,
+      "identity_anchor": 0,
+      "maps": 0,
+      "probes": 0,
+      "solves": 0,
+      "sweeps": 0
+    }
+  },
+  "counters_complete": true,
+  "files_complete": false,
+  "wall_s": 1695.4494605199434,
+  "artifact_sha256": {
+    "stdout.log": "8636f86d0cd104d2464567ac3383207eb99236718eff0798576fabab18c60992",
+    "stderr.log": "b9c294aa3ef8afdfa395aa5806403277c00c8fd200361642fb8e1ef411970af7",
+    "run.json": "87ef5c65f0ad133f6784ccf49568eb9dac49b0ab4de223707e41b811086084e5",
+    "observations.json": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+    "inputs.json": "feac1e37b6a082ee1c193f11894766aac26eff1346ab4ca954e8c86b9d5cb273"
+  }
+}

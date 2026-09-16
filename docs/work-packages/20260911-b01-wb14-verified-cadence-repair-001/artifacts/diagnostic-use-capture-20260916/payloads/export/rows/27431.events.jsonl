@@ -1,0 +1,61 @@
+{"path":[],"event":"start_map","value":null}
+{"path":[{"member":"archive_entry","position":0}],"event":"map_key","value":"archive_entry"}
+{"path":[],"event":"start_map","value":null}
+{"path":[{"member":"beginning_owner_set_sha256","position":0}],"event":"map_key","value":"beginning_owner_set_sha256"}
+{"path":[],"event":"string","value":"bd181c07f40dbd5b696265e0c7f217eae97afe0f4c2d40bb5dc2c7377615182f"}
+{"path":[{"member":"canonical_uncompressed_len","position":1}],"event":"map_key","value":"canonical_uncompressed_len"}
+{"path":[],"event":"number","value":{"number_lexeme":"307105003","encoding":"exact Decimal event"}}
+{"path":[{"member":"committed_publication_receipt_sha256","position":2}],"event":"map_key","value":"committed_publication_receipt_sha256"}
+{"path":[],"event":"string","value":"30d671518d1e406941ca137d799f296e6424692fc871b54a6087ee8ade310517"}
+{"path":[{"member":"content_sha256","position":3}],"event":"map_key","value":"content_sha256"}
+{"path":[],"event":"string","value":"3d91e0ed544eaf5afc85760a27fa4549a56015a31d9def83abdbe2e0fe4b3452"}
+{"path":[{"member":"day_index","position":4}],"event":"map_key","value":"day_index"}
+{"path":[],"event":"number","value":{"number_lexeme":"0","encoding":"exact Decimal event"}}
+{"path":[{"member":"ending_accepted_until_ns","position":5}],"event":"map_key","value":"ending_accepted_until_ns"}
+{"path":[],"event":"number","value":{"number_lexeme":"86400000000000","encoding":"exact Decimal event"}}
+{"path":[{"member":"ending_next_parent_sequence","position":6}],"event":"map_key","value":"ending_next_parent_sequence"}
+{"path":[],"event":"number","value":{"number_lexeme":"48","encoding":"exact Decimal event"}}
+{"path":[{"member":"ending_owner_set_sha256","position":7}],"event":"map_key","value":"ending_owner_set_sha256"}
+{"path":[],"event":"string","value":"a802d44d8d7dca06315d0c029a67a22742bc3e516331ebc5930184f94c1531a9"}
+{"path":[{"member":"parent_receipt_sha256","position":8}],"event":"map_key","value":"parent_receipt_sha256"}
+{"path":[],"event":"string","value":"d3c8a6fd3685ec44bec6e1f91ac7a5687c3090c9afdf3e9b69ff23f950d260df"}
+{"path":[{"member":"previous_archive_content_root_sha256","position":9}],"event":"map_key","value":"previous_archive_content_root_sha256"}
+{"path":[],"event":"string","value":"85081c24ca40cc46b456d40bf30a2cd605e3b383fc9fe096bf93bdd7d1fc85ff"}
+{"path":[{"member":"previous_ordered_day_chain_sha256","position":10}],"event":"map_key","value":"previous_ordered_day_chain_sha256"}
+{"path":[],"event":"string","value":"661f6ac3233d32b2396719bab8d8eca6ddb47c1d2ec81970ec5b37235592e25c"}
+{"path":[{"member":"publication_evidence_sha256","position":11}],"event":"map_key","value":"publication_evidence_sha256"}
+{"path":[],"event":"string","value":"da205d126f6253f31525518ac77ac22be5ac362b04d5e3ee81d48c09345043de"}
+{"path":[{"member":"qualification_day_delta_sha256","position":12}],"event":"map_key","value":"qualification_day_delta_sha256"}
+{"path":[],"event":"string","value":"717773033c86b5631deb7fd939d0268fbc8cdc17a25ff0535c3fc7c66ba0897d"}
+{"path":[{"member":"record_sha256","position":13}],"event":"map_key","value":"record_sha256"}
+{"path":[],"event":"string","value":"4945175395845e61b9619489e0c2cfddaf1c0bbf2359869157960195f0e7ee14"}
+{"path":[{"member":"resulting_archive_content_root_sha256","position":14}],"event":"map_key","value":"resulting_archive_content_root_sha256"}
+{"path":[],"event":"string","value":"e9092ca9dd40bf22acb32905539f7d30cf0e3ea6cac61dfbef957eea0b988c18"}
+{"path":[{"member":"resulting_ordered_day_chain_sha256","position":15}],"event":"map_key","value":"resulting_ordered_day_chain_sha256"}
+{"path":[],"event":"string","value":"398abf0fcad4051c181b2b596b21871329b749c3ed904c1118ea53d17bbefa94"}
+{"path":[{"member":"schema_version","position":16}],"event":"map_key","value":"schema_version"}
+{"path":[],"event":"number","value":{"number_lexeme":"1","encoding":"exact Decimal event"}}
+{"path":[],"event":"end_map","value":null}
+{"path":[{"member":"canonical_record","position":1}],"event":"map_key","value":"canonical_record"}
+{"event":"external_byte_array_start","path":[{"member":"canonical_record","position":1}],"file":"rows/27431.canonical_record.bin","encoding":"source-defined Vec<u8>; streamed bytes"}
+{"event":"external_byte_array_end","path":[{"member":"canonical_record","position":1}],"file":"rows/27431.canonical_record.bin","bytes":307105003,"sha256":"3d91e0ed544eaf5afc85760a27fa4549a56015a31d9def83abdbe2e0fe4b3452"}
+{"path":[{"member":"capture","position":2}],"event":"map_key","value":"capture"}
+{"path":[],"event":"start_map","value":null}
+{"path":[{"member":"ordinal","position":0}],"event":"map_key","value":"ordinal"}
+{"path":[],"event":"number","value":{"number_lexeme":"27431","encoding":"exact Decimal event"}}
+{"path":[{"member":"process","position":1}],"event":"map_key","value":"process"}
+{"path":[],"event":"number","value":{"number_lexeme":"996446","encoding":"exact Decimal event"}}
+{"path":[{"member":"session","position":2}],"event":"map_key","value":"session"}
+{"path":[],"event":"number","value":{"number_lexeme":"1","encoding":"exact Decimal event"}}
+{"path":[{"member":"thread","position":3}],"event":"map_key","value":"thread"}
+{"path":[],"event":"string","value":"ThreadId(2)"}
+{"path":[],"event":"end_map","value":null}
+{"path":[{"member":"day_index","position":3}],"event":"map_key","value":"day_index"}
+{"path":[],"event":"number","value":{"number_lexeme":"0","encoding":"exact Decimal event"}}
+{"path":[{"member":"kind","position":4}],"event":"map_key","value":"kind"}
+{"path":[],"event":"string","value":"b01_wb14_committed_day_archive_record_v1"}
+{"path":[{"member":"static_run_identity","position":5}],"event":"map_key","value":"static_run_identity"}
+{"path":[],"event":"string","value":"59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"}
+{"path":[{"member":"static_topology_identity","position":6}],"event":"map_key","value":"static_topology_identity"}
+{"path":[],"event":"string","value":"a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"}
+{"path":[],"event":"end_map","value":null}

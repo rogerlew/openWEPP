@@ -1,0 +1,7 @@
+{
+  "pid": 1018249,
+  "utc": "2026-09-16T03:43:02.461226+00:00",
+  "reason": "Inspect current census selected payload expansion before automatic export; raw model and collector already terminal, inventory continues",
+  "signal": "SIGSTOP",
+  "model_invocations": 0
+}

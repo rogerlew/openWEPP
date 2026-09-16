@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "status": "COMPLETE",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/observations.json",
+  "expected_sha256": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+  "expected_bytes": 8701419029,
+  "expected_physical_rows": 123094,
+  "physical_rows": 123094,
+  "completed_rows": 123094,
+  "selected_rows": 488,
+  "kind_counts": {
+    "accepted_day": 4,
+    "b01_wb14_committed_day_archive_record_v1": 4,
+    "b01_wb14_prepared_day_current_context_v1": 1,
+    "b01_wb14_snow_free_pre_child_current_context_v1": 1,
+    "candidate_subslab_primitives": 13768,
+    "canonical_budget_rejection": 41,
+    "inner_accepted_state": 12024,
+    "native_preterminal_donor_bridge": 4,
+    "native_wat5_source_projection": 1814,
+    "provider_precipitation_phase": 480,
+    "retained_lse_final_operands": 27536,
+    "soil_trial_primitive": 67027,
+    "surface_liquid_wb14_cadence_caller_failure": 1,
+    "surface_liquid_wb14_cadence_failure": 1,
+    "validated_inactive_parent_endpoint": 384,
+    "wat5_native_source_before_after": 4
+  },
+  "anomaly_counts": {},
+  "syntax_complete": true,
+  "eof": true,
+  "metadata": {
+    "nested_field_cap": 1024,
+    "array_preview_elements": 8,
+    "string_preview_characters": 256,
+    "locators": "source SHA + physical ordinal + member-position path",
+    "payload_authentication": "NOT EVALUATED"
+  },
+  "ijson": {
+    "version": "3.4.0",
+    "backend": "yajl2_c"
+  },
+  "rlimit_as_bytes": [
+    1073741824,
+    1073741824
+  ],
+  "source_stat_before": {
+    "st_dev": 64514,
+    "st_ino": 85923923,
+    "st_size": 8701419029,
+    "st_mtime_ns": 1789529876314398278,
+    "st_ctime_ns": 1789529876314398278
+  },
+  "source_stat_after": {
+    "st_dev": 64514,
+    "st_ino": 85923923,
+    "st_size": 8701419029,
+    "st_mtime_ns": 1789529876314398278,
+    "st_ctime_ns": 1789529876314398278
+  },
+  "source_path_stat_after": {
+    "st_dev": 64514,
+    "st_ino": 85923923,
+    "st_size": 8701419029,
+    "st_mtime_ns": 1789529876314398278,
+    "st_ctime_ns": 1789529876314398278
+  },
+  "bytes_supplied": 8701419029,
+  "sha256_supplied": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+  "elapsed_seconds": 418.23143785540015,
+  "peak_rss_kib": 26692,
+  "argv": [
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/stream-inventory-20260914/inventory.py",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/observations.json",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/diagnostic-use-capture-20260916/inventory",
+    "--sha256",
+    "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+    "--bytes",
+    "8701419029",
+    "--rows",
+    "123094"
+  ],
+  "utility_sha256": "776c40a07cba35a50118625830f952dc26cff3b06300e9cb544b00cf5a127605"
+}

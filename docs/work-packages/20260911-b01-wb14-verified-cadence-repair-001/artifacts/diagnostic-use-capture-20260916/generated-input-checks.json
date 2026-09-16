@@ -1,0 +1,41 @@
+{
+  "observed_utc": "2026-09-16T03:15:29.054285+00:00",
+  "current_fixture": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1/snow_accuracy_continuous_1789528435904586137",
+  "input_files_verified": {
+    "README.md": "8a4e18ec84a0e88bd21a627929cfff42cf997c1ce77f459099830631acfb96bc",
+    "case.man.yaml": "661f8e1576b2dffe0909283677242893298d58ebcf02aa18abe4282b5b1be7ad",
+    "case.run": "5f4b7f0f74efeac97b917cfe5ee8d5aa3b2a08ca9fe1e109dd01f7ac046da23a",
+    "case.run.snow_stage3_v11_owner_seed.json": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515",
+    "frost.txt": "b6f81ef2040b029e361b63be4bd9591dbc3a151b9ecae927805152e365521e53",
+    "p102.cli": "5af208853205300ab2cc606070407fccccba3b4c8d770f5e242613033fa2508a",
+    "p102.man": "6abc78f34c8900fd11d243ef5916b9acf89fa25fd087bddc64d9c02b7517ce5f",
+    "p102.run": "1cabf3319ccf83baaf00d4c94c6de6804a09918307f162275b58fc6ea64b577f",
+    "p102.slp": "be38e0a111db3708ca73bf9d207fd799ddd3c67bff4fecaabbfbab3956d12d74",
+    "p102.sol": "e0a86be22d7c819ac963620648b844ed18d1ac78ee867ea34587dad7ef225dca",
+    "pmetpara.txt": "7f67616e491e293a41ef3a79940108cf5de5cb0b780ab9728234ee1eb2aaf9b2",
+    "snow.txt": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba",
+    "wepp_ui.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "case_data_matches_original": true,
+  "policy_matches_original": true,
+  "file_names_match_original": true,
+  "byte_identical_to_original": [
+    "README.md",
+    "case.man.yaml",
+    "case.run",
+    "case.run.snow_stage3_v11_owner_seed.json",
+    "frost.txt",
+    "p102.cli",
+    "p102.man",
+    "p102.run",
+    "p102.slp",
+    "p102.sol",
+    "pmetpara.txt",
+    "snow.txt",
+    "wepp_ui.txt"
+  ],
+  "changed_files": [],
+  "current_input_tree_hash": "3fe515282d23cb43d5290c785aa0f8f110a25cb95362e420a071fa06db1f62f6",
+  "historical_input_tree_hash": "3fe515282d23cb43d5290c785aa0f8f110a25cb95362e420a071fa06db1f62f6",
+  "current_input_receipt_sha256": "feac1e37b6a082ee1c193f11894766aac26eff1346ab4ca954e8c86b9d5cb273"
+}

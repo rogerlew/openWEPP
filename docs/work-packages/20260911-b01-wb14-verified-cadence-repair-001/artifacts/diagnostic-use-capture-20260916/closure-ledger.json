@@ -1,0 +1,27 @@
+{
+  "through_utc": "2026-09-16T04:23:53.151090+00:00",
+  "state": "pre-publication subtotal; final overhead pending",
+  "carry_charged_seconds": 41786.563411,
+  "continuation_start_utc": "2026-09-16T03:03:00+00:00",
+  "all_wall_seconds_charged": 4853.15109,
+  "cumulative_charged_seconds": 46639.714501,
+  "cumulative_ceiling_seconds": 51155.159526,
+  "remaining_seconds": 4515.445025,
+  "cumulative_failures": 67,
+  "new_failed_verification_invocations": 8,
+  "new_failed_model_invocations": 1,
+  "corrected_capture": "1/1 consumed",
+  "old_capture": "1/1 consumed",
+  "old_witness": "1/1 consumed",
+  "authentic_probe": "0/1 RESERVED AND PROHIBITED",
+  "wait_deductions_seconds": 0,
+  "acquisition": "COMPLETE/PASS",
+  "overall_package": "INCOMPLETE/HOLD",
+  "final_local_ledger": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/diagnostic-use-capture-publication.json",
+  "failure_breakdown": {
+    "carried": 58,
+    "focused_offline": 7,
+    "model": 1,
+    "initial_staged_whitespace_check": 1
+  }
+}

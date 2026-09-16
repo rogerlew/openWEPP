@@ -1,0 +1,61 @@
+{"path":[],"event":"start_map","value":null}
+{"path":[{"member":"archive_entry","position":0}],"event":"map_key","value":"archive_entry"}
+{"path":[],"event":"start_map","value":null}
+{"path":[{"member":"beginning_owner_set_sha256","position":0}],"event":"map_key","value":"beginning_owner_set_sha256"}
+{"path":[],"event":"string","value":"45dbcf5c83118ea4c6da3b55fbd07125c8208341e8aeece957cab02fe1915c7e"}
+{"path":[{"member":"canonical_uncompressed_len","position":1}],"event":"map_key","value":"canonical_uncompressed_len"}
+{"path":[],"event":"number","value":{"number_lexeme":"373891449","encoding":"exact Decimal event"}}
+{"path":[{"member":"committed_publication_receipt_sha256","position":2}],"event":"map_key","value":"committed_publication_receipt_sha256"}
+{"path":[],"event":"string","value":"2fa562a7a3e2f6658ebc8b5803ca7a3ee15618c03973ed7e8855ff5a092ce441"}
+{"path":[{"member":"content_sha256","position":3}],"event":"map_key","value":"content_sha256"}
+{"path":[],"event":"string","value":"7965ae7a3485d727af13c9d530525eaedd367ae7271cc23855cb751265fd38ba"}
+{"path":[{"member":"day_index","position":4}],"event":"map_key","value":"day_index"}
+{"path":[],"event":"number","value":{"number_lexeme":"2","encoding":"exact Decimal event"}}
+{"path":[{"member":"ending_accepted_until_ns","position":5}],"event":"map_key","value":"ending_accepted_until_ns"}
+{"path":[],"event":"number","value":{"number_lexeme":"259200000000000","encoding":"exact Decimal event"}}
+{"path":[{"member":"ending_next_parent_sequence","position":6}],"event":"map_key","value":"ending_next_parent_sequence"}
+{"path":[],"event":"number","value":{"number_lexeme":"144","encoding":"exact Decimal event"}}
+{"path":[{"member":"ending_owner_set_sha256","position":7}],"event":"map_key","value":"ending_owner_set_sha256"}
+{"path":[],"event":"string","value":"845455b5ef052c2fce4637f479f9ded4744123889dc90b1513263fef74070994"}
+{"path":[{"member":"parent_receipt_sha256","position":8}],"event":"map_key","value":"parent_receipt_sha256"}
+{"path":[],"event":"string","value":"f10729cfaf7a158db8116c2db037c75640599870ea481ac7efa3ee1a185fcfa8"}
+{"path":[{"member":"previous_archive_content_root_sha256","position":9}],"event":"map_key","value":"previous_archive_content_root_sha256"}
+{"path":[],"event":"string","value":"7d19c90ebc2287335a48d59d07b06ee5b0e5dea8c5c3cd498a47c3f571691fa0"}
+{"path":[{"member":"previous_ordered_day_chain_sha256","position":10}],"event":"map_key","value":"previous_ordered_day_chain_sha256"}
+{"path":[],"event":"string","value":"7f71effb27cbc67e473594c30f8b43a966b7c1a0f162ca2f378fbcdaa6c2c6e6"}
+{"path":[{"member":"publication_evidence_sha256","position":11}],"event":"map_key","value":"publication_evidence_sha256"}
+{"path":[],"event":"string","value":"106b84a814b4664b6963efc055500bc9e81051dc3cb10ebcee029208eaba6cce"}
+{"path":[{"member":"qualification_day_delta_sha256","position":12}],"event":"map_key","value":"qualification_day_delta_sha256"}
+{"path":[],"event":"string","value":"862061f83a2983d2c485eb23d31495161faee53e71d95a5a781e12590298930d"}
+{"path":[{"member":"record_sha256","position":13}],"event":"map_key","value":"record_sha256"}
+{"path":[],"event":"string","value":"436ca69dd59c5f65109ef6babd1a0fe9afcb472bef22729119e346fefcf5fc1c"}
+{"path":[{"member":"resulting_archive_content_root_sha256","position":14}],"event":"map_key","value":"resulting_archive_content_root_sha256"}
+{"path":[],"event":"string","value":"d043527697e227c078825040fa5188c3c0676723201fd3e8548de305f046638d"}
+{"path":[{"member":"resulting_ordered_day_chain_sha256","position":15}],"event":"map_key","value":"resulting_ordered_day_chain_sha256"}
+{"path":[],"event":"string","value":"32ca2a97db76c48776c01e1675667d4a6f5d3264cea045c2badc6b62e3fb1cf4"}
+{"path":[{"member":"schema_version","position":16}],"event":"map_key","value":"schema_version"}
+{"path":[],"event":"number","value":{"number_lexeme":"1","encoding":"exact Decimal event"}}
+{"path":[],"event":"end_map","value":null}
+{"path":[{"member":"canonical_record","position":1}],"event":"map_key","value":"canonical_record"}
+{"event":"external_byte_array_start","path":[{"member":"canonical_record","position":1}],"file":"rows/79222.canonical_record.bin","encoding":"source-defined Vec<u8>; streamed bytes"}
+{"event":"external_byte_array_end","path":[{"member":"canonical_record","position":1}],"file":"rows/79222.canonical_record.bin","bytes":373891449,"sha256":"7965ae7a3485d727af13c9d530525eaedd367ae7271cc23855cb751265fd38ba"}
+{"path":[{"member":"capture","position":2}],"event":"map_key","value":"capture"}
+{"path":[],"event":"start_map","value":null}
+{"path":[{"member":"ordinal","position":0}],"event":"map_key","value":"ordinal"}
+{"path":[],"event":"number","value":{"number_lexeme":"79222","encoding":"exact Decimal event"}}
+{"path":[{"member":"process","position":1}],"event":"map_key","value":"process"}
+{"path":[],"event":"number","value":{"number_lexeme":"996446","encoding":"exact Decimal event"}}
+{"path":[{"member":"session","position":2}],"event":"map_key","value":"session"}
+{"path":[],"event":"number","value":{"number_lexeme":"1","encoding":"exact Decimal event"}}
+{"path":[{"member":"thread","position":3}],"event":"map_key","value":"thread"}
+{"path":[],"event":"string","value":"ThreadId(2)"}
+{"path":[],"event":"end_map","value":null}
+{"path":[{"member":"day_index","position":3}],"event":"map_key","value":"day_index"}
+{"path":[],"event":"number","value":{"number_lexeme":"2","encoding":"exact Decimal event"}}
+{"path":[{"member":"kind","position":4}],"event":"map_key","value":"kind"}
+{"path":[],"event":"string","value":"b01_wb14_committed_day_archive_record_v1"}
+{"path":[{"member":"static_run_identity","position":5}],"event":"map_key","value":"static_run_identity"}
+{"path":[],"event":"string","value":"59bce9a19ec0402075d3ca88c00594f5bea65e82df3efde86a21cc8db91680e9"}
+{"path":[{"member":"static_topology_identity","position":6}],"event":"map_key","value":"static_topology_identity"}
+{"path":[],"event":"string","value":"a8890ab71b502ee9afe95b2cc14681ba9627fd946276c524668142c757801a75"}
+{"path":[],"event":"end_map","value":null}

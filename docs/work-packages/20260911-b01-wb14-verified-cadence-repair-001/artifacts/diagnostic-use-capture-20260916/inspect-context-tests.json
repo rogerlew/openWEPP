@@ -1,0 +1,22 @@
+{
+  "start_utc": "2026-09-16T03:59:59.343036985Z",
+  "argv": [
+    ".venv/bin/python",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/diagnostic-use-capture-20260916/test_inspect_context.py"
+  ],
+  "scripts": {
+    "inspect_context.py": "586408287ff1ad3cc866db868d17b0bb98cf34dc1649f480592a5016dcfc4edb",
+    "test_inspect_context.py": "4f75bf16b840c3a4fbf6dae581884ca86753a5986b1fe4b0b0e526d53ae5ba81"
+  },
+  "model_invocations": 0,
+  "exit": 0,
+  "end_utc": "2026-09-16T03:59:59.715374176Z",
+  "stdout_sha256": "07df55bdc251eb79e15346e3dce9cc31bd2f78bb5acd2508b408373fb39a95b6",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "prior_unrecorded_focused_failure": {
+    "exit": 1,
+    "relevant_error_excerpt": "ContextInspectionError: typed bytes must start with an object",
+    "cause": "initial fixture encoded parent_working_typed_bytes as an array instead of the required {Ok:[...]} wrapper; fixture corrected before this terminal pass"
+  },
+  "new_focused_failures": 1
+}

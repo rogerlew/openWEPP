@@ -1,16 +1,209 @@
 # B01 WB14 verified parent cadence repair
 
-**Status: INCOMPLETE / HOLD.** Recorder controls, native payload parity and
-formatting retain PASS on the unchanged detached candidate. Supplemental lint
-collection is COMPLETE across every selected target/configuration on both sources;
-both independent reviews accept the amended matched-diagnostic criterion as PASS.
-Strict Clippy remains FAIL. The original regression remains FAIL on baseline and
-candidate and the scientific/authority disagreement remains unresolved.
+**Status: INCOMPLETE / HOLD.** The newly authorized diagnostic acquisition is
+**COMPLETE / PASS** under both independent reviews: the genuine snow-free
+pre-child payload and accompanying evidence are retained and structurally
+inspectable. The captured model still fails E008, and native restoration was not
+run. Recorder controls, native payload parity and formatting retain PASS on the
+unchanged candidate; matched-diagnostic lint remains PASS, strict Clippy FAIL,
+and the original baseline/candidate regression FAIL. Cadence remains unresolved.
 
 Authentic capture and witness allowances are exhausted (**1 / 1** each).
+The additional corrected-recorder diagnostic acquisition is also **1 / 1 consumed**.
 The authentic probe remains **0 / 1, RESERVED AND PROHIBITED**. Cadence is suspended.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Diagnostic-only corrected-recorder acquisition — adopted 2026-09-16
+
+Owner execution of `/tmp/openwepp_b01_wb14_diagnostic_use_capture_authorization.md`
+adopted one additional original-input acquisition, **CORRECTED-RECORDER-20260916**,
+within `B01-WB14-CURRENT-CONTEXT-CAPTURE`. It is now **1/1 consumed**. The older
+capture and witness remain **1/1 consumed** each; the authentic probe remains
+**0/1 RESERVED AND PROHIBITED**. Diagnostic use of the known-failing recorder was
+explicitly permitted without scientific or full recorder acceptance. No cadence,
+solver, admission, parent-authority, native-reader or production-source change
+was authorized or made.
+
+Intent declared before edits: build and freeze the unchanged accepted candidate
+through the retained Nix/Cargo protocol; verify the exact harness and original
+inputs; run the existing collector once with B01 / `gradual_warm_tail7` / one OFE,
+seven forcing rows, physical observation enabled, no retry and child timeout
+3,600 seconds; preserve terminal outcomes; inventory the whole stream; export
+all actual target/error and accompanying provider/archive/guard/caller records;
+perform bounded offline structural inspection and two independent reviews.
+SC-SURFACELIQUID-001 INV-035/C-025 and related coupled chronology remain binding.
+Neither recording a supplied object nor matching its bytes accepts its authority.
+
+### Exact producing identities and execution
+
+- Retained candidate: `/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915`.
+  Its 741-entry tree SHA-256 is `ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592`;
+  cumulative patch is `4559c7d21fbcdb9314845e6a5c19940d051d0ef861e48c7cb2a4ae7e51020c5d`.
+  Producing-base tree is `114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5`;
+  supplemental execution-input custody remains separately defined as
+  `2e9e27eeb0a355672e7a74c8fd645a2ce95182ae88bf78741bc8f98ecac9b082`.
+- New frozen executable: `/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-20260916.frozen`,
+  SHA-256 `1c733d1ca2fea700b2f34f06cd29a89a6f7d66977a042ddfb371816a320a0955`.
+  Build-input stamp: `c8da7f27e2b7c8ee33a38e4a426b84681b1ddecae27efafcd97a7489f62fb71c`.
+  The old recorder and warning-capped diagnostic artifacts were not used.
+- Original case SHA-256: `c48cc560dff31102085ebcf852225b2063a1629ad96cfa9f7283364df44fbf3f`.
+  All 13 generated fixture files match the original bundle byte for byte; runtime
+  input-tree hash is `3fe515282d23cb43d5290c785aa0f8f110a25cb95362e420a071fa06db1f62f6`.
+  [Post-model custody](artifacts/diagnostic-use-capture-20260916/post-model-custody.json)
+  verifies candidate/source inputs, executable, generated files and master input
+  bundle remained unchanged.
+
+Ran: [build](artifacts/diagnostic-use-capture-20260916/build-command.json) exit **0**;
+[exact harness listing](artifacts/diagnostic-use-capture-20260916/compiled-list.json)
+found one test / zero benchmarks and executed zero tests. The build retained the
+explicit candidate manifest, locked three-feature selection and historical
+release/LTO settings, using a new target directory.
+[Preflight](artifacts/diagnostic-use-capture-20260916/preflight.json) verified current
+source/binary/input identity, CPU0, fresh durable paths, observer activation and
+storage. Free durable space was 39,088,013,312 bytes against 29,333,337,005 required;
+8,794.260724 seconds remained against 6,300 reserved before launch.
+
+The single [launch](artifacts/diagnostic-use-capture-20260916/raw-launch-start.json)
+started **03:13:55.827612 UTC** (wrapper996414, collector996445, runner996446).
+The live snapshot confirms `OPENWEPP_ACCURACY_PHYSICAL=1`, repeats1 and the actual
+new frozen executable. Correctness preflight independently verified the production
+observer/constructor retention and snow-free hook before physical execution.
+No historical observation ordinal was used to select the new target.
+
+[Terminal result](artifacts/diagnostic-use-capture-20260916/raw-launch-terminal.json):
+**runner101 / FAIL**, **collector0**, no timeout or infrastructure error;
+`execution_valid=false`, `observation_complete=true`. Model wall time was
+1,436.63587989 seconds; collector wall time was 1,695.44946052 seconds. The captured
+failure is `SURFACELIQUID-E-008 IngressCandidate: WB14 day or interval continuation
+mismatch`. The separately retained original regression still fails on baseline
+and candidate with its preliminary direct-segment canonical-covered evaluation-
+budget error. Neither failure was repaired, waived or converted to PASS.
+
+### Complete acquisition and inspectable payloads
+
+The [terminal collection](artifacts/diagnostic-use-capture-20260916/terminal-collection.json)
+hashes every retained output and copies small terminal records into `terminal/`.
+The complete observation stream has **8,701,419,029 bytes / 123,094 physical rows**,
+SHA-256 `1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c`.
+Raw observations/spool and the fixture remain in the new durable namespaces
+`corrected-recorder-capture-20260916-1` and `corrected-recorder-fixture-20260916-1`
+under `/workdir/openwepp-experiments/b01-wb14-cadence/`; older corpora are intact.
+
+Ran: unchanged [whole-stream inventory](artifacts/diagnostic-use-capture-20260916/inventory/summary.json)
+**COMPLETE**, exact bytes/hash/EOF, 123,094 completed rows and zero anomalies;
+418.231 seconds, 26,692KiB peak RSS under a 1GiB address-space limit. It records
+488 broadly relevant metadata rows. Current semantic selection retains all eight
+required records, with one target and zero capture-error rows:
+
+| Recorded material | Current physical ordinal(s) |
+| --- | --- |
+| Committed-day archives, days0–3 | 27431, 54078, 79222, 107936 |
+| Day4 prepared/provider context | 108033 |
+| Snow-free pre-child day4/interval22 | 123091 |
+| WB14 guard and caller failures | 123092, 123093 |
+
+Ran: [selected export](artifacts/diagnostic-use-capture-20260916/export-summary.json)
+**COMPLETE**, independently traversing the entire same stream and matching hash,
+bytes, count, EOF and unchanged file identity. All eight selected records and
+all their members are retained. Payload output is **1,796,372,827 bytes**:
+54,117 event-envelope bytes, 466,164,750 compact JSON bytes and 1,330,153,960 archive
+binary bytes. Runtime was 1,102.814 seconds, peak RSS29,676KiB, under the recorded
+1GiB / 3,600-second bounds and 4GiB payload-output limit plus 1GiB reserve.
+Small manifest/directory overhead is outside that payload counter. Full export:
+`/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1`.
+
+Both [export inspection](artifacts/diagnostic-use-capture-20260916/inspect-summary.json)
+and [context inspection](artifacts/diagnostic-use-capture-20260916/context-summary.json)
+completed with exit0 on unchanged, tested utilities. They verify member paths,
+file hashes/lengths, strict byte arrays, bounded inner-JSON decoding and named
+history structure. The [supplemental structural findings](artifacts/diagnostic-use-capture-20260916/structural-findings.json)
+bind the following comparisons to actual retained payloads:
+
+- The target has37 top-level members. Its transformed and provisional support
+  both equal `[385920000000000,385980000000000)` nanoseconds. Current parent and
+  coupled clock both end their accepted prefix at385920000000000. The provider
+  has48 ordered supports; interval22 parent support matches the current clock.
+  The constructor records `v11-real-consumer`, with no covered projection.
+- The captured parent checkpoint is decoded from1,925,058 canonical bytes;
+  the current coupled clock from42,870 bytes. Each records eight accepted
+  segments/slabs. Phase history contains eight contiguous owner joins spanning
+  parent start to child start, one event group, recorded prefix operands,
+  deferred native soil custody and pending terminal parcels. These are recorded
+  operands and structural comparisons, not recomputed prefix authentication.
+- Both complete-owner maps and transformed/native constructor operands are
+  exported. Small JSON members are decoded where bounded; the457,913,228-byte
+  native-consumer operand is fully retained locally but not reconstructed.
+  Explicit canonical/typed byte members, including configurations, reduction,
+  ledger, provisional receipt, cursor and guard/caller state, have decoded byte
+  files. Inner JSON is bounded at8MiB. No installable native context was created.
+- Archive days0–3 have matching declared byte lengths/content hashes and linked
+  recorded archive roots, day chains and owner sets. The day4 provider prefix
+  matches the last recorded archive. All eight capture metadata records match
+  their actual physical ordinal, process996446 and session1.
+- Guard/caller input and beginning-state bytes match; caller beginning/working
+  bytes also match. Actual transaction255 is recorded with outer day4/interval22.
+  Inner `ofe-1` parent authority remains **0/0**, so the cadence disagreement is
+  still present. Recording and exporting it does not accept it.
+
+Report erratum: `inspect-summary.json` emits the literal label `"day_index"`
+inside `archive_integrity.day_index`. It is not a day value. The supplemental
+findings extract true days0–3 directly from retained row events and archive
+entries without rewriting that original receipt; same-reviewer QA verified the
+correction. Hash/length checks were unaffected.
+
+Every scientific value remains **semantically unvalidated**. Present/exported,
+byte-decoded, inner-JSON-decoded and structurally checked are distinct statuses.
+No native importer/probe, successor/finalization run, conservation proof, restart
+acceptance or model-correctness claim follows from this acquisition.
+
+### Review, corrections, publication and remaining boundary
+
+Offline corrections stayed within observational tooling. Actual archive-member
+order, nested routing, string-valued `TimeSupport`, exact numbers/duplicate keys,
+64KiB byte buffering and aggregate pre-write output bounds are covered by the
+[source-bound exporter tests](artifacts/diagnostic-use-capture-20260916/export-tests.json).
+The initial automatic coordinator was deliberately cancelled before any export
+when current payload size exposed excessive event expansion; compact streaming
+subtrees preserve the full data instead. `/root/lint_diagnostics_processing`
+returned remaining hardening unfinished; the sequential sole replacement writer
+`/root/capture_export_completion` completed it and the separate
+[context-inspector tests](artifacts/diagnostic-use-capture-20260916/inspect-context-tests.json).
+No concurrent writers or model retries occurred. There were seven failed focused
+offline invocations before terminal passing tests, plus the one model failure.
+
+Independent `/root/diagnostics_qa` reviewed the affected tools, new corpus,
+archive bytes, source custody, bounded processing and compact-copy integrity;
+[QA disposition](artifacts/diagnostic-use-capture-20260916/qa-review.md) is **PASS**
+for scoped diagnostic custody/completeness/structural provenance. Independent
+`/root/diagnostics_correctness` verified the actual archive/provider/prefix,
+target-clock-support and guard/caller joins;
+[correctness disposition](artifacts/diagnostic-use-capture-20260916/correctness-review.md)
+is **PASS** for bounded acquisition/custody. Both reviewers are distinct from the
+writers, orchestrator and each other; each verified affected fixes in their own
+scope. Thus this diagnostic acquisition is **COMPLETE / PASS**. Prior accepted recorder controls, formatting,
+native parity and matched-diagnostic lint work remain closed on unchanged source.
+Strict Clippy remains **FAIL**, matched-diagnostic criterion **PASS**, original
+regression **FAIL**, and full recorder/current-context/cadence **INCOMPLETE/HOLD**.
+
+[Compact payload custody](artifacts/diagnostic-use-capture-20260916/payload-publication-manifest.json)
+prepares62 exact or losslessly compressed payload files totaling1,176,572 bytes;
+every gzip is checked against its decompressed source hash. Four archive binaries
+and the large native-consumer operand remain local only, as do the full raw
+stream/spool. The compact copies and manifests do not replace those large
+payloads. Scoped Git publication and remote byte verification remain pending.
+
+Accounting carries **41,786.563411 / 51,155.159526 charged seconds** at conservative
+start **03:03:00 UTC**, with no new allowance and no wait deductions. Deadline is
+**05:39:08.596115 UTC**. Cumulative failures are **67** (58 carried, seven focused
+offline checks, one model invocation, one initial staged whitespace check). The [60-minute internal reassessment](artifacts/diagnostic-use-capture-20260916/internal-reassessment.json)
+continued useful in-scope collection with publication/review time reserved; it
+renewed no budget or invocation. The staged whitespace check found a Markdown hard-break (removed without
+changing reviewer prose) and the original stdout trailing blank line (retained
+byte for byte); final whitespace validation excludes only that raw log. Final
+publication overhead and ledger are still to be reconciled. The current acquisition is exhausted; further model execution,
+native restoration/probe, cadence repair or scientific qualification requires
+separate owner-adopted scope.
 
 ## Complete diagnostic collection amendment — adopted 2026-09-16 UTC
 

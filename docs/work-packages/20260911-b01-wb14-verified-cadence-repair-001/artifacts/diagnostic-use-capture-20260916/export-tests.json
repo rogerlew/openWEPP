@@ -1,0 +1,20 @@
+{
+  "start_utc": "2026-09-16T03:51:58.305308513Z",
+  "argv": [
+    ".venv/bin/python",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/diagnostic-use-capture-20260916/test_export_selected.py"
+  ],
+  "scripts": {
+    "export_selected.py": "2e6e0d8c6c318124ee5d30fb06b97baebcd3e6233a0ce6a998e4a4648aea586e",
+    "inspect_exports.py": "57b5dcafd8677d1122b71027eba90ea90f4f40e03477d38ba487d3857c37f93a",
+    "test_export_selected.py": "21c83b1a97d6528f676885b7e79a5c65ec140f8646f444eca21b8079eaca64a4"
+  },
+  "model_invocations": 0,
+  "exit": 0,
+  "end_utc": "2026-09-16T03:51:59.46044747Z",
+  "stdout_sha256": "4005f778fa3a97845d97e331a9955000b762d9839ae8e1dadfd8240a79e9a049",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "prior_offline_failed_invocations": 6,
+  "new_offline_failed_invocations": 0,
+  "accounting_note": "Parent reconciliation: original writer reported five earlier failed focused invocations plus one generic JSON accounting assertion failure; replacement writer reported zero new failures."
+}

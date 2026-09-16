@@ -1,0 +1,1491 @@
+{
+  "status": "COMPLETE",
+  "export_summary_sha256": "cf5f6612d65c3b5a2a53583560730e8d5c551795efc73ff6b3fd5735e41c17bb",
+  "rows": [
+    {
+      "physical_ordinal": 27431,
+      "kind": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "role": "related_b01",
+      "top_level_members": [
+        {
+          "member": "archive_entry",
+          "position": 0,
+          "file": "0000-archive_entry.events.jsonl"
+        },
+        {
+          "member": "canonical_record",
+          "position": 1,
+          "file": "0001-canonical_record.events.jsonl"
+        },
+        {
+          "member": "capture",
+          "position": 2,
+          "file": "0002-capture.events.jsonl"
+        },
+        {
+          "member": "day_index",
+          "position": 3,
+          "file": "0003-day_index.events.jsonl"
+        },
+        {
+          "member": "kind",
+          "position": 4,
+          "file": "0004-kind.events.jsonl"
+        },
+        {
+          "member": "static_run_identity",
+          "position": 5,
+          "file": "0005-static_run_identity.events.jsonl"
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 6,
+          "file": "0006-static_topology_identity.events.jsonl"
+        }
+      ],
+      "external_byte_arrays": [
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "file": "rows/27431.canonical_record.bin",
+          "bytes": 307105003,
+          "sha256": "3d91e0ed544eaf5afc85760a27fa4549a56015a31d9def83abdbe2e0fe4b3452",
+          "status": "exported; structural byte hash checked; semantically unvalidated"
+        }
+      ],
+      "external_json": [],
+      "decoded_members": [],
+      "archive_integrity": {
+        "day_index": "day_index",
+        "canonical_uncompressed_len": 307105003,
+        "content_sha256": "3d91e0ed544eaf5afc85760a27fa4549a56015a31d9def83abdbe2e0fe4b3452",
+        "status": "structurally checked; semantically unvalidated"
+      },
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 54078,
+      "kind": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "role": "related_b01",
+      "top_level_members": [
+        {
+          "member": "archive_entry",
+          "position": 0,
+          "file": "0000-archive_entry.events.jsonl"
+        },
+        {
+          "member": "canonical_record",
+          "position": 1,
+          "file": "0001-canonical_record.events.jsonl"
+        },
+        {
+          "member": "capture",
+          "position": 2,
+          "file": "0002-capture.events.jsonl"
+        },
+        {
+          "member": "day_index",
+          "position": 3,
+          "file": "0003-day_index.events.jsonl"
+        },
+        {
+          "member": "kind",
+          "position": 4,
+          "file": "0004-kind.events.jsonl"
+        },
+        {
+          "member": "static_run_identity",
+          "position": 5,
+          "file": "0005-static_run_identity.events.jsonl"
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 6,
+          "file": "0006-static_topology_identity.events.jsonl"
+        }
+      ],
+      "external_byte_arrays": [
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "file": "rows/54078.canonical_record.bin",
+          "bytes": 376086364,
+          "sha256": "41acc940916dfc98326f32fc55ee13de773888acd876a1b0a274f74c5b9ecca0",
+          "status": "exported; structural byte hash checked; semantically unvalidated"
+        }
+      ],
+      "external_json": [],
+      "decoded_members": [],
+      "archive_integrity": {
+        "day_index": "day_index",
+        "canonical_uncompressed_len": 376086364,
+        "content_sha256": "41acc940916dfc98326f32fc55ee13de773888acd876a1b0a274f74c5b9ecca0",
+        "status": "structurally checked; semantically unvalidated"
+      },
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 79222,
+      "kind": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "role": "related_b01",
+      "top_level_members": [
+        {
+          "member": "archive_entry",
+          "position": 0,
+          "file": "0000-archive_entry.events.jsonl"
+        },
+        {
+          "member": "canonical_record",
+          "position": 1,
+          "file": "0001-canonical_record.events.jsonl"
+        },
+        {
+          "member": "capture",
+          "position": 2,
+          "file": "0002-capture.events.jsonl"
+        },
+        {
+          "member": "day_index",
+          "position": 3,
+          "file": "0003-day_index.events.jsonl"
+        },
+        {
+          "member": "kind",
+          "position": 4,
+          "file": "0004-kind.events.jsonl"
+        },
+        {
+          "member": "static_run_identity",
+          "position": 5,
+          "file": "0005-static_run_identity.events.jsonl"
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 6,
+          "file": "0006-static_topology_identity.events.jsonl"
+        }
+      ],
+      "external_byte_arrays": [
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "file": "rows/79222.canonical_record.bin",
+          "bytes": 373891449,
+          "sha256": "7965ae7a3485d727af13c9d530525eaedd367ae7271cc23855cb751265fd38ba",
+          "status": "exported; structural byte hash checked; semantically unvalidated"
+        }
+      ],
+      "external_json": [],
+      "decoded_members": [],
+      "archive_integrity": {
+        "day_index": "day_index",
+        "canonical_uncompressed_len": 373891449,
+        "content_sha256": "7965ae7a3485d727af13c9d530525eaedd367ae7271cc23855cb751265fd38ba",
+        "status": "structurally checked; semantically unvalidated"
+      },
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 107936,
+      "kind": [
+        "b01_wb14_committed_day_archive_record_v1"
+      ],
+      "role": "related_b01",
+      "top_level_members": [
+        {
+          "member": "archive_entry",
+          "position": 0,
+          "file": "0000-archive_entry.events.jsonl"
+        },
+        {
+          "member": "canonical_record",
+          "position": 1,
+          "file": "0001-canonical_record.events.jsonl"
+        },
+        {
+          "member": "capture",
+          "position": 2,
+          "file": "0002-capture.events.jsonl"
+        },
+        {
+          "member": "day_index",
+          "position": 3,
+          "file": "0003-day_index.events.jsonl"
+        },
+        {
+          "member": "kind",
+          "position": 4,
+          "file": "0004-kind.events.jsonl"
+        },
+        {
+          "member": "static_run_identity",
+          "position": 5,
+          "file": "0005-static_run_identity.events.jsonl"
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 6,
+          "file": "0006-static_topology_identity.events.jsonl"
+        }
+      ],
+      "external_byte_arrays": [
+        {
+          "path": [
+            {
+              "member": "canonical_record",
+              "position": 1
+            }
+          ],
+          "file": "rows/107936.canonical_record.bin",
+          "bytes": 273071144,
+          "sha256": "a9432f9740f0a505939b77c7cfa8e6465bbeb8bce0e3591ab7b416e43ebfd4d4",
+          "status": "exported; structural byte hash checked; semantically unvalidated"
+        }
+      ],
+      "external_json": [],
+      "decoded_members": [],
+      "archive_integrity": {
+        "day_index": "day_index",
+        "canonical_uncompressed_len": 273071144,
+        "content_sha256": "a9432f9740f0a505939b77c7cfa8e6465bbeb8bce0e3591ab7b416e43ebfd4d4",
+        "status": "structurally checked; semantically unvalidated"
+      },
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 108033,
+      "kind": [
+        "b01_wb14_prepared_day_current_context_v1"
+      ],
+      "role": "related_b01",
+      "top_level_members": [
+        {
+          "member": "archived_receipt_prefix",
+          "position": 0,
+          "file": "0000-archived_receipt_prefix.events.jsonl"
+        },
+        {
+          "member": "capture",
+          "position": 1,
+          "file": "0001-capture.events.jsonl"
+        },
+        {
+          "member": "capture_posture",
+          "position": 2,
+          "file": "0002-capture_posture.events.jsonl"
+        },
+        {
+          "member": "committed_clock_restart_canonical_json",
+          "position": 3,
+          "file": "0003-committed_clock_restart_canonical_json.events.jsonl"
+        },
+        {
+          "member": "committed_next_parent_sequence",
+          "position": 4,
+          "file": "0004-committed_next_parent_sequence.events.jsonl"
+        },
+        {
+          "member": "committed_receipt_tail_count",
+          "position": 5,
+          "file": "0005-committed_receipt_tail_count.events.jsonl"
+        },
+        {
+          "member": "day_index",
+          "position": 6,
+          "file": "0006-day_index.events.jsonl"
+        },
+        {
+          "member": "kind",
+          "position": 7,
+          "file": "0007-kind.events.jsonl"
+        },
+        {
+          "member": "native_committed_bootstrap_lane_map_constructor_operands",
+          "position": 8,
+          "file": "0008-native_committed_bootstrap_lane_map_constructor_operands.events.jsonl"
+        },
+        {
+          "member": "native_committed_bootstrap_soil_v2_constructor_operands",
+          "position": 9,
+          "file": "0009-native_committed_bootstrap_soil_v2_constructor_operands.events.jsonl"
+        },
+        {
+          "member": "ordered_support_constructor_operands",
+          "position": 10,
+          "file": "0010-ordered_support_constructor_operands.events.jsonl"
+        },
+        {
+          "member": "provider_constructor_operands",
+          "position": 11,
+          "file": "0011-provider_constructor_operands.events.jsonl"
+        },
+        {
+          "member": "snow_enthalpy_material_residents",
+          "position": 12,
+          "file": "0012-snow_enthalpy_material_residents.events.jsonl"
+        },
+        {
+          "member": "static_run_identity",
+          "position": 13,
+          "file": "0013-static_run_identity.events.jsonl"
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 14,
+          "file": "0014-static_topology_identity.events.jsonl"
+        }
+      ],
+      "external_byte_arrays": [],
+      "external_json": [
+        {
+          "path": [
+            {
+              "member": "archived_receipt_prefix",
+              "position": 0
+            }
+          ],
+          "file": "rows/108033.0.json",
+          "bytes": 2834,
+          "sha256": "8900d4d3a36b2f4ad46c631adff2503fea55b1d739185f748c144e932ebd8cd0",
+          "member_position": {
+            "member": "archived_receipt_prefix",
+            "position": 0
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "committed_clock_restart_canonical_json",
+              "position": 3
+            }
+          ],
+          "file": "rows/108033.3.json",
+          "bytes": 223918,
+          "sha256": "ffe8c5b3b8cddfc972d91b4b562b6d0136fdc47f84f33d5e2b28d016dc81cda8",
+          "member_position": {
+            "member": "committed_clock_restart_canonical_json",
+            "position": 3
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "native_committed_bootstrap_lane_map_constructor_operands",
+              "position": 8
+            }
+          ],
+          "file": "rows/108033.8.json",
+          "bytes": 111,
+          "sha256": "b490483de1802d99f84c968b6a80f986c2b6d36cf2a3d9468cf94dfd8c1daeb0",
+          "member_position": {
+            "member": "native_committed_bootstrap_lane_map_constructor_operands",
+            "position": 8
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "native_committed_bootstrap_soil_v2_constructor_operands",
+              "position": 9
+            }
+          ],
+          "file": "rows/108033.9.json",
+          "bytes": 315288,
+          "sha256": "53ef8620f29ef2478a1debf9243d08b96aea899e320f9e59ccd423752b36f8b0",
+          "member_position": {
+            "member": "native_committed_bootstrap_soil_v2_constructor_operands",
+            "position": 9
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "ordered_support_constructor_operands",
+              "position": 10
+            }
+          ],
+          "file": "rows/108033.10.json",
+          "bytes": 606393,
+          "sha256": "1d9d17e908a220d9912f14498eda113bd8cdffaaf6dfd705305d7c4c00838081",
+          "member_position": {
+            "member": "ordered_support_constructor_operands",
+            "position": 10
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "provider_constructor_operands",
+              "position": 11
+            }
+          ],
+          "file": "rows/108033.11.json",
+          "bytes": 134780,
+          "sha256": "7581abdf5250748ff289b61ee3e1bae324a65a88afffd4e01a5cf5a6b83741bc",
+          "member_position": {
+            "member": "provider_constructor_operands",
+            "position": 11
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "snow_enthalpy_material_residents",
+              "position": 12
+            }
+          ],
+          "file": "rows/108033.12.json",
+          "bytes": 160,
+          "sha256": "3b47d47157564740ab8bf2f9285f5e603aae4c08aaecb920b788511d5708a3ed",
+          "member_position": {
+            "member": "snow_enthalpy_material_residents",
+            "position": 12
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        }
+      ],
+      "decoded_members": [
+        {
+          "member": "committed_clock_restart_canonical_json",
+          "source_event_file": "0003-committed_clock_restart_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        }
+      ],
+      "archive_integrity": null,
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 123091,
+      "kind": [
+        "b01_wb14_snow_free_pre_child_current_context_v1"
+      ],
+      "role": "target_success",
+      "top_level_members": [
+        {
+          "member": "accepted_until",
+          "position": 0,
+          "file": "0000-accepted_until.events.jsonl"
+        },
+        {
+          "member": "beginning_snow_enthalpy_material_owner",
+          "position": 1,
+          "file": "0001-beginning_snow_enthalpy_material_owner.events.jsonl"
+        },
+        {
+          "member": "beginning_stage3_canonical_json",
+          "position": 2,
+          "file": "0002-beginning_stage3_canonical_json.events.jsonl"
+        },
+        {
+          "member": "capture",
+          "position": 3,
+          "file": "0003-capture.events.jsonl"
+        },
+        {
+          "member": "capture_phase",
+          "position": 4,
+          "file": "0004-capture_phase.events.jsonl"
+        },
+        {
+          "member": "capture_posture",
+          "position": 5,
+          "file": "0005-capture_posture.events.jsonl"
+        },
+        {
+          "member": "clock_complete_owner_canonical_bytes",
+          "position": 6,
+          "file": "0006-clock_complete_owner_canonical_bytes.events.jsonl"
+        },
+        {
+          "member": "complete_owner_canonical_bytes",
+          "position": 7,
+          "file": "0007-complete_owner_canonical_bytes.events.jsonl"
+        },
+        {
+          "member": "complete_owner_ledger_canonical_json",
+          "position": 8,
+          "file": "0008-complete_owner_ledger_canonical_json.events.jsonl"
+        },
+        {
+          "member": "constraint_reduction_canonical_json",
+          "position": 9,
+          "file": "0009-constraint_reduction_canonical_json.events.jsonl"
+        },
+        {
+          "member": "coupled_binding",
+          "position": 10,
+          "file": "0010-coupled_binding.events.jsonl"
+        },
+        {
+          "member": "coupled_clock_restart_authority_sha256",
+          "position": 11,
+          "file": "0011-coupled_clock_restart_authority_sha256.events.jsonl"
+        },
+        {
+          "member": "coupled_clock_restart_canonical_json",
+          "position": 12,
+          "file": "0012-coupled_clock_restart_canonical_json.events.jsonl"
+        },
+        {
+          "member": "coupled_clock_restart_model_sha256",
+          "position": 13,
+          "file": "0013-coupled_clock_restart_model_sha256.events.jsonl"
+        },
+        {
+          "member": "coupled_clock_restart_policy_sha256",
+          "position": 14,
+          "file": "0014-coupled_clock_restart_policy_sha256.events.jsonl"
+        },
+        {
+          "member": "day_index",
+          "position": 15,
+          "file": "0015-day_index.events.jsonl"
+        },
+        {
+          "member": "interval_index",
+          "position": 16,
+          "file": "0016-interval_index.events.jsonl"
+        },
+        {
+          "member": "kind",
+          "position": 17,
+          "file": "0017-kind.events.jsonl"
+        },
+        {
+          "member": "lse_configuration_canonical_json",
+          "position": 18,
+          "file": "0018-lse_configuration_canonical_json.events.jsonl"
+        },
+        {
+          "member": "native_consumer_constructor_operands",
+          "position": 19,
+          "file": "0019-native_consumer_constructor_operands.events.jsonl"
+        },
+        {
+          "member": "native_hydrology_constructor_inputs",
+          "position": 20,
+          "file": "0020-native_hydrology_constructor_inputs.events.jsonl"
+        },
+        {
+          "member": "native_hydrology_frame_dynamic_constructor_operands",
+          "position": 21,
+          "file": "0021-native_hydrology_frame_dynamic_constructor_operands.events.jsonl"
+        },
+        {
+          "member": "native_lane_map_constructor_operands",
+          "position": 22,
+          "file": "0022-native_lane_map_constructor_operands.events.jsonl"
+        },
+        {
+          "member": "native_soil_v2_constructor_operands",
+          "position": 23,
+          "file": "0023-native_soil_v2_constructor_operands.events.jsonl"
+        },
+        {
+          "member": "parent_checkpoint_canonical_json",
+          "position": 24,
+          "file": "0024-parent_checkpoint_canonical_json.events.jsonl"
+        },
+        {
+          "member": "parent_support",
+          "position": 25,
+          "file": "0025-parent_support.events.jsonl"
+        },
+        {
+          "member": "phase_diagnostics",
+          "position": 26,
+          "file": "0026-phase_diagnostics.events.jsonl"
+        },
+        {
+          "member": "prepared_support_constructor_operands",
+          "position": 27,
+          "file": "0027-prepared_support_constructor_operands.events.jsonl"
+        },
+        {
+          "member": "provider_cursor_canonical_json",
+          "position": 28,
+          "file": "0028-provider_cursor_canonical_json.events.jsonl"
+        },
+        {
+          "member": "provisional_constructor_inputs",
+          "position": 29,
+          "file": "0029-provisional_constructor_inputs.events.jsonl"
+        },
+        {
+          "member": "provisional_receipt_canonical_json",
+          "position": 30,
+          "file": "0030-provisional_receipt_canonical_json.events.jsonl"
+        },
+        {
+          "member": "static_run_identity",
+          "position": 31,
+          "file": "0031-static_run_identity.events.jsonl"
+        },
+        {
+          "member": "static_topology_identity",
+          "position": 32,
+          "file": "0032-static_topology_identity.events.jsonl"
+        },
+        {
+          "member": "support",
+          "position": 33,
+          "file": "0033-support.events.jsonl"
+        },
+        {
+          "member": "surface_liquid_configuration_canonical_json",
+          "position": 34,
+          "file": "0034-surface_liquid_configuration_canonical_json.events.jsonl"
+        },
+        {
+          "member": "terminal_parcels_produced_unconsumed_canonical_json",
+          "position": 35,
+          "file": "0035-terminal_parcels_produced_unconsumed_canonical_json.events.jsonl"
+        },
+        {
+          "member": "vegetation_configuration_canonical_json",
+          "position": 36,
+          "file": "0036-vegetation_configuration_canonical_json.events.jsonl"
+        }
+      ],
+      "external_byte_arrays": [],
+      "external_json": [
+        {
+          "path": [
+            {
+              "member": "beginning_stage3_canonical_json",
+              "position": 2
+            }
+          ],
+          "file": "rows/123091.2.json",
+          "bytes": 2636,
+          "sha256": "10cae8a34e98b4cd58e067c05edbcd9378024f60bdad38168e78b1ef0b1c6e9d",
+          "member_position": {
+            "member": "beginning_stage3_canonical_json",
+            "position": 2
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "clock_complete_owner_canonical_bytes",
+              "position": 6
+            }
+          ],
+          "file": "rows/123091.6.json",
+          "bytes": 70510,
+          "sha256": "de5ba0989f4a66c81e7eb1c5b0b5c5e6e75fe36658141608572a9e6032a6e5a6",
+          "member_position": {
+            "member": "clock_complete_owner_canonical_bytes",
+            "position": 6
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "complete_owner_canonical_bytes",
+              "position": 7
+            }
+          ],
+          "file": "rows/123091.7.json",
+          "bytes": 60023,
+          "sha256": "fb40ea15c6a88d624ad7ac344d05f936c12aeb9f5b211ff483872511b601a3df",
+          "member_position": {
+            "member": "complete_owner_canonical_bytes",
+            "position": 7
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "complete_owner_ledger_canonical_json",
+              "position": 8
+            }
+          ],
+          "file": "rows/123091.8.json",
+          "bytes": 1089,
+          "sha256": "7e86357cc245a82faafdf53095745c8861f8ab21eb73bf35b92bb1240ad6143a",
+          "member_position": {
+            "member": "complete_owner_ledger_canonical_json",
+            "position": 8
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "constraint_reduction_canonical_json",
+              "position": 9
+            }
+          ],
+          "file": "rows/123091.9.json",
+          "bytes": 2876,
+          "sha256": "e081b414b6b67fd24869f56ae7b09b37eef083a5c1fc09c7b6e9748ae9fea1a6",
+          "member_position": {
+            "member": "constraint_reduction_canonical_json",
+            "position": 9
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 10
+            }
+          ],
+          "file": "rows/123091.10.json",
+          "bytes": 665,
+          "sha256": "9e5a3bfd0353528220274a51cae4b253c68d85291aaec7a04471442967aae7a4",
+          "member_position": {
+            "member": "coupled_binding",
+            "position": 10
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_clock_restart_canonical_json",
+              "position": 12
+            }
+          ],
+          "file": "rows/123091.12.json",
+          "bytes": 141779,
+          "sha256": "6c59860507007a0ac6f4baebdff76df718352a4e1830623336c329a13aa186a1",
+          "member_position": {
+            "member": "coupled_clock_restart_canonical_json",
+            "position": 12
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "lse_configuration_canonical_json",
+              "position": 18
+            }
+          ],
+          "file": "rows/123091.18.json",
+          "bytes": 12726,
+          "sha256": "b994450337fbb0f855d0b986fc49ac035579267180ebc9e547f7a671cb2dcad6",
+          "member_position": {
+            "member": "lse_configuration_canonical_json",
+            "position": 18
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "native_consumer_constructor_operands",
+              "position": 19
+            }
+          ],
+          "file": "rows/123091.19.json",
+          "bytes": 457913228,
+          "sha256": "2e1d9732f67cae8e2291f430645f59aacf1836f00a0beddf82ad0a31bee064ba",
+          "member_position": {
+            "member": "native_consumer_constructor_operands",
+            "position": 19
+          },
+          "status": "present/exported/not decoded/semantically unvalidated",
+          "limitation": "member exceeds bounded decode limit"
+        },
+        {
+          "path": [
+            {
+              "member": "native_hydrology_constructor_inputs",
+              "position": 20
+            }
+          ],
+          "file": "rows/123091.20.json",
+          "bytes": 4797,
+          "sha256": "99e9706798db4982ac7ebba2d8576906b6a8f09367b8f3487bb3b8002768a8b1",
+          "member_position": {
+            "member": "native_hydrology_constructor_inputs",
+            "position": 20
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "native_hydrology_frame_dynamic_constructor_operands",
+              "position": 21
+            }
+          ],
+          "file": "rows/123091.21.json",
+          "bytes": 6518,
+          "sha256": "e4738c3173d7872f4a7eb478716827ba8a18b15e19d036bedc60b8a33961e3a4",
+          "member_position": {
+            "member": "native_hydrology_frame_dynamic_constructor_operands",
+            "position": 21
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "native_lane_map_constructor_operands",
+              "position": 22
+            }
+          ],
+          "file": "rows/123091.22.json",
+          "bytes": 111,
+          "sha256": "b490483de1802d99f84c968b6a80f986c2b6d36cf2a3d9468cf94dfd8c1daeb0",
+          "member_position": {
+            "member": "native_lane_map_constructor_operands",
+            "position": 22
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "native_soil_v2_constructor_operands",
+              "position": 23
+            }
+          ],
+          "file": "rows/123091.23.json",
+          "bytes": 315368,
+          "sha256": "ea7f4ce04601b7a62cb88676395a4ea5bfb0ab86a073746caafc9e2ddfec9628",
+          "member_position": {
+            "member": "native_soil_v2_constructor_operands",
+            "position": 23
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "parent_checkpoint_canonical_json",
+              "position": 24
+            }
+          ],
+          "file": "rows/123091.24.json",
+          "bytes": 5997977,
+          "sha256": "09d914ff78012a835833abfed9890cc9a88197effdf10f7c6847edb9886061af",
+          "member_position": {
+            "member": "parent_checkpoint_canonical_json",
+            "position": 24
+          },
+          "status": "present/exported/not decoded/semantically unvalidated",
+          "limitation": "member exceeds bounded decode limit"
+        },
+        {
+          "path": [
+            {
+              "member": "parent_support",
+              "position": 25
+            }
+          ],
+          "file": "rows/123091.25.json",
+          "bytes": 57,
+          "sha256": "f4a5dfd0b2ddfabfb786a9c2c077949b9f002019567965defee3c4fc3d01622c",
+          "member_position": {
+            "member": "parent_support",
+            "position": 25
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "phase_diagnostics",
+              "position": 26
+            }
+          ],
+          "file": "rows/123091.26.json",
+          "bytes": 262808,
+          "sha256": "443aa08f5e2d9d11939754901253196d63e74ac9d85481f719e4ac640047e3fd",
+          "member_position": {
+            "member": "phase_diagnostics",
+            "position": 26
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "prepared_support_constructor_operands",
+              "position": 27
+            }
+          ],
+          "file": "rows/123091.27.json",
+          "bytes": 11057,
+          "sha256": "febb81ba0e24a8415c4794460c0247016680907ba40bd47da2f67fa59e6ae0e8",
+          "member_position": {
+            "member": "prepared_support_constructor_operands",
+            "position": 27
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "provider_cursor_canonical_json",
+              "position": 28
+            }
+          ],
+          "file": "rows/123091.28.json",
+          "bytes": 522,
+          "sha256": "ed2dc65ea8db15245f677d6e0a6888567bbe68d8f329f7857b9d9f1c2cc301aa",
+          "member_position": {
+            "member": "provider_cursor_canonical_json",
+            "position": 28
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "provisional_constructor_inputs",
+              "position": 29
+            }
+          ],
+          "file": "rows/123091.29.json",
+          "bytes": 518,
+          "sha256": "a232d8da04a80fe26ac52f3c37a8fb684fe9ec9e4dbc2baa76ba9f0e27f77b1a",
+          "member_position": {
+            "member": "provisional_constructor_inputs",
+            "position": 29
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "provisional_receipt_canonical_json",
+              "position": 30
+            }
+          ],
+          "file": "rows/123091.30.json",
+          "bytes": 3386,
+          "sha256": "6285bf7a879789110f91bf4856cbb3e0a07f28a65f23ad1b65ab1e621fe07e02",
+          "member_position": {
+            "member": "provisional_receipt_canonical_json",
+            "position": 30
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "surface_liquid_configuration_canonical_json",
+              "position": 34
+            }
+          ],
+          "file": "rows/123091.34.json",
+          "bytes": 4336,
+          "sha256": "1740eaf412b7a72658d877f46cf075591c270cee31428a1878d30814915c9503",
+          "member_position": {
+            "member": "surface_liquid_configuration_canonical_json",
+            "position": 34
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "terminal_parcels_produced_unconsumed_canonical_json",
+              "position": 35
+            }
+          ],
+          "file": "rows/123091.35.json",
+          "bytes": 3505,
+          "sha256": "c9b8ab4f03b34415236514c819e95a0f460085d76828bff02687cd194c0e7f58",
+          "member_position": {
+            "member": "terminal_parcels_produced_unconsumed_canonical_json",
+            "position": 35
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "vegetation_configuration_canonical_json",
+              "position": 36
+            }
+          ],
+          "file": "rows/123091.36.json",
+          "bytes": 21330,
+          "sha256": "f3c79596f2bcf572de0d98d1392c591b619bdcc25ffb76ae7f31c2f030a73c27",
+          "member_position": {
+            "member": "vegetation_configuration_canonical_json",
+            "position": 36
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "list",
+          "number_decoding": "exact Decimal"
+        }
+      ],
+      "decoded_members": [
+        {
+          "member": "beginning_stage3_canonical_json",
+          "source_event_file": "0002-beginning_stage3_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        },
+        {
+          "member": "complete_owner_ledger_canonical_json",
+          "source_event_file": "0008-complete_owner_ledger_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        },
+        {
+          "member": "constraint_reduction_canonical_json",
+          "source_event_file": "0009-constraint_reduction_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        },
+        {
+          "member": "coupled_clock_restart_canonical_json",
+          "source_event_file": "0012-coupled_clock_restart_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        },
+        {
+          "member": "lse_configuration_canonical_json",
+          "source_event_file": "0018-lse_configuration_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        },
+        {
+          "member": "parent_checkpoint_canonical_json",
+          "source_event_file": "0024-parent_checkpoint_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        },
+        {
+          "member": "provider_cursor_canonical_json",
+          "source_event_file": "0028-provider_cursor_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        },
+        {
+          "member": "provisional_receipt_canonical_json",
+          "source_event_file": "0030-provisional_receipt_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        },
+        {
+          "member": "surface_liquid_configuration_canonical_json",
+          "source_event_file": "0034-surface_liquid_configuration_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        },
+        {
+          "member": "terminal_parcels_produced_unconsumed_canonical_json",
+          "source_event_file": "0035-terminal_parcels_produced_unconsumed_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        },
+        {
+          "member": "vegetation_configuration_canonical_json",
+          "source_event_file": "0036-vegetation_configuration_canonical_json.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "explicit byte field has non-byte value"
+        }
+      ],
+      "archive_integrity": null,
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 123092,
+      "kind": [
+        "surface_liquid_wb14_cadence_failure"
+      ],
+      "role": "related_b01",
+      "top_level_members": [
+        {
+          "member": "accepted_parent_local_projection",
+          "position": 0,
+          "file": "0000-accepted_parent_local_projection.events.jsonl"
+        },
+        {
+          "member": "actual_day",
+          "position": 1,
+          "file": "0001-actual_day.events.jsonl"
+        },
+        {
+          "member": "actual_interval",
+          "position": 2,
+          "file": "0002-actual_interval.events.jsonl"
+        },
+        {
+          "member": "beginning_typed_bytes",
+          "position": 3,
+          "file": "0003-beginning_typed_bytes.events.jsonl"
+        },
+        {
+          "member": "capture",
+          "position": 4,
+          "file": "0004-capture.events.jsonl"
+        },
+        {
+          "member": "expected_day",
+          "position": 5,
+          "file": "0005-expected_day.events.jsonl"
+        },
+        {
+          "member": "expected_interval",
+          "position": 6,
+          "file": "0006-expected_interval.events.jsonl"
+        },
+        {
+          "member": "finalize_parent_interval",
+          "position": 7,
+          "file": "0007-finalize_parent_interval.events.jsonl"
+        },
+        {
+          "member": "initial",
+          "position": 8,
+          "file": "0008-initial.events.jsonl"
+        },
+        {
+          "member": "input_typed_bytes",
+          "position": 9,
+          "file": "0009-input_typed_bytes.events.jsonl"
+        },
+        {
+          "member": "kind",
+          "position": 10,
+          "file": "0010-kind.events.jsonl"
+        },
+        {
+          "member": "ofe_id",
+          "position": 11,
+          "file": "0011-ofe_id.events.jsonl"
+        },
+        {
+          "member": "parent_child_mode",
+          "position": 12,
+          "file": "0012-parent_child_mode.events.jsonl"
+        },
+        {
+          "member": "state_mutated",
+          "position": 13,
+          "file": "0013-state_mutated.events.jsonl"
+        }
+      ],
+      "external_byte_arrays": [],
+      "external_json": [
+        {
+          "path": [
+            {
+              "member": "beginning_typed_bytes",
+              "position": 3
+            }
+          ],
+          "file": "rows/123092.3.json",
+          "bytes": 3142,
+          "sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938",
+          "member_position": {
+            "member": "beginning_typed_bytes",
+            "position": 3
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "input_typed_bytes",
+              "position": 9
+            }
+          ],
+          "file": "rows/123092.9.json",
+          "bytes": 7648,
+          "sha256": "77624723588a92c1b10adc8f94bf7a31852a61d7b88c93a0681918bf3e946620",
+          "member_position": {
+            "member": "input_typed_bytes",
+            "position": 9
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        }
+      ],
+      "decoded_members": [
+        {
+          "member": "beginning_typed_bytes",
+          "source_event_file": "0003-beginning_typed_bytes.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "typed bytes must be {'Ok':[...]}"
+        },
+        {
+          "member": "input_typed_bytes",
+          "source_event_file": "0009-input_typed_bytes.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "typed bytes must be {'Ok':[...]}"
+        }
+      ],
+      "archive_integrity": null,
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    },
+    {
+      "physical_ordinal": 123093,
+      "kind": [
+        "surface_liquid_wb14_cadence_caller_failure"
+      ],
+      "role": "related_b01",
+      "top_level_members": [
+        {
+          "member": "beginning_typed_bytes",
+          "position": 0,
+          "file": "0000-beginning_typed_bytes.events.jsonl"
+        },
+        {
+          "member": "capture",
+          "position": 1,
+          "file": "0001-capture.events.jsonl"
+        },
+        {
+          "member": "coupled_binding",
+          "position": 2,
+          "file": "0002-coupled_binding.events.jsonl"
+        },
+        {
+          "member": "error",
+          "position": 3,
+          "file": "0003-error.events.jsonl"
+        },
+        {
+          "member": "finalize_parent_interval",
+          "position": 4,
+          "file": "0004-finalize_parent_interval.events.jsonl"
+        },
+        {
+          "member": "input_typed_bytes",
+          "position": 5,
+          "file": "0005-input_typed_bytes.events.jsonl"
+        },
+        {
+          "member": "kind",
+          "position": 6,
+          "file": "0006-kind.events.jsonl"
+        },
+        {
+          "member": "parent_child_mode",
+          "position": 7,
+          "file": "0007-parent_child_mode.events.jsonl"
+        },
+        {
+          "member": "parent_working_typed_bytes",
+          "position": 8,
+          "file": "0008-parent_working_typed_bytes.events.jsonl"
+        },
+        {
+          "member": "working_typed_bytes",
+          "position": 9,
+          "file": "0009-working_typed_bytes.events.jsonl"
+        }
+      ],
+      "external_byte_arrays": [],
+      "external_json": [
+        {
+          "path": [
+            {
+              "member": "beginning_typed_bytes",
+              "position": 0
+            }
+          ],
+          "file": "rows/123093.0.json",
+          "bytes": 3142,
+          "sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938",
+          "member_position": {
+            "member": "beginning_typed_bytes",
+            "position": 0
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "coupled_binding",
+              "position": 2
+            }
+          ],
+          "file": "rows/123093.2.json",
+          "bytes": 673,
+          "sha256": "cc857a2799350e61fc2c12a514cf951411005b23e03e0456b515bfaef1dfb6e0",
+          "member_position": {
+            "member": "coupled_binding",
+            "position": 2
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "input_typed_bytes",
+              "position": 5
+            }
+          ],
+          "file": "rows/123093.5.json",
+          "bytes": 7648,
+          "sha256": "77624723588a92c1b10adc8f94bf7a31852a61d7b88c93a0681918bf3e946620",
+          "member_position": {
+            "member": "input_typed_bytes",
+            "position": 5
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "parent_working_typed_bytes",
+              "position": 8
+            }
+          ],
+          "file": "rows/123093.8.json",
+          "bytes": 18049,
+          "sha256": "bc339feadb3b03f2961185f08d64a771191d5f0cbc49e7eb6344c17ac38c1a5e",
+          "member_position": {
+            "member": "parent_working_typed_bytes",
+            "position": 8
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        },
+        {
+          "path": [
+            {
+              "member": "working_typed_bytes",
+              "position": 9
+            }
+          ],
+          "file": "rows/123093.9.json",
+          "bytes": 3142,
+          "sha256": "d1d75ed56e3f699230332626dede9c7541da9a63f9bd8ede6c258e3b3d8ac938",
+          "member_position": {
+            "member": "working_typed_bytes",
+            "position": 9
+          },
+          "status": "present/exported/decoded/structurally checked/semantically unvalidated",
+          "decoded_type": "dict",
+          "number_decoding": "exact Decimal"
+        }
+      ],
+      "decoded_members": [
+        {
+          "member": "beginning_typed_bytes",
+          "source_event_file": "0000-beginning_typed_bytes.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "typed bytes must be {'Ok':[...]}"
+        },
+        {
+          "member": "input_typed_bytes",
+          "source_event_file": "0005-input_typed_bytes.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "typed bytes must be {'Ok':[...]}"
+        },
+        {
+          "member": "parent_working_typed_bytes",
+          "source_event_file": "0008-parent_working_typed_bytes.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "typed bytes must be {'Ok':[...]}"
+        },
+        {
+          "member": "working_typed_bytes",
+          "source_event_file": "0009-working_typed_bytes.events.jsonl",
+          "status": "present/exported/not decoded",
+          "limitation": "typed bytes must be {'Ok':[...]}"
+        }
+      ],
+      "archive_integrity": null,
+      "status": "present/exported/structurally checked/semantically unvalidated"
+    }
+  ],
+  "limits": "structural/custody inspection only; semantically unvalidated"
+}

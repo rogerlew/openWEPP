@@ -1,0 +1,21 @@
+{
+  "collector_exit": 0,
+  "end_utc": "2026-09-16T03:42:17.636642+00:00",
+  "wrapper_pid": 996414,
+  "collector_pid": 996445,
+  "output": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1",
+  "fixture": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1",
+  "source_and_inputs_unchanged": true,
+  "binary_unchanged": true,
+  "receipt_present": true,
+  "runner": {
+    "exit_code": 101,
+    "timeout": false,
+    "infrastructure_error": null,
+    "runner_execution": "FAIL",
+    "execution_valid": false,
+    "observation_complete": true,
+    "physical_rows": 123094,
+    "wall_s": 1695.4494605199434
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "pid": 1045214,
+  "state": "COMPLETE_OFFLINE_INSPECTIONS",
+  "start_utc": "2026-09-16T04:01:58.198083+00:00",
+  "frozen_tools": {
+    "export_selected.py": "2e6e0d8c6c318124ee5d30fb06b97baebcd3e6233a0ce6a998e4a4648aea586e",
+    "inspect_exports.py": "57b5dcafd8677d1122b71027eba90ea90f4f40e03477d38ba487d3857c37f93a",
+    "inspect_context.py": "586408287ff1ad3cc866db868d17b0bb98cf34dc1649f480592a5016dcfc4edb"
+  },
+  "model_invocations": 0,
+  "end_utc": "2026-09-16T04:12:35.922305+00:00"
+}

@@ -1,0 +1,76 @@
+{
+  "observed_utc": "2026-09-16T03:15:11.162793+00:00",
+  "wrapper_pid": 996414,
+  "collector_pid": 996445,
+  "children": [
+    {
+      "pid": 996446,
+      "cmdline": [
+        "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-20260916.frozen",
+        "hillslope::tests::stage3_snow_accuracy_case",
+        "--ignored",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "selected_environment": {
+        "TMPDIR": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1",
+        "RUST_MIN_STACK": "67108864",
+        "OPENWEPP_EXPERIMENT_OFES": "1",
+        "OPENWEPP_EXPERIMENT_REPEATS": "1",
+        "OPENWEPP_COMPACT_COST": "off",
+        "OPENWEPP_ACCURACY_POLICY": "B01",
+        "OPENWEPP_ACCURACY_CASE": "gradual_warm_tail7",
+        "OPENWEPP_ACCURACY_CASES": "/workdir/openWEPP/docs/work-packages/20260910-stage3-b01-snow-cycle-integration-001/artifacts/gradual-warm-tail7-cases.json",
+        "OPENWEPP_ACCURACY_OUTPUT": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1",
+        "OPENWEPP_ACCURACY_PHYSICAL": "1"
+      },
+      "executable": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-20260916.frozen"
+    }
+  ],
+  "raw_output": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1",
+  "files": [
+    {
+      "name": "configuration.json",
+      "bytes_at_snapshot": 9519,
+      "inode": 85923919,
+      "sha256_at_snapshot": "b9b86193ee61350fc21ea687161e1a2048f9ab6abc22d0f77b1e51d57c2fa91a"
+    },
+    {
+      "name": "fixture-path.txt",
+      "bytes_at_snapshot": 129,
+      "inode": 85923920,
+      "sha256_at_snapshot": "a709933185a4fc5b9760beafb307fa3689e410d9f194e3ca6ca1cbecab59f9a6"
+    },
+    {
+      "name": "inputs.json",
+      "bytes_at_snapshot": 1356,
+      "inode": 85923921,
+      "sha256_at_snapshot": "feac1e37b6a082ee1c193f11894766aac26eff1346ab4ca954e8c86b9d5cb273"
+    },
+    {
+      "name": "physical-rows.jsonpart",
+      "bytes_at_snapshot": 306132393,
+      "inode": 85923922
+    },
+    {
+      "name": "started.json",
+      "bytes_at_snapshot": 1475,
+      "inode": 85923902,
+      "sha256_at_snapshot": "7e0ab4097d0dba4c3b1f3b86bc965974af16659fe232bdb54750483419bf07b9"
+    },
+    {
+      "name": "stderr.log",
+      "bytes_at_snapshot": 0,
+      "inode": 85923904,
+      "sha256_at_snapshot": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "stdout.log",
+      "bytes_at_snapshot": 69,
+      "inode": 85923903,
+      "sha256_at_snapshot": "f407fd5f57bd08c50ddfd4cce32fc506ee5b6055f0fc616a1f9abbec78aa3cbc"
+    }
+  ],
+  "terminal": false
+}

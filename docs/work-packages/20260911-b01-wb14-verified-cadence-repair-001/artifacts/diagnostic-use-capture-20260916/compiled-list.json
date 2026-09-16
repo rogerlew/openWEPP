@@ -1,0 +1,52 @@
+{
+  "argv": [
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-20260916.frozen",
+    "hillslope::tests::stage3_snow_accuracy_case",
+    "--ignored",
+    "--exact",
+    "--list"
+  ],
+  "exit": 0,
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-20260916.frozen",
+  "binary_sha256": "1c733d1ca2fea700b2f34f06cd29a89a6f7d66977a042ddfb371816a320a0955",
+  "bytes": 49388608,
+  "compiler_artifact": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-runner#0.1.0",
+    "manifest_path": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-runner/Cargo.toml",
+    "target": {
+      "kind": [
+        "lib"
+      ],
+      "crate_types": [
+        "lib"
+      ],
+      "name": "openwepp_runner",
+      "src_path": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/crates/openwepp-runner/src/lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "1",
+      "debuginfo": 0,
+      "debug_assertions": false,
+      "overflow_checks": false,
+      "test": true
+    },
+    "features": [
+      "default",
+      "test-fixture-authority"
+    ],
+    "filenames": [
+      "/tmp/openwepp-b01-wb14-cadence-targets/diagnostic-use-capture-20260916/release/deps/openwepp_runner-5f2e45c674e868ff"
+    ],
+    "executable": "/tmp/openwepp-b01-wb14-cadence-targets/diagnostic-use-capture-20260916/release/deps/openwepp_runner-5f2e45c674e868ff",
+    "fresh": false
+  },
+  "listing_only": true,
+  "tests_executed": 0,
+  "utc": "2026-09-16T03:11:51.562760+00:00"
+}

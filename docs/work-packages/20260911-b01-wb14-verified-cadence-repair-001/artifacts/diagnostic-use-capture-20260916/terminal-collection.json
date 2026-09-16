@@ -1,0 +1,92 @@
+{
+  "status": "COMPLETE_LOCAL_PRESERVATION",
+  "started_utc": "2026-09-16T03:42:23.368006+00:00",
+  "terminal": {
+    "collector_exit": 0,
+    "end_utc": "2026-09-16T03:42:17.636642+00:00",
+    "wrapper_pid": 996414,
+    "collector_pid": 996445,
+    "output": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1",
+    "fixture": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1",
+    "source_and_inputs_unchanged": true,
+    "binary_unchanged": true,
+    "receipt_present": true,
+    "runner": {
+      "exit_code": 101,
+      "timeout": false,
+      "infrastructure_error": null,
+      "runner_execution": "FAIL",
+      "execution_valid": false,
+      "observation_complete": true,
+      "physical_rows": 123094,
+      "wall_s": 1695.4494605199434
+    }
+  },
+  "files": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/comparisons.txt",
+      "bytes": 7179032,
+      "sha256": "fd865400f97d35a09b370c87b5d134303d230fbfb9c6cb61f9abef619328bb74"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/configuration.json",
+      "bytes": 9519,
+      "sha256": "b9b86193ee61350fc21ea687161e1a2048f9ab6abc22d0f77b1e51d57c2fa91a",
+      "published_copy": "terminal/configuration.json"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/fixture-path.txt",
+      "bytes": 129,
+      "sha256": "a709933185a4fc5b9760beafb307fa3689e410d9f194e3ca6ca1cbecab59f9a6",
+      "published_copy": "terminal/fixture-path.txt"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/inputs.json",
+      "bytes": 1356,
+      "sha256": "feac1e37b6a082ee1c193f11894766aac26eff1346ab4ca954e8c86b9d5cb273",
+      "published_copy": "terminal/inputs.json"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/observations.json",
+      "bytes": 8701419029,
+      "sha256": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/physical-rows.jsonpart",
+      "bytes": 8676448859,
+      "sha256": "b89ad2d49f10a6d90418a257691d8e5fa47c96bd92f29174d21343358ac683a6"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/receipt.json",
+      "bytes": 2876,
+      "sha256": "bff25840f10726dd15a3e39a1d14df7f35918493c214c9785056b3e858609c76",
+      "published_copy": "terminal/receipt.json"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/run.json",
+      "bytes": 39982,
+      "sha256": "87ef5c65f0ad133f6784ccf49568eb9dac49b0ab4de223707e41b811086084e5",
+      "published_copy": "terminal/run.json"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/started.json",
+      "bytes": 1475,
+      "sha256": "7e0ab4097d0dba4c3b1f3b86bc965974af16659fe232bdb54750483419bf07b9",
+      "published_copy": "terminal/started.json"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/stderr.log",
+      "bytes": 641,
+      "sha256": "b9c294aa3ef8afdfa395aa5806403277c00c8fd200361642fb8e1ef411970af7",
+      "published_copy": "terminal/stderr.log"
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/stdout.log",
+      "bytes": 28925,
+      "sha256": "8636f86d0cd104d2464567ac3383207eb99236718eff0798576fabab18c60992",
+      "published_copy": "terminal/stdout.log"
+    }
+  ],
+  "large_raw_remote_publication": false,
+  "end_utc": "2026-09-16T03:42:34.377125+00:00"
+}
