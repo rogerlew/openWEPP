@@ -1,0 +1,163 @@
+diff --git a/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs b/tmp/openwepp-reader-helper-final/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
+index 1d17f27..1bab8ad 100644
+--- a/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
++++ b/tmp/openwepp-reader-helper-final/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
+@@ -2716,6 +2716,54 @@ pub(crate) fn import_and_reconstruct_pre_child_context(
+     context: &DirectSnowStage3V11StaticContext,
+     consumer: &DirectV10RealConsumerShadow,
+ ) -> Result<(), String> {
++    let inputs = restore_pre_child_provisional_inputs(row, context)?;
++    let before = inputs
++        .restored
++        .to_canonical_json()
++        .map_err(|e| e.to_string())?;
++    let (_, reduction, ledger, receipt) = reconstruct_provisional_on_clone_for_constraint_owner(
++        &inputs.beginning_clock,
++        inputs.support,
++        context,
++        inputs.forcing,
++        inputs.expected_owner,
++    )?;
++    if inputs
++        .restored
++        .to_canonical_json()
++        .map_err(|e| e.to_string())?
++        != before
++    {
++        return Err("provisional clone mutated restored beginning clock".into());
++    }
++    validate_pre_child_provisional_evidence(row, &reduction, &ledger, &receipt)?;
++    validate_pre_child_binding_and_owners(
++        row,
++        &inputs.parent,
++        &inputs.beginning_clock,
++        inputs.support,
++        inputs.parent_support,
++        &receipt,
++        consumer,
++    )
++}
++
++#[cfg(test)]
++struct PreChildProvisionalInputsV1 {
++    restored: CoupledTimeRestartV2,
++    beginning_clock: CoupledClockStateV1,
++    parent: V11ParentTransaction,
++    support: TimeSupport,
++    parent_support: TimeSupport,
++    expected_owner: &'static str,
++    forcing: openwepp_coupled_time::Digest32,
++}
++
++#[cfg(test)]
++fn restore_pre_child_provisional_inputs(
++    row: &serde_json::Value,
++    context: &DirectSnowStage3V11StaticContext,
++) -> Result<PreChildProvisionalInputsV1, String> {
+     let get = |name: &str| {
+         row.get(name)
+             .ok_or_else(|| format!("capture missing {name}"))
+@@ -2806,17 +2854,28 @@ pub(crate) fn import_and_reconstruct_pre_child_context(
+             .clone(),
+     )
+     .map_err(|e| e.to_string())?;
+-    let before = restored.to_canonical_json().map_err(|e| e.to_string())?;
+-    let (_, reduction, ledger, receipt) = reconstruct_provisional_on_clone_for_constraint_owner(
+-        &beginning_clock,
++    Ok(PreChildProvisionalInputsV1 {
++        restored,
++        beginning_clock,
++        parent,
+         support,
+-        context,
+-        forcing,
++        parent_support,
+         expected_owner,
+-    )?;
+-    if restored.to_canonical_json().map_err(|e| e.to_string())? != before {
+-        return Err("provisional clone mutated restored beginning clock".into());
+-    }
++        forcing,
++    })
++}
++
++#[cfg(test)]
++fn validate_pre_child_provisional_evidence(
++    row: &serde_json::Value,
++    reduction: &ConstraintReductionReceiptV1,
++    ledger: &LedgerEntryV1,
++    receipt: &AcceptedSlabReceiptV1,
++) -> Result<(), String> {
++    let get = |name: &str| {
++        row.get(name)
++            .ok_or_else(|| format!("capture missing {name}"))
++    };
+     let expected: Vec<u8> =
+         serde_json::from_value(get("provisional_receipt_canonical_json")?.clone())
+             .map_err(|e| e.to_string())?;
+@@ -2835,6 +2894,23 @@ pub(crate) fn import_and_reconstruct_pre_child_context(
+     if serde_json::to_vec(&receipt).map_err(|e| e.to_string())? != expected {
+         return Err("provisional receipt durable coordinates".into());
+     }
++    Ok(())
++}
++
++#[cfg(test)]
++fn validate_pre_child_binding_and_owners(
++    row: &serde_json::Value,
++    parent: &V11ParentTransaction,
++    beginning_clock: &CoupledClockStateV1,
++    support: TimeSupport,
++    parent_support: TimeSupport,
++    receipt: &AcceptedSlabReceiptV1,
++    consumer: &DirectV10RealConsumerShadow,
++) -> Result<(), String> {
++    let get = |name: &str| {
++        row.get(name)
++            .ok_or_else(|| format!("capture missing {name}"))
++    };
+     let beginning_owner_digest =
+         complete_owner_set_digest(beginning_clock.owners()).map_err(|e| e.to_string())?;
+     let binding = get("coupled_binding")?;
+@@ -3136,6 +3212,14 @@ pub(crate) struct RestoredCapturedPreChildContextV1 {
+ fn restore_captured_pre_child_context(
+     row: &serde_json::Value,
+     context: &DirectSnowStage3V11StaticContext,
++) -> Result<RestoredCapturedPreChildContextV1, String> {
++    restore_captured_pre_child_context_components(row, context)
++}
++
++#[cfg(test)]
++fn restore_captured_pre_child_context_components(
++    row: &serde_json::Value,
++    context: &DirectSnowStage3V11StaticContext,
+ ) -> Result<RestoredCapturedPreChildContextV1, String> {
+     let get = |name: &str| {
+         row.get(name)
+@@ -3386,6 +3470,26 @@ pub(crate) fn restore_provider_bound_context_from_rows(
+     pinned_lse_configuration: &openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
+     pinned_frozen_litter_lse_configuration: &openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
+     pinned_hydrology_constructor_inputs: crate::DirectRunConstructorInputs,
++) -> Result<RestoredProviderBoundContextV1, String> {
++    restore_provider_bound_context_components_from_rows(
++        rows,
++        context,
++        pinned_provider_configuration,
++        pinned_lse_configuration,
++        pinned_frozen_litter_lse_configuration,
++        pinned_hydrology_constructor_inputs,
++    )
++}
++
++#[cfg(feature = "persisted-restart-v1")]
++#[cfg(test)]
++fn restore_provider_bound_context_components_from_rows(
++    rows: &[serde_json::Value],
++    context: &DirectSnowStage3V11StaticContext,
++    pinned_provider_configuration: &crate::runtime_inputs::SnowFreeHalfHourStaticConfiguration,
++    pinned_lse_configuration: &openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
++    pinned_frozen_litter_lse_configuration: &openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
++    pinned_hydrology_constructor_inputs: crate::DirectRunConstructorInputs,
+ ) -> Result<RestoredProviderBoundContextV1, String> {
+     let target = rows
+         .iter()

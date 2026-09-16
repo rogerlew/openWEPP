@@ -1,0 +1,24 @@
+Command exited with non-zero status 101
+	Command being timed: "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/composed-phase.frozen snow_stage3_v11_current_context_capture::member_backed_restore_tests::current_phase_members_validate_without_physics --exact --nocapture --test-threads=1"
+	User time (seconds): 0.56
+	System time (seconds): 0.04
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.60
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 157564
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 37364
+	Voluntary context switches: 2
+	Involuntary context switches: 13
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 16
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 101

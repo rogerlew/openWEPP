@@ -1,0 +1,6 @@
+{
+  "build": "a002-prospective-red-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/prospective-red.frozen",
+  "sha256": "dff10548be5f3ffbaf294656b18c2e39d78068ffa2c3785f8a8db3e0df01e629",
+  "source_tree_sha256": "17b9158a319a5b0309ece54c0901ab984816490e2883006d66a258886efaeaa3"
+}

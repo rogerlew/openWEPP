@@ -1,0 +1,5 @@
+{
+  "build": "native-gsi-aggregate-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/native-gsi-aggregate.frozen",
+  "sha256": "c1ec55817463b86c927a2475f9d6e6bedff3c788c9cd254cfeeb722333ca0d55"
+}

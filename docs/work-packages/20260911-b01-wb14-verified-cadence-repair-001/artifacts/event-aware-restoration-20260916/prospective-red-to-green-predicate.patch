@@ -1,0 +1,20 @@
+--- red/v9_real_consumer_shadow_publication_retention.rs
++++ green/v9_real_consumer_shadow_publication_retention.rs
+@@ -1789,9 +1789,6 @@
+         .ok_or(DirectV11RealConsumerError::Identity(
+             "archived publication day beginning",
+         ))?;
+-    let last = supports.last().ok_or(DirectV11RealConsumerError::Identity(
+-        "archived publication day ending",
+-    ))?;
+     let beginning_owner_set_sha256 = wire
+         .event_handoffs
+         .first()
+@@ -1810,7 +1807,6 @@
+     // its full-history tail is the effective archive ending owner.
+     if restored.validate_cached_tail_against_full_scan()? != Some(wire.ending_owner_set_sha256)
+         || beginning_owner_set_sha256 == Digest32::zero()
+-        || last.ending_complete_owner_set_sha256 != wire.ending_owner_set_sha256
+     {
+         return Err(DirectV11RealConsumerError::Identity(
+             "archived publication day chronology",

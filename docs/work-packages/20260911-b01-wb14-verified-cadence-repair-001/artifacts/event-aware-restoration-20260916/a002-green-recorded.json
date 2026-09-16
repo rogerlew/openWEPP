@@ -1,0 +1,45 @@
+{
+  "label": "a002-green-recorded",
+  "argv": [
+    "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/a002-green-restorer.frozen",
+    "v9_real_consumer_shadow::accepted_publication_chronology_tests::archived_restorer_uses_replayed_terminal_event_tail_and_rejects_wire_poisons",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-green-recorded.resources",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/a002-green-restorer.frozen",
+    "v9_real_consumer_shadow::accepted_publication_chronology_tests::archived_restorer_uses_replayed_terminal_event_tail_and_rejects_wire_poisons",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916",
+  "start_utc": "2026-09-16T16:08:39.411657+00:00",
+  "source_tree_sha256": "40ad40854db26f4a9dd9215b379628de968ceb730fd70f9cf98e61bb15ab3342",
+  "patch_sha256": "6f81b1f3606720caa932ca0c17466c436a1258b79fa2220de0716d76dc60179e",
+  "source_receipt": "a002-green-recorded-source.json",
+  "input_manifest": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/input-custody-before.json",
+  "input_manifest_sha256": "b78f2956b99079d6447aacb51c95e087093b858d90b47f65f601e0b3d53748b3",
+  "environment": {
+    "OPENWEPP_B01_MEMBER_EXPORT": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1"
+  },
+  "timeout_seconds": 900,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/a002-green-restorer.frozen",
+  "binary_sha256": "aa33c7a35c2afbc1f5d992b9e0536ba9796acf55ad5fea0aaf17e67f29455ced",
+  "process_group": 1831075,
+  "exit_code": 0,
+  "timed_out": false,
+  "elapsed_seconds": 39.69255892187357,
+  "end_utc": "2026-09-16T16:09:19.317643+00:00",
+  "source_unchanged": true,
+  "binary_unchanged": true,
+  "inputs_unchanged": true
+}

@@ -1,0 +1,24 @@
+Command exited with non-zero status 101
+	Command being timed: "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/authority-controls.frozen --exact snow_stage3_v11_current_context_capture::member_backed_restore_tests::provider_authority_scalars_reject_semantic_substitutions_without_installation snow_stage3_v11_current_context_capture::member_backed_restore_tests::member_constructor_inverse_roundtrips_actual_operands snow_stage3_v11_current_context_capture::member_backed_restore_tests::recorded_archive_manifest_rejects_semantic_order_and_namespace_changes snow_stage3_v11_current_context_capture::member_backed_restore_tests::current_phase_semantic_substitutions_refuse_without_physics --nocapture --test-threads=1"
+	User time (seconds): 1.65
+	System time (seconds): 0.26
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.91
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 195408
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 1
+	Minor (reclaiming a frame) page faults: 271285
+	Voluntary context switches: 17
+	Involuntary context switches: 24
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 32
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 101

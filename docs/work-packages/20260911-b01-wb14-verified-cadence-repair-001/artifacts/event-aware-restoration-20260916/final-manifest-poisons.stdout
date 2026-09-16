@@ -1,0 +1,15 @@
+
+running 1 test
+test snow_stage3_v11_current_context_capture::member_backed_restore_tests::recorded_archive_manifest_rejects_semantic_order_and_namespace_changes ... manifest poison omitted first: Err("Stage-3/V11 attachment identity failure: archive manifest append order or prior root")
+manifest poison duplicate: Err("Stage-3/V11 attachment identity failure: archive manifest append order or prior root")
+manifest poison reordered: Err("Stage-3/V11 attachment identity failure: archive manifest append order or prior root")
+manifest poison omitted middle: Err("Stage-3/V11 attachment identity failure: archive manifest append order or prior root")
+manifest poison run namespace: Err(Identity("archive manifest append order or prior root"))
+manifest poison topology namespace: Err(Identity("archive manifest append order or prior root"))
+probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })
+probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 0, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }
+probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1487 filtered out; finished in 0.06s
+

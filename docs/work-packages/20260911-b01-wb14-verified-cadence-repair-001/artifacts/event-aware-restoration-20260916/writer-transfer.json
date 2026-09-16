@@ -1,0 +1,16 @@
+{
+  "utc": "2026-09-16T16:26:21.354881+00:00",
+  "from_writer": "/root/event_native_writer",
+  "to_writer": "/root/native_dto_writer",
+  "reason": "Repeated missing-decoder scope investigations without implementing complete graph; narrowed independent implementation assignment",
+  "prior_writer_paused": true,
+  "active_build_before_transfer": "a002-a003-final-build.json",
+  "active_build_completed": true,
+  "sole_write_scope": "detached reader private constructor DTO inverse and focused verification",
+  "prior_writer_remaining_scope": "read-only integration support: provider seed/position/phase joins",
+  "reviewers_remain_independent": [
+    "/root/event_correctness",
+    "/root/event_qa"
+  ],
+  "deadline_unchanged": "2026-09-16T19:12:00+00:00"
+}

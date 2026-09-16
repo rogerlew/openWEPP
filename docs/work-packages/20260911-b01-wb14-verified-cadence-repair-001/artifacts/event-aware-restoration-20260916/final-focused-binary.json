@@ -1,0 +1,6 @@
+{
+  "build": "final-gated-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/final-focused.frozen",
+  "sha256": "21b1acc6957b74f472db14e8b9b5b06227aca0f1a88a799d74d40ce726780813",
+  "source_tree_sha256": "677cd0550fc5cba474bac283a34387d04ebda2349a92a2cc193ecc7773e373d7"
+}

@@ -1,0 +1,148 @@
+{
+  "source_tree_sha256": "7c04f52e6cae6327202591b37f0c4e7a5fff3ae34a103255a35c49a3dbdf37ab",
+  "binary": {
+    "build": "terminal-confirmed-build.json",
+    "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/terminal-focused.frozen",
+    "sha256": "47fd72c2b2c9acb422021659d499be3ba0b29020d94468f084a9846eb89cb631",
+    "source_tree_sha256": "7c04f52e6cae6327202591b37f0c4e7a5fff3ae34a103255a35c49a3dbdf37ab"
+  },
+  "focused_tests": [
+    {
+      "label": "terminal-dto",
+      "receipt": "terminal-dto.json",
+      "stdout": "terminal-dto.stdout",
+      "elapsed_seconds": 0.6174996099434793,
+      "test_result": "PASS 1/1",
+      "audit_lines": [
+        "probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })",
+        "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 0, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      ],
+      "stdout_sha256": "34b2134d43335913f834d5e692616303762678fd06f0c20f81b59130cf41455d"
+    },
+    {
+      "label": "terminal-phase-positive",
+      "receipt": "terminal-phase-positive.json",
+      "stdout": "terminal-phase-positive.stdout",
+      "elapsed_seconds": 0.6682795942761004,
+      "test_result": "PASS 1/1",
+      "audit_lines": [
+        "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 0, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      ],
+      "stdout_sha256": "329dbcc75cb16d81c88b58c75b7fbd383763955efb60a78d1bafe5b0b92a4ddf"
+    },
+    {
+      "label": "terminal-phase-poisons",
+      "receipt": "terminal-phase-poisons.json",
+      "stdout": "terminal-phase-poisons.stdout",
+      "elapsed_seconds": 1.3715543779544532,
+      "test_result": "PASS 1/1",
+      "audit_lines": [
+        "probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })",
+        "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 0, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      ],
+      "stdout_sha256": "5a4ce741164d864538bdddbdcaeaf9d938c47932d8ff7420bb44a0e38d39bb34"
+    },
+    {
+      "label": "terminal-provider-poisons",
+      "receipt": "terminal-provider-poisons.json",
+      "stdout": "terminal-provider-poisons.stdout",
+      "elapsed_seconds": 0.669239048846066,
+      "test_result": "PASS 1/1",
+      "audit_lines": [
+        "probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })",
+        "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 0, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      ],
+      "stdout_sha256": "78da940f3e7cba9dd402756d74a263dc8161e73d7fbab400a6499a867e0613f8"
+    },
+    {
+      "label": "terminal-manifest-poisons",
+      "receipt": "terminal-manifest-poisons.json",
+      "stdout": "terminal-manifest-poisons.stdout",
+      "elapsed_seconds": 0.11657949537038803,
+      "test_result": "PASS 1/1",
+      "audit_lines": [
+        "probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })",
+        "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 0, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      ],
+      "stdout_sha256": "cc06fa36fddca7555624f1a6f32e9289956e3925dca1fbd507395fc295526b51"
+    },
+    {
+      "label": "terminal-beginning-poison",
+      "receipt": "terminal-beginning-poison.json",
+      "stdout": "terminal-beginning-poison.stdout",
+      "elapsed_seconds": 44.46966584958136,
+      "test_result": "PASS 1/1",
+      "audit_lines": [
+        "probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })",
+        "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 0, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      ],
+      "stdout_sha256": "886d9ef737798fa2c84ea6b797e771d486671a51a596560b6d6a1504d60744ed"
+    },
+    {
+      "label": "terminal-archive-controls",
+      "receipt": "terminal-archive-controls.json",
+      "stdout": "terminal-archive-controls.stdout",
+      "elapsed_seconds": 124.28952471306548,
+      "test_result": "PASS 1/1",
+      "audit_lines": [
+        "probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })",
+        "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 0, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      ],
+      "stdout_sha256": "3dcf6f4f4ff69b1a8b278a868a238ba36687d13d81eccd24fb052ea3f3d03b63"
+    },
+    {
+      "label": "terminal-native-refusal",
+      "receipt": "terminal-native-refusal.json",
+      "stdout": "terminal-native-refusal.stdout",
+      "elapsed_seconds": 218.5600979118608,
+      "test_result": "PASS 1/1",
+      "audit_lines": [
+        "probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })",
+        "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 1, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      ],
+      "stdout_sha256": "cfec76b05abe248f905d4f6862fa347669add96c6a6d0b9ba0cc7335bf3a52e3"
+    },
+    {
+      "label": "terminal-chronology-1",
+      "receipt": "terminal-chronology-1.json",
+      "stdout": "terminal-chronology-1.stdout",
+      "elapsed_seconds": 0.00559516716748476,
+      "test_result": "PASS 1/1",
+      "audit_lines": [],
+      "stdout_sha256": "3e1573481ed18a16594041280cb8831ae8003decaa6b994bb9f881b265ae5136"
+    },
+    {
+      "label": "terminal-chronology-2",
+      "receipt": "terminal-chronology-2.json",
+      "stdout": "terminal-chronology-2.stdout",
+      "elapsed_seconds": 0.005747625138610601,
+      "test_result": "PASS 1/1",
+      "audit_lines": [],
+      "stdout_sha256": "6add192e9f912cb09c78cdaa0d36ae0a8a6d77ba145c51ba74a91c0c9e26f7eb"
+    },
+    {
+      "label": "terminal-chronology-3",
+      "receipt": "terminal-chronology-3.json",
+      "stdout": "terminal-chronology-3.stdout",
+      "elapsed_seconds": 0.005698915105313063,
+      "test_result": "PASS 1/1",
+      "audit_lines": [],
+      "stdout_sha256": "44d15d5364dc96e7d72a02f843a732aea45499c6474f529ddd115b9f43027a6e"
+    }
+  ],
+  "passed_tests": 11,
+  "native_outcome": "EXPECTED REFUSAL, not restored",
+  "native_six_owner_projection": "NOT REACHED",
+  "physics": "No new physical/model execution; audited file diagnostics report zero physical work and publication",
+  "critical_campaign": "BLOCKED / NOT RUN under the owner run allowance",
+  "strict_clippy": "Historical FAIL, not waived",
+  "scope": "Fresh-process file/representation/chronology controls; no package or production acceptance."
+}

@@ -1,0 +1,222 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs
+@@ -2117,6 +2117,52 @@
+         Some(serde_json::from_slice(publication).expect("canonical publication wire"))
+     }
+ 
++    fn canonical_event_field_substitution(
++        wire: &[u8],
++        event: &AcceptedEventReceiptV1,
++        field: &str,
++        replacement: &str,
++    ) -> Vec<u8> {
++        // This retains the typed wire's field order and changes one semantic
++        // event field only. Rebuilding through `Value` would exercise the
++        // restorer's canonical-byte guard instead of its event guard.
++        let event_value = serde_json::to_value(event).expect("event wire value");
++        let receipt_id = event_value["receipt_id"]
++            .as_str()
++            .expect("event receipt id");
++        let prior = event_value[field].as_str().expect("event field value");
++        let mut text = String::from_utf8(wire.to_vec()).expect("canonical UTF-8 wire");
++        let receipt_marker = format!(r#""receipt_id":"{receipt_id}""#);
++        let receipt_offset = text.find(&receipt_marker).expect("unique event receipt");
++        assert_eq!(text.matches(&receipt_marker).count(), 1);
++        let event_start = text[..receipt_offset].rfind('{').expect("event object start");
++        let event_end = text[receipt_offset..]
++            .find('}')
++            .map(|offset| receipt_offset + offset)
++            .expect("event object end");
++        let field_marker = format!(r#""{field}":"{prior}""#);
++        let field_offset = text[event_start..event_end]
++            .find(&field_marker)
++            .map(|offset| event_start + offset)
++            .expect("event field in selected receipt");
++        assert_eq!(text[event_start..event_end].matches(&field_marker).count(), 1);
++        text.replace_range(
++            field_offset..field_offset + field_marker.len(),
++            &format!(r#""{field}":"{replacement}""#),
++        );
++        text.into_bytes()
++    }
++
++    fn assert_archive_identity(
++        result: Result<RestoredStage3PublicationDayEvidenceV1, DirectV11RealConsumerError>,
++        expected: &'static str,
++    ) {
++        assert!(
++            matches!(result, Err(DirectV11RealConsumerError::Identity(actual)) if actual == expected),
++            "expected archive identity {expected}; got {result:?}"
++        );
++    }
++
+     #[test]
+     fn archived_restorer_uses_replayed_terminal_event_tail_and_rejects_wire_poisons() {
+         let one_event_wire = archived_publication_wire_v1(27_431)
+@@ -2142,39 +2188,143 @@
+             .expect("replayed same-tick terminal events are the archive ending");
+         let multiple_wire: Stage3AcceptedPublicationDayEvidenceWireV1 =
+             serde_json::from_slice(&multiple).expect("sealed multiple-event wire");
++        assert_eq!(
++            serde_json::to_vec(&multiple_wire).expect("recanonicalized multiple-event wire"),
++            multiple,
++            "fixture must reach semantic guards through canonical serialization",
++        );
+         assert!(multiple_wire.event_handoffs.len() > one_event_wire.event_handoffs.len());
++        let last_support = multiple_wire.supports.last().expect("day has supports");
+         assert_ne!(
+-            multiple_wire
+-                .supports
+-                .last()
+-                .expect("day has supports")
+-                .ending_complete_owner_set_sha256,
++            last_support.ending_complete_owner_set_sha256,
+             restored.ending_owner_set_sha256,
+         );
+ 
+-        let mut omitted: Stage3AcceptedPublicationDayEvidenceWireV1 =
+-            serde_json::from_slice(&multiple).expect("sealed multiple-event wire");
++        // Retain every internal handoff and remove only the terminal pair. The
++        // effective endpoint then returns to the final positive support.
++        let final_tick = last_support.support.end_ns();
++        let mut no_terminal = multiple_wire.clone();
++        let original_count = no_terminal.event_handoffs.len();
++        no_terminal.event_handoffs.retain(|event| event.tick() != final_tick);
++        let removed = original_count - no_terminal.event_handoffs.len();
++        assert_eq!(removed, 2, "immutable day has two same-tick terminal events");
++        no_terminal.cumulative_event_count -= removed;
++        no_terminal.ending_owner_set_sha256 = last_support.ending_complete_owner_set_sha256;
++        let no_terminal = serde_json::to_vec(&no_terminal).expect("canonical no-terminal wire");
++        assert_eq!(
++            restart_authority_restore_archived_publication_day_v1(&no_terminal)
++                .expect("no terminal event preserves final support endpoint")
++                .ending_owner_set_sha256,
++            last_support.ending_complete_owner_set_sha256,
++        );
++
++        let terminal_indexes = multiple_wire
++            .event_handoffs
++            .iter()
++            .enumerate()
++            .filter_map(|(index, event)| (event.tick() == final_tick).then_some(index))
++            .collect::<Vec<_>>();
++        let [first_terminal, second_terminal] = terminal_indexes.as_slice() else {
++            panic!("immutable day must retain exactly two terminal events");
++        };
++        let first_event = &multiple_wire.event_handoffs[*first_terminal];
++        let second_event = &multiple_wire.event_handoffs[*second_terminal];
++
++        let mut reordered = multiple_wire.clone();
++        reordered.event_handoffs.swap(*first_terminal, *second_terminal);
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(
++                &serde_json::to_vec(&reordered).expect("canonical reordered wire"),
++            ),
++            "accepted publication incremental event chronology",
++        );
++
++        let wrong_tick = canonical_event_field_substitution(
++            &multiple,
++            first_event,
++            "tick",
++            &(final_tick.get() + 1).to_string(),
++        );
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(&wrong_tick),
++            "accepted publication incremental event seal",
++        );
++        // Use an unlike, valid digest from the first event outside this
++        // terminal parent rather than a made-up parent representation.
++        let foreign = multiple_wire
++            .event_handoffs
++            .iter()
++            .find(|event| event.parent_transaction_id() != first_event.parent_transaction_id())
++            .expect("immutable archive foreign parent event");
++        let wrong_parent = canonical_event_field_substitution(
++            &multiple,
++            first_event,
++            "parent_transaction_id",
++            serde_json::to_value(foreign)
++                .expect("foreign event value")["parent_transaction_id"]
++                .as_str()
++                .expect("foreign event parent"),
++        );
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(&wrong_parent),
++            "accepted publication incremental event seal",
++        );
++        let wrong_beginning = canonical_event_field_substitution(
++            &multiple,
++            first_event,
++            "begin_owner_set",
++            serde_json::to_value(second_event)
++                .expect("second terminal event value")["begin_owner_set"]
++                .as_str()
++                .expect("second terminal beginning owner"),
++        );
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(&wrong_beginning),
++            "accepted publication incremental event seal",
++        );
++
++        let mut omitted = multiple_wire.clone();
+         omitted.event_handoffs.remove(0);
+         omitted.cumulative_event_count -= 1;
+-        assert!(restart_authority_restore_archived_publication_day_v1(
+-            &serde_json::to_vec(&omitted).expect("omitted event wire")
+-        )
+-        .is_err());
+-        let mut duplicated: Stage3AcceptedPublicationDayEvidenceWireV1 =
+-            serde_json::from_slice(&multiple).expect("sealed multiple-event wire");
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(
++                &serde_json::to_vec(&omitted).expect("canonical omitted-event wire"),
++            ),
++            "accepted publication incremental event chronology",
++        );
++        let mut duplicated = multiple_wire.clone();
+         duplicated.event_handoffs.push(duplicated.event_handoffs[0].clone());
+         duplicated.cumulative_event_count += 1;
+-        assert!(restart_authority_restore_archived_publication_day_v1(
+-            &serde_json::to_vec(&duplicated).expect("duplicated event wire")
+-        )
+-        .is_err());
+-        let mut wrong_final: Stage3AcceptedPublicationDayEvidenceWireV1 =
+-            serde_json::from_slice(&multiple).expect("sealed multiple-event wire");
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(
++                &serde_json::to_vec(&duplicated).expect("canonical duplicated-event wire"),
++            ),
++            "accepted publication incremental restore chronology",
++        );
++        let mut wrong_final = multiple_wire.clone();
+         wrong_final.ending_owner_set_sha256 = Digest32::zero();
+-        assert!(restart_authority_restore_archived_publication_day_v1(
+-            &serde_json::to_vec(&wrong_final).expect("wrong final-owner wire")
+-        )
+-        .is_err());
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(
++                &serde_json::to_vec(&wrong_final).expect("canonical wrong-final-owner wire"),
++            ),
++            "archived publication day chronology",
++        );
++        let mut wrong_schema = multiple_wire.clone();
++        wrong_schema.schema_version = 2;
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(
++                &serde_json::to_vec(&wrong_schema).expect("canonical wrong-schema wire"),
++            ),
++            "archived publication day wire",
++        );
++        let mut wrong_count = multiple_wire;
++        wrong_count.cumulative_event_count += 1;
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(
++                &serde_json::to_vec(&wrong_count).expect("canonical wrong-count wire"),
++            ),
++            "archived publication day wire",
++        );
+     }
+ 
+     fn support(

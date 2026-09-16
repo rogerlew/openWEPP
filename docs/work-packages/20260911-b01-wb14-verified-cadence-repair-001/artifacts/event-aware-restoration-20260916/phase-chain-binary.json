@@ -1,0 +1,5 @@
+{
+  "build": "phase-chain-a002-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/phase-chain.frozen",
+  "sha256": "f05ea8837c61dba13a131db9b793e0236479934ec6dd128a32d4a1d01aaaf2b8"
+}

@@ -1,0 +1,22 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0599]: the method `as_deref` exists for enum `Result<(), std::string::String>`, but its trait bounds were not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4268:31
+     |
+4268 |             assert_eq!(result.as_deref(), Err(expected));
+     |                               ^^^^^^^^
+     |
+     = note: the following trait bounds were not satisfied:
+             `(): Deref`
+
+error[E0599]: the method `as_deref` exists for enum `Result<(), std::string::String>`, but its trait bounds were not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4281:31
+     |
+4281 |             assert_eq!(result.as_deref(), Err(expected));
+     |                               ^^^^^^^^
+     |
+     = note: the following trait bounds were not satisfied:
+             `(): Deref`
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 2 previous errors

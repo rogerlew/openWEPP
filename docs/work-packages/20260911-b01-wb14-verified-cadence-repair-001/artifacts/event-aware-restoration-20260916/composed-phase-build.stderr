@@ -1,0 +1,37 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0432]: unresolved import `openwepp_land_surface_energy::TransactionId`
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:255:111
+    |
+255 |     use openwepp_land_surface_energy::{Sha256Digest, SoilThermalLayerEnergyCreditV2, SoilThermalOwnedStateV2, TransactionId};
+    |                                                                                                               ^^^^^^^^^^^^^ no `TransactionId` in the root
+    |
+help: a similar name exists in the module
+    |
+255 -     use openwepp_land_surface_energy::{Sha256Digest, SoilThermalLayerEnergyCreditV2, SoilThermalOwnedStateV2, TransactionId};
+255 +     use openwepp_land_surface_energy::{Sha256Digest, SoilThermalLayerEnergyCreditV2, SoilThermalOwnedStateV2, transaction};
+    |
+
+error[E0599]: `CanonicalSnowOwnerV4Error` doesn't implement `std::fmt::Display`
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:236:137
+    |
+236 | ...r(|error| error.to_string())?;
+    |                    ^^^^^^^^^ method cannot be called on `CanonicalSnowOwnerV4Error` due to unsatisfied trait bounds
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/snow_owner_v4.rs:14:1
+    |
+ 14 | pub(crate) struct CanonicalSnowOwnerV4Error(pub(crate) &'static str);
+    | ------------------------------------------- method `to_string` not found for this struct because it doesn't satisfy `CanonicalSnowOwnerV4Error: ToString` or `CanonicalSnowOwnerV4Error: std::fmt::Display`
+    |
+    = note: the following trait bounds were not satisfied:
+            `CanonicalSnowOwnerV4Error: std::fmt::Display`
+            which is required by `CanonicalSnowOwnerV4Error: ToString`
+note: the trait `std::fmt::Display` must be implemented
+   --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/fmt/mod.rs:1186:0
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following trait defines an item `to_string`, perhaps you need to implement it:
+            candidate #1: `ToString`
+
+Some errors have detailed explanations: E0432, E0599.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 2 previous errors

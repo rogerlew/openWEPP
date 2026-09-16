@@ -1,0 +1,5 @@
+{
+  "build": "native-aggregate-third-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/native-aggregate.frozen",
+  "sha256": "76e21c4e18401596655739f491961b72febc2f849b4ded8cd844204a10fa1933"
+}

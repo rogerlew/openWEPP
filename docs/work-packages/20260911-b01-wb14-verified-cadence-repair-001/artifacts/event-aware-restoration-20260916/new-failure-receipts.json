@@ -1,0 +1,117 @@
+{
+  "recorded_utc": "2026-09-16T18:27:06.912080+00:00",
+  "historical_floor": 88,
+  "recorded_nonzero_commands": [
+    {
+      "receipt": "a002-direct-expanded.json",
+      "exit_code": 101,
+      "elapsed_seconds": 48.6399299306795,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "a002-prospective-red.json",
+      "exit_code": 101,
+      "elapsed_seconds": 10.495366838295013,
+      "classification": "expected red"
+    },
+    {
+      "receipt": "a002-resealed-controls.json",
+      "exit_code": 101,
+      "elapsed_seconds": 101.07456198334694,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "acquisition-default-feature-check.json",
+      "exit_code": 101,
+      "elapsed_seconds": 32.15735723357648,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "authority-controls-fast.json",
+      "exit_code": 101,
+      "elapsed_seconds": 1.921504623722285,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "composed-first-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 5.83676169719547,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "composed-first.json",
+      "exit_code": 101,
+      "elapsed_seconds": 219.18422747822478,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "composed-fourth.json",
+      "exit_code": 101,
+      "elapsed_seconds": 217.71173054585233,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "composed-phase-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 34.029634069185704,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "composed-second.json",
+      "exit_code": 101,
+      "elapsed_seconds": 220.5379819208756,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "composed-third.json",
+      "exit_code": 101,
+      "elapsed_seconds": 226.93383683310822,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "dto-first-check.json",
+      "exit_code": 101,
+      "elapsed_seconds": 33.93507203599438,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "final-default-feature-check.json",
+      "exit_code": 101,
+      "elapsed_seconds": 23.506030329037458,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "native-aggregate-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 7.390448934864253,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "native-aggregate-second-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 7.441031141206622,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "phase-first.json",
+      "exit_code": 101,
+      "elapsed_seconds": 0.6183048808015883,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "terminal-default-feature-check.json",
+      "exit_code": 101,
+      "elapsed_seconds": 22.245717084035277,
+      "classification": "retained failure"
+    },
+    {
+      "receipt": "terminal-default-feature-final-check.json",
+      "exit_code": 101,
+      "elapsed_seconds": 22.046336805913597,
+      "classification": "retained failure"
+    }
+  ],
+  "additional_failed_temp_checks": 2,
+  "cumulative_failure_floor": 108,
+  "limitation": "Lower bound: early discovery/tool/temporary source uncertainty retained; no failure-count stop."
+}

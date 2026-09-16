@@ -1,0 +1,5 @@
+{
+  "build": "dto-roundtrip-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/dto-roundtrip.frozen",
+  "sha256": "224b5a36a0d9d62e6f06dbc865fb17bfb48bf081afe19c438cedb6e535b56659"
+}

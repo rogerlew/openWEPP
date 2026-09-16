@@ -1,0 +1,6 @@
+{
+  "build": "terminal-confirmed-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/terminal-focused.frozen",
+  "sha256": "47fd72c2b2c9acb422021659d499be3ba0b29020d94468f084a9846eb89cb631",
+  "source_tree_sha256": "7c04f52e6cae6327202591b37f0c4e7a5fff3ae34a103255a35c49a3dbdf37ab"
+}

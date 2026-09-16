@@ -1,0 +1,29 @@
+{
+  "historical_failure_floor": 88,
+  "new_failed_actions": [
+    {
+      "action": "followup /root/restoration_correctness",
+      "result": "live agent path not found",
+      "classification": "reviewer continuity unavailable; distinct replacement obtained"
+    },
+    {
+      "action": "rg artifacts/complete-lint-diagnostics-20260916/disposition*",
+      "exit": 2,
+      "classification": "read-only discovery glob absent; existing comparison script supplies method"
+    },
+    {
+      "action": "send_message to completed event_correctness while writer and QA active",
+      "result": "agent thread limit reached",
+      "classification": "review-capacity routing failure; no repeated spawn; final correctness reuse deferred until active slot available"
+    },
+    {
+      "action": "writer first archive launch",
+      "classification": "INVALID source edited during build and unlimited address-space/output bounds observed; exact writer outcome pending"
+    },
+    {
+      "action": "parent proc/kill read after process disappearance",
+      "classification": "read/termination race: no remaining PID; not new corrective cycle"
+    }
+  ],
+  "failure_count_note": "Conservative floor; writer execution failures tracked separately; no failure-count stop."
+}

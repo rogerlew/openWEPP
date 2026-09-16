@@ -1,0 +1,340 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+@@ -352,6 +352,24 @@
+ 
+ include!("v9_real_consumer_shadow_forcing.rs");
+ include!("v9_real_consumer_shadow/v10_soil_thermal_v2.rs");
++
++#[cfg(feature = "persisted-restart-v1")]
++fn diagnostic_native_field<T: serde::de::DeserializeOwned>(
++    captured: &serde_json::Value,
++    name: &str,
++) -> Result<T, DirectV10RealConsumerError> {
++    let value = captured.get(name).cloned().ok_or_else(|| {
++        DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
++            "diagnostic native constructor operand",
++        ))
++    })?;
++    serde_json::from_value(value).map_err(|error| {
++        DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
++            error.to_string(),
++        ))
++    })
++}
++
+ 
+ #[cfg(feature = "persisted-restart-v1")]
+ pub(crate) fn diagnostic_canonicalize_soil_operand_chain_v1(
+@@ -595,37 +613,13 @@
+         pinned_provider_static_configuration: &SnowFreeHalfHourStaticConfiguration,
+         pinned_hydrology_constructor_inputs: std::sync::Arc<DirectRunConstructorInputs>,
+     ) -> Result<Self, DirectV10RealConsumerError> {
+-        let get = |name| {
+-            captured.get(name).cloned().ok_or_else(|| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
+-                    "diagnostic native constructor operand",
+-                ))
+-            })
+-        };
+-        let vegetation_configuration = serde_json::from_value(get("vegetation_configuration")?)
+-            .map_err(|e| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    e.to_string(),
+-                ))
+-            })?;
++        let vegetation_configuration = diagnostic_native_field(captured, "vegetation_configuration")?;
+         let vegetation_state: V10CoupledOwnedState =
+-            serde_json::from_value(get("vegetation_state")?).map_err(|e| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    e.to_string(),
+-                ))
+-            })?;
++            diagnostic_native_field(captured, "vegetation_state")?;
+         let vegetation_owner_id =
+-            serde_json::from_value(get("vegetation_owner_id")?).map_err(|e| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    e.to_string(),
+-                ))
+-            })?;
++            diagnostic_native_field(captured, "vegetation_owner_id")?;
+         let captured_lse_configuration: LandSurfaceEnergyConfiguration =
+-            serde_json::from_value(get("lse_configuration")?).map_err(|e| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    e.to_string(),
+-                ))
+-            })?;
++            diagnostic_native_field(captured, "lse_configuration")?;
+         if &captured_lse_configuration != pinned_lse_configuration {
+             return Err(DirectV9RealConsumerError::Identity(
+                 "diagnostic main LSE configuration/pinned authority join",
+@@ -633,18 +627,9 @@
+             .into());
+         }
+         let lse_configuration = pinned_lse_configuration.clone();
+-        let lse_state: LandSurfaceEnergyV2State = serde_json::from_value(get("lse_state")?)
+-            .map_err(|e| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    e.to_string(),
+-                ))
+-            })?;
++        let lse_state: LandSurfaceEnergyV2State = diagnostic_native_field(captured, "lse_state")?;
+         let surface_configuration_canonical_json: Vec<u8> =
+-            serde_json::from_value(get("surface_configuration_canonical_json")?).map_err(|e| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    e.to_string(),
+-                ))
+-            })?;
++            diagnostic_native_field(captured, "surface_configuration_canonical_json")?;
+         let captured_surface_configuration =
+             DirectSurfaceLiquidConfiguration::from_canonical_bytes(
+                 &surface_configuration_canonical_json,
+@@ -658,58 +643,26 @@
+             .into());
+         }
+         let surface_configuration = pinned_surface_configuration.clone();
+-        let biogeochemistry = serde_json::from_value(get("biogeochemistry")?).map_err(|e| {
+-            DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                e.to_string(),
+-            ))
+-        })?;
+-        let next_day_index = serde_json::from_value(get("next_day_index")?).map_err(|e| {
+-            DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                e.to_string(),
+-            ))
+-        })?;
+-        let gsi_owner_configuration = serde_json::from_value(get("gsi_owner_configuration")?)
+-            .map_err(|e| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    e.to_string(),
+-                ))
+-            })?;
++        let biogeochemistry = diagnostic_native_field(captured, "biogeochemistry")?;
++        let next_day_index = diagnostic_native_field(captured, "next_day_index")?;
++        let gsi_owner_configuration = diagnostic_native_field(captured, "gsi_owner_configuration")?;
+         let gsi_owner_state: crate::runtime_inputs::DirectGsiOwnerStateV1 =
+-            serde_json::from_value(get("gsi_owner_state")?).map_err(|e| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    e.to_string(),
+-                ))
+-            })?;
++            diagnostic_native_field(captured, "gsi_owner_state")?;
+         let gsi_state =
+             crate::runtime_inputs::restart_authority_restore_gsi_state(&gsi_owner_state)?;
+         let provider_static_configuration: crate::snow_stage3_v11_current_context_capture::
+-            ProviderStaticConfigurationCaptureV1 = serde_json::from_value(get(
+-            "provider_static_configuration",
+-        )?)
+-        .map_err(|e| {
+-            DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                e.to_string(),
+-            ))
+-        })?;
++            ProviderStaticConfigurationCaptureV1 = diagnostic_native_field(captured, "provider_static_configuration")?;
+         provider_static_configuration.validate_against(pinned_provider_static_configuration)?;
+         let provider_static_configuration = pinned_provider_static_configuration.clone();
+         let provider_cursor_canonical_json: Vec<u8> =
+-            serde_json::from_value(get("provider_cursor_canonical_json")?).map_err(|e| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    e.to_string(),
+-                ))
+-            })?;
++            diagnostic_native_field(captured, "provider_cursor_canonical_json")?;
+         let provider_cursor = SnowFreeHalfHourProviderCursor::restore_json(
+             &provider_cursor_canonical_json,
+             &provider_static_configuration,
+             next_day_index,
+         )?;
+         let root_zone_hydraulic_configuration =
+-            serde_json::from_value(get("root_zone_hydraulic_configuration")?).map_err(|e| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    e.to_string(),
+-                ))
+-            })?;
++            diagnostic_native_field(captured, "root_zone_hydraulic_configuration")?;
+         let proof = NativeSoilRestartAdmissionV1::authenticate(
+             &target_soil,
+             &committed_bootstrap,
+@@ -746,20 +699,11 @@
+             clock,
+             NativeSoilRestartPositionV1::InProgressSupportCurrent,
+         )?;
+-        let history: Vec<u8> = serde_json::from_value(get("accepted_publication_rotation")?)
+-            .map_err(|error| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    error.to_string(),
+-                ))
+-            })?;
++        let history: Vec<u8> = diagnostic_native_field(captured, "accepted_publication_rotation")?;
+         restored
+             .restart_authority_restore_accepted_publication_rotation_canonical_bytes_v3(&history)?;
+         let wb14: Option<Vec<u8>> =
+-            serde_json::from_value(get("wb14_parent")?).map_err(|error| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    error.to_string(),
+-                ))
+-            })?;
++            diagnostic_native_field(captured, "wb14_parent")?;
+         restored.restart_authority_restore_native_wb14_parent_canonical_bytes(
+             wb14.as_deref(),
+             &proof,
+@@ -767,84 +711,18 @@
+             NativeSoilRestartPositionV1::InProgressSupportCurrent,
+         )?;
+         let frozen_litter_residents: Option<DiagnosticFrozenLitterResidentsV1> =
+-            serde_json::from_value(get("frozen_litter_residents")?).map_err(|error| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    error.to_string(),
+-                ))
+-            })?;
++            diagnostic_native_field(captured, "frozen_litter_residents")?;
+         let frozen = frozen_litter_residents.ok_or_else(|| {
+             DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
+                 "diagnostic native target requires frozen-litter V3/V4 residents",
+             ))
+         })?;
+-        {
+-            if &frozen.lse_configuration != pinned_frozen_litter_lse_configuration {
+-                return Err(DirectV9RealConsumerError::Identity(
+-                    "diagnostic frozen-litter LSE configuration/pinned authority join",
+-                )
+-                .into());
+-            }
+-            let surface_parent = DirectSurfaceLiquidConfiguration::from_canonical_bytes(
+-                &frozen.surface_parent_configuration_canonical_bytes,
+-            )?;
+-            if surface_parent.canonical_bytes()?
+-                != pinned_surface_configuration.canonical_bytes()?
+-            {
+-                return Err(DirectV9RealConsumerError::Identity(
+-                    "diagnostic frozen-litter surface parent/pinned authority join",
+-                )
+-                .into());
+-            }
+-            let surface_model = crate::direct_runtime::SurfaceLiquidOwnerModelDefinitionV2::
+-                restart_authority_from_canonical_bytes(
+-                    &frozen.surface_model_definition_canonical_bytes,
+-                )?;
+-            let surface_configuration =
+-                crate::direct_runtime::SurfaceLiquidConfigurationV2::from_canonical_bytes(
+-                    surface_parent,
+-                    surface_model,
+-                    &frozen.surface_configuration_canonical_bytes,
+-                )?;
+-            let surface_owner =
+-                crate::direct_runtime::SurfaceLiquidOwnerEnvelopeV2::from_canonical_bytes(
+-                    surface_configuration.parent(),
+-                    Some(&surface_configuration),
+-                    &frozen.surface_owner_canonical_bytes,
+-                )?;
+-            let mut physical = FrozenLitterV3Resident::try_new(
+-                pinned_frozen_litter_lse_configuration.clone(),
+-                frozen.lse_state,
+-                surface_configuration,
+-                surface_owner,
+-            )?;
+-            physical.restore_restart_authority(
+-                &frozen.physical_publication_history,
+-                frozen.physical_wb14_parent.as_deref(),
+-                &frozen.physical_predecessor_receipt_chain_sha256,
+-            )?;
+-            let exact_owner = crate::LseSurfaceEnthalpyOwnerEnvelopeV1::from_canonical_bytes(
+-                &frozen.exact_surface_owner_canonical_bytes,
+-            )?;
+-            let exact = FrozenLitterV4Resident::try_restore(
+-                &physical,
+-                exact_owner,
+-                &frozen.exact_publication_history,
+-                &frozen.exact_publication_beginning_lse_v3_state_sha256,
+-            )?;
+-            restored.install_restored_frozen_litter_v4_residents(physical, exact)?;
+-        }
+-        let accepted_interval_count: u64 = serde_json::from_value(get("accepted_interval_count")?)
+-            .map_err(|error| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    error.to_string(),
+-                ))
+-            })?;
++        restored.diagnostic_restore_frozen_litter_residents_v1(
++            frozen, pinned_frozen_litter_lse_configuration, pinned_surface_configuration,
++        )?;
++        let accepted_interval_count: u64 = diagnostic_native_field(captured, "accepted_interval_count")?;
+         let provider_gsi_receipt_sha256: String =
+-            serde_json::from_value(get("provider_gsi_receipt_sha256")?).map_err(|error| {
+-                DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization(
+-                    error.to_string(),
+-                ))
+-            })?;
++            diagnostic_native_field(captured, "provider_gsi_receipt_sha256")?;
+         if provider_gsi_receipt_sha256.len() != 64 {
+             return Err(DirectV9RealConsumerError::Identity(
+                 "diagnostic provider GSI receipt width",
+@@ -869,6 +747,69 @@
+         );
+         Ok(restored)
+     }
++    fn diagnostic_restore_frozen_litter_residents_v1(
++        &mut self,
++        frozen: DiagnosticFrozenLitterResidentsV1,
++        pinned_frozen_litter_lse_configuration: &LandSurfaceEnergyConfiguration,
++        pinned_surface_configuration: &DirectSurfaceLiquidConfiguration,
++    ) -> Result<(), DirectV10RealConsumerError> {
++        if &frozen.lse_configuration != pinned_frozen_litter_lse_configuration {
++            return Err(DirectV9RealConsumerError::Identity(
++                "diagnostic frozen-litter LSE configuration/pinned authority join",
++            )
++            .into());
++        }
++        let surface_parent = DirectSurfaceLiquidConfiguration::from_canonical_bytes(
++            &frozen.surface_parent_configuration_canonical_bytes,
++        )?;
++        if surface_parent.canonical_bytes()?
++            != pinned_surface_configuration.canonical_bytes()?
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "diagnostic frozen-litter surface parent/pinned authority join",
++            )
++            .into());
++        }
++        let surface_model = crate::direct_runtime::SurfaceLiquidOwnerModelDefinitionV2::
++            restart_authority_from_canonical_bytes(
++                &frozen.surface_model_definition_canonical_bytes,
++            )?;
++        let surface_configuration =
++            crate::direct_runtime::SurfaceLiquidConfigurationV2::from_canonical_bytes(
++                surface_parent,
++                surface_model,
++                &frozen.surface_configuration_canonical_bytes,
++            )?;
++        let surface_owner =
++            crate::direct_runtime::SurfaceLiquidOwnerEnvelopeV2::from_canonical_bytes(
++                surface_configuration.parent(),
++                Some(&surface_configuration),
++                &frozen.surface_owner_canonical_bytes,
++            )?;
++        let mut physical = FrozenLitterV3Resident::try_new(
++            pinned_frozen_litter_lse_configuration.clone(),
++            frozen.lse_state,
++            surface_configuration,
++            surface_owner,
++        )?;
++        physical.restore_restart_authority(
++            &frozen.physical_publication_history,
++            frozen.physical_wb14_parent.as_deref(),
++            &frozen.physical_predecessor_receipt_chain_sha256,
++        )?;
++        let exact_owner = crate::LseSurfaceEnthalpyOwnerEnvelopeV1::from_canonical_bytes(
++            &frozen.exact_surface_owner_canonical_bytes,
++        )?;
++        let exact = FrozenLitterV4Resident::try_restore(
++            &physical,
++            exact_owner,
++            &frozen.exact_publication_history,
++            &frozen.exact_publication_beginning_lse_v3_state_sha256,
++        )?;
++        self.install_restored_frozen_litter_v4_residents(physical, exact)?;
++        Ok(())
++    }
++
+ 
+     pub(crate) fn diagnostic_native_lane_maps_v1(&self) -> Vec<DiagnosticNativeLaneMapV1> {
+         self.inner

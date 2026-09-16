@@ -1,0 +1,363 @@
+--- before/snow_stage3_v11_member_restoration.rs
++++ after/snow_stage3_v11_member_restoration.rs
+@@ -156,47 +156,12 @@
+     lanes: Vec<(&'a u32, &'a crate::DirectSnowStage3PersistentState)>,
+ }
+ 
+-pub(super) fn restore(export: &Path, seed_path: &Path) -> Result<(), String> {
+-    let seed: Value =
+-        serde_json::from_slice(&std::fs::read(seed_path).map_err(|error| error.to_string())?)
+-            .map_err(|error| error.to_string())?;
+-    let pin = extract_pinned_seed_configuration_v1(seed_path)?;
+-    let provider_configuration = pinned_provider(&seed)?;
+-    let summary: Value = serde_json::from_slice(
+-        &std::fs::read(export.join("summary.json")).map_err(|error| error.to_string())?,
+-    )
+-    .map_err(|error| error.to_string())?;
+-    if summary["status"] != "COMPLETE" {
+-        return Err("member export incomplete".into());
+-    }
+-    let entries = required(&summary, "rows")?
+-        .as_array()
+-        .ok_or("member rows")?;
+-    let day_entries = entries
+-        .iter()
+-        .filter(|r| kind(r, "b01_wb14_prepared_day_current_context_v1"))
+-        .collect::<Vec<_>>();
+-    let [day_entry] = day_entries.as_slice() else {
+-        return Err("prepared day missing or duplicate".into());
+-    };
+-    let day = load_row(export, day_entry, &BTreeSet::new())?;
+-    if day["day_index"] != B01_DAY_INDEX
+-        || day["static_run_identity"] != serde_json::json!(pin.run_identity)
+-        || day["static_topology_identity"] != serde_json::json!(pin.topology_identity)
+-    {
+-        return Err("prepared day seed identity".into());
+-    }
+-    let clock_parent = restore_snow_free_clock_parent_from_member_export(export)?;
+-    let vegetation_bytes: Vec<u8> = decode(required(
+-        &clock_parent.recorded_row,
+-        "vegetation_configuration_canonical_json",
+-    )?)?;
+-    let vegetation: openwepp_vegetation::VegetationConfigurationV11 =
+-        serde_json::from_slice(&vegetation_bytes).map_err(|error| error.to_string())?;
+-    if vegetation.imported_v10 != pin.vegetation {
+-        return Err("seed vegetation configuration".into());
+-    }
+-    vegetation.validate().map_err(|error| error.to_string())?;
++fn restore_authenticated_archive_manifest(
++    export: &Path,
++    entries: &[Value],
++    pin: &super::PinnedSeedConfigurationV1,
++    vegetation: &openwepp_vegetation::VegetationConfigurationV11,
++) -> Result<crate::Stage3CommittedDayArchiveManifestV1, String> {
+     let mut manifest =
+         crate::Stage3CommittedDayArchiveManifestV1::empty(pin.run_identity, pin.topology_identity)
+             .map_err(|error| error.to_string())?;
+@@ -258,35 +223,30 @@
+         );
+         // The canonical blob and restored day are dropped before reading the next.
+     }
+-    let prefix: crate::Stage3ArchivedReceiptPrefixV1 =
+-        decode(required(&day, "archived_receipt_prefix")?)?;
+-    prefix.validate().map_err(|error| error.to_string())?;
+-    let committed_bytes: Vec<u8> =
+-        decode(required(&day, "committed_clock_restart_canonical_json")?)?;
+-    let committed = restore_coupled_clock(
+-        &committed_bytes,
+-        digest_bytes(CLOCK_MODEL_DOMAIN),
+-        digest_bytes(CLOCK_AUTHORITY_DOMAIN),
+-        pin.controller_policy,
+-    )?
+-    .clock()
+-    .clone();
+-    if prefix.run_identity != pin.run_identity
+-        || prefix.topology_identity != pin.topology_identity
+-        || prefix.archived_day_count != manifest.committed_day_count
+-        || prefix.ordered_day_chain_sha256 != manifest.ordered_day_chain_sha256
+-        || prefix.archive_content_root_sha256 != manifest.archive_content_root_sha256
+-        || prefix.accepted_until_ns != committed.accepted_until().get()
+-        || prefix.ending_owner_set_sha256
+-            != Some(
+-                complete_owner_set_digest(committed.owners()).map_err(|error| error.to_string())?,
+-            )
+-        || day["committed_next_parent_sequence"] != serde_json::json!(prefix.next_parent_sequence)
+-        || day["committed_receipt_tail_count"] != 0
+-    {
+-        return Err("archive prepared-day prefix join".into());
+-    }
+-    println!("composed archive/provider prefix PASS");
++    Ok(manifest)
++}
++
++struct NativeRestorationContext<'a> {
++    export: &'a Path,
++    seed: &'a Value,
++    pin: &'a super::PinnedSeedConfigurationV1,
++    provider_configuration: &'a crate::runtime_inputs::SnowFreeHalfHourStaticConfiguration,
++    day: &'a Value,
++    prefix: &'a crate::Stage3ArchivedReceiptPrefixV1,
++    clock_parent: &'a super::RestoredSnowFreeClockParentV1,
++}
++
++fn restore_native_context(
++    entries: &[Value],
++    context: NativeRestorationContext<'_>,
++) -> Result<(), String> {
++    let export = context.export;
++    let seed = context.seed;
++    let pin = context.pin;
++    let provider_configuration = context.provider_configuration;
++    let day = context.day;
++    let prefix = context.prefix;
++    let clock_parent = context.clock_parent;
+     let target_entries = entries
+         .iter()
+         .filter(|r| kind(r, "b01_wb14_snow_free_pre_child_current_context_v1"))
+@@ -371,12 +331,21 @@
+         native["accepted_interval_count"]
+     );
+     if native["next_day_index"] != B01_DAY_INDEX
+-        || target["day_index"] != B01_DAY_INDEX || target["interval_index"] != B01_INTERVAL_INDEX {
++        || target["day_index"] != B01_DAY_INDEX
++        || target["interval_index"] != B01_INTERVAL_INDEX
++    {
+         return Err("native outer day/interval join".into());
+     }
+-    let expected_gsi = serde_json::json!(provider.gsi_receipt_digest().map_err(|error| error.to_string())?);
++    let expected_gsi = serde_json::json!(
++        provider
++            .gsi_receipt_digest()
++            .map_err(|error| error.to_string())?
++    );
+     let gsi_matches = native["provider_gsi_receipt_sha256"] == expected_gsi;
+-    println!("native GSI validation: provider={expected_gsi}; captured={}; matched={gsi_matches}; no receipt installation", native["provider_gsi_receipt_sha256"]);
++    println!(
++        "native GSI validation: provider={expected_gsi}; captured={}; matched={gsi_matches}; no receipt installation",
++        native["provider_gsi_receipt_sha256"]
++    );
+     validate_current_phase(&target, &clock_parent.clock, position)?;
+     let forcing = crate::snow_stage3_v11_attachment::canonical_parent_forcing_digest(
+         B01_DAY_INDEX,
+@@ -480,6 +449,92 @@
+     Ok(())
+ }
+ 
++pub(super) fn restore(export: &Path, seed_path: &Path) -> Result<(), String> {
++    let seed: Value =
++        serde_json::from_slice(&std::fs::read(seed_path).map_err(|error| error.to_string())?)
++            .map_err(|error| error.to_string())?;
++    let pin = extract_pinned_seed_configuration_v1(seed_path)?;
++    let provider_configuration = pinned_provider(&seed)?;
++    let summary: Value = serde_json::from_slice(
++        &std::fs::read(export.join("summary.json")).map_err(|error| error.to_string())?,
++    )
++    .map_err(|error| error.to_string())?;
++    if summary["status"] != "COMPLETE" {
++        return Err("member export incomplete".into());
++    }
++    let entries = required(&summary, "rows")?
++        .as_array()
++        .ok_or("member rows")?;
++    let day_entries = entries
++        .iter()
++        .filter(|r| kind(r, "b01_wb14_prepared_day_current_context_v1"))
++        .collect::<Vec<_>>();
++    let [day_entry] = day_entries.as_slice() else {
++        return Err("prepared day missing or duplicate".into());
++    };
++    let day = load_row(export, day_entry, &BTreeSet::new())?;
++    if day["day_index"] != B01_DAY_INDEX
++        || day["static_run_identity"] != serde_json::json!(pin.run_identity)
++        || day["static_topology_identity"] != serde_json::json!(pin.topology_identity)
++    {
++        return Err("prepared day seed identity".into());
++    }
++    let clock_parent = restore_snow_free_clock_parent_from_member_export(export)?;
++    let vegetation_bytes: Vec<u8> = decode(required(
++        &clock_parent.recorded_row,
++        "vegetation_configuration_canonical_json",
++    )?)?;
++    let vegetation: openwepp_vegetation::VegetationConfigurationV11 =
++        serde_json::from_slice(&vegetation_bytes).map_err(|error| error.to_string())?;
++    if vegetation.imported_v10 != pin.vegetation {
++        return Err("seed vegetation configuration".into());
++    }
++    vegetation.validate().map_err(|error| error.to_string())?;
++    let manifest = restore_authenticated_archive_manifest(export, entries, &pin, &vegetation)?;
++    let prefix: crate::Stage3ArchivedReceiptPrefixV1 =
++        decode(required(&day, "archived_receipt_prefix")?)?;
++    prefix.validate().map_err(|error| error.to_string())?;
++    let committed_bytes: Vec<u8> =
++        decode(required(&day, "committed_clock_restart_canonical_json")?)?;
++    let committed = restore_coupled_clock(
++        &committed_bytes,
++        digest_bytes(CLOCK_MODEL_DOMAIN),
++        digest_bytes(CLOCK_AUTHORITY_DOMAIN),
++        pin.controller_policy,
++    )?
++    .clock()
++    .clone();
++    if prefix.run_identity != pin.run_identity
++        || prefix.topology_identity != pin.topology_identity
++        || prefix.archived_day_count != manifest.committed_day_count
++        || prefix.ordered_day_chain_sha256 != manifest.ordered_day_chain_sha256
++        || prefix.archive_content_root_sha256 != manifest.archive_content_root_sha256
++        || prefix.accepted_until_ns != committed.accepted_until().get()
++        || prefix.ending_owner_set_sha256
++            != Some(
++                complete_owner_set_digest(committed.owners()).map_err(|error| error.to_string())?,
++            )
++        || day["committed_next_parent_sequence"] != serde_json::json!(prefix.next_parent_sequence)
++        || day["committed_receipt_tail_count"] != 0
++    {
++        return Err("archive prepared-day prefix join".into());
++    }
++    println!("composed archive/provider prefix PASS");
++    restore_native_context(
++        entries,
++        NativeRestorationContext {
++            export,
++            seed: &seed,
++            pin: &pin,
++            provider_configuration: &provider_configuration,
++            day: &day,
++            prefix: &prefix,
++            clock_parent: &clock_parent,
++        },
++    )?;
++    Ok(())
++}
++
+ pub(super) fn validate_current_phase(
+     target: &Value,
+     clock: &CoupledClockStateV1,
+@@ -697,59 +752,11 @@
+     }
+     output
+ }
+-fn validate_deferred_custody(target: &Value, clock: &CoupledClockStateV1) -> Result<(), String> {
+-    let custody = required(
+-        &target["phase_diagnostics"],
+-        "deferred_native_v2_soil_custody",
+-    )?;
+-    if custody["posture"] != "reconstructible_operands_not_installable_capability" {
+-        return Err("deferred custody posture".into());
+-    }
+-    let trial = required(custody, "candidate")?;
+-    let ending = validate_trial(trial)?;
+-    let continuation = required(custody, "continuation")?;
+-    if required(continuation, "physical_trial")? != trial {
+-        return Err("deferred candidate/physical trial join".into());
+-    }
+-    let original: openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2 =
+-        decode(required(continuation, "original_beginning_owner")?)?;
+-    original.validate().map_err(|error| error.to_string())?;
+-    let resident: crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2 =
+-        decode(required(target, "native_soil_v2_constructor_operands")?)?;
+-    if original.state != resident.owner().state
+-        || original.receipt_chain_sha256 != resident.owner().receipt_chain_sha256
+-        || trial["support_end_ns"] != serde_json::json!(clock.accepted_until().get())
+-        || ending == resident.owner().state
+-    {
+-        return Err("deferred/current resident separation and support join".into());
+-    }
+-    let chain: Vec<Vec<openwepp_land_surface_energy::SoilThermalLayerEnergyCreditV2>> =
+-        decode(required(continuation, "ordered_layer_credit_chain")?)?;
+-    let transaction: openwepp_kernel_contract::TransactionId =
+-        decode(required(trial, "transaction_id")?)?;
+-    let predecessor: Option<openwepp_kernel_contract::TransactionId> =
+-        decode(required(trial, "predecessor_transaction_id")?)?;
+-    let expected_last = original
+-        .transaction_id
+-        .0
+-        .checked_add(
+-            u128::try_from(chain.len().checked_sub(1).ok_or("empty deferred chain")?)
+-                .map_err(|error| error.to_string())?,
+-        )
+-        .ok_or("deferred transaction overflow")?;
+-    if transaction.0 != expected_last
+-        || predecessor.map(|id| id.0) != expected_last.checked_sub(1)
+-        || original.expected_predecessor_transaction_id != Some(resident.owner().transaction_id)
+-        || original.transaction_id.0
+-            != resident
+-                .owner()
+-                .transaction_id
+-                .0
+-                .checked_add(1)
+-                .ok_or("resident transaction overflow")?
+-    {
+-        return Err("deferred ordered transaction lineage".into());
+-    }
++fn replay_deferred_ordered_state_chain(
++    original: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
++    chain: &[Vec<openwepp_land_surface_energy::SoilThermalLayerEnergyCreditV2>],
++    trial: &Value,
++) -> Result<openwepp_land_surface_energy::SoilThermalOwnedStateV2, String> {
+     let mut state = original.state.clone();
+     for (index, credits) in chain.iter().enumerate() {
+         if index + 1 == chain.len()
+@@ -806,6 +813,63 @@
+         state.reseal().map_err(|error| error.to_string())?;
+         state.validate().map_err(|error| error.to_string())?;
+     }
++    Ok(state)
++}
++
++fn validate_deferred_custody(target: &Value, clock: &CoupledClockStateV1) -> Result<(), String> {
++    let custody = required(
++        &target["phase_diagnostics"],
++        "deferred_native_v2_soil_custody",
++    )?;
++    if custody["posture"] != "reconstructible_operands_not_installable_capability" {
++        return Err("deferred custody posture".into());
++    }
++    let trial = required(custody, "candidate")?;
++    let ending = validate_trial(trial)?;
++    let continuation = required(custody, "continuation")?;
++    if required(continuation, "physical_trial")? != trial {
++        return Err("deferred candidate/physical trial join".into());
++    }
++    let original: openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2 =
++        decode(required(continuation, "original_beginning_owner")?)?;
++    original.validate().map_err(|error| error.to_string())?;
++    let resident: crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2 =
++        decode(required(target, "native_soil_v2_constructor_operands")?)?;
++    if original.state != resident.owner().state
++        || original.receipt_chain_sha256 != resident.owner().receipt_chain_sha256
++        || trial["support_end_ns"] != serde_json::json!(clock.accepted_until().get())
++        || ending == resident.owner().state
++    {
++        return Err("deferred/current resident separation and support join".into());
++    }
++    let chain: Vec<Vec<openwepp_land_surface_energy::SoilThermalLayerEnergyCreditV2>> =
++        decode(required(continuation, "ordered_layer_credit_chain")?)?;
++    let transaction: openwepp_kernel_contract::TransactionId =
++        decode(required(trial, "transaction_id")?)?;
++    let predecessor: Option<openwepp_kernel_contract::TransactionId> =
++        decode(required(trial, "predecessor_transaction_id")?)?;
++    let expected_last = original
++        .transaction_id
++        .0
++        .checked_add(
++            u128::try_from(chain.len().checked_sub(1).ok_or("empty deferred chain")?)
++                .map_err(|error| error.to_string())?,
++        )
++        .ok_or("deferred transaction overflow")?;
++    if transaction.0 != expected_last
++        || predecessor.map(|id| id.0) != expected_last.checked_sub(1)
++        || original.expected_predecessor_transaction_id != Some(resident.owner().transaction_id)
++        || original.transaction_id.0
++            != resident
++                .owner()
++                .transaction_id
++                .0
++                .checked_add(1)
++                .ok_or("resident transaction overflow")?
++    {
++        return Err("deferred ordered transaction lineage".into());
++    }
++    let state = replay_deferred_ordered_state_chain(&original, &chain, trial)?;
+     if state != ending {
+         return Err("deferred complete ordered ending state".into());
+     }

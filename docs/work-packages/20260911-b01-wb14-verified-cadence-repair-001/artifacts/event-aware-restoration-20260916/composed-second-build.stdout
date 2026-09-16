@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/native-context-restoration-reader-20260916-3b29d2c67dd8
+  scratch: /tmp/openwepp-roger-native-context-restoration-reader-20260916-3b29d2c67dd8
+  cache:   /workdir/.cache/openwepp

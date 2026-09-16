@@ -1,0 +1,28 @@
+
+running 1 test
+test v9_real_consumer_shadow::accepted_publication_chronology_tests::archived_restorer_uses_replayed_terminal_event_tail_and_rejects_wire_poisons ... archive refusal: accepted publication incremental event chronology
+terminal event substitution: tick; independently sealed=false
+archive refusal: accepted publication incremental restore chronology
+terminal event substitution: parent_transaction_id; independently sealed=false
+archive refusal: accepted publication incremental event seal
+terminal event substitution: begin_owner_set; independently sealed=false
+archive refusal: accepted publication incremental event seal
+terminal event substitution: tick; independently sealed=true
+archive refusal: accepted publication incremental restore chronology
+terminal event substitution: parent_transaction_id; independently sealed=true
+archive refusal: accepted publication incremental event chronology
+terminal event substitution: begin_owner_set; independently sealed=true
+archive refusal: accepted publication incremental event chronology
+archive refusal: accepted publication incremental owner handoff
+archive refusal: accepted publication incremental restore chronology
+archive refusal: archived publication day chronology
+archive refusal: archived publication day wire
+archive refusal: archived publication day wire
+archive refusal: archived publication day wire
+probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })
+probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 0, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }
+probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1487 filtered out; finished in 124.64s
+

@@ -1,0 +1,175 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs
+@@ -2153,6 +2153,125 @@
+         text.into_bytes()
+     }
+ 
++    fn resealed_event_field_substitution(
++        wire: &[u8],
++        event: &AcceptedEventReceiptV1,
++        field: &str,
++        replacement: &str,
++    ) -> Vec<u8> {
++        let mut text = String::from_utf8(canonical_event_field_substitution(
++            wire,
++            event,
++            field,
++            replacement,
++        ))
++        .expect("canonical UTF-8 resealed wire");
++        let event_value = serde_json::to_value(event).expect("event wire value");
++        let receipt_id = event_value["receipt_id"]
++            .as_str()
++            .expect("event receipt id");
++        let receipt_marker = format!(r#""receipt_id":"{receipt_id}""#);
++        let receipt_offset = text.find(&receipt_marker).expect("selected event receipt");
++        let event_start = text[..receipt_offset].rfind('{').expect("event object start");
++        let event_end = text[receipt_offset..]
++            .find('}')
++            .map(|offset| receipt_offset + offset)
++            .expect("event object end");
++        let value: serde_json::Value = serde_json::from_str(&text[event_start..=event_end])
++            .expect("selected canonical event object");
++        let digest = |name: &str| {
++            serde_json::from_value::<Digest32>(value[name].clone())
++                .expect("selected event digest")
++        };
++        let parent: ParentTransactionId = serde_json::from_value(value["parent_transaction_id"].clone())
++            .expect("selected event parent");
++        let tick = value["tick"]
++            .as_str()
++            .expect("selected event tick")
++            .parse::<u128>()
++            .expect("selected event tick width");
++        let ordinal = u32::try_from(value["ordinal"].as_u64().expect("selected event ordinal"))
++            .expect("selected event ordinal width");
++        let class = match value["class"].as_str().expect("selected event class") {
++            "OwnershipTransfer" => "OwnershipTransfer",
++            "BoundaryModeTransition" => "BoundaryModeTransition",
++            "RegimeTransition" => "RegimeTransition",
++            "ScheduledBoundary" => "ScheduledBoundary",
++            "DiagnosticMarker" => "DiagnosticMarker",
++            _ => panic!("selected event class is canonical"),
++        };
++        let source = value["source_owner_id"].as_str().expect("selected event source");
++        let context = digest("event_context_digest");
++        let tick_bytes = tick.to_be_bytes();
++        let ordinal_bytes = ordinal.to_be_bytes();
++        let event_id = framed_sha256(
++            "event",
++            &[
++                FramedField { tag: "parent_transaction_id", value: parent.digest().as_bytes() },
++                FramedField { tag: "tick_ns", value: &tick_bytes },
++                FramedField { tag: "event_class", value: class.as_bytes() },
++                FramedField { tag: "event_ordinal", value: &ordinal_bytes },
++                FramedField { tag: "source_owner_id", value: source.as_bytes() },
++                FramedField { tag: "event_context", value: context.as_bytes() },
++            ],
++        )
++        .expect("canonical event id");
++        let begin_clock = digest("begin_clock");
++        let end_owner = digest("end_owner_set");
++        let end_clock = digest_bytes(
++            &[&begin_clock.as_bytes()[..], &event_id.as_bytes()[..], &end_owner.as_bytes()[..]].concat(),
++        );
++        let begin_owner = digest("begin_owner_set");
++        let ledger = digest("ledger_digest");
++        let receipt_id = framed_sha256(
++            "event-receipt-v2",
++            &[
++                FramedField { tag: "parent_transaction_id", value: parent.digest().as_bytes() },
++                FramedField { tag: "event_id", value: event_id.as_bytes() },
++                FramedField { tag: "tick_ns", value: &tick_bytes },
++                FramedField { tag: "ordinal", value: &ordinal_bytes },
++                FramedField { tag: "begin_clock", value: begin_clock.as_bytes() },
++                FramedField { tag: "end_clock", value: end_clock.as_bytes() },
++                FramedField { tag: "begin_owner_set", value: begin_owner.as_bytes() },
++                FramedField { tag: "end_owner_set", value: end_owner.as_bytes() },
++                FramedField { tag: "event_context", value: context.as_bytes() },
++                FramedField { tag: "ledger_digest", value: ledger.as_bytes() },
++            ],
++        )
++        .expect("canonical event receipt id");
++        let replacement = |digest: Digest32| {
++            serde_json::to_value(digest)
++                .expect("canonical digest JSON")
++                .as_str()
++                .expect("canonical digest text")
++                .to_owned()
++        };
++        for (name, old, new) in [
++            ("event_id", value["event_id"].as_str().expect("old event id"), replacement(event_id)),
++            ("end_clock", value["end_clock"].as_str().expect("old end clock"), replacement(end_clock)),
++            ("receipt_id", value["receipt_id"].as_str().expect("old receipt id"), replacement(receipt_id)),
++        ] {
++            let old_marker = format!(r#""{name}":"{old}""#);
++            let offset = text[event_start..event_end]
++                .find(&old_marker)
++                .map(|offset| event_start + offset)
++                .expect("selected event identity field");
++            text.replace_range(offset..offset + old_marker.len(), &format!(r#""{name}":"{new}""#));
++        }
++        text.into_bytes()
++    }
++
++    fn assert_resealed_event_is_valid(
++        wire: &[u8],
++        event_index: usize,
++    ) {
++        let wire: Stage3AcceptedPublicationDayEvidenceWireV1 =
++            serde_json::from_slice(wire).expect("resealed canonical typed wire");
++        wire.event_handoffs[event_index]
++            .validate()
++            .expect("resealed event receipt validates before chronology replay");
++    }
++
+     fn assert_archive_identity(
+         result: Result<RestoredStage3PublicationDayEvidenceV1, DirectV11RealConsumerError>,
+         expected: &'static str,
+@@ -2283,6 +2402,46 @@
+             "accepted publication incremental event seal",
+         );
+ 
++        let resealed_wrong_tick = resealed_event_field_substitution(
++            &multiple,
++            first_event,
++            "tick",
++            &(final_tick.get() + 1).to_string(),
++        );
++        assert_resealed_event_is_valid(&resealed_wrong_tick, *first_terminal);
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(&resealed_wrong_tick),
++            "accepted publication incremental restore chronology",
++        );
++        let resealed_foreign_parent = resealed_event_field_substitution(
++            &multiple,
++            first_event,
++            "parent_transaction_id",
++            serde_json::to_value(foreign)
++                .expect("foreign event value")["parent_transaction_id"]
++                .as_str()
++                .expect("foreign event parent"),
++        );
++        assert_resealed_event_is_valid(&resealed_foreign_parent, *first_terminal);
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(&resealed_foreign_parent),
++            "accepted publication incremental event chronology",
++        );
++        let resealed_wrong_beginning = resealed_event_field_substitution(
++            &multiple,
++            first_event,
++            "begin_owner_set",
++            serde_json::to_value(second_event)
++                .expect("second terminal event value")["begin_owner_set"]
++                .as_str()
++                .expect("second terminal beginning owner"),
++        );
++        assert_resealed_event_is_valid(&resealed_wrong_beginning, *first_terminal);
++        assert_archive_identity(
++            restart_authority_restore_archived_publication_day_v1(&resealed_wrong_beginning),
++            "accepted publication incremental event chronology",
++        );
++
+         let mut omitted = multiple_wire.clone();
+         omitted.event_handoffs.remove(0);
+         omitted.cumulative_event_count -= 1;

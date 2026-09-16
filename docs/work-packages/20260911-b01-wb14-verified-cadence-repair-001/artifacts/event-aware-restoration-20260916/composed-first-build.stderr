@@ -1,0 +1,16 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0599]: no function or associated item named `new` found for struct `VegetationConfigurationV11` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:110:71
+    |
+110 |     let vegetation = openwepp_vegetation::VegetationConfigurationV11::new(pin.vegetation.clone()).map_err(|error| error.to_string())?;
+    |                                                                       ^^^ function or associated item not found in `VegetationConfigurationV11`
+    |
+help: there is a method `ne` with a similar name
+    |
+110 -     let vegetation = openwepp_vegetation::VegetationConfigurationV11::new(pin.vegetation.clone()).map_err(|error| error.to_string())?;
+110 +     let vegetation = openwepp_vegetation::VegetationConfigurationV11::ne(pin.vegetation.clone()).map_err(|error| error.to_string())?;
+    |
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error

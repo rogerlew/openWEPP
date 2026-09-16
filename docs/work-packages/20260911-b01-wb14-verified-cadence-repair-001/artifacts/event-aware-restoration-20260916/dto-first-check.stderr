@@ -1,0 +1,74 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking serde_core v1.0.228
+    Checking typenum v1.20.0
+    Checking cfg-if v1.0.4
+    Checking itoa v1.0.18
+    Checking cpufeatures v0.2.17
+    Checking openwepp-unit-boundary v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-unit-boundary)
+    Checking openwepp-sim-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-sim-contract)
+    Checking hashbrown v0.17.1
+    Checking equivalent v1.0.2
+    Checking thiserror v2.0.20
+    Checking unsafe-libyaml v0.2.11
+    Checking simd-adler32 v0.3.9
+    Checking num-traits v0.2.19
+    Checking zmij v1.0.21
+    Checking memchr v2.8.0
+    Checking adler2 v2.0.1
+    Checking ryu v1.0.23
+    Checking crc32fast v1.5.0
+    Checking base64 v0.22.1
+    Checking libm v0.2.16
+    Checking openwepp-plant-phenology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-plant-phenology)
+    Checking openwepp-meteorology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-meteorology)
+    Checking miniz_oxide v0.8.9
+    Checking openwepp-topology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-topology)
+    Checking num-integer v0.1.46
+    Checking flate2 v1.1.9
+    Checking indexmap v2.14.0
+    Checking num-bigint v0.4.6
+    Checking generic-array v0.14.7
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking digest v0.10.7
+    Checking sha2 v0.10.9
+    Checking serde v1.0.228
+    Checking serde_json v1.0.150
+    Checking openwepp-kernel-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-kernel-contract)
+    Checking serde_yaml v0.9.34+deprecated
+    Checking openwepp-coupled-time v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-coupled-time)
+    Checking openwepp-land-surface-energy v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-land-surface-energy)
+    Checking openwepp-biogeochemistry v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-biogeochemistry)
+    Checking openwepp-management-schema v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-management-schema)
+    Checking openwepp-vegetation v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-vegetation)
+    Checking openwepp-input-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-input-contract)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0277]: the trait bound `(f64, f64, f64): Decode` is not satisfied
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_inverse.rs:48:36
+    |
+ 48 |                 Ok(Self { $($name: field(value, stringify!($name))?),* })
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Decode` is not implemented for `(f64, f64, f64)`
+...
+231 | captured_struct!(crate::direct_runtime::Wave1InterOfeContinuity {shrspv_pa, tcprev_kg_s_m, ktrprv, prior_shear_last, prior_transport_last});
+    | ------------------------------------------------------------------------------------------------------------------------------------------- in this macro invocation
+    |
+    = help: the following other types implement trait `Decode`:
+              Box<T>
+              DirectDayConstructorInputs
+              DirectDayForcing
+              DirectDecompositionAction
+              DirectDecompositionActiveContext
+              DirectDecompositionInputs
+              DirectDeepSeepageInputs
+              DirectErod13Inputs
+            and 76 others
+note: required by a bound in `field`
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_inverse.rs:9:13
+    |
+  9 | fn field<T: Decode>(value: &Value, name: &str) -> Result<T, String> {
+    |             ^^^^^^ required by this bound in `field`
+    = note: this error originates in the macro `captured_struct` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1 previous error

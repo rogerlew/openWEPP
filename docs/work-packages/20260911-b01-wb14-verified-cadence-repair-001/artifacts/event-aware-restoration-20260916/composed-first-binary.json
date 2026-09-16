@@ -1,0 +1,5 @@
+{
+  "build": "composed-second-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/composed-first.frozen",
+  "sha256": "3b54566d6ae9bad3f932e9f31078edd44160a964c14dcce22312a9d1230bf74c"
+}

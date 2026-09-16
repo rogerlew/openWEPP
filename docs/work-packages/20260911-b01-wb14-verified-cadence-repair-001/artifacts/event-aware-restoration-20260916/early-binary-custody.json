@@ -1,0 +1,24 @@
+{
+  "utc": "2026-09-16T16:06:22.192599+00:00",
+  "scope": "Binary preservation only; source mapping requires writer receipt reconciliation",
+  "entries": [
+    {
+      "source": "/tmp/openwepp-b01-wb14-cadence-targets/event-aware-restoration-20260916/a002-green-restorer.frozen",
+      "durable_copy": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/a002-green-restorer.frozen",
+      "sha256": "aa33c7a35c2afbc1f5d992b9e0536ba9796acf55ad5fea0aaf17e67f29455ced",
+      "bytes": 442078736
+    },
+    {
+      "source": "/tmp/openwepp-b01-wb14-cadence-targets/event-aware-restoration-20260916/a002-red-direct-restorer.frozen",
+      "durable_copy": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/a002-red-direct-restorer.frozen",
+      "sha256": "e1c078af8b32d93b94d2de702db94dec3ce579036a7fe569e5c2d2c24b98d399",
+      "bytes": 442012672
+    },
+    {
+      "source": "/tmp/openwepp-b01-wb14-cadence-targets/event-aware-restoration-20260916/a002-red-restorer.frozen",
+      "durable_copy": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/a002-red-restorer.frozen",
+      "sha256": "253042e83cb55eb8a28eee7beb607f543cd9a785ba239ab1009ca7aaf254a5a6",
+      "bytes": 442224048
+    }
+  ]
+}

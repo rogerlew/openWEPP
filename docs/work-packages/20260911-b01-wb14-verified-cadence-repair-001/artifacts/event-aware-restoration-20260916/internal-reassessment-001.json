@@ -1,0 +1,15 @@
+{
+  "utc": "2026-09-16T16:03:28.523741+00:00",
+  "trigger": "invalid source-raced/unbounded launch followed by fixture-setup failure",
+  "evidence": [
+    "invalid-inflight-command.md",
+    "parent-invalid-attempt-observation.json",
+    "a002-red.stderr"
+  ],
+  "classification": "No valid target red yet; neither failure establishes archive/native impossibility",
+  "decision": "Continue within existing allowance",
+  "new_discriminating_action": "Use retained source-valid immutable archive operands for direct restorer tests; source-stable no-run build then frozen prospectively bounded execution; typed-wire mutation preserves serialization to reach semantic guards",
+  "budget_not_reset": true,
+  "hard_deadline_utc": "2026-09-16T19:12:00+00:00",
+  "excluded_runs_unchanged": true
+}

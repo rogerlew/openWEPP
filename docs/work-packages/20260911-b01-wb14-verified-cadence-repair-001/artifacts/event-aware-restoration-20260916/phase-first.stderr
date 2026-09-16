@@ -1,0 +1,4 @@
+
+thread 'snow_stage3_v11_current_context_capture::member_backed_restore_tests::current_phase_members_validate_without_physics' (1898085) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4224:106:
+phase current/deferred joins: "deferred accumulated operand membership"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

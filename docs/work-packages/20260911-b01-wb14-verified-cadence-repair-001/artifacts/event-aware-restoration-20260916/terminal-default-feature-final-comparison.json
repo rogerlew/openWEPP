@@ -1,0 +1,10 @@
+{
+  "baseline_receipt": "acquisition-default-feature-check.json",
+  "candidate_receipt": "terminal-default-feature-final-check.json",
+  "baseline_error_count": 61,
+  "candidate_error_count": 61,
+  "introduced_messages": {},
+  "removed_messages": {},
+  "status": "FAIL inherited default-feature compilation; no new error messages",
+  "method": "Compiler error-message multiset; reviewed source boundaries; not successful compilation."
+}

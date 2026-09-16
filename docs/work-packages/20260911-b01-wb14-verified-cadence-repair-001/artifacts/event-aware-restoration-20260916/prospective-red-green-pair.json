@@ -1,0 +1,13 @@
+{
+  "red_command": "a002-prospective-red.json",
+  "red_file_sha256": "79bcfdbe133ecaf0e94e4cd2549c04f39fd4ff24f7ab917bea454a1cdcd03350",
+  "green_file_sha256": "8605f40cde371760abf8dc24ea710daa72ebe1188f12b8933dd83e879adfc1d6",
+  "exact_change": "delete contradictory final-support equality and now-unused last local; full event replay and full-scan guard retained",
+  "test_body_unchanged": true,
+  "green_command": "a002-prospective-green.json",
+  "red_exit": 101,
+  "green_exit": 0,
+  "red_classification": "EXPECTED_RED at exact archived publication day chronology guard",
+  "green_classification": "PASS direct canonical archive test, 0/1/multiple terminal events, raw and independently resealed semantic controls, wire schema/count/canonical-byte controls",
+  "historical_gap": "Earlier unpinned red attempt remains a custody gap; this is a separate prospective pair."
+}

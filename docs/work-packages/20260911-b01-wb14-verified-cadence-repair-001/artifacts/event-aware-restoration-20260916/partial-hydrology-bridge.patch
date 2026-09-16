@@ -1,0 +1,27 @@
+--- a/hydrology/support_helpers_mod/snow_mass_transition.rs
++++ b/hydrology/support_helpers_mod/snow_mass_transition.rs
+@@ -155,6 +155,24 @@
+ impl Error for DirectSnowMassTransitionLedgerError {}
+ 
+ impl DirectSnowMassTransitionLedgers {
++    /// Private diagnostic restoration bridge.  This deliberately reconstructs
++    /// the sealed ledger through its validating constructor rather than
++    /// exposing its constituent fields to restart consumers.
++    pub(crate) fn restore_captured_json(value: &serde_json::Value) -> Result<Self, String> {
++        let get = |name| value.get(name).ok_or_else(|| format!("captured snow ledger missing {name}"));
++        let solid = get("solid_to_liquid")?;
++        let liquid = get("liquid_disposition")?;
++        let outcome = get("stage3_outcome")?;
++        let number = |value: &serde_json::Value, name: &str| value.get(name).and_then(serde_json::Value::as_f64).ok_or_else(|| format!("captured snow ledger {name}"));
++        let solid_to_liquid = DirectSnowSolidToLiquidLedger {
++            raw_signed_melt_m: number(solid, "raw_signed_melt_m")?, redistributed_positive_melt_m: number(solid, "redistributed_positive_melt_m")?, snowpack_swe_loss_m: number(solid, "snowpack_swe_loss_m")?, rain_released_m: number(solid, "rain_released_m")?, liquid_handoff_m: number(solid, "liquid_handoff_m")?,
++        };
++        let liquid_disposition = DirectSnowLiquidDispositionLedger {
++            incoming_liquid_m: number(liquid, "incoming_liquid_m")?, routed_liquid_m: number(liquid, "routed_liquid_m")?, retained_liquid_delta_m: number(liquid, "retained_liquid_delta_m")?, refrozen_liquid_m: number(liquid, "refrozen_liquid_m")?, liquid_closure_residual_m: number(liquid, "liquid_closure_residual_m")?,
++        };
++        let stage3_outcome = DirectSnowStage3Outcome { enabled: outcome.get("enabled").and_then(serde_json::Value::as_bool).ok_or("captured snow ledger enabled")?, meltwater_temperature_c: outcome.get("meltwater_temperature_c").cloned().map(serde_json::from_value).transpose().map_err(|e| e.to_string())?, sublimation_m: number(outcome, "sublimation_m")? };
++        Self::try_from_parts(solid_to_liquid, liquid_disposition, stage3_outcome).map_err(|e| e.to_string())
++    }
+     #[must_use]
+     pub const fn zero() -> Self {
+         Self {

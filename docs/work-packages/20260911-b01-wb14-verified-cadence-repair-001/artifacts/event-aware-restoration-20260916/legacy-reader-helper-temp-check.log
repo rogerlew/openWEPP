@@ -1,0 +1,179 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openwepp-reader-quality-check-5dce618b848e
+  scratch: /tmp/openwepp-roger-openwepp-reader-quality-check-5dce618b848e
+  cache:   /workdir/.cache/openwepp
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling serde_core v1.0.228
+   Compiling version_check v0.9.5
+   Compiling serde v1.0.228
+    Checking typenum v1.20.0
+    Checking cfg-if v1.0.4
+    Checking itoa v1.0.18
+   Compiling thiserror v2.0.20
+    Checking cpufeatures v0.2.17
+   Compiling autocfg v1.5.1
+   Compiling zmij v1.0.21
+    Checking equivalent v1.0.2
+   Compiling serde_json v1.0.150
+    Checking openwepp-unit-boundary v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-unit-boundary)
+    Checking hashbrown v0.17.1
+    Checking openwepp-sim-contract v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-sim-contract)
+   Compiling crc32fast v1.5.0
+    Checking simd-adler32 v0.3.9
+    Checking memchr v2.8.0
+    Checking ryu v1.0.23
+    Checking adler2 v2.0.1
+    Checking unsafe-libyaml v0.2.11
+   Compiling generic-array v0.14.7
+    Checking miniz_oxide v0.8.9
+   Compiling libm v0.2.16
+    Checking base64 v0.22.1
+    Checking openwepp-plant-phenology v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-plant-phenology)
+    Checking openwepp-topology v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-topology)
+   Compiling num-traits v0.2.19
+    Checking flate2 v1.1.9
+    Checking indexmap v2.14.0
+   Compiling syn v2.0.117
+   Compiling syn v3.0.3
+    Checking num-integer v0.1.46
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking num-bigint v0.4.6
+    Checking digest v0.10.7
+    Checking sha2 v0.10.9
+   Compiling thiserror-impl v2.0.20
+   Compiling serde_derive v1.0.228
+    Checking openwepp-meteorology v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-meteorology)
+    Checking serde_yaml v0.9.34+deprecated
+    Checking openwepp-kernel-contract v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-kernel-contract)
+    Checking openwepp-coupled-time v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-coupled-time)
+    Checking openwepp-biogeochemistry v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-biogeochemistry)
+    Checking openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-land-surface-energy)
+    Checking openwepp-management-schema v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-management-schema)
+    Checking openwepp-vegetation v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-vegetation)
+    Checking openwepp-input-contract v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-input-contract)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-hillslope-orchestrator)
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3480:5
+     |
+3480 |     archived_receipt_prefix
+     |     ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3483:8
+     |
+3483 |     if archived_receipt_prefix.run_identity != context.run_identity
+     |        ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3484:12
+     |
+3484 |         || archived_receipt_prefix.topology_identity != context.topology_identity
+     |            ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3485:12
+     |
+3485 |         || archived_receipt_prefix.accepted_until_ns != committed_clock.accepted_until().get()
+     |            ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3486:12
+     |
+3486 |         || archived_receipt_prefix.next_parent_sequence != archived_next_parent_sequence
+     |            ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_next_parent_sequence` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3486:60
+     |
+3486 |         || archived_receipt_prefix.next_parent_sequence != archived_next_parent_sequence
+     |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3487:12
+     |
+3487 |         || archived_receipt_prefix.ending_owner_set_sha256 != Some(committed_owner_set)
+     |            ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3488:52
+     |
+3488 |         || archive_manifest.committed_day_count != archived_receipt_prefix.archived_day_count
+     |                                                    ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3490:16
+     |
+3490 |             != archived_receipt_prefix.ordered_day_chain_sha256
+     |                ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3492:16
+     |
+3492 |             != archived_receipt_prefix.archive_content_root_sha256
+     |                ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `authenticated_archived_days` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3785:9
+     |
+2970 | / fn authenticate_archived_day_v1(
+2971 | |     entry: crate::Stage3CommittedDayArchiveEntryV1,
+2972 | |     canonical_record: Vec<u8>,
+2973 | |     context: &DirectSnowStage3V11StaticContext,
+...    |
+2984 | | }
+     | |_- similarly named function `authenticate_archived_day_v1` defined here
+...
+3785 |           authenticated_archived_days,
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+3785 -         authenticated_archived_days,
+3785 +         authenticate_archived_day_v1,
+     |
+
+error[E0599]: no method named `restart_authority_install_hydrology_continuation_inputs_v3` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1431:18
+     |
+1430 | /             shadow
+1431 | |                 .restart_authority_install_hydrology_continuation_inputs_v3(&continuation_inputs)
+     | |_________________-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:448:1
+     |
+ 448 |   pub struct DirectV10RealConsumerShadow {
+     |   -------------------------------------- method `restart_authority_install_hydrology_continuation_inputs_v3` not found for this struct
+     |
+help: there is a method `restart_authority_install_native_routing` with a similar name, but with different arguments
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:888:5
+     |
+ 888 | /     pub fn restart_authority_install_native_routing(
+ 889 | |         &mut self,
+ 890 | |         config: Option<Box<crate::DirectLanedActiveConfig>>,
+ 891 | |         summary: Option<Box<crate::DirectLanedActiveRunSummary>>,
+ 892 | |         expected: &Option<Box<crate::DirectLanedActiveConfig>>,
+ 893 | |     ) -> Result<(), DirectV10RealConsumerError> {
+     | |_______________________________________________^
+
+error[E0599]: no method named `restart_authority_complete_commit_and_stage_archive_day_v3` found for struct `snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1570:22
+     |
+1569 | /                 attachment
+1570 | |                     .restart_authority_complete_commit_and_stage_archive_day_v3(&publication_inputs)
+     | |                     -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment`
+     | |_____________________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2915:1
+     |
+2915 |   pub struct DirectSnowStage3V11ShadowAttachment {
+     |   ---------------------------------------------- method `restart_authority_complete_commit_and_stage_archive_day_v3` not found for this struct
+
+Some errors have detailed explanations: E0425, E0599.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 13 previous errors

@@ -1,0 +1,1999 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs
+@@ -1,28 +1,55 @@
+ //! File-only composition of the retained diagnostic members. No process step.
+-use super::*;
++use super::{
++    B01_DAY_INDEX, B01_INTERVAL_INDEX, CLOCK_AUTHORITY_DOMAIN, CLOCK_MODEL_DOMAIN,
++    CoupledClockStateV1, DirectV10RealConsumerShadow, PreparedSupportCaptureV1, TimeSupport,
++    authenticate_archived_day_with_configuration_v1, capture_direct_run_constructor_inputs,
++    capture_snow_free_prepared_support, complete_owner_set_digest, constructor_inverse,
++    decode_member_backed_row_v1, digest_bytes, extract_pinned_seed_configuration_v1,
++    reconstruct_provisional_on_clone_with_authorities, restore_coupled_clock,
++    restore_direct_run_frame_dynamic, restore_prepared_support, restore_provider_day,
++    restore_snow_free_clock_parent_from_member_export, validate_snow_free_prefix_membership_v1,
++};
++use serde::{Serialize, de::DeserializeOwned};
+ use serde_json::Value;
+-use std::path::Path;
++use std::{
++    collections::{BTreeMap, BTreeSet},
++    path::Path,
++};
+ 
+ fn required<'a>(value: &'a Value, name: &str) -> Result<&'a Value, String> {
+     value.get(name).ok_or_else(|| format!("missing {name}"))
+ }
+-fn decode<T: serde::de::DeserializeOwned>(value: &Value) -> Result<T, String> {
++fn decode<T: DeserializeOwned>(value: &Value) -> Result<T, String> {
+     serde_json::from_value(value.clone()).map_err(|error| error.to_string())
+ }
+ fn hex_float(value: &Value) -> Result<f64, String> {
+     let text = value.as_str().ok_or("seed hex float string")?;
+-    let hex = text.strip_prefix("0x").filter(|s| s.len() == 16).ok_or("seed hex float width")?;
++    let hex = text
++        .strip_prefix("0x")
++        .filter(|s| s.len() == 16)
++        .ok_or("seed hex float width")?;
+     let value = f64::from_bits(u64::from_str_radix(hex, 16).map_err(|error| error.to_string())?);
+-    if !value.is_finite() { return Err("seed nonfinite float".into()); }
++    if !value.is_finite() {
++        return Err("seed nonfinite float".into());
++    }
+     Ok(value)
+ }
+-fn pinned_provider(seed: &Value) -> Result<crate::runtime_inputs::SnowFreeHalfHourStaticConfiguration, String> {
++fn pinned_provider(
++    seed: &Value,
++) -> Result<crate::runtime_inputs::SnowFreeHalfHourStaticConfiguration, String> {
+     let value = &seed["checkpoint"]["phase"]["committed"]["static_forcing_configuration"];
+-    let destinations = required(value, "destinations")?.as_array().ok_or("seed destinations")?
+-        .iter().map(|d| Ok(crate::runtime_inputs::SnowFreeHalfHourDestination {
+-            ofe_id: decode(required(d, "ofe_id")?)?, tile_id: decode(required(d, "tile_id")?)?,
+-            wb14_configuration_sha256: decode(required(d, "wb14_configuration_sha256")?)?,
+-        })).collect::<Result<Vec<_>, String>>()?;
++    let destinations = required(value, "destinations")?
++        .as_array()
++        .ok_or("seed destinations")?
++        .iter()
++        .map(|d| {
++            Ok(crate::runtime_inputs::SnowFreeHalfHourDestination {
++                ofe_id: decode(required(d, "ofe_id")?)?,
++                tile_id: decode(required(d, "tile_id")?)?,
++                wb14_configuration_sha256: decode(required(d, "wb14_configuration_sha256")?)?,
++            })
++        })
++        .collect::<Result<Vec<_>, String>>()?;
+     let result = crate::runtime_inputs::SnowFreeHalfHourStaticConfiguration {
+         run_id: decode(required(value, "run_id")?)?,
+         co2_pa: hex_float(required(value, "co2_pa")?)?,
+@@ -41,7 +68,11 @@
+ fn operand_digest(domain: &str, value: &impl Serialize) -> Result<Value, String> {
+     fn hexify(value: &mut Value) {
+         match value {
+-            Value::Number(n) if n.is_f64() => { if let Some(f) = n.as_f64() { *value = Value::String(format!("0x{:016x}", f.to_bits())); } }
++            Value::Number(n) if n.is_f64() => {
++                if let Some(f) = n.as_f64() {
++                    *value = Value::String(format!("0x{:016x}", f.to_bits()));
++                }
++            }
+             Value::Array(a) => a.iter_mut().for_each(hexify),
+             Value::Object(o) => o.values_mut().for_each(hexify),
+             _ => {}
+@@ -49,205 +80,512 @@
+     }
+     let mut projected = serde_json::to_value(value).map_err(|error| error.to_string())?;
+     hexify(&mut projected);
+-    serde_json::to_value(digest_bytes(&serde_json::to_vec(&(domain, projected)).map_err(|error| error.to_string())?))
+-        .map_err(|error| error.to_string())
++    serde_json::to_value(digest_bytes(
++        &serde_json::to_vec(&(domain, projected)).map_err(|error| error.to_string())?,
++    ))
++    .map_err(|error| error.to_string())
+ }
+ fn pin_hydrology(seed: &Value, inputs: &crate::DirectRunConstructorInputs) -> Result<(), String> {
+     let committed = &seed["checkpoint"]["phase"]["committed"]["scientific"]["direct_hydrology"];
+     let captured = capture_direct_run_constructor_inputs(inputs);
+     for name in ["run_id", "hillslope_id", "lane_count", "day_count"] {
+-        if required(committed, name)? != required(&captured["identity"], name)? { return Err(format!("seed hydrology {name}")); }
++        if required(committed, name)? != required(&captured["identity"], name)? {
++            return Err(format!("seed hydrology {name}"));
++        }
++    }
++    let phases = inputs
++        .phase_plan
++        .phases()
++        .iter()
++        .map(|phase| match phase {
++            crate::DirectPhaseKind::Normalization => "normalization",
++            crate::DirectPhaseKind::StorageBounds => "storage_bounds",
++            crate::DirectPhaseKind::DecompositionTransition => "decomposition_transition",
++            crate::DirectPhaseKind::ResiduePartitionTransition => "residue_partition_transition",
++            crate::DirectPhaseKind::AnnualGrowthTransition => "annual_growth_transition",
++            crate::DirectPhaseKind::PerennialGrowthTransition => "perennial_growth_transition",
++            crate::DirectPhaseKind::PercolationDeepSeepage => "percolation_deep_seepage",
++            crate::DirectPhaseKind::Evapotranspiration => "evapotranspiration",
++            crate::DirectPhaseKind::Drainage => "drainage",
++            crate::DirectPhaseKind::LateralTransfer => "lateral_transfer",
++            crate::DirectPhaseKind::PlantRootUptake => "plant_root_uptake",
++            crate::DirectPhaseKind::RunoffReconciliation => "runoff_reconciliation",
++            crate::DirectPhaseKind::StorageReconciliation => "storage_reconciliation",
++            crate::DirectPhaseKind::ClosureDiagnostics => "closure_diagnostics",
++        })
++        .collect::<Vec<_>>();
++    if operand_digest("DirectPhasePlanV1", &phases)? != committed["phase_plan_sha256"] {
++        return Err("seed phase plan digest".into());
++    }
++    let lanes = required(committed, "lanes")?
++        .as_array()
++        .ok_or("seed lanes")?;
++    if lanes.len() != inputs.lanes.len() {
++        return Err("seed lane cardinality".into());
+     }
+-    let phases = inputs.phase_plan.phases().iter().map(|phase| match phase {
+-        crate::DirectPhaseKind::Normalization => "normalization",
+-        crate::DirectPhaseKind::StorageBounds => "storage_bounds",
+-        crate::DirectPhaseKind::DecompositionTransition => "decomposition_transition",
+-        crate::DirectPhaseKind::ResiduePartitionTransition => "residue_partition_transition",
+-        crate::DirectPhaseKind::AnnualGrowthTransition => "annual_growth_transition",
+-        crate::DirectPhaseKind::PerennialGrowthTransition => "perennial_growth_transition",
+-        crate::DirectPhaseKind::PercolationDeepSeepage => "percolation_deep_seepage",
+-        crate::DirectPhaseKind::Evapotranspiration => "evapotranspiration",
+-        crate::DirectPhaseKind::Drainage => "drainage",
+-        crate::DirectPhaseKind::LateralTransfer => "lateral_transfer",
+-        crate::DirectPhaseKind::PlantRootUptake => "plant_root_uptake",
+-        crate::DirectPhaseKind::RunoffReconciliation => "runoff_reconciliation",
+-        crate::DirectPhaseKind::StorageReconciliation => "storage_reconciliation",
+-        crate::DirectPhaseKind::ClosureDiagnostics => "closure_diagnostics",
+-    }).collect::<Vec<_>>();
+-    if operand_digest("DirectPhasePlanV1", &phases)? != committed["phase_plan_sha256"] { return Err("seed phase plan digest".into()); }
+-    let lanes = required(committed, "lanes")?.as_array().ok_or("seed lanes")?;
+-    if lanes.len() != inputs.lanes.len() { return Err("seed lane cardinality".into()); }
+     for (lane, pinned) in inputs.lanes.iter().zip(lanes) {
+-        if pinned["lane_id"] != lane.lane_id || operand_digest("DirectDayConstructorInputsV1", &lane.day_inputs)? != pinned["day_inputs_sha256"] {
++        if pinned["lane_id"] != lane.lane_id
++            || operand_digest("DirectDayConstructorInputsV1", &lane.day_inputs)?
++                != pinned["day_inputs_sha256"]
++        {
+             return Err("seed lane immutable day inputs digest".into());
+         }
+     }
+     Ok(())
+ }
+ fn load_row(export: &Path, entry: &Value, omitted: &BTreeSet<&str>) -> Result<Value, String> {
+-    let path = required(entry, "event_file")?.as_str().ok_or("member event path")?;
++    let path = required(entry, "event_file")?
++        .as_str()
++        .ok_or("member event path")?;
+     let bytes = std::fs::read(export.join(path)).map_err(|error| error.to_string())?;
+-    if serde_json::to_value(digest_bytes(&bytes)).map_err(|error| error.to_string())? != entry["event_file_sha256"]
+-        || entry["event_file_bytes"].as_u64() != u64::try_from(bytes.len()).ok() {
++    if serde_json::to_value(digest_bytes(&bytes)).map_err(|error| error.to_string())?
++        != entry["event_file_sha256"]
++        || entry["event_file_bytes"].as_u64() != u64::try_from(bytes.len()).ok()
++    {
+         return Err("member event manifest identity".into());
+     }
+     decode_member_backed_row_v1(export, &export.join(path), omitted)
+ }
+-fn kind(entry: &Value, name: &str) -> bool { entry["kinds"] == serde_json::json!([name]) }
++fn kind(entry: &Value, name: &str) -> bool {
++    entry["kinds"] == serde_json::json!([name])
++}
++
++#[derive(Serialize)]
++struct SnowProjection<'a> {
++    schema: &'static str,
++    lanes: Vec<(&'a u32, &'a crate::DirectSnowStage3PersistentState)>,
++}
+ 
+ pub(super) fn restore(export: &Path, seed_path: &Path) -> Result<(), String> {
+-    let seed: Value = serde_json::from_slice(&std::fs::read(seed_path).map_err(|error| error.to_string())?).map_err(|error| error.to_string())?;
++    let seed: Value =
++        serde_json::from_slice(&std::fs::read(seed_path).map_err(|error| error.to_string())?)
++            .map_err(|error| error.to_string())?;
+     let pin = extract_pinned_seed_configuration_v1(seed_path)?;
+     let provider_configuration = pinned_provider(&seed)?;
+-    let summary: Value = serde_json::from_slice(&std::fs::read(export.join("summary.json")).map_err(|error| error.to_string())?).map_err(|error| error.to_string())?;
+-    if summary["status"] != "COMPLETE" { return Err("member export incomplete".into()); }
+-    let entries = required(&summary, "rows")?.as_array().ok_or("member rows")?;
+-    let day_entries = entries.iter().filter(|r| kind(r, "b01_wb14_prepared_day_current_context_v1")).collect::<Vec<_>>();
+-    let [day_entry] = day_entries.as_slice() else { return Err("prepared day missing or duplicate".into()); };
++    let summary: Value = serde_json::from_slice(
++        &std::fs::read(export.join("summary.json")).map_err(|error| error.to_string())?,
++    )
++    .map_err(|error| error.to_string())?;
++    if summary["status"] != "COMPLETE" {
++        return Err("member export incomplete".into());
++    }
++    let entries = required(&summary, "rows")?
++        .as_array()
++        .ok_or("member rows")?;
++    let day_entries = entries
++        .iter()
++        .filter(|r| kind(r, "b01_wb14_prepared_day_current_context_v1"))
++        .collect::<Vec<_>>();
++    let [day_entry] = day_entries.as_slice() else {
++        return Err("prepared day missing or duplicate".into());
++    };
+     let day = load_row(export, day_entry, &BTreeSet::new())?;
+-    if day["day_index"] != B01_DAY_INDEX || day["static_run_identity"] != serde_json::json!(pin.run_identity)
+-        || day["static_topology_identity"] != serde_json::json!(pin.topology_identity) { return Err("prepared day seed identity".into()); }
++    if day["day_index"] != B01_DAY_INDEX
++        || day["static_run_identity"] != serde_json::json!(pin.run_identity)
++        || day["static_topology_identity"] != serde_json::json!(pin.topology_identity)
++    {
++        return Err("prepared day seed identity".into());
++    }
+     let clock_parent = restore_snow_free_clock_parent_from_member_export(export)?;
+-    let vegetation_bytes: Vec<u8> = decode(required(&clock_parent.recorded_row, "vegetation_configuration_canonical_json")?)?;
+-    let vegetation: openwepp_vegetation::VegetationConfigurationV11 = serde_json::from_slice(&vegetation_bytes).map_err(|error| error.to_string())?;
+-    if vegetation.imported_v10 != pin.vegetation { return Err("seed vegetation configuration".into()); }
++    let vegetation_bytes: Vec<u8> = decode(required(
++        &clock_parent.recorded_row,
++        "vegetation_configuration_canonical_json",
++    )?)?;
++    let vegetation: openwepp_vegetation::VegetationConfigurationV11 =
++        serde_json::from_slice(&vegetation_bytes).map_err(|error| error.to_string())?;
++    if vegetation.imported_v10 != pin.vegetation {
++        return Err("seed vegetation configuration".into());
++    }
+     vegetation.validate().map_err(|error| error.to_string())?;
+-    let mut manifest = crate::Stage3CommittedDayArchiveManifestV1::empty(pin.run_identity, pin.topology_identity).map_err(|error| error.to_string())?;
++    let mut manifest =
++        crate::Stage3CommittedDayArchiveManifestV1::empty(pin.run_identity, pin.topology_identity)
++            .map_err(|error| error.to_string())?;
+     let mut previous = None;
+-    let archives = entries.iter().filter(|r| kind(r, "b01_wb14_committed_day_archive_record_v1")).collect::<Vec<_>>();
+-    if archives.len() != B01_DAY_INDEX { return Err("archive member cardinality".into()); }
++    let archives = entries
++        .iter()
++        .filter(|r| kind(r, "b01_wb14_committed_day_archive_record_v1"))
++        .collect::<Vec<_>>();
++    if archives.len() != B01_DAY_INDEX {
++        return Err("archive member cardinality".into());
++    }
+     for (index, item) in archives.iter().enumerate() {
+         let row = load_row(export, item, &BTreeSet::from(["canonical_record"]))?;
+-        let entry: crate::Stage3CommittedDayArchiveEntryV1 = decode(required(&row, "archive_entry")?)?;
+-        if entry.day_index != index || row["day_index"] != index { return Err("archive recorded order".into()); }
+-        let ordinal = required(item, "ordinal")?.as_u64().ok_or("archive ordinal")?;
+-        let bytes = std::fs::read(export.join(format!("rows/{ordinal}.canonical_record.bin"))).map_err(|error| error.to_string())?;
+-        let authenticated = authenticate_archived_day_with_configuration_v1(entry.clone(), bytes, pin.run_identity, pin.topology_identity, &vegetation, &pin.lse)?;
++        let entry: crate::Stage3CommittedDayArchiveEntryV1 =
++            decode(required(&row, "archive_entry")?)?;
++        if entry.day_index != index || row["day_index"] != index {
++            return Err("archive recorded order".into());
++        }
++        let ordinal = required(item, "ordinal")?
++            .as_u64()
++            .ok_or("archive ordinal")?;
++        let bytes = std::fs::read(export.join(format!("rows/{ordinal}.canonical_record.bin")))
++            .map_err(|error| error.to_string())?;
++        let authenticated = authenticate_archived_day_with_configuration_v1(
++            entry.clone(),
++            bytes,
++            pin.run_identity,
++            pin.topology_identity,
++            &vegetation,
++            &pin.lse,
++        )?;
+         let publication = &authenticated.publication;
+         if let Some((support_count, event_count, authority, ending)) = previous {
+-            if publication.prefix_support_count != support_count || publication.prefix_event_count != event_count
+-                || publication.prefix_authority_sha256 != authority || publication.prefix_ending_owner_set_sha256 != Some(ending)
+-                || entry.beginning_owner_set_sha256 != ending { return Err("archive full publication prefix join".into()); }
+-        } else if publication.prefix_support_count != 0 || publication.prefix_event_count != 0
+-            || publication.prefix_authority_sha256 != digest_bytes(b"OPENWEPP_ACCEPTED_PUBLICATION_INCREMENTAL_AUTHORITY_V1\0")
+-            || publication.prefix_ending_owner_set_sha256.is_some() { return Err("archive genesis publication prefix".into()); }
+-        previous = Some((publication.cumulative_support_count, publication.cumulative_event_count, publication.cumulative_authority_sha256, publication.ending_owner_set_sha256));
++            if publication.prefix_support_count != support_count
++                || publication.prefix_event_count != event_count
++                || publication.prefix_authority_sha256 != authority
++                || publication.prefix_ending_owner_set_sha256 != Some(ending)
++                || entry.beginning_owner_set_sha256 != ending
++            {
++                return Err("archive full publication prefix join".into());
++            }
++        } else if publication.prefix_support_count != 0
++            || publication.prefix_event_count != 0
++            || publication.prefix_authority_sha256
++                != digest_bytes(b"OPENWEPP_ACCEPTED_PUBLICATION_INCREMENTAL_AUTHORITY_V1\0")
++            || publication.prefix_ending_owner_set_sha256.is_some()
++        {
++            return Err("archive genesis publication prefix".into());
++        }
++        previous = Some((
++            publication.cumulative_support_count,
++            publication.cumulative_event_count,
++            publication.cumulative_authority_sha256,
++            publication.ending_owner_set_sha256,
++        ));
+         manifest.append(entry).map_err(|error| error.to_string())?;
+-        println!("composed archive day {index}: canonical authentication and ordered manifest PASS");
++        println!(
++            "composed archive day {index}: canonical authentication and ordered manifest PASS"
++        );
+         // The canonical blob and restored day are dropped before reading the next.
+     }
+-    let prefix: crate::Stage3ArchivedReceiptPrefixV1 = decode(required(&day, "archived_receipt_prefix")?)?;
++    let prefix: crate::Stage3ArchivedReceiptPrefixV1 =
++        decode(required(&day, "archived_receipt_prefix")?)?;
+     prefix.validate().map_err(|error| error.to_string())?;
+-    let committed_bytes: Vec<u8> = decode(required(&day, "committed_clock_restart_canonical_json")?)?;
+-    let committed = restore_coupled_clock(&committed_bytes, digest_bytes(CLOCK_MODEL_DOMAIN), digest_bytes(CLOCK_AUTHORITY_DOMAIN), pin.controller_policy)?.clock().clone();
+-    if prefix.run_identity != pin.run_identity || prefix.topology_identity != pin.topology_identity
+-        || prefix.archived_day_count != manifest.committed_day_count || prefix.ordered_day_chain_sha256 != manifest.ordered_day_chain_sha256
++    let committed_bytes: Vec<u8> =
++        decode(required(&day, "committed_clock_restart_canonical_json")?)?;
++    let committed = restore_coupled_clock(
++        &committed_bytes,
++        digest_bytes(CLOCK_MODEL_DOMAIN),
++        digest_bytes(CLOCK_AUTHORITY_DOMAIN),
++        pin.controller_policy,
++    )?
++    .clock()
++    .clone();
++    if prefix.run_identity != pin.run_identity
++        || prefix.topology_identity != pin.topology_identity
++        || prefix.archived_day_count != manifest.committed_day_count
++        || prefix.ordered_day_chain_sha256 != manifest.ordered_day_chain_sha256
+         || prefix.archive_content_root_sha256 != manifest.archive_content_root_sha256
+         || prefix.accepted_until_ns != committed.accepted_until().get()
+-        || prefix.ending_owner_set_sha256 != Some(complete_owner_set_digest(committed.owners()).map_err(|error| error.to_string())?)
++        || prefix.ending_owner_set_sha256
++            != Some(
++                complete_owner_set_digest(committed.owners()).map_err(|error| error.to_string())?,
++            )
+         || day["committed_next_parent_sequence"] != serde_json::json!(prefix.next_parent_sequence)
+-        || day["committed_receipt_tail_count"] != 0 { return Err("archive prepared-day prefix join".into()); }
++        || day["committed_receipt_tail_count"] != 0
++    {
++        return Err("archive prepared-day prefix join".into());
++    }
+     println!("composed archive/provider prefix PASS");
+-    let target_entries = entries.iter().filter(|r| kind(r, "b01_wb14_snow_free_pre_child_current_context_v1")).collect::<Vec<_>>();
+-    let [target_entry] = target_entries.as_slice() else { return Err("native target missing or duplicate".into()); };
++    let target_entries = entries
++        .iter()
++        .filter(|r| kind(r, "b01_wb14_snow_free_pre_child_current_context_v1"))
++        .collect::<Vec<_>>();
++    let [target_entry] = target_entries.as_slice() else {
++        return Err("native target missing or duplicate".into());
++    };
+     let target = load_row(export, target_entry, &BTreeSet::new())?;
+     println!("composed actual native member decoded");
+-    let inputs = constructor_inverse::restore(required(&target, "native_hydrology_constructor_inputs")?)?;
++    let inputs =
++        constructor_inverse::restore(required(&target, "native_hydrology_constructor_inputs")?)?;
+     pin_hydrology(&seed, &inputs)?;
+-    let surface_bytes: Vec<u8> = decode(required(&target, "surface_liquid_configuration_canonical_json")?)?;
+-    let surface = crate::DirectSurfaceLiquidConfiguration::from_canonical_bytes(&surface_bytes).map_err(|error| error.to_string())?;
+-    if seed["checkpoint"]["phase"]["committed"]["surface_liquid_configuration"]["configuration_sha256"] != surface.configuration_sha256 { return Err("seed surface configuration digest".into()); }
++    let surface_bytes: Vec<u8> = decode(required(
++        &target,
++        "surface_liquid_configuration_canonical_json",
++    )?)?;
++    let surface = crate::DirectSurfaceLiquidConfiguration::from_canonical_bytes(&surface_bytes)
++        .map_err(|error| error.to_string())?;
++    if seed["checkpoint"]["phase"]["committed"]["surface_liquid_configuration"]["configuration_sha256"]
++        != surface.configuration_sha256
++    {
++        return Err("seed surface configuration digest".into());
++    }
+     let phase = required(&target, "phase_diagnostics")?;
+-    let prefix_surface: Vec<u8> = decode(required(phase, "prefix_validation_surface_configuration_canonical_json")?)?;
+-    if prefix_surface != surface_bytes { return Err("prefix surface configuration authority join".into()); }
++    let prefix_surface: Vec<u8> = decode(required(
++        phase,
++        "prefix_validation_surface_configuration_canonical_json",
++    )?)?;
++    if prefix_surface != surface_bytes {
++        return Err("prefix surface configuration authority join".into());
++    }
+     validate_snow_free_prefix_membership_v1(&target, &clock_parent.clock, &surface)?;
+-    let provider = restore_provider_day(decode(required(&day, "provider_constructor_operands")?)?, &provider_configuration)?;
+-    let captures: Vec<PreparedSupportCaptureV1> = decode(required(&day, "ordered_support_constructor_operands")?)?;
+-    let supports = captures.into_iter().map(|c| restore_prepared_support(c, &provider)).collect::<Result<Vec<_>, _>>()?;
+-    let prepared_day = crate::PreparedStage3V11DayV1::bind_production_provider_day(&provider, B01_DAY_INDEX, supports).map_err(|error| error.to_string())?;
+-    let parent = prepared_day.supports().get(B01_INTERVAL_INDEX).ok_or("selected parent missing")?;
++    let provider = restore_provider_day(
++        decode(required(&day, "provider_constructor_operands")?)?,
++        &provider_configuration,
++    )?;
++    let captures: Vec<PreparedSupportCaptureV1> =
++        decode(required(&day, "ordered_support_constructor_operands")?)?;
++    let supports = captures
++        .into_iter()
++        .map(|c| restore_prepared_support(c, &provider))
++        .collect::<Result<Vec<_>, _>>()?;
++    let prepared_day = crate::PreparedStage3V11DayV1::bind_production_provider_day(
++        &provider,
++        B01_DAY_INDEX,
++        supports,
++    )
++    .map_err(|error| error.to_string())?;
++    let parent = prepared_day
++        .supports()
++        .get(B01_INTERVAL_INDEX)
++        .ok_or("selected parent missing")?;
+     let parent_support: TimeSupport = decode(required(&target, "parent_support")?)?;
+     let support: TimeSupport = decode(required(&target, "support")?)?;
+     let pending = decode(required(phase, "pending_terminal_parcels")?)?;
+-    let ordinal = u32::try_from(clock_parent.clock.accepted_slab_receipts().len()).map_err(|error| error.to_string())?;
+-    let prepared = parent.diagnostic_snow_free_successor_v1(support, ordinal, &pending).map_err(|error| error.to_string())?;
+-    if capture_snow_free_prepared_support(&prepared)? != *required(&target, "prepared_support_constructor_operands")? { return Err("snow-free successor provider projection".into()); }
+-    if parent.support() != parent_support || prepared.support() != support || support.start_ns().get() != clock_parent.clock.accepted_until().get()
+-        || support.start_ns() < parent_support.start_ns() || support.end_ns() > parent_support.end_ns() { return Err("provider selected support/clock position".into()); }
++    let ordinal = u32::try_from(clock_parent.clock.accepted_slab_receipts().len())
++        .map_err(|error| error.to_string())?;
++    let prepared = parent
++        .diagnostic_snow_free_successor_v1(support, ordinal, &pending)
++        .map_err(|error| error.to_string())?;
++    if capture_snow_free_prepared_support(&prepared)?
++        != *required(&target, "prepared_support_constructor_operands")?
++    {
++        return Err("snow-free successor provider projection".into());
++    }
++    if parent.support() != parent_support
++        || prepared.support() != support
++        || support.start_ns().get() != clock_parent.clock.accepted_until().get()
++        || support.start_ns() < parent_support.start_ns()
++        || support.end_ns() > parent_support.end_ns()
++    {
++        return Err("provider selected support/clock position".into());
++    }
+     let native = required(&target, "native_consumer_constructor_operands")?;
+-    let position = prefix.next_parent_sequence.checked_add(u128::try_from(B01_INTERVAL_INDEX).map_err(|error| error.to_string())?).ok_or("position overflow")?;
++    let position = prefix
++        .next_parent_sequence
++        .checked_add(u128::from(B01_INTERVAL_INDEX as u64))
++        .ok_or("position overflow")?;
+     let position_matches = native["accepted_interval_count"] == serde_json::json!(position);
+-    println!("native position validation: outer={position}; captured={}; matched={position_matches}; no scalar installation", native["accepted_interval_count"]);
++    println!(
++        "native position validation: outer={position}; captured={}; matched={position_matches}; no scalar installation",
++        native["accepted_interval_count"]
++    );
+     if native["next_day_index"] != B01_DAY_INDEX
+-        || target["day_index"] != B01_DAY_INDEX || target["interval_index"] != B01_INTERVAL_INDEX
+-        || native["provider_gsi_receipt_sha256"] != serde_json::json!(provider.gsi_receipt_digest().map_err(|error| error.to_string())?) {
++        || target["day_index"] != B01_DAY_INDEX
++        || target["interval_index"] != B01_INTERVAL_INDEX
++        || native["provider_gsi_receipt_sha256"]
++            != serde_json::json!(
++                provider
++                    .gsi_receipt_digest()
++                    .map_err(|error| error.to_string())?
++            )
++    {
+         return Err("native accepted position/provider GSI join".into());
+     }
+     validate_current_phase(&target, &clock_parent.clock, position)?;
+-    let forcing = crate::snow_stage3_v11_attachment::canonical_parent_forcing_digest(B01_DAY_INDEX, B01_INTERVAL_INDEX, provider.gsi_receipt_digest().map_err(|error| error.to_string())?, parent).map_err(|error| error.to_string())?;
+-    if target["provisional_constructor_inputs"]["forcing_receipt"] != serde_json::json!(forcing) { return Err("native provider forcing join".into()); }
+-    let (_, reduction, ledger, receipt) = reconstruct_provisional_on_clone_with_authorities(&clock_parent.clock, support, pin.calendar, pin.controller_policy, forcing, "v11-real-consumer")?;
+-    for (name, actual) in [("constraint_reduction_canonical_json", serde_json::to_vec(&reduction)), ("complete_owner_ledger_canonical_json", serde_json::to_vec(&ledger)), ("provisional_receipt_canonical_json", serde_json::to_vec(&receipt))] {
++    let forcing = crate::snow_stage3_v11_attachment::canonical_parent_forcing_digest(
++        B01_DAY_INDEX,
++        B01_INTERVAL_INDEX,
++        provider
++            .gsi_receipt_digest()
++            .map_err(|error| error.to_string())?,
++        parent,
++    )
++    .map_err(|error| error.to_string())?;
++    if target["provisional_constructor_inputs"]["forcing_receipt"] != serde_json::json!(forcing) {
++        return Err("native provider forcing join".into());
++    }
++    let (_, reduction, ledger, receipt) = reconstruct_provisional_on_clone_with_authorities(
++        &clock_parent.clock,
++        support,
++        pin.calendar,
++        pin.controller_policy,
++        forcing,
++        "v11-real-consumer",
++    )?;
++    for (name, actual) in [
++        (
++            "constraint_reduction_canonical_json",
++            serde_json::to_vec(&reduction),
++        ),
++        (
++            "complete_owner_ledger_canonical_json",
++            serde_json::to_vec(&ledger),
++        ),
++        (
++            "provisional_receipt_canonical_json",
++            serde_json::to_vec(&receipt),
++        ),
++    ] {
+         let expected: Vec<u8> = decode(required(&target, name)?)?;
+-        if actual.map_err(|error| error.to_string())? != expected { return Err(format!("native provisional {name}")); }
++        if actual.map_err(|error| error.to_string())? != expected {
++            return Err(format!("native provisional {name}"));
++        }
+     }
+-    let frame = restore_direct_run_frame_dynamic(decode(required(&target, "native_hydrology_frame_dynamic_constructor_operands")?)?, inputs.clone(), &surface)?;
+-    println!("composed native constructor operands/seed/provider/position/provisional PASS; invoking canonical native constructor");
+-    let native_result = DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_v1(native,
++    let frame = restore_direct_run_frame_dynamic(
++        decode(required(
++            &target,
++            "native_hydrology_frame_dynamic_constructor_operands",
++        )?)?,
++        inputs.clone(),
++        &surface,
++    )?;
++    println!(
++        "composed native constructor operands/seed/provider/position/provisional PASS; invoking canonical native constructor"
++    );
++    let native_result = DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_v1(
++        native,
+         decode(required(&target, "native_soil_v2_constructor_operands")?)?,
+-        decode(required(&day, "native_committed_bootstrap_soil_v2_constructor_operands")?)?,
++        decode(required(
++            &day,
++            "native_committed_bootstrap_soil_v2_constructor_operands",
++        )?)?,
+         decode(required(&target, "native_lane_map_constructor_operands")?)?,
+-        &clock_parent.clock, frame, &surface, &pin.lse, &pin.lse, &provider_configuration, std::sync::Arc::new(inputs))
+-        .map_err(|error| format!("canonical native constructor refusal: {error}"));
+-    println!("canonical native constructor: {}", match &native_result { Ok(_) => "accepted original operands".to_owned(), Err(error) => error.clone() });
++        &clock_parent.clock,
++        frame,
++        &surface,
++        &pin.lse,
++        &pin.lse,
++        &provider_configuration,
++        std::sync::Arc::new(inputs),
++    )
++    .map_err(|error| format!("canonical native constructor refusal: {error}"));
++    println!(
++        "canonical native constructor: {}",
++        match &native_result {
++            Ok(_) => "accepted original operands".to_owned(),
++            Err(error) => error.clone(),
++        }
++    );
+     let consumer = match (native_result, position_matches) {
+-        (Err(error), false) => return Err(format!("reader accepted-position join refused (outer={position}, captured={}); {error}", native["accepted_interval_count"])),
++        (Err(error), false) => {
++            return Err(format!(
++                "reader accepted-position join refused (outer={position}, captured={}); {error}",
++                native["accepted_interval_count"]
++            ));
++        }
+         (Err(error), true) => return Err(error),
+-        (Ok(_), false) => return Err(format!("reader accepted-position join refused (outer={position}, captured={}); canonical native constructor accepted original operands", native["accepted_interval_count"])),
++        (Ok(_), false) => {
++            return Err(format!(
++                "reader accepted-position join refused (outer={position}, captured={}); canonical native constructor accepted original operands",
++                native["accepted_interval_count"]
++            ));
++        }
+         (Ok(consumer), true) => consumer,
+     };
+-    let expected: BTreeMap<String, Vec<u8>> = decode(required(&target, "complete_owner_canonical_bytes")?)?;
+-    if consumer.canonical_v11_parent_owner_state_bytes().map_err(|error| error.to_string())? != expected { return Err("native six-owner projection".into()); }
++    let expected: BTreeMap<String, Vec<u8>> =
++        decode(required(&target, "complete_owner_canonical_bytes")?)?;
++    if consumer
++        .canonical_v11_parent_owner_state_bytes()
++        .map_err(|error| error.to_string())?
++        != expected
++    {
++        return Err("native six-owner projection".into());
++    }
+     Ok(())
+ }
+ 
+-
+-pub(super) fn validate_current_phase(target: &Value, clock: &CoupledClockStateV1, position: u128) -> Result<(), String> {
++pub(super) fn validate_current_phase(
++    target: &Value,
++    clock: &CoupledClockStateV1,
++    position: u128,
++) -> Result<(), String> {
+     let phase = required(target, "phase_diagnostics")?;
+-    let current: BTreeMap<u32, crate::DirectSnowStage3PersistentState> = decode(required(phase, "current_stage3")?)?;
+-    if current.is_empty() || current.values().any(|state| u128::try_from(state.next_interval_index).ok() != Some(position)) {
++    let current: BTreeMap<u32, crate::DirectSnowStage3PersistentState> =
++        decode(required(phase, "current_stage3")?)?;
++    if current.is_empty()
++        || current
++            .values()
++            .any(|state| u128::from(state.next_interval_index) != position)
++    {
+         return Err("current Stage3 accepted position".into());
+     }
+-    let material: Option<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1> = decode(required(phase, "current_snow_enthalpy_material_owner")?)?;
++    let material: Option<
++        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
++    > = decode(required(phase, "current_snow_enthalpy_material_owner")?)?;
+     if let Some(owner) = material {
+         owner.validate().map_err(|error| error.to_string())?;
+-        if owner.base_material_owner() != &current { return Err("current snow material/base state".into()); }
++        if owner.base_material_owner() != &current {
++            return Err("current snow material/base state".into());
++        }
+     }
+-    #[derive(Serialize)]
+-    struct SnowProjection<'a> { schema: &'static str, lanes: Vec<(&'a u32, &'a crate::DirectSnowStage3PersistentState)> }
+     let ending_bytes: Vec<u8> = decode(required(phase, "ending_snow_owner_canonical_bytes")?)?;
+-    let projected = serde_json::to_vec(&SnowProjection { schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V1", lanes: current.iter().collect() }).map_err(|error| error.to_string())?;
+-    if projected != ending_bytes { return Err("current Stage3 ending snow projection".into()); }
+-    let parcels: BTreeMap<openwepp_coupled_time::Digest32, crate::DirectSnowStage3V11TerminalParcel> = decode(required(phase, "pending_terminal_parcels")?)?;
+-    let captured_bytes: Vec<u8> = decode(required(target, "terminal_parcels_produced_unconsumed_canonical_json")?)?;
+-    let captured_parcels: BTreeMap<openwepp_coupled_time::Digest32, crate::DirectSnowStage3V11TerminalParcel> = serde_json::from_slice(&captured_bytes).map_err(|error| error.to_string())?;
+-    if parcels != captured_parcels || parcels.iter().any(|(digest, parcel)| {
+-        parcel.posture != crate::DirectSnowStage3V11TerminalParcelPosture::ProducedUnconsumed
+-            || parcel.parent_transaction_id != clock.parent_transaction_id().digest()
+-            || parcel.support.start_ns() < clock.parent_support().start_ns()
+-            || parcel.support.end_ns() > clock.accepted_until()
+-            || crate::snow_owner_v4::canonical_terminal_parcel_digest(parcel).map_or(true, |actual| actual != *digest || actual != parcel.parcel_digest)
+-    }) { return Err("current terminal parcel custody posture".into()); }
+-    let joins = crate::snow_stage3_v11_attachment::diagnostic_restore_coupled_subslab_receipts_value_v2(required(phase, "ordered_owner_joins")?.clone())?;
++    let projected = serde_json::to_vec(&SnowProjection {
++        schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V1",
++        lanes: current.iter().collect(),
++    })
++    .map_err(|error| error.to_string())?;
++    if projected != ending_bytes {
++        return Err("current Stage3 ending snow projection".into());
++    }
++    let parcels: BTreeMap<
++        openwepp_coupled_time::Digest32,
++        crate::DirectSnowStage3V11TerminalParcel,
++    > = decode(required(phase, "pending_terminal_parcels")?)?;
++    let captured_bytes: Vec<u8> = decode(required(
++        target,
++        "terminal_parcels_produced_unconsumed_canonical_json",
++    )?)?;
++    let captured_parcels: BTreeMap<
++        openwepp_coupled_time::Digest32,
++        crate::DirectSnowStage3V11TerminalParcel,
++    > = serde_json::from_slice(&captured_bytes).map_err(|error| error.to_string())?;
++    if parcels != captured_parcels
++        || parcels.iter().any(|(digest, parcel)| {
++            parcel.posture != crate::DirectSnowStage3V11TerminalParcelPosture::ProducedUnconsumed
++                || parcel.parent_transaction_id != clock.parent_transaction_id().digest()
++                || parcel.support.start_ns() < clock.parent_support().start_ns()
++                || parcel.support.end_ns() > clock.accepted_until()
++                || crate::snow_owner_v4::canonical_terminal_parcel_digest(parcel)
++                    .map_or(true, |actual| {
++                        actual != *digest || actual != parcel.parcel_digest
++                    })
++        })
++    {
++        return Err("current terminal parcel custody posture".into());
++    }
++    let joins =
++        crate::snow_stage3_v11_attachment::diagnostic_restore_coupled_subslab_receipts_value_v2(
++            required(phase, "ordered_owner_joins")?.clone(),
++        )?;
+     let last = joins.last().ok_or("current snow prefix tail")?;
+-    let lanes = last.lane_receipts.iter().map(|(lane, receipt)| (*lane, receipt.receipt_sha256)).collect();
+-    let tiles = last.destination_receipts.iter().map(|((ofe, tile), receipt)| ((ofe.as_str().to_owned(), tile.as_str().to_owned()), *receipt.receipt_sha256())).collect();
+-    let expected = crate::snow_owner_v4::canonical_stage3_snow_owner_v4_bytes(&current, &parcels, &lanes, &tiles).map_err(|error| error.0.to_owned())?;
+-    let snow = clock.owners().iter().find(|owner| owner.owner_id() == "snow").ok_or("clock snow owner")?;
+-    if expected != snow.state_bytes() { return Err("current Stage3 clock snow owner projection".into()); }
+-    let expected_clock: BTreeMap<String, Vec<u8>> = decode(required(target, "clock_complete_owner_canonical_bytes")?)?;
+-    let actual_clock = clock.owners().iter().map(|o| (o.owner_id().to_owned(), o.state_bytes().to_vec())).collect::<BTreeMap<_,_>>();
+-    if expected_clock != actual_clock { return Err("current seven-owner clock projection".into()); }
++    let lanes = last
++        .lane_receipts
++        .iter()
++        .map(|(lane, receipt)| (*lane, receipt.receipt_sha256))
++        .collect();
++    let tiles = last
++        .destination_receipts
++        .iter()
++        .map(|((ofe, tile), receipt)| {
++            (
++                (ofe.as_str().to_owned(), tile.as_str().to_owned()),
++                *receipt.receipt_sha256(),
++            )
++        })
++        .collect();
++    let expected = crate::snow_owner_v4::canonical_stage3_snow_owner_v4_bytes(
++        &current, &parcels, &lanes, &tiles,
++    )
++    .map_err(|error| error.0.to_owned())?;
++    let snow = clock
++        .owners()
++        .iter()
++        .find(|owner| owner.owner_id() == "snow")
++        .ok_or("clock snow owner")?;
++    if expected != snow.state_bytes() {
++        return Err("current Stage3 clock snow owner projection".into());
++    }
++    let expected_clock: BTreeMap<String, Vec<u8>> =
++        decode(required(target, "clock_complete_owner_canonical_bytes")?)?;
++    let actual_clock = clock
++        .owners()
++        .iter()
++        .map(|o| (o.owner_id().to_owned(), o.state_bytes().to_vec()))
++        .collect::<BTreeMap<_, _>>();
++    if expected_clock != actual_clock {
++        return Err("current seven-owner clock projection".into());
++    }
+     validate_deferred_custody(target, clock)?;
+     Ok(())
+ }
+@@ -257,33 +595,70 @@
+ enum TrialPredecessor {
+     AcceptedReceiptChain(openwepp_land_surface_energy::Sha256Digest),
+     UnpublishedTrial(openwepp_land_surface_energy::Sha256Digest),
+-    NumericalCoordinateProjection { authority_sha256: openwepp_land_surface_energy::Sha256Digest, accepted_receipt_chain_sha256: openwepp_land_surface_energy::Sha256Digest, coordinate_set_sha256: openwepp_land_surface_energy::Sha256Digest },
++    NumericalCoordinateProjection {
++        authority_sha256: openwepp_land_surface_energy::Sha256Digest,
++        accepted_receipt_chain_sha256: openwepp_land_surface_energy::Sha256Digest,
++        coordinate_set_sha256: openwepp_land_surface_energy::Sha256Digest,
++    },
+ }
+ // Representation inverse only: no numerical evolution or install capability.
+-fn validate_trial(value: &Value) -> Result<openwepp_land_surface_energy::SoilThermalOwnedStateV2, String> {
+-    use openwepp_land_surface_energy::{Sha256Digest, SoilThermalLayerEnergyCreditV2, SoilThermalOwnedStateV2};
++fn validate_trial(
++    value: &Value,
++) -> Result<openwepp_land_surface_energy::SoilThermalOwnedStateV2, String> {
+     use openwepp_kernel_contract::TransactionId;
+-    let accepted: Option<Sha256Digest> = decode(required(value, "accepted_predecessor_receipt_chain_sha256")?)?;
+-    let unpublished: Option<Sha256Digest> = decode(required(value, "unpublished_predecessor_trial_sha256")?)?;
+-    let authority: Option<Sha256Digest> = decode(required(value, "numerical_coordinate_authority_sha256")?)?;
+-    let coordinate: Option<Sha256Digest> = decode(required(value, "numerical_coordinate_set_sha256")?)?;
++    use openwepp_land_surface_energy::{
++        Sha256Digest, SoilThermalLayerEnergyCreditV2, SoilThermalOwnedStateV2,
++    };
++    let accepted: Option<Sha256Digest> = decode(required(
++        value,
++        "accepted_predecessor_receipt_chain_sha256",
++    )?)?;
++    let unpublished: Option<Sha256Digest> =
++        decode(required(value, "unpublished_predecessor_trial_sha256")?)?;
++    let authority: Option<Sha256Digest> =
++        decode(required(value, "numerical_coordinate_authority_sha256")?)?;
++    let coordinate: Option<Sha256Digest> =
++        decode(required(value, "numerical_coordinate_set_sha256")?)?;
+     let custody = match (accepted, unpublished, authority, coordinate) {
+         (Some(a), None, None, None) => TrialPredecessor::AcceptedReceiptChain(a),
+         (None, Some(u), None, None) => TrialPredecessor::UnpublishedTrial(u),
+-        (Some(a), None, Some(authority), Some(coordinate)) => TrialPredecessor::NumericalCoordinateProjection { authority_sha256: authority, accepted_receipt_chain_sha256: a, coordinate_set_sha256: coordinate },
++        (Some(a), None, Some(authority), Some(coordinate)) => {
++            TrialPredecessor::NumericalCoordinateProjection {
++                authority_sha256: authority,
++                accepted_receipt_chain_sha256: a,
++                coordinate_set_sha256: coordinate,
++            }
++        }
+         _ => return Err("deferred trial predecessor custody".into()),
+     };
+     let transaction: TransactionId = decode(required(value, "transaction_id")?)?;
+-    let predecessor: Option<TransactionId> = decode(required(value, "predecessor_transaction_id")?)?;
++    let predecessor: Option<TransactionId> =
++        decode(required(value, "predecessor_transaction_id")?)?;
+     let start: u128 = decode(required(value, "support_start_ns")?)?;
+     let end: u128 = decode(required(value, "support_end_ns")?)?;
+     let beginning: Sha256Digest = decode(required(value, "beginning_state_sha256")?)?;
+     let ending: SoilThermalOwnedStateV2 = decode(required(value, "ending_state")?)?;
+     let credits: Vec<SoilThermalLayerEnergyCreditV2> = decode(required(value, "layer_credits")?)?;
+     ending.validate().map_err(|error| error.to_string())?;
+-    if start >= end || ending.last_accepted_transaction_id != Some(transaction) { return Err("deferred trial transaction/support".into()); }
+-    let bytes = serde_json::to_vec(&("OPENWEPP_SOIL_THERMAL_UNPUBLISHED_TRIAL_V2", transaction, predecessor, start, end, beginning, custody, &ending, credits)).map_err(|error| error.to_string())?;
+-    if serde_json::to_value(digest_bytes(&python_exponents(&bytes))).map_err(|error| error.to_string())? != value["unpublished_trial_sha256"] {
++    if start >= end || ending.last_accepted_transaction_id != Some(transaction) {
++        return Err("deferred trial transaction/support".into());
++    }
++    let bytes = serde_json::to_vec(&(
++        "OPENWEPP_SOIL_THERMAL_UNPUBLISHED_TRIAL_V2",
++        transaction,
++        predecessor,
++        start,
++        end,
++        beginning,
++        custody,
++        &ending,
++        credits,
++    ))
++    .map_err(|error| error.to_string())?;
++    if serde_json::to_value(digest_bytes(&python_exponents(&bytes)))
++        .map_err(|error| error.to_string())?
++        != value["unpublished_trial_sha256"]
++    {
+         return Err("deferred unpublished trial seal".into());
+     }
+     Ok(ending)
+@@ -296,66 +671,170 @@
+         let byte = bytes[index];
+         if quoted {
+             output.push(byte);
+-            if escaped { escaped = false; } else if byte == b'\\' { escaped = true; } else if byte == b'"' { quoted = false; }
++            if escaped {
++                escaped = false;
++            } else if byte == b'\\' {
++                escaped = true;
++            } else if byte == b'"' {
++                quoted = false;
++            }
++            index += 1;
++            continue;
++        }
++        if byte == b'"' {
++            quoted = true;
++            output.push(byte);
+             index += 1;
+             continue;
+         }
+-        if byte == b'"' { quoted = true; output.push(byte); index += 1; continue; }
+-        if byte == b'e' && index + 3 < bytes.len() && matches!(bytes[index + 1], b'+' | b'-') && bytes[index + 2].is_ascii_digit() && !bytes[index + 3].is_ascii_digit() {
+-            output.extend_from_slice(&[byte, bytes[index+1], b'0', bytes[index+2]]); index += 3; continue;
++        if byte == b'e'
++            && index + 3 < bytes.len()
++            && matches!(bytes[index + 1], b'+' | b'-')
++            && bytes[index + 2].is_ascii_digit()
++            && !bytes[index + 3].is_ascii_digit()
++        {
++            output.extend_from_slice(&[byte, bytes[index + 1], b'0', bytes[index + 2]]);
++            index += 3;
++            continue;
+         }
+-        output.push(byte); index += 1;
++        output.push(byte);
++        index += 1;
+     }
+     output
+ }
+ fn validate_deferred_custody(target: &Value, clock: &CoupledClockStateV1) -> Result<(), String> {
+-    let custody = required(&target["phase_diagnostics"], "deferred_native_v2_soil_custody")?;
+-    if custody["posture"] != "reconstructible_operands_not_installable_capability" { return Err("deferred custody posture".into()); }
++    let custody = required(
++        &target["phase_diagnostics"],
++        "deferred_native_v2_soil_custody",
++    )?;
++    if custody["posture"] != "reconstructible_operands_not_installable_capability" {
++        return Err("deferred custody posture".into());
++    }
+     let trial = required(custody, "candidate")?;
+     let ending = validate_trial(trial)?;
+     let continuation = required(custody, "continuation")?;
+-    if required(continuation, "physical_trial")? != trial { return Err("deferred candidate/physical trial join".into()); }
+-    let original: openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2 = decode(required(continuation, "original_beginning_owner")?)?;
++    if required(continuation, "physical_trial")? != trial {
++        return Err("deferred candidate/physical trial join".into());
++    }
++    let original: openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2 =
++        decode(required(continuation, "original_beginning_owner")?)?;
+     original.validate().map_err(|error| error.to_string())?;
+-    let resident: crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2 = decode(required(target, "native_soil_v2_constructor_operands")?)?;
+-    if original.state != resident.owner().state || original.receipt_chain_sha256 != resident.owner().receipt_chain_sha256
+-        || trial["support_end_ns"] != serde_json::json!(clock.accepted_until().get()) || ending == resident.owner().state {
++    let resident: crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2 =
++        decode(required(target, "native_soil_v2_constructor_operands")?)?;
++    if original.state != resident.owner().state
++        || original.receipt_chain_sha256 != resident.owner().receipt_chain_sha256
++        || trial["support_end_ns"] != serde_json::json!(clock.accepted_until().get())
++        || ending == resident.owner().state
++    {
+         return Err("deferred/current resident separation and support join".into());
+     }
+-    let chain: Vec<Vec<openwepp_land_surface_energy::SoilThermalLayerEnergyCreditV2>> = decode(required(continuation, "ordered_layer_credit_chain")?)?;
+-    let transaction: openwepp_kernel_contract::TransactionId = decode(required(trial, "transaction_id")?)?;
+-    let predecessor: Option<openwepp_kernel_contract::TransactionId> = decode(required(trial, "predecessor_transaction_id")?)?;
+-    let expected_last = original.transaction_id.0.checked_add(u128::try_from(chain.len().checked_sub(1).ok_or("empty deferred chain")?).map_err(|error| error.to_string())?).ok_or("deferred transaction overflow")?;
+-    if transaction.0 != expected_last || predecessor.map(|id| id.0) != expected_last.checked_sub(1)
++    let chain: Vec<Vec<openwepp_land_surface_energy::SoilThermalLayerEnergyCreditV2>> =
++        decode(required(continuation, "ordered_layer_credit_chain")?)?;
++    let transaction: openwepp_kernel_contract::TransactionId =
++        decode(required(trial, "transaction_id")?)?;
++    let predecessor: Option<openwepp_kernel_contract::TransactionId> =
++        decode(required(trial, "predecessor_transaction_id")?)?;
++    let expected_last = original
++        .transaction_id
++        .0
++        .checked_add(
++            u128::try_from(chain.len().checked_sub(1).ok_or("empty deferred chain")?)
++                .map_err(|error| error.to_string())?,
++        )
++        .ok_or("deferred transaction overflow")?;
++    if transaction.0 != expected_last
++        || predecessor.map(|id| id.0) != expected_last.checked_sub(1)
+         || original.expected_predecessor_transaction_id != Some(resident.owner().transaction_id)
+-        || original.transaction_id.0 != resident.owner().transaction_id.0.checked_add(1).ok_or("resident transaction overflow")? {
++        || original.transaction_id.0
++            != resident
++                .owner()
++                .transaction_id
++                .0
++                .checked_add(1)
++                .ok_or("resident transaction overflow")?
++    {
+         return Err("deferred ordered transaction lineage".into());
+     }
+     let mut state = original.state.clone();
+     for (index, credits) in chain.iter().enumerate() {
+-        if index + 1 == chain.len() && serde_json::to_value(&state.state_sha256).map_err(|error| error.to_string())? != trial["beginning_state_sha256"] { return Err("deferred final trial beginning state".into()); }
+-        let layer_count = state.ofes.iter().map(|ofe| ofe.ordered_layers.len()).sum::<usize>();
+-        if credits.len() != layer_count { return Err("deferred layer chain cardinality".into()); }
+-        for ((ofe_id, layer), credit) in state.ofes.iter_mut().flat_map(|ofe| ofe.ordered_layers.iter_mut().map(|layer| (&ofe.ofe_id, layer))).zip(credits) {
+-            if ofe_id != &credit.ofe_id || layer.layer_id != credit.layer_id
+-                || layer.enthalpy_hi_j_m2_ofe_ground.to_bits() != credit.beginning_enthalpy_hi_j_m2_ofe_ground.to_bits()
++        if index + 1 == chain.len()
++            && serde_json::to_value(&state.state_sha256).map_err(|error| error.to_string())?
++                != trial["beginning_state_sha256"]
++        {
++            return Err("deferred final trial beginning state".into());
++        }
++        let layer_count = state
++            .ofes
++            .iter()
++            .map(|ofe| ofe.ordered_layers.len())
++            .sum::<usize>();
++        if credits.len() != layer_count {
++            return Err("deferred layer chain cardinality".into());
++        }
++        for ((ofe_id, layer), credit) in state
++            .ofes
++            .iter_mut()
++            .flat_map(|ofe| {
++                ofe.ordered_layers
++                    .iter_mut()
++                    .map(|layer| (&ofe.ofe_id, layer))
++            })
++            .zip(credits)
++        {
++            if ofe_id != &credit.ofe_id
++                || layer.layer_id != credit.layer_id
++                || layer.enthalpy_hi_j_m2_ofe_ground.to_bits()
++                    != credit.beginning_enthalpy_hi_j_m2_ofe_ground.to_bits()
+                 || layer.enthalpy_carry != credit.beginning_enthalpy_carry
+-                || layer.temperature_k.to_bits() != credit.beginning_temperature_k.to_bits() { return Err("deferred ordered layer beginning".into()); }
++                || layer.temperature_k.to_bits() != credit.beginning_temperature_k.to_bits()
++            {
++                return Err("deferred ordered layer beginning".into());
++            }
+             layer.enthalpy_hi_j_m2_ofe_ground = credit.ending_enthalpy_hi_j_m2_ofe_ground;
+             layer.enthalpy_carry = credit.ending_enthalpy_carry.clone();
+             layer.temperature_k = credit.ending_temperature_k;
+-            layer.last_accepted_transaction_id = Some(openwepp_kernel_contract::TransactionId(original.transaction_id.0.checked_add(u128::try_from(index).map_err(|error| error.to_string())?).ok_or("deferred transaction overflow")?));
++            layer.last_accepted_transaction_id = Some(openwepp_kernel_contract::TransactionId(
++                original
++                    .transaction_id
++                    .0
++                    .checked_add(u128::try_from(index).map_err(|error| error.to_string())?)
++                    .ok_or("deferred transaction overflow")?,
++            ));
+         }
+-        state.last_accepted_transaction_id = Some(openwepp_kernel_contract::TransactionId(original.transaction_id.0.checked_add(u128::try_from(index).map_err(|error| error.to_string())?).ok_or("deferred transaction overflow")?));
++        state.last_accepted_transaction_id = Some(openwepp_kernel_contract::TransactionId(
++            original
++                .transaction_id
++                .0
++                .checked_add(u128::try_from(index).map_err(|error| error.to_string())?)
++                .ok_or("deferred transaction overflow")?,
++        ));
+         state.reseal().map_err(|error| error.to_string())?;
+         state.validate().map_err(|error| error.to_string())?;
+     }
+-    if state != ending { return Err("deferred complete ordered ending state".into()); }
++    if state != ending {
++        return Err("deferred complete ordered ending state".into());
++    }
+     let last = chain.last().ok_or("deferred credit chain missing")?;
+-    if serde_json::to_value(last).map_err(|error| error.to_string())? != trial["layer_credits"] { return Err("deferred credit chain tail".into()); }
+-    let operands: Vec<openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2> = decode(required(continuation, "accumulated_operands")?)?;
+-    let mut flattened = chain.iter().flat_map(|layers| layers.iter().flat_map(|layer| layer.accepted_operands.clone())).collect::<Vec<_>>();
+-    crate::v9_real_consumer_shadow::diagnostic_canonicalize_soil_operand_chain_v1(&original, &mut flattened).map_err(|error| error.to_string())?;
+-    if operands != flattened { return Err("deferred canonical accumulated operand chain".into()); }
++    if serde_json::to_value(last).map_err(|error| error.to_string())? != trial["layer_credits"] {
++        return Err("deferred credit chain tail".into());
++    }
++    let operands: Vec<openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2> =
++        decode(required(continuation, "accumulated_operands")?)?;
++    let mut flattened = chain
++        .iter()
++        .flat_map(|layers| {
++            layers
++                .iter()
++                .flat_map(|layer| layer.accepted_operands.clone())
++        })
++        .collect::<Vec<_>>();
++    crate::v9_real_consumer_shadow::diagnostic_canonicalize_soil_operand_chain_v1(
++        &original,
++        &mut flattened,
++    )
++    .map_err(|error| error.to_string())?;
++    if operands != flattened {
++        return Err("deferred canonical accumulated operand chain".into());
++    }
+     Ok(())
+ }
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_inverse.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_inverse.rs
+@@ -7,8 +7,12 @@
+     fn decode(value: &Value) -> Result<Self, String>;
+ }
+ fn field<T: Decode>(value: &Value, name: &str) -> Result<T, String> {
+-    T::decode(value.get(name).ok_or_else(|| format!("missing constructor field {name}"))?)
+-        .map_err(|error| format!("{name}: {error}"))
++    T::decode(
++        value
++            .get(name)
++            .ok_or_else(|| format!("missing constructor field {name}"))?,
++    )
++    .map_err(|error| format!("{name}: {error}"))
+ }
+ macro_rules! scalar {
+     ($($ty:ty),* $(,)?) => {$(impl Decode for $ty {
+@@ -17,23 +21,50 @@
+         }
+     })*};
+ }
+-scalar!(f64, bool, u8, u16, u32, u64, usize, i8, i16, i32, i64, String, (f64, f64, f64));
++scalar!(
++    f64,
++    bool,
++    u8,
++    u16,
++    u32,
++    u64,
++    usize,
++    i8,
++    i16,
++    i32,
++    i64,
++    String,
++    (f64, f64, f64)
++);
+ impl<T: Decode> Decode for Option<T> {
+     fn decode(value: &Value) -> Result<Self, String> {
+-        if value.is_null() { Ok(None) } else { T::decode(value).map(Some) }
++        if value.is_null() {
++            Ok(None)
++        } else {
++            T::decode(value).map(Some)
++        }
+     }
+ }
+ impl<T: Decode> Decode for Box<T> {
+-    fn decode(value: &Value) -> Result<Self, String> { T::decode(value).map(Box::new) }
++    fn decode(value: &Value) -> Result<Self, String> {
++        T::decode(value).map(Box::new)
++    }
+ }
+ impl<T: Decode> Decode for Vec<T> {
+     fn decode(value: &Value) -> Result<Self, String> {
+-        value.as_array().ok_or("constructor array required")?.iter().map(T::decode).collect()
++        value
++            .as_array()
++            .ok_or("constructor array required")?
++            .iter()
++            .map(T::decode)
++            .collect()
+     }
+ }
+ impl<T: Decode, const N: usize> Decode for [T; N] {
+     fn decode(value: &Value) -> Result<Self, String> {
+-        Vec::<T>::decode(value)?.try_into().map_err(|v: Vec<T>| format!("constructor array length {}, expected {N}", v.len()))
++        Vec::<T>::decode(value)?
++            .try_into()
++            .map_err(|v: Vec<T>| format!("constructor array length {}, expected {N}", v.len()))
+     }
+ }
+ impl Decode for openwepp_unit_boundary::TemperatureCelsius {
+@@ -93,142 +124,770 @@
+ }
+ impl Decode for crate::DirectSnowMassTransitionLedgers {
+     fn decode(value: &Value) -> Result<Self, String> {
+-        Self::try_from_parts(field(value, "solid_to_liquid")?, field(value, "liquid_disposition")?, field(value, "stage3_outcome")?)
+-            .map_err(|error| error.to_string())
++        Self::try_from_parts(
++            field(value, "solid_to_liquid")?,
++            field(value, "liquid_disposition")?,
++            field(value, "stage3_outcome")?,
++        )
++        .map_err(|error| error.to_string())
+     }
+ }
+ // Source fields: direct_runtime/00_core_frames.rs:508
+-captured_struct!(crate::direct_runtime::DirectDayConstructorInputs {forcing, normalization_inputs, interception_m, storage_bounds_inputs, decomposition_inputs, residue_partition_inputs, annual_growth_inputs, perennial_growth_inputs, storage_input_inputs, liquid_input_inputs, runon_carry_inputs, infiltration_depression_inputs, saturation_addback_inputs, runoff_partition_inputs, percolation_inputs, subsurface_compute_inputs, deep_seepage_inputs, subsurface_loss_inputs, evapotranspiration_compute_inputs, evapotranspiration_inputs, snow_coupling_inputs, storage_reconciliation_inputs, hydrology_projection_inputs, erosion_inputs, frost_storage_liquid_delta_m, winter_frost_compute_inputs, winter_frost_outcome, frost_layer_carry_projection, snow_runtime_carry, frost_runtime_carry});
++captured_struct!(crate::direct_runtime::DirectDayConstructorInputs {
++    forcing,
++    normalization_inputs,
++    interception_m,
++    storage_bounds_inputs,
++    decomposition_inputs,
++    residue_partition_inputs,
++    annual_growth_inputs,
++    perennial_growth_inputs,
++    storage_input_inputs,
++    liquid_input_inputs,
++    runon_carry_inputs,
++    infiltration_depression_inputs,
++    saturation_addback_inputs,
++    runoff_partition_inputs,
++    percolation_inputs,
++    subsurface_compute_inputs,
++    deep_seepage_inputs,
++    subsurface_loss_inputs,
++    evapotranspiration_compute_inputs,
++    evapotranspiration_inputs,
++    snow_coupling_inputs,
++    storage_reconciliation_inputs,
++    hydrology_projection_inputs,
++    erosion_inputs,
++    frost_storage_liquid_delta_m,
++    winter_frost_compute_inputs,
++    winter_frost_outcome,
++    frost_layer_carry_projection,
++    snow_runtime_carry,
++    frost_runtime_carry
++});
+ // Source fields: direct_runtime/02_state_reports.rs:57
+-captured_struct!(crate::direct_runtime::DirectDayForcing {precipitation_m, effective_temperature_c});
++captured_struct!(crate::direct_runtime::DirectDayForcing {
++    precipitation_m,
++    effective_temperature_c
++});
+ // Source fields: direct_runtime/decomposition.rs:389
+-captured_enum!(crate::direct_runtime::DirectDecompositionAction {None, Herbicide, Burn, Silage, Cut, Remove, Grazing});
++captured_enum!(crate::direct_runtime::DirectDecompositionAction {
++    None,
++    Herbicide,
++    Burn,
++    Silage,
++    Cut,
++    Remove,
++    Grazing
++});
+ // Source fields: direct_runtime/decomposition.rs:358
+ active_context!(crate::direct_runtime::DirectDecompositionActiveContext);
+ // Source fields: direct_runtime/decomposition.rs:407
+-captured_struct!(crate::direct_runtime::DirectDecompositionInputs {active_context, active_action, residue_type_selector, surface_residue_seed_kg_m2, interrill_ground_seed_kg_m2, rill_ground_seed_kg_m2, residue_cover_factor, root_residue_seed_kg_m2, surface_litter_input_kg_m2, residue_depth_conversion_m_per_kg_m2, temperature_max_c, temperature_min_c, precipitation_m, water_stress_fraction, surface_decomposition_rate, root_decomposition_rate, burn_surface_fraction, remove_surface_fraction, cut_transfer_fraction, grazing_digest_fraction});
++captured_struct!(crate::direct_runtime::DirectDecompositionInputs {
++    active_context,
++    active_action,
++    residue_type_selector,
++    surface_residue_seed_kg_m2,
++    interrill_ground_seed_kg_m2,
++    rill_ground_seed_kg_m2,
++    residue_cover_factor,
++    root_residue_seed_kg_m2,
++    surface_litter_input_kg_m2,
++    residue_depth_conversion_m_per_kg_m2,
++    temperature_max_c,
++    temperature_min_c,
++    precipitation_m,
++    water_stress_fraction,
++    surface_decomposition_rate,
++    root_decomposition_rate,
++    burn_surface_fraction,
++    remove_surface_fraction,
++    cut_transfer_fraction,
++    grazing_digest_fraction
++});
+ // Source fields: direct_runtime/storage.rs:1163
+-captured_struct!(crate::direct_runtime::DirectDeepSeepageInputs {deep_seepage_handoff_m});
++captured_struct!(crate::direct_runtime::DirectDeepSeepageInputs {
++    deep_seepage_handoff_m
++});
+ // Source fields: direct_runtime/erosion.rs:157
+-captured_struct!(crate::direct_runtime::DirectErod13Inputs {ie_m_s, te_s, fs, ft, taufe_pa, q_m2_s, g_kg_s_m, di_kg_s_m2, beta, vf_m_s, dgdx_kg_s_m2, cntlen_m, kr_s_m, kradjf, tcadjf, shrsol_pa, tcend_kg_s_m, shcrit_pa, detinr_kg_s_m2, effdrr_m, effdrn_m, veleff_m_s, pkro_m3_s, tc_k, tc_m, q_runoff_m, peakro_m_s, watdur_s});
++captured_struct!(crate::direct_runtime::DirectErod13Inputs {
++    ie_m_s,
++    te_s,
++    fs,
++    ft,
++    taufe_pa,
++    q_m2_s,
++    g_kg_s_m,
++    di_kg_s_m2,
++    beta,
++    vf_m_s,
++    dgdx_kg_s_m2,
++    cntlen_m,
++    kr_s_m,
++    kradjf,
++    tcadjf,
++    shrsol_pa,
++    tcend_kg_s_m,
++    shcrit_pa,
++    detinr_kg_s_m2,
++    effdrr_m,
++    effdrn_m,
++    veleff_m_s,
++    pkro_m3_s,
++    tc_k,
++    tc_m,
++    q_runoff_m,
++    peakro_m_s,
++    watdur_s
++});
+ // Source fields: direct_runtime/erosion.rs:144
+-captured_enum!(crate::direct_runtime::DirectErosionHydrographShapeAuthority {Dc01SourceShape, RoutedHydrograph});
++captured_enum!(
++    crate::direct_runtime::DirectErosionHydrographShapeAuthority {
++        Dc01SourceShape,
++        RoutedHydrograph
++    }
++);
+ // Source fields: direct_runtime/erosion.rs:90
+-captured_struct!(crate::direct_runtime::DirectErosionInputs {wave1_enabled, wave1, wave1_continuity, wave1_operand_seed, hydrograph_shape_authority, routed_hydrograph_runoff_fraction});
++captured_struct!(crate::direct_runtime::DirectErosionInputs {
++    wave1_enabled,
++    wave1,
++    wave1_continuity,
++    wave1_operand_seed,
++    hydrograph_shape_authority,
++    routed_hydrograph_runoff_fraction
++});
+ // Source fields: direct_runtime/evapotranspiration.rs:658
+-captured_struct!(crate::direct_runtime::DirectEvapotranspirationComputeInputs {et_demand_m, leaf_area_index, canopy_height_m, canopy_cover_fraction, residue_interception_m, same_pass_infiltration_m, outside_water_depth_m, root_depth_m, plant_tolerance, growth_context_required, stage_state, pmet, pmet_compute});
++captured_struct!(
++    crate::direct_runtime::DirectEvapotranspirationComputeInputs {
++        et_demand_m,
++        leaf_area_index,
++        canopy_height_m,
++        canopy_cover_fraction,
++        residue_interception_m,
++        same_pass_infiltration_m,
++        outside_water_depth_m,
++        root_depth_m,
++        plant_tolerance,
++        growth_context_required,
++        stage_state,
++        pmet,
++        pmet_compute
++    }
++);
+ // Source fields: direct_runtime/storage.rs:1291
+-captured_struct!(crate::direct_runtime::DirectEvapotranspirationInputs {evapotranspiration_handoff_m});
++captured_struct!(crate::direct_runtime::DirectEvapotranspirationInputs {
++    evapotranspiration_handoff_m
++});
+ // Source fields: direct_runtime/evapotranspiration.rs:634
+-captured_struct!(crate::direct_runtime::DirectEvapotranspirationPmetComputeInputs {runtime_day_of_year, radiation_ly, wind_m_s, dew_point_c, temperature_max_c, temperature_min_c, latitude_degrees, elevation_m, kcb, rawp, canopy_height_m, radpot_ly, solthk_m});
++captured_struct!(
++    crate::direct_runtime::DirectEvapotranspirationPmetComputeInputs {
++        runtime_day_of_year,
++        radiation_ly,
++        wind_m_s,
++        dew_point_c,
++        temperature_max_c,
++        temperature_min_c,
++        latitude_degrees,
++        elevation_m,
++        kcb,
++        rawp,
++        canopy_height_m,
++        radpot_ly,
++        solthk_m
++    }
++);
+ // Source fields: direct_runtime/evapotranspiration.rs:620
+-captured_struct!(crate::direct_runtime::DirectEvapotranspirationPmetInputs {soil_evaporation_m, plant_transpiration_m, soil_evaporation_storage_return_m});
++captured_struct!(crate::direct_runtime::DirectEvapotranspirationPmetInputs {
++    soil_evaporation_m,
++    plant_transpiration_m,
++    soil_evaporation_storage_return_m
++});
+ // Source fields: direct_runtime/evapotranspiration.rs:605
+-captured_struct!(crate::direct_runtime::DirectEvapotranspirationStageState {s1_m, s2_m, threshold_m, counter});
++captured_struct!(crate::direct_runtime::DirectEvapotranspirationStageState {
++    s1_m,
++    s2_m,
++    threshold_m,
++    counter
++});
+ // Source fields: hydrology/03_kernel_support_00_support_helpers.rs:1140
+-captured_struct!(crate::hydrology::DirectFrostControlInputs {frost_file_present, wint_red_enabled, fine_top_count, fine_bot_count, ksnowf, kresf, ksoilf, kfactor1, kfactor2, kfactor3, landuse_class_proxy});
++captured_struct!(crate::hydrology::DirectFrostControlInputs {
++    frost_file_present,
++    wint_red_enabled,
++    fine_top_count,
++    fine_bot_count,
++    ksnowf,
++    kresf,
++    ksoilf,
++    kfactor1,
++    kfactor2,
++    kfactor3,
++    landuse_class_proxy
++});
+ // Source fields: direct_runtime/00_core_frames.rs:312
+-captured_struct!(crate::direct_runtime::DirectFrostFineLayerCarry {layer_index, fine_index, fgfrst, slfsd_m, slsic_m, slsw_theta, sltime_s});
++captured_struct!(crate::direct_runtime::DirectFrostFineLayerCarry {
++    layer_index,
++    fine_index,
++    fgfrst,
++    slfsd_m,
++    slsic_m,
++    slsw_theta,
++    sltime_s
++});
+ // Source fields: hydrology/03_kernel_support_00_support_helpers.rs:1350
+-captured_struct!(crate::hydrology::DirectFrostFineLayerProjection {layer_index, fine_index, fgfrst, slfsd_m, slsic_m, slsw_theta, sltime_s});
++captured_struct!(crate::hydrology::DirectFrostFineLayerProjection {
++    layer_index,
++    fine_index,
++    fgfrst,
++    slfsd_m,
++    slsic_m,
++    slsw_theta,
++    sltime_s
++});
+ // Source fields: hydrology/03_kernel_support_00_support_helpers.rs:1115
+-captured_struct!(crate::hydrology::DirectFrostHourlyForcing {radiation_mj_m2, air_temperature_c, cloud_fraction});
++captured_struct!(crate::hydrology::DirectFrostHourlyForcing {
++    radiation_mj_m2,
++    air_temperature_c,
++    cloud_fraction
++});
+ // Source fields: direct_runtime/01_publication.rs:108
+-captured_struct!(crate::direct_runtime::DirectFrostLayerCarryProjection {layer_index, fine_layer_count, fine_layer_thickness_m});
++captured_struct!(crate::direct_runtime::DirectFrostLayerCarryProjection {
++    layer_index,
++    fine_layer_count,
++    fine_layer_thickness_m
++});
+ // Source fields: hydrology/03_kernel_support_00_support_helpers.rs:1316
+-captured_struct!(crate::hydrology::DirectFrostLayerProjection {layer_index, theta_after_m, frozen_depth_m, frozen_water_m});
++captured_struct!(crate::hydrology::DirectFrostLayerProjection {
++    layer_index,
++    theta_after_m,
++    frozen_depth_m,
++    frozen_water_m
++});
+ // Source fields: direct_runtime/00_core_frames.rs:293
+-captured_struct!(crate::direct_runtime::DirectFrostLayerShadowCarry {layer_index, st_m, soil_water_m, frozen_depth_m, frozen_water_m, soilf_m, yst_m, nwfrzz_m});
++captured_struct!(crate::direct_runtime::DirectFrostLayerShadowCarry {
++    layer_index,
++    st_m,
++    soil_water_m,
++    frozen_depth_m,
++    frozen_water_m,
++    soilf_m,
++    yst_m,
++    nwfrzz_m
++});
+ // Source fields: hydrology/03_kernel_support_00_support_helpers.rs:1331
+-captured_struct!(crate::hydrology::DirectFrostLayerShadowProjection {layer_index, st_m, soil_water_m, frozen_depth_m, frozen_water_m, soilf_m, yst_m, nwfrzz_m});
++captured_struct!(crate::hydrology::DirectFrostLayerShadowProjection {
++    layer_index,
++    st_m,
++    soil_water_m,
++    frozen_depth_m,
++    frozen_water_m,
++    soilf_m,
++    yst_m,
++    nwfrzz_m
++});
+ // Source fields: direct_runtime/00_core_frames.rs:252
+-captured_struct!(crate::direct_runtime::DirectFrostRuntimeCarry {active_frost_coupling, dfrost_m, dthaw_m, nft, ws_frz_m, infcap_frz_m_s, frwatc_soil_water_before_m, frwatc_soil_water_after_m, frwatc_frozen_water_before_m, frwatc_frozen_water_after_m, frwatc_freeze_debit_m, frwatc_thaw_credit_m, frwatc_net_liquid_delta_m, frdp_m, thdp_m, tfrdp_m, tthawd_m, fgthwd_flag, total_fine_layer_count, conductivity_tilled_w_m_k, conductivity_untilled_w_m_k, conductivity_residue_w_m_k, shadow_total_water_before_m, shadow_total_water_after_m, shadow_wb_delta_m, shadow_frwatc_residual_m, watpdg_m, watbtm_m, layer_shadows, fine_layers});
++captured_struct!(crate::direct_runtime::DirectFrostRuntimeCarry {
++    active_frost_coupling,
++    dfrost_m,
++    dthaw_m,
++    nft,
++    ws_frz_m,
++    infcap_frz_m_s,
++    frwatc_soil_water_before_m,
++    frwatc_soil_water_after_m,
++    frwatc_frozen_water_before_m,
++    frwatc_frozen_water_after_m,
++    frwatc_freeze_debit_m,
++    frwatc_thaw_credit_m,
++    frwatc_net_liquid_delta_m,
++    frdp_m,
++    thdp_m,
++    tfrdp_m,
++    tthawd_m,
++    fgthwd_flag,
++    total_fine_layer_count,
++    conductivity_tilled_w_m_k,
++    conductivity_untilled_w_m_k,
++    conductivity_residue_w_m_k,
++    shadow_total_water_before_m,
++    shadow_total_water_after_m,
++    shadow_wb_delta_m,
++    shadow_frwatc_residual_m,
++    watpdg_m,
++    watbtm_m,
++    layer_shadows,
++    fine_layers
++});
+ // Source fields: hydrology/03_kernel_support_00_support_helpers.rs:1162
+-captured_struct!(crate::hydrology::DirectFrostThermalInputs {snow_depth_m, snow_density_kg_m3, residue_depth_m, wind_m_s, albedo, canopy_height_m, random_roughness_m, day_of_year, seasonal_temperature_curve});
++captured_struct!(crate::hydrology::DirectFrostThermalInputs {
++    snow_depth_m,
++    snow_density_kg_m3,
++    residue_depth_m,
++    wind_m_s,
++    albedo,
++    canopy_height_m,
++    random_roughness_m,
++    day_of_year,
++    seasonal_temperature_curve
++});
+ // Source fields: direct_runtime/growth.rs:317
+-captured_enum!(crate::direct_runtime::DirectGrowthAction {None, PrePlantSkip, PlantingReset, HarvestReset, StopReset, Cut, Grazing, TypedStateOverride});
++captured_enum!(crate::direct_runtime::DirectGrowthAction {
++    None,
++    PrePlantSkip,
++    PlantingReset,
++    HarvestReset,
++    StopReset,
++    Cut,
++    Grazing,
++    TypedStateOverride
++});
+ // Source fields: direct_runtime/growth.rs:260
+ active_context!(crate::direct_runtime::DirectGrowthActiveContext);
+ // Source fields: direct_runtime/growth.rs:415
+-captured_struct!(crate::direct_runtime::DirectGrowthInputs {active_context, active_action, state_before, planting_day, harvest_day, stop_day, water_stress, temperature_max_c, temperature_min_c, radiation_mj_m2, monthly_temperature_max_c, monthly_temperature_min_c, soil_depth_m, btemp, otemp, gddmax, dlai, dropfc, decfct, spriod, bb, bbb, hmax, beinp, extnct, hi, xmxlai, rsr, rtmmax, rdmax, et_demand_m, residue_interception_m, plant_tolerance});
++captured_struct!(crate::direct_runtime::DirectGrowthInputs {
++    active_context,
++    active_action,
++    state_before,
++    planting_day,
++    harvest_day,
++    stop_day,
++    water_stress,
++    temperature_max_c,
++    temperature_min_c,
++    radiation_mj_m2,
++    monthly_temperature_max_c,
++    monthly_temperature_min_c,
++    soil_depth_m,
++    btemp,
++    otemp,
++    gddmax,
++    dlai,
++    dropfc,
++    decfct,
++    spriod,
++    bb,
++    bbb,
++    hmax,
++    beinp,
++    extnct,
++    hi,
++    xmxlai,
++    rsr,
++    rtmmax,
++    rdmax,
++    et_demand_m,
++    residue_interception_m,
++    plant_tolerance
++});
+ // Source fields: direct_runtime/growth.rs:361
+-captured_struct!(crate::direct_runtime::DirectGrowthStateSurface {sumgdd, live_biomass_kg_m2, interception_live_biomass_kg_m2, canopy_height_m, canopy_cover_fraction, leaf_area_index, root_mass_kg_m2, root_depth_m, harvest_index});
++captured_struct!(crate::direct_runtime::DirectGrowthStateSurface {
++    sumgdd,
++    live_biomass_kg_m2,
++    interception_live_biomass_kg_m2,
++    canopy_height_m,
++    canopy_cover_fraction,
++    leaf_area_index,
++    root_mass_kg_m2,
++    root_depth_m,
++    harvest_index
++});
+ // Source fields: direct_runtime/projection.rs:321
+-captured_struct!(crate::direct_runtime::DirectHydrologyProjectionInputs {aggregate_storage_tolerance_m, snow_water_m, frozen_soil_water_m, frost_depth_m, profile_depth_m, profile_porosity_cap_m, profile_field_capacity_m, profile_wilting_point_m});
++captured_struct!(crate::direct_runtime::DirectHydrologyProjectionInputs {
++    aggregate_storage_tolerance_m,
++    snow_water_m,
++    frozen_soil_water_m,
++    frost_depth_m,
++    profile_depth_m,
++    profile_porosity_cap_m,
++    profile_field_capacity_m,
++    profile_wilting_point_m
++});
+ // Source fields: direct_runtime/runoff_result_types.rs:145
+-captured_struct!(crate::direct_runtime::DirectInfiltrationDepressionInputs {cumulative_infiltration_handoff_m, depression_storage_delta_handoff_m, producer_inputs});
++captured_struct!(crate::direct_runtime::DirectInfiltrationDepressionInputs {
++    cumulative_infiltration_handoff_m,
++    depression_storage_delta_handoff_m,
++    producer_inputs
++});
+ // Source fields: direct_runtime/runoff_result_types.rs:9
+-captured_struct!(crate::direct_runtime::DirectLiquidInputInputs {liquid_input_handoff_m});
++captured_struct!(crate::direct_runtime::DirectLiquidInputInputs {
++    liquid_input_handoff_m
++});
+ // Source fields: direct_runtime/normalization.rs:173
+-captured_struct!(crate::direct_runtime::DirectNormalizationInputs {precipitation_m, effective_temperature_c, storage_initial_m, surface_transfer_m, lateral_transfer_m, upstream_flow_m, subsurface_input_m});
++captured_struct!(crate::direct_runtime::DirectNormalizationInputs {
++    precipitation_m,
++    effective_temperature_c,
++    storage_initial_m,
++    surface_transfer_m,
++    lateral_transfer_m,
++    upstream_flow_m,
++    subsurface_input_m
++});
+ // Source fields: direct_runtime/subsurface.rs:784
+-captured_struct!(crate::direct_runtime::DirectPercolationInputs {soil_water_initial_m, reconcile_legacy_soil_water_from_layers, same_pass_infiltration_m, same_pass_infiltration_lineage, tillage_depth_m, lane_substeps, restrictive_layer_enabled, restrictive_layer_conductivity_m_s, restrictive_layer_thickness_m, layers});
++captured_struct!(crate::direct_runtime::DirectPercolationInputs {
++    soil_water_initial_m,
++    reconcile_legacy_soil_water_from_layers,
++    same_pass_infiltration_m,
++    same_pass_infiltration_lineage,
++    tillage_depth_m,
++    lane_substeps,
++    restrictive_layer_enabled,
++    restrictive_layer_conductivity_m_s,
++    restrictive_layer_thickness_m,
++    layers
++});
+ // Source fields: direct_runtime/01_publication.rs:3
+-captured_struct!(crate::direct_runtime::DirectPublicationFrame {runoff_m, infiltration_m, evapotranspiration_m, drainage_m, lateral_flow_m});
++captured_struct!(crate::direct_runtime::DirectPublicationFrame {
++    runoff_m,
++    infiltration_m,
++    evapotranspiration_m,
++    drainage_m,
++    lateral_flow_m
++});
+ // Source fields: direct_runtime/decomposition.rs:842
+-captured_struct!(crate::direct_runtime::DirectResiduePartitionInputs {standing_residue_kg_m2, flat_residue_offset_kg_m2, buried_residue_kg_m2, cover_fraction, rescov_interrill_weight});
++captured_struct!(crate::direct_runtime::DirectResiduePartitionInputs {
++    standing_residue_kg_m2,
++    flat_residue_offset_kg_m2,
++    buried_residue_kg_m2,
++    cover_fraction,
++    rescov_interrill_weight
++});
+ // Source fields: direct_runtime/runoff_result_types.rs:476
+-captured_struct!(crate::direct_runtime::DirectRunoffPartitionInputs {liquid_input_m, runon_input_m, cumulative_infiltration_m, depression_storage_delta_m, surface_saturation_runoff_m, frost_retained_local_liquid_m, frost_preprojected_local_liquid_m});
++captured_struct!(crate::direct_runtime::DirectRunoffPartitionInputs {
++    liquid_input_m,
++    runon_input_m,
++    cumulative_infiltration_m,
++    depression_storage_delta_m,
++    surface_saturation_runoff_m,
++    frost_retained_local_liquid_m,
++    frost_preprojected_local_liquid_m
++});
+ // Source fields: direct_runtime/runoff_result_types.rs:73
+-captured_struct!(crate::direct_runtime::DirectRunonCarryInputs {surface_runon_handoff_m, subsurface_carry_handoff_m});
++captured_struct!(crate::direct_runtime::DirectRunonCarryInputs {
++    surface_runon_handoff_m,
++    subsurface_carry_handoff_m
++});
+ // Source fields: direct_runtime/runoff_result_types.rs:412
+-captured_struct!(crate::direct_runtime::DirectSaturationAddbackInputs {surface_saturation_runoff_handoff_m});
++captured_struct!(crate::direct_runtime::DirectSaturationAddbackInputs {
++    surface_saturation_runoff_handoff_m
++});
+ // Source fields: direct_runtime/storage.rs:1355
+-captured_struct!(crate::direct_runtime::DirectSnowCouplingInputs {snow_coupling_handoff_m, snow_state_projected, active_snow_coupling, mass_transition_ledgers, hourly_routed_melt_m, sublimation_m, post_winter_rain_m, runtime_swe_after_m, runtime_depth_after_m, runtime_density_after_kg_m3, runtime_settle_day_count_after, coe_boundary_depth_after_m, coe_boundary_density_after_kg_m3, coe_boundary_settle_day_count_after, liquid_holding_capacity_after_m, liquid_water_retained_after_m, liquid_water_released_m, snow_albedo_state_after, snow_layers_after});
++captured_struct!(crate::direct_runtime::DirectSnowCouplingInputs {
++    snow_coupling_handoff_m,
++    snow_state_projected,
++    active_snow_coupling,
++    mass_transition_ledgers,
++    hourly_routed_melt_m,
++    sublimation_m,
++    post_winter_rain_m,
++    runtime_swe_after_m,
++    runtime_depth_after_m,
++    runtime_density_after_kg_m3,
++    runtime_settle_day_count_after,
++    coe_boundary_depth_after_m,
++    coe_boundary_density_after_kg_m3,
++    coe_boundary_settle_day_count_after,
++    liquid_holding_capacity_after_m,
++    liquid_water_retained_after_m,
++    liquid_water_released_m,
++    snow_albedo_state_after,
++    snow_layers_after
++});
+ // Source fields: winter_column.rs:44
+-captured_struct!(crate::winter_column::DirectSnowLayerState {mass_swe_m, thickness_m, density_kg_m3, settle_day_count, temperature_c, liquid_water_m, cold_content_j_m2, refrozen_liquid_m});
++captured_struct!(crate::winter_column::DirectSnowLayerState {
++    mass_swe_m,
++    thickness_m,
++    density_kg_m3,
++    settle_day_count,
++    temperature_c,
++    liquid_water_m,
++    cold_content_j_m2,
++    refrozen_liquid_m
++});
+ // Source fields: hydrology/support_helpers_mod/snow_mass_transition.rs:49
+-captured_struct!(crate::hydrology::DirectSnowLiquidDispositionLedger {incoming_liquid_m, routed_liquid_m, retained_liquid_delta_m, refrozen_liquid_m, liquid_closure_residual_m});
++captured_struct!(crate::hydrology::DirectSnowLiquidDispositionLedger {
++    incoming_liquid_m,
++    routed_liquid_m,
++    retained_liquid_delta_m,
++    refrozen_liquid_m,
++    liquid_closure_residual_m
++});
+ // Source fields: direct_runtime/00_core_frames.rs:172
+-captured_struct!(crate::direct_runtime::DirectSnowRuntimeCarry {runtime_swe_m, runtime_depth_m, runtime_density_kg_m3, runtime_settle_day_count, coe_boundary_depth_m, coe_boundary_density_kg_m3, coe_boundary_settle_day_count, liquid_water_retained_m, snow_albedo_state, layers});
++captured_struct!(crate::direct_runtime::DirectSnowRuntimeCarry {
++    runtime_swe_m,
++    runtime_depth_m,
++    runtime_density_kg_m3,
++    runtime_settle_day_count,
++    coe_boundary_depth_m,
++    coe_boundary_density_kg_m3,
++    coe_boundary_settle_day_count,
++    liquid_water_retained_m,
++    snow_albedo_state,
++    layers
++});
+ // Source fields: hydrology/support_helpers_mod/snow_mass_transition.rs:33
+-captured_struct!(crate::hydrology::DirectSnowSolidToLiquidLedger {raw_signed_melt_m, redistributed_positive_melt_m, snowpack_swe_loss_m, rain_released_m, liquid_handoff_m});
++captured_struct!(crate::hydrology::DirectSnowSolidToLiquidLedger {
++    raw_signed_melt_m,
++    redistributed_positive_melt_m,
++    snowpack_swe_loss_m,
++    rain_released_m,
++    liquid_handoff_m
++});
+ // Source fields: hydrology/support_helpers_mod/snow_mass_transition.rs:65
+-captured_struct!(crate::hydrology::DirectSnowStage3Outcome {enabled, meltwater_temperature_c, sublimation_m});
++captured_struct!(crate::hydrology::DirectSnowStage3Outcome {
++    enabled,
++    meltwater_temperature_c,
++    sublimation_m
++});
+ // Source fields: direct_runtime/normalization.rs:387
+-captured_struct!(crate::direct_runtime::DirectStorageBoundsInputs {storage_initial_m, total_accounted_input_m, closure_tolerance_m});
++captured_struct!(crate::direct_runtime::DirectStorageBoundsInputs {
++    storage_initial_m,
++    total_accounted_input_m,
++    closure_tolerance_m
++});
+ // Source fields: direct_runtime/storage.rs:1093
+-captured_struct!(crate::direct_runtime::DirectStorageInputInputs {precip_input_handoff_m});
++captured_struct!(crate::direct_runtime::DirectStorageInputInputs {
++    precip_input_handoff_m
++});
+ // Source fields: direct_runtime/storage.rs:1602
+-captured_struct!(crate::direct_runtime::DirectStorageReconciliationInputs {storage_initial_m, precip_input_m, snow_coupling_m, frost_liquid_delta_m, runon_input_m, interception_m, evapotranspiration_m, evapotranspiration_storage_return_m, deep_seepage_m, subsurface_loss_m, closure_tolerance_m});
++captured_struct!(crate::direct_runtime::DirectStorageReconciliationInputs {
++    storage_initial_m,
++    precip_input_m,
++    snow_coupling_m,
++    frost_liquid_delta_m,
++    runon_input_m,
++    interception_m,
++    evapotranspiration_m,
++    evapotranspiration_storage_return_m,
++    deep_seepage_m,
++    subsurface_loss_m,
++    closure_tolerance_m
++});
+ // Source fields: direct_runtime/subsurface.rs:898
+-captured_struct!(crate::direct_runtime::DirectSubsurfaceComputeInputs {avg_slope, slope_length_m, lateral_anisotropy_ratio, soil_depth_m, solwpv_mode, mofe_hourly_carry_arrays_enabled, lane_substeps, drainage_capacity_m, drain_enabled, drain_depth_m, drain_spacing_m, drain_diameter_m, layers});
++captured_struct!(crate::direct_runtime::DirectSubsurfaceComputeInputs {
++    avg_slope,
++    slope_length_m,
++    lateral_anisotropy_ratio,
++    soil_depth_m,
++    solwpv_mode,
++    mofe_hourly_carry_arrays_enabled,
++    lane_substeps,
++    drainage_capacity_m,
++    drain_enabled,
++    drain_depth_m,
++    drain_spacing_m,
++    drain_diameter_m,
++    layers
++});
+ // Source fields: direct_runtime/subsurface.rs:651
+-captured_struct!(crate::direct_runtime::DirectSubsurfaceLayerInputs {theta_m, field_capacity_m, upper_limit_m, conductivity_m_s, depth_m, residual_theta, frozen_depth_m, frozen_water_m, porosity, field_capacity_theta, coca, lateral_conductivity_m_s});
++captured_struct!(crate::direct_runtime::DirectSubsurfaceLayerInputs {
++    theta_m,
++    field_capacity_m,
++    upper_limit_m,
++    conductivity_m_s,
++    depth_m,
++    residual_theta,
++    frozen_depth_m,
++    frozen_water_m,
++    porosity,
++    field_capacity_theta,
++    coca,
++    lateral_conductivity_m_s
++});
+ // Source fields: direct_runtime/subsurface.rs:713
+-captured_struct!(crate::direct_runtime::DirectSubsurfaceLayerState {theta_m, field_capacity_m, upper_limit_m, conductivity_m_s, depth_m, residual_theta, frozen_depth_m, frozen_water_m, porosity, field_capacity_theta, coca, lateral_conductivity_m_s});
++captured_struct!(crate::direct_runtime::DirectSubsurfaceLayerState {
++    theta_m,
++    field_capacity_m,
++    upper_limit_m,
++    conductivity_m_s,
++    depth_m,
++    residual_theta,
++    frozen_depth_m,
++    frozen_water_m,
++    porosity,
++    field_capacity_theta,
++    coca,
++    lateral_conductivity_m_s
++});
+ // Source fields: direct_runtime/storage.rs:1227
+-captured_struct!(crate::direct_runtime::DirectSubsurfaceLossInputs {subsurface_loss_handoff_m});
++captured_struct!(crate::direct_runtime::DirectSubsurfaceLossInputs {
++    subsurface_loss_handoff_m
++});
+ // Source fields: direct_runtime/02_state_reports.rs:73
+-captured_struct!(crate::direct_runtime::DirectTransferBuffers {surface_carry_m, surface_hourly_weights, lateral_carry_m, upstream_flow_m, subsurface_input_m});
++captured_struct!(crate::direct_runtime::DirectTransferBuffers {
++    surface_carry_m,
++    surface_hourly_weights,
++    lateral_carry_m,
++    upstream_flow_m,
++    subsurface_input_m
++});
+ // Source fields: direct_runtime/erosion_continuity.rs:161
+-captured_struct!(crate::direct_runtime::DirectWave1ContinuityInputs {enabled, inter_ofe, enrichment, segments, peakro_m_s, runoff_depth_m, qin_m2_s, efflen_m, slplen_m, cntlen_m, rspace_m, width_m, field_width_m, effdrn_s, effdrr_s, kr_s_m, kradjf, shcrit_pa, tcadjf, detinr_kg_s_m2, shrsol_pa, tcend_kg_s_m, ktrato, veleff_m_s, beta, strldn, surface_frozen, theta_suppressed});
++captured_struct!(crate::direct_runtime::DirectWave1ContinuityInputs {
++    enabled,
++    inter_ofe,
++    enrichment,
++    segments,
++    peakro_m_s,
++    runoff_depth_m,
++    qin_m2_s,
++    efflen_m,
++    slplen_m,
++    cntlen_m,
++    rspace_m,
++    width_m,
++    field_width_m,
++    effdrn_s,
++    effdrr_s,
++    kr_s_m,
++    kradjf,
++    shcrit_pa,
++    tcadjf,
++    detinr_kg_s_m2,
++    shrsol_pa,
++    tcend_kg_s_m,
++    ktrato,
++    veleff_m_s,
++    beta,
++    strldn,
++    surface_frozen,
++    theta_suppressed
++});
+ // Source fields: direct_runtime/erosion_seed.rs:78
+-captured_struct!(crate::direct_runtime::DirectWave1OperandSeed {enabled, is_cropland, segments, slplen_m, efflen_m, cntlen_m, rspace_m, field_width_m, avg_slope, slpend, sand, ssasol, classes, veleff_m_s, baselines, kr_s_m, ki, shcrit_pa, hmax_m, flivmx, random_roughness_m, initial_daydis});
++captured_struct!(crate::direct_runtime::DirectWave1OperandSeed {
++    enabled,
++    is_cropland,
++    segments,
++    slplen_m,
++    efflen_m,
++    cntlen_m,
++    rspace_m,
++    field_width_m,
++    avg_slope,
++    slpend,
++    sand,
++    ssasol,
++    classes,
++    veleff_m_s,
++    baselines,
++    kr_s_m,
++    ki,
++    shcrit_pa,
++    hmax_m,
++    flivmx,
++    random_roughness_m,
++    initial_daydis
++});
+ // Source fields: direct_runtime/erosion_continuity.rs:112
+-captured_struct!(crate::direct_runtime::DirectWave1SlopeSegment {xu, xl, a, b});
++captured_struct!(crate::direct_runtime::DirectWave1SlopeSegment { xu, xl, a, b });
+ // Source fields: direct_runtime/runoff_result_types.rs:349
+-captured_struct!(crate::direct_runtime::DirectWb14HyetographInterval {start_s, end_s, intensity_m_s});
++captured_struct!(crate::direct_runtime::DirectWb14HyetographInterval {
++    start_s,
++    end_s,
++    intensity_m_s
++});
+ // Source fields: direct_runtime/runoff_result_types.rs:210
+-captured_struct!(crate::direct_runtime::DirectWb14InfiltrationProducerInputs {hyetograph, hourly_additional_supply_m, effective_conductivity_m_s, matric_potential_m, storage_capacity_m, depression_storage_capacity_m});
++captured_struct!(
++    crate::direct_runtime::DirectWb14InfiltrationProducerInputs {
++        hyetograph,
++        hourly_additional_supply_m,
++        effective_conductivity_m_s,
++        matric_potential_m,
++        storage_capacity_m,
++        depression_storage_capacity_m
++    }
++);
+ // Source fields: hydrology/03_kernel_support_00_support_helpers.rs:1298
+-captured_struct!(crate::hydrology::DirectWinterFrostComputeInputs {controls, thermal, theta_residual, theta_field_capacity, soil_conductivity_m_s, layer_bulk_density_kg_m3, hourly});
++captured_struct!(crate::hydrology::DirectWinterFrostComputeInputs {
++    controls,
++    thermal,
++    theta_residual,
++    theta_field_capacity,
++    soil_conductivity_m_s,
++    layer_bulk_density_kg_m3,
++    hourly
++});
+ // Source fields: hydrology/03_kernel_support_00_support_helpers.rs:1368
+-captured_struct!(crate::hydrology::DirectWinterFrostPartitionOutcome {active_frost_coupling, dthaw_after_m, nft_after, infcap_frz_m_s, soil_water_after_frwatc_m, frwatc_soil_water_before_m, frwatc_soil_water_after_m, frwatc_frozen_water_before_m, frwatc_frozen_water_after_m, frwatc_freeze_debit_m, frwatc_thaw_credit_m, frwatc_net_liquid_delta_m, frozen_water_after_m, frost_depth_after_m, thdp_after_m, tfrdp_after_m, tthawd_after_m, fgthwd_flag_after, total_fine_layer_count, conductivity_tilled_w_m_k, conductivity_untilled_w_m_k, conductivity_residue_w_m_k, shadow_total_water_before_m, shadow_total_water_after_m, shadow_wb_delta_m, shadow_frwatc_residual_m, watpdg_m, watbtm_m, layer_projection, layer_shadow_projection, fine_layer_projection});
++captured_struct!(crate::hydrology::DirectWinterFrostPartitionOutcome {
++    active_frost_coupling,
++    dthaw_after_m,
++    nft_after,
++    infcap_frz_m_s,
++    soil_water_after_frwatc_m,
++    frwatc_soil_water_before_m,
++    frwatc_soil_water_after_m,
++    frwatc_frozen_water_before_m,
++    frwatc_frozen_water_after_m,
++    frwatc_freeze_debit_m,
++    frwatc_thaw_credit_m,
++    frwatc_net_liquid_delta_m,
++    frozen_water_after_m,
++    frost_depth_after_m,
++    thdp_after_m,
++    tfrdp_after_m,
++    tthawd_after_m,
++    fgthwd_flag_after,
++    total_fine_layer_count,
++    conductivity_tilled_w_m_k,
++    conductivity_untilled_w_m_k,
++    conductivity_residue_w_m_k,
++    shadow_total_water_before_m,
++    shadow_total_water_after_m,
++    shadow_wb_delta_m,
++    shadow_frwatc_residual_m,
++    watpdg_m,
++    watbtm_m,
++    layer_projection,
++    layer_shadow_projection,
++    fine_layer_projection
++});
+ // Source fields: direct_runtime/erosion_adjustments.rs:72
+-captured_struct!(crate::direct_runtime::ErosionConsolidationBaselines {kicrat, krcrat, tccrat, bconsd});
++captured_struct!(crate::direct_runtime::ErosionConsolidationBaselines {
++    kicrat,
++    krcrat,
++    tccrat,
++    bconsd
++});
+ // Source fields: direct_runtime/erosion_operands.rs:144
+-captured_struct!(crate::direct_runtime::ErosionParticleClass {dia_m, spg, frac, fall_m_s, frcly, frslt, frsnd, frorg});
++captured_struct!(crate::direct_runtime::ErosionParticleClass {
++    dia_m,
++    spg,
++    frac,
++    fall_m_s,
++    frcly,
++    frslt,
++    frsnd,
++    frorg
++});
+ // Source fields: hydrology/03_kernel_support_00_support_helpers.rs:1186
+-captured_struct!(crate::hydrology::FrostSeasonalTemperatureCurve {annual_mean_c, amplitude_c, phase_shift_days});
++captured_struct!(crate::hydrology::FrostSeasonalTemperatureCurve {
++    annual_mean_c,
++    amplitude_c,
++    phase_shift_days
++});
+ // Source fields: hydrology/08_snow_albedo.rs:68
+-captured_enum!(crate::hydrology::SnowAlbedoModel {Brock2000TemperatureAgeV1});
++captured_enum!(crate::hydrology::SnowAlbedoModel {
++    Brock2000TemperatureAgeV1
++});
+ // Source fields: hydrology/08_snow_albedo.rs:89
+-captured_struct!(crate::hydrology::SnowAlbedoState {model, albedo, accumulated_positive_temperature_c_day});
++captured_struct!(crate::hydrology::SnowAlbedoState {
++    model,
++    albedo,
++    accumulated_positive_temperature_c_day
++});
+ // Source fields: direct_runtime/erosion_enrichment.rs:45
+-captured_struct!(crate::direct_runtime::Wave1EnrichmentInputs {classes, tcf1, fidel, ssasol, inflow_fractions});
++captured_struct!(crate::direct_runtime::Wave1EnrichmentInputs {
++    classes,
++    tcf1,
++    fidel,
++    ssasol,
++    inflow_fractions
++});
+ // Source fields: direct_runtime/erosion_continuity.rs:134
+-captured_struct!(crate::direct_runtime::Wave1InterOfeContinuity {shrspv_pa, tcprev_kg_s_m, ktrprv, prior_shear_last, prior_transport_last});
++captured_struct!(crate::direct_runtime::Wave1InterOfeContinuity {
++    shrspv_pa,
++    tcprev_kg_s_m,
++    ktrprv,
++    prior_shear_last,
++    prior_transport_last
++});
+ 
+ fn lane(value: &Value) -> Result<crate::DirectLaneConstructorInputs, String> {
+     let water: [f64; 6] = field(value, "water")?;
+@@ -243,11 +902,18 @@
+         runoff_publication_q_scale: field(value, "runoff_publication_q_scale")?,
+         runoff_publication_qofe_scale: field(value, "runoff_publication_qofe_scale")?,
+         runoff_publication_efflen_m: field(value, "runoff_publication_efflen_m")?,
+-        runoff_publication_cumulative_length_m: field(value, "runoff_publication_cumulative_length_m")?,
++        runoff_publication_cumulative_length_m: field(
++            value,
++            "runoff_publication_cumulative_length_m",
++        )?,
+         runoff_publication_ofe_length_m: field(value, "runoff_publication_ofe_length_m")?,
+         water: crate::DirectWaterState {
+-            soil_water_m: water[0], infiltration_m: water[1], runoff_m: water[2],
+-            evapotranspiration_m: water[3], drainage_m: water[4], lateral_flow_m: water[5],
++            soil_water_m: water[0],
++            infiltration_m: water[1],
++            runoff_m: water[2],
++            evapotranspiration_m: water[3],
++            drainage_m: water[4],
++            lateral_flow_m: water[5],
+         },
+         transfer: field(value, "transfer")?,
+         publication: field(value, "publication")?,
+@@ -256,7 +922,8 @@
+         plant_growth_state: field(value, "plant_growth_state")?,
+         plant_water_stress: field(value, "plant_water_stress")?,
+         winter_column: Box::new(crate::DirectWinterColumnState {
+-            snow: winter_snow.into(), frost: winter_frost.into(),
++            snow: winter_snow.into(),
++            frost: winter_frost.into(),
+         }),
+         snow_runtime_carry: field(value, "snow_runtime_carry")?,
+         frost_runtime_carry: field(value, "frost_runtime_carry")?,
+@@ -265,20 +932,38 @@
+ }
+ 
+ pub(super) fn restore(value: &Value) -> Result<crate::DirectRunConstructorInputs, String> {
+-    let identity = value.get("identity").ok_or("constructor identity missing")?;
++    let identity = value
++        .get("identity")
++        .ok_or("constructor identity missing")?;
+     let identity = crate::DirectRunIdentity::new(
+-        field(identity, "run_id")?, field(identity, "hillslope_id")?,
+-        field(identity, "lane_count")?, field(identity, "day_count")?,
+-    ).map_err(|error| error.to_string())?;
++        field(identity, "run_id")?,
++        field(identity, "hillslope_id")?,
++        field(identity, "lane_count")?,
++        field(identity, "day_count")?,
++    )
++    .map_err(|error| error.to_string())?;
+     let phase_plan = crate::DirectPhasePlan::default();
+     let captured_ranks: Vec<usize> = field(value, "phase_plan_ranks")?;
+-    let canonical_ranks = phase_plan.phases().iter().map(|phase| phase.rank()).collect::<Vec<_>>();
++    let canonical_ranks = phase_plan
++        .phases()
++        .iter()
++        .map(|phase| phase.rank())
++        .collect::<Vec<_>>();
+     if captured_ranks != canonical_ranks {
+         return Err("captured constructor phase plan differs from canonical ordered plan".into());
+     }
+-    let lanes = value.get("lanes").and_then(Value::as_array)
+-        .ok_or("constructor lanes missing")?.iter().map(lane).collect::<Result<Vec<_>, _>>()?;
+-    let restored = crate::DirectRunConstructorInputs { identity, phase_plan, lanes };
++    let lanes = value
++        .get("lanes")
++        .and_then(Value::as_array)
++        .ok_or("constructor lanes missing")?
++        .iter()
++        .map(lane)
++        .collect::<Result<Vec<_>, _>>()?;
++    let restored = crate::DirectRunConstructorInputs {
++        identity,
++        lanes,
++        phase_plan,
++    };
+     if super::capture_direct_run_constructor_inputs(&restored) != *value {
+         return Err("constructor inverse canonical recapture mismatch".into());
+     }

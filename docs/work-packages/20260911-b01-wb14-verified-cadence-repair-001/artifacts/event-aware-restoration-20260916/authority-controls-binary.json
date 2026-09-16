@@ -1,0 +1,5 @@
+{
+  "build": "authority-controls-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/authority-controls.frozen",
+  "sha256": "fcf4a7ea1624bebe66d58f5aa5c5a4fbb129ec80e86452201482a15128507590"
+}

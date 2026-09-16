@@ -1,0 +1,147 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openwepp-reader-quality-check-5dce618b848e
+  scratch: /tmp/openwepp-roger-openwepp-reader-quality-check-5dce618b848e
+  cache:   /workdir/.cache/openwepp
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-reader-quality-check/crates/openwepp-hillslope-orchestrator)
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3486:5
+     |
+3486 |     archived_receipt_prefix
+     |     ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3489:8
+     |
+3489 |     if archived_receipt_prefix.run_identity != context.run_identity
+     |        ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3490:12
+     |
+3490 |         || archived_receipt_prefix.topology_identity != context.topology_identity
+     |            ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3491:12
+     |
+3491 |         || archived_receipt_prefix.accepted_until_ns != committed_clock.accepted_until().get()
+     |            ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3492:12
+     |
+3492 |         || archived_receipt_prefix.next_parent_sequence != archived_next_parent_sequence
+     |            ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_next_parent_sequence` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3492:60
+     |
+3492 |         || archived_receipt_prefix.next_parent_sequence != archived_next_parent_sequence
+     |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3493:12
+     |
+3493 |         || archived_receipt_prefix.ending_owner_set_sha256 != Some(committed_owner_set)
+     |            ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3494:52
+     |
+3494 |         || archive_manifest.committed_day_count != archived_receipt_prefix.archived_day_count
+     |                                                    ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3496:16
+     |
+3496 |             != archived_receipt_prefix.ordered_day_chain_sha256
+     |                ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3498:16
+     |
+3498 |             != archived_receipt_prefix.archive_content_root_sha256
+     |                ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `archived_receipt_prefix` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3502:9
+     |
+3502 |     Ok((archived_receipt_prefix, authenticated_archived_days))
+     |         ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0599]: no method named `restart_authority_install_hydrology_continuation_inputs_v3` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1431:18
+     |
+1430 | /             shadow
+1431 | |                 .restart_authority_install_hydrology_continuation_inputs_v3(&continuation_inputs)
+     | |_________________-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:448:1
+     |
+ 448 |   pub struct DirectV10RealConsumerShadow {
+     |   -------------------------------------- method `restart_authority_install_hydrology_continuation_inputs_v3` not found for this struct
+     |
+help: there is a method `restart_authority_install_native_routing` with a similar name, but with different arguments
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:888:5
+     |
+ 888 | /     pub fn restart_authority_install_native_routing(
+ 889 | |         &mut self,
+ 890 | |         config: Option<Box<crate::DirectLanedActiveConfig>>,
+ 891 | |         summary: Option<Box<crate::DirectLanedActiveRunSummary>>,
+ 892 | |         expected: &Option<Box<crate::DirectLanedActiveConfig>>,
+ 893 | |     ) -> Result<(), DirectV10RealConsumerError> {
+     | |_______________________________________________^
+
+error[E0599]: no method named `restart_authority_complete_commit_and_stage_archive_day_v3` found for struct `snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1570:22
+     |
+1569 | /                 attachment
+1570 | |                     .restart_authority_complete_commit_and_stage_archive_day_v3(&publication_inputs)
+     | |                     -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment`
+     | |_____________________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2915:1
+     |
+2915 |   pub struct DirectSnowStage3V11ShadowAttachment {
+     |   ---------------------------------------------- method `restart_authority_complete_commit_and_stage_archive_day_v3` not found for this struct
+
+error[E0277]: the trait bound `!: serde::de::DeserializeOwned` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3763:41
+     |
+3763 |       let archived_next_parent_sequence = serde_json::from_value(
+     |  _________________________________________^
+3764 | |         day.get("committed_next_parent_sequence")
+3765 | |             .ok_or("captured next parent sequence missing")?
+3766 | |             .clone(),
+3767 | |     )
+     | |_____^ the trait `for<'de> Deserialize<'de>` is not implemented for `!`
+     |
+     = help: the following other types implement trait `Deserialize<'de>`:
+               &'a Path
+               &'a [u8]
+               &'a str
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+             and 675 others
+     = note: this error might have been caused by changes to Rust's type-inference algorithm (see issue #148922 <https://github.com/rust-lang/rust/issues/148922> for more information)
+     = help: you might have intended to use the type `()` here instead
+     = note: required for `!` to implement `DeserializeOwned`
+note: required by a bound in `from_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:1039:8
+     |
+1037 | pub fn from_value<T>(value: Value) -> Result<T, Error>
+     |        ---------- required by a bound in this function
+1038 | where
+1039 |     T: DeserializeOwned,
+     |        ^^^^^^^^^^^^^^^^ required by this bound in `from_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-reader-quality-target/debug/deps/openwepp_hillslope_orchestrator-1a93e8d3f1668b2f.long-type-12670723780940523047.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+Some errors have detailed explanations: E0277, E0425, E0599.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 14 previous errors

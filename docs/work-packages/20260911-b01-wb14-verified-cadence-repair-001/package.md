@@ -1,17 +1,309 @@
 # B01 WB14 verified parent cadence repair
 
-**Status: INCOMPLETE / HOLD.** Acquisition remains COMPLETE / PASS. Native diagnostic
-prefix, provisional and prepared-provider components pass with zero recorded
-physical-work counters. All four archives canonically refuse terminal-event
-publication chronology. Full native consumer restoration is unimplemented/unrun;
-production remains inadmissible, original E008/regression FAIL, cadence HOLD.
-No new model execution occurred. Distinct QA remains unavailable and unmet.
+**Status: INCOMPLETE / HOLD; authorized file-only negative diagnostic complete.**
+Acquisition remains COMPLETE / PASS. All 11 terminal focused tests passed,
+including the assertion of the original native authority refusal. The four
+archives authenticate; position/GSI and accepted-soil authority still refuse.
+Physical-work and publication counters are zero. Independent terminal reviews
+and the detailed limits are recorded below. Production, scientific qualification,
+restart, conservation and cadence remain HOLD; historical FAILs remain preserved.
 
 Authentic capture, witness and corrected-recorder acquisition allowances remain
 exhausted (1/1 each). Bounded native diagnostics have executed under the adopted
 amendment below; they do not release a physical successor.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Event-aware restoration terminal disposition — 2026-09-16
+
+**Bounded negative diagnostic complete; native restoration and the overall package remain HOLD.**
+The exact terminal-source fresh-process experiment consumed the actual
+457,913,228-byte native member and all four canonical archives. It authenticated
+the archives in recorded manifest order, bound first-positive parent beginnings,
+checked roots/counts and the day-4 prefix, restored constructor operands, and
+validated the current/deferred/provisional representations. It preserved the
+independent position mismatch (derived outer 214, captured native 0) and provider
+GSI mismatch (85ca5300… versus e1ca5d7e…). The canonical constructor then refused:
+
+`reader position/GSI joins refused (outer=214, captured=0, gsi_matches=false); canonical native constructor refusal: V9 real-consumer identity failure: native soil proof accepted support or exact bootstrap`
+
+The immutable current accepted soil support ends at 385200000000000 ns, while
+the clock requires 385920000000000 ns. The distinct committed bootstrap ends at
+345600000000000 ns. The later deferred candidate is explicitly unpublished and
+cannot replace the accepted resident. Independent correctness traced the exact
+canonical predicate and earlier joins; this is an attributed authority refusal,
+not a missing decoder or permission to change state. The six-consumer-owner
+projection and later constructor branches remain **NOT REACHED**. No authentic
+successful native restoration or restart/science qualification is claimed.
+
+[Terminal focused results](artifacts/event-aware-restoration-20260916/terminal-focused-results.json)
+bind 11 separately executed 1/1 tests to the same source and frozen binary.
+They cover constructor roundtrip and seed geometry/phase-plan/day-input pins;
+phase/current/deferred transaction, predecessor, credit, exponent and custody
+poisons; provider position/GSI; manifest order/omission/duplication/root and
+namespace controls; archive first-positive beginning; direct archive restoration;
+the exact composed native refusal; and three pure chronology/serialization
+compatibility tests. The composed negative selector passing means its exact
+`Err` was observed. The original success-asserting composed attempt remains
+[FAIL](artifacts/event-aware-restoration-20260916/composed-fourth.json).
+
+The direct archive test exercises no terminal event, one terminal event and
+multiple same-tick terminal events. It rejects omitted, duplicated, reordered,
+wrong-tick, foreign-parent, wrong-beginning and wrong-final-owner wires, including
+independently resealed semantic substitutions, plus schema/count/noncanonical
+bytes. The canonical full-history replay and cached/full-scan agreement remain
+the endpoint authority; only the contradictory last-positive-support equality
+was removed. The source-bound
+[prospective red/green pair](artifacts/event-aware-restoration-20260916/prospective-red-green-pair.json)
+records the original predicate failing before its removal. Earlier missing-red-
+source and in-flight custody gaps remain historical limitations, not repaired
+retroactively by the later pair.
+
+The terminal archive and composed attempts carry their own observable audit
+output. All measured solver/mechanism work, direct compute/state mutation,
+day commit, publication capture, and native litter/surface/WB14 physical calls
+are zero. The native refusal makes one ordinary run-frame construction.
+Zero-work evidence is limited to these call paths and executions; it is not
+conservation evidence or evidence about historical physical runs. Commands used
+fresh processes, 600-second bounds for large decodes, 16-GiB address space,
+1-GiB output limits, and unchanged source/binary/pinned inputs before and after.
+No new model, collector, successor, multi-day physics, restart comparison or
+performance campaign ran. Each historical physical allowance remains 1/1 exhausted.
+
+| Review item | Terminal disposition |
+| --- | --- |
+| A-001 connected native inverse/authority | Implemented and exercised through the actual canonical soil refusal; position/GSI defects preserved. Native acceptance remains HOLD. |
+| A-002 event-aware archive admission | Focused direct positives, semantic negatives and source-bound red/green verified. Critical campaign correctness remains BLOCKED/NOT RUN; no production adoption. |
+| A-003 beginning/ordered manifest/root joins | Verified on all four immutable archives and discriminating beginning/order/namespace controls. |
+| A-004 fresh-process custody and zero work | Verified for the exercised archive/component/refusal paths; one allowed construction distinguished from physics. |
+| A-005 semantic substitutions | Required reachable representation/authority controls exercised; authentic native six-owner projection and its downstream poison remain BLOCKED by the earlier canonical refusal. |
+
+Distinct independent
+[correctness](artifacts/event-aware-restoration-20260916/correctness-review.md) and
+[QA](artifacts/event-aware-restoration-20260916/qa-review.md) reviews retain their
+earlier findings and same-reviewer fix verification. Their terminal dispositions
+support reporting this bounded negative experiment, not admitting production.
+Private copies of hydrology operand-digest and deferred-trial representation
+logic have source provenance and actual-record parity/poison evidence; they
+remain maintenance debt requiring synchronization with the canonical producers.
+The later frozen-configuration branch is not certified by the earlier refusal.
+
+Terminal quality is separately bounded. The owning orchestrator and runner
+complete-target matched diagnostic collections finished on the exact source:
+orchestrator 2,829 candidate messages, 2,827 matched plus two independently
+[adjudicated inherited accessor presentation variants](artifacts/event-aware-restoration-20260916/lint-equivalence-review.md);
+runner 202/202 matched. Affected-file rustfmt and the feature-enabled test build
+pass. Default-feature compilation remains **FAIL** with exactly the same
+61 error-message instances as the unchanged acquisition source; all introduced
+feature-scope errors were removed and independently checked in the
+[terminal comparison](artifacts/event-aware-restoration-20260916/terminal-default-feature-final-comparison.json).
+Capped matched lint is diagnostic quality evidence, **not strict Clippy PASS**.
+The historical strict Clippy FAIL, original regression/E008 FAIL, conservation,
+restart, cadence and scientific HOLDs remain. The Critical immediate full
+correctness campaign is BLOCKED/NOT RUN under the explicit file-only allowance;
+no retrospective waiver or campaign acceptance is asserted.
+
+[Terminal reconciliation](artifacts/event-aware-restoration-20260916/terminal-reconciliation.json)
+records source tree
+`7c04f52e6cae6327202591b37f0c4e7a5fff3ae34a103255a35c49a3dbdf37ab`,
+cumulative patch
+`6f9f1cf01547c96baf229f5d5ac1e7cbec6124f6042053f53b39880d982158b4`,
+and incremental-from-acquisition patch
+`548e2524061d539223576836ed39cff18acc45b43168736db22086ce8ea775a8`.
+Recovery is unchanged acquisition Q plus `reader-incremental.patch`; do not
+apply the cumulative patch atop Q. Exact reconstruction passed for all seven
+changed Rust files. The private inverse/reader, test/counter/refactor changes
+and narrow archive endpoint correction remain in detached R only; this
+publication adopts no Rust into main and changes no schema, public API,
+dependency, physical law, solver or canonical soil validator.
+
+[Frozen terminal binary](artifacts/event-aware-restoration-20260916/terminal-focused-binary.json):
+`47fd72c2b2c9acb422021659d499be3ba0b29020d94468f084a9846eb89cb631`.
+Acquisition Q remains `ecc48d52…`; all 49 export members (1,796,372,827 bytes),
+source observation `1555efe1…`, summary `cf5f6612…`, original seed
+`d1c46726…`, supplemental custody `2e9e27ee…`, and prior frozen component
+`9741b397…` remain unchanged. Full identities and local paths are in the linked
+receipts. Large corpus/source trees and binaries remain local custody;
+remote verification covers only published package/evidence/patch bytes.
+
+[Accounting](artifacts/event-aware-restoration-20260916/budget-current.json)
+charges all wall time from 15:12 UTC plus the unchanged 51,146.178324-second
+carry, including its unreclaimed prior reservation, against the fixed
+65,546.178324-second ceiling and 19:12 UTC deadline. There are no wait deductions.
+The [failure inventory](artifacts/event-aware-restoration-20260916/new-failure-receipts.json)
+retains a conservative floor of at least 108 failures, expected red separately identified, failed
+same-process policy test, failed default checks, and temporary writer failures.
+Early command/source uncertainty remains explicitly unresolved. Publication and
+return time continue accruing; the final custody supplement records them.
+
+The next unresolved step is authority/admission work on the captured native
+position/GSI/accepted-soil state and the blocked qualification gates. It cannot
+be repaired by installing a captured scalar, substituting an unpublished
+candidate, or silently releasing another physical run under this allowance.
+
+
+## Event-aware archive and composed native restoration — execution history
+
+At17:27 UTC, [composed-fourth](artifacts/event-aware-restoration-20260916/composed-fourth.json)
+completed in217.711731s, process FAIL101, with source/input/binary identities unchanged.
+All four canonical archives, ordered manifest/root/prefix and parent-first-positive
+beginning joins passed. The original457,913,228-byte native member was consumed.
+Position214 versus captured0 and provider GSI85ca5300… versus captured e1ca5d7e…
+were observed separately without installation or normalization. Phase/current snow,
+parcel custody, 12-step deferred credit/state/transaction continuity and provisional
+checks passed, then the actual native constructor refused
+`native soil proof accepted support or exact bootstrap`.
+Independent correctness inspected immutable operands and canonical precedence:
+current accepted soil ends385200000000000ns while clock accepted-until is
+385920000000000ns. The committed bootstrap ends345600000000000ns; the later
+candidate is unpublished, not an installable accepted resident. Substitution would
+be invalid. This is an attributed canonical refusal, not missing inverse code.
+Independent QA verified bounded command custody and post-unwind counters:
+one ordinary run-frame construction; zero solver work, direct compute/mutation,
+commit, publication and native litter/surface/WB14 physical calls.
+
+Root continues in-scope controls and quality under the same deadline. Two writer
+quality passes supplied partial helper extraction; root owns the remaining source
+and integrates discriminating archive beginning/order/namespace, provider scalar,
+immutable lane geometry and deferred representation poisons. Native six-owner
+projection remains downstream of the real canonical refusal and cannot receive a
+successful authentic exercise without excluded acceptance/state changes. No new
+physical run or canonical soil correction is authorized.
+
+
+At17:12 UTC, the second composed attempt authenticated all four archives in
+recorded manifest order and joined the day-start prefix, decoded the actual
+457,913,228-byte native member, then refused at the reader accepted-position
+join: independently derived outer214 versus captured native0 (native next-day4).
+This preserves the known nested mismatch; no scalar was normalized. The refusal
+preceded canonical native construction and is not described as a constructor
+refusal. All mechanism/direct/native-physics counters remained zero. Independent
+correctness confirmed these operands and the need to preserve both namespaces.
+The private diagnostic now aggregates independent position and original-object
+constructor validation without allowing success if either fails. It no longer
+assigns the captured scheduler scalar after construction. Current phase/deferred
+checks passed a component test; strengthened 12-step state/transaction continuity
+and semantic controls are compiling. A-003 now projects the validated first
+positive publication support to join parent beginnings while retaining day0's
+actual tick-zero event. The new-failure receipt inventory remains a lower bound;
+all time from15:12 counts, with19:12 hard deadline.
+
+
+At16:50 UTC root's field-complete private inverse has compiled and passed the
+actual small-member capture/inverse roundtrip (dto-roundtrip, zero physical-work
+and publication counters). Independent QA verified its source/build/binary/input
+custody for that narrow claim. The first inverse check failed on one missing
+tuple Decode implementation, corrected before the passing build. A new private
+member composition module is compiling/running under the same recorder: ordered
+canonical archive manifest, seed provider configuration and hydrology day-input
+digests, actual native member, provider/position/provisional joins and canonical
+native constructor. Initial composed build failed on a nonexistent vegetation
+constructor, corrected by restoring captured V11 configuration and validating its
+imported V10 configuration against seed. Phase-current/deferred joins and final
+semantic controls remain in progress. No composed acceptance is claimed.
+
+
+Owner execution of `/tmp/openwepp_b01_wb14_event_aware_restoration_authorization.md`
+adopts [the authorization](artifacts/event-aware-restoration-20260916/adopted-authorization.md)
+for the same CURRENT-CONTEXT-CAPTURE checkpoint. Work is active; historical
+outcomes below remain unchanged. Actual starting reader tree/patch verified as
+711a4300… / d38956e1… against the retained acquisition recipe, without reapplying
+any patch. No branch switch or candidate Rust adoption is authorized.
+
+Carry 51,146.178324 charged seconds, including the prior 90-second reservation;
+fixed ceiling 65,546.178324 seconds. Conservative session start 15:12:00 UTC,
+hard deadline 19:12:00 UTC, no wait deductions. At least 88 historical failures;
+no failure-count stop. All three physical acquisition/witness allowances remain
+exhausted at 1/1. Only file diagnostics, bounded local compilation/tests/quality,
+semantic controls and evidence publication are permitted.
+
+Intent: one writer completes the private member-backed native inverse and joins,
+archive beginnings and ordered roots, composed file entrypoint and counter/poison
+coverage. Narrowly correct the contradictory last-support endpoint guard after
+contract-derived failing tests, retaining full validated event-history replay.
+Other validators, physics, cadence, schemas and APIs remain fixed. Preserve the
+frozen component binary and every prior failure. Format affected files only.
+
+Selected validation: before/after event endpoint controls (zero/one/multiple
+terminal events and specified semantic negatives), consequential chronology,
+restart/serialization/error-precedence and affected-consumer tests; fresh-process
+immutable corpus diagnostics under declared resource bounds; independent seed,
+position, phase, owner and ordered archive joins; zero physical-work and publication
+counters on success/refusal; complete-target matched diagnostic lint and scoped
+formatting. The changed archive acceptance is consequential state/restart work;
+full correctness requirements are not waived by diagnostic naming. Exact affected
+coverage and any allowance conflict will be recorded before disposition. Distinct
+correctness and QA review remain required. No automatic strict Clippy PASS,
+production admission or scientific/cadence closure follows.
+
+Independent correctness replacement `/root/event_correctness` confirms the
+endpoint correction affects Critical chronology/restart acceptance under testing
+strategy §8. Full campaign-strength correctness is **BLOCKED / NOT RUN** under
+the owner's focused file-only run allowance; strict Clippy remains historical
+FAIL. Owner-authorized matched-lint adjudication is diagnostic quality evidence,
+not a waiver of Critical acceptance. Useful authorized development continues.
+Prior `/root/restoration_correctness` was unavailable (`live agent path not found`).
+Distinct QA has yet to review the completed cut. Initial continuity independently
+matched all49 members (1,796,372,827 bytes), acquisition tree and frozen9741… binary.
+
+At15:54 UTC the initial correctness requirements packet is complete (Static,
+no final approval). A-001–A-005 remain open pending changed-source evidence.
+Distinct independent QA `/root/event_qa` is now available and assigned custody,
+resource, semantic-control, counter and complete-target quality review. Session
+resume did not reset the ledger; all elapsed time from15:12 remains charged.
+
+Execution correction at15:56 UTC: the writer's initial archive `cargo test`
+launch is **INVALID**, because source changed during build and parent-observed
+AS/file limits were unlimited during decoding. It supplies no acceptable red or
+archive verdict. Parent directed stable-source `--no-run` compilation followed by
+frozen, prospectively bounded binary execution; invalid logs remain evidence.
+This is a tooling/protocol failure, not scientific refusal. Continue only with
+that corrected launch protocol and contract-derived red/green controls.
+
+A-002 provisional evidence at16:08 UTC: direct restorer EXPECTED_RED exit101
+reached `Identity("archived publication day chronology")`; after the narrow
+endpoint deletion, its direct test PASS1/1 (39.15s, peak RSS927,408KiB). The
+red source was not prospectively saved before the edit; reconstructed red source
+is a custody limitation, and complete direct control coverage remains pending.
+Parent preserved green tree40ad408…/patch6f81b1… and all three early binaries
+in durable experiment storage. No A-002 closure is claimed. Future commands use
+`run_recorded.py` to record source/input/argv/resource identity before execution;
+its `/usr/bin/true` smoke passed and makes no scientific/test claim.
+
+Independent small-member scalar reconstruction found the four archive entries
+in recorded order have adjacent owner/content-root/day-root joins. See
+[independent operands](artifacts/event-aware-restoration-20260916/independent-archive-entry-joins.json).
+This does not establish canonical receipt/root validity or archive admission.
+
+The missing runner-private seed adapter is in-scope private inverse work under
+the adopted authorization. Astra directed implementation using immutable seed
+operands and existing canonical constructors, without public API/dependency/schema
+changes. No unavailable-authority or canonical-refusal claim follows from a
+missing convenience decoder. Full native composition remains pending.
+
+At16:17:49 UTC the corrected immutable archive component passed all four days
+in217.668s, exit0. [Recorded execution](artifacts/event-aware-restoration-20260916/a003-ordered-archives.json)
+binds tree65467f…/patchd66490… and binarybbf48d…, unchanged source/binary/49members/
+seed/summary. Its stdout reports every existing solver, direct-runtime and native
+litter/surface/WB14 physical-work counter zero, and zero publication. Despite the
+attempt label, **A-003 remains OPEN**: the existing test authenticates individual
+days then sorts results; it does not yet exercise the complete ordered canonical
+manifest or newly required beginning-owner joins. No component pass admits
+production or closes native restoration.
+
+Read-only extraction `/root/constructor_inverse_map` found the captured native
+hydrology constructor representation field-complete (including recursive day
+inputs), with explicit phase-rank and winter-carry reconstruction constraints.
+No existing full inverse was found; private DTO implementation remains authorized
+work. This finding replaces the writer's earlier mistaken lossy-projection concern.
+
+At16:25 UTC Astra reassigned sole detached source ownership from
+`/root/event_native_writer` (paused after source-stable no-run build PASS) to
+`/root/native_dto_writer` for the complete private constructor DTO inverse.
+Repeated missing-adapter scope investigations were not advancing the authorized
+implementation. The prior writer now supplies read-only provider/position/phase
+integration analysis; no concurrent source writers are permitted. This internal
+reassignment does not reset any budget, failure or run allowance.
 
 ## Native context restoration — bounded diagnostic disposition, 2026-09-16
 

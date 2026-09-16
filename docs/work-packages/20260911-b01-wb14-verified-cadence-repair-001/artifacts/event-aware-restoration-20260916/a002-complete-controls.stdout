@@ -1,0 +1,18 @@
+
+running 1 test
+test v9_real_consumer_shadow::accepted_publication_chronology_tests::archived_restorer_uses_replayed_terminal_event_tail_and_rejects_wire_poisons ... archive refusal: accepted publication incremental event chronology
+archive refusal: accepted publication incremental restore chronology
+archive refusal: accepted publication incremental event seal
+archive refusal: accepted publication incremental event seal
+archive refusal: accepted publication incremental restore chronology
+archive refusal: accepted publication incremental event chronology
+archive refusal: accepted publication incremental event chronology
+archive refusal: accepted publication incremental owner handoff
+archive refusal: accepted publication incremental restore chronology
+archive refusal: archived publication day chronology
+archive refusal: archived publication day wire
+archive refusal: archived publication day wire
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1486 filtered out; finished in 120.36s
+

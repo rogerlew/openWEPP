@@ -1,0 +1,23 @@
+	Command being timed: "bash /workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh /workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916 /tmp/openwepp-b01-wb14-final-build clippy --manifest-path /workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/Cargo.toml -p openwepp-runner --all-targets --locked --features openwepp-runner/test-fixture-authority,openwepp-hillslope-orchestrator/persisted-restart-v1,openwepp-hillslope-orchestrator/restart-authority-evidence --message-format=json -vv -- --no-deps -D warnings --cap-lints warn"
+	User time (seconds): 82.25
+	System time (seconds): 7.57
+	Percent of CPU this job got: 247%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:36.29
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1681808
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 126
+	Minor (reclaiming a frame) page faults: 3106713
+	Voluntary context switches: 11218
+	Involuntary context switches: 4396
+	Swaps: 0
+	File system inputs: 51368
+	File system outputs: 1231904
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

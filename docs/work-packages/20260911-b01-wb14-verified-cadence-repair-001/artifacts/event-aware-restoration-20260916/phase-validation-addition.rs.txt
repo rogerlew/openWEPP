@@ -1,0 +1,122 @@
+
+fn validate_current_phase(target: &Value, clock: &CoupledClockStateV1, position: u128) -> Result<(), String> {
+    let phase = required(target, "phase_diagnostics")?;
+    let current: BTreeMap<u32, crate::DirectSnowStage3PersistentState> = decode(required(phase, "current_stage3")?)?;
+    if current.is_empty() || current.values().any(|state| u128::from(state.next_interval_index) != position) {
+        return Err("current Stage3 accepted position".into());
+    }
+    let material: Option<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1> = decode(required(phase, "current_snow_enthalpy_material_owner")?)?;
+    if let Some(owner) = material {
+        owner.validate().map_err(|error| error.to_string())?;
+        if owner.base_material_owner() != &current { return Err("current snow material/base state".into()); }
+    }
+    #[derive(Serialize)]
+    struct SnowProjection<'a> { schema: &'static str, lanes: Vec<(&'a u32, &'a crate::DirectSnowStage3PersistentState)> }
+    let ending_bytes: Vec<u8> = decode(required(phase, "ending_snow_owner_canonical_bytes")?)?;
+    let projected = serde_json::to_vec(&SnowProjection { schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V1", lanes: current.iter().collect() }).map_err(|error| error.to_string())?;
+    if projected != ending_bytes { return Err("current Stage3 ending snow projection".into()); }
+    let parcels: BTreeMap<openwepp_coupled_time::Digest32, crate::DirectSnowStage3V11TerminalParcel> = decode(required(phase, "pending_terminal_parcels")?)?;
+    let captured_bytes: Vec<u8> = decode(required(target, "terminal_parcels_produced_unconsumed_canonical_json")?)?;
+    let captured_parcels: BTreeMap<openwepp_coupled_time::Digest32, crate::DirectSnowStage3V11TerminalParcel> = serde_json::from_slice(&captured_bytes).map_err(|error| error.to_string())?;
+    if parcels != captured_parcels || parcels.iter().any(|(digest, parcel)| {
+        parcel.posture != crate::DirectSnowStage3V11TerminalParcelPosture::ProducedUnconsumed
+            || parcel.parent_transaction_id != clock.parent_transaction_id().digest()
+            || parcel.support.start_ns() < clock.parent_support().start_ns()
+            || parcel.support.end_ns() > clock.accepted_until()
+            || crate::snow_owner_v4::canonical_terminal_parcel_digest(parcel).map_or(true, |actual| actual != *digest || actual != parcel.parcel_digest)
+    }) { return Err("current terminal parcel custody posture".into()); }
+    let joins = crate::snow_stage3_v11_attachment::diagnostic_restore_coupled_subslab_receipts_value_v2(required(phase, "ordered_owner_joins")?.clone())?;
+    let last = joins.last().ok_or("current snow prefix tail")?;
+    let lanes = last.lane_receipts.iter().map(|(lane, receipt)| (*lane, receipt.receipt_sha256)).collect();
+    let tiles = last.destination_receipts.iter().map(|((ofe, tile), receipt)| ((ofe.as_str().to_owned(), tile.as_str().to_owned()), *receipt.receipt_sha256())).collect();
+    let expected = crate::snow_owner_v4::canonical_stage3_snow_owner_v4_bytes(&current, &parcels, &lanes, &tiles).map_err(|error| error.to_string())?;
+    let snow = clock.owners().iter().find(|owner| owner.owner_id() == "snow").ok_or("clock snow owner")?;
+    if expected != snow.state_bytes() { return Err("current Stage3 clock snow owner projection".into()); }
+    let expected_clock: BTreeMap<String, Vec<u8>> = decode(required(target, "clock_complete_owner_canonical_bytes")?)?;
+    let actual_clock = clock.owners().iter().map(|o| (o.owner_id().to_owned(), o.state_bytes().to_vec())).collect::<BTreeMap<_,_>>();
+    if expected_clock != actual_clock { return Err("current seven-owner clock projection".into()); }
+    validate_deferred_custody(target, clock)?;
+    Ok(())
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+enum TrialPredecessor {
+    AcceptedReceiptChain(openwepp_land_surface_energy::Sha256Digest),
+    UnpublishedTrial(openwepp_land_surface_energy::Sha256Digest),
+    NumericalCoordinateProjection { authority_sha256: openwepp_land_surface_energy::Sha256Digest, accepted_receipt_chain_sha256: openwepp_land_surface_energy::Sha256Digest, coordinate_set_sha256: openwepp_land_surface_energy::Sha256Digest },
+}
+// Representation inverse only: no numerical evolution or install capability.
+fn validate_trial(value: &Value) -> Result<openwepp_land_surface_energy::SoilThermalOwnedStateV2, String> {
+    use openwepp_land_surface_energy::{Sha256Digest, SoilThermalLayerEnergyCreditV2, SoilThermalOwnedStateV2, TransactionId};
+    let accepted: Option<Sha256Digest> = decode(required(value, "accepted_predecessor_receipt_chain_sha256")?)?;
+    let unpublished: Option<Sha256Digest> = decode(required(value, "unpublished_predecessor_trial_sha256")?)?;
+    let authority: Option<Sha256Digest> = decode(required(value, "numerical_coordinate_authority_sha256")?)?;
+    let coordinate: Option<Sha256Digest> = decode(required(value, "numerical_coordinate_set_sha256")?)?;
+    let custody = match (accepted, unpublished, authority, coordinate) {
+        (Some(a), None, None, None) => TrialPredecessor::AcceptedReceiptChain(a),
+        (None, Some(u), None, None) => TrialPredecessor::UnpublishedTrial(u),
+        (Some(a), None, Some(authority), Some(coordinate)) => TrialPredecessor::NumericalCoordinateProjection { authority_sha256: authority, accepted_receipt_chain_sha256: a, coordinate_set_sha256: coordinate },
+        _ => return Err("deferred trial predecessor custody".into()),
+    };
+    let transaction: TransactionId = decode(required(value, "transaction_id")?)?;
+    let predecessor: Option<TransactionId> = decode(required(value, "predecessor_transaction_id")?)?;
+    let start: u128 = decode(required(value, "support_start_ns")?)?;
+    let end: u128 = decode(required(value, "support_end_ns")?)?;
+    let beginning: Sha256Digest = decode(required(value, "beginning_state_sha256")?)?;
+    let ending: SoilThermalOwnedStateV2 = decode(required(value, "ending_state")?)?;
+    let credits: Vec<SoilThermalLayerEnergyCreditV2> = decode(required(value, "layer_credits")?)?;
+    ending.validate().map_err(|error| error.to_string())?;
+    if start >= end || ending.last_accepted_transaction_id != Some(transaction) { return Err("deferred trial transaction/support".into()); }
+    let bytes = serde_json::to_vec(&("OPENWEPP_SOIL_THERMAL_UNPUBLISHED_TRIAL_V2", transaction, predecessor, start, end, beginning, custody, &ending, credits)).map_err(|error| error.to_string())?;
+    if serde_json::to_value(digest_bytes(&python_exponents(&bytes))).map_err(|error| error.to_string())? != value["unpublished_trial_sha256"] {
+        return Err("deferred unpublished trial seal".into());
+    }
+    Ok(ending)
+}
+// Exact digest representation rule from land_surface_energy::identity.
+fn python_exponents(bytes: &[u8]) -> Vec<u8> {
+    let mut output = Vec::with_capacity(bytes.len());
+    let (mut quoted, mut escaped, mut index) = (false, false, 0);
+    while index < bytes.len() {
+        let byte = bytes[index];
+        if quoted {
+            output.push(byte);
+            if escaped { escaped = false; } else if byte == b'\\' { escaped = true; } else if byte == b'"' { quoted = false; }
+            index += 1;
+            continue;
+        }
+        if byte == b'"' { quoted = true; output.push(byte); index += 1; continue; }
+        if byte == b'e' && index + 3 < bytes.len() && matches!(bytes[index + 1], b'+' | b'-') && bytes[index + 2].is_ascii_digit() && !bytes[index + 3].is_ascii_digit() {
+            output.extend_from_slice(&[byte, bytes[index+1], b'0', bytes[index+2]]); index += 3; continue;
+        }
+        output.push(byte); index += 1;
+    }
+    output
+}
+fn validate_deferred_custody(target: &Value, clock: &CoupledClockStateV1) -> Result<(), String> {
+    let custody = required(&target["phase_diagnostics"], "deferred_native_v2_soil_custody")?;
+    if custody["posture"] != "reconstructible_operands_not_installable_capability" { return Err("deferred custody posture".into()); }
+    let trial = required(custody, "candidate")?;
+    let ending = validate_trial(trial)?;
+    let continuation = required(custody, "continuation")?;
+    if required(continuation, "physical_trial")? != trial { return Err("deferred candidate/physical trial join".into()); }
+    let original: openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2 = decode(required(continuation, "original_beginning_owner")?)?;
+    original.validate().map_err(|error| error.to_string())?;
+    let resident: crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2 = decode(required(target, "native_soil_v2_constructor_operands")?)?;
+    if original.state != resident.owner().state || original.receipt_chain_sha256 != resident.owner().receipt_chain_sha256
+        || trial["support_end_ns"] != serde_json::json!(clock.accepted_until().get()) || ending == resident.owner().state {
+        return Err("deferred/current resident separation and support join".into());
+    }
+    let chain: Vec<Vec<openwepp_land_surface_energy::SoilThermalLayerEnergyCreditV2>> = decode(required(continuation, "ordered_layer_credit_chain")?)?;
+    let last = chain.last().ok_or("deferred credit chain missing")?;
+    if serde_json::to_value(last).map_err(|error| error.to_string())? != trial["layer_credits"] { return Err("deferred credit chain tail".into()); }
+    let operands: Vec<openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2> = decode(required(continuation, "accumulated_operands")?)?;
+    let flattened = chain.iter().flat_map(|layers| layers.iter().flat_map(|layer| layer.accepted_operands.clone())).collect::<Vec<_>>();
+    // The retained flattened operands use the continuation's canonical source order.
+    if operands.len() != flattened.len() { return Err("deferred accumulated operand cardinality".into()); }
+    for operand in &operands {
+        if operands.iter().filter(|other| *other == operand).count() != flattened.iter().filter(|other| *other == operand).count() { return Err("deferred accumulated operand membership".into()); }
+    }
+    Ok(())
+}

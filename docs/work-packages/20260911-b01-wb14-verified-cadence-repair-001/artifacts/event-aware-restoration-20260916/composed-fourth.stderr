@@ -1,0 +1,4 @@
+
+thread 'snow_stage3_v11_current_context_capture::member_backed_restore_tests::composed_member_native_restoration_from_pinned_seed' (1924665) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4294:16:
+composed native restoration: "reader position/GSI joins refused (outer=214, captured=0, gsi_matches=false); canonical native constructor refusal: V9 real-consumer identity failure: native soil proof accepted support or exact bootstrap"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

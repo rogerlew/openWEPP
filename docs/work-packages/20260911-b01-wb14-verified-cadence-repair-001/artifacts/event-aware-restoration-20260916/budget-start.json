@@ -1,0 +1,8 @@
+{
+  "start_utc": "2026-09-16T15:12:00+00:00",
+  "carry_charged_seconds": 51146.178324,
+  "ceiling_seconds": 65546.178324,
+  "deadline_utc": "2026-09-16T19:12:00+00:00",
+  "wait_deductions_seconds": 0,
+  "failures_at_least": 88
+}

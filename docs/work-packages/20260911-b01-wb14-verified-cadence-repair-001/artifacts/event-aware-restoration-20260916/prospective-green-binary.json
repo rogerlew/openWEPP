@@ -1,0 +1,6 @@
+{
+  "build": "a002-prospective-green-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/prospective-green.frozen",
+  "sha256": "18375431dab6629343c66ecc3633c293c1ee659324295a164c12e54b26bd2b02",
+  "source_tree_sha256": "4bc2e31d9746a9d22e2c814d28bd60c22d49ed03d4ba72b7e8689f6a9f6414f7"
+}

@@ -1,0 +1,4 @@
+
+thread 'v9_real_consumer_shadow::accepted_publication_chronology_tests::archived_restorer_uses_replayed_terminal_event_tail_and_rejects_wire_poisons' (1821878) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:2128:14:
+fixture day seals: Identity("accepted publication premature or mixed-day rotation")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

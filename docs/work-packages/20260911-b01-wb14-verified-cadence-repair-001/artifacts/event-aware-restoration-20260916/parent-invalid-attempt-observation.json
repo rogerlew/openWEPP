@@ -1,0 +1,19 @@
+{
+  "utc": "2026-09-16T15:56:58.501571+00:00",
+  "evidence_class": "Ran: parent inspected ps and /proc/1812987/limits",
+  "cargo_pid": 1807759,
+  "test_pid": 1812987,
+  "observed_rss_kib": 1065012,
+  "observed_runtime_seconds": 59,
+  "limits": {
+    "address_space": "unlimited",
+    "file_size": "unlimited",
+    "cpu_time": "unlimited"
+  },
+  "source_drift": "writer reported editing endpoint while build active",
+  "disposition": "INVALID; not before-correction evidence",
+  "response": "Writer instructed stop invalid path and use stable-source build --no-run then frozen bounded execution; no forbidden physics observed",
+  "process_end": "Cargo process ended during next proc inspection; outcome/logs to be preserved by writer",
+  "qa_orphan_observation": "QA observed PID1812987 PPID1 elapsed86s RSS1124596KiB after cargo parent exited",
+  "parent_containment": "kill -TERM1812987 returned No such process; ps empty at15:57UTC"
+}

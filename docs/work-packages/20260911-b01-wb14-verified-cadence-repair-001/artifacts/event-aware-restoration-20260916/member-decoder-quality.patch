@@ -1,0 +1,190 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
+@@ -3819,39 +3819,88 @@
+ /// are refused instead of silently becoming last-key-wins JSON.  Callers name
+ /// the large members they deliberately do not need; this keeps chronology and
+ /// parent validation usable before native-consumer decoding.
++fn attach_member_backed_value_v1(
++    stack: &mut [serde_json::Value],
++    keys: &mut [Option<String>],
++    root: &mut Option<serde_json::Value>,
++    value: serde_json::Value,
++) -> Result<(), String> {
++    let Some(parent) = stack.last_mut() else {
++        if root.replace(value).is_some() {
++            return Err("member-backed row has multiple roots".into());
++        }
++        return Ok(());
++    };
++    match parent {
++        serde_json::Value::Array(values) => values.push(value),
++        serde_json::Value::Object(values) => {
++            let key = keys
++                .last_mut()
++                .and_then(Option::take)
++                .ok_or("member-backed object value lacks key")?;
++            if values.insert(key, value).is_some() {
++                return Err("member-backed row duplicate object member".into());
++            }
++        }
++        _ => return Err("member-backed row scalar container".into()),
++    }
++    Ok(())
++}
++
++fn validate_member_backed_external_end_v1(
++    item: &serde_json::Value,
++    pending_external: &mut Option<(String, usize, openwepp_coupled_time::Digest32)>,
++) -> Result<(), String> {
++    let (file, bytes, digest) = pending_external
++        .take()
++        .ok_or("member-backed unexpected external JSON end")?;
++    let expected_file = item
++        .get("file")
++        .and_then(serde_json::Value::as_str)
++        .ok_or("member-backed external end file")?;
++    let expected_bytes = item
++        .get("bytes")
++        .and_then(serde_json::Value::as_u64)
++        .and_then(|value| usize::try_from(value).ok())
++        .ok_or("member-backed external end bytes")?;
++    let expected_digest: openwepp_coupled_time::Digest32 = serde_json::from_value(
++        item.get("sha256")
++            .ok_or("member-backed external end digest")?
++            .clone(),
++    )
++    .map_err(|error| error.to_string())?;
++    if file != expected_file || bytes != expected_bytes || digest != expected_digest {
++        return Err("member-backed external payload identity".into());
++    }
++    Ok(())
++}
++
++fn decode_member_backed_scalar_event_v1(
++    item: &serde_json::Value,
++    event: &str,
++) -> Result<serde_json::Value, String> {
++    Ok(match event {
++        "start_map" => serde_json::Value::Object(serde_json::Map::new()),
++        "start_array" => serde_json::Value::Array(Vec::new()),
++        "string" | "boolean" => item.get("value").cloned().ok_or("member-backed scalar")?,
++        "null" => serde_json::Value::Null,
++        "number" => {
++            let lexeme = item
++                .get("value")
++                .and_then(|value| value.get("number_lexeme"))
++                .and_then(serde_json::Value::as_str)
++                .ok_or("member-backed number lexeme")?;
++            serde_json::from_str(lexeme).map_err(|error| error.to_string())?
++        }
++        _ => return Err("member-backed unsupported event".into()),
++    })
++}
++
+ fn decode_member_backed_row_v1(
+     export_root: &std::path::Path,
+     event_path: &std::path::Path,
+     omitted_members: &BTreeSet<&str>,
+ ) -> Result<serde_json::Value, String> {
+-    fn attach(
+-        stack: &mut [serde_json::Value],
+-        keys: &mut [Option<String>],
+-        root: &mut Option<serde_json::Value>,
+-        value: serde_json::Value,
+-    ) -> Result<(), String> {
+-        let Some(parent) = stack.last_mut() else {
+-            if root.replace(value).is_some() {
+-                return Err("member-backed row has multiple roots".into());
+-            }
+-            return Ok(());
+-        };
+-        match parent {
+-            serde_json::Value::Array(values) => values.push(value),
+-            serde_json::Value::Object(values) => {
+-                let key = keys
+-                    .last_mut()
+-                    .and_then(Option::take)
+-                    .ok_or("member-backed object value lacks key")?;
+-                if values.insert(key, value).is_some() {
+-                    return Err("member-backed row duplicate object member".into());
+-                }
+-            }
+-            _ => return Err("member-backed row scalar container".into()),
+-        }
+-        Ok(())
+-    }
+-
+     let raw = std::fs::File::open(event_path).map_err(|error| error.to_string())?;
+     let reader = std::io::BufReader::new(raw);
+     let mut stack = Vec::<serde_json::Value>::new();
+@@ -3898,7 +3947,7 @@
+                 std::fs::read(export_root.join(file)).map_err(|error| error.to_string())?;
+             let value = serde_json::from_slice(&payload).map_err(|error| error.to_string())?;
+             pending_external = Some((file.into(), payload.len(), digest_bytes(&payload)));
+-            attach(&mut stack, &mut keys, &mut root, value)?;
++            attach_member_backed_value_v1(&mut stack, &mut keys, &mut root, value)?;
+             continue;
+         }
+         if event == "external_json_end" {
+@@ -3906,27 +3955,7 @@
+                 skipped_external = false;
+                 continue;
+             }
+-            let (file, bytes, digest) = pending_external
+-                .take()
+-                .ok_or("member-backed unexpected external JSON end")?;
+-            let expected_file = item
+-                .get("file")
+-                .and_then(serde_json::Value::as_str)
+-                .ok_or("member-backed external end file")?;
+-            let expected_bytes = item
+-                .get("bytes")
+-                .and_then(serde_json::Value::as_u64)
+-                .and_then(|value| usize::try_from(value).ok())
+-                .ok_or("member-backed external end bytes")?;
+-            let expected_digest: openwepp_coupled_time::Digest32 = serde_json::from_value(
+-                item.get("sha256")
+-                    .ok_or("member-backed external end digest")?
+-                    .clone(),
+-            )
+-            .map_err(|error| error.to_string())?;
+-            if file != expected_file || bytes != expected_bytes || digest != expected_digest {
+-                return Err("member-backed external payload identity".into());
+-            }
++            validate_member_backed_external_end_v1(&item, &mut pending_external)?;
+             continue;
+         }
+         if event == "external_byte_array_start" || event == "external_byte_array_end" {
+@@ -3937,29 +3966,15 @@
+                 .pop()
+                 .ok_or("member-backed unexpected container end")?;
+             keys.pop().ok_or("member-backed key stack end")?;
+-            attach(&mut stack, &mut keys, &mut root, value)?;
++            attach_member_backed_value_v1(&mut stack, &mut keys, &mut root, value)?;
+             continue;
+         }
+-        let value = match event {
+-            "start_map" => serde_json::Value::Object(serde_json::Map::new()),
+-            "start_array" => serde_json::Value::Array(Vec::new()),
+-            "string" | "boolean" => item.get("value").cloned().ok_or("member-backed scalar")?,
+-            "null" => serde_json::Value::Null,
+-            "number" => {
+-                let lexeme = item
+-                    .get("value")
+-                    .and_then(|value| value.get("number_lexeme"))
+-                    .and_then(serde_json::Value::as_str)
+-                    .ok_or("member-backed number lexeme")?;
+-                serde_json::from_str(lexeme).map_err(|error| error.to_string())?
+-            }
+-            _ => return Err("member-backed unsupported event".into()),
+-        };
++        let value = decode_member_backed_scalar_event_v1(&item, event)?;
+         if event == "start_map" || event == "start_array" {
+             stack.push(value);
+             keys.push(None);
+         } else {
+-            attach(&mut stack, &mut keys, &mut root, value)?;
++            attach_member_backed_value_v1(&mut stack, &mut keys, &mut root, value)?;
+         }
+     }
+     if !stack.is_empty() {

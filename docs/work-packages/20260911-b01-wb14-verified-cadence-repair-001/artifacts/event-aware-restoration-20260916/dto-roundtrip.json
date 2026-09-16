@@ -1,0 +1,53 @@
+{
+  "label": "dto-roundtrip",
+  "argv": [
+    "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/dto-roundtrip.frozen",
+    "snow_stage3_v11_current_context_capture::member_backed_restore_tests::member_constructor_inverse_roundtrips_actual_operands",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip.resources",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/dto-roundtrip.frozen",
+    "snow_stage3_v11_current_context_capture::member_backed_restore_tests::member_constructor_inverse_roundtrips_actual_operands",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916",
+  "start_utc": "2026-09-16T16:42:53.490467+00:00",
+  "source_tree_sha256": "456ba6c2340022f26e81fdcfdefb4d9f17d5ade23dc3521df2017fa2b5062ea1",
+  "patch_sha256": "a5ee1b24553d116d9fedb74740372acde040d969f0bc5d75086d1e76178d8296",
+  "source_receipt": "dto-roundtrip-source.json",
+  "input_manifest": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/input-custody-before.json",
+  "input_manifest_sha256": "b78f2956b99079d6447aacb51c95e087093b858d90b47f65f601e0b3d53748b3",
+  "environment": {
+    "OPENWEPP_B01_MEMBER_EXPORT": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1",
+    "RUST_MIN_STACK": "67108864"
+  },
+  "pinned_files": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/run_recorded.py": "a1692ab1ed05c1abba57571328b61a309aa1acde79c052b1e339f8d667872d2e",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/summary.json": "cf5f6612d65c3b5a2a53583560730e8d5c551795efc73ff6b3fd5735e41c17bb"
+  },
+  "timeout_seconds": 300,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/dto-roundtrip.frozen",
+  "binary_sha256": "224b5a36a0d9d62e6f06dbc865fb17bfb48bf081afe19c438cedb6e535b56659",
+  "process_group": 1881120,
+  "exit_code": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.5674567110836506,
+  "end_utc": "2026-09-16T16:42:54.272743+00:00",
+  "source_unchanged": true,
+  "binary_unchanged": true,
+  "pinned_files_unchanged": true,
+  "inputs_unchanged": true
+}

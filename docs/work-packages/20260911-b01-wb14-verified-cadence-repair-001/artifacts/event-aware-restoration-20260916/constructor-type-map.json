@@ -1,0 +1,2680 @@
+{
+  "DirectSnowStage3Outcome": {
+    "kind": "struct",
+    "path": "hydrology/support_helpers_mod/snow_mass_transition.rs",
+    "line": 65,
+    "body": "\n    pub enabled: bool,\n    #[cfg_attr(\n        any(\n            feature = \"restart-authority-evidence\",\n            feature = \"persisted-restart-v1\"\n        ),\n        serde(serialize_with = \"serialize_optional_temperature_celsius\")\n    )]\n    pub meltwater_temperature_c: Option<TemperatureCelsius>,\n    pub sublimation_m: f64,\n",
+    "fields": [
+      [
+        "enabled",
+        "bool"
+      ],
+      [
+        "meltwater_temperature_c",
+        "Option<TemperatureCelsius>"
+      ],
+      [
+        "sublimation_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectSnowLiquidDispositionLedger": {
+    "kind": "struct",
+    "path": "hydrology/support_helpers_mod/snow_mass_transition.rs",
+    "line": 49,
+    "body": "\n    pub incoming_liquid_m: f64,\n    pub routed_liquid_m: f64,\n    pub retained_liquid_delta_m: f64,\n    pub refrozen_liquid_m: f64,\n    pub liquid_closure_residual_m: f64,\n",
+    "fields": [
+      [
+        "incoming_liquid_m",
+        "f64"
+      ],
+      [
+        "routed_liquid_m",
+        "f64"
+      ],
+      [
+        "retained_liquid_delta_m",
+        "f64"
+      ],
+      [
+        "refrozen_liquid_m",
+        "f64"
+      ],
+      [
+        "liquid_closure_residual_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectSnowSolidToLiquidLedger": {
+    "kind": "struct",
+    "path": "hydrology/support_helpers_mod/snow_mass_transition.rs",
+    "line": 33,
+    "body": "\n    pub raw_signed_melt_m: f64,\n    pub redistributed_positive_melt_m: f64,\n    pub snowpack_swe_loss_m: f64,\n    pub rain_released_m: f64,\n    pub liquid_handoff_m: f64,\n",
+    "fields": [
+      [
+        "raw_signed_melt_m",
+        "f64"
+      ],
+      [
+        "redistributed_positive_melt_m",
+        "f64"
+      ],
+      [
+        "snowpack_swe_loss_m",
+        "f64"
+      ],
+      [
+        "rain_released_m",
+        "f64"
+      ],
+      [
+        "liquid_handoff_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectTransferBuffers": {
+    "kind": "struct",
+    "path": "direct_runtime/02_state_reports.rs",
+    "line": 73,
+    "body": "\n    pub surface_carry_m: [f64; DIRECT_TRANSFER_HOUR_COUNT],\n    /// DC01: unit-normalized hourly distribution of `surface_carry_m` totals\n    /// (INV-RUNOFFPART-031); consumed by WB14 supply admission.\n    pub surface_hourly_weights: [f64; DIRECT_TRANSFER_HOUR_COUNT],\n    pub lateral_carry_m: [f64; DIRECT_TRANSFER_HOUR_COUNT],\n    pub upstream_flow_m: f64,\n    pub subsurface_input_m: f64,\n",
+    "fields": [
+      [
+        "surface_carry_m",
+        "[f64; DIRECT_TRANSFER_HOUR_COUNT]"
+      ],
+      [
+        "surface_hourly_weights",
+        "[f64; DIRECT_TRANSFER_HOUR_COUNT]"
+      ],
+      [
+        "lateral_carry_m",
+        "[f64; DIRECT_TRANSFER_HOUR_COUNT]"
+      ],
+      [
+        "upstream_flow_m",
+        "f64"
+      ],
+      [
+        "subsurface_input_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectPublicationFrame": {
+    "kind": "struct",
+    "path": "direct_runtime/01_publication.rs",
+    "line": 3,
+    "body": "\n    pub runoff_m: f64,\n    pub infiltration_m: f64,\n    pub evapotranspiration_m: f64,\n    pub drainage_m: f64,\n    pub lateral_flow_m: f64,\n",
+    "fields": [
+      [
+        "runoff_m",
+        "f64"
+      ],
+      [
+        "infiltration_m",
+        "f64"
+      ],
+      [
+        "evapotranspiration_m",
+        "f64"
+      ],
+      [
+        "drainage_m",
+        "f64"
+      ],
+      [
+        "lateral_flow_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectSubsurfaceLayerState": {
+    "kind": "struct",
+    "path": "direct_runtime/subsurface.rs",
+    "line": 713,
+    "body": "\n    pub theta_m: f64,\n    pub field_capacity_m: f64,\n    pub upper_limit_m: f64,\n    pub conductivity_m_s: f64,\n    pub depth_m: f64,\n    pub residual_theta: f64,\n    pub frozen_depth_m: f64,\n    pub frozen_water_m: f64,\n    pub porosity: f64,\n    pub field_capacity_theta: f64,\n    pub coca: f64,\n    pub lateral_conductivity_m_s: f64,\n",
+    "fields": [
+      [
+        "theta_m",
+        "f64"
+      ],
+      [
+        "field_capacity_m",
+        "f64"
+      ],
+      [
+        "upper_limit_m",
+        "f64"
+      ],
+      [
+        "conductivity_m_s",
+        "f64"
+      ],
+      [
+        "depth_m",
+        "f64"
+      ],
+      [
+        "residual_theta",
+        "f64"
+      ],
+      [
+        "frozen_depth_m",
+        "f64"
+      ],
+      [
+        "frozen_water_m",
+        "f64"
+      ],
+      [
+        "porosity",
+        "f64"
+      ],
+      [
+        "field_capacity_theta",
+        "f64"
+      ],
+      [
+        "coca",
+        "f64"
+      ],
+      [
+        "lateral_conductivity_m_s",
+        "f64"
+      ]
+    ]
+  },
+  "DirectEvapotranspirationStageState": {
+    "kind": "struct",
+    "path": "direct_runtime/evapotranspiration.rs",
+    "line": 605,
+    "body": "\n    pub s1_m: f64,\n    pub s2_m: f64,\n    pub threshold_m: f64,\n    pub counter: f64,\n",
+    "fields": [
+      [
+        "s1_m",
+        "f64"
+      ],
+      [
+        "s2_m",
+        "f64"
+      ],
+      [
+        "threshold_m",
+        "f64"
+      ],
+      [
+        "counter",
+        "f64"
+      ]
+    ]
+  },
+  "DirectGrowthStateSurface": {
+    "kind": "struct",
+    "path": "direct_runtime/growth.rs",
+    "line": 361,
+    "body": "\n    pub sumgdd: f64,\n    pub live_biomass_kg_m2: f64,\n    pub interception_live_biomass_kg_m2: f64,\n    pub canopy_height_m: f64,\n    pub canopy_cover_fraction: f64,\n    pub leaf_area_index: f64,\n    pub root_mass_kg_m2: f64,\n    pub root_depth_m: f64,\n    pub harvest_index: f64,\n",
+    "fields": [
+      [
+        "sumgdd",
+        "f64"
+      ],
+      [
+        "live_biomass_kg_m2",
+        "f64"
+      ],
+      [
+        "interception_live_biomass_kg_m2",
+        "f64"
+      ],
+      [
+        "canopy_height_m",
+        "f64"
+      ],
+      [
+        "canopy_cover_fraction",
+        "f64"
+      ],
+      [
+        "leaf_area_index",
+        "f64"
+      ],
+      [
+        "root_mass_kg_m2",
+        "f64"
+      ],
+      [
+        "root_depth_m",
+        "f64"
+      ],
+      [
+        "harvest_index",
+        "f64"
+      ]
+    ]
+  },
+  "DirectFrostRuntimeCarry": {
+    "kind": "struct",
+    "path": "direct_runtime/00_core_frames.rs",
+    "line": 252,
+    "body": "\n    pub active_frost_coupling: bool,\n    pub dfrost_m: f64,\n    pub dthaw_m: f64,\n    pub nft: f64,\n    pub ws_frz_m: f64,\n    pub infcap_frz_m_s: f64,\n    pub frwatc_soil_water_before_m: f64,\n    pub frwatc_soil_water_after_m: f64,\n    pub frwatc_frozen_water_before_m: f64,\n    pub frwatc_frozen_water_after_m: f64,\n    pub frwatc_freeze_debit_m: f64,\n    pub frwatc_thaw_credit_m: f64,\n    pub frwatc_net_liquid_delta_m: f64,\n    pub frdp_m: f64,\n    pub thdp_m: f64,\n    pub tfrdp_m: f64,\n    pub tthawd_m: f64,\n    pub fgthwd_flag: f64,\n    pub total_fine_layer_count: f64,\n    pub conductivity_tilled_w_m_k: f64,\n    pub conductivity_untilled_w_m_k: f64,\n    pub conductivity_residue_w_m_k: f64,\n    pub shadow_total_water_before_m: f64,\n    pub shadow_total_water_after_m: f64,\n    pub shadow_wb_delta_m: f64,\n    pub shadow_frwatc_residual_m: f64,\n    pub watpdg_m: f64,\n    pub watbtm_m: f64,\n    pub layer_shadows: Vec<DirectFrostLayerShadowCarry>,\n    pub fine_layers: Vec<DirectFrostFineLayerCarry>,\n",
+    "fields": [
+      [
+        "active_frost_coupling",
+        "bool"
+      ],
+      [
+        "dfrost_m",
+        "f64"
+      ],
+      [
+        "dthaw_m",
+        "f64"
+      ],
+      [
+        "nft",
+        "f64"
+      ],
+      [
+        "ws_frz_m",
+        "f64"
+      ],
+      [
+        "infcap_frz_m_s",
+        "f64"
+      ],
+      [
+        "frwatc_soil_water_before_m",
+        "f64"
+      ],
+      [
+        "frwatc_soil_water_after_m",
+        "f64"
+      ],
+      [
+        "frwatc_frozen_water_before_m",
+        "f64"
+      ],
+      [
+        "frwatc_frozen_water_after_m",
+        "f64"
+      ],
+      [
+        "frwatc_freeze_debit_m",
+        "f64"
+      ],
+      [
+        "frwatc_thaw_credit_m",
+        "f64"
+      ],
+      [
+        "frwatc_net_liquid_delta_m",
+        "f64"
+      ],
+      [
+        "frdp_m",
+        "f64"
+      ],
+      [
+        "thdp_m",
+        "f64"
+      ],
+      [
+        "tfrdp_m",
+        "f64"
+      ],
+      [
+        "tthawd_m",
+        "f64"
+      ],
+      [
+        "fgthwd_flag",
+        "f64"
+      ],
+      [
+        "total_fine_layer_count",
+        "f64"
+      ],
+      [
+        "conductivity_tilled_w_m_k",
+        "f64"
+      ],
+      [
+        "conductivity_untilled_w_m_k",
+        "f64"
+      ],
+      [
+        "conductivity_residue_w_m_k",
+        "f64"
+      ],
+      [
+        "shadow_total_water_before_m",
+        "f64"
+      ],
+      [
+        "shadow_total_water_after_m",
+        "f64"
+      ],
+      [
+        "shadow_wb_delta_m",
+        "f64"
+      ],
+      [
+        "shadow_frwatc_residual_m",
+        "f64"
+      ],
+      [
+        "watpdg_m",
+        "f64"
+      ],
+      [
+        "watbtm_m",
+        "f64"
+      ],
+      [
+        "layer_shadows",
+        "Vec<DirectFrostLayerShadowCarry>"
+      ],
+      [
+        "fine_layers",
+        "Vec<DirectFrostFineLayerCarry>"
+      ]
+    ]
+  },
+  "DirectFrostFineLayerCarry": {
+    "kind": "struct",
+    "path": "direct_runtime/00_core_frames.rs",
+    "line": 312,
+    "body": "\n    pub layer_index: usize,\n    pub fine_index: usize,\n    pub fgfrst: f64,\n    pub slfsd_m: f64,\n    pub slsic_m: f64,\n    pub slsw_theta: f64,\n    pub sltime_s: f64,\n",
+    "fields": [
+      [
+        "layer_index",
+        "usize"
+      ],
+      [
+        "fine_index",
+        "usize"
+      ],
+      [
+        "fgfrst",
+        "f64"
+      ],
+      [
+        "slfsd_m",
+        "f64"
+      ],
+      [
+        "slsic_m",
+        "f64"
+      ],
+      [
+        "slsw_theta",
+        "f64"
+      ],
+      [
+        "sltime_s",
+        "f64"
+      ]
+    ]
+  },
+  "DirectFrostLayerShadowCarry": {
+    "kind": "struct",
+    "path": "direct_runtime/00_core_frames.rs",
+    "line": 293,
+    "body": "\n    pub layer_index: usize,\n    pub st_m: f64,\n    pub soil_water_m: f64,\n    pub frozen_depth_m: f64,\n    pub frozen_water_m: f64,\n    pub soilf_m: f64,\n    pub yst_m: f64,\n    pub nwfrzz_m: f64,\n",
+    "fields": [
+      [
+        "layer_index",
+        "usize"
+      ],
+      [
+        "st_m",
+        "f64"
+      ],
+      [
+        "soil_water_m",
+        "f64"
+      ],
+      [
+        "frozen_depth_m",
+        "f64"
+      ],
+      [
+        "frozen_water_m",
+        "f64"
+      ],
+      [
+        "soilf_m",
+        "f64"
+      ],
+      [
+        "yst_m",
+        "f64"
+      ],
+      [
+        "nwfrzz_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectSnowRuntimeCarry": {
+    "kind": "struct",
+    "path": "direct_runtime/00_core_frames.rs",
+    "line": 172,
+    "body": "\n    pub runtime_swe_m: f64,\n    pub runtime_depth_m: f64,\n    pub runtime_density_kg_m3: f64,\n    pub runtime_settle_day_count: f64,\n    pub coe_boundary_depth_m: f64,\n    pub coe_boundary_density_kg_m3: f64,\n    pub coe_boundary_settle_day_count: f64,\n    pub liquid_water_retained_m: f64,\n    pub snow_albedo_state: Option<SnowAlbedoState>,\n    pub layers: Vec<DirectSnowLayerState>,\n",
+    "fields": [
+      [
+        "runtime_swe_m",
+        "f64"
+      ],
+      [
+        "runtime_depth_m",
+        "f64"
+      ],
+      [
+        "runtime_density_kg_m3",
+        "f64"
+      ],
+      [
+        "runtime_settle_day_count",
+        "f64"
+      ],
+      [
+        "coe_boundary_depth_m",
+        "f64"
+      ],
+      [
+        "coe_boundary_density_kg_m3",
+        "f64"
+      ],
+      [
+        "coe_boundary_settle_day_count",
+        "f64"
+      ],
+      [
+        "liquid_water_retained_m",
+        "f64"
+      ],
+      [
+        "snow_albedo_state",
+        "Option<SnowAlbedoState>"
+      ],
+      [
+        "layers",
+        "Vec<DirectSnowLayerState>"
+      ]
+    ]
+  },
+  "DirectSnowLayerState": {
+    "kind": "struct",
+    "path": "winter_column.rs",
+    "line": 44,
+    "body": "\n    pub mass_swe_m: f64,\n    pub thickness_m: f64,\n    pub density_kg_m3: f64,\n    pub settle_day_count: f64,\n    pub temperature_c: f64,\n    pub liquid_water_m: f64,\n    pub cold_content_j_m2: f64,\n    pub refrozen_liquid_m: f64,\n",
+    "fields": [
+      [
+        "mass_swe_m",
+        "f64"
+      ],
+      [
+        "thickness_m",
+        "f64"
+      ],
+      [
+        "density_kg_m3",
+        "f64"
+      ],
+      [
+        "settle_day_count",
+        "f64"
+      ],
+      [
+        "temperature_c",
+        "f64"
+      ],
+      [
+        "liquid_water_m",
+        "f64"
+      ],
+      [
+        "cold_content_j_m2",
+        "f64"
+      ],
+      [
+        "refrozen_liquid_m",
+        "f64"
+      ]
+    ]
+  },
+  "SnowAlbedoState": {
+    "kind": "struct",
+    "path": "hydrology/08_snow_albedo.rs",
+    "line": 89,
+    "body": "\n    pub model: SnowAlbedoModel,\n    pub albedo: f64,\n    pub accumulated_positive_temperature_c_day: f64,\n",
+    "fields": [
+      [
+        "model",
+        "SnowAlbedoModel"
+      ],
+      [
+        "albedo",
+        "f64"
+      ],
+      [
+        "accumulated_positive_temperature_c_day",
+        "f64"
+      ]
+    ]
+  },
+  "SnowAlbedoModel": {
+    "kind": "enum",
+    "path": "hydrology/08_snow_albedo.rs",
+    "line": 68,
+    "body": "\n    Brock2000TemperatureAgeV1,\n",
+    "fields": []
+  },
+  "DirectDayConstructorInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/00_core_frames.rs",
+    "line": 508,
+    "body": "\n    pub forcing: DirectDayForcing,\n    pub normalization_inputs: DirectNormalizationInputs,\n    pub interception_m: f64,\n    pub storage_bounds_inputs: DirectStorageBoundsInputs,\n    pub decomposition_inputs: DirectDecompositionInputs,\n    pub residue_partition_inputs: DirectResiduePartitionInputs,\n    pub annual_growth_inputs: DirectGrowthInputs,\n    pub perennial_growth_inputs: DirectGrowthInputs,\n    pub storage_input_inputs: DirectStorageInputInputs,\n    pub liquid_input_inputs: DirectLiquidInputInputs,\n    pub runon_carry_inputs: DirectRunonCarryInputs,\n    pub infiltration_depression_inputs: DirectInfiltrationDepressionInputs,\n    pub saturation_addback_inputs: DirectSaturationAddbackInputs,\n    pub runoff_partition_inputs: DirectRunoffPartitionInputs,\n    pub percolation_inputs: DirectPercolationInputs,\n    pub subsurface_compute_inputs: DirectSubsurfaceComputeInputs,\n    pub deep_seepage_inputs: DirectDeepSeepageInputs,\n    pub subsurface_loss_inputs: DirectSubsurfaceLossInputs,\n    pub evapotranspiration_compute_inputs: DirectEvapotranspirationComputeInputs,\n    pub evapotranspiration_inputs: DirectEvapotranspirationInputs,\n    pub snow_coupling_inputs: DirectSnowCouplingInputs,\n    pub storage_reconciliation_inputs: DirectStorageReconciliationInputs,\n    pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,\n    pub erosion_inputs: DirectErosionInputs,\n    pub frost_storage_liquid_delta_m: Option<f64>,\n    pub winter_frost_compute_inputs: Option<crate::hydrology::DirectWinterFrostComputeInputs>,\n    pub winter_frost_outcome: Option<Box<crate::hydrology::DirectWinterFrostPartitionOutcome>>,\n    pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,\n    pub snow_runtime_carry: Option<Box<DirectSnowRuntimeCarry>>,\n    pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,\n",
+    "fields": [
+      [
+        "forcing",
+        "DirectDayForcing"
+      ],
+      [
+        "normalization_inputs",
+        "DirectNormalizationInputs"
+      ],
+      [
+        "interception_m",
+        "f64"
+      ],
+      [
+        "storage_bounds_inputs",
+        "DirectStorageBoundsInputs"
+      ],
+      [
+        "decomposition_inputs",
+        "DirectDecompositionInputs"
+      ],
+      [
+        "residue_partition_inputs",
+        "DirectResiduePartitionInputs"
+      ],
+      [
+        "annual_growth_inputs",
+        "DirectGrowthInputs"
+      ],
+      [
+        "perennial_growth_inputs",
+        "DirectGrowthInputs"
+      ],
+      [
+        "storage_input_inputs",
+        "DirectStorageInputInputs"
+      ],
+      [
+        "liquid_input_inputs",
+        "DirectLiquidInputInputs"
+      ],
+      [
+        "runon_carry_inputs",
+        "DirectRunonCarryInputs"
+      ],
+      [
+        "infiltration_depression_inputs",
+        "DirectInfiltrationDepressionInputs"
+      ],
+      [
+        "saturation_addback_inputs",
+        "DirectSaturationAddbackInputs"
+      ],
+      [
+        "runoff_partition_inputs",
+        "DirectRunoffPartitionInputs"
+      ],
+      [
+        "percolation_inputs",
+        "DirectPercolationInputs"
+      ],
+      [
+        "subsurface_compute_inputs",
+        "DirectSubsurfaceComputeInputs"
+      ],
+      [
+        "deep_seepage_inputs",
+        "DirectDeepSeepageInputs"
+      ],
+      [
+        "subsurface_loss_inputs",
+        "DirectSubsurfaceLossInputs"
+      ],
+      [
+        "evapotranspiration_compute_inputs",
+        "DirectEvapotranspirationComputeInputs"
+      ],
+      [
+        "evapotranspiration_inputs",
+        "DirectEvapotranspirationInputs"
+      ],
+      [
+        "snow_coupling_inputs",
+        "DirectSnowCouplingInputs"
+      ],
+      [
+        "storage_reconciliation_inputs",
+        "DirectStorageReconciliationInputs"
+      ],
+      [
+        "hydrology_projection_inputs",
+        "DirectHydrologyProjectionInputs"
+      ],
+      [
+        "erosion_inputs",
+        "DirectErosionInputs"
+      ],
+      [
+        "frost_storage_liquid_delta_m",
+        "Option<f64>"
+      ],
+      [
+        "winter_frost_compute_inputs",
+        "Option<crate::hydrology::DirectWinterFrostComputeInputs>"
+      ],
+      [
+        "winter_frost_outcome",
+        "Option<Box<crate::hydrology::DirectWinterFrostPartitionOutcome>>"
+      ],
+      [
+        "frost_layer_carry_projection",
+        "Option<Vec<DirectFrostLayerCarryProjection>>"
+      ],
+      [
+        "snow_runtime_carry",
+        "Option<Box<DirectSnowRuntimeCarry>>"
+      ],
+      [
+        "frost_runtime_carry",
+        "Option<DirectFrostRuntimeCarry>"
+      ]
+    ]
+  },
+  "DirectFrostLayerCarryProjection": {
+    "kind": "struct",
+    "path": "direct_runtime/01_publication.rs",
+    "line": 108,
+    "body": "\n    pub layer_index: usize,\n    pub fine_layer_count: usize,\n    pub fine_layer_thickness_m: f64,\n",
+    "fields": [
+      [
+        "layer_index",
+        "usize"
+      ],
+      [
+        "fine_layer_count",
+        "usize"
+      ],
+      [
+        "fine_layer_thickness_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectWinterFrostPartitionOutcome": {
+    "kind": "struct",
+    "path": "hydrology/03_kernel_support_00_support_helpers.rs",
+    "line": 1368,
+    "body": "\n    pub active_frost_coupling: bool,\n    pub dthaw_after_m: f64,\n    pub nft_after: f64,\n    pub infcap_frz_m_s: f64,\n    pub soil_water_after_frwatc_m: Option<f64>,\n    pub frwatc_soil_water_before_m: f64,\n    pub frwatc_soil_water_after_m: f64,\n    pub frwatc_frozen_water_before_m: f64,\n    pub frwatc_frozen_water_after_m: f64,\n    pub frwatc_freeze_debit_m: f64,\n    pub frwatc_thaw_credit_m: f64,\n    pub frwatc_net_liquid_delta_m: f64,\n    pub frozen_water_after_m: f64,\n    pub frost_depth_after_m: f64,\n    pub thdp_after_m: f64,\n    pub tfrdp_after_m: f64,\n    pub tthawd_after_m: f64,\n    pub fgthwd_flag_after: f64,\n    pub total_fine_layer_count: f64,\n    pub conductivity_tilled_w_m_k: f64,\n    pub conductivity_untilled_w_m_k: f64,\n    pub conductivity_residue_w_m_k: f64,\n    pub shadow_total_water_before_m: f64,\n    pub shadow_total_water_after_m: f64,\n    pub shadow_wb_delta_m: f64,\n    pub shadow_frwatc_residual_m: f64,\n    pub watpdg_m: f64,\n    pub watbtm_m: f64,\n    pub layer_projection: Vec<DirectFrostLayerProjection>,\n    pub layer_shadow_projection: Vec<DirectFrostLayerShadowProjection>,\n    pub fine_layer_projection: Vec<DirectFrostFineLayerProjection>,\n",
+    "fields": [
+      [
+        "active_frost_coupling",
+        "bool"
+      ],
+      [
+        "dthaw_after_m",
+        "f64"
+      ],
+      [
+        "nft_after",
+        "f64"
+      ],
+      [
+        "infcap_frz_m_s",
+        "f64"
+      ],
+      [
+        "soil_water_after_frwatc_m",
+        "Option<f64>"
+      ],
+      [
+        "frwatc_soil_water_before_m",
+        "f64"
+      ],
+      [
+        "frwatc_soil_water_after_m",
+        "f64"
+      ],
+      [
+        "frwatc_frozen_water_before_m",
+        "f64"
+      ],
+      [
+        "frwatc_frozen_water_after_m",
+        "f64"
+      ],
+      [
+        "frwatc_freeze_debit_m",
+        "f64"
+      ],
+      [
+        "frwatc_thaw_credit_m",
+        "f64"
+      ],
+      [
+        "frwatc_net_liquid_delta_m",
+        "f64"
+      ],
+      [
+        "frozen_water_after_m",
+        "f64"
+      ],
+      [
+        "frost_depth_after_m",
+        "f64"
+      ],
+      [
+        "thdp_after_m",
+        "f64"
+      ],
+      [
+        "tfrdp_after_m",
+        "f64"
+      ],
+      [
+        "tthawd_after_m",
+        "f64"
+      ],
+      [
+        "fgthwd_flag_after",
+        "f64"
+      ],
+      [
+        "total_fine_layer_count",
+        "f64"
+      ],
+      [
+        "conductivity_tilled_w_m_k",
+        "f64"
+      ],
+      [
+        "conductivity_untilled_w_m_k",
+        "f64"
+      ],
+      [
+        "conductivity_residue_w_m_k",
+        "f64"
+      ],
+      [
+        "shadow_total_water_before_m",
+        "f64"
+      ],
+      [
+        "shadow_total_water_after_m",
+        "f64"
+      ],
+      [
+        "shadow_wb_delta_m",
+        "f64"
+      ],
+      [
+        "shadow_frwatc_residual_m",
+        "f64"
+      ],
+      [
+        "watpdg_m",
+        "f64"
+      ],
+      [
+        "watbtm_m",
+        "f64"
+      ],
+      [
+        "layer_projection",
+        "Vec<DirectFrostLayerProjection>"
+      ],
+      [
+        "layer_shadow_projection",
+        "Vec<DirectFrostLayerShadowProjection>"
+      ],
+      [
+        "fine_layer_projection",
+        "Vec<DirectFrostFineLayerProjection>"
+      ]
+    ]
+  },
+  "DirectFrostFineLayerProjection": {
+    "kind": "struct",
+    "path": "hydrology/03_kernel_support_00_support_helpers.rs",
+    "line": 1350,
+    "body": "\n    pub layer_index: usize,\n    pub fine_index: usize,\n    pub fgfrst: f64,\n    pub slfsd_m: f64,\n    pub slsic_m: f64,\n    pub slsw_theta: f64,\n    pub sltime_s: f64,\n",
+    "fields": [
+      [
+        "layer_index",
+        "usize"
+      ],
+      [
+        "fine_index",
+        "usize"
+      ],
+      [
+        "fgfrst",
+        "f64"
+      ],
+      [
+        "slfsd_m",
+        "f64"
+      ],
+      [
+        "slsic_m",
+        "f64"
+      ],
+      [
+        "slsw_theta",
+        "f64"
+      ],
+      [
+        "sltime_s",
+        "f64"
+      ]
+    ]
+  },
+  "DirectFrostLayerShadowProjection": {
+    "kind": "struct",
+    "path": "hydrology/03_kernel_support_00_support_helpers.rs",
+    "line": 1331,
+    "body": "\n    pub layer_index: usize,\n    pub st_m: f64,\n    pub soil_water_m: f64,\n    pub frozen_depth_m: f64,\n    pub frozen_water_m: f64,\n    pub soilf_m: f64,\n    pub yst_m: f64,\n    pub nwfrzz_m: f64,\n",
+    "fields": [
+      [
+        "layer_index",
+        "usize"
+      ],
+      [
+        "st_m",
+        "f64"
+      ],
+      [
+        "soil_water_m",
+        "f64"
+      ],
+      [
+        "frozen_depth_m",
+        "f64"
+      ],
+      [
+        "frozen_water_m",
+        "f64"
+      ],
+      [
+        "soilf_m",
+        "f64"
+      ],
+      [
+        "yst_m",
+        "f64"
+      ],
+      [
+        "nwfrzz_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectFrostLayerProjection": {
+    "kind": "struct",
+    "path": "hydrology/03_kernel_support_00_support_helpers.rs",
+    "line": 1316,
+    "body": "\n    pub layer_index: usize,\n    pub theta_after_m: f64,\n    pub frozen_depth_m: f64,\n    pub frozen_water_m: f64,\n",
+    "fields": [
+      [
+        "layer_index",
+        "usize"
+      ],
+      [
+        "theta_after_m",
+        "f64"
+      ],
+      [
+        "frozen_depth_m",
+        "f64"
+      ],
+      [
+        "frozen_water_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectWinterFrostComputeInputs": {
+    "kind": "struct",
+    "path": "hydrology/03_kernel_support_00_support_helpers.rs",
+    "line": 1298,
+    "body": "\n    pub controls: DirectFrostControlInputs,\n    pub thermal: DirectFrostThermalInputs,\n    pub theta_residual: f64,\n    pub theta_field_capacity: f64,\n    pub soil_conductivity_m_s: Option<f64>,\n    pub layer_bulk_density_kg_m3: Vec<f64>,\n    pub hourly: [DirectFrostHourlyForcing; SIMIMPL29_HOURS_PER_DAY],\n",
+    "fields": [
+      [
+        "controls",
+        "DirectFrostControlInputs"
+      ],
+      [
+        "thermal",
+        "DirectFrostThermalInputs"
+      ],
+      [
+        "theta_residual",
+        "f64"
+      ],
+      [
+        "theta_field_capacity",
+        "f64"
+      ],
+      [
+        "soil_conductivity_m_s",
+        "Option<f64>"
+      ],
+      [
+        "layer_bulk_density_kg_m3",
+        "Vec<f64>"
+      ],
+      [
+        "hourly",
+        "[DirectFrostHourlyForcing; SIMIMPL29_HOURS_PER_DAY]"
+      ]
+    ]
+  },
+  "DirectFrostHourlyForcing": {
+    "kind": "struct",
+    "path": "hydrology/03_kernel_support_00_support_helpers.rs",
+    "line": 1115,
+    "body": "\n    pub radiation_mj_m2: f64,\n    pub air_temperature_c: f64,\n    pub cloud_fraction: f64,\n",
+    "fields": [
+      [
+        "radiation_mj_m2",
+        "f64"
+      ],
+      [
+        "air_temperature_c",
+        "f64"
+      ],
+      [
+        "cloud_fraction",
+        "f64"
+      ]
+    ]
+  },
+  "DirectFrostThermalInputs": {
+    "kind": "struct",
+    "path": "hydrology/03_kernel_support_00_support_helpers.rs",
+    "line": 1162,
+    "body": "\n    pub snow_depth_m: f64,\n    pub snow_density_kg_m3: f64,\n    pub residue_depth_m: f64,\n    pub wind_m_s: f64,\n    pub albedo: f64,\n    pub canopy_height_m: f64,\n    pub random_roughness_m: f64,\n    pub day_of_year: f64,\n    pub seasonal_temperature_curve: FrostSeasonalTemperatureCurve,\n",
+    "fields": [
+      [
+        "snow_depth_m",
+        "f64"
+      ],
+      [
+        "snow_density_kg_m3",
+        "f64"
+      ],
+      [
+        "residue_depth_m",
+        "f64"
+      ],
+      [
+        "wind_m_s",
+        "f64"
+      ],
+      [
+        "albedo",
+        "f64"
+      ],
+      [
+        "canopy_height_m",
+        "f64"
+      ],
+      [
+        "random_roughness_m",
+        "f64"
+      ],
+      [
+        "day_of_year",
+        "f64"
+      ],
+      [
+        "seasonal_temperature_curve",
+        "FrostSeasonalTemperatureCurve"
+      ]
+    ]
+  },
+  "FrostSeasonalTemperatureCurve": {
+    "kind": "struct",
+    "path": "hydrology/03_kernel_support_00_support_helpers.rs",
+    "line": 1186,
+    "body": "\n    pub annual_mean_c: f64,\n    pub amplitude_c: f64,\n    pub phase_shift_days: f64,\n",
+    "fields": [
+      [
+        "annual_mean_c",
+        "f64"
+      ],
+      [
+        "amplitude_c",
+        "f64"
+      ],
+      [
+        "phase_shift_days",
+        "f64"
+      ]
+    ]
+  },
+  "DirectFrostControlInputs": {
+    "kind": "struct",
+    "path": "hydrology/03_kernel_support_00_support_helpers.rs",
+    "line": 1140,
+    "body": "\n    pub frost_file_present: bool,\n    pub wint_red_enabled: bool,\n    pub fine_top_count: usize,\n    pub fine_bot_count: usize,\n    pub ksnowf: f64,\n    pub kresf: f64,\n    pub ksoilf: f64,\n    pub kfactor1: f64,\n    pub kfactor2: f64,\n    pub kfactor3: f64,\n    pub landuse_class_proxy: Option<f64>,\n",
+    "fields": [
+      [
+        "frost_file_present",
+        "bool"
+      ],
+      [
+        "wint_red_enabled",
+        "bool"
+      ],
+      [
+        "fine_top_count",
+        "usize"
+      ],
+      [
+        "fine_bot_count",
+        "usize"
+      ],
+      [
+        "ksnowf",
+        "f64"
+      ],
+      [
+        "kresf",
+        "f64"
+      ],
+      [
+        "ksoilf",
+        "f64"
+      ],
+      [
+        "kfactor1",
+        "f64"
+      ],
+      [
+        "kfactor2",
+        "f64"
+      ],
+      [
+        "kfactor3",
+        "f64"
+      ],
+      [
+        "landuse_class_proxy",
+        "Option<f64>"
+      ]
+    ]
+  },
+  "DirectErosionInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/erosion.rs",
+    "line": 90,
+    "body": "\n    pub wave1_enabled: bool,\n    pub wave1: DirectErod13Inputs,\n    /// Wave-1 spatial sediment-continuity payload (SC-SED-001, single-OFE\n    /// `route`/`erod`/`runge` lineage). `wave1_continuity.enabled` gates the\n    /// spatial solve independently of the pointwise `wave1_enabled` check.\n    /// Boxed to keep `DirectDayConstructorInputs` inside its R7B type-size\n    /// bound; the box is only cloned on days where an erosion wave is\n    /// enabled (the pre-r7d8 flag check short-circuits otherwise).\n    pub wave1_continuity: Box<DirectWave1ContinuityInputs>,\n    /// Per-lane **static** Wave-1 operand seed (SC-SED-001 1b-C): the\n    /// texture / geometry / cover-constant operands the per-day assembly\n    /// (`assemble_wave1_continuity_inputs`) combines with the daily frame\n    /// state to build `wave1_continuity`. Boxed with `wave1_continuity` to\n    /// stay inside the R7B type-size bound; `seed.enabled` gates the\n    /// assembly (disabled until the production flip).\n    pub wave1_operand_seed: Box<DirectWave1OperandSeed>,\n    /// D13 / SC-SED-001 rev 53: select the hourly WATER shape consumed by\n    /// hydrograph-resolved Wave-1. Default/off uses DC01 source weights;\n    /// active-routed-water candidates must supply validated routed\n    /// hydrograph weights in `routed_hydrograph_runoff_fraction`.\n    pub hydrograph_shape_authority: DirectErosionHydrographShapeAuthority,\n    pub routed_hydrograph_runoff_fraction: Option<Box<[f64; 24]>>,\n",
+    "fields": [
+      [
+        "wave1_enabled",
+        "bool"
+      ],
+      [
+        "wave1",
+        "DirectErod13Inputs"
+      ],
+      [
+        "wave1_continuity",
+        "Box<DirectWave1ContinuityInputs>"
+      ],
+      [
+        "wave1_operand_seed",
+        "Box<DirectWave1OperandSeed>"
+      ],
+      [
+        "hydrograph_shape_authority",
+        "DirectErosionHydrographShapeAuthority"
+      ],
+      [
+        "routed_hydrograph_runoff_fraction",
+        "Option<Box<[f64; 24]>>"
+      ]
+    ]
+  },
+  "DirectErosionHydrographShapeAuthority": {
+    "kind": "enum",
+    "path": "direct_runtime/erosion.rs",
+    "line": 144,
+    "body": "\n    Dc01SourceShape,\n    RoutedHydrograph,\n",
+    "fields": []
+  },
+  "DirectWave1OperandSeed": {
+    "kind": "struct",
+    "path": "direct_runtime/erosion_seed.rs",
+    "line": 78,
+    "body": "\n    /// Gate: when false the whole Wave-1 continuity path is inactive\n    /// (production seed stays disabled until this is set).\n    pub enabled: bool,\n    /// Whether the OFE is cropland (`lanuse == 1`) \u2014 selects the interrill\n    /// delivery branch. Forest burns run non-cropland (`intdr = 1`).\n    pub is_cropland: bool,\n    /// Normalized slope segments (`profil.for` fit).\n    pub segments: Vec<DirectWave1SlopeSegment>,\n    /// OFE slope length (m).\n    pub slplen_m: f64,\n    /// Effective flow-path length (m).\n    pub efflen_m: f64,\n    /// Contouring length (m); equals `slplen` without contours.\n    pub cntlen_m: f64,\n    /// Rill spacing (m).\n    pub rspace_m: f64,\n    /// Hillslope field width (m).\n    pub field_width_m: f64,\n    /// Average OFE slope gradient (`avgslp`).\n    pub avg_slope: f64,\n    /// Normalized end-slope gradient basis (`slpend = (a_n + b_n)\u00b7avgslp`).\n    pub slpend: f64,\n    /// Surface-layer sand fraction (for the yalin sandy adjustment).\n    pub sand: f64,\n    /// Surface-soil specific surface area (`enrich.for:148-151`\n    /// `ssasol`), per-OFE \u2014 the enrichment-ratio denominator.\n    pub ssasol: f64,\n    /// Five erosion particle classes + per-class fall velocity.\n    pub classes: [ErosionParticleClass; 5],\n    /// Effective particle fall velocity (`veleff`).\n    pub veleff_m_s: f64,\n    /// `scon.for` consolidation baselines.\n    pub baselines: ErosionConsolidationBaselines,\n    /// Baseline rill erodibility `kr` (s/m).\n    pub kr_s_m: f64,\n    /// Baseline interrill erodibility `ki`.\n    pub ki: f64,\n    /// Baseline critical shear `shcrit` (Pa).\n    pub shcrit_pa: f64,\n    /// Static rill-friction cover constants that do not vary daily\n    /// (`hmax`, `flivmx`); the daily `rilcov`/`canhgt` come from the\n    /// daily state.\n    pub hmax_m: f64,\n    pub flivmx: f64,\n    /// Random roughness (m) \u2014 management `rrinit`. First-cut static value\n    /// (no daily rainfall decay; decay is a recorded follow-up).\n    pub random_roughness_m: f64,\n    /// Initial days-since-disturbance (`daydi1`, management). Seeds the\n    /// consolidation carry so the enable is faithful for both fresh\n    /// (`daydi1 = 0`) and aged starts, not just fresh disturbance.\n    pub initial_daydis: f64,\n",
+    "fields": [
+      [
+        "enabled",
+        "bool"
+      ],
+      [
+        "is_cropland",
+        "bool"
+      ],
+      [
+        "segments",
+        "Vec<DirectWave1SlopeSegment>"
+      ],
+      [
+        "slplen_m",
+        "f64"
+      ],
+      [
+        "efflen_m",
+        "f64"
+      ],
+      [
+        "cntlen_m",
+        "f64"
+      ],
+      [
+        "rspace_m",
+        "f64"
+      ],
+      [
+        "field_width_m",
+        "f64"
+      ],
+      [
+        "avg_slope",
+        "f64"
+      ],
+      [
+        "slpend",
+        "f64"
+      ],
+      [
+        "sand",
+        "f64"
+      ],
+      [
+        "ssasol",
+        "f64"
+      ],
+      [
+        "classes",
+        "[ErosionParticleClass; 5]"
+      ],
+      [
+        "veleff_m_s",
+        "f64"
+      ],
+      [
+        "baselines",
+        "ErosionConsolidationBaselines"
+      ],
+      [
+        "kr_s_m",
+        "f64"
+      ],
+      [
+        "ki",
+        "f64"
+      ],
+      [
+        "shcrit_pa",
+        "f64"
+      ],
+      [
+        "hmax_m",
+        "f64"
+      ],
+      [
+        "flivmx",
+        "f64"
+      ],
+      [
+        "random_roughness_m",
+        "f64"
+      ],
+      [
+        "initial_daydis",
+        "f64"
+      ]
+    ]
+  },
+  "ErosionConsolidationBaselines": {
+    "kind": "struct",
+    "path": "direct_runtime/erosion_adjustments.rs",
+    "line": 72,
+    "body": "\n    /// `kicrat` \u2014 interrill consolidation ratio (`scon.for:651`).\n    pub kicrat: f64,\n    /// `krcrat` \u2014 rill consolidation ratio (`scon.for:747`).\n    pub krcrat: f64,\n    /// `tccrat` \u2014 critical-shear consolidation ratio (`scon.for` tc block).\n    pub tccrat: f64,\n    /// `bconsd` \u2014 consolidation rate (`scon.for:659`).\n    pub bconsd: f64,\n",
+    "fields": [
+      [
+        "kicrat",
+        "f64"
+      ],
+      [
+        "krcrat",
+        "f64"
+      ],
+      [
+        "tccrat",
+        "f64"
+      ],
+      [
+        "bconsd",
+        "f64"
+      ]
+    ]
+  },
+  "ErosionParticleClass": {
+    "kind": "struct",
+    "path": "direct_runtime/erosion_operands.rs",
+    "line": 144,
+    "body": "\n    /// Equivalent particle diameter (m).\n    pub dia_m: f64,\n    /// Particle specific gravity.\n    pub spg: f64,\n    /// Detached mass fraction of this class.\n    pub frac: f64,\n    /// Still-water fall velocity (m/s).\n    pub fall_m_s: f64,\n    /// Primary-clay mass fraction of this class (`prtcmp.for:208-\u2026`).\n    pub frcly: f64,\n    /// Primary-silt mass fraction of this class.\n    pub frslt: f64,\n    /// Primary-sand mass fraction of this class.\n    pub frsnd: f64,\n    /// Organic-matter mass fraction of this class.\n    pub frorg: f64,\n",
+    "fields": [
+      [
+        "dia_m",
+        "f64"
+      ],
+      [
+        "spg",
+        "f64"
+      ],
+      [
+        "frac",
+        "f64"
+      ],
+      [
+        "fall_m_s",
+        "f64"
+      ],
+      [
+        "frcly",
+        "f64"
+      ],
+      [
+        "frslt",
+        "f64"
+      ],
+      [
+        "frsnd",
+        "f64"
+      ],
+      [
+        "frorg",
+        "f64"
+      ]
+    ]
+  },
+  "DirectWave1SlopeSegment": {
+    "kind": "struct",
+    "path": "direct_runtime/erosion_continuity.rs",
+    "line": 112,
+    "body": "\n    pub xu: f64,\n    pub xl: f64,\n    pub a: f64,\n    pub b: f64,\n",
+    "fields": [
+      [
+        "xu",
+        "f64"
+      ],
+      [
+        "xl",
+        "f64"
+      ],
+      [
+        "a",
+        "f64"
+      ],
+      [
+        "b",
+        "f64"
+      ]
+    ]
+  },
+  "DirectWave1ContinuityInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/erosion_continuity.rs",
+    "line": 161,
+    "body": "\n    pub enabled: bool,\n    /// Inter-OFE continuity operands; `None` on OFE-1 / single-OFE lanes\n    /// (the coefficient rewrite is skipped, matching the legacy\n    /// `iplane > 1 \u2227 qout > 0 \u2227 qin > 0` guard).\n    pub inter_ofe: Option<Wave1InterOfeContinuity>,\n    /// E.4 enrichment operands; `None` skips the class-composition state\n    /// entirely (crafted/legacy-instrument quanta) \u2014 the production\n    /// assembly always supplies them.\n    pub enrichment: Option<Box<super::Wave1EnrichmentInputs>>,\n    /// Normalized slope segments from the slope profile (`profil.for` fit).\n    pub segments: Vec<DirectWave1SlopeSegment>,\n    /// Peak runoff rate (m/s) \u2014 legacy `peakro(iplane)`.\n    pub peakro_m_s: f64,\n    /// Event runoff depth (m) \u2014 legacy `runoff(iplane)`; activation gate.\n    pub runoff_depth_m: f64,\n    /// Unit inflow discharge from the upstream OFE (m^2/s); 0 for OFE-1.\n    pub qin_m2_s: f64,\n    /// Effective flow-path length (m) \u2014 legacy `efflen(iplane)`.\n    pub efflen_m: f64,\n    /// OFE slope length (m) \u2014 legacy `slplen(iplane)`.\n    pub slplen_m: f64,\n    /// Contouring length (m) \u2014 legacy `cntlen(iplane)`; equals `slplen`\n    /// without contours (`xinflo.for:147`).\n    pub cntlen_m: f64,\n    /// Rill spacing (m) \u2014 legacy `rspace(iplane)`.\n    pub rspace_m: f64,\n    /// Rill width (m) \u2014 legacy `width(iplane)`.\n    pub width_m: f64,\n    /// Hillslope field width (m) \u2014 legacy `fwidth`; publication area scale.\n    pub field_width_m: f64,\n    /// Effective runoff duration (s) \u2014 legacy `effdrn = runoff/peakro`\n    /// (`irs.for:725`); the WB16 `runoff_duration_s` surface.\n    pub effdrn_s: f64,\n    /// Duration of rainfall excess (s) \u2014 legacy `effdrr`.\n    pub effdrr_s: f64,\n    /// Rill erodibility (s/m) \u2014 soil file `kr`.\n    pub kr_s_m: f64,\n    /// Daily rill-erodibility adjustment factor \u2014 legacy `kradjf`.\n    pub kradjf: f64,\n    /// Critical shear (Pa) \u2014 soil file `shcrit`.\n    pub shcrit_pa: f64,\n    /// Daily critical-shear adjustment factor \u2014 legacy `tcadjf`\n    /// (INV-SED-006: `>= 0.30`).\n    pub tcadjf: f64,\n    /// Interrill detachment rate (kg s^-1 m^-2) \u2014 legacy `detinr`\n    /// (`param.for:482`, delivery-ratio and rill-spacing folded upstream).\n    pub detinr_kg_s_m2: f64,\n    /// Flow shear at the end of the average slope (Pa) \u2014 legacy `shrsol`.\n    pub shrsol_pa: f64,\n    /// Transport capacity at the end of the average slope (kg s^-1 m^-1)\n    /// \u2014 legacy `tcend = kt * shrsol**1.5`.\n    pub tcend_kg_s_m: f64,\n    /// Normalized transport coefficient \u2014 legacy `ktrato = kt2/kt`.\n    pub ktrato: f64,\n    /// Effective particle fall velocity (m/s) \u2014 legacy `veleff`.\n    pub veleff_m_s: f64,\n    /// Rainfall-turbulence factor \u2014 legacy `beta` (0.5 rain / 1.0 dry).\n    pub beta: f64,\n    /// Nondimensional inflow sediment load \u2014 legacy `strldn`; 0 for OFE-1.\n    pub strldn: f64,\n    /// Legacy `param.for:396`: surface frozen to the top -> `eata = 0`.\n    pub surface_frozen: bool,\n    /// Legacy `param.for:530`: snow cover / melt-only / furrow-only day\n    /// -> `theta = 0`.\n    pub theta_suppressed: bool,\n",
+    "fields": [
+      [
+        "enabled",
+        "bool"
+      ],
+      [
+        "inter_ofe",
+        "Option<Wave1InterOfeContinuity>"
+      ],
+      [
+        "enrichment",
+        "Option<Box<super::Wave1EnrichmentInputs>>"
+      ],
+      [
+        "segments",
+        "Vec<DirectWave1SlopeSegment>"
+      ],
+      [
+        "peakro_m_s",
+        "f64"
+      ],
+      [
+        "runoff_depth_m",
+        "f64"
+      ],
+      [
+        "qin_m2_s",
+        "f64"
+      ],
+      [
+        "efflen_m",
+        "f64"
+      ],
+      [
+        "slplen_m",
+        "f64"
+      ],
+      [
+        "cntlen_m",
+        "f64"
+      ],
+      [
+        "rspace_m",
+        "f64"
+      ],
+      [
+        "width_m",
+        "f64"
+      ],
+      [
+        "field_width_m",
+        "f64"
+      ],
+      [
+        "effdrn_s",
+        "f64"
+      ],
+      [
+        "effdrr_s",
+        "f64"
+      ],
+      [
+        "kr_s_m",
+        "f64"
+      ],
+      [
+        "kradjf",
+        "f64"
+      ],
+      [
+        "shcrit_pa",
+        "f64"
+      ],
+      [
+        "tcadjf",
+        "f64"
+      ],
+      [
+        "detinr_kg_s_m2",
+        "f64"
+      ],
+      [
+        "shrsol_pa",
+        "f64"
+      ],
+      [
+        "tcend_kg_s_m",
+        "f64"
+      ],
+      [
+        "ktrato",
+        "f64"
+      ],
+      [
+        "veleff_m_s",
+        "f64"
+      ],
+      [
+        "beta",
+        "f64"
+      ],
+      [
+        "strldn",
+        "f64"
+      ],
+      [
+        "surface_frozen",
+        "bool"
+      ],
+      [
+        "theta_suppressed",
+        "bool"
+      ]
+    ]
+  },
+  "Wave1EnrichmentInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/erosion_enrichment.rs",
+    "line": 45,
+    "body": "\n    /// The five classes with mineralogy (`prtcmp` per-OFE lineage).\n    pub classes: [ErosionParticleClass; CLASS_COUNT],\n    /// Per-class transport shares at the normalizing shear\n    /// (`yalin.for:157` `tcf1`).\n    pub tcf1: [f64; CLASS_COUNT],\n    /// Interrill-detached composition. Non-cropland `fidel = frac`\n    /// (`param.for:452-458`) \u2014 exact on the enabled no-tillage scope;\n    /// the cropland `drinti` composition is a labeled extension point.\n    pub fidel: [f64; CLASS_COUNT],\n    /// Surface-soil specific surface area (`enrich.for:148-151`\n    /// `ssasol`), per-OFE.\n    pub ssasol: f64,\n    /// Upstream flow composition for the `route.for:142-160`\n    /// initialization; `None` for a no-inflow quantum (local `frac`).\n    pub inflow_fractions: Option<[f64; CLASS_COUNT]>,\n",
+    "fields": [
+      [
+        "classes",
+        "[ErosionParticleClass; CLASS_COUNT]"
+      ],
+      [
+        "tcf1",
+        "[f64; CLASS_COUNT]"
+      ],
+      [
+        "fidel",
+        "[f64; CLASS_COUNT]"
+      ],
+      [
+        "ssasol",
+        "f64"
+      ],
+      [
+        "inflow_fractions",
+        "Option<[f64; CLASS_COUNT]>"
+      ]
+    ]
+  },
+  "Wave1InterOfeContinuity": {
+    "kind": "struct",
+    "path": "direct_runtime/erosion_continuity.rs",
+    "line": 134,
+    "body": "\n    /// Shear at the inflow discharge on the prior OFE's AVERAGE slope\n    /// (`sheart(qin\u00b7rspace, cnslp_{i-1})`, floored 1e-6 Pa).\n    pub shrspv_pa: f64,\n    /// Prior-boundary transport capacity `trcoef(shrtp1)\u00b7shrspv^1.5`.\n    pub tcprev_kg_s_m: f64,\n    /// Prior-boundary transport-coefficient ratio\n    /// `trcoef((shrtp1+shrspv)/2) / trcoef(shrtp1)`.\n    pub ktrprv: f64,\n    /// Prior lane's final shear coefficients (`anflst`, `bnflst`, `cnflst`).\n    pub prior_shear_last: (f64, f64, f64),\n    /// Prior lane's final transport coefficients\n    /// (`atclst`, `btclst`, `ctclst`).\n    pub prior_transport_last: (f64, f64, f64),\n",
+    "fields": [
+      [
+        "shrspv_pa",
+        "f64"
+      ],
+      [
+        "tcprev_kg_s_m",
+        "f64"
+      ],
+      [
+        "ktrprv",
+        "f64"
+      ],
+      [
+        "prior_shear_last",
+        "(f64, f64, f64)"
+      ],
+      [
+        "prior_transport_last",
+        "(f64, f64, f64)"
+      ]
+    ]
+  },
+  "DirectErod13Inputs": {
+    "kind": "struct",
+    "path": "direct_runtime/erosion.rs",
+    "line": 157,
+    "body": "\n    pub ie_m_s: f64,\n    pub te_s: f64,\n    pub fs: f64,\n    pub ft: f64,\n    pub taufe_pa: f64,\n    pub q_m2_s: f64,\n    pub g_kg_s_m: f64,\n    pub di_kg_s_m2: f64,\n    pub beta: f64,\n    pub vf_m_s: f64,\n    pub dgdx_kg_s_m2: f64,\n    pub cntlen_m: f64,\n    pub kr_s_m: f64,\n    pub kradjf: f64,\n    pub tcadjf: f64,\n    pub shrsol_pa: f64,\n    pub tcend_kg_s_m: f64,\n    pub shcrit_pa: f64,\n    pub detinr_kg_s_m2: f64,\n    pub effdrr_m: f64,\n    pub effdrn_m: f64,\n    pub veleff_m_s: f64,\n    pub pkro_m3_s: f64,\n    pub tc_k: f64,\n    pub tc_m: f64,\n    pub q_runoff_m: f64,\n    pub peakro_m_s: f64,\n    pub watdur_s: f64,\n",
+    "fields": [
+      [
+        "ie_m_s",
+        "f64"
+      ],
+      [
+        "te_s",
+        "f64"
+      ],
+      [
+        "fs",
+        "f64"
+      ],
+      [
+        "ft",
+        "f64"
+      ],
+      [
+        "taufe_pa",
+        "f64"
+      ],
+      [
+        "q_m2_s",
+        "f64"
+      ],
+      [
+        "g_kg_s_m",
+        "f64"
+      ],
+      [
+        "di_kg_s_m2",
+        "f64"
+      ],
+      [
+        "beta",
+        "f64"
+      ],
+      [
+        "vf_m_s",
+        "f64"
+      ],
+      [
+        "dgdx_kg_s_m2",
+        "f64"
+      ],
+      [
+        "cntlen_m",
+        "f64"
+      ],
+      [
+        "kr_s_m",
+        "f64"
+      ],
+      [
+        "kradjf",
+        "f64"
+      ],
+      [
+        "tcadjf",
+        "f64"
+      ],
+      [
+        "shrsol_pa",
+        "f64"
+      ],
+      [
+        "tcend_kg_s_m",
+        "f64"
+      ],
+      [
+        "shcrit_pa",
+        "f64"
+      ],
+      [
+        "detinr_kg_s_m2",
+        "f64"
+      ],
+      [
+        "effdrr_m",
+        "f64"
+      ],
+      [
+        "effdrn_m",
+        "f64"
+      ],
+      [
+        "veleff_m_s",
+        "f64"
+      ],
+      [
+        "pkro_m3_s",
+        "f64"
+      ],
+      [
+        "tc_k",
+        "f64"
+      ],
+      [
+        "tc_m",
+        "f64"
+      ],
+      [
+        "q_runoff_m",
+        "f64"
+      ],
+      [
+        "peakro_m_s",
+        "f64"
+      ],
+      [
+        "watdur_s",
+        "f64"
+      ]
+    ]
+  },
+  "DirectHydrologyProjectionInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/projection.rs",
+    "line": 321,
+    "body": "\n    pub aggregate_storage_tolerance_m: f64,\n    pub snow_water_m: f64,\n    pub frozen_soil_water_m: f64,\n    pub frost_depth_m: f64,\n    pub profile_depth_m: Option<f64>,\n    pub profile_porosity_cap_m: Option<f64>,\n    pub profile_field_capacity_m: Option<f64>,\n    pub profile_wilting_point_m: Option<f64>,\n",
+    "fields": [
+      [
+        "aggregate_storage_tolerance_m",
+        "f64"
+      ],
+      [
+        "snow_water_m",
+        "f64"
+      ],
+      [
+        "frozen_soil_water_m",
+        "f64"
+      ],
+      [
+        "frost_depth_m",
+        "f64"
+      ],
+      [
+        "profile_depth_m",
+        "Option<f64>"
+      ],
+      [
+        "profile_porosity_cap_m",
+        "Option<f64>"
+      ],
+      [
+        "profile_field_capacity_m",
+        "Option<f64>"
+      ],
+      [
+        "profile_wilting_point_m",
+        "Option<f64>"
+      ]
+    ]
+  },
+  "DirectStorageReconciliationInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/storage.rs",
+    "line": 1602,
+    "body": "\n    pub storage_initial_m: f64,\n    pub precip_input_m: f64,\n    pub snow_coupling_m: f64,\n    pub frost_liquid_delta_m: f64,\n    pub runon_input_m: f64,\n    pub interception_m: f64,\n    pub evapotranspiration_m: f64,\n    pub evapotranspiration_storage_return_m: f64,\n    pub deep_seepage_m: f64,\n    pub subsurface_loss_m: f64,\n    pub closure_tolerance_m: f64,\n",
+    "fields": [
+      [
+        "storage_initial_m",
+        "f64"
+      ],
+      [
+        "precip_input_m",
+        "f64"
+      ],
+      [
+        "snow_coupling_m",
+        "f64"
+      ],
+      [
+        "frost_liquid_delta_m",
+        "f64"
+      ],
+      [
+        "runon_input_m",
+        "f64"
+      ],
+      [
+        "interception_m",
+        "f64"
+      ],
+      [
+        "evapotranspiration_m",
+        "f64"
+      ],
+      [
+        "evapotranspiration_storage_return_m",
+        "f64"
+      ],
+      [
+        "deep_seepage_m",
+        "f64"
+      ],
+      [
+        "subsurface_loss_m",
+        "f64"
+      ],
+      [
+        "closure_tolerance_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectSnowCouplingInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/storage.rs",
+    "line": 1355,
+    "body": "\n    pub snow_coupling_handoff_m: f64,\n    pub snow_state_projected: bool,\n    pub active_snow_coupling: bool,\n    pub mass_transition_ledgers: Box<DirectSnowMassTransitionLedgers>,\n    pub hourly_routed_melt_m: [f64; 24],\n    pub sublimation_m: f64,\n    pub post_winter_rain_m: f64,\n    pub runtime_swe_after_m: f64,\n    pub runtime_depth_after_m: f64,\n    pub runtime_density_after_kg_m3: f64,\n    pub runtime_settle_day_count_after: f64,\n    pub coe_boundary_depth_after_m: f64,\n    pub coe_boundary_density_after_kg_m3: f64,\n    pub coe_boundary_settle_day_count_after: f64,\n    pub liquid_holding_capacity_after_m: f64,\n    pub liquid_water_retained_after_m: f64,\n    pub liquid_water_released_m: f64,\n    pub snow_albedo_state_after: Option<SnowAlbedoState>,\n    pub snow_layers_after: Vec<DirectSnowLayerState>,\n",
+    "fields": [
+      [
+        "snow_coupling_handoff_m",
+        "f64"
+      ],
+      [
+        "snow_state_projected",
+        "bool"
+      ],
+      [
+        "active_snow_coupling",
+        "bool"
+      ],
+      [
+        "mass_transition_ledgers",
+        "Box<DirectSnowMassTransitionLedgers>"
+      ],
+      [
+        "hourly_routed_melt_m",
+        "[f64; 24]"
+      ],
+      [
+        "sublimation_m",
+        "f64"
+      ],
+      [
+        "post_winter_rain_m",
+        "f64"
+      ],
+      [
+        "runtime_swe_after_m",
+        "f64"
+      ],
+      [
+        "runtime_depth_after_m",
+        "f64"
+      ],
+      [
+        "runtime_density_after_kg_m3",
+        "f64"
+      ],
+      [
+        "runtime_settle_day_count_after",
+        "f64"
+      ],
+      [
+        "coe_boundary_depth_after_m",
+        "f64"
+      ],
+      [
+        "coe_boundary_density_after_kg_m3",
+        "f64"
+      ],
+      [
+        "coe_boundary_settle_day_count_after",
+        "f64"
+      ],
+      [
+        "liquid_holding_capacity_after_m",
+        "f64"
+      ],
+      [
+        "liquid_water_retained_after_m",
+        "f64"
+      ],
+      [
+        "liquid_water_released_m",
+        "f64"
+      ],
+      [
+        "snow_albedo_state_after",
+        "Option<SnowAlbedoState>"
+      ],
+      [
+        "snow_layers_after",
+        "Vec<DirectSnowLayerState>"
+      ]
+    ]
+  },
+  "DirectEvapotranspirationInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/storage.rs",
+    "line": 1291,
+    "body": "\n    pub evapotranspiration_handoff_m: f64,\n",
+    "fields": [
+      [
+        "evapotranspiration_handoff_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectEvapotranspirationComputeInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/evapotranspiration.rs",
+    "line": 658,
+    "body": "\n    pub et_demand_m: f64,\n    pub leaf_area_index: f64,\n    pub canopy_height_m: f64,\n    pub canopy_cover_fraction: f64,\n    pub residue_interception_m: f64,\n    pub same_pass_infiltration_m: f64,\n    pub outside_water_depth_m: f64,\n    pub root_depth_m: f64,\n    pub plant_tolerance: f64,\n    pub growth_context_required: bool,\n    pub stage_state: Option<DirectEvapotranspirationStageState>,\n    pub pmet: Option<DirectEvapotranspirationPmetInputs>,\n    pub pmet_compute: Option<DirectEvapotranspirationPmetComputeInputs>,\n",
+    "fields": [
+      [
+        "et_demand_m",
+        "f64"
+      ],
+      [
+        "leaf_area_index",
+        "f64"
+      ],
+      [
+        "canopy_height_m",
+        "f64"
+      ],
+      [
+        "canopy_cover_fraction",
+        "f64"
+      ],
+      [
+        "residue_interception_m",
+        "f64"
+      ],
+      [
+        "same_pass_infiltration_m",
+        "f64"
+      ],
+      [
+        "outside_water_depth_m",
+        "f64"
+      ],
+      [
+        "root_depth_m",
+        "f64"
+      ],
+      [
+        "plant_tolerance",
+        "f64"
+      ],
+      [
+        "growth_context_required",
+        "bool"
+      ],
+      [
+        "stage_state",
+        "Option<DirectEvapotranspirationStageState>"
+      ],
+      [
+        "pmet",
+        "Option<DirectEvapotranspirationPmetInputs>"
+      ],
+      [
+        "pmet_compute",
+        "Option<DirectEvapotranspirationPmetComputeInputs>"
+      ]
+    ]
+  },
+  "DirectEvapotranspirationPmetComputeInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/evapotranspiration.rs",
+    "line": 634,
+    "body": "\n    pub runtime_day_of_year: u16,\n    pub radiation_ly: f64,\n    pub wind_m_s: f64,\n    pub dew_point_c: f64,\n    pub temperature_max_c: f64,\n    pub temperature_min_c: f64,\n    pub latitude_degrees: f64,\n    pub elevation_m: f64,\n    pub kcb: f64,\n    pub rawp: f64,\n    pub canopy_height_m: f64,\n    pub radpot_ly: Option<f64>,\n    pub solthk_m: Vec<Option<f64>>,\n",
+    "fields": [
+      [
+        "runtime_day_of_year",
+        "u16"
+      ],
+      [
+        "radiation_ly",
+        "f64"
+      ],
+      [
+        "wind_m_s",
+        "f64"
+      ],
+      [
+        "dew_point_c",
+        "f64"
+      ],
+      [
+        "temperature_max_c",
+        "f64"
+      ],
+      [
+        "temperature_min_c",
+        "f64"
+      ],
+      [
+        "latitude_degrees",
+        "f64"
+      ],
+      [
+        "elevation_m",
+        "f64"
+      ],
+      [
+        "kcb",
+        "f64"
+      ],
+      [
+        "rawp",
+        "f64"
+      ],
+      [
+        "canopy_height_m",
+        "f64"
+      ],
+      [
+        "radpot_ly",
+        "Option<f64>"
+      ],
+      [
+        "solthk_m",
+        "Vec<Option<f64>>"
+      ]
+    ]
+  },
+  "DirectEvapotranspirationPmetInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/evapotranspiration.rs",
+    "line": 620,
+    "body": "\n    pub soil_evaporation_m: f64,\n    pub plant_transpiration_m: f64,\n    pub soil_evaporation_storage_return_m: f64,\n",
+    "fields": [
+      [
+        "soil_evaporation_m",
+        "f64"
+      ],
+      [
+        "plant_transpiration_m",
+        "f64"
+      ],
+      [
+        "soil_evaporation_storage_return_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectSubsurfaceLossInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/storage.rs",
+    "line": 1227,
+    "body": "\n    pub subsurface_loss_handoff_m: f64,\n",
+    "fields": [
+      [
+        "subsurface_loss_handoff_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectDeepSeepageInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/storage.rs",
+    "line": 1163,
+    "body": "\n    pub deep_seepage_handoff_m: f64,\n",
+    "fields": [
+      [
+        "deep_seepage_handoff_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectSubsurfaceComputeInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/subsurface.rs",
+    "line": 898,
+    "body": "\n    pub avg_slope: f64,\n    pub slope_length_m: f64,\n    pub lateral_anisotropy_ratio: f64,\n    pub soil_depth_m: f64,\n    pub solwpv_mode: i32,\n    pub mofe_hourly_carry_arrays_enabled: bool,\n    pub lane_substeps: usize,\n    pub drainage_capacity_m: f64,\n    pub drain_enabled: bool,\n    pub drain_depth_m: f64,\n    pub drain_spacing_m: f64,\n    pub drain_diameter_m: f64,\n    pub layers: Vec<DirectSubsurfaceLayerInputs>,\n",
+    "fields": [
+      [
+        "avg_slope",
+        "f64"
+      ],
+      [
+        "slope_length_m",
+        "f64"
+      ],
+      [
+        "lateral_anisotropy_ratio",
+        "f64"
+      ],
+      [
+        "soil_depth_m",
+        "f64"
+      ],
+      [
+        "solwpv_mode",
+        "i32"
+      ],
+      [
+        "mofe_hourly_carry_arrays_enabled",
+        "bool"
+      ],
+      [
+        "lane_substeps",
+        "usize"
+      ],
+      [
+        "drainage_capacity_m",
+        "f64"
+      ],
+      [
+        "drain_enabled",
+        "bool"
+      ],
+      [
+        "drain_depth_m",
+        "f64"
+      ],
+      [
+        "drain_spacing_m",
+        "f64"
+      ],
+      [
+        "drain_diameter_m",
+        "f64"
+      ],
+      [
+        "layers",
+        "Vec<DirectSubsurfaceLayerInputs>"
+      ]
+    ]
+  },
+  "DirectSubsurfaceLayerInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/subsurface.rs",
+    "line": 651,
+    "body": "\n    pub theta_m: f64,\n    pub field_capacity_m: f64,\n    pub upper_limit_m: f64,\n    pub conductivity_m_s: f64,\n    pub depth_m: f64,\n    pub residual_theta: f64,\n    pub frozen_depth_m: f64,\n    pub frozen_water_m: f64,\n    pub porosity: f64,\n    pub field_capacity_theta: f64,\n    pub coca: f64,\n    pub lateral_conductivity_m_s: f64,\n",
+    "fields": [
+      [
+        "theta_m",
+        "f64"
+      ],
+      [
+        "field_capacity_m",
+        "f64"
+      ],
+      [
+        "upper_limit_m",
+        "f64"
+      ],
+      [
+        "conductivity_m_s",
+        "f64"
+      ],
+      [
+        "depth_m",
+        "f64"
+      ],
+      [
+        "residual_theta",
+        "f64"
+      ],
+      [
+        "frozen_depth_m",
+        "f64"
+      ],
+      [
+        "frozen_water_m",
+        "f64"
+      ],
+      [
+        "porosity",
+        "f64"
+      ],
+      [
+        "field_capacity_theta",
+        "f64"
+      ],
+      [
+        "coca",
+        "f64"
+      ],
+      [
+        "lateral_conductivity_m_s",
+        "f64"
+      ]
+    ]
+  },
+  "DirectPercolationInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/subsurface.rs",
+    "line": 784,
+    "body": "\n    pub soil_water_initial_m: f64,\n    pub reconcile_legacy_soil_water_from_layers: bool,\n    pub same_pass_infiltration_m: f64,\n    pub same_pass_infiltration_lineage: bool,\n    pub tillage_depth_m: f64,\n    pub lane_substeps: usize,\n    pub restrictive_layer_enabled: bool,\n    pub restrictive_layer_conductivity_m_s: f64,\n    pub restrictive_layer_thickness_m: f64,\n    pub layers: Vec<DirectSubsurfaceLayerState>,\n",
+    "fields": [
+      [
+        "soil_water_initial_m",
+        "f64"
+      ],
+      [
+        "reconcile_legacy_soil_water_from_layers",
+        "bool"
+      ],
+      [
+        "same_pass_infiltration_m",
+        "f64"
+      ],
+      [
+        "same_pass_infiltration_lineage",
+        "bool"
+      ],
+      [
+        "tillage_depth_m",
+        "f64"
+      ],
+      [
+        "lane_substeps",
+        "usize"
+      ],
+      [
+        "restrictive_layer_enabled",
+        "bool"
+      ],
+      [
+        "restrictive_layer_conductivity_m_s",
+        "f64"
+      ],
+      [
+        "restrictive_layer_thickness_m",
+        "f64"
+      ],
+      [
+        "layers",
+        "Vec<DirectSubsurfaceLayerState>"
+      ]
+    ]
+  },
+  "DirectRunoffPartitionInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/runoff_result_types.rs",
+    "line": 476,
+    "body": "\n    pub liquid_input_m: f64,\n    pub runon_input_m: f64,\n    pub cumulative_infiltration_m: f64,\n    pub depression_storage_delta_m: f64,\n    pub surface_saturation_runoff_m: f64,\n    pub frost_retained_local_liquid_m: f64,\n    pub frost_preprojected_local_liquid_m: f64,\n",
+    "fields": [
+      [
+        "liquid_input_m",
+        "f64"
+      ],
+      [
+        "runon_input_m",
+        "f64"
+      ],
+      [
+        "cumulative_infiltration_m",
+        "f64"
+      ],
+      [
+        "depression_storage_delta_m",
+        "f64"
+      ],
+      [
+        "surface_saturation_runoff_m",
+        "f64"
+      ],
+      [
+        "frost_retained_local_liquid_m",
+        "f64"
+      ],
+      [
+        "frost_preprojected_local_liquid_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectSaturationAddbackInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/runoff_result_types.rs",
+    "line": 412,
+    "body": "\n    pub surface_saturation_runoff_handoff_m: f64,\n",
+    "fields": [
+      [
+        "surface_saturation_runoff_handoff_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectInfiltrationDepressionInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/runoff_result_types.rs",
+    "line": 145,
+    "body": "\n    pub cumulative_infiltration_handoff_m: f64,\n    pub depression_storage_delta_handoff_m: f64,\n    pub producer_inputs: Option<DirectWb14InfiltrationProducerInputs>,\n",
+    "fields": [
+      [
+        "cumulative_infiltration_handoff_m",
+        "f64"
+      ],
+      [
+        "depression_storage_delta_handoff_m",
+        "f64"
+      ],
+      [
+        "producer_inputs",
+        "Option<DirectWb14InfiltrationProducerInputs>"
+      ]
+    ]
+  },
+  "DirectWb14InfiltrationProducerInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/runoff_result_types.rs",
+    "line": 210,
+    "body": "\n    pub hyetograph: Vec<DirectWb14HyetographInterval>,\n    /// Producer-owned hourly liquid supplied in addition to direct rain.\n    /// Routed melt is seeded by the runner before WB14; inter-OFE runon is\n    /// added at R4K from the R4J-resolved totals. Both pass through the same\n    /// infiltration/depression partition before any runoff timing is claimed.\n    pub hourly_additional_supply_m: [f64; DC01_HOUR_BIN_COUNT],\n    pub effective_conductivity_m_s: f64,\n    pub matric_potential_m: f64,\n    pub storage_capacity_m: f64,\n    pub depression_storage_capacity_m: f64,\n",
+    "fields": [
+      [
+        "hyetograph",
+        "Vec<DirectWb14HyetographInterval>"
+      ],
+      [
+        "hourly_additional_supply_m",
+        "[f64; DC01_HOUR_BIN_COUNT]"
+      ],
+      [
+        "effective_conductivity_m_s",
+        "f64"
+      ],
+      [
+        "matric_potential_m",
+        "f64"
+      ],
+      [
+        "storage_capacity_m",
+        "f64"
+      ],
+      [
+        "depression_storage_capacity_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectWb14HyetographInterval": {
+    "kind": "struct",
+    "path": "direct_runtime/runoff_result_types.rs",
+    "line": 349,
+    "body": "\n    pub start_s: f64,\n    pub end_s: f64,\n    pub intensity_m_s: f64,\n",
+    "fields": [
+      [
+        "start_s",
+        "f64"
+      ],
+      [
+        "end_s",
+        "f64"
+      ],
+      [
+        "intensity_m_s",
+        "f64"
+      ]
+    ]
+  },
+  "DirectRunonCarryInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/runoff_result_types.rs",
+    "line": 73,
+    "body": "\n    pub surface_runon_handoff_m: f64,\n    pub subsurface_carry_handoff_m: f64,\n",
+    "fields": [
+      [
+        "surface_runon_handoff_m",
+        "f64"
+      ],
+      [
+        "subsurface_carry_handoff_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectLiquidInputInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/runoff_result_types.rs",
+    "line": 9,
+    "body": "\n    pub liquid_input_handoff_m: f64,\n",
+    "fields": [
+      [
+        "liquid_input_handoff_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectStorageInputInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/storage.rs",
+    "line": 1093,
+    "body": "\n    pub precip_input_handoff_m: Option<f64>,\n",
+    "fields": [
+      [
+        "precip_input_handoff_m",
+        "Option<f64>"
+      ]
+    ]
+  },
+  "DirectGrowthInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/growth.rs",
+    "line": 415,
+    "body": "\n    pub active_context: DirectGrowthActiveContext,\n    pub active_action: DirectGrowthAction,\n    pub state_before: DirectGrowthStateSurface,\n    pub planting_day: u16,\n    pub harvest_day: u16,\n    pub stop_day: u16,\n    pub water_stress: f64,\n    pub temperature_max_c: f64,\n    pub temperature_min_c: f64,\n    pub radiation_mj_m2: f64,\n    pub monthly_temperature_max_c: [f64; 12],\n    pub monthly_temperature_min_c: [f64; 12],\n    pub soil_depth_m: f64,\n    pub btemp: f64,\n    pub otemp: f64,\n    pub gddmax: f64,\n    pub dlai: f64,\n    pub dropfc: f64,\n    pub decfct: f64,\n    pub spriod: f64,\n    pub bb: f64,\n    pub bbb: f64,\n    pub hmax: f64,\n    pub beinp: f64,\n    pub extnct: f64,\n    pub hi: f64,\n    pub xmxlai: f64,\n    pub rsr: f64,\n    pub rtmmax: f64,\n    pub rdmax: f64,\n    pub et_demand_m: f64,\n    pub residue_interception_m: f64,\n    pub plant_tolerance: f64,\n",
+    "fields": [
+      [
+        "active_context",
+        "DirectGrowthActiveContext"
+      ],
+      [
+        "active_action",
+        "DirectGrowthAction"
+      ],
+      [
+        "state_before",
+        "DirectGrowthStateSurface"
+      ],
+      [
+        "planting_day",
+        "u16"
+      ],
+      [
+        "harvest_day",
+        "u16"
+      ],
+      [
+        "stop_day",
+        "u16"
+      ],
+      [
+        "water_stress",
+        "f64"
+      ],
+      [
+        "temperature_max_c",
+        "f64"
+      ],
+      [
+        "temperature_min_c",
+        "f64"
+      ],
+      [
+        "radiation_mj_m2",
+        "f64"
+      ],
+      [
+        "monthly_temperature_max_c",
+        "[f64; 12]"
+      ],
+      [
+        "monthly_temperature_min_c",
+        "[f64; 12]"
+      ],
+      [
+        "soil_depth_m",
+        "f64"
+      ],
+      [
+        "btemp",
+        "f64"
+      ],
+      [
+        "otemp",
+        "f64"
+      ],
+      [
+        "gddmax",
+        "f64"
+      ],
+      [
+        "dlai",
+        "f64"
+      ],
+      [
+        "dropfc",
+        "f64"
+      ],
+      [
+        "decfct",
+        "f64"
+      ],
+      [
+        "spriod",
+        "f64"
+      ],
+      [
+        "bb",
+        "f64"
+      ],
+      [
+        "bbb",
+        "f64"
+      ],
+      [
+        "hmax",
+        "f64"
+      ],
+      [
+        "beinp",
+        "f64"
+      ],
+      [
+        "extnct",
+        "f64"
+      ],
+      [
+        "hi",
+        "f64"
+      ],
+      [
+        "xmxlai",
+        "f64"
+      ],
+      [
+        "rsr",
+        "f64"
+      ],
+      [
+        "rtmmax",
+        "f64"
+      ],
+      [
+        "rdmax",
+        "f64"
+      ],
+      [
+        "et_demand_m",
+        "f64"
+      ],
+      [
+        "residue_interception_m",
+        "f64"
+      ],
+      [
+        "plant_tolerance",
+        "f64"
+      ]
+    ]
+  },
+  "DirectGrowthAction": {
+    "kind": "enum",
+    "path": "direct_runtime/growth.rs",
+    "line": 317,
+    "body": "\n    None,\n    PrePlantSkip,\n    PlantingReset,\n    HarvestReset,\n    StopReset,\n    Cut,\n    Grazing,\n    /// Publish the validated typed process state carried in `state_before`\n    /// without evaluating the legacy GDD canopy equations.\n    TypedStateOverride,\n",
+    "fields": []
+  },
+  "DirectGrowthActiveContext": {
+    "kind": "enum",
+    "path": "direct_runtime/growth.rs",
+    "line": 260,
+    "body": "\n    Inactive,\n    AnnualOrFallow {\n        active_slot_index: u16,\n        active_crop_slot_index: u16,\n        runtime_day_of_year: u16,\n    },\n    Perennial {\n        active_slot_index: u16,\n        active_crop_slot_index: u16,\n        runtime_day_of_year: u16,\n    },\n    Missing,\n    Ambiguous,\n",
+    "fields": []
+  },
+  "DirectResiduePartitionInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/decomposition.rs",
+    "line": 842,
+    "body": "\n    pub standing_residue_kg_m2: f64,\n    pub flat_residue_offset_kg_m2: f64,\n    pub buried_residue_kg_m2: f64,\n    pub cover_fraction: f64,\n    /// `covcal.for:176` `rescov` interrill area weight\n    /// `(rspace \u2212 width)/rspace`; the composite cover is\n    /// `w\u00b7inrcov + (1\u2212w)\u00b7rilcov`.\n    pub rescov_interrill_weight: f64,\n",
+    "fields": [
+      [
+        "standing_residue_kg_m2",
+        "f64"
+      ],
+      [
+        "flat_residue_offset_kg_m2",
+        "f64"
+      ],
+      [
+        "buried_residue_kg_m2",
+        "f64"
+      ],
+      [
+        "cover_fraction",
+        "f64"
+      ],
+      [
+        "rescov_interrill_weight",
+        "f64"
+      ]
+    ]
+  },
+  "DirectDecompositionInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/decomposition.rs",
+    "line": 407,
+    "body": "\n    pub active_context: DirectDecompositionActiveContext,\n    pub active_action: DirectDecompositionAction,\n    pub residue_type_selector: f64,\n    pub surface_residue_seed_kg_m2: f64,\n    /// Ground-cover authority (E.5 `GAP-SED-009` closure): the interrill\n    /// and rill ground-residue pools (`init1.for:295-297` lineage \u2014 day-0\n    /// back-derived from the declared IC covers; day-N carried from the\n    /// prior day's state) and the residue-type cover factor\n    /// (`cf(iresd)`), the `covcal.for` operands.\n    pub interrill_ground_seed_kg_m2: f64,\n    pub rill_ground_seed_kg_m2: f64,\n    pub residue_cover_factor: f64,\n    pub root_residue_seed_kg_m2: f64,\n    pub surface_litter_input_kg_m2: f64,\n    pub residue_depth_conversion_m_per_kg_m2: f64,\n    pub temperature_max_c: f64,\n    pub temperature_min_c: f64,\n    pub precipitation_m: f64,\n    pub water_stress_fraction: f64,\n    pub surface_decomposition_rate: f64,\n    pub root_decomposition_rate: f64,\n    pub burn_surface_fraction: f64,\n    pub remove_surface_fraction: f64,\n    pub cut_transfer_fraction: f64,\n    pub grazing_digest_fraction: f64,\n",
+    "fields": [
+      [
+        "active_context",
+        "DirectDecompositionActiveContext"
+      ],
+      [
+        "active_action",
+        "DirectDecompositionAction"
+      ],
+      [
+        "residue_type_selector",
+        "f64"
+      ],
+      [
+        "surface_residue_seed_kg_m2",
+        "f64"
+      ],
+      [
+        "interrill_ground_seed_kg_m2",
+        "f64"
+      ],
+      [
+        "rill_ground_seed_kg_m2",
+        "f64"
+      ],
+      [
+        "residue_cover_factor",
+        "f64"
+      ],
+      [
+        "root_residue_seed_kg_m2",
+        "f64"
+      ],
+      [
+        "surface_litter_input_kg_m2",
+        "f64"
+      ],
+      [
+        "residue_depth_conversion_m_per_kg_m2",
+        "f64"
+      ],
+      [
+        "temperature_max_c",
+        "f64"
+      ],
+      [
+        "temperature_min_c",
+        "f64"
+      ],
+      [
+        "precipitation_m",
+        "f64"
+      ],
+      [
+        "water_stress_fraction",
+        "f64"
+      ],
+      [
+        "surface_decomposition_rate",
+        "f64"
+      ],
+      [
+        "root_decomposition_rate",
+        "f64"
+      ],
+      [
+        "burn_surface_fraction",
+        "f64"
+      ],
+      [
+        "remove_surface_fraction",
+        "f64"
+      ],
+      [
+        "cut_transfer_fraction",
+        "f64"
+      ],
+      [
+        "grazing_digest_fraction",
+        "f64"
+      ]
+    ]
+  },
+  "DirectDecompositionAction": {
+    "kind": "enum",
+    "path": "direct_runtime/decomposition.rs",
+    "line": 389,
+    "body": "\n    None,\n    Herbicide,\n    Burn,\n    Silage,\n    Cut,\n    Remove,\n    Grazing,\n",
+    "fields": []
+  },
+  "DirectDecompositionActiveContext": {
+    "kind": "enum",
+    "path": "direct_runtime/decomposition.rs",
+    "line": 358,
+    "body": "\n    Inactive,\n    AnnualOrFallow {\n        active_slot_index: u16,\n        active_crop_slot_index: u16,\n        runtime_day_of_year: u16,\n    },\n    Perennial {\n        active_slot_index: u16,\n        active_crop_slot_index: u16,\n        runtime_day_of_year: u16,\n    },\n    Missing,\n    Ambiguous,\n",
+    "fields": []
+  },
+  "DirectStorageBoundsInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/normalization.rs",
+    "line": 387,
+    "body": "\n    pub storage_initial_m: f64,\n    pub total_accounted_input_m: f64,\n    pub closure_tolerance_m: f64,\n",
+    "fields": [
+      [
+        "storage_initial_m",
+        "f64"
+      ],
+      [
+        "total_accounted_input_m",
+        "f64"
+      ],
+      [
+        "closure_tolerance_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectNormalizationInputs": {
+    "kind": "struct",
+    "path": "direct_runtime/normalization.rs",
+    "line": 173,
+    "body": "\n    pub precipitation_m: f64,\n    pub effective_temperature_c: f64,\n    pub storage_initial_m: f64,\n    pub surface_transfer_m: f64,\n    pub lateral_transfer_m: f64,\n    pub upstream_flow_m: f64,\n    pub subsurface_input_m: f64,\n",
+    "fields": [
+      [
+        "precipitation_m",
+        "f64"
+      ],
+      [
+        "effective_temperature_c",
+        "f64"
+      ],
+      [
+        "storage_initial_m",
+        "f64"
+      ],
+      [
+        "surface_transfer_m",
+        "f64"
+      ],
+      [
+        "lateral_transfer_m",
+        "f64"
+      ],
+      [
+        "upstream_flow_m",
+        "f64"
+      ],
+      [
+        "subsurface_input_m",
+        "f64"
+      ]
+    ]
+  },
+  "DirectDayForcing": {
+    "kind": "struct",
+    "path": "direct_runtime/02_state_reports.rs",
+    "line": 57,
+    "body": "\n    pub precipitation_m: f64,\n    pub effective_temperature_c: f64,\n",
+    "fields": [
+      [
+        "precipitation_m",
+        "f64"
+      ],
+      [
+        "effective_temperature_c",
+        "f64"
+      ]
+    ]
+  }
+}

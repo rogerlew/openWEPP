@@ -1,0 +1,12 @@
+{
+  "baseline_receipt": "acquisition-default-feature-check.json",
+  "candidate_receipt": "terminal-default-feature-check.json",
+  "baseline_error_count": 61,
+  "candidate_error_count": 63,
+  "introduced_messages": {
+    "cannot find function `diagnostic_restore_coupled_subslab_receipts_value_v2` in module `crate::snow_stage3_v11_attachment`": 2
+  },
+  "removed_messages": {},
+  "status": "FAIL new error messages",
+  "method": "Compiler error-message multiset; independent reviewer confirms affected source boundaries and inherited locations; not a successful compilation."
+}

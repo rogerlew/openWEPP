@@ -1,0 +1,5 @@
+{
+  "build": "composed-phase-second-build.json",
+  "binary": "/workdir/openwepp-experiments/b01-wb14-cadence/event-aware-restoration-binaries-20260916/composed-phase.frozen",
+  "sha256": "8fa52a3b594d8b31e332b39cef81f629627d5c0c344629bccfa92392d1419557"
+}

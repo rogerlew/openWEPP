@@ -1,0 +1,83 @@
+{
+  "native": {
+    "accepted_interval_count": 0,
+    "next_day_index": 4,
+    "provider_gsi_receipt_sha256": "e1ca5d7e2f8088c68d3acdd0a7a8073bd3b5c7b6a1b632d58782d01ebc961887"
+  },
+  "native_cursor": {
+    "next_day_index": 4,
+    "configuration_sha256": "28989c0a2d709d9944b06f1096b340491df042542e22d23690c360b899d06ca0",
+    "pending_carry": [],
+    "pending_solid_carry": []
+  },
+  "provider_gsi_receipt": {
+    "beginning_state": {
+      "history_oldest_first": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "last_date": {
+        "ordinal_day": 4,
+        "year": 2001
+      },
+      "state_sha256": "fc2fb42727b01c327018087ce58e40ffdf15575ffcebb391eeb7df86a663dd2a"
+    },
+    "beginning_state_sha256": "fc2fb42727b01c327018087ce58e40ffdf15575ffcebb391eeb7df86a663dd2a",
+    "configuration_sha256": "40ec29c72af94bc48308bb6560674c39f8026a0322de8962c3c3d6fed16498ff",
+    "day_index": 4,
+    "ending_state": {
+      "history_oldest_first": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "last_date": {
+        "ordinal_day": 5,
+        "year": 2001
+      },
+      "state_sha256": "c8c5a909ca11e308ab5a5bafc800fd172572fec867f5acaa3b91c0655d3d9ab8"
+    },
+    "ending_state_sha256": "c8c5a909ca11e308ab5a5bafc800fd172572fec867f5acaa3b91c0655d3d9ab8",
+    "forcing": {
+      "latitude_degrees": 41.1,
+      "minimum_temperature_c": 3.0,
+      "ordinal_day": 5,
+      "vapor_pressure_deficit_pa": 424.6676089359233,
+      "year": 2001
+    },
+    "forcing_sha256": "3107d3d59530b2ae69c4e3f29251b07fe8e7224d8e388802d1c023a7e254c8d7",
+    "owner_id": "restart-authority-gsi",
+    "parameters": {
+      "minimum_temperature_inactive_c": -2.0,
+      "minimum_temperature_unconstrained_c": 5.0,
+      "photoperiod_inactive_hours": 10.0,
+      "photoperiod_unconstrained_hours": 11.0,
+      "vapor_pressure_deficit_inactive_pa": 4100.0,
+      "vapor_pressure_deficit_unconstrained_pa": 900.0
+    },
+    "receipt_sha256": "85ca53004008e48734b4674eb7e86510f07471d9dbb5db994ddff325ff11ab28",
+    "result": {
+      "growing_season_index": 0.0,
+      "instantaneous_gsi": 0.0,
+      "minimum_temperature_indicator": 0.7142857142857143,
+      "photoperiod_hours": 9.160369889040435,
+      "photoperiod_indicator": 0.0,
+      "sample_count": 5,
+      "vapor_pressure_deficit_indicator": 1.0
+    },
+    "result_sha256": "a383e6cee43e60464f079e702d8ac356a344b3f00032d181031175905cd1d4da",
+    "run_id": "83",
+    "schema_version": "DIRECT_GSI_DAILY_RECEIPT_V1",
+    "source_climate_sha256": "f16562ab232c0db1aa3751d6c51bac66a0acc63c3cc64759f57720fabd18c592"
+  },
+  "provider_beginning_cursor": {
+    "next_day_index": 4,
+    "configuration_sha256": "28989c0a2d709d9944b06f1096b340491df042542e22d23690c360b899d06ca0",
+    "pending_carry": [],
+    "pending_solid_carry": []
+  }
+}

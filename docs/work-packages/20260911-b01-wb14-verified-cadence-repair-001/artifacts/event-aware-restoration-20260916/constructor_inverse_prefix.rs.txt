@@ -1,0 +1,99 @@
+//! Private field-complete inverse of the diagnostic constructor capture.
+//! No solver or process transition is evaluated here. The native constructor
+//! remains the authority for installing the reconstructed operands.
+use serde_json::Value;
+
+trait Decode: Sized {
+    fn decode(value: &Value) -> Result<Self, String>;
+}
+fn field<T: Decode>(value: &Value, name: &str) -> Result<T, String> {
+    T::decode(value.get(name).ok_or_else(|| format!("missing constructor field {name}"))?)
+        .map_err(|error| format!("{name}: {error}"))
+}
+macro_rules! scalar {
+    ($($ty:ty),* $(,)?) => {$(impl Decode for $ty {
+        fn decode(value: &Value) -> Result<Self, String> {
+            serde_json::from_value(value.clone()).map_err(|error| error.to_string())
+        }
+    })*};
+}
+scalar!(f64, bool, u8, u16, u32, u64, usize, i8, i16, i32, i64, String);
+impl<T: Decode> Decode for Option<T> {
+    fn decode(value: &Value) -> Result<Self, String> {
+        if value.is_null() { Ok(None) } else { T::decode(value).map(Some) }
+    }
+}
+impl<T: Decode> Decode for Box<T> {
+    fn decode(value: &Value) -> Result<Self, String> { T::decode(value).map(Box::new) }
+}
+impl<T: Decode> Decode for Vec<T> {
+    fn decode(value: &Value) -> Result<Self, String> {
+        value.as_array().ok_or("constructor array required")?.iter().map(T::decode).collect()
+    }
+}
+impl<T: Decode, const N: usize> Decode for [T; N] {
+    fn decode(value: &Value) -> Result<Self, String> {
+        Vec::<T>::decode(value)?.try_into().map_err(|v: Vec<T>| format!("constructor array length {}, expected {N}", v.len()))
+    }
+}
+impl Decode for openwepp_unit_boundary::TemperatureCelsius {
+    fn decode(value: &Value) -> Result<Self, String> {
+        Self::try_new(f64::decode(value)?).map_err(|error| error.to_string())
+    }
+}
+macro_rules! captured_struct {
+    ($ty:path { $($name:ident),* $(,)? }) => {
+        impl Decode for $ty {
+            fn decode(value: &Value) -> Result<Self, String> {
+                Ok(Self { $($name: field(value, stringify!($name))?),* })
+            }
+        }
+    };
+}
+macro_rules! captured_enum {
+    ($ty:path { $($variant:ident),* $(,)? }) => {
+        impl Decode for $ty {
+            fn decode(value: &Value) -> Result<Self, String> {
+                $(if serde_json::to_value(Self::$variant).map_err(|error| error.to_string())? == *value {
+                    return Ok(Self::$variant);
+                })*
+                Err(format!("unknown {} captured variant", stringify!($ty)))
+            }
+        }
+    };
+}
+macro_rules! active_context {
+    ($ty:path) => {
+        impl Decode for $ty {
+            fn decode(value: &Value) -> Result<Self, String> {
+                match value.as_str() {
+                    Some("inactive") => return Ok(Self::Inactive),
+                    Some("missing") => return Ok(Self::Missing),
+                    Some("ambiguous") => return Ok(Self::Ambiguous),
+                    _ => {}
+                }
+                if let Some(fields) = value.get("annual_or_fallow") {
+                    return Ok(Self::AnnualOrFallow {
+                        active_slot_index: field(fields, "active_slot_index")?,
+                        active_crop_slot_index: field(fields, "active_crop_slot_index")?,
+                        runtime_day_of_year: field(fields, "runtime_day_of_year")?,
+                    });
+                }
+                if let Some(fields) = value.get("perennial") {
+                    return Ok(Self::Perennial {
+                        active_slot_index: field(fields, "active_slot_index")?,
+                        active_crop_slot_index: field(fields, "active_crop_slot_index")?,
+                        runtime_day_of_year: field(fields, "runtime_day_of_year")?,
+                    });
+                }
+                Err(format!("unknown {} captured context", stringify!($ty)))
+            }
+        }
+    };
+}
+impl Decode for crate::DirectSnowMassTransitionLedgers {
+    fn decode(value: &Value) -> Result<Self, String> {
+        Self::try_from_parts(field(value, "solid_to_liquid")?, field(value, "liquid_disposition")?, field(value, "stage3_outcome")?)
+            .map_err(|error| error.to_string())
+    }
+}

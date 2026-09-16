@@ -1,0 +1,40 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0308]: `?` operator has incompatible types
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:328:63
+    |
+328 | ...ed_add(u64::try_from(chain.len().checked_sub(1).ok_or("empty deferred chain")?).map_err(|error| error.to_string())?).ok_or("defe...
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `u128`, found `u64`
+    |
+    = note: `?` operator cannot convert from `u64` to `u128`
+help: you can convert a `u64` to a `u128`
+    |
+328 |     let expected_last = original.transaction_id.0.checked_add(u64::try_from(chain.len().checked_sub(1).ok_or("empty deferred chain")?).map_err(|error| error.to_string())?.into()).ok_or("deferred transaction overflow")?;
+    |                                                                                                                                                                           +++++++
+
+error[E0308]: `?` operator has incompatible types
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:347:133
+    |
+347 | ...ion_id.0.checked_add(u64::try_from(index).map_err(|error| error.to_string())?).ok_or("deferred transaction overflow")?));
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `u128`, found `u64`
+    |
+    = note: `?` operator cannot convert from `u64` to `u128`
+help: you can convert a `u64` to a `u128`
+    |
+347 |             layer.last_accepted_transaction_id = Some(openwepp_kernel_contract::TransactionId(original.transaction_id.0.checked_add(u64::try_from(index).map_err(|error| error.to_string())?.into()).ok_or("deferred transaction overflow")?));
+    |                                                                                                                                                                                             +++++++
+
+error[E0308]: `?` operator has incompatible types
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:349:129
+    |
+349 | ...ion_id.0.checked_add(u64::try_from(index).map_err(|error| error.to_string())?).ok_or("deferred transaction overflow")?));
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `u128`, found `u64`
+    |
+    = note: `?` operator cannot convert from `u64` to `u128`
+help: you can convert a `u64` to a `u128`
+    |
+349 |         state.last_accepted_transaction_id = Some(openwepp_kernel_contract::TransactionId(original.transaction_id.0.checked_add(u64::try_from(index).map_err(|error| error.to_string())?.into()).ok_or("deferred transaction overflow")?));
+    |                                                                                                                                                                                         +++++++
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 3 previous errors
