@@ -126,6 +126,14 @@ source observation `1555efe1…`, summary `cf5f6612…`, original seed
 receipts. Large corpus/source trees and binaries remain local custody;
 remote verification covers only published package/evidence/patch bytes.
 
+Evidence commit `14621d3800eda6f4de8658c979adf4e68d355fa4` is pushed to main.
+[Exact-commit remote verification](artifacts/event-aware-restoration-20260916/remote-verification.json)
+matched all 543 published files, 139,032,407 bytes, against local Git bytes.
+The custody supplement publishes that receipt and the
+[tracked final ledger](artifacts/event-aware-restoration-20260916/budget-final.json).
+The latter identifies the external post-publication receipt for the last
+supplement verification and return charge; this avoids a recursive self-verification claim.
+
 [Accounting](artifacts/event-aware-restoration-20260916/budget-current.json)
 charges all wall time from 15:12 UTC plus the unchanged 51,146.178324-second
 carry, including its unreclaimed prior reservation, against the fixed

@@ -1,0 +1,2725 @@
+{
+  "utc": "2026-09-16T18:28:39.024703+00:00",
+  "commit": "14621d3800eda6f4de8658c979adf4e68d355fa4",
+  "parent": "7ade4d6ef233333316b0a16d3e134227945a81c3",
+  "method": "independent exact-commit HTTPS raw fetch; byte-for-byte comparison to git show",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a001-seed-pin-build-source.json",
+      "bytes": 112890,
+      "sha256": "f7506af4e02be9c9d8affca9bec6d667e3f70a324da9b0692906e5480d30ec76"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a001-seed-pin-build.json",
+      "bytes": 2845,
+      "sha256": "584a1bf0d2eecdc0122c0ec7ac3b3d39087b5210bc5f4bb6505565024fb64579"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a001-seed-pin-build.resources",
+      "bytes": 1112,
+      "sha256": "b98887dd37781083e793f7763c9848def6c699d83c827740b422ff9d6db73b2a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a001-seed-pin-build.stderr",
+      "bytes": 8555,
+      "sha256": "e5ee58ab3581d2697a000b3de214110aa10c4a3df2a33619148ae46ce4148815"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a001-seed-pin-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-a003-final-build-source.json",
+      "bytes": 112890,
+      "sha256": "80a9cffcef0c77726b4a927591203f438427ab2618a458329905866125c89011"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-a003-final-build.json",
+      "bytes": 2849,
+      "sha256": "210a5634519bfed305aea31532d003f5c6514ebccc898d44dc11b11c5abef04a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-a003-final-build.resources",
+      "bytes": 1107,
+      "sha256": "f711e5d0bdcd85174ebf0caf1adf7537698957f159728729f366ecd6670f3315"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-a003-final-build.stderr",
+      "bytes": 7940,
+      "sha256": "178560f1676f5edc02337242d456beffa68b41480fd494cceada15a416eef36d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-a003-final-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-complete-controls-source.json",
+      "bytes": 113939,
+      "sha256": "bcd7f37492e4a4b207dc7de9a7e0719bb3b80fbdf77fff97fff212385bd81ccb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-complete-controls.json",
+      "bytes": 3448,
+      "sha256": "3672f4687bea0f733f5a766534315d54798cf1fddd482fc316dc059f35139deb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-complete-controls.resources",
+      "bytes": 1018,
+      "sha256": "559d2035c4fa6d558ad13b31422e29b8c076c41cc5c56936ea16b9a264583cbb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-complete-controls.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-complete-controls.stdout",
+      "bytes": 1011,
+      "sha256": "cdfea399e0145ef048c32389b1c65c4afc937ce6dc7d9adedb9901ab16903275"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-direct-expanded-source.json",
+      "bytes": 113939,
+      "sha256": "2cf660e23e3919b50f653f96489b84a0176b2f13b441f26be167a9ee2ac05a08"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-direct-expanded.json",
+      "bytes": 3001,
+      "sha256": "eec56d98420d5bd6cfd1b0a0058191346aedfda4f196ec15d65fce7aa85a6758"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-direct-expanded.resources",
+      "bytes": 1050,
+      "sha256": "622922ccb0e0b847d20311cd45bad0531b15b24851c91abba4b5ccc89f98339a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-direct-expanded.stderr",
+      "bytes": 495,
+      "sha256": "76a407fa3b969828a2c169aecfd7a50849398d07d2a96c53fcd7ba2b4d0f0546"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-direct-expanded.stdout",
+      "bytes": 444,
+      "sha256": "a5b5342b7024af1cc660d3662c01cebda9ea8dfbf381b33450166b0d1f99e325"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-expanded-build-source.json",
+      "bytes": 112890,
+      "sha256": "b6fba7f4cfec3581a48d92c51dfd86978f9dc382299c21ec9e1ccc7ffa26c0ee"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-expanded-build.json",
+      "bytes": 2410,
+      "sha256": "df7830b712b50df2691081955b9dc74c21b52fac1fd552ffcbd767cb9618ff4a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-expanded-build.resources",
+      "bytes": 1141,
+      "sha256": "4c31cd68ad44a6e72e0d0c12f2ee58a8edb78a93a2035fc7304815a5ac420aed"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-expanded-build.stderr",
+      "bytes": 17366,
+      "sha256": "84cb5758eaab4d1fc86a3de4bc27d57067afd60aa4c8e51d6361799d3e3905fd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-expanded-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-expanded-green-source.json",
+      "bytes": 112890,
+      "sha256": "b6fba7f4cfec3581a48d92c51dfd86978f9dc382299c21ec9e1ccc7ffa26c0ee"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-expanded-green.json",
+      "bytes": 2333,
+      "sha256": "c447ef430f19ee567fe577156a7abeb3fd765f41dee05c4c87be6aa33bae6569"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-expanded-green.resources",
+      "bytes": 1016,
+      "sha256": "a4ba35897bea6640b65a256048cbc727fa36d115a02874b04bbf62bf19a34a25"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-expanded-green.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-expanded-green.stdout",
+      "bytes": 269,
+      "sha256": "fd2142a69c720d182d5a0d03d3e32c60f2d5c68896c4889a590c0a328373dd1e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-extra-semantic-resealed-tests-proposal.patch",
+      "bytes": 8400,
+      "sha256": "705d1b86178f586c8421c0a81bf9265146636b7f182e3783b8e6c1b6aab05081"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-extra-tests-proposal.patch",
+      "bytes": 10698,
+      "sha256": "58acabc2c3704e4fd0e58c630674a47665342d5e75f833440b78f94ea0c53e87"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-green-recorded-source.json",
+      "bytes": 112890,
+      "sha256": "55cd2f10f96842b51c9303812b68fe095cd2513bc487051a1d54cd3e4b6c89e5"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-green-recorded.json",
+      "bytes": 2333,
+      "sha256": "59f246b020f02fa920c02bd5282385c34a4a8cdddd5cd325d685e446c0b5baac"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-green-recorded.resources",
+      "bytes": 1016,
+      "sha256": "5bf9b5bf85ff55303115caf61bf61dcffaa90c9253ef99b6a9b675b21b0b2d67"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-green-recorded.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-green-recorded.stdout",
+      "bytes": 269,
+      "sha256": "7ecc4fef6a3c1e033ab9957b62a787834fc6e16e648023464a513c986d72270c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-green-source.json",
+      "bytes": 113078,
+      "sha256": "9951c5dd2b619e13f867a76eb014912ddd829ed8f0299e3a96cba445a72ca8e6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-green.resources",
+      "bytes": 1117,
+      "sha256": "80809783bb5cbcb79cd96414fa24f303a341ff1bc27b35bb35ed6890bc0e9242"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-green.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-green.stdout",
+      "bytes": 269,
+      "sha256": "49052284bc3f707d09fe416910476ec3269b778ddfd6a105d07b24c83ffeccef"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-green-build-source.json",
+      "bytes": 113939,
+      "sha256": "6eeb813aaf507d65d3dab903b4708f628dd7c8a87f3ba70faed46605b4373a58"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-green-build.json",
+      "bytes": 2808,
+      "sha256": "29ac5ebbd944b3aa7562c4b3a9b9a5091c0d460ecfcd7fb8153504ae9d08d363"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-green-build.resources",
+      "bytes": 1075,
+      "sha256": "98ba08c59375d7430f517e950a6bb19d59ac3f3eafc05de6797f44dbe73ca995"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-green-build.stderr",
+      "bytes": 3041,
+      "sha256": "05cc53cf707a9f388d9c7ad4829f1c28ef4b22459d4518dbd4b813124e4b6845"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-green-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-green-source.json",
+      "bytes": 113939,
+      "sha256": "6eeb813aaf507d65d3dab903b4708f628dd7c8a87f3ba70faed46605b4373a58"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-green.json",
+      "bytes": 3445,
+      "sha256": "129f00e18ee3bb1c20d0789acb28bb231dbaba185e90d4db8f6b378f29d11198"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-green.resources",
+      "bytes": 1016,
+      "sha256": "3f9fd621b9039d997fb100706aaee76bdcb4a402ddabcc22b6834a660dad4d92"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-green.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-green.stdout",
+      "bytes": 1483,
+      "sha256": "0cba4ad784fd8f630e557c07545159b97d8a9a8b882140c64e54a7bae7e07525"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-red-build-source.json",
+      "bytes": 113939,
+      "sha256": "c463e6b262aea23e194c210e62adb78cfe7161eee9d0d718b11ea0660090419a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-red-build.json",
+      "bytes": 2803,
+      "sha256": "cf4e5bf8b0b27908d3bea91201b13033d2b536811f2830099fd841f0b38c10a3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-red-build.resources",
+      "bytes": 1084,
+      "sha256": "ff18a0097c622f78750eedfb545f8b1de4b3fa9f77aea995258fc023fb6a9096"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-red-build.stderr",
+      "bytes": 3041,
+      "sha256": "9b93a582aeaa364b2d8075a0f675ccd6ca69c03e5c42709b0677c84d755bddbe"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-red-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-red-source.json",
+      "bytes": 113939,
+      "sha256": "c463e6b262aea23e194c210e62adb78cfe7161eee9d0d718b11ea0660090419a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-red.json",
+      "bytes": 3435,
+      "sha256": "5d90a5e1575771d352e8715dc24b7ac9583f6f5069ced233fbabf72b98b04127"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-red.resources",
+      "bytes": 1053,
+      "sha256": "258ba7e8e43288f22ecc1fa092d74e8b3b00855115b401611484d9f5cc194f2b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-red.stderr",
+      "bytes": 451,
+      "sha256": "577b073cb37178ab6637a34c0a42da224ca06749dac649fd72e9a2dfa1e36749"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-prospective-red.stdout",
+      "bytes": 444,
+      "sha256": "063bfa14f299c2e3c0721b14e79204922884b6b8cbd469e349ea3ba6824dcce3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-red-direct.resources",
+      "bytes": 1163,
+      "sha256": "a9cdd4e1eb86d00a764d008f174725fc97c9dbf2d96481c3e329384138f04b0e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-red-direct.stderr",
+      "bytes": 449,
+      "sha256": "769d19cafd16855926c87b0450dd73a98292dc4bb357f83afca78edc2eb51489"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-red-direct.stdout",
+      "bytes": 444,
+      "sha256": "93f8edabfa6032437db2b8b8c873775c0269ab4e6d0840b1ec273c67e3c0ce02"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-red-green-receipt.md",
+      "bytes": 1739,
+      "sha256": "cd77c5feae3b3eeb4a0db22dadffc36e542dff25246117e39767bef65a746da0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-red.resources",
+      "bytes": 1156,
+      "sha256": "37369af2448ed8910af4e4b54c5a546dead483257d00dcca755d38f97a1118de"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-red.stderr",
+      "bytes": 436,
+      "sha256": "2950dd731696271e287bb9b9321e8531eb5d505e1c7c0a3bf5a34d2f697efad1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-red.stdout",
+      "bytes": 443,
+      "sha256": "96f3c26e2af358c7f00dc4f58d632b756ba30957ff925339ce14e5f91bda6d4a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-resealed-controls-source.json",
+      "bytes": 113939,
+      "sha256": "b49b91f2ee17d690231fd4a90f911111ee87a11a6c956ccb52d70d3238a975b9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-resealed-controls.json",
+      "bytes": 3444,
+      "sha256": "26229976f1491111ddf8ef1794d36b5347afe08c88bd46ec6f2c05236cb44f2d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-resealed-controls.resources",
+      "bytes": 1056,
+      "sha256": "7666c2b9ed502d09e712fab96a8ac698c4ba6aaa06ab7fc00d9eb6191d00162e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-resealed-controls.stderr",
+      "bytes": 496,
+      "sha256": "224c1a60965115ce8b0e3bd507e160cca243694b31353610af035e7fc6f8659f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-resealed-controls.stdout",
+      "bytes": 445,
+      "sha256": "2b912569377c9075cda291963d141fddd1bd2d9466cc200f5431696f244e9c8b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-rustfmt-check-source.json",
+      "bytes": 112890,
+      "sha256": "b6fba7f4cfec3581a48d92c51dfd86978f9dc382299c21ec9e1ccc7ffa26c0ee"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-rustfmt-check.json",
+      "bytes": 2333,
+      "sha256": "556cf6ea0022690ea7de3296233a046feeffffff5e53ae28646512dea4abdcd2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-rustfmt-check.resources",
+      "bytes": 903,
+      "sha256": "6bd696c2b0f3e41d14d0c5f0d27cdc914c2bc8fa18e9fbd4d5e8c4682a395899"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-rustfmt-check.stderr",
+      "bytes": 47,
+      "sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-rustfmt-check.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-terminal-chain-controls-source.json",
+      "bytes": 112890,
+      "sha256": "b6fba7f4cfec3581a48d92c51dfd86978f9dc382299c21ec9e1ccc7ffa26c0ee"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-terminal-chain-controls.json",
+      "bytes": 2716,
+      "sha256": "42fb253b52072aa958dace158a2deb8a821fb22355ea1572c68a7e84efcf8c46"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-terminal-chain-controls.resources",
+      "bytes": 1004,
+      "sha256": "a7172d1e035416a2ed8efe837b866d1f6a82e104f671f4f80ad7d2e6328e52f9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-terminal-chain-controls.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a002-terminal-chain-controls.stdout",
+      "bytes": 265,
+      "sha256": "52e3e66a146cd8fcd829ec7156e35a13708a3240faf962a97ae55d40058eee19"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a003-ordered-archives-source.json",
+      "bytes": 112890,
+      "sha256": "b6fba7f4cfec3581a48d92c51dfd86978f9dc382299c21ec9e1ccc7ffa26c0ee"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a003-ordered-archives.json",
+      "bytes": 3390,
+      "sha256": "1d5b0f7b88ed93c42a82a7d605f2d644261f10f68d3fd82c805c2f03c88786b1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a003-ordered-archives.resources",
+      "bytes": 1006,
+      "sha256": "ae5476d136f6e0d43ea53d254f6162c1049032fbc25ec84d0656c1a46cf9ce74"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a003-ordered-archives.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/a003-ordered-archives.stdout",
+      "bytes": 1744,
+      "sha256": "262638361f81a6c9419130d5114e92609b9c384f77dd5280c100acea04f945a0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/acquisition-default-feature-check-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/acquisition-default-feature-check.json",
+      "bytes": 2709,
+      "sha256": "5bce5e811c3ae29a8cc0bff46001ec2dec2fbdcd92fa41915fc8e6fce7ed518f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/acquisition-default-feature-check.resources",
+      "bytes": 1078,
+      "sha256": "d62c6f8b0a124008522bfb0149863abbf904245ab7ba39f3222263846aa2b1fd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/acquisition-default-feature-check.stderr",
+      "bytes": 90036,
+      "sha256": "c52a22fa610c150490bea3951953a1ed47d61e9a6234b2f87f24575309288358"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/acquisition-default-feature-check.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/additional-controls.rs",
+      "bytes": 5816,
+      "sha256": "eae449c9a2a53e2ad5157c00a4e0758a2ddc7de9fee430f66a01ad5ea28703d0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/adopted-authorization.md",
+      "bytes": 16259,
+      "sha256": "61a11cb77ef3196f258327b998367a71d18e41e4d204aa4a46829dd5c7f24a81"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/archive-beginning-control-source.json",
+      "bytes": 113939,
+      "sha256": "6eeb813aaf507d65d3dab903b4708f628dd7c8a87f3ba70faed46605b4373a58"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/archive-beginning-control.json",
+      "bytes": 3451,
+      "sha256": "c4d8d7a435a48549c4cd511236400b770bd5f39c6368d7fa0ed3af650dfd5f7f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/archive-beginning-control.resources",
+      "bytes": 1013,
+      "sha256": "aee41ca10a589ce4e8967f107ff6e30af1ed45e9ab54930cb076ee9e2688ec38"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/archive-beginning-control.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/archive-beginning-control.stdout",
+      "bytes": 1779,
+      "sha256": "04649e40c3453c565063c0f874b6d783b26aeef9fef201b20764805d541233df"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-binary.json",
+      "bytes": 257,
+      "sha256": "1f2b1b6757695c12c7e4c02e970353c2335955e51f9e762fde1bf88997d26bf4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-build-source.json",
+      "bytes": 113939,
+      "sha256": "bcd7f37492e4a4b207dc7de9a7e0719bb3b80fbdf77fff97fff212385bd81ccb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-build.json",
+      "bytes": 2795,
+      "sha256": "51dd696963641c4b8ced0b0e4d36444f9647f3f8e6f90d0b8932103e8f7450cb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-build.resources",
+      "bytes": 1077,
+      "sha256": "e6ee1b39963e764b6abde66171808e8ff73ac4f0f63b672af16a9a4b9b9f14b7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-build.stderr",
+      "bytes": 4294,
+      "sha256": "6d1a832760d251ba96f297bf13162671c26606c305199d2a9501fe5ea1848426"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-fast-source.json",
+      "bytes": 113939,
+      "sha256": "bcd7f37492e4a4b207dc7de9a7e0719bb3b80fbdf77fff97fff212385bd81ccb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-fast.json",
+      "bytes": 4298,
+      "sha256": "c02f6ce852086cebe163039c89060062fd59957eae8fe31872cddf960222d654"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-fast.resources",
+      "bytes": 1457,
+      "sha256": "3be512d3f9e07de7fcd883930b051ac3c641ed9afe6f46b6d028154d64990606"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-fast.stderr",
+      "bytes": 364,
+      "sha256": "d95a521b1d8c04cc3152a8054653bfae18318826a7c67807145f6345e990c3dd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-controls-fast.stdout",
+      "bytes": 8168,
+      "sha256": "d073a504263f3c79a8f25295851bb81c68e2f5846bb7ee99898cc0b030902130"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-dto-fresh-source.json",
+      "bytes": 113939,
+      "sha256": "bcd7f37492e4a4b207dc7de9a7e0719bb3b80fbdf77fff97fff212385bd81ccb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-dto-fresh.json",
+      "bytes": 3405,
+      "sha256": "3fd0442f85fce2241f00cc31b8187c1501164aef73f102b7d4cba99630b0f7bb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-dto-fresh.resources",
+      "bytes": 992,
+      "sha256": "bfeaf015743c7a39319ef0aed383b359a33ade133e4f8825b9120d71b796cecb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-dto-fresh.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/authority-dto-fresh.stdout",
+      "bytes": 1711,
+      "sha256": "5060361f7358ceddc44b70a6c8599a178f8809cc73c6a6e762472096b1af783a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/budget-current.json",
+      "bytes": 751,
+      "sha256": "2c2a75b1076bb95c4d7d1850541a17f955b762b4bbe721d362020480c69b2752"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/budget-start.json",
+      "bytes": 229,
+      "sha256": "8d9241aa176916ec30ef234193011ea6659b92a1980d9747b75a24565cbbaa8e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/check_archive_entry_joins.py",
+      "bytes": 3497,
+      "sha256": "ea2e07f0e50ef32eae87dccac60e1f9ba37ec7d6c15901035c1e0f965b8ca312"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/compare_reader_lint.py",
+      "bytes": 1628,
+      "sha256": "10c93af94f05e067bfd9a5f32414a58c3f4564f1a143de0a753b0d4dd86b7795"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first-binary.json",
+      "bytes": 250,
+      "sha256": "4b75e22c822b9ae417abac597fb566d53f4e9efe7c1ce3b0bd77ac21b5d3083f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first-build-source.json",
+      "bytes": 113660,
+      "sha256": "150526660127ab6542c94a341c397b664df80e7fa3310888ba69de567423b50b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first-build.json",
+      "bytes": 2785,
+      "sha256": "52874f54bf95260d5cf8aeef6ec351b6d02a3401bafa76f7bb19070fe7716503"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first-build.resources",
+      "bytes": 1116,
+      "sha256": "c4e734008e347bb59b9cd0cf5615da2989fd4d92d4d508e83ea51b3444becf0e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first-build.stderr",
+      "bytes": 1257,
+      "sha256": "9e592e013f7e3d0af9531577d853137f5f82fe90b381cfd77dece490ba0144a6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first-source.json",
+      "bytes": 113660,
+      "sha256": "25086c339ab744b102a6421fdf3cd6d1d57a253a8323309c0b55782b71369f6a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first.json",
+      "bytes": 3376,
+      "sha256": "b90fe28d070d078fe575dd20d1fa696fd04a042fe6b70518e2af92416c444b64"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first.resources",
+      "bytes": 1039,
+      "sha256": "39e0b7f78fce1a90dcdc7346bd1e7a278c1e904bf3269b2663e5461604a8e8d3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first.stderr",
+      "bytes": 391,
+      "sha256": "ee82b7424c63b912aa9af6c1e5361790224b7c12792ea174f27fbe2aa6b60b4d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-first.stdout",
+      "bytes": 2253,
+      "sha256": "2af4ebf2811c9fe6dd7375793885d1421880b62add3b325248f89f5246870a48"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-fourth-source.json",
+      "bytes": 113939,
+      "sha256": "0246548e8d2f6d977f1d8483a3d0ebe0368f79ae3bd12bd7797c715aad8dc429"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-fourth.json",
+      "bytes": 3397,
+      "sha256": "08b37b37f529bdd9205e333c131e4f17154fe1192d5d963c8be3efe39abb37a6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-fourth.resources",
+      "bytes": 1043,
+      "sha256": "590ca6df7d5ccd8b10a7cdd991e0ce2bd24ca7bb391381ad822c197101ec5af3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-fourth.stderr",
+      "bytes": 563,
+      "sha256": "901e457f4760a38d85e9669657157803a327e79afd8743054fb7506bcaa2782a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-fourth.stdout",
+      "bytes": 3053,
+      "sha256": "b20e1369f06cec46639935518f7b9a8fed9f6bf19ff66f8c446dc9f3e235ec87"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-binary.json",
+      "bytes": 256,
+      "sha256": "163574e89fce45921fb8b287e8ff8fc41a2243aeac14db98a76cbaa55e5b2406"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-build-source.json",
+      "bytes": 113660,
+      "sha256": "c92203c8cc1762231dc96f4d41e3a95de8df17b843393bee72317e9e65632939"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-build.json",
+      "bytes": 2787,
+      "sha256": "3904075ffc5d9b688d4cb3b127ab4aebfe1e492d2df003d7f8a92a52f19232eb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-build.resources",
+      "bytes": 1123,
+      "sha256": "a4e71797774003c949586cff87c23b5f61b60ee9194d92fa8030f992fdeb1a19"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-build.stderr",
+      "bytes": 2517,
+      "sha256": "3e914f55d0fa89ecb48a48b09bac53e2b3880be6b1285ad913a4f39226701d24"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-second-build-source.json",
+      "bytes": 113660,
+      "sha256": "0569cc8ea3a04afc4b5886858280851cfd331aa508d1ddc52cc44d0b784bd788"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-second-build.json",
+      "bytes": 2805,
+      "sha256": "95f35d3d963337be60cf24473f1a4c1557b5f8945d621c93fa96c130441d71e1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-second-build.resources",
+      "bytes": 1083,
+      "sha256": "f4c21974fffae9d94a05a3afd54c926dcd7f86d0365782e2781a7c7204d372b7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-second-build.stderr",
+      "bytes": 4541,
+      "sha256": "0b4aeccc1404cbab0fcdd597f09cac4cf03f2424d8cc8a6190b35306f8b14dab"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-phase-second-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-second-build-source.json",
+      "bytes": 113660,
+      "sha256": "25086c339ab744b102a6421fdf3cd6d1d57a253a8323309c0b55782b71369f6a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-second-build.json",
+      "bytes": 2786,
+      "sha256": "6872ae9cd5cd7f6ae65752bf877e888fa4fdcc8fb266cf2db78c4476558680eb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-second-build.resources",
+      "bytes": 1078,
+      "sha256": "ad119fb227ed67ba04bc553b09469b5ca83bf56af35c69de088ed0216ac8cf36"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-second-build.stderr",
+      "bytes": 4541,
+      "sha256": "8a00f76f02a5873cb1cace275d802be42cb21c578ba3c276c0e25d44687b5d2f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-second-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-second-source.json",
+      "bytes": 113939,
+      "sha256": "2cf660e23e3919b50f653f96489b84a0176b2f13b441f26be167a9ee2ac05a08"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-second.json",
+      "bytes": 3369,
+      "sha256": "6f162c053e30ee96a5964306cf88dd0f589624bdc3bf88adf3fbccbcd2f75ad4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-second.resources",
+      "bytes": 1034,
+      "sha256": "4e8b7a52674649cfd343c069b2a1f15544312c14cc1b812924727b3dd18e623c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-second.stderr",
+      "bytes": 401,
+      "sha256": "c465094f4e2a7b38bed0f51820fb8c4bdc657fbf7ad28c7db5c32998f44b28a3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-second.stdout",
+      "bytes": 2263,
+      "sha256": "3f39415f8c8164f04defd743ef34ca461b1edb09d5319d6c91f62c96b9ab83d2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-third-source.json",
+      "bytes": 113939,
+      "sha256": "b49b91f2ee17d690231fd4a90f911111ee87a11a6c956ccb52d70d3238a975b9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-third.json",
+      "bytes": 3382,
+      "sha256": "0d483fde44b7bd8a7e32bb755dda35b89718d517e2f41b001b32a5ddb8e7ca79"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-third.resources",
+      "bytes": 1039,
+      "sha256": "abf3858e0e6effc3b23d8def9085e90d1e613433d6fcd7978ca1fe719813ab1d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-third.stderr",
+      "bytes": 401,
+      "sha256": "1c6a9d1ac4810200be88c65647f32dd4c72be96abc66f97c69d3238ff07a2704"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/composed-third.stdout",
+      "bytes": 2352,
+      "sha256": "c0403b17618185c87a4e1a8d971f17ca3e255607b8f8f56aff5a8443725e3d8e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/constructor-type-map.json",
+      "bytes": 72765,
+      "sha256": "edafecd2e39393ebd292ec45318c626ca694a142b288ca98e9c38d376924b87d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/constructor_inverse_prefix.rs.txt",
+      "bytes": 4192,
+      "sha256": "c926cec7bbf484747cae5d34e7164744c3706df8b0a0d0b264d4c68a34917026"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/continuity.json",
+      "bytes": 1109502,
+      "sha256": "78a4c6eccd52b217132b9c1f536b4d80a962da1c420bc7ff62e6bd7dc50bb9d1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/controls-quality-build-source.json",
+      "bytes": 113939,
+      "sha256": "c43008fb2d3007ac33ef89f415e936a8e0f410a5ac84c8188e26f980e2e6956b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/controls-quality-build.json",
+      "bytes": 2791,
+      "sha256": "b8ea1897daefec367fd20f514ebaec5bb00d926a21f2cd4881a7b90ea54fbd35"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/controls-quality-build.resources",
+      "bytes": 1078,
+      "sha256": "417e868d6fa21863598026a14af86e71987947b11c1139fa820a77669314302b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/controls-quality-build.stderr",
+      "bytes": 4294,
+      "sha256": "770f977597e2218810d8e173bb0c098f9a7b490cdfb146e2f5e894dc0590ca43"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/controls-quality-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/correctness-review.md",
+      "bytes": 28615,
+      "sha256": "b4080f99371da17345f569a97aa4a0e5132425598b20e3d7d8a3c501c912a7d7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/decompose_retained_readers.py",
+      "bytes": 8241,
+      "sha256": "5106e89f6769d28cfb7550a4803d5fb3bfa5972b3a9310f3e180cc0a9c7173ca"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/default-feature-initial-comparison.json",
+      "bytes": 19386,
+      "sha256": "c2c7e6fd6e6eb21990250969610a6c32743f1f7441ea26546df961ad1035d26c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-first-check-source.json",
+      "bytes": 113276,
+      "sha256": "8a0cf33556382cef9ca0d034b523ebcfadc304b98b2c7fbb1f7a44b50ad8206c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-first-check.json",
+      "bytes": 2741,
+      "sha256": "0aefcd5ea10aa49dfff3e69919bb969c2100d75af9e6ead94e8e9156602302b0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-first-check.resources",
+      "bytes": 1117,
+      "sha256": "81e4d06f00059672ecab95c7977c951601dd2e545248b907df28e3122e4a1e4a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-first-check.stderr",
+      "bytes": 5004,
+      "sha256": "e60e43101cfcc30bf4cf78cc837e9813330f21a5629cc8dfef7bad8cdbac7293"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-first-check.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip-binary.json",
+      "bytes": 247,
+      "sha256": "7969f6f2d06c5eae8dd269bf8addc088231f4c97ac997884fd88a2e112150f24"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip-build-source.json",
+      "bytes": 113276,
+      "sha256": "e360669b41d15a1a6feee558568db237bf582b764d4e05c4d94d597013b90bf4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip-build.json",
+      "bytes": 2782,
+      "sha256": "0f6324411f389b212050099e9c22b09d199835c0d6411117b2f13fd6fd8012c3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip-build.resources",
+      "bytes": 1084,
+      "sha256": "a9c706050459317c4b12ad78715c2dc52c52430d6ae54589100d518b7262bcbd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip-build.stderr",
+      "bytes": 4541,
+      "sha256": "db635a736cb15d0bf5fc968c6281512a16d47b44066b38c61ec8bdc02cce07de"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip-source.json",
+      "bytes": 113276,
+      "sha256": "e360669b41d15a1a6feee558568db237bf582b764d4e05c4d94d597013b90bf4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip.json",
+      "bytes": 2952,
+      "sha256": "8f0e3eea53f2f8d9c7670cb96e5992ac3df9af8f7399fbed313757709b43e8b3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip.resources",
+      "bytes": 989,
+      "sha256": "83adbc95fa2491d835ac77001d0cf18ee338d68602a2cc9bb90dd9c5a2863b0e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/dto-roundtrip.stdout",
+      "bytes": 1711,
+      "sha256": "ae5d93d1582d944b27db3ab85bcb8d9e605e5040e5097f968828afbb97c440cd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/early-binary-custody.json",
+      "bytes": 1310,
+      "sha256": "5f1a7085fe91b47433f90be76431eb8e66ea647519447a4bb7d100b91800b596"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/execute_final_focused.py",
+      "bytes": 2810,
+      "sha256": "4f03b2c813e84721bd436ba4b21ff6525443f289c0a49464da4479decc9d3f35"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/execute_terminal_focused.py",
+      "bytes": 2846,
+      "sha256": "1f21eb7f6f5dd6af390ba4dd803a78631ea37ea80d0b4a92a8831f887adecc20"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/execute_terminal_quality.py",
+      "bytes": 691,
+      "sha256": "06ef011742897092120f32da66e5e94718222ded2d40663c0efae6149e2a7ea8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/failed-legacy-reader-temp-custody.json",
+      "bytes": 114269,
+      "sha256": "00199a8d00dd2ab616851898298bc9fd219a4e262c8375b8d0af1c70f5c13ee2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/failed-legacy-reader-temp-source.patch",
+      "bytes": 357275,
+      "sha256": "fdfedda48e640dd38e0407fb474f6166cfda9e3e331ac19599df9c80ea5b7eb9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-archive-controls-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-archive-controls.json",
+      "bytes": 3433,
+      "sha256": "b904228f6d4f52c94b1c9d14714f072c5c276a78b2e4b3ac431ed59f0baa55e4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-archive-controls.resources",
+      "bytes": 1012,
+      "sha256": "cc80523aa21eeaba390e385837df36868a30e52dc1ae875c31162c55ce116084"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-archive-controls.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-archive-controls.stdout",
+      "bytes": 2889,
+      "sha256": "068e84b2d6cefa597079c92ba2a707dda2b9bc406b432a918f4e0e873991ca06"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-beginning-poison-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-beginning-poison.json",
+      "bytes": 3431,
+      "sha256": "123d64f16d3e189d9af1960054c89e2bc941908c7f955149ac19b8212779b935"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-beginning-poison.resources",
+      "bytes": 1009,
+      "sha256": "7da68a7778de8768722c4b6045cf24aefdc1de1bd5e0006d28b9aa7a8beef98c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-beginning-poison.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-beginning-poison.stdout",
+      "bytes": 1779,
+      "sha256": "805f56c93136ff95ca87e008292ef83beda26983f8a985ab59277ffd86accf2c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-1-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-1.json",
+      "bytes": 3420,
+      "sha256": "73f91ad650e2224c106974b24e9dad74767dd9a17bfbfa705be501ab86ad2942"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-1.resources",
+      "bytes": 1000,
+      "sha256": "6c384e96889ab67997725bbe875421ae096e1cb11dc9be8f4173640630c73279"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-1.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-1.stdout",
+      "bytes": 266,
+      "sha256": "3e1573481ed18a16594041280cb8831ae8003decaa6b994bb9f881b265ae5136"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-2-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-2.json",
+      "bytes": 3417,
+      "sha256": "754ea57afe5d6aa1e0b938648585e935c68b5c0b6d8470708828f35ac1fed86d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-2.resources",
+      "bytes": 998,
+      "sha256": "388868eb8e1e1783a64b173cf9bf2ae8b1821a5cbdbb4b619ce4bb72dc895578"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-2.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-2.stdout",
+      "bytes": 265,
+      "sha256": "6add192e9f912cb09c78cdaa0d36ae0a8a6d77ba145c51ba74a91c0c9e26f7eb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-3-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-3.json",
+      "bytes": 3425,
+      "sha256": "4e4bf4850a7a9f31bea72cf83e4e1a74da4ad2dc4c542013bcd03933ddb3486d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-3.resources",
+      "bytes": 1003,
+      "sha256": "9235f2544059b11a544a57b62e4bb330043b457b94be319cc920c12e602188f8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-3.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-chronology-3.stdout",
+      "bytes": 269,
+      "sha256": "44d15d5364dc96e7d72a02f843a732aea45499c6474f529ddd115b9f43027a6e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-default-feature-check-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-default-feature-check.json",
+      "bytes": 2694,
+      "sha256": "8af017f7929d1843ad0d5460c5e38784388e6f42970c031cfe854bc1dd680779"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-default-feature-check.resources",
+      "bytes": 1072,
+      "sha256": "d2fe8b016cf2fba6e2dd9b0cd51f3c08a86c160cbb1fcafc1d2f3b6541656bec"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-default-feature-check.stderr",
+      "bytes": 99103,
+      "sha256": "afe5c4d735182ee1d1102794d234083ceb072d7ec075ea4401e2bb16aab5340f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-default-feature-check.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-dto-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-dto.json",
+      "bytes": 3360,
+      "sha256": "0c5b6054bc0bb7c613c7a66a9642084417c3f64bae8efeaf9fe61b94657f0496"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-dto.resources",
+      "bytes": 988,
+      "sha256": "66fa4fdda791db0e58fd97f1a55bbf8384e1766e5595a76256764c0655082ab4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-dto.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-dto.stdout",
+      "bytes": 1711,
+      "sha256": "34b2134d43335913f834d5e692616303762678fd06f0c20f81b59130cf41455d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-focused-binary.json",
+      "bytes": 337,
+      "sha256": "6b1fe921d527744cefb8d3ed3f8dd4bd1d55e31c54080412a8d72d62345db9f0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-focused-build-source.json",
+      "bytes": 113939,
+      "sha256": "20a3f5e3e1ac5a1a5a2d277a016049dcf1e3d5e762aa911b54543e586d1a89be"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-focused-build.json",
+      "bytes": 2781,
+      "sha256": "9cd1993636e8853dd4b04863cebe94207f52737cec9fd83fd10f580adedcd893"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-focused-build.resources",
+      "bytes": 1080,
+      "sha256": "9673f41edbe55e03c4a8178f279bf1300bcfc9af067290cf67fb686b4d8ee58c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-focused-build.stderr",
+      "bytes": 3041,
+      "sha256": "e4e4c01e03f97e4c0256f8d01a437364536ba30ebfdecda5303e13bc1395a4cc"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-focused-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-gated-build-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-gated-build.json",
+      "bytes": 2776,
+      "sha256": "d941c0f19614aa8bee4db0865386e0ed699370d37644d057169eb123fcac5bb1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-gated-build.resources",
+      "bytes": 1075,
+      "sha256": "882f4bd4f5da9a40345f8caf6798ad06df2563d2ed4878377ebf1b37aa9e0eef"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-gated-build.stderr",
+      "bytes": 3041,
+      "sha256": "3313645d6d61fc3d9b49e51298de2aa9016f8c8555855d168679939f6376544a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-gated-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-manifest-poisons-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-manifest-poisons.json",
+      "bytes": 3434,
+      "sha256": "0b2912307c06c30a442e42570dd18a3f68c49a76fa14e72f2b8a7780145b220c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-manifest-poisons.resources",
+      "bytes": 1002,
+      "sha256": "a89330e566e6e4221f2b9f5e7052f3f0dd770533179977d7a31b6861bb7cf1a3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-manifest-poisons.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-manifest-poisons.stdout",
+      "bytes": 2348,
+      "sha256": "cc06fa36fddca7555624f1a6f32e9289956e3925dca1fbd507395fc295526b51"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-native-refusal-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-native-refusal.json",
+      "bytes": 3407,
+      "sha256": "e084feaf19bc42dcb082134dd7f29a11d8a0747ce735aaf20202126a734637f4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-native-refusal.resources",
+      "bytes": 1003,
+      "sha256": "3035a6d82e347db8f6c9542789d8466f9b13e300823f7376675b61f0225121ec"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-native-refusal.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-native-refusal.stdout",
+      "bytes": 3002,
+      "sha256": "559908d3cda60403c41413ff8e644d814eb1de55564966e7085f45356d431f13"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-phase-poisons-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-phase-poisons.json",
+      "bytes": 3402,
+      "sha256": "b90358cd2ef9bce89f90a84e76d3302713cb77bb6d3f6d414a6bebe96ca27f91"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-phase-poisons.resources",
+      "bytes": 995,
+      "sha256": "15bb317dd7c56310e161c162c5b63de5717dc5adfcb07729f358740e247e9f53"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-phase-poisons.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-phase-poisons.stdout",
+      "bytes": 2686,
+      "sha256": "afe352e1d7f675200075150ddd52561b8262f0762b6328fbd8ec630c6b1e9426"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-phase-positive-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-phase-positive.json",
+      "bytes": 3379,
+      "sha256": "f959ccfbb04744c0352c407798756e9536b59062cd994cdc54d9ada766b2b5da"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-phase-positive.resources",
+      "bytes": 980,
+      "sha256": "75f1868ad1a3bd1fe9de76254e003b61c31f6eeb71006cea858a0789002d0579"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-phase-positive.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-phase-positive.stdout",
+      "bytes": 1650,
+      "sha256": "382649f53b2cbf846e446e1e0d8d4d7f7203bb872a332d251fad58edd7ee8780"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-provider-poisons-source.json",
+      "bytes": 113939,
+      "sha256": "1d8e904f5a6ee5b08ff1de19610621df4ffeb9430538fe1bafd8fa1dfd350fa7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-provider-poisons.json",
+      "bytes": 3447,
+      "sha256": "1f62c0b9e1ae0ae0f77aa027abce6a3d81aa689f56c0741b9a616dc94de2cd92"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-provider-poisons.resources",
+      "bytes": 1012,
+      "sha256": "30e34d7b89df98076a158de57ed03162243b375869ac9b5cab04834ee63be1f4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-provider-poisons.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-provider-poisons.stdout",
+      "bytes": 1787,
+      "sha256": "59fb60f06ff10129277183d9e95621b2f70c1575cfc65c54f02ea5b0734acac6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final-writer-quality-source.patch",
+      "bytes": 16399,
+      "sha256": "2bb281908b1929da000166666f0612fbe754483d066148b4fb055b229616e854"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/final_quality_fixes.py",
+      "bytes": 5623,
+      "sha256": "1fa1cd17480fa3628f0fa3ee9f10f9eff75e3940cad7341e4cd4fec0936d205e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/finish_authority_controls.py",
+      "bytes": 6153,
+      "sha256": "fbe3925c05a988200892166ef7a3e49587929b8618bfc03a63f99b6cf46521d9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/finish_reader_controls.py",
+      "bytes": 6349,
+      "sha256": "7e2f0eed9b8c23ec35a25962c40e78a290f05e952146647ba646d8def8de4ffd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/freeze_binary.py",
+      "bytes": 780,
+      "sha256": "bbb0ba4f5244a935411e59b93807b4af0e9390e6b0d5ac0838f42538c93a7b8b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/generate_constructor_inverse.py",
+      "bytes": 1078,
+      "sha256": "41da5cc7f8af7db4888430de4213ef5e3dc91c1e610fd9a4c4f159cc431de746"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/independent-archive-entry-joins.json",
+      "bytes": 7813,
+      "sha256": "0f170b59f3438e540510176550d2ae51709947effd0d19836304d3fdb6870849"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/inspect-native-position-source.json",
+      "bytes": 113939,
+      "sha256": "2cf660e23e3919b50f653f96489b84a0176b2f13b441f26be167a9ee2ac05a08"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/inspect-native-position.json",
+      "bytes": 2275,
+      "sha256": "dad45f298fd9b924e54f0db2fc1449c1ca84201ef475a10038465f58612c2e1f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/inspect-native-position.resources",
+      "bytes": 907,
+      "sha256": "af096251c76cfb6dd45a6521c88958fc45ef37622f46b0d4218ef34675efcd65"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/inspect-native-position.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/inspect-native-position.stdout",
+      "bytes": 2820,
+      "sha256": "95233a04034c7ccefa620894c37fcdc8020c409fb4096096aab0dff209c58acb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/inspect_native_position.py",
+      "bytes": 559,
+      "sha256": "2d059208fe21ce6b9fa051a0c47777a3377bd86c54da786b840dc78dbcf4946a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/internal-reassessment-001.json",
+      "bytes": 788,
+      "sha256": "c13d0a560f8dc881e6f9d85f4cb77228ac2fbf0c2a6ff4e24a6ee1e6a8a7c98d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/internal-reassessment-002.json",
+      "bytes": 765,
+      "sha256": "3c616c12d54ebe050b4b42d477946f40567cffbb7b5b7e7ef9e06ccb06ec3c42"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/invalid-inflight-command.md",
+      "bytes": 1729,
+      "sha256": "796e81c1bf88217acc73845c4abc300afc8c9fa970d74a8afe09d38d9dd38c16"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/legacy-reader-helper-temp-check-2.log",
+      "bytes": 8646,
+      "sha256": "351a1846ede3bf435e7b5f4b7406dab924d9edbf09b1a311183eed075d3f56ef"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/legacy-reader-helper-temp-check.log",
+      "bytes": 9857,
+      "sha256": "767ac14d2a4573e3f537a1a0ee36bbaefd3161430bb6d09977818c23217c83bf"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-audited-orchestrator-comparison.json",
+      "bytes": 551077,
+      "sha256": "b591cfdd318db297d664434b82f5b8c6dd189321ef4988c58d9c00b005b36cb3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-audited-orchestrator-source.json",
+      "bytes": 113939,
+      "sha256": "454249821b606e065d6ba042cd44204a2891883f4d6062bc4bbacee6825397d8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-audited-orchestrator.json",
+      "bytes": 3314,
+      "sha256": "a57223dc45e672919e8fcd003afcf8871f26cb2e2eec9d1bf510219bf74e8fe1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-audited-orchestrator.resources",
+      "bytes": 1304,
+      "sha256": "f49e8be43d869c6f7318f7545bdd89fb6cd206502626d7b0eca7d07967127f9b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-audited-orchestrator.stderr",
+      "bytes": 28493,
+      "sha256": "ec0354022993c1974c2a3e34b4864a34eee1e7001c47c62ba090734d8a46aab3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-audited-orchestrator.stdout",
+      "bytes": 13582129,
+      "sha256": "0989e047b96afe3f9769326a8aa55f173781a45ee6e55e61ce38907a7a49f16b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-equivalence-review.md",
+      "bytes": 5836,
+      "sha256": "b706edc4dafd2a118ffac509eb32317acd48e6c7d904049bfc4c595b09b0dd7f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-orchestrator-comparison.json",
+      "bytes": 551075,
+      "sha256": "68ec9894ca99bdd0a8f5b7a544d017a80e46b9bf88cbc5fc9d9d5d4220e16d0c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-orchestrator-source.json",
+      "bytes": 113939,
+      "sha256": "01dc562c74651b087dadbc11b73add7e70f30f98d5b3928245a9f37c2a8a064e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-orchestrator.json",
+      "bytes": 3308,
+      "sha256": "9a08ea0d110540244c0491b404f84bfafcd0bd8a732b7489cfec511cbbef1f59"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-orchestrator.resources",
+      "bytes": 1304,
+      "sha256": "931d096513798ff86ee9babb7459675c8d209c14df2a16795eaf618b9d8d4fa6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-orchestrator.stderr",
+      "bytes": 28499,
+      "sha256": "05f80f011e7fe9d81d2a30e655233b1428e2dd1d51388063f03181909e393563"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-orchestrator.stdout",
+      "bytes": 13582129,
+      "sha256": "d9dfb8c441c623b491a9c8e8fdfa8ff156f25068e4d5f19647a1c4dca4fc8f74"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-runner-comparison.json",
+      "bytes": 392478,
+      "sha256": "1b6c1b9d1b67caede93a7c5e5e19b1c30b349ca4ed7b3fe59b199fb282277ba7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-runner-source.json",
+      "bytes": 113939,
+      "sha256": "454249821b606e065d6ba042cd44204a2891883f4d6062bc4bbacee6825397d8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-runner.json",
+      "bytes": 3463,
+      "sha256": "83ffc9be0e99ab6620bae2be98260c02e61aca9e7b3dc0ebe343602eaa1dd098"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-runner.resources",
+      "bytes": 1398,
+      "sha256": "1d16b74200ae59cfbc6645b96e25e8b989a5709feeaedba2530b86c47c349f20"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-runner.stderr",
+      "bytes": 338753,
+      "sha256": "c821b07712699e0e43efe99b2b1ecb7bd98253d71b59c4ffbd9beb7e22161a40"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-final-runner.stdout",
+      "bytes": 747876,
+      "sha256": "49d4b3821f3b4d37ab92369715f26e766283dd42c6249a73d730efb24f6ba8a1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-initial-comparison.json",
+      "bytes": 609909,
+      "sha256": "e14f60fb9dc8018b8e70b39629e081891f8753f89b7c78f7ef6d440f8ea609a5"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-initial-orchestrator-source.json",
+      "bytes": 113939,
+      "sha256": "b49b91f2ee17d690231fd4a90f911111ee87a11a6c956ccb52d70d3238a975b9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-initial-orchestrator.json",
+      "bytes": 3313,
+      "sha256": "d1bc4df0d39a7fc3590a2953263fa8bb67413b1edbf8636469fac71fd5918014"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-initial-orchestrator.resources",
+      "bytes": 1313,
+      "sha256": "f72d4dc6b008538184fa79917a2a10778ddbd54b4440ddf4d64fc789ad314a22"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-initial-orchestrator.stderr",
+      "bytes": 54741,
+      "sha256": "8327b4918518bdc8c3ab1a7f835486b9464e0ff5267d3baa8bf721a10555a7fd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-initial-orchestrator.stdout",
+      "bytes": 13764725,
+      "sha256": "b9b058ac8127248a1172923ba8aa66b484aba57899b8bf38f1818c471727c316"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-quality-orchestrator-comparison.json",
+      "bytes": 611455,
+      "sha256": "5dfe1cf159746eab0693be9cf20aa5afce67d1d19372016dd09429aa9a5d2d42"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-quality-orchestrator-source.json",
+      "bytes": 113939,
+      "sha256": "bcd7f37492e4a4b207dc7de9a7e0719bb3b80fbdf77fff97fff212385bd81ccb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-quality-orchestrator.json",
+      "bytes": 3314,
+      "sha256": "9aed151f012ea0130c033ecee19682ee9935d3201dcffbe74f726af16461f569"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-quality-orchestrator.resources",
+      "bytes": 1311,
+      "sha256": "c2bd04c30f0609328c26b9afc48ffa6c59a428deb58927db69548fe566bd0a1a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-quality-orchestrator.stderr",
+      "bytes": 28478,
+      "sha256": "9d118a50a93b3b94656fc2812a329e52ad751c1093a9a737c5686a2871a6e864"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-quality-orchestrator.stdout",
+      "bytes": 13727377,
+      "sha256": "deb4d2e0ab8522672b6b9273c54393e94a244ef8b4fef9f068f544ef627e2069"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-refactored-orchestrator-comparison.json",
+      "bytes": 585298,
+      "sha256": "ef4df5b00eab86eda2b219d10cc363d85cd313803fd580d8e2937c7c5f426b09"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-refactored-orchestrator-source.json",
+      "bytes": 113939,
+      "sha256": "e577b95284541e21724d4eba20c2c188c21f1bc3803112679cd88695060b45ce"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-refactored-orchestrator.json",
+      "bytes": 3322,
+      "sha256": "2ecedd9f9a471f226001d93febbf1ab4842cc68981f0f68230b3a441de34b339"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-refactored-orchestrator.resources",
+      "bytes": 1308,
+      "sha256": "259acd9e2935baac826601fcb41675b61ef502a9f5fb3a9cfcfb3949f3aa1b17"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-refactored-orchestrator.stderr",
+      "bytes": 28477,
+      "sha256": "d00e852b8c1832a9d9d6a5037b1827eb6d65cdc40e0afaf6fbe854d83bdc8bd5"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-refactored-orchestrator.stdout",
+      "bytes": 13606549,
+      "sha256": "e3a683db4d22aad3ec0bd8fce2588060f270f8f8302d0ce0802d8f7d1e8e25f5"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-terminal-orchestrator-comparison.json",
+      "bytes": 569045,
+      "sha256": "898469b791a0922cf1d8e44e9fae5169296840aad1b68700ce65a1240c5a7955"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-terminal-orchestrator-source.json",
+      "bytes": 113939,
+      "sha256": "0ecc7068c87fb10fbf41857199032b7c63e89985fd720b709e5dad227ea454e6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-terminal-orchestrator.json",
+      "bytes": 3316,
+      "sha256": "8a990d649da43069fd7f0bc265a59903e2266231513631c8245902daa47cb854"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-terminal-orchestrator.resources",
+      "bytes": 1304,
+      "sha256": "4271df8b23ed7f1436a6f55d602c9260fc30dc84cae7ccac4d18971d7f8ab609"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-terminal-orchestrator.stderr",
+      "bytes": 28493,
+      "sha256": "c4d093e810011f7b3b86861363750ef6b08f4fcc2941b45c8f2b6eef7ed29594"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/lint-terminal-orchestrator.stdout",
+      "bytes": 13593075,
+      "sha256": "1e1136d58e69e9eb3c45a4eefcd1f410a2f50099a86126150b66c2827bd9c350"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/map_constructor_graph.py",
+      "bytes": 1839,
+      "sha256": "ee372ae56c81c0ffa0a0aeb04688afb32663dce7cbc650c6ec3e323fabab6931"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/member-decoder-quality.patch",
+      "bytes": 8261,
+      "sha256": "9e46f99fd6afc260e35f1b6919d75e3aafe5976b2ceceb9fd87646643379b9d8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/member-restoration-complete-helper-split-proposal.patch",
+      "bytes": 16400,
+      "sha256": "a4c599324758c8a7f6a6b5eafe5f6161ad2d1f34a3f8a46ff13eb1b2f49aa238"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/member-restoration-helper-split-proposal.patch",
+      "bytes": 11180,
+      "sha256": "e9bd887baed2932f33765c593739d3b9ad14c1e24d16328484efcd784d9e568f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/member-restoration-quality-proposal.patch",
+      "bytes": 100284,
+      "sha256": "20cc7b8a284bd20985c50653619c361621b466a625983c15c65ea481664d27ed"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-binary.json",
+      "bytes": 259,
+      "sha256": "ec3ae70f84308cd0bb0e543dc614663a56de07ae193feb973f227efd7827b40a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-build-source.json",
+      "bytes": 113939,
+      "sha256": "4fb53d17816dd6b25d4f8b5c844e916d2c11075aa59026f9d12ef203b7869978"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-build.json",
+      "bytes": 2792,
+      "sha256": "10dd95edb891604de5ac170d90827c3e0236217a9e2094c2eace88adc0be55b3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-build.resources",
+      "bytes": 1115,
+      "sha256": "4472ab1b771f27e2fb07a22555e5b7439e06a23f675582ce269b47f389eb0715"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-build.stderr",
+      "bytes": 3283,
+      "sha256": "020d6073ca8cf6dc7face5125218c5a487a2bedc5c09e3794b5faebe0902024b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-second-build-source.json",
+      "bytes": 113939,
+      "sha256": "2fcbb3893000b221511d77764381082afa7140e9f07595161511103d6eb7b658"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-second-build.json",
+      "bytes": 2813,
+      "sha256": "250525b45db76638a75be326f1081d978db9d59c318d0f64ea9d68c0fae4efbe"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-second-build.resources",
+      "bytes": 1113,
+      "sha256": "b127374eb457961a591bd0b4767af8f755896e55324642f265bce13ff347b9b1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-second-build.stderr",
+      "bytes": 1273,
+      "sha256": "b06d4c5dea8ac1e3bd687caefb3548898c32694f721b53961e1d6f09c3c7ce97"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-second-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-third-build-source.json",
+      "bytes": 113939,
+      "sha256": "b49b91f2ee17d690231fd4a90f911111ee87a11a6c956ccb52d70d3238a975b9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-third-build.json",
+      "bytes": 2809,
+      "sha256": "2333ca99d67a58a91d2e455ca96779dad4be8e16b6817abb96fd0c5c7132dea8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-third-build.resources",
+      "bytes": 1078,
+      "sha256": "6cdfa8ff446f6e284e46afc762eae3f50c255d34fb18d2bb8fa156cd1666656d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-third-build.stderr",
+      "bytes": 4541,
+      "sha256": "8b4110269b89ba36d3e8e3654e404775a084754bffeb4a7734eb9f3f98fd2f62"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-aggregate-third-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-constructor-quality-proposal.patch",
+      "bytes": 16680,
+      "sha256": "adf2912085bf37852c414497cdc5fbddc9108dcd1c5dd83f05a886968f95a332"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-gsi-aggregate-binary.json",
+      "bytes": 261,
+      "sha256": "e20d76dc732068bd0394680b2502e8dd9bc755b4ef603e91b75b1363b643f5e6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-gsi-aggregate-build-source.json",
+      "bytes": 113939,
+      "sha256": "0246548e8d2f6d977f1d8483a3d0ebe0368f79ae3bd12bd7797c715aad8dc429"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-gsi-aggregate-build.json",
+      "bytes": 2801,
+      "sha256": "290c2af2a622ec57396f9a1486e4579713d6846bdd05a706ee9575be39f2d7d4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-gsi-aggregate-build.resources",
+      "bytes": 1084,
+      "sha256": "cb9e47106a08b5eb8fb56f25c9882d71b270e36181d033886fb05bcc9ebcff9e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-gsi-aggregate-build.stderr",
+      "bytes": 4541,
+      "sha256": "6f68908d237433b8adddf11c85e43f4945cd084c91fdeac5b114583069ec1d9b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/native-gsi-aggregate-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/new-failure-receipts.json",
+      "bytes": 3398,
+      "sha256": "3aeb5a2bbe01961442d6c511134894b1b32ad66cfeac46765198decaa27e379e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/parent-actions.json",
+      "bytes": 1264,
+      "sha256": "a464a0eb5025587b937ce3371ee9896d2fadf42d3b1a4577d04dd22257e8c999"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/parent-invalid-attempt-observation.json",
+      "bytes": 937,
+      "sha256": "c284efeae5665f00c5812691624e7226493d7871de574e305a21b930fd05c8f2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/partial-hydrology-bridge.patch",
+      "bytes": 2304,
+      "sha256": "538da0f20f5c0b651760ca7ea162e23043d9d7097e38fb3dd232f4045f3dc074"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/partial-reader-helper-custody.json",
+      "bytes": 114165,
+      "sha256": "b47940c091aa4467f34872cb5d368f3fdd6718321cc882777fbcd18c8eee5bf3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/partial-reader-helper-surviving-source.patch",
+      "bytes": 353904,
+      "sha256": "3f3a18d12345fd6bd7d6d816a44a3ce930ebddfed9257ed6cf17cf96dff252e5"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain-a002-build-source.json",
+      "bytes": 113939,
+      "sha256": "2cf660e23e3919b50f653f96489b84a0176b2f13b441f26be167a9ee2ac05a08"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain-a002-build.json",
+      "bytes": 2791,
+      "sha256": "66b9d8cda8fee9723c24a616987ec0daf81a3e33076f1dbbcfe691097e56f033"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain-a002-build.resources",
+      "bytes": 1080,
+      "sha256": "4e3fe1b5f762b8af589a1aead7e52737444a2ea16ded70d69ce3b8bba6a622d9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain-a002-build.stderr",
+      "bytes": 4541,
+      "sha256": "b10311d4107d57878171fe59a1b61359048714508646cc1422507007274d4dc5"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain-a002-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain-binary.json",
+      "bytes": 248,
+      "sha256": "24d9e2fde602da76b5b1860c8f3b4143f3e2c7280439b571679bb4aa11387f04"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain-source.json",
+      "bytes": 113939,
+      "sha256": "2cf660e23e3919b50f653f96489b84a0176b2f13b441f26be167a9ee2ac05a08"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain.json",
+      "bytes": 2926,
+      "sha256": "bf4a1f8195ee9c0d9b020b279bf711a6cde1f1306395734b054bbb3415b19ad2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain.resources",
+      "bytes": 979,
+      "sha256": "399dd28404dd460e0c1fc52b7d474bf9756a990194e0f34fe4d13d3f9f4c8e12"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-chain.stdout",
+      "bytes": 1650,
+      "sha256": "f7a16b165496e2c788e0c80fdba65caa2fe1e3cb90ff7c3b45aeb1a2b2d4cafc"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-controls-source.json",
+      "bytes": 113939,
+      "sha256": "b49b91f2ee17d690231fd4a90f911111ee87a11a6c956ccb52d70d3238a975b9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-controls.json",
+      "bytes": 2975,
+      "sha256": "d1c29df96653c30e3226a6d4e87f24746dc7299aa4b0a382229f097b56f2edeb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-controls.resources",
+      "bytes": 1000,
+      "sha256": "0992add88e48d1d85060cb7bea5d69f5217adc8e31747e60a816c12af1e60985"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-controls.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-controls.stdout",
+      "bytes": 2385,
+      "sha256": "f92f7473073f4d97d7c4f7801ab07a77545dad58f3bd69148a1de90e20415798"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-first-source.json",
+      "bytes": 113660,
+      "sha256": "0569cc8ea3a04afc4b5886858280851cfd331aa508d1ddc52cc44d0b784bd788"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-first.json",
+      "bytes": 2937,
+      "sha256": "709b31114a78d6c3aec6af74a6339afd56d6e20aea79026942effdd95f28ef17"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-first.resources",
+      "bytes": 1026,
+      "sha256": "e919c53677160477065eb465bae4beadf89306962f77131ba44d3b5ef0b2849d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-first.stderr",
+      "bytes": 395,
+      "sha256": "d26a8d03e1e87613797e9a3300a5d3f09d43e216a45390ebe92cd7514b99baf7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-first.stdout",
+      "bytes": 1801,
+      "sha256": "578d17ab7f100da6f7fca8f4d37f437f020ac799272db1c3aa61754eb1809e0d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/phase-validation-addition.rs.txt",
+      "bytes": 10043,
+      "sha256": "7658e19ba6f20b3d8313b08a8b19eb96d8877d1c3ffed97fc7403517b86cdc2e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/prepare_native_quality.py",
+      "bytes": 2914,
+      "sha256": "b827bdd8307837795e89b5266cc3c2ccaf3d4f04127fc7e9bb1cf78ddeb8c20a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/preserve_terminal.py",
+      "bytes": 4538,
+      "sha256": "0449242d7c3387926b2b32d11e65557df2702072890bc27d00abcad680c64a9a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/prospective-green-binary.json",
+      "bytes": 352,
+      "sha256": "7162d326c5c5de7e570ba5696c386a1c6ff6e071aecb88e397f9b4bc09620419"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/prospective-red-binary.json",
+      "bytes": 348,
+      "sha256": "33c3118003ab9e4667c2425e3340e8be7772ecfd0b62315cfe7569243d0eda5b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/prospective-red-green-pair.json",
+      "bytes": 877,
+      "sha256": "c9b252021afca11e5eb0b9e0f7b811f149fd3df2d4a89e1180676455657bd8e8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/prospective-red-to-green-predicate.patch",
+      "bytes": 919,
+      "sha256": "17517f59c86b468ed8b496256346453a6d8515de6d1d4a1942174cec6b619642"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/qa-review.md",
+      "bytes": 18828,
+      "sha256": "ed2106424c6f4e2b03df1432ec5924c1b2d7550945afc19335ea584b671c1b0c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/reader-helper-final-check.log",
+      "bytes": 3066,
+      "sha256": "67ed7a0bd5cffb0e36677e1adafeefb2070e24789c6ad3e88b444a8b59f39b8a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/reader-helper-final-clippy.log",
+      "bytes": 13136834,
+      "sha256": "bb2a74cb204ac318b30e721a9bfafca19490ff943bcc744443cabfc1704788b9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/reader-helper-final.patch",
+      "bytes": 6492,
+      "sha256": "0346725759eb5912c03eb8024a08f202a2024bb4f0204e062d08c8de4def157a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/reader-incremental.patch",
+      "bytes": 221565,
+      "sha256": "548e2524061d539223576836ed39cff18acc45b43168736db22086ce8ea775a8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/recorder-smoke-source.json",
+      "bytes": 112890,
+      "sha256": "55cd2f10f96842b51c9303812b68fe095cd2513bc487051a1d54cd3e4b6c89e5"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/recorder-smoke.json",
+      "bytes": 1406,
+      "sha256": "54416251053d3440353ffed2eb611401fb43edce7100cae1ded8ec8f78ffede1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/recorder-smoke.resources",
+      "bytes": 725,
+      "sha256": "92ec17d527730574fb3c911999cf10391408a88b6966dff08c354746d6fcae39"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/recorder-smoke.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/recorder-smoke.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/refactor_archive_controls.py",
+      "bytes": 4843,
+      "sha256": "97e50467dd59fbbec6b1fc8d7c32d953d908dad7a77861186a991ffb3b5210b8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/run_recorded.py",
+      "bytes": 6244,
+      "sha256": "a1692ab1ed05c1abba57571328b61a309aa1acde79c052b1e339f8d667872d2e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/scope_reader_helpers.py",
+      "bytes": 6093,
+      "sha256": "907895c6684c153ba4c3a490502dddc897900a475823edc945445d732506fb4c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/scoped-quality-check-source.json",
+      "bytes": 113939,
+      "sha256": "69e57fccb440d1ef0664d3f4afa114e205da43cd4227afa75fe27f32c2abc8c1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/scoped-quality-check.json",
+      "bytes": 2758,
+      "sha256": "1eed895defe26030a445a38fdc965c51b3614dda7ad7f8c4f70e94fb49d8d93b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/scoped-quality-check.resources",
+      "bytes": 1069,
+      "sha256": "a36f03a74dadd8f3a72fa8166dde9385000457ecea74f61b4b0ce2bcdc8b3c01"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/scoped-quality-check.stderr",
+      "bytes": 3086,
+      "sha256": "b69e433c4bc3f5cfb406dc12c66e808f2f529f67461341f0456638cfa0022126"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/scoped-quality-check.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-057ab6ccc0529bc78f5b692bd99dfb76b7dee918fca50a9ab9dcc7b9999d2719.patch",
+      "bytes": 374934,
+      "sha256": "057ab6ccc0529bc78f5b692bd99dfb76b7dee918fca50a9ab9dcc7b9999d2719"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-1a59a24511e67a94d7d1ed3043b4ad72564ca4a1109bad1c397f6b0f6fd38151.patch",
+      "bytes": 374983,
+      "sha256": "1a59a24511e67a94d7d1ed3043b4ad72564ca4a1109bad1c397f6b0f6fd38151"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-2cd7f0339c51bf750f501c08bb20882d0c3518e8a5d96c938e0d435a14d9c944.patch",
+      "bytes": 349589,
+      "sha256": "2cd7f0339c51bf750f501c08bb20882d0c3518e8a5d96c938e0d435a14d9c944"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-376f074c392f9f85475f5d429856bae8f5413daf199a0938625be2cefd5f2b5a.patch",
+      "bytes": 277440,
+      "sha256": "376f074c392f9f85475f5d429856bae8f5413daf199a0938625be2cefd5f2b5a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-3e95036b5338be8961f5cbea83991a7849e9413ffa2eeeae5fe1dbdb61aab34b.patch",
+      "bytes": 268561,
+      "sha256": "3e95036b5338be8961f5cbea83991a7849e9413ffa2eeeae5fe1dbdb61aab34b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-43a1b8e34502c220d8c2cd6d7b975fe066b21d5e6b79aa6e9dc4c9afc0e8df68.patch",
+      "bytes": 212096,
+      "sha256": "43a1b8e34502c220d8c2cd6d7b975fe066b21d5e6b79aa6e9dc4c9afc0e8df68"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-545ac71e79811ff268abc00e71145f191a8bb6f9eacc5f1c3d3aa2ffcef968b0.patch",
+      "bytes": 307169,
+      "sha256": "545ac71e79811ff268abc00e71145f191a8bb6f9eacc5f1c3d3aa2ffcef968b0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-564063c7854b96a40db8fa6e2fae9f0cc80657d0288f5efc4ab40dc4ddcc05e3.patch",
+      "bytes": 296312,
+      "sha256": "564063c7854b96a40db8fa6e2fae9f0cc80657d0288f5efc4ab40dc4ddcc05e3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-6b2e72dcde6a89fb2bb1882f2768b072c357c6b0f8d6ad3242d7290bde34d561.patch",
+      "bytes": 343261,
+      "sha256": "6b2e72dcde6a89fb2bb1882f2768b072c357c6b0f8d6ad3242d7290bde34d561"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-6f81b1f3606720caa932ca0c17466c436a1258b79fa2220de0716d76dc60179e.patch",
+      "bytes": 209290,
+      "sha256": "6f81b1f3606720caa932ca0c17466c436a1258b79fa2220de0716d76dc60179e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-6f9f1cf01547c96baf229f5d5ac1e7cbec6124f6042053f53b39880d982158b4.patch",
+      "bytes": 376368,
+      "sha256": "6f9f1cf01547c96baf229f5d5ac1e7cbec6124f6042053f53b39880d982158b4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-7381048bba6c621f47c9a8f8343a84512dfd7ae926c2e79d2f0a4759f39bc141.patch",
+      "bytes": 336812,
+      "sha256": "7381048bba6c621f47c9a8f8343a84512dfd7ae926c2e79d2f0a4759f39bc141"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-7391001b7606c7f90f96ceb03cda0f19dd51e0ee012a66776e0478e2ac391c98.patch",
+      "bytes": 212000,
+      "sha256": "7391001b7606c7f90f96ceb03cda0f19dd51e0ee012a66776e0478e2ac391c98"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-79a6033a989f1c349ddceb19603e8e82f94d8dd53827eacb42762f1a6128d6b2.patch",
+      "bytes": 375231,
+      "sha256": "79a6033a989f1c349ddceb19603e8e82f94d8dd53827eacb42762f1a6128d6b2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-79f4a2f4cdacc8d6559b4fdf9588bedf3aeb5f852c2b0dc7838ce2e581f023d9.patch",
+      "bytes": 256966,
+      "sha256": "79f4a2f4cdacc8d6559b4fdf9588bedf3aeb5f852c2b0dc7838ce2e581f023d9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-a5ee1b24553d116d9fedb74740372acde040d969f0bc5d75086d1e76178d8296.patch",
+      "bytes": 239005,
+      "sha256": "a5ee1b24553d116d9fedb74740372acde040d969f0bc5d75086d1e76178d8296"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-acf6f848803dfc8023deb75ec6d21e3414c9dc701a2ba0154d16407e5eaa8040.patch",
+      "bytes": 348809,
+      "sha256": "acf6f848803dfc8023deb75ec6d21e3414c9dc701a2ba0154d16407e5eaa8040"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-d1980750aa04101edad90fe98e206ae6e3c0d92130bd14c013be34cd2ca69e90.patch",
+      "bytes": 375645,
+      "sha256": "d1980750aa04101edad90fe98e206ae6e3c0d92130bd14c013be34cd2ca69e90"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-d546254c98366e02e7d2a202d63e1c60e978247d16932abf84b3c2c45ee911d2.patch",
+      "bytes": 375783,
+      "sha256": "d546254c98366e02e7d2a202d63e1c60e978247d16932abf84b3c2c45ee911d2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-d6649059c2c85736351db4848f69a086a4574139fd780ac6c7d579c23d7ea334.patch",
+      "bytes": 210238,
+      "sha256": "d6649059c2c85736351db4848f69a086a4574139fd780ac6c7d579c23d7ea334"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-e396700e45e459f83953075cd7047c8b5d8fa17f96ef3d649dc46c2a487cc8d9.patch",
+      "bytes": 296268,
+      "sha256": "e396700e45e459f83953075cd7047c8b5d8fa17f96ef3d649dc46c2a487cc8d9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-e43b6664a743d8b022eae7dcd0342035f10ffe44e50ae316fc715a8a69a55ae0.patch",
+      "bytes": 291796,
+      "sha256": "e43b6664a743d8b022eae7dcd0342035f10ffe44e50ae316fc715a8a69a55ae0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-e74c4044e9cff93e78d247153d694f0ed59bf3efb47d04436d10e009bbe6c10b.patch",
+      "bytes": 256654,
+      "sha256": "e74c4044e9cff93e78d247153d694f0ed59bf3efb47d04436d10e009bbe6c10b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-e7e4024b0a94ba85f2ac55ecc4ba074e24e4dabfcdecef6b5760d07cd603b035.patch",
+      "bytes": 369075,
+      "sha256": "e7e4024b0a94ba85f2ac55ecc4ba074e24e4dabfcdecef6b5760d07cd603b035"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-ea1c7fe5f8e953e362bbb11833d946aeb4a9182368ff5fb43011eaf8624cbd40.patch",
+      "bytes": 350064,
+      "sha256": "ea1c7fe5f8e953e362bbb11833d946aeb4a9182368ff5fb43011eaf8624cbd40"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-f2f03e3fb673b15907cf3d5811f22594306a5b8c090a71bccb7e7d9dd5c68a6c.patch",
+      "bytes": 238025,
+      "sha256": "f2f03e3fb673b15907cf3d5811f22594306a5b8c090a71bccb7e7d9dd5c68a6c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-fc1db404486fda6fb6aac011cab0f6d5347b19862ebe5df76261bf947dcedfd2.patch",
+      "bytes": 269725,
+      "sha256": "fc1db404486fda6fb6aac011cab0f6d5347b19862ebe5df76261bf947dcedfd2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/source-fe48f2d3741870e7eaab5abee7af9676162aebd9ed24ae3d9a6ad22e3f4c2669.patch",
+      "bytes": 376290,
+      "sha256": "fe48f2d3741870e7eaab5abee7af9676162aebd9ed24ae3d9a6ad22e3f4c2669"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/starting-source.json",
+      "bytes": 1092471,
+      "sha256": "a4c84a2c9edc01a279f082207999c2a40b68b3224878209bf9f46f86649f712e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/summarize_terminal_focused.py",
+      "bytes": 2090,
+      "sha256": "d3c5d941c49f9559fb0c48dc407d8ff1cd29afc0de08cdef552a09ee6cd6df64"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-archive-controls-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-archive-controls.json",
+      "bytes": 3451,
+      "sha256": "9965304754473e15cbb94d8c66f1e09762b00e758d4536bddb2e0821fa3fb943"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-archive-controls.resources",
+      "bytes": 1015,
+      "sha256": "1fd9929162e9b8d13a9c5d8863fbc2bb21cefd70c9468a13c46889a7e3797646"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-archive-controls.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-archive-controls.stdout",
+      "bytes": 2889,
+      "sha256": "3dcf6f4f4ff69b1a8b278a868a238ba36687d13d81eccd24fb052ea3f3d03b63"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-beginning-poison-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-beginning-poison.json",
+      "bytes": 3448,
+      "sha256": "d93bce27fb0bb002785fae41ae0376a9e11236a8dc8c9e1af0fa29f3fcc1b834"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-beginning-poison.resources",
+      "bytes": 1012,
+      "sha256": "59d34f214609fb355c8eaab4084aa8922ec858f5b7f0afc430a2de3562fdd19a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-beginning-poison.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-beginning-poison.stdout",
+      "bytes": 1779,
+      "sha256": "886d9ef737798fa2c84ea6b797e771d486671a51a596560b6d6a1504d60744ed"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-1-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-1.json",
+      "bytes": 3436,
+      "sha256": "8f9ac1740596dc6fd2e837bdd1d3f32190dad8ac17ff20af0b8573c7e2b4362b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-1.resources",
+      "bytes": 1002,
+      "sha256": "88f61f405786e1f8aa2bb630a76908982ebfd163df56aabfb122f178438e9c01"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-1.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-1.stdout",
+      "bytes": 266,
+      "sha256": "3e1573481ed18a16594041280cb8831ae8003decaa6b994bb9f881b265ae5136"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-2-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-2.json",
+      "bytes": 3435,
+      "sha256": "6c18281841f3e52cf7cf1a2f152cd76637d7fe22cee7cfd0aae5f1e24384b47c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-2.resources",
+      "bytes": 1002,
+      "sha256": "4eee04fc82acc9b39a06b65e6e176a28b36a38d7235991313f704b95559d60a8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-2.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-2.stdout",
+      "bytes": 265,
+      "sha256": "6add192e9f912cb09c78cdaa0d36ae0a8a6d77ba145c51ba74a91c0c9e26f7eb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-3-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-3.json",
+      "bytes": 3443,
+      "sha256": "051f6302c2f0412f99dbec23d0338fa8b2af3a01147ce353dc9bd4a5aa6965f2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-3.resources",
+      "bytes": 1006,
+      "sha256": "7e2022edfd9c6d4cc610988e087967944b892e3daa24487277cee74b599a196a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-3.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-chronology-3.stdout",
+      "bytes": 269,
+      "sha256": "44d15d5364dc96e7d72a02f843a732aea45499c6474f529ddd115b9f43027a6e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-confirmed-build-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-confirmed-build.json",
+      "bytes": 2797,
+      "sha256": "f56c0c2382241c2af2b3112192aa6e1b66e6e37a260c4f3d3023b6772bf905aa"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-confirmed-build.resources",
+      "bytes": 1074,
+      "sha256": "8aac01da20c4eee28abb073157f31bf3612699b7c8c43f877cdecd29ebf144bb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-confirmed-build.stderr",
+      "bytes": 3041,
+      "sha256": "a6e196a2a049f76964116c5114a4be9fee67b708d377b65f389c02c25bf8d0e2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-confirmed-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-check-source.json",
+      "bytes": 113939,
+      "sha256": "d696a936ac8260c76591982d0945cb2e0fc4157c2cd893d7e2ec371b4ad31909"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-check.json",
+      "bytes": 2703,
+      "sha256": "71230302aaafd8b27adc0de6c38a573aeae9bb4d67be63f2ca6a8810aecc1ff6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-check.resources",
+      "bytes": 1072,
+      "sha256": "49884566a7f0e894aa214d8825a680794089882c8bbef7f8b9a04e1175f5c0a2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-check.stderr",
+      "bytes": 89992,
+      "sha256": "b636a905b60220af8f6f1a377e90073b3d8cdd23d0f5a934453ea07d2bcef84f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-check.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-comparison.json",
+      "bytes": 578,
+      "sha256": "22f73b5d5211ad64b6b47555c9a2716a117f5a935c141372997338312859e3e1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-final-check-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-final-check.json",
+      "bytes": 2721,
+      "sha256": "bf7c5506882c1d1b07dbd0c6398a9eba902a03ba7fbee89d3b17b10a03ea07ef"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-final-check.resources",
+      "bytes": 1072,
+      "sha256": "f75b2f96a73406b2ab968e7c5bb143f1211cd427972d8194eca08d009a4da5cb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-final-check.stderr",
+      "bytes": 86609,
+      "sha256": "619cea5fb6fc510132102a6cfdef5547ada3280b2594e786b23595fbac65bfbe"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-final-check.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-default-feature-final-comparison.json",
+      "bytes": 436,
+      "sha256": "987ef8db1710d6ccff5686d9f4509f77ff0263e3f675627f71337bd4cb576b62"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-dto-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-dto.json",
+      "bytes": 3378,
+      "sha256": "1de04200a578a3fec7ba1b87512c3fb22e9e47b42e57b86a92296a86872b8e0a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-dto.resources",
+      "bytes": 990,
+      "sha256": "0bc5a4fbc513bab459f092349c9a3eac05c30d60910e34377319dbd9556c536e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-dto.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-dto.stdout",
+      "bytes": 1711,
+      "sha256": "34b2134d43335913f834d5e692616303762678fd06f0c20f81b59130cf41455d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-focused-binary.json",
+      "bytes": 347,
+      "sha256": "e475910389aaaabb5b37afd0076243b7bb8f3080ffbc98c1ad3e02ad6f2747ac"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-focused-build-source.json",
+      "bytes": 113939,
+      "sha256": "d696a936ac8260c76591982d0945cb2e0fc4157c2cd893d7e2ec371b4ad31909"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-focused-build.json",
+      "bytes": 2791,
+      "sha256": "6f14e51ccdc3313f6e18fc35c0c908745308749b6d53d74542e832bdbbbce210"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-focused-build.resources",
+      "bytes": 1076,
+      "sha256": "6caf12910773545e46152b80c9366f434a25c19e8b19935c9729b45e8d4d8073"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-focused-build.stderr",
+      "bytes": 3041,
+      "sha256": "83047182ed608e9d38f17525ec09c4cff4cab08029acb97f0fd90c471ad0a600"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-focused-build.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-focused-results.json",
+      "bytes": 15696,
+      "sha256": "5e17e092e6cf0e39d78bd5f4f4eecd6e4c5e51aae442da042d38cf79a89cfb97"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-format-check-source.json",
+      "bytes": 113939,
+      "sha256": "d696a936ac8260c76591982d0945cb2e0fc4157c2cd893d7e2ec371b4ad31909"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-format-check.json",
+      "bytes": 4670,
+      "sha256": "337eae2e892efd2ce1384f8466b70df49c97123d829b497bd04f18bfd9e97419"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-format-check.resources",
+      "bytes": 2006,
+      "sha256": "478384404a3eb16f21ac8600e7bc6412af149bf84cdf4854eddd86bfcd69afbf"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-format-check.stderr",
+      "bytes": 47,
+      "sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-format-check.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-format-final-check-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-format-final-check.json",
+      "bytes": 4688,
+      "sha256": "ba249ac088f7b51eb7d2cf9b5ada0e51fd8a5c32e8286914981797763a2417a3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-format-final-check.resources",
+      "bytes": 2006,
+      "sha256": "c9585945f78ddfd30f74654fcdb081ac8cb6e07f66a8fa4af5799c2647381a46"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-format-final-check.stderr",
+      "bytes": 47,
+      "sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-format-final-check.stdout",
+      "bytes": 242,
+      "sha256": "25054a2cce6aa4f1221ffc16b7d81102da11b441264268bf9be214d6c2ba5dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-orchestrator-comparison.json",
+      "bytes": 551078,
+      "sha256": "faae079f1e06ca7b2f807e640fd653ca00eff5f3ece75c6f3287635f7e83e56d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-orchestrator-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-orchestrator.json",
+      "bytes": 3317,
+      "sha256": "c15f4c006a04b5cadb5b9ea3279c9ed3efc7973377d56d269aaeef034438d714"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-orchestrator.resources",
+      "bytes": 1304,
+      "sha256": "6dbfa1dd03aa1cc1f2fa42258178771c93dca540e74ca3f127e3331005ad8a6a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-orchestrator.stderr",
+      "bytes": 28499,
+      "sha256": "7b153842cc359a25d0830ca08af677e3ac0052a3704440de3edcfe2725292c62"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-orchestrator.stdout",
+      "bytes": 13582129,
+      "sha256": "e9af099059a5d0a9ffcce32c4b076010e444b5a85021e299bf05e376f03c8d3c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-runner-comparison.json",
+      "bytes": 392481,
+      "sha256": "b303a9f476f8a2df29a2565b1e6c18b5d07dcff66970b69222a3b8f7e0ff9bd7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-runner-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-runner.json",
+      "bytes": 3472,
+      "sha256": "36daae52a3c6a9417c5b1be9fe7f70de04b7137afa808ef947cff66e862c66d9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-runner.resources",
+      "bytes": 1390,
+      "sha256": "dd4c89ce7917a76f7557f1185bcbf5574965710fd5e7ca1f2c23af46852bd9b8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-runner.stderr",
+      "bytes": 124481,
+      "sha256": "b10b16a3d1a527463451f7ab71fe7037c9d97a04406163d7fd3ea47251ef5b95"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-lint-runner.stdout",
+      "bytes": 742931,
+      "sha256": "b89f5d39ac48732f09d50748767bc53c25538dfcbd43884a0de90b256f006681"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-manifest-poisons-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-manifest-poisons.json",
+      "bytes": 3452,
+      "sha256": "f765b7825db6bac0a561e3888edf2124d52e6dec6f44cae5b8f205030c34d12b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-manifest-poisons.resources",
+      "bytes": 1005,
+      "sha256": "4420da783e3d98e61779322d5939ae9ff832fd9f36b8d811530cec28b94f989b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-manifest-poisons.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-manifest-poisons.stdout",
+      "bytes": 2348,
+      "sha256": "cc06fa36fddca7555624f1a6f32e9289956e3925dca1fbd507395fc295526b51"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-native-refusal-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-native-refusal.json",
+      "bytes": 3424,
+      "sha256": "d5c0c6e47f3e432776f82a9f8d006aec424c71781c17bf08b3211e0e6350faa1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-native-refusal.resources",
+      "bytes": 1006,
+      "sha256": "0857a4f838a432ade4cb24687d1f4ba2af56847573cbb576a0533736d50db1b9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-native-refusal.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-native-refusal.stdout",
+      "bytes": 3002,
+      "sha256": "cfec76b05abe248f905d4f6862fa347669add96c6a6d0b9ba0cc7335bf3a52e3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-phase-poisons-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-phase-poisons.json",
+      "bytes": 3420,
+      "sha256": "50b129d2ae1339c59312b3eb64cbbb5532cfa81d4df819b462046bbccf1d7576"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-phase-poisons.resources",
+      "bytes": 998,
+      "sha256": "d8b8f8247e45b697c8972c943a2532d2bab1cdff59a7af5d3a0f43c03733a3ab"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-phase-poisons.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-phase-poisons.stdout",
+      "bytes": 2686,
+      "sha256": "5a4ce741164d864538bdddbdcaeaf9d938c47932d8ff7420bb44a0e38d39bb34"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-phase-positive-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-phase-positive.json",
+      "bytes": 3397,
+      "sha256": "613330ff92cbb176dfd23c35a400fc6ca775b5f7c613065dca7a67084a74d4cc"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-phase-positive.resources",
+      "bytes": 985,
+      "sha256": "6eb9f2dfa4e62e00e66554fb29f4188f53e816fdc1cb435b0d24eea389a3967c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-phase-positive.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-phase-positive.stdout",
+      "bytes": 1650,
+      "sha256": "329dbcc75cb16d81c88b58c75b7fbd383763955efb60a78d1bafe5b0b92a4ddf"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-provider-poisons-source.json",
+      "bytes": 113939,
+      "sha256": "6799f1afc4f157c1e7cbb8dcb020f03d85ee9250dd406596d50e5b72190f5d6f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-provider-poisons.json",
+      "bytes": 3464,
+      "sha256": "516d90b19e05819315db0c7709d3e66f0392391344cfcae06b38709f6f17fec7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-provider-poisons.resources",
+      "bytes": 1015,
+      "sha256": "6142373e21c3bb168db8254c76764a368d4faad299036693a11cfca863875283"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-provider-poisons.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-provider-poisons.stdout",
+      "bytes": 1787,
+      "sha256": "78da940f3e7cba9dd402756d74a263dc8161e73d7fbab400a6499a867e0613f8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/terminal-reconciliation.json",
+      "bytes": 115231,
+      "sha256": "8a2b9b517e0f69bacbdfcafecfb23c1fd6d259137a7f43bc11b395c19375d288"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/update_accounting.py",
+      "bytes": 1905,
+      "sha256": "9e1d837f12c3a49f61f14c44c69d65ca0b7ea1e19732dbd4db49ce7a5a760631"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/verify_remote_evidence.py",
+      "bytes": 1685,
+      "sha256": "81544bedace25a9142a3754fe0fba390d028eedfacb7b555e05add5a9328481c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/event-aware-restoration-20260916/writer-transfer.json",
+      "bytes": 757,
+      "sha256": "15f9ab49fefd90ea692a0c57c9ac82dbab29e98f43baf3f3838a729ab518b3cc"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 431310,
+      "sha256": "acb8c8bbabf87d1fda29404c22de1525dd552899a599eb1c0e760573fb8ed8b9"
+    }
+  ],
+  "all_match": true,
+  "scope": "Published package/evidence/patch files only; external source trees, frozen binaries and large corpus remain local custody."
+}
