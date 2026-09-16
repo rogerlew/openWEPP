@@ -1,0 +1,55 @@
+{
+  "utc": "2026-09-16T19:55:34.509110+00:00",
+  "commit": "46c4bbd9ce0b3838938750e889638bb6d12069a6",
+  "parent": "cd3fd25599e99269cf1d179c1fffac4b27c9f0cf",
+  "method": "independent exact-commit HTTPS raw fetch; byte-for-byte comparison to git show",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/checks.json",
+      "bytes": 1522,
+      "sha256": "5fbc29c00670106297dfd8c8f5effbe98e1e97b491920085501b47297fb36a9c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/continuity.json",
+      "bytes": 1323,
+      "sha256": "bde927bd8068abbce0e80b753f6d8e0baec010ec77f2d3ccdf4d462fef39828e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/correctness-review.md",
+      "bytes": 3107,
+      "sha256": "ba610717236df5084066ed7d730a00ed073358a4a1ec74b6fd5da3fa0b3f6e24"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/inspect_position_gsi.py",
+      "bytes": 4493,
+      "sha256": "d916de97c463650d133064ca597a1ecdd0ffe2164135e6f32a874efe5c355c66"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/inspect_soil_operands.py",
+      "bytes": 3714,
+      "sha256": "49de293d010eb2cead6963a8955ab0005d5b7a2b452b7c473e3daa378a57fb33"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/position-gsi-operands.json",
+      "bytes": 7181,
+      "sha256": "e0c1ab912aa2e30ca85769a7df2e3aeaaed9be07878d26e9597c49b126e310fd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/qa-review.md",
+      "bytes": 6472,
+      "sha256": "193323eec39ee62acc50a242618f0a5cbe776e2406360070b4b29effa2400bc9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/soil-operands.json",
+      "bytes": 2949,
+      "sha256": "cb0d5fa3a23d29e81829b9a1fcb52a9892f47903899aa2ca31bb2f29645ad4e2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 451061,
+      "sha256": "f63e49a11fc10b33872854a729cf868d3c838d200ffcb6de3143fdbace4a35b2"
+    }
+  ],
+  "all_match": true,
+  "scope": "Published package/evidence/patch files only; external source trees, frozen binaries and large corpus remain local custody."
+}

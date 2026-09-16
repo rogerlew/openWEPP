@@ -164,6 +164,15 @@ no current API success or producer physics defect is established. Production and
 native restoration remain HOLD. Publication and final charged time are recorded
 in the custody paragraph/receipt below.
 
+Custody: evidence commit `46c4bbd9ce0b3838938750e889638bb6d12069a6` pushed to
+existing `origin/main`, exit0. [Exact-commit remote verification](artifacts/authority-domain-attribution-20260916/remote-verification.json)
+fetched all9 changed files, **481,822 bytes**, and matched local Git bytes.
+The custody supplement publishes this receipt and paragraph; its own exact-commit
+verification and final charged-time/return receipt remain at the external log
+path above. Full frozen Q/R source, binaries and the large export remain locally
+preserved, with their prior recovery/custody unchanged. No new source patch is
+needed because no detached source changed.
+
 ## Event-aware restoration terminal disposition — 2026-09-16
 
 **Bounded negative diagnostic complete; native restoration and the overall package remain HOLD.**
