@@ -1,0 +1,86 @@
+{
+  "evidence_class": "Ran: byte-for-byte raw log copy and gzip round-trip verification",
+  "streams": [
+    {
+      "label": "baseline-orchestrator",
+      "stream": "stdout",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/complete-lint-diagnostics-20260916/baseline-orchestrator.stdout",
+      "published_gzip": "baseline-orchestrator.stdout.gz",
+      "bytes": 14154436,
+      "sha256": "efed76732958757555dbfd4fded08889b613757add91a77a484fdaba55b20609",
+      "gzip_sha256": "c9588cdcc3f24efae9626eb1ff5e398f6d4fda585b9aa55c4b42e3c02fe712c9",
+      "lossless_verified": true
+    },
+    {
+      "label": "baseline-orchestrator",
+      "stream": "stderr",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/complete-lint-diagnostics-20260916/baseline-orchestrator.stderr",
+      "published_gzip": "baseline-orchestrator.stderr.gz",
+      "bytes": 186533,
+      "sha256": "927cae0161a10c0e8e6208c9c15ead6d6c7bb8225d684ef18d2eb00d43828984",
+      "gzip_sha256": "6c41ed4e782b91d541a5c2bb7c3676f7dcf826b06f069cd9d6eecd78a0750af3",
+      "lossless_verified": true
+    },
+    {
+      "label": "baseline-runner",
+      "stream": "stdout",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/complete-lint-diagnostics-20260916/baseline-runner.stdout",
+      "published_gzip": "baseline-runner.stdout.gz",
+      "bytes": 1022827,
+      "sha256": "02f69951e1f158662f95b1355f68c95a3e404e1063917ab64a4626908bb7846d",
+      "gzip_sha256": "de1947a5f9aea714a6b9d48e91e06f5634c7053ed08758e8cf61bf5ec0e3f30b",
+      "lossless_verified": true
+    },
+    {
+      "label": "baseline-runner",
+      "stream": "stderr",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/complete-lint-diagnostics-20260916/baseline-runner.stderr",
+      "published_gzip": "baseline-runner.stderr.gz",
+      "bytes": 380669,
+      "sha256": "dab7dfab3c7fa493c9a0539749cc7a6cb47a0f529c0870373685d7b1d9280e81",
+      "gzip_sha256": "dbbe62728fc6a9af8869a069208f4142922280c8d05bcdcb02491bab04a15717",
+      "lossless_verified": true
+    },
+    {
+      "label": "candidate-orchestrator",
+      "stream": "stdout",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/complete-lint-diagnostics-20260916/candidate-orchestrator.stdout",
+      "published_gzip": "candidate-orchestrator.stdout.gz",
+      "bytes": 13939071,
+      "sha256": "a024e2211e1b3ed7a77e35987bb2262706322fdd04d4ad7bb1265907fe2f0650",
+      "gzip_sha256": "5a3da5e83322649d2f6aa0668ea03b4af4ceb9a2e24aca2b8f3e1375985dfd1c",
+      "lossless_verified": true
+    },
+    {
+      "label": "candidate-orchestrator",
+      "stream": "stderr",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/complete-lint-diagnostics-20260916/candidate-orchestrator.stderr",
+      "published_gzip": "candidate-orchestrator.stderr.gz",
+      "bytes": 187200,
+      "sha256": "79652b5135b2e7dc3a289ff3dbaf461785311f6dc7b09995f46caff7e20262f0",
+      "gzip_sha256": "bb5908723d4b768c7eb1fc93b957ee9e29ef64c85b77221527b5af83bd9b91fe",
+      "lossless_verified": true
+    },
+    {
+      "label": "candidate-runner",
+      "stream": "stdout",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/complete-lint-diagnostics-20260916/candidate-runner.stdout",
+      "published_gzip": "candidate-runner.stdout.gz",
+      "bytes": 1024937,
+      "sha256": "5065740eae734b89121e5fa4570505be81107258b7861a7095acd205755ddbb1",
+      "gzip_sha256": "f6bb3a90d9aa782661fe0536785dbb230ce068ae795916d0b03a12288cd06927",
+      "lossless_verified": true
+    },
+    {
+      "label": "candidate-runner",
+      "stream": "stderr",
+      "local_raw": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/complete-lint-diagnostics-20260916/candidate-runner.stderr",
+      "published_gzip": "candidate-runner.stderr.gz",
+      "bytes": 382244,
+      "sha256": "ad5d37bc94240d152af0172b8dcaa4273202dba199d5b36ed8ecae4f59523d64",
+      "gzip_sha256": "aae2d494c0b214a8d61584faab0189c19c5ba6a49bd1f36cdedb8a24d16d22c2",
+      "lossless_verified": true
+    }
+  ],
+  "scope": "Complete stdout/stderr retained, including ANSI and verbose compiler commands; collection only, no runtime execution"
+}

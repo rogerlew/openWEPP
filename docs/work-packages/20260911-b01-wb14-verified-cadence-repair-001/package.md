@@ -1,16 +1,148 @@
 # B01 WB14 verified parent cadence repair
 
-**Status: INCOMPLETE / HOLD.** Recorder controls pass on the final detached
-candidate, including independent current operands and model isolation. Native
-payload parity and formatting also pass. Full source-quality coverage is blocked
-by inherited lint debt before required examples, binaries and integration tests
-are reached. The original regression remains FAIL on baseline and candidate.
-Both existing reviewers confirm this limited disposition.
+**Status: INCOMPLETE / HOLD.** Recorder controls, native payload parity and
+formatting retain PASS on the unchanged detached candidate. Supplemental lint
+collection is COMPLETE across every selected target/configuration on both sources;
+both independent reviews accept the amended matched-diagnostic criterion as PASS.
+Strict Clippy remains FAIL. The original regression remains FAIL on baseline and
+candidate and the scientific/authority disagreement remains unresolved.
 
 Authentic capture and witness allowances are exhausted (**1 / 1** each).
 The authentic probe remains **0 / 1, RESERVED AND PROHIBITED**. Cadence is suspended.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Complete diagnostic collection amendment — adopted 2026-09-16 UTC
+
+Owner execution of `/tmp/openwepp_b01_wb14_complete_lint_diagnostics_authorization.md`
+adopts the dated diagnostic-only `--cap-lints warn` protocol for the existing
+checkpoint. Historical strict Clippy FAIL remains unchanged. Intent before edits:
+collect matched complete owning-crate and runner diagnostics on the exact retained
+baseline/candidate, verify every selected target/configuration completes, compare
+structured diagnostics and independently adjudicate changed/new results. No Rust,
+manifest, features, science or production-authority edits are planned. Existing
+recorder controls, native parity and formatting are reused on unchanged sources.
+
+Use original Nix wrapper, explicit manifests, locked feature selections and
+`--all-targets -- --no-deps -D warnings --cap-lints warn`; add Cargo verbose output
+only to expose actual Clippy driver/target invocations. Fresh diagnostic-only
+baseline/candidate target directories distinguish this collection from authentic
+executables. Collection zero exit cannot establish strict Clippy PASS. No tests,
+simulation programs, capture, probe or protected-checkpoint operations are executed.
+Selected checks: source/input continuity, exact command and toolchain custody,
+completed artifact inventory versus original selection, complete capped/capped
+comparison, strict-to-capped lint-class preservation, independent correctness and
+QA, final evidence/link/JSON/script checks and scoped remote publication.
+
+Carry **40,457.459351 / 51,155.159526 charged seconds**, **55 failures**, no failure
+ceiling. Conservative start **2026-09-16 02:00:00 UTC** includes initial reading;
+remaining allowance **10,697.700175 seconds**, deadline **04:58:17.700175 UTC**.
+All elapsed time counts, concurrent work once; no wait deductions. Reserve at least
+90 seconds for preservation. No allowance is restored. Both historical reviewer
+followups returned `live agent path ... not found`; use the already-authorized
+attributable replacement route, preserving prior accepted scope without claiming
+conversation continuity. Overall recorder preparation remains INCOMPLETE/HOLD and
+original regression FAIL. Authentic capture/witness 1/1 exhausted; probe 0/1
+RESERVED AND PROHIBITED. New evidence: `artifacts/complete-lint-diagnostics-20260916/`.
+
+### Supplemental collection results and accepted bounded disposition
+
+Ran: all four diagnostic collections exit **0**, each with unchanged source and
+supplemental inputs. The baseline retains tree
+`114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5`; candidate
+retains tree `ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592`
+and patch `4559c7d21fbcdb9314845e6a5c19940d051d0ef861e48c7cb2a4ae7e51020c5d`.
+[Environment continuity](artifacts/complete-lint-diagnostics-20260916/environment-continuity.json)
+confirms retained Nix inputs and rustc/cargo 1.95.0, Clippy 0.1.95. Verbose logs
+show actual Clippy driver invocations; warnings remain visible and complete.
+
+[Target/configuration coverage](artifacts/complete-lint-diagnostics-20260916/complete-lint-target-coverage.json)
+is complete on both sources: owning library normal/test plus four examples
+(**6 configurations**); runner library normal/test, five binaries normal/test,
+and nine integration tests (**21 configurations**). Each selected artifact has
+`fresh:false`; each command has successful `build-finished`. Newly reached
+examples/binaries/integration tests emit zero diagnostics. Metadata alone and
+absence of messages were not used as completion evidence.
+
+[Full structured comparison](artifacts/complete-lint-diagnostics-20260916/complete-lint-diagnostic-comparison.json)
+retains target, complete message/child/span/suggestion content and multiplicity:
+owning baseline **2,956**, candidate **2,954**, exact mapped matches **2,944**.
+Six candidate groups (10 occurrences) and eight baseline groups (12 occurrences)
+are independently confirmed against the previously adjudicated source
+changes and two resolved baseline-only lints. Runner **291 / 291** messages
+match exactly. These totals include **93** owning-command and **176** runner-command
+external dependency warnings exposed by the cap. All prior strict lint classes
+remain represented. Cargo omits per-message normal/test profile identity; full
+combined multiplicity plus completed target/profile artifacts bound the claim.
+
+Both attributable replacement reviews accept this amended diagnostic criterion:
+[correctness, `/root/diagnostics_correctness`](artifacts/complete-lint-diagnostics-20260916/correctness-review.md)
+and [QA, `/root/diagnostics_qa`](artifacts/complete-lint-diagnostics-20260916/qa-review.md).
+They are independent of the author/orchestrator and each other; neither claims
+continuity with unavailable prior conversations. The six candidate groups are
+two `result_large_err` closure sites, three inherited `too_many_lines` sites
+(metrics 238→253 formatting, 663→670 recorder argument, 115→116 formatting), and
+the unchanged 10-argument `too_many_arguments` helper. The two baseline-only
+warnings are `needless_pass_by_value` and `fn_params_excessive_bools`, resolved by
+the already-reviewed recorder changes. No new relevant diagnostic remains.
+
+The cap exposes inherited dependency warnings as well. Correctness inspected all
+nine `serde_yaml` implicit raw-pointer autoreference sites and the same-width
+`arrow-array` transmute warnings; no concrete correctness/safety/security defect
+was found. Deprecation and inherited lint debt remain maintenance risks, not
+waivers for any future safety finding. Neither review treats inheritance alone
+as safety acceptance. The artifact summary omits `fresh`, but raw records and
+[direct record checks](artifacts/complete-lint-diagnostics-20260916/independent-record-checks.json)
+prove `fresh:false` for every selected configuration.
+
+| Outcome | Final disposition |
+| --- | --- |
+| Strict owning and runner Clippy, both sources | **FAIL**, retained exit101 |
+| Supplemental diagnostic collection | **COMPLETE**, four exit0 collections |
+| Complete matched diagnostic criterion | **PASS**, both independent scopes accepted |
+| Original regression | **FAIL**, unchanged; no scientific waiver |
+| Full recorder preparation | **INCOMPLETE / HOLD** |
+
+Exact source-bound commands are retained for
+[baseline owning](artifacts/complete-lint-diagnostics-20260916/baseline-orchestrator.json),
+[baseline runner](artifacts/complete-lint-diagnostics-20260916/baseline-runner.json),
+[candidate owning](artifacts/complete-lint-diagnostics-20260916/candidate-orchestrator.json),
+and [candidate runner](artifacts/complete-lint-diagnostics-20260916/candidate-runner.json).
+[Lossless output preservation](artifacts/complete-lint-diagnostics-20260916/output-preservation.json)
+binds all eight complete raw stdout/stderr streams in the durable local log
+directory to their published gzip copies. Reprocessing those gzip copies changes
+only log paths; complete comparison content is identical to the reviewed cut.
+
+[Failure ledger](artifacts/complete-lint-diagnostics-20260916/failure-ledger.json)
+preserves all **55 historical failures** and conservatively adds **three**
+processing/inspection mistakes, cumulative **58**. No new lint or behavioral
+failure occurred. Nonterminal derived reports were regenerated after the last
+collection finished; all raw logs and command receipts stayed intact. Two QA
+spawn attempts hit session capacity; the serialized attempt after both earlier
+children completed succeeded. QA corrected one group-count wording ambiguity in
+its own review; its verdict is unchanged. No new reviewer wave was used.
+
+No Rust, science, dependency, manifest or feature changes, test executions,
+runner/collector calls or authentic operations occurred. Prior control/native/
+format evidence remains applicable. The remaining decision is the original
+scientific-regression and authority disposition; successful lint collection does
+not accept the 540-second regression or resolve outer 4/22 versus inner 0/0.
+Capture/witness remain 1/1 exhausted; probe 0/1 RESERVED AND PROHIBITED. No cadence
+resumption, candidate Rust adoption or further authentic run is released.
+
+[Terminal checks](artifacts/complete-lint-diagnostics-20260916/terminal-checks.json)
+confirm unchanged exact source and supplemental inputs, current-section links,
+JSON/Python syntax, lossless logs and scoped authored files.
+[Preservation accounting](artifacts/complete-lint-diagnostics-20260916/ledger-preservation.json)
+at **2026-09-16 02:19:37 UTC** records **41634.630302 charged seconds**,
+**9520.529224 seconds remaining**, and **58 cumulative failures**.
+Scoped evidence is being committed/pushed on existing `main`; exact remote-byte
+verification follows. Final additional charged
+time and exact remote-byte verification will be retained in
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/complete-lint-diagnostics-publication.json`.
+This local terminal receipt avoids recursive publication claims and preserves the
+ceiling **51,155.159526 seconds**; every elapsed second through publication and
+response is charged, with no wait deductions.
 
 ## Delegated recorder preparation — final disposition, 2026-09-15
 

@@ -1,0 +1,46 @@
+{
+  "historical": 55,
+  "current": 58,
+  "failure_ceiling": "superseded",
+  "new_lint_or_behavior_failures": 0,
+  "counting": "Preserve all55 historical failures; conservatively add three diagnostic-processing/inspection failures. Availability/absence queries and transient agent dispatch errors are orchestration friction, not source verification results.",
+  "entries": [
+    {
+      "number": 56,
+      "role": "/root/lint_diagnostics_processing",
+      "timestamp": "not captured",
+      "argv": [
+        ".venv/bin/python",
+        "docs/work-packages/20260911-bb14-verified-cadence-repair-001/artifacts/complete-lint-diagnostics-20260916/compare-complete.py"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit": 2,
+      "stderr": ".venv/bin/python: can't open file '/workdir/openWEPP/docs/work-packages/20260911-bb14-verified-cadence-repair-001/artifacts/complete-lint-diagnostics-20260916/compare-complete.py': [Errno 2] No such file or directory\n",
+      "classification": "Mistyped artifact path; no source/build/runtime operation. Correct path processing subsequently passed."
+    },
+    {
+      "number": 57,
+      "role": "/root",
+      "timestamp": "not captured",
+      "command": "Inline .venv/bin/python read-only summary of complete-lint-target-coverage.json, attempting t[required_profiles]",
+      "exit": 1,
+      "stdout": "orchestrator\n",
+      "stderr": "Traceback (most recent call last):\n  File \"<stdin>\", line 8, in <module>\nKeyError: 'required_profiles'\n",
+      "classification": "Inspection queried wrong field name; no file changed. Correct artifact_profiles summary subsequently passed."
+    },
+    {
+      "number": 58,
+      "role": "/root",
+      "command": "Inline .venv/bin/python raw-stream checks assumed exactly four non-JSON stdout lines",
+      "exit": 1,
+      "stderr": "Traceback (most recent call last):\n  File \"<stdin>\", line 17, in <module>\nAssertionError\n",
+      "classification": "Inspection assumption omitted -vv build-script cargo: directives. All non-JSON lines were inspected and classified as four Nix banner lines plus verbose build-script directives; corrected check passed. No command/source/log changed."
+    }
+  ],
+  "orchestration_friction": [
+    "Both prior recovery reviewer followups returned live agent path not found; carried attributable replacements used.",
+    "QA spawn returned agent thread limit reached twice while correctness active; succeeded after both previous children completed."
+  ],
+  "intermediate_processing": "Two derived JSON reports were first generated while candidate-runner was in progress, then overwritten by terminal processing after all four receipts completed. Raw logs and receipts were unchanged. In-progress report was not treated as acceptance or a failed collection.",
+  "internal_reassessment": "Continue bounded record verification: processing/inspection failures concern path/key/banner assumptions only, not Clippy collection, source or science. All four source-bound collection results remain successful. No source correction or lint rerun needed."
+}

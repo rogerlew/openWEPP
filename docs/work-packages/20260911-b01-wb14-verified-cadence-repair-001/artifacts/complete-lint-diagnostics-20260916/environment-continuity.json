@@ -1,0 +1,148 @@
+{
+  "evidence_class": "Ran: local identity inspection and pinned tool version command",
+  "observed_utc": "2026-09-16T02:09:28.497752+00:00",
+  "evidence_revision": "4723051f341adb4ae147b73b8812700202aaf01a",
+  "source_config_files": {
+    "flake.nix": {
+      "baseline": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+      "candidate": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+      "repository": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9"
+    },
+    "flake.lock": {
+      "baseline": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+      "candidate": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+      "repository": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6"
+    },
+    "rust-toolchain.toml": {
+      "baseline": "3e18e70208ee460635e239a91c142cf67371feafb718b05617ff06f388bf96df",
+      "candidate": "3e18e70208ee460635e239a91c142cf67371feafb718b05617ff06f388bf96df",
+      "repository": "3e18e70208ee460635e239a91c142cf67371feafb718b05617ff06f388bf96df"
+    },
+    "clippy.toml": {
+      "baseline": "6bcaaf24bd65b7ead78a207a92d05ce1c1516ae69bdb1c240689a34b3bc6cd81",
+      "candidate": "6bcaaf24bd65b7ead78a207a92d05ce1c1516ae69bdb1c240689a34b3bc6cd81",
+      "repository": "6bcaaf24bd65b7ead78a207a92d05ce1c1516ae69bdb1c240689a34b3bc6cd81"
+    },
+    "Cargo.toml": {
+      "baseline": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+      "candidate": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+      "repository": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676"
+    },
+    "Cargo.lock": {
+      "baseline": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c",
+      "candidate": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c",
+      "repository": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c"
+    }
+  },
+  "source_configs_identical": true,
+  "active_nix_matches_source": true,
+  "retained_wrapper_unchanged_from_evidence_revision": true,
+  "cargo_config_inspection": [
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/.cargo/config",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/.cargo/config.toml",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/.cargo/config",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/.cargo/config.toml",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/openWEPP/.cargo/config",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/openWEPP/.cargo/config.toml",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/.cargo/config",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/b01-wb14-cadence/.cargo/config.toml",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/.cargo/config",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/openwepp-experiments/.cargo/config.toml",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/.cargo/config",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/.cargo/config.toml",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/.cargo/config",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/.cargo/config.toml",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/home/roger/.cargo/config",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/home/roger/.cargo/config.toml",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/.cache/openwepp/cargo-home/config",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "/workdir/.cache/openwepp/cargo-home/config.toml",
+      "exists": false,
+      "sha256": null
+    }
+  ],
+  "toolchain_command": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "bash",
+    "-c",
+    "rustc -Vv; cargo -V; cargo clippy -V; command -v rustc; command -v cargo; command -v clippy-driver"
+  ],
+  "toolchain_exit": 0,
+  "toolchain_stdout_sha256": "3b1179f349d1d89304fbd3a01e12e4fd6cecf99eb05c5e77a073235f03e4a6bf",
+  "toolchain_stderr_sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+  "toolchain_version": "rustc 1.95.0 (59807616e1fa2540724bfbac14d7976d7e4a3860), cargo 1.95.0, clippy 0.1.95",
+  "strict_results": "Unchanged FAIL exit101; no strict command rerun",
+  "script_sha256": "cdd76fb6fccc5248e79737899f438660db59b1e469e0f534aec26ee81ff10c3b",
+  "effective_cargo_home": "/workdir/.cache/openwepp/cargo-home"
+}

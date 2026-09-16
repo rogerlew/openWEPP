@@ -1,0 +1,4380 @@
+{
+  "evidence_class": "Ran: raw compiler-artifact and build-finished reconciliation against prior final selected-target inventory.",
+  "prior_inventory": "artifacts/execution-discretion-20260915/final-lint-target-coverage.json",
+  "command_custody": {
+    "baseline-orchestrator": {
+      "label": "baseline-orchestrator",
+      "source": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+      "source_tree_sha256": "114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5",
+      "exit": 0,
+      "argv": [
+        "/usr/bin/timeout",
+        "--signal=TERM",
+        "--kill-after=5s",
+        "10210.986408s",
+        "bash",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+        "/tmp/openwepp-b01-wb14-cadence-targets/complete-lint-20260916-baseline",
+        "clippy",
+        "--manifest-path",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/Cargo.toml",
+        "-p",
+        "openwepp-hillslope-orchestrator",
+        "--all-targets",
+        "--locked",
+        "--features",
+        "persisted-restart-v1,restart-authority-evidence",
+        "--message-format=json",
+        "-vv",
+        "--",
+        "--no-deps",
+        "-D",
+        "warnings",
+        "--cap-lints",
+        "warn"
+      ],
+      "issues": [],
+      "receipt_present": true
+    },
+    "candidate-orchestrator": {
+      "label": "candidate-orchestrator",
+      "source": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+      "source_tree_sha256": "ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592",
+      "exit": 0,
+      "argv": [
+        "/usr/bin/timeout",
+        "--signal=TERM",
+        "--kill-after=5s",
+        "10080.294792s",
+        "bash",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+        "/tmp/openwepp-b01-wb14-cadence-targets/complete-lint-20260916-candidate",
+        "clippy",
+        "--manifest-path",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/Cargo.toml",
+        "-p",
+        "openwepp-hillslope-orchestrator",
+        "--all-targets",
+        "--locked",
+        "--features",
+        "persisted-restart-v1,restart-authority-evidence",
+        "--message-format=json",
+        "-vv",
+        "--",
+        "--no-deps",
+        "-D",
+        "warnings",
+        "--cap-lints",
+        "warn"
+      ],
+      "issues": [],
+      "receipt_present": true
+    },
+    "baseline-runner": {
+      "label": "baseline-runner",
+      "source": "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+      "source_tree_sha256": "114bd2877dd4141ec5023dbd99e1d7c1c97e68dfd75b5fdf6a570350c8f463e5",
+      "exit": 0,
+      "argv": [
+        "/usr/bin/timeout",
+        "--signal=TERM",
+        "--kill-after=5s",
+        "10145.692486s",
+        "bash",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913",
+        "/tmp/openwepp-b01-wb14-cadence-targets/complete-lint-20260916-baseline",
+        "clippy",
+        "--manifest-path",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/current-context-capture-20260913/Cargo.toml",
+        "-p",
+        "openwepp-runner",
+        "--all-targets",
+        "--locked",
+        "--features",
+        "openwepp-runner/test-fixture-authority,openwepp-hillslope-orchestrator/persisted-restart-v1,openwepp-hillslope-orchestrator/restart-authority-evidence",
+        "--message-format=json",
+        "-vv",
+        "--",
+        "--no-deps",
+        "-D",
+        "warnings",
+        "--cap-lints",
+        "warn"
+      ],
+      "issues": [],
+      "receipt_present": true
+    },
+    "candidate-runner": {
+      "label": "candidate-runner",
+      "source": "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+      "source_tree_sha256": "ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592",
+      "exit": 0,
+      "argv": [
+        "/usr/bin/timeout",
+        "--signal=TERM",
+        "--kill-after=5s",
+        "9997.689706s",
+        "bash",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/snowfree-recorder-20260915/ow-cargo.sh",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915",
+        "/tmp/openwepp-b01-wb14-cadence-targets/complete-lint-20260916-candidate",
+        "clippy",
+        "--manifest-path",
+        "/workdir/openwepp-experiments/b01-wb14-cadence/snowfree-recorder-candidate-20260915/Cargo.toml",
+        "-p",
+        "openwepp-runner",
+        "--all-targets",
+        "--locked",
+        "--features",
+        "openwepp-runner/test-fixture-authority,openwepp-hillslope-orchestrator/persisted-restart-v1,openwepp-hillslope-orchestrator/restart-authority-evidence",
+        "--message-format=json",
+        "-vv",
+        "--",
+        "--no-deps",
+        "-D",
+        "warnings",
+        "--cap-lints",
+        "warn"
+      ],
+      "issues": [],
+      "receipt_present": true
+    }
+  },
+  "coverage": {
+    "orchestrator": {
+      "baseline": [
+        {
+          "target": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp_hillslope_orchestrator",
+              "kind": [
+                "lib"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp_hillslope_orchestrator",
+              "kind": [
+                "lib"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "cascade_seam_ledger",
+          "kind": [
+            "example"
+          ],
+          "metadata_test": false,
+          "required_profile_test": [
+            false
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "cascade_seam_ledger",
+              "kind": [
+                "example"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "dval_case",
+          "kind": [
+            "example"
+          ],
+          "metadata_test": false,
+          "required_profile_test": [
+            false
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "dval_case",
+              "kind": [
+                "example"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "iwagaki_oracle_dump",
+          "kind": [
+            "example"
+          ],
+          "metadata_test": false,
+          "required_profile_test": [
+            false
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "iwagaki_oracle_dump",
+              "kind": [
+                "example"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "steady_probe",
+          "kind": [
+            "example"
+          ],
+          "metadata_test": false,
+          "required_profile_test": [
+            false
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "steady_probe",
+              "kind": [
+                "example"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        }
+      ],
+      "candidate": [
+        {
+          "target": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp_hillslope_orchestrator",
+              "kind": [
+                "lib"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp_hillslope_orchestrator",
+              "kind": [
+                "lib"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "cascade_seam_ledger",
+          "kind": [
+            "example"
+          ],
+          "metadata_test": false,
+          "required_profile_test": [
+            false
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "cascade_seam_ledger",
+              "kind": [
+                "example"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "dval_case",
+          "kind": [
+            "example"
+          ],
+          "metadata_test": false,
+          "required_profile_test": [
+            false
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "dval_case",
+              "kind": [
+                "example"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "iwagaki_oracle_dump",
+          "kind": [
+            "example"
+          ],
+          "metadata_test": false,
+          "required_profile_test": [
+            false
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "iwagaki_oracle_dump",
+              "kind": [
+                "example"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "steady_probe",
+          "kind": [
+            "example"
+          ],
+          "metadata_test": false,
+          "required_profile_test": [
+            false
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "steady_probe",
+              "kind": [
+                "example"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        }
+      ],
+      "baseline_build_finished": [
+        {
+          "reason": "build-finished",
+          "success": true
+        }
+      ],
+      "candidate_build_finished": [
+        {
+          "reason": "build-finished",
+          "success": true
+        }
+      ],
+      "baseline_selected_artifacts_complete": true,
+      "candidate_selected_artifacts_complete": true,
+      "baseline_artifacts": [
+        {
+          "target": "adler2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "autocfg",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "base64",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "block_buffer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "build-script-build",
+          "kind": [
+            "custom-build"
+          ],
+          "profile_test": false,
+          "multiplicity": 11
+        },
+        {
+          "target": "cascade_seam_ledger",
+          "kind": [
+            "example"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "cfg_if",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "cpufeatures",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "crc32fast",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "crypto_common",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "digest",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "dval_case",
+          "kind": [
+            "example"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "equivalent",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "flate2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "generic_array",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "hashbrown",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "indexmap",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "itoa",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "iwagaki_oracle_dump",
+          "kind": [
+            "example"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "libm",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "memchr",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "miniz_oxide",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_bigint",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_integer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_traits",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_biogeochemistry",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_climate_runtime_adapter",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_coupled_time",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_input_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_kernel_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_land_surface_energy",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_management_schema",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_meteorology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_plant_phenology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_sim_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_topology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_unit_boundary",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_vegetation",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "proc_macro2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "quote",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "ryu",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_core",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_derive",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_json",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_yaml",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "sha2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "simd_adler32",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "steady_probe",
+          "kind": [
+            "example"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "syn",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 2
+        },
+        {
+          "target": "thiserror",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "thiserror_impl",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "typenum",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "unicode_ident",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "unsafe_libyaml",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "version_check",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "zmij",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        }
+      ],
+      "candidate_artifacts": [
+        {
+          "target": "adler2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "autocfg",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "base64",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "block_buffer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "build-script-build",
+          "kind": [
+            "custom-build"
+          ],
+          "profile_test": false,
+          "multiplicity": 11
+        },
+        {
+          "target": "cascade_seam_ledger",
+          "kind": [
+            "example"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "cfg_if",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "cpufeatures",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "crc32fast",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "crypto_common",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "digest",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "dval_case",
+          "kind": [
+            "example"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "equivalent",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "flate2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "generic_array",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "hashbrown",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "indexmap",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "itoa",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "iwagaki_oracle_dump",
+          "kind": [
+            "example"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "libm",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "memchr",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "miniz_oxide",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_bigint",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_integer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_traits",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_biogeochemistry",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_climate_runtime_adapter",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_coupled_time",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_input_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_kernel_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_land_surface_energy",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_management_schema",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_meteorology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_plant_phenology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_sim_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_topology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_unit_boundary",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_vegetation",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "proc_macro2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "quote",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "ryu",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_core",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_derive",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_json",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_yaml",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "sha2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "simd_adler32",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "steady_probe",
+          "kind": [
+            "example"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "syn",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 2
+        },
+        {
+          "target": "thiserror",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "thiserror_impl",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "typenum",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "unicode_ident",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "unsafe_libyaml",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "version_check",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "zmij",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        }
+      ]
+    },
+    "runner": {
+      "baseline": [
+        {
+          "target": "openwepp_runner",
+          "kind": [
+            "lib"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp_runner",
+              "kind": [
+                "lib"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp_runner",
+              "kind": [
+                "lib"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "open_wepp_runner",
+          "kind": [
+            "bin"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "open_wepp_runner",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "open_wepp_runner",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "openwepp-cli-hill",
+          "kind": [
+            "bin"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp-cli-hill",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp-cli-hill",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "openwepp-cli-totalwatsed3",
+          "kind": [
+            "bin"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp-cli-totalwatsed3",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp-cli-totalwatsed3",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "openwepp-cli-watershed",
+          "kind": [
+            "bin"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp-cli-watershed",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp-cli-watershed",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "openwepp-snowbench",
+          "kind": [
+            "bin"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp-snowbench",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp-snowbench",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "mt3_hbp_hourly_consumer_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "mt3_hbp_hourly_consumer_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "simimpl04_runner_kernel_execution_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "simimpl04_runner_kernel_execution_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "simimpl04_wb13_publication_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "simimpl04_wb13_publication_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "simimpl04_wepp_ui_mode_closure_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "simimpl04_wepp_ui_mode_closure_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "snowbench_error_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "snowbench_error_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "test_fixture_authority_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "test_fixture_authority_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "totalwatsed3_cli_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "totalwatsed3_cli_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "watershed_cli_behavior_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "watershed_cli_behavior_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "wshedw10_chaninp_absent_default_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "wshedw10_chaninp_absent_default_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        }
+      ],
+      "candidate": [
+        {
+          "target": "openwepp_runner",
+          "kind": [
+            "lib"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp_runner",
+              "kind": [
+                "lib"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp_runner",
+              "kind": [
+                "lib"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "open_wepp_runner",
+          "kind": [
+            "bin"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "open_wepp_runner",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "open_wepp_runner",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "openwepp-cli-hill",
+          "kind": [
+            "bin"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp-cli-hill",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp-cli-hill",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "openwepp-cli-totalwatsed3",
+          "kind": [
+            "bin"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp-cli-totalwatsed3",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp-cli-totalwatsed3",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "openwepp-cli-watershed",
+          "kind": [
+            "bin"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp-cli-watershed",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp-cli-watershed",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "openwepp-snowbench",
+          "kind": [
+            "bin"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            false,
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "openwepp-snowbench",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": false,
+              "multiplicity": 1
+            },
+            {
+              "target": "openwepp-snowbench",
+              "kind": [
+                "bin"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "mt3_hbp_hourly_consumer_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "mt3_hbp_hourly_consumer_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "simimpl04_runner_kernel_execution_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "simimpl04_runner_kernel_execution_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "simimpl04_wb13_publication_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "simimpl04_wb13_publication_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "simimpl04_wepp_ui_mode_closure_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "simimpl04_wepp_ui_mode_closure_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "snowbench_error_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "snowbench_error_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "test_fixture_authority_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "test_fixture_authority_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "totalwatsed3_cli_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "totalwatsed3_cli_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "watershed_cli_behavior_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "watershed_cli_behavior_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        },
+        {
+          "target": "wshedw10_chaninp_absent_default_contract",
+          "kind": [
+            "test"
+          ],
+          "metadata_test": true,
+          "required_profile_test": [
+            true
+          ],
+          "artifact_observed": true,
+          "artifact_profiles": [
+            {
+              "target": "wshedw10_chaninp_absent_default_contract",
+              "kind": [
+                "test"
+              ],
+              "profile_test": true,
+              "multiplicity": 1
+            }
+          ],
+          "missing_profile_test": [],
+          "complete": true
+        }
+      ],
+      "baseline_build_finished": [
+        {
+          "reason": "build-finished",
+          "success": true
+        }
+      ],
+      "candidate_build_finished": [
+        {
+          "reason": "build-finished",
+          "success": true
+        }
+      ],
+      "baseline_selected_artifacts_complete": true,
+      "candidate_selected_artifacts_complete": true,
+      "baseline_artifacts": [
+        {
+          "target": "adler2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "ahash",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_array",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_buffer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_cast",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_data",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_ipc",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_schema",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_select",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "atoi",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "autocfg",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "base64",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "bitflags",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 2
+        },
+        {
+          "target": "block_buffer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "build-script-build",
+          "kind": [
+            "custom-build"
+          ],
+          "profile_test": false,
+          "multiplicity": 19
+        },
+        {
+          "target": "byteorder",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "bytes",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "cfg_if",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "chrono",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "cpufeatures",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "crc32fast",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "crypto_common",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "deranged",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "digest",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "equivalent",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "flatbuffers",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "flate2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "generic_array",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "getrandom",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "half",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "hashbrown",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 2
+        },
+        {
+          "target": "iana_time_zone",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "indexmap",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "integer_encoding",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "itoa",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_core",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_parse_float",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_parse_integer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_util",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_write_float",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_write_integer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "libc",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "libm",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "linux_raw_sys",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "memchr",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "miniz_oxide",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "mt3_hbp_hourly_consumer_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "num",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_bigint",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_complex",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_conv",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_integer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_iter",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_rational",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_traits",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "once_cell",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "open_wepp_runner",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "open_wepp_runner",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-hill",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-hill",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-totalwatsed3",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-totalwatsed3",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-watershed",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-watershed",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-snowbench",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-snowbench",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_biogeochemistry",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_climate_runtime_adapter",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_comparator_metadata",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_coupled_time",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_hillslope_output",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_input_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_kernel_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_land_surface_energy",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_legacy_bridge",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_management_schema",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_meteorology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_persisted_restart_v1",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_plant_phenology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_runner",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_runner",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_sim_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_summary_accumulator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_topology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_unit_boundary",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_vegetation",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_watershed_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_watershed_output",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "ordered_float",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "parquet",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "paste",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "powerfmt",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "proc_macro2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "quote",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "rustc_version",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "rustix",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "ryu",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "semver",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "seq_macro",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_core",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_derive",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_json",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_spanned",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_yaml",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "sha2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "simd_adler32",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "simimpl04_runner_kernel_execution_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "simimpl04_wb13_publication_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "simimpl04_wepp_ui_mode_closure_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "snap",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "snowbench_error_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "static_assertions",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "syn",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 2
+        },
+        {
+          "target": "test_fixture_authority_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "thiserror",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "thiserror_impl",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "thrift",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "time",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "time_core",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "toml",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "toml_datetime",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "toml_edit",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "toml_write",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "totalwatsed3_cli_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "twox_hash",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "typenum",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "unicode_ident",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "unsafe_libyaml",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "version_check",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "watershed_cli_behavior_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "winnow",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "wshedw10_chaninp_absent_default_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "zerocopy",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "zerocopy_derive",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "zmij",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        }
+      ],
+      "candidate_artifacts": [
+        {
+          "target": "adler2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "ahash",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_array",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_buffer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_cast",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_data",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_ipc",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_schema",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "arrow_select",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "atoi",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "autocfg",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "base64",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "bitflags",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 2
+        },
+        {
+          "target": "block_buffer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "build-script-build",
+          "kind": [
+            "custom-build"
+          ],
+          "profile_test": false,
+          "multiplicity": 19
+        },
+        {
+          "target": "byteorder",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "bytes",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "cfg_if",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "chrono",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "cpufeatures",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "crc32fast",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "crypto_common",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "deranged",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "digest",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "equivalent",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "flatbuffers",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "flate2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "generic_array",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "getrandom",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "half",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "hashbrown",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 2
+        },
+        {
+          "target": "iana_time_zone",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "indexmap",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "integer_encoding",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "itoa",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_core",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_parse_float",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_parse_integer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_util",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_write_float",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "lexical_write_integer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "libc",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "libm",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "linux_raw_sys",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "memchr",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "miniz_oxide",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "mt3_hbp_hourly_consumer_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "num",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_bigint",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_complex",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_conv",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_integer",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_iter",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_rational",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "num_traits",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "once_cell",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "open_wepp_runner",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "open_wepp_runner",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-hill",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-hill",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-totalwatsed3",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-totalwatsed3",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-watershed",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-cli-watershed",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-snowbench",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp-snowbench",
+          "kind": [
+            "bin"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_biogeochemistry",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_climate_runtime_adapter",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_comparator_metadata",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_coupled_time",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_hillslope_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_hillslope_output",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_input_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_kernel_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_land_surface_energy",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_legacy_bridge",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_management_schema",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_meteorology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_persisted_restart_v1",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_plant_phenology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_runner",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_runner",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_sim_contract",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_summary_accumulator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_topology",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_unit_boundary",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_vegetation",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_watershed_orchestrator",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "openwepp_watershed_output",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "ordered_float",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "parquet",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "paste",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "powerfmt",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "proc_macro2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "quote",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "rustc_version",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "rustix",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "ryu",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "semver",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "seq_macro",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_core",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_derive",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_json",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_spanned",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "serde_yaml",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "sha2",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "simd_adler32",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "simimpl04_runner_kernel_execution_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "simimpl04_wb13_publication_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "simimpl04_wepp_ui_mode_closure_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "snap",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "snowbench_error_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "static_assertions",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "syn",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 2
+        },
+        {
+          "target": "test_fixture_authority_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "thiserror",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "thiserror_impl",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "thrift",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "time",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "time_core",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "toml",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "toml_datetime",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "toml_edit",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "toml_write",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "totalwatsed3_cli_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "twox_hash",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "typenum",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "unicode_ident",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "unsafe_libyaml",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "version_check",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "watershed_cli_behavior_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "winnow",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "wshedw10_chaninp_absent_default_contract",
+          "kind": [
+            "test"
+          ],
+          "profile_test": true,
+          "multiplicity": 1
+        },
+        {
+          "target": "zerocopy",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "zerocopy_derive",
+          "kind": [
+            "proc-macro"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        },
+        {
+          "target": "zmij",
+          "kind": [
+            "lib"
+          ],
+          "profile_test": false,
+          "multiplicity": 1
+        }
+      ]
+    }
+  },
+  "limits": "A compiler-artifact profile contains profile.test but not complete Cargo feature/profile identity. Missing artifact, missing/false build-finished, or invalid receipt remains incomplete coverage; target presence alone is not a quality acceptance.",
+  "disposition": "OBSERVATIONAL: reviewer/orchestrator must assess receipt custody, every selected target/configuration, and any missing or failed build completion."
+}
