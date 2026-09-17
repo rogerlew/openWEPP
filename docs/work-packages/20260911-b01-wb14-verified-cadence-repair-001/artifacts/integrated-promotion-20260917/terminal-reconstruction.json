@@ -1,0 +1,24 @@
+{
+  "terminal_source_tree_sha256": "50672ab77e97334e731c99ccbc869ecdcc213da7257b86b141c5b1879104b6c5",
+  "recovery_tree": "/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction",
+  "source_entries": 746,
+  "all_entries_equal": true,
+  "base_T_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+  "U_sha256": "eba402ae70511df0026fe103dc83c2239de3e26a3e34bbbd8066c478141c2d0c",
+  "incremental_patch_sha256": "ba3dbbf5bcd25ba1aec1cbd82b88a3200a6326b46c57aa6e6db241ebbd4ac31a",
+  "changed_entries_vs_U": [
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs"
+  ],
+  "changed_entries_vs_T": [
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs"
+  ]
+}

@@ -1,0 +1,6 @@
+patching file crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs
+patching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
+patching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+patching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs
+patching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs
+patching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs

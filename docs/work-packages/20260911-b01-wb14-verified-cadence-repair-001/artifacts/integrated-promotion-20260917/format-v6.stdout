@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-integrated-promotion-20260917-fdc1afd6fadb
+  scratch: /tmp/openwepp-roger-b01-wb14-integrated-promotion-20260917-fdc1afd6fadb
+  cache:   /workdir/.cache/openwepp

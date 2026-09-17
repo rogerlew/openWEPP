@@ -1,0 +1,73 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-integrated-promotion-20260917-fdc1afd6fadb
+  scratch: /tmp/openwepp-roger-b01-wb14-integrated-promotion-20260917-fdc1afd6fadb
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2220:
+                 .map_err(DirectV11RealConsumerError::Runtime)?;
+             if let Some((_, accepted)) = frozen_litter_v4.as_mut() {
+                 #[cfg(test)]
+[31m-                record_integrated_promotion_boundary_v1("promotion-attempt", accepted
+[m[31m-                    .physical
+[m[31m-                    .complete_owner_projection
+[m[31m-                    .is_candidate_only_unpublished_soil());
+[m[32m+                record_integrated_promotion_boundary_v1(
+[m[32m+                    "promotion-attempt",
+[m[32m+                    accepted
+[m[32m+                        .physical
+[m[32m+                        .complete_owner_projection
+[m[32m+                        .is_candidate_only_unpublished_soil(),
+[m[32m+                );
+[m                 candidate
+                     .accept_promoted_candidate_only_frozen_litter_v4(
+                         &self.beginning,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:1593:
+         accepted: &mut crate::land_surface_energy_shadow::v3_execution::AcceptedFrozenLitterV4RuntimeCandidate,
+     ) -> Result<(), DirectV10RealConsumerError> {
+         #[cfg(test)]
+[31m-        super::record_integrated_promotion_boundary_v1("promotion-entry", accepted
+[m[31m-            .physical
+[m[31m-            .complete_owner_projection
+[m[31m-            .is_candidate_only_unpublished_soil());
+[m[32m+        super::record_integrated_promotion_boundary_v1(
+[m[32m+            "promotion-entry",
+[m[32m+            accepted
+[m[32m+                .physical
+[m[32m+                .complete_owner_projection
+[m[32m+                .is_candidate_only_unpublished_soil(),
+[m[32m+        );
+[m         if !accepted
+             .physical
+             .complete_owner_projection
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:902:
+     assert!(promotion_audit.projection_promotion_entry_count >= 1);
+     assert!(promotion_audit.projection_promotion_success_count >= 1);
+     assert_eq!(
+[31m-        promotion_audit.promotion_entry_count,
+[m[31m-        promotion_audit.candidate_only_promotion_entry_count,
+[m[32m+        promotion_audit.promotion_entry_count, promotion_audit.candidate_only_promotion_entry_count,
+[m         "only candidate-only V4 custody may enter deferred promotion"
+     );
+[31m-    assert_eq!(value.native_physical_audit.snow_free_litter_physics_call_count, 0);
+[m[31m-    assert_eq!(value.native_physical_audit.snow_free_surface_physics_call_count, 0);
+[m[31m-    assert_eq!(value.native_physical_audit.snow_free_wb14_physics_call_count, 0);
+[m[32m+    assert_eq!(
+[m[32m+        value
+[m[32m+            .native_physical_audit
+[m[32m+            .snow_free_litter_physics_call_count,
+[m[32m+        0
+[m[32m+    );
+[m[32m+    assert_eq!(
+[m[32m+        value
+[m[32m+            .native_physical_audit
+[m[32m+            .snow_free_surface_physics_call_count,
+[m[32m+        0
+[m[32m+    );
+[m[32m+    assert_eq!(
+[m[32m+        value
+[m[32m+            .native_physical_audit
+[m[32m+            .snow_free_wb14_physics_call_count,
+[m[32m+        0
+[m[32m+    );
+[m     assert!(promotion_audit.snow_free_litter_low_level_count >= 1);
+     assert!(promotion_audit.snow_free_surface_low_level_count >= 1);
+     assert!(promotion_audit.snow_free_wb14_low_level_count >= 1);

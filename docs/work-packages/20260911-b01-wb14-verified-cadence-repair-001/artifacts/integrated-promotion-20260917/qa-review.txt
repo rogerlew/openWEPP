@@ -1,0 +1,5 @@
+Static / inspected execution evidence — /root/qa_review, independent replacement reused through fixes.
+
+IP-1/IP-2 source/binary/stream custody verified. Initial introduced formatting and compile gaps reported and retained. Current owner/root instructions treat file length as a maintenance signal; no unrelated refactor gate inferred.
+
+Final same-reviewer verification: compile-n2-v6 TIMEOUT exit124 after58.705s, no frozen binary or executed N2 result. v5 E0277 retained separately. format-v6 PASS exactsource50672ab77e97334e731c99ccbc869ecdcc213da7257b86b141c5b1879104b6c5. V5 strict Clippy/no-default/evidence-only each FAIL101 and are not v6 validation; capped v5 timeout. Terminal reconstruction from T+patch ba3dbbf5bcd25ba1aec1cbd82b88a3200a6326b46c57aa6e6db241ebbd4ac31a equals all746entries; U/T preserved. Test-only expectation/canonical-owner snapshot/typed sentinel design is bounded but unexecuted. QA: v6 formatting/recovery PASS; N2 behavior, strict quality and broader matrix/qualification blocked/unmet.

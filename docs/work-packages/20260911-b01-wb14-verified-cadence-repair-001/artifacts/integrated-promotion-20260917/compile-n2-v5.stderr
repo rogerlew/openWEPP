@@ -1,0 +1,26 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator)
+error[E0277]: `?` couldn't convert the error to `v9_real_consumer_shadow::DirectV11RealConsumerError`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2300:82
+     |
+2300 |                     let wrong_original_owner = disposable.inner.soil_thermal.v2()?.owner().clone();
+     |                                                                              ----^ the trait `From<v9_real_consumer_shadow::DirectV9RealConsumerError>` is not implemented for `v9_real_consumer_shadow::DirectV11RealConsumerError`
+     |                                                                              |
+     |                                                                              this can't be annotated with `?` because it has type `Result<_, v9_real_consumer_shadow::DirectV9RealConsumerError>`
+     |
+note: `v9_real_consumer_shadow::DirectV11RealConsumerError` needs to implement `From<v9_real_consumer_shadow::DirectV9RealConsumerError>`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v11_error.rs:20:1
+     |
+  20 | pub enum DirectV11RealConsumerError {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+     = help: the following other types implement trait `From<T>`:
+               `v9_real_consumer_shadow::DirectV11RealConsumerError` implements `From<V11Error>`
+               `v9_real_consumer_shadow::DirectV11RealConsumerError` implements `From<hydrology::DirectSnowStage3EvaluationError>`
+               `v9_real_consumer_shadow::DirectV11RealConsumerError` implements `From<openwepp_coupled_time::CoupledTimeError>`
+               `v9_real_consumer_shadow::DirectV11RealConsumerError` implements `From<serde_json::Error>`
+               `v9_real_consumer_shadow::DirectV11RealConsumerError` implements `From<snow_stage3_terminal_handoff::SnowStage3HandoffError>`
+               `v9_real_consumer_shadow::DirectV11RealConsumerError` implements `From<v9_real_consumer_shadow::DirectV10RealConsumerError>`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error

@@ -1,0 +1,182 @@
+{
+  "receipts": [
+    {
+      "label": "capped-clippy-v5",
+      "exit_code": 124,
+      "elapsed_seconds": 6.397375103086233,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "compile-integrated-v1",
+      "exit_code": 101,
+      "elapsed_seconds": 38.95530077395961,
+      "source": "d4d41fc327bedbab4b8a0bf2c736f019c0eae54309f92c824d78b17dbaae7689"
+    },
+    {
+      "label": "compile-integrated-v2",
+      "exit_code": 0,
+      "elapsed_seconds": 90.1245398609899,
+      "source": "61dc7e913121b4b4519dbac530aafa3c01e7348a63739d7b24289e0bcad39f30"
+    },
+    {
+      "label": "compile-integrated-v3",
+      "exit_code": 0,
+      "elapsed_seconds": 11.856339684687555,
+      "source": "91c16b657416ab2d8ac7ae9d05f7e609e70aaed5d79d85d95ba88c2fe363a46f"
+    },
+    {
+      "label": "compile-lineage-v4",
+      "exit_code": 0,
+      "elapsed_seconds": 43.47452201228589,
+      "source": "1a22efbc27182b3bed0ebad6d1437e503486e79d25e49ab6d651466cdbca45e1"
+    },
+    {
+      "label": "compile-n2-v5",
+      "exit_code": 101,
+      "elapsed_seconds": 22.99694887921214,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "compile-n2-v6",
+      "exit_code": 124,
+      "elapsed_seconds": 58.70535848196596,
+      "source": "50672ab77e97334e731c99ccbc869ecdcc213da7257b86b141c5b1879104b6c5"
+    },
+    {
+      "label": "evidence-only-v5",
+      "exit_code": 101,
+      "elapsed_seconds": 22.647604214958847,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "format-edition2024-v3",
+      "exit_code": 1,
+      "elapsed_seconds": 12.901043199934065,
+      "source": "91c16b657416ab2d8ac7ae9d05f7e609e70aaed5d79d85d95ba88c2fe363a46f"
+    },
+    {
+      "label": "format-integrated-v3",
+      "exit_code": 1,
+      "elapsed_seconds": 0.4675198779441416,
+      "source": "91c16b657416ab2d8ac7ae9d05f7e609e70aaed5d79d85d95ba88c2fe363a46f"
+    },
+    {
+      "label": "format-v5",
+      "exit_code": 1,
+      "elapsed_seconds": 0.46738290460780263,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "format-v6",
+      "exit_code": 0,
+      "elapsed_seconds": 0.5670459219254553,
+      "source": "50672ab77e97334e731c99ccbc869ecdcc213da7257b86b141c5b1879104b6c5"
+    },
+    {
+      "label": "integrated-reach-v3",
+      "exit_code": 0,
+      "elapsed_seconds": 9.852613436058164,
+      "source": "91c16b657416ab2d8ac7ae9d05f7e609e70aaed5d79d85d95ba88c2fe363a46f"
+    },
+    {
+      "label": "lineage-positive-v4",
+      "exit_code": 0,
+      "elapsed_seconds": 10.15686862776056,
+      "source": "1a22efbc27182b3bed0ebad6d1437e503486e79d25e49ab6d651466cdbca45e1"
+    },
+    {
+      "label": "no-default-v5",
+      "exit_code": 101,
+      "elapsed_seconds": 22.04832557728514,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "strict-clippy-v5",
+      "exit_code": 101,
+      "elapsed_seconds": 9.80559306871146,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "toolchain-v1",
+      "exit_code": 0,
+      "elapsed_seconds": 1.4210290960036218,
+      "source": "61dc7e913121b4b4519dbac530aafa3c01e7348a63739d7b24289e0bcad39f30"
+    }
+  ],
+  "recorded_nonzero_commands": [
+    {
+      "label": "capped-clippy-v5",
+      "exit_code": 124,
+      "elapsed_seconds": 6.397375103086233,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "compile-integrated-v1",
+      "exit_code": 101,
+      "elapsed_seconds": 38.95530077395961,
+      "source": "d4d41fc327bedbab4b8a0bf2c736f019c0eae54309f92c824d78b17dbaae7689"
+    },
+    {
+      "label": "compile-n2-v5",
+      "exit_code": 101,
+      "elapsed_seconds": 22.99694887921214,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "compile-n2-v6",
+      "exit_code": 124,
+      "elapsed_seconds": 58.70535848196596,
+      "source": "50672ab77e97334e731c99ccbc869ecdcc213da7257b86b141c5b1879104b6c5"
+    },
+    {
+      "label": "evidence-only-v5",
+      "exit_code": 101,
+      "elapsed_seconds": 22.647604214958847,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "format-edition2024-v3",
+      "exit_code": 1,
+      "elapsed_seconds": 12.901043199934065,
+      "source": "91c16b657416ab2d8ac7ae9d05f7e609e70aaed5d79d85d95ba88c2fe363a46f"
+    },
+    {
+      "label": "format-integrated-v3",
+      "exit_code": 1,
+      "elapsed_seconds": 0.4675198779441416,
+      "source": "91c16b657416ab2d8ac7ae9d05f7e609e70aaed5d79d85d95ba88c2fe363a46f"
+    },
+    {
+      "label": "format-v5",
+      "exit_code": 1,
+      "elapsed_seconds": 0.46738290460780263,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "no-default-v5",
+      "exit_code": 101,
+      "elapsed_seconds": 22.04832557728514,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    },
+    {
+      "label": "strict-clippy-v5",
+      "exit_code": 101,
+      "elapsed_seconds": 9.80559306871146,
+      "source": "f10e566984236d8b144904a5c579dace6e8e181fd60ba31e6dd48de7fce4b70f"
+    }
+  ],
+  "other_observed_failed_actions": [
+    "missing evidence directory inspection",
+    "nonmatching receipt-key rg inspection",
+    "two nonexistent nested-AGENTS cat errors",
+    "two agent-thread-limit followups",
+    "nonexistent soil-path glob search",
+    "initial suffix reconstruction FAIL",
+    "suffix inspection KeyError",
+    "nonmatching draft negative-test rg",
+    "writer rustfmt unavailable in PATH",
+    "writer detached git diff/check unavailable"
+  ],
+  "conservative_failure_floor": 190,
+  "failure_uncertainty": "floor, not exhaustive; expected inspection nonmatches conservatively counted"
+}

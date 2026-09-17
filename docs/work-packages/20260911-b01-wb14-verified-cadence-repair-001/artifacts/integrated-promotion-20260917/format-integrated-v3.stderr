@@ -1,0 +1,7 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+error: let chains are only allowed in Rust 2024 or later
+    --> /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:1417:12
+     |
+1417 |         if let Some(beginning) = fixed_unpublished_soil
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+

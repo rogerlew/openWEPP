@@ -21,6 +21,250 @@ amendment below; they do not release a physical successor.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
 
+## Integrated native promotion control — adopted 2026-09-17
+
+**BOUNDED PARTIAL DISPOSITION; A-001 remains INCOMPLETE / HOLD.** Owner execution adopts the
+[integrated fixture authorization](artifacts/integrated-promotion-20260917/owner-authorization.md)
+at evidence HEAD `2ad12a37db05b7c6c278f7f5a36a1c245b874737`.
+[Initial continuity](artifacts/integrated-promotion-20260917/starting-continuity.json)
+verifies exact U and T (746 entries each). Preserve both, LP-3's distinct executed
+cut, all prior failures, original inputs and frozen v20. Sole writer
+`/root/integrated_writer` (implementer) owns a new U-derived local tree at
+`/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917`.
+No Rust is adopted into main and no branch changes.
+
+Intent before edits: inspect the retained native mixed-phase producer, expose
+actual factory/deferred/final replay/promotion reach with narrow test-only
+observation, and use one coherent native lineage for LP-C2/C4 and the required
+positive, semantic-negative, precedence and exact rollback/install controls.
+No physical input/guard/budget/trust change, synthetic owner/prefix, original
+successor, acquisition, full coupled campaign or production publication.
+Canonical obligations are LSE INV-155/C-010, SurfaceLiquid INV-027/C-017,
+SnowEnergy INV-084/C-052 and CoupledTime INV-031/OBL-014, including distinct
+represented-snow and physical WB14 prefixes. Main publication is evidence only.
+
+Selected checks: source-bound compile, exact serial fixture/case tests with no
+automatic retries, affected-file formatting and scoped quality diagnostics;
+independent correctness plus QA review of new source/evidence. Freeze concrete
+cases/inputs/source/binary before each physical batch. Full Critical campaign,
+original regression, strict quality, conservation/restart and RQ1 remain unmet;
+local component evidence cannot close them. Existing strict/feature failures
+are historical, not executions of this new source. Anti-evasion checks apply
+only if actual diff touches suite posture/cohort/required-case bindings; no such
+change is intended. Reconcile terminal diff before disposition.
+
+The once-read final ledger carries **89,853.653076s**, **2,676.606924s remaining**,
+failure floor **168**, no new failure ceiling. Conservative continuation anchor
+**07:49:45 UTC**, hard deadline **08:34:21.606924 UTC** on 2026-09-17. All elapsed
+wall time counts once, no wait deductions; reserve at least 480s for reviews,
+preservation/publication/return. Host: 31,313MiB RAM, 27,260MiB available;
+/home/roger 294GiB and /tmp 433GiB free, /workdir only 453MiB. Use existing Nix,
+two build jobs, 16GiB process address-space, 1GiB per output, core dumps off,
+bounded command timeouts. Logs and frozen binaries go under
+`/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917`.
+
+### Integrated control: static selection and review scope
+
+Static: current U contains the corrected single-lane native mixed-phase helper.
+It uses parent 0..1800s, SWE `0.0006m`, zero initial cold delta, hard boundary
+60s, native V3/V4 residents, terminal event enabled, no second lane or child17,
+no solid reappearance, and the production-only fixture route. Existing accepted
+slabs/events/consumed parcel and snow-free successor receipts belong to this
+one execution. These retained source inputs are frozen for the first probe.
+
+Independent replacement `/root/correctness_review` traced terminal deferred
+custody minting, adaptive carry of native inactive-prefix plus deferred custody,
+and the V4/deferred conjunction leading to final replay and actual promotion.
+Old review conversations are not live in this session; this replacement remains
+distinct from writer and parent. A passing parent fixture alone proves neither
+promotion reach nor LP-C2. The first new test will require actual candidate-only
+factory/promotion reach; it may expose a refusal before that boundary. No input
+retuning follows a refusal. LP-C2 additionally needs independent physical-output,
+ordered primitive-credit and selected-ending correspondence, not hashes alone.
+
+First intended code surfaces: narrow cfg(test) audit in native consumer/factory/
+promotion paths plus one test calling the retained native helper. Compile before
+result-bearing execution; freezes and exact boundaries are recorded below once
+source is ready. No result or acceptance is asserted by this static assessment.
+
+Pre-run review corrections (no physical execution): parent and independent
+correctness identified projection-promotion counters mislabeled as final soil
+replay; writer separates them and observes actual composition. Parent also
+identified the existing native physical counters as scoped to represented-snow
+work, where zero is required; separate low-level integrated counters must retain
+that invariant. The probe must print audit on unwind and resume the original
+panic. These are unfinished test/instrumentation defects, not physical failures.
+
+Ran: `compile-integrated-v1` **FAIL exit101**, three E0277 errors in new
+JSON-value/u128 assertions, 38.955s; exact source and T-relative patch retained
+in the new raw evidence directory. No physical execution. Independent review
+also caught the V4 entry counter in the unused ordinary wrapper; it must move
+to the shared runtime function used by the actual heterogeneous path. These
+introduced test defects are being corrected without changing physical inputs.
+Failure floor now **170** (carried168 + one harmless missing-directory inspection
++ this compile). Both failures remain recorded; no automatic retry.
+
+### IP-1 physical reach probe — frozen before execution
+
+Compile v3 PASS (11.856s), source `91c16b657416ab2d8ac7ae9d05f7e609e70aaed5d79d85d95ba88c2fe363a46f`;
+frozen binary `/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/integrated-v3.frozen`, SHA-256 `9f8857fff5d4203c4b91c5294d9eb57d6224ad088caa17f80493f63d34bb5198`. Exact libtest listing selects one test:
+`v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_reaches_deferred_v4_promotion_boundary`.
+
+Run once with `--exact --nocapture --test-threads=1`, timeout300s, 16GiB address
+space, 1GiB per output file, no core dump/retry. Retained NativeMixedPhase inputs
+above are unchanged. Expected: native fixture completes and reaches candidate-only
+V4, validated final soil replay and actual promotion; preserve any refusal and
+its actual reached stages. This is a reach probe, not the semantic-negative
+matrix, exact rollback, accepted-parent install count or LP-C2 independent
+operand reconstruction. Actual low-level snow-free activity is separate from
+zero protected represented-snow work. Source remains frozen throughout execution.
+
+### IP-1 result and next bounded controls
+
+Ran: **IP-1 PASS1/1**, exit0, 9.852613s, exact frozen v3 source/binary above;
+source, T, binary and recorder/toolchain pins unchanged. Observed common V4
+entry/success **2/2**, deferred completion **1**, validated final soil replay
+**1/1**, projection promotion **1/1**, actual promotion **1/1**, with candidate-only
+posture **1**. Low-level snow-free litter/surface/WB14 calls **2/2/3**; protected
+represented-snow audit counters zero. This is real physical work, not v20's
+zero-physics diagnostic. The fixture assertions retain accepted parent support,
+terminal event, consumed parcel and snow-free receipt continuity.
+
+**Reachability established only.** No independent operand/credit reconstruction,
+full parent/prefix physical-receipt join, negative matrix, exact rejection rollback
+or accepted-parent single-install proof is claimed. Writer now extends the same
+unchanged native fixture with source operands and semantic controls at the actual
+boundary, fresh lineage per case, no injected accepted capability or physical
+input tuning. LP-C2/C4 and RC1/RQ2 remain open pending those obligations.
+
+Formatting: the historical standalone command failed due to omitted Rust2024
+edition; the corrected explicit-edition check failed only three introduced hunk
+groups. Writer will apply those focused formatting corrections. Both failed
+receipts remain, no PASS is inferred. Actual compiler is rustc1.95.0,
+commit59807616e1fa2540724bfbac14d7976d7e4a3860, LLVM21.1.8 from current Nix.
+
+Independent interim QA `/root/qa_review` verified source/binary/stream custody and
+v1 failed-source recoverability; it agrees IP-1 is reach-only. Its formatting
+finding is accepted for correction. Cargo-deny is not selected for this no-dependency,
+no-manifest detached test increment; broader qualification remains unmet. Its
+historical source-local 3000-line rule does not override current owner/root
+instructions that size is a maintenance signal, or authorize unrelated refactoring.
+No package closure is claimed. Current main `crates/AGENTS.md` has the same
+maintenance-signal rule. Exact strict/compatibility checks remain pending terminal
+source. Review continuity attempt for the completed correctness conversation
+returned `agent thread limit reached`; preserve that tooling failure and reuse
+when writer returns, without a new review wave or substitute approval.
+
+### IP-2 producer/custody evidence — frozen before execution
+
+Compile-lineage-v4 PASS, source `1a22efbc27182b3bed0ebad6d1437e503486e79d25e49ab6d651466cdbca45e1`, frozen binary
+`/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/lineage-v4.frozen` SHA-256 `d3794d9fa84ff8ca24b2ea466346dcb642856395ca30ddbb506be23f79425b83`. Repeat the same exact single reach test with unchanged
+NativeMixedPhase inputs once, now recording donor pre-ingress layer bits, ingress
+receipts, WB14 replay bytes, original prepared owner, selected trial, ordered
+accumulated credits and installed native custody. This deliberate affected rerun
+adds evidence, not tuning/retry after a physical failure. Same300s/16GiB/1GiB
+bounds, exact serial libtest, automatic retries0. Independent Python receiver
+reconstruction will use exact rational high+carry sums, separate from donor
+correspondence and broader scientific acceptance. Negative cases are not part
+of this batch. Expected successful original fixture and raw joined evidence;
+any actual refusal is preserved without physical changes.
+
+### IP-2 observed scope and independent reconstruction
+
+Ran IP-2 **PASS1/1**,10.156869s, frozen source/binary unchanged. The single observed
+promotion is child **360..420s** within parent0..1800s; soil selected physical trial
+transaction47 is distinct from the original-prepared/final publication transaction41.
+Independent correctness reconstructed all **12 soil-internal +2 infiltration**
+selected-child operand energy bits from logged physical sources. Parent's Python
+rational reconstruction closes **90 reported credit rows** exactly, including
+nearest-even high terms. Seven ordered groups contain **92 accumulated operands**.
+Installed expected-source operands match that sequence; installed receipt/owner
+support0..420s and ending state hash agree. Explicit physical temperature/high/carry
+inventory matches the selected ending; full state bytes do **not** match because
+transaction/state-digest domains differ. No identity normalization authorizes a join.
+
+Preserved reconstruction-v1 FAIL tested an incorrect expected-source wrapper shape
+and over-strong full-state equality; the corrected script compares the nested
+accepted-operands field and separately reports both the raw identity inequality
+and physical inventory equality. Both scripts/results are retained, never relabelled
+as production failure or substituted for canonical install validation.
+
+WB14 child replay independently shows physical ordinal0 at360..420s. Its
+parent-final replay is null at that observation. The complete native fixture
+finishes1800s, but current evidence does not independently source the prior0..360s
+primitive outputs or prove parent-final replay in this promotion record. Therefore
+**LP-C2 partial; LP-C4/RC1/RQ2 OPEN**. Positive local control accepted only within
+these bounds; original B01 E008 and overall A-001 remain HOLD.
+
+Next bounded N2 uses one fresh canonical native lineage, a genuine accepted owner
+substituted as original-prepared at the real promotion entry, exact source-defined
+aggregate/child custody refusal, and receiver-owned canonical state rollback. A
+typed test-only unwind discards the attempted candidate; it is not reused. Other
+missing/wrong replay/support/predecessor/credit/ending/custody-mode and combined
+precedence cases remain NOT RUN. Clock/history outside the API receiver must not
+be claimed checked from a receiver snapshot alone.
+
+### Internal reassessment and terminal correction
+
+N2 v5 compile FAIL E0277, introduced test-only error conversion. Strict Clippy
+v5 FAIL upstream27 diagnostics; no-default/evidence-only checks FAIL; correct-edition
+format v5 FAIL one final introduced assertion wrap. Capped Clippy v5 timed out at
+the480s internal reserve boundary; no capped acceptance. All source cuts/logs retained.
+Both independent reviewers inspected this failed cut and correctly withheld N2
+acceptance. Their early statements that quality checks were NOT RUN are superseded
+by these subsequently completed receipts, not silently relabelled.
+
+At08:26 UTC, parent reallocates120s of the self-selected480s reserve to this one
+mechanical correction and bounded execution, retaining360s for same-reviewer fix
+verification, preservation, publication and return. Hard owner deadline remains
+08:34:21.606924 and no time/failure allowance is added. Parent corrects the one
+cfg(test) native V2 extraction to an explicit test expectation (wrong posture
+still fails the test) and formats the introduced wrap. No physics/guard/input
+change. This is an internal reassessment with concrete in-scope progress, not
+renewed authority. Full qualification and unimplemented matrix remain HOLD.
+
+### Integrated effort terminal disposition — HOLD
+
+Execution stopped at08:28:21 UTC. **IP-1 and IP-2 positive local controls PASS**;
+actual producer/candidate/deferred replay/promotion reach established. Selected
+child primitive and receiver arithmetic evidence is bounded as above. **N2 NOT RUN**:
+v5 failed compile, corrected v6 build TIMEOUT exit124 after58.705s; no frozen v6
+binary or executed negative. All remaining negatives, combined precedence,
+complete authoritative rollback, original-B01 correspondence and required full
+qualification remain unmet. LP-C2 partial, LP-C4/RC1/RQ2 OPEN; RQ1 and A-001 HOLD.
+No production Rust, authority, original input, frozen T/U or cadence was changed.
+
+Terminal source **50672ab77e97334e731c99ccbc869ecdcc213da7257b86b141c5b1879104b6c5**,
+[reconstruction](artifacts/integrated-promotion-20260917/terminal-reconstruction.json),
+T-relative patch SHA-256 **ba3dbbf5bcd25ba1aec1cbd82b88a3200a6326b46c57aa6e6db241ebbd4ac31a**.
+All746entries reconstruct exactly. Actual scientific runs remain bound to their
+v3/v4 cuts and frozen binaries, never relabelled terminal v6 executions. Five files
+changed versus U: four intended observation/test surfaces plus three incidental
+rustfmt-only wraps in existing `v3_publication_retention_tests.rs` from the writer's
+module formatting. Parent inspected that fifth diff: no tokens/inputs/assertions
+changed. Six files differ from T, including U's original soil helper. This is
+preserved detached test/evidence source, not main Rust adoption.
+
+[Correctness](artifacts/integrated-promotion-20260917/correctness-review.txt) and
+[QA](artifacts/integrated-promotion-20260917/qa-review.txt) independently verify
+bounded positive evidence and same-reviewer fixes, and retain HOLD. Terminal
+format-v6 PASS. Strict/no-default/evidence-only failures belong to v5; v6 strict
+quality NOT RUN, capped-v5 TIMEOUT. No full/default campaign, constitutive suite,
+original regression, conservation/restart qualification or production delivery.
+Source diff does not alter external-authority suite/cohort/required-case bindings;
+anti-evasion checks NOT_APPLICABLE to this detached test increment. No dependency,
+manifest or public schema change; cargo-deny not selected for this increment.
+
+[Command summary](artifacts/integrated-promotion-20260917/command-summary.json)
+retains failed commands and operational uncertainty. At2026-09-17T08:30:37.932851+00:00, charged
+**92306.585927s**, remaining **223.674073s**, failure floor **at least190**,
+no wait deductions, concurrent wall counted once. Final publication/return ledger
+will be retained at `/workdir/openwepp-experiments/b01-wb14-cadence/logs/integrated-promotion-final-20260917.json`.
+Scoped evidence/test patches are being committed/pushed on existing main; exact
+remote byte receipt is retained beside that final ledger. Complete source/corpus/
+binaries remain local; scoped remote evidence is not full remote corpus custody.
+The three pre-existing untracked capped-Clippy stdout files remain untouched.
+
 ## Local promotion controls — adopted 2026-09-17
 
 **BOUNDED NEGATIVE DISPOSITION; A-001 remains INCOMPLETE / HOLD.** Owner execution adopts the

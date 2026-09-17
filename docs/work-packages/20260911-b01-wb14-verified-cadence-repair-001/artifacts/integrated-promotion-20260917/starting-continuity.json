@@ -1,0 +1,20 @@
+{
+  "U": {
+    "path": "/home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917",
+    "tree_sha256": "eba402ae70511df0026fe103dc83c2239de3e26a3e34bbbd8066c478141c2d0c",
+    "expected": "eba402ae70511df0026fe103dc83c2239de3e26a3e34bbbd8066c478141c2d0c",
+    "matches": true,
+    "entries": 746
+  },
+  "T": {
+    "path": "/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917",
+    "tree_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+    "expected": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+    "matches": true,
+    "entries": 746
+  },
+  "anchor_utc": "2026-09-17T07:49:45+00:00",
+  "hard_deadline_utc": "2026-09-17T08:34:21.606924+00:00",
+  "carried_seconds": 89853.653076,
+  "failure_floor": 168
+}

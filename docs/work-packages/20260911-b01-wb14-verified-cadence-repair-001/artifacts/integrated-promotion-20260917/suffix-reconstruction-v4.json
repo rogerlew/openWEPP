@@ -1,0 +1,39 @@
+{
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/lineage-positive-v4.stdout",
+  "input_sha256": "744e3ead30c0cb342a99d519d910e854d7f0bbb9fdb654b4a6d3bc47f022f7e8",
+  "soil_internal_operands": 12,
+  "infiltration_operands": 2,
+  "reported_selected_operands": 14,
+  "selected_suffix_energy_bits_equal": true,
+  "accumulated_operand_count": 92,
+  "credit_chain_groups": 7,
+  "installed_expected_sources_equal_accumulated": false,
+  "installed_state_equal_selected_ending": false,
+  "receipt_ending_equal_installed_state": true,
+  "owner_receipt_support_equal": true,
+  "installed_support_ns": [
+    0,
+    420000000000
+  ],
+  "installed_transaction_id": 41,
+  "selected_trial_support_ns": [
+    360000000000,
+    420000000000
+  ],
+  "selected_trial_transaction_id": 47,
+  "wb14_first_physical_receipts": [
+    {
+      "ordinal": 0,
+      "support_start_ns": 360000000000,
+      "support_end_ns": 420000000000
+    }
+  ],
+  "first_physical_child_support_equal": true,
+  "wb14_parent_replay_present": false,
+  "pass": false,
+  "limits": [
+    "Only selected child physical primitives are available; prior covered-prefix donor outputs are absent.",
+    "Numerical/group-key suffix equality does not independently authenticate every debit-credit source digest.",
+    "This partial-child replay is not parent-final WB14 replay, negative coverage, rollback, or full qualification."
+  ]
+}

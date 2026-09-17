@@ -1,0 +1,8 @@
+{
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/integrated-v3.frozen",
+  "binary_sha256": "9f8857fff5d4203c4b91c5294d9eb57d6224ad088caa17f80493f63d34bb5198",
+  "test": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_reaches_deferred_v4_promotion_boundary",
+  "listing_exit": 0,
+  "listing": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_reaches_deferred_v4_promotion_boundary: test\n\n1 test, 0 benchmarks\n",
+  "source_tree_sha256": "91c16b657416ab2d8ac7ae9d05f7e609e70aaed5d79d85d95ba88c2fe363a46f"
+}

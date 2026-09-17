@@ -1,0 +1,5 @@
+{
+  "raw": "integrated-reach-v3.stdout",
+  "summary": "B01_INTEGRATED_PROMOTION outcome=success promotion=IntegratedPromotionBoundaryAuditV1 { deferred_completion_count: 1, v4_runtime_entry_count: 2, v4_runtime_success_count: 2, final_replay_entry_count: 1, final_replay_success_count: 1, projection_promotion_entry_count: 1, projection_promotion_success_count: 1, promotion_attempt_count: 1, promotion_entry_count: 1, promotion_success_count: 1, candidate_only_promotion_entry_count: 1, snow_free_litter_low_level_count: 2, snow_free_surface_low_level_count: 2, snow_free_wb14_low_level_count: 3 }",
+  "claim": "actual reach only; no independent credit/rollback/negative-matrix acceptance"
+}

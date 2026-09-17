@@ -1,0 +1,5 @@
+Static / inspected execution evidence — /root/correctness_review, independent replacement reused through fixes.
+
+IP-2: Independently reconstructed12 soil-internal deltas and2 infiltration receipt enthalpies, matching all14 selected-child credit operands bit-for-bit. Installed owner/receipt support0..420s at transaction41 and ending hashes agree; expected source operands equal92 accumulated operands. Prior0..360s primitive sources are absent; only selected360..420s donor correspondence is established. Parent0..1800s, parent-final WB14 replay absent at this partial child. LP-C2/C4 remain OPEN.
+
+Final same-reviewer verification: v5->v6 changes only test formatting and invalid v2()? to test expect. Genuine wrong-original substitution remains at real promotion call. compile-n2-v6 timed out exit124 at08:28:21, no frozen binary or N2 execution. Planned canonical complete-owner bytes do not establish full clock/history/publication/consumed-capability rollback. Error assertion matches text, not exact typed variant/code. N2 NOT RUN; negative matrix, LP-C2/C4 and overall acceptance HOLD. Reviewer ran no Rust commands.

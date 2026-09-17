@@ -1,0 +1,19 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-integrated-promotion-20260917-fdc1afd6fadb
+  scratch: /tmp/openwepp-roger-b01-wb14-integrated-promotion-20260917-fdc1afd6fadb
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:955:
+         Err(panic) => panic,
+         Ok(_) => panic!("N2 must stop after the rejected disposable promotion"),
+     };
+[31m-    assert!(panic
+[m[31m-        .downcast_ref::<crate::v9_real_consumer_shadow::B01IntegratedWrongOriginalN2Sentinel>()
+[m[31m-        .is_some());
+[m[32m+    assert!(
+[m[32m+        panic
+[m[32m+            .downcast_ref::<crate::v9_real_consumer_shadow::B01IntegratedWrongOriginalN2Sentinel>()
+[m[32m+            .is_some()
+[m[32m+    );
+[m     println!("B01_INTEGRATED_N2_WRONG_ORIGINAL promotion={audit:?}");
+     assert!(audit.promotion_attempt_count >= 1);
+     assert!(audit.promotion_entry_count >= 1);

@@ -1,0 +1,61 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator)
+error[E0277]: can't compare `serde_json::Value` with `u128`
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:878:5
+    |
+878 |     assert_eq!(value.fixture.fixture_inputs["hard_boundary_ns"], 60_000_000_000_u128);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no implementation for `serde_json::Value == u128`
+    |
+    = help: the trait `PartialEq<u128>` is not implemented for `serde_json::Value`
+    = help: the following other types implement trait `PartialEq<Rhs>`:
+              `&mut serde_json::Value` implements `PartialEq<bool>`
+              `&mut serde_json::Value` implements `PartialEq<f32>`
+              `&mut serde_json::Value` implements `PartialEq<f64>`
+              `&mut serde_json::Value` implements `PartialEq<i16>`
+              `&mut serde_json::Value` implements `PartialEq<i32>`
+              `&mut serde_json::Value` implements `PartialEq<i64>`
+              `&mut serde_json::Value` implements `PartialEq<i8>`
+              `&mut serde_json::Value` implements `PartialEq<isize>`
+            and 35 others
+
+error[E0277]: can't compare `serde_json::Value` with `u128`
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:879:5
+    |
+879 |     assert_eq!(value.fixture.fixture_inputs["parent_support"]["start_ns"], 0_u128);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no implementation for `serde_json::Value == u128`
+    |
+    = help: the trait `PartialEq<u128>` is not implemented for `serde_json::Value`
+    = help: the following other types implement trait `PartialEq<Rhs>`:
+              `&mut serde_json::Value` implements `PartialEq<bool>`
+              `&mut serde_json::Value` implements `PartialEq<f32>`
+              `&mut serde_json::Value` implements `PartialEq<f64>`
+              `&mut serde_json::Value` implements `PartialEq<i16>`
+              `&mut serde_json::Value` implements `PartialEq<i32>`
+              `&mut serde_json::Value` implements `PartialEq<i64>`
+              `&mut serde_json::Value` implements `PartialEq<i8>`
+              `&mut serde_json::Value` implements `PartialEq<isize>`
+            and 35 others
+
+error[E0277]: can't compare `serde_json::Value` with `u128`
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:880:5
+    |
+880 | /     assert_eq!(
+881 | |         value.fixture.fixture_inputs["parent_support"]["end_ns"],
+882 | |         1_800_000_000_000_u128
+883 | |     );
+    | |_____^ no implementation for `serde_json::Value == u128`
+    |
+    = help: the trait `PartialEq<u128>` is not implemented for `serde_json::Value`
+    = help: the following other types implement trait `PartialEq<Rhs>`:
+              `&mut serde_json::Value` implements `PartialEq<bool>`
+              `&mut serde_json::Value` implements `PartialEq<f32>`
+              `&mut serde_json::Value` implements `PartialEq<f64>`
+              `&mut serde_json::Value` implements `PartialEq<i16>`
+              `&mut serde_json::Value` implements `PartialEq<i32>`
+              `&mut serde_json::Value` implements `PartialEq<i64>`
+              `&mut serde_json::Value` implements `PartialEq<i8>`
+              `&mut serde_json::Value` implements `PartialEq<isize>`
+            and 35 others
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 3 previous errors

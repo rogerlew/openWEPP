@@ -1,0 +1,685 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-integrated-promotion-20260917-fdc1afd6fadb
+  scratch: /tmp/openwepp-roger-b01-wb14-integrated-promotion-20260917-fdc1afd6fadb
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:13:
+ 
+ #[cfg(test)]
+ use crate::v11_vegetation_consumer::{accept_direct_v11_segment, execute_direct_v11_segment};
+[31m-use openwepp_biogeochemistry::{BiogeochemistryError, BiogeochemistryState, available_by_key};
+[m[32m+use openwepp_biogeochemistry::{available_by_key, BiogeochemistryError, BiogeochemistryState};
+[m use openwepp_coupled_time::{
+[31m-    AcceptedEventReceiptV1, Digest32, FramedField, ParentTransactionId, TimeSupport,
+[m[31m-    complete_owner_set_digest, digest_bytes, framed_sha256,
+[m[32m+    complete_owner_set_digest, digest_bytes, framed_sha256, AcceptedEventReceiptV1, Digest32,
+[m[32m+    FramedField, ParentTransactionId, TimeSupport,
+[m };
+ use openwepp_kernel_contract::{
+[31m-    MineralNitrogenKey, MineralNitrogenSpecies, ResourceAmountBasis, ResourceOwnerId, SoilLayerId,
+[m[31m-    StratumId, TileId, TransactionId, authorize_proportionally,
+[m[32m+    authorize_proportionally, MineralNitrogenKey, MineralNitrogenSpecies, ResourceAmountBasis,
+[m[32m+    ResourceOwnerId, SoilLayerId, StratumId, TileId, TransactionId,
+[m };
+ use openwepp_land_surface_energy::{
+[32m+    build_lse_ending_state, project_v2_runtime_to_v1, project_validated_v1_runtime_to_v2,
+[m     CoveredColumnAuthority, LandSurfaceEnergyConfiguration, LandSurfaceEnergyError,
+     LandSurfaceEnergyState, LandSurfaceEnergyV2State, LandSurfaceForcing, LiquidParcel,
+     LiquidParcelKind, LiquidTemperatureProvider, LseSupportAdmissibilityReceiptV1, LseV2StateError,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:29:
+     OfeId, ParcelId, Sha256Digest, SoilThermalLayerSnapshot, SoilThermalOfeSnapshot,
+     SoilThermalSnapshot, SoilThermalTileCandidate, Stage3SnowCoveredLowerBoundary,
+[31m-    build_lse_ending_state, project_v2_runtime_to_v1, project_validated_v1_runtime_to_v2,
+[m };
+ use openwepp_meteorology::snow_free_forcing::{
+     celsius_to_kelvin, kilopascals_to_pascals, liquid_specific_enthalpy_j_kg,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:39:
+     canopy_surface_friction_velocity, leaf_boundary_conductance, neutral_resistance,
+ };
+ use openwepp_vegetation::v11::{
+[31m-    V11AdmittedResourceFlux, V11BgcDebitScope, V11CoupledOwnedState, V11ImportedV10SegmentInput,
+[m[31m-    V11ImportedV10SegmentOutput, V11LseSupportReceiptEnvelope, V11OwnerEnvelope, V11ResourceDebit,
+[m[31m-    V11ResourceKey, V11SharedResourceKey, V11SharedResourceKind, V11SharedResourceOwnerTransition,
+[m[32m+    project_v11_parent_finalization_to_v10, V11AdmittedResourceFlux, V11BgcDebitScope,
+[m[32m+    V11CoupledOwnedState, V11ImportedV10SegmentInput, V11ImportedV10SegmentOutput,
+[m[32m+    V11LseSupportReceiptEnvelope, V11OwnerEnvelope, V11ResourceDebit, V11ResourceKey,
+[m[32m+    V11SharedResourceKey, V11SharedResourceKind, V11SharedResourceOwnerTransition,
+[m     ValidatedV11ParentFinalizationV1, VegetationConfigurationV11,
+[31m-    project_v11_parent_finalization_to_v10,
+[m };
+ use openwepp_vegetation::{
+[31m-    NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, SnowFreeForcing, V8CoupledOwnedState,
+[m[31m-    V9CoupledOwnedState, V9StateError, V10CoupledOwnedState, V10StateError,
+[m[31m-    VegetationConfiguration, VegetationError, project_v8_runtime_to_v9, project_v9_runtime_to_v8,
+[m[31m-    project_v9_runtime_to_v10, project_v10_runtime_to_v9,
+[m[32m+    project_v10_runtime_to_v9, project_v8_runtime_to_v9, project_v9_runtime_to_v10,
+[m[32m+    project_v9_runtime_to_v8, NitrogenArbiter, NitrogenAuthorization, NitrogenRequest,
+[m[32m+    SnowFreeForcing, V10CoupledOwnedState, V10StateError, V8CoupledOwnedState, V9CoupledOwnedState,
+[m[32m+    V9StateError, VegetationConfiguration, VegetationError,
+[m };
+ use serde::{Deserialize, Serialize};
+ use sha2::{Digest, Sha256};
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:58:
+ use crate::hydrology::{
+     DirectActiveSnowPartitionInputs, DirectSnowStage3EvaluationError,
+     DirectSnowStage3PersistentState, DirectSnowStage3SupportInput, DirectSnowTerminalEventResult,
+[31m-    STAGE3_DEFAULT_SNOW_ALBEDO, Wb11HydrologyKernel,
+[m[32m+    Wb11HydrologyKernel, STAGE3_DEFAULT_SNOW_ALBEDO,
+[m };
+ use crate::land_surface_energy_shadow::{
+[31m-    CoveredCarrierComponentState, CoveredLseIterationState, CoveredV8OwnerEnvelopeError,
+[m[31m-    ExecuteV8LseRuntimeShadowError, LandSurfaceEnergyRealHydrologyAdapter,
+[m[31m-    LandSurfaceEnergyShadowError, ProvisionalCoveredV8PhysicalEvaluationV1,
+[m[31m-    UncommittedCoveredV8OwnerEnvelope, V8CanopyForcingReceipt, V8InputProjectionError,
+[m[31m-    V10RootZoneLayerReceipt, V10RootZoneReceiptKey, V10RootZoneReceiptSet,
+[m     execute_v8_lse_runtime_shadow_internal,
+     execute_v8_lse_runtime_shadow_v11_physical_with_carriers,
+     execute_v8_lse_runtime_shadow_v11_with_native_soil_beginning,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:72:
+[31m-    unified_beginning_hydrology_snapshot_sha256,
+[m[32m+    unified_beginning_hydrology_snapshot_sha256, CoveredCarrierComponentState,
+[m[32m+    CoveredLseIterationState, CoveredV8OwnerEnvelopeError, ExecuteV8LseRuntimeShadowError,
+[m[32m+    LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError,
+[m[32m+    ProvisionalCoveredV8PhysicalEvaluationV1, UncommittedCoveredV8OwnerEnvelope,
+[m[32m+    V10RootZoneLayerReceipt, V10RootZoneReceiptKey, V10RootZoneReceiptSet, V8CanopyForcingReceipt,
+[m[32m+    V8InputProjectionError,
+[m };
+ use crate::runtime_inputs::{
+     DirectGsiDailyReceiptV1, DirectGsiOwnerConfigurationV1, PreparedSnowFreeGsiDayV1,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:79:
+     ValidatedSnowFreeHalfHourForcingReceipts,
+ };
+ use crate::snow_stage3_open_boundary::{
+[31m-    FinalStage3OpenSnowBoundaryReceiptV1, FinalStage3TileBoundaryReceiptV1,
+[m[31m-    OpenSnowTileBoundaryCandidateV1, SealedStage3TileBoundaryForcingV1,
+[m[31m-    evaluate_open_snow_tile_boundary,
+[m[32m+    evaluate_open_snow_tile_boundary, FinalStage3OpenSnowBoundaryReceiptV1,
+[m[32m+    FinalStage3TileBoundaryReceiptV1, OpenSnowTileBoundaryCandidateV1,
+[m[32m+    SealedStage3TileBoundaryForcingV1,
+[m };
+ use crate::snow_stage3_terminal_handoff::{
+[31m-    CanopyLongwaveComponent, CarrierSurface, FinalStage3CanopyBoundaryReceiptInputs,
+[m[31m-    FinalStage3CanopyBoundaryReceiptV1, LaneBoundaryContributionV1,
+[m[31m-    LaneBoundaryTopologyExpectationV1, LaneStage3BoundaryReceiptV1,
+[m[31m-    STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE, SealedCoveredCarrierForcing,
+[m[31m-    SnowStage3HandoffError, Stage3BoundaryIdentity, Stage3LaneAreaBasisV1,
+[m[31m-    Stage3SnowSurfaceBoundaryReceiptInputs, Stage3SnowSurfaceBoundaryReceiptV1,
+[m[31m-    Stage3TileBoundaryClassV1, outward_snow_fluxes_to_stage3,
+[m[32m+    outward_snow_fluxes_to_stage3, CanopyLongwaveComponent, CarrierSurface,
+[m[32m+    FinalStage3CanopyBoundaryReceiptInputs, FinalStage3CanopyBoundaryReceiptV1,
+[m[32m+    LaneBoundaryContributionV1, LaneBoundaryTopologyExpectationV1, LaneStage3BoundaryReceiptV1,
+[m[32m+    SealedCoveredCarrierForcing, SnowStage3HandoffError, Stage3BoundaryIdentity,
+[m[32m+    Stage3LaneAreaBasisV1, Stage3SnowSurfaceBoundaryReceiptInputs,
+[m[32m+    Stage3SnowSurfaceBoundaryReceiptV1, Stage3TileBoundaryClassV1,
+[m[32m+    STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE,
+[m };
+ use crate::snow_stage3_v11_attachment::{
+[31m-    DirectSnowStage3V11AttachmentError, DirectSnowStage3V11TerminalParcel,
+[m[31m-    DirectSnowStage3V11TerminalParcelPosture, SnowSoilHeatReceiptV1,
+[m[31m-    Stage3PrecipitationDestinationV1, Stage3PrecipitationEnthalpyProviderV1,
+[m[31m-    Stage3PrecipitationPhaseParcelSetV1, Stage3PrecipitationPhaseParcelV1,
+[m[31m-    Stage3PrecipitationPhaseV1, Stage3PrecipitationSourceV1,
+[m     begin_adaptive_parent_fixed_point_phase_v1 as profile_start,
+     reconstruct_precipitation_mass_and_advected_heat,
+     record_adaptive_parent_profile_detail_v1 as profile_record,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:104:
+[31m-    validate_precipitation_phase_parcel_set,
+[m[32m+    validate_precipitation_phase_parcel_set, DirectSnowStage3V11AttachmentError,
+[m[32m+    DirectSnowStage3V11TerminalParcel, DirectSnowStage3V11TerminalParcelPosture,
+[m[32m+    SnowSoilHeatReceiptV1, Stage3PrecipitationDestinationV1, Stage3PrecipitationEnthalpyProviderV1,
+[m[32m+    Stage3PrecipitationPhaseParcelSetV1, Stage3PrecipitationPhaseParcelV1,
+[m[32m+    Stage3PrecipitationPhaseV1, Stage3PrecipitationSourceV1,
+[m };
+ use crate::vegetation_real_hydrology_shadow::{
+     RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter, RealHydrologyShadowError,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:112:
+ };
+ 
+ #[cfg(test)]
+[31m-use crate::DirectRunConstructorInputs;
+[m[31m-#[cfg(test)]
+[m use crate::vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId;
+[32m+#[cfg(test)]
+[m[32m+use crate::DirectRunConstructorInputs;
+[m 
+ #[path = "canonical_owner_bytes.rs"]
+ mod canonical_owner_bytes;
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:121:
+ pub use canonical_owner_bytes::canonical_soil_thermal_v2_bundle_bytes;
+ pub(crate) use canonical_owner_bytes::{
+[31m-    AdaptiveCompleteOwnerComparisonV1, AdaptiveDiscreteSurfaceKindV1, AdaptiveOwnerDimensionV1,
+[m[31m-    adaptive_scalar_policy,
+[m[32m+    adaptive_scalar_policy, AdaptiveCompleteOwnerComparisonV1, AdaptiveDiscreteSurfaceKindV1,
+[m[32m+    AdaptiveOwnerDimensionV1,
+[m };
+ #[path = "v11_covered/mod.rs"]
+ mod v11_covered;
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:128:
+ #[cfg(test)]
+ pub(crate) use frozen_litter_v4_adoption::{
+[31m-    CoveredNativePhysicalPathAuditV1, begin_covered_native_physical_path_audit_v1,
+[m[31m-    record_native_surface_ingress_entry_v1, record_native_surface_resource_entry_v1,
+[m[31m-    record_native_wb14_physics_entry_v1, take_covered_native_physical_path_audit_v1,
+[m[32m+    begin_covered_native_physical_path_audit_v1, record_native_surface_ingress_entry_v1,
+[m[32m+    record_native_surface_resource_entry_v1, record_native_wb14_physics_entry_v1,
+[m[32m+    take_covered_native_physical_path_audit_v1, CoveredNativePhysicalPathAuditV1,
+[m };
+ #[cfg(test)]
+ pub(crate) use v11_covered::audit_covered_carrier_support;
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:136:
+ pub(crate) use v11_covered::normalize_v11_staged_parent_lineage;
+[32m+pub(crate) use v11_covered::physical_outcome_ledger::ledger_set_digest as stage3_physical_outcome_ledger_set_digest;
+[m #[cfg(test)]
+ pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+ pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1;
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:140:
+[31m-pub(crate) use v11_covered::physical_outcome_ledger::ledger_set_digest as stage3_physical_outcome_ledger_set_digest;
+[m pub use v11_covered::physical_outcome_ledger::{
+[31m-    Stage3PhysicalOutcomeClosureAuditV1, begin_stage3_physical_outcome_closure_audit_v1,
+[m[31m-    take_stage3_physical_outcome_closure_audit_v1,
+[m[32m+    begin_stage3_physical_outcome_closure_audit_v1, take_stage3_physical_outcome_closure_audit_v1,
+[m[32m+    Stage3PhysicalOutcomeClosureAuditV1,
+[m };
+ #[cfg(test)]
+ pub(crate) use v11_covered::{
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:147:
+[31m-    CanonicalCoveredFinalConstructorStageV1, CanonicalCoveredPhysicalParityPoisonV1,
+[m[32m+    begin_covered_provisional_physical_audit_v1, begin_v50_outer_owner_transition_evidence_v1,
+[m[32m+    force_covered_full_provisional_envelope_for_test, take_covered_provisional_physical_audit_v1,
+[m[32m+    take_v50_outer_owner_transition_evidence_v1, CoveredProvisionalPhysicalAuditV1,
+[m[32m+};
+[m[32m+#[cfg(test)]
+[m[32m+pub(crate) use v11_covered::{
+[m     canonical_covered_final_constructor_boundary_v1,
+     canonical_covered_final_validation_boundary_v1, canonical_covered_parity_poison_v1,
+     record_canonical_covered_accepted_parent_adoption_v1,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:151:
+[31m-    record_canonical_covered_successful_history_append_v1,
+[m[32m+    record_canonical_covered_successful_history_append_v1, CanonicalCoveredFinalConstructorStageV1,
+[m[32m+    CanonicalCoveredPhysicalParityPoisonV1,
+[m };
+[31m-#[cfg(test)]
+[m[31m-pub(crate) use v11_covered::{
+[m[31m-    CoveredProvisionalPhysicalAuditV1, begin_covered_provisional_physical_audit_v1,
+[m[31m-    begin_v50_outer_owner_transition_evidence_v1, force_covered_full_provisional_envelope_for_test,
+[m[31m-    take_covered_provisional_physical_audit_v1, take_v50_outer_owner_transition_evidence_v1,
+[m[31m-};
+[m 
+[32m+pub(crate) use v11_covered::covered_carrier_initial_owner_bytes_with_deferred_native_v2_soil_custody_v1;
+[m[32m+pub(crate) use v11_covered::stage3_support_forcing_digest;
+[m pub(crate) use v11_covered::CoveredCarrierEphemeralCandidatesV1;
+ pub(crate) use v11_covered::CoveredCarrierPhaseResultV1;
+ pub(crate) use v11_covered::CoveredPhysicalCustodyJoinInputs;
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:163:
+ pub(crate) use v11_covered::DeferredNativeV2SoilCustodyV1;
+[31m-pub(crate) use v11_covered::covered_carrier_initial_owner_bytes_with_deferred_native_v2_soil_custody_v1;
+[m[31m-pub(crate) use v11_covered::stage3_support_forcing_digest;
+[m use v11_covered::*;
+[32m+pub(crate) use v11_covered::{
+[m[32m+    precomputed_terminal_pre_event_authority_sha256_v1, PrecomputedTerminalAcceptedEndpointV1,
+[m[32m+};
+[m pub use v11_covered::{
+     CoveredParentOwnerJoinReceiptV1, DirectV11RealConsumerStack,
+     DirectV11SnowCoveredRealConsumerStack, DirectV11SnowCoveredStackInputs,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:170:
+ };
+[31m-pub(crate) use v11_covered::{
+[m[31m-    PrecomputedTerminalAcceptedEndpointV1, precomputed_terminal_pre_event_authority_sha256_v1,
+[m[31m-};
+[m 
+ const INTERVALS_PER_DAY: usize = 48;
+ const INTERVAL_S: f64 = 1_800.0;
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1508:
+ include!("v9_real_consumer_shadow_root_zone_configuration.rs");
+ #[path = "v9_real_consumer_shadow/accepted_publication_support_capability.rs"]
+ mod accepted_publication_support_capability;
+[31m-use accepted_publication_support_capability::{
+[m[31m-    AcceptedPublicationHistoryLiveRevisionV1, PreparedStage3AcceptedPublicationSupportV1,
+[m[31m-    ValidatedStage3AcceptedPublicationSupportV1,
+[m[31m-};
+[m #[cfg(test)]
+ pub(crate) use accepted_publication_support_capability::{
+[31m-    AcceptedPublicationLiveRevisionPoisonV1, AcceptedPublicationSupportCapabilityAuditV1,
+[m     begin_accepted_publication_support_capability_audit_v1,
+[31m-    take_accepted_publication_support_capability_audit_v1,
+[m[32m+    take_accepted_publication_support_capability_audit_v1, AcceptedPublicationLiveRevisionPoisonV1,
+[m[32m+    AcceptedPublicationSupportCapabilityAuditV1,
+[m };
+[32m+use accepted_publication_support_capability::{
+[m[32m+    AcceptedPublicationHistoryLiveRevisionV1, PreparedStage3AcceptedPublicationSupportV1,
+[m[32m+    ValidatedStage3AcceptedPublicationSupportV1,
+[m[32m+};
+[m #[path = "v9_real_consumer_shadow/frozen_litter_v3_adoption.rs"]
+ mod frozen_litter_v3_adoption;
+ pub use frozen_litter_v3_adoption::FrozenLitterV3Resident;
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1534:
+ #[cfg(any(test, feature = "persisted-restart-v1"))]
+ pub(crate) use snow_free_physical_reuse::record_snow_free_outer_accepted_publication_v1;
+ pub(crate) use snow_free_physical_reuse::{
+[31m-    SnowFreePhysicalReusePendingV1, SnowFreePhysicalReuseSeedV1, prepare_snow_free_physical_reuse,
+[m[32m+    prepare_snow_free_physical_reuse, SnowFreePhysicalReusePendingV1, SnowFreePhysicalReuseSeedV1,
+[m };
+ #[cfg(test)]
+ pub(crate) use snow_free_physical_reuse::{
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1803:
+     #[test]
+     fn covered_receipt_refuses_legacy_or_v3_downgrade_after_v4_adoption() {
+         for staged in [b"legacy".as_slice(), b"native-v3".as_slice()] {
+[31m-            assert!(
+[m[31m-                select_v11_support_lse_bytes(
+[m[31m-                    staged,
+[m[31m-                    b"legacy",
+[m[31m-                    Some(b"native-v3"),
+[m[31m-                    Some(b"native-v4"),
+[m[31m-                    false,
+[m[31m-                )
+[m[31m-                .is_err()
+[m[31m-            );
+[m[32m+            assert!(select_v11_support_lse_bytes(
+[m[32m+                staged,
+[m[32m+                b"legacy",
+[m[32m+                Some(b"native-v3"),
+[m[32m+                Some(b"native-v4"),
+[m[32m+                false,
+[m[32m+            )
+[m[32m+            .is_err());
+[m         }
+     }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2220:
+                 .map_err(DirectV11RealConsumerError::Runtime)?;
+             if let Some((_, accepted)) = frozen_litter_v4.as_mut() {
+                 #[cfg(test)]
+[31m-                record_integrated_promotion_boundary_v1("promotion-attempt", accepted
+[m[31m-                    .physical
+[m[31m-                    .complete_owner_projection
+[m[31m-                    .is_candidate_only_unpublished_soil());
+[m[32m+                record_integrated_promotion_boundary_v1(
+[m[32m+                    "promotion-attempt",
+[m[32m+                    accepted
+[m[32m+                        .physical
+[m[32m+                        .complete_owner_projection
+[m[32m+                        .is_candidate_only_unpublished_soil(),
+[m[32m+                );
+[m                 candidate
+                     .accept_promoted_candidate_only_frozen_litter_v4(
+                         &self.beginning,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2610:
+             .expect("three-domain continuation install");
+         assert!(replay < accept && accept < vegetation && vegetation < lse);
+         assert!(lse < authenticate && authenticate < install);
+[31m-        assert!(
+[m[31m-            !body.contains(
+[m[31m-                "authenticate_soil_thermal_unpublished_continuation_install_authority_v2("
+[m[31m-            )
+[m[31m-        );
+[m[32m+        assert!(!body
+[m[32m+            .contains("authenticate_soil_thermal_unpublished_continuation_install_authority_v2("));
+[m         assert!(!body.contains("install_soil_thermal_accepted_v2_from_unpublished_continuation("));
+     }
+ }
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs:4:
+ 
+ use openwepp_kernel_contract::TransactionId;
+ use openwepp_land_surface_energy::{
+[31m-    ExactDyadicEnthalpy, LITTER_ICE_HEAT_CAPACITY_J_KG_K, LandSurfaceEnergyConfiguration,
+[m[31m-    LandSurfaceEnergyV3State, LitterPhaseCapacitySpillV1, LitterPhaseReceipt,
+[m[31m-    LitterPhaseTransactionIdentity, LitterPhaseTransactionInput, REFERENCE_TEMPERATURE_K,
+[m[31m-    Sha256Digest, SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2,
+[m[32m+    build_v3_ending_state, execute_litter_phase_v3, ExactDyadicEnthalpy,
+[m[32m+    LandSurfaceEnergyConfiguration, LandSurfaceEnergyV3State, LitterPhaseCapacitySpillV1,
+[m[32m+    LitterPhaseReceipt, LitterPhaseTransactionIdentity, LitterPhaseTransactionInput, Sha256Digest,
+[m[32m+    SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2,
+[m     SoilThermalUnpublishedPhysicalBeginningV2, SurfaceConfiguration, SurfaceHeatStorageMode,
+[31m-    V3TilePhaseUpdate, WATER_HEAT_CAPACITY_J_KG_K, WaterAmount, WaterAuthorization,
+[m[31m-    WaterSourceType, build_v3_ending_state, execute_litter_phase_v3,
+[m[32m+    V3TilePhaseUpdate, WaterAmount, WaterAuthorization, WaterSourceType,
+[m[32m+    LITTER_ICE_HEAT_CAPACITY_J_KG_K, REFERENCE_TEMPERATURE_K, WATER_HEAT_CAPACITY_J_KG_K,
+[m };
+ 
+ use crate::direct_runtime::{
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs:17:
+[32m+    apply_ordinary_finalized_uses_to_phase_adjusted_v2,
+[m[32m+    execute_surface_liquid_ingress_v2_with_parent_state_and_coupled_binding,
+[m[32m+    prepare_surface_liquid_resource_candidate_v2_with_phase_capacity_spills,
+[m     DirectSurfaceLiquidIngressCandidateV2, DirectSurfaceLiquidIngressInput,
+     DirectSurfaceLiquidParcelReceipt, DirectWb14CoupledChildBindingV1,
+     DirectWb14ParentWorkingStateV2, LseSurfaceEnthalpyAcceptedEnergyOperandV1,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs:21:
+     LseSurfaceEnthalpyErrorV1, LseSurfaceEnthalpyOwnerEnvelopeV1,
+     SurfaceLiquidCompleteOwnerProjectionIdentityV3, SurfaceLiquidCompleteOwnerProjectionV3,
+     SurfaceLiquidCompleteOwnerProjectionV4, SurfaceLiquidConfigurationV2,
+[31m-    SurfaceLiquidOwnerEnvelopeV2, apply_ordinary_finalized_uses_to_phase_adjusted_v2,
+[m[31m-    execute_surface_liquid_ingress_v2_with_parent_state_and_coupled_binding,
+[m[31m-    prepare_surface_liquid_resource_candidate_v2_with_phase_capacity_spills,
+[m[32m+    SurfaceLiquidOwnerEnvelopeV2,
+[m };
+ 
+ use super::retained_surface_tile_credits_from_receipts_v1;
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs:30:
+ use super::v3_input_projection::{
+[31m-    FrozenLitterV3PhaseFreeInput, FrozenLitterV3RuntimeError, checked_support_seconds,
+[m[31m-    project_frozen_litter_v3_phase,
+[m[32m+    checked_support_seconds, project_frozen_litter_v3_phase, FrozenLitterV3PhaseFreeInput,
+[m[32m+    FrozenLitterV3RuntimeError,
+[m };
+ use super::v3_rollback::FrozenLitterV3RollbackSnapshot;
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1:
+[31m-use crate::STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+[m use crate::snow_stage3_v11_attachment::{
+[31m-    AcceptedPublicationCaptureAuditV1, AcceptedPublicationCaptureRegimeV1,
+[m[31m-    AdaptiveControllerTestPolicyV1, Stage3AdaptiveStepDecisionV1,
+[m     begin_adaptive_comparison_test_audit, begin_adaptive_controller_test_audit,
+     begin_adaptive_performance_test_audit, begin_terminal_batch_production_audit,
+     take_accepted_publication_capture_audit, take_adaptive_comparison_test_audit,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:8:
+     take_adaptive_controller_test_audit, take_adaptive_performance_test_audit,
+[31m-    take_terminal_batch_production_audit,
+[m[32m+    take_terminal_batch_production_audit, AcceptedPublicationCaptureAuditV1,
+[m[32m+    AcceptedPublicationCaptureRegimeV1, AdaptiveControllerTestPolicyV1,
+[m[32m+    Stage3AdaptiveStepDecisionV1,
+[m };
+[32m+use crate::STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+[m 
+ const MINIMUM_STEP_NS: u128 = STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:39:
+     static CANONICAL_PARITY_CASE: std::cell::Cell<Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1>> = const { std::cell::Cell::new(None) };
+ }
+ 
+[31m-pub(super) fn canonical_parity_case_requested()
+[m[31m--> Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1> {
+[m[32m+pub(super) fn canonical_parity_case_requested(
+[m[32m+) -> Option<crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1> {
+[m     CANONICAL_PARITY_CASE.with(std::cell::Cell::get)
+ }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:62:
+     FINAL_PHYSICAL_COMPARISON.with(|value| *value.borrow_mut() = Some(comparison));
+ }
+ 
+[31m-fn take_final_physical_comparison()
+[m[31m--> crate::v9_real_consumer_shadow::AdaptiveCompleteOwnerComparisonV1 {
+[m[32m+fn take_final_physical_comparison(
+[m[32m+) -> crate::v9_real_consumer_shadow::AdaptiveCompleteOwnerComparisonV1 {
+[m     FINAL_PHYSICAL_COMPARISON
+         .with(|value| value.borrow_mut().take())
+         .expect("final complete-owner physical comparison")
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:360:
+         live["surface_liquid_configuration_canonical_json"]
+     );
+     assert!(row["phase_diagnostics"]["validated_native_inactive_wb14_prefix"].is_object());
+[31m-    assert!(
+[m[31m-        row["phase_diagnostics"]["ordered_owner_joins"]
+[m[31m-            .as_array()
+[m[31m-            .is_some_and(|rows| !rows.is_empty())
+[m[31m-    );
+[m[31m-    assert!(
+[m[31m-        row["phase_diagnostics"]["ordered_event_groups"]
+[m[31m-            .as_array()
+[m[31m-            .is_some_and(|rows| !rows.is_empty())
+[m[31m-    );
+[m[32m+    assert!(row["phase_diagnostics"]["ordered_owner_joins"]
+[m[32m+        .as_array()
+[m[32m+        .is_some_and(|rows| !rows.is_empty()));
+[m[32m+    assert!(row["phase_diagnostics"]["ordered_event_groups"]
+[m[32m+        .as_array()
+[m[32m+        .is_some_and(|rows| !rows.is_empty()));
+[m }
+ 
+ fn assert_actual_snow_free_recorder_controls(
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:431:
+         );
+         assert_eq!(rejected.recorded_rows[0]["capture_phase"], "snow_free");
+     }
+[31m-    assert!(
+[m[31m-        wrong_phase.recorded_rows[0]["detail"]
+[m[31m-            .as_str()
+[m[31m-            .is_some_and(|detail| detail.contains("covered"))
+[m[31m-    );
+[m[31m-    assert!(
+[m[31m-        omission.recorded_rows[0]["detail"]
+[m[31m-            .as_str()
+[m[31m-            .is_some_and(|detail| detail.contains("missing transformed prepared support"))
+[m[31m-    );
+[m[32m+    assert!(wrong_phase.recorded_rows[0]["detail"]
+[m[32m+        .as_str()
+[m[32m+        .is_some_and(|detail| detail.contains("covered")));
+[m[32m+    assert!(omission.recorded_rows[0]["detail"]
+[m[32m+        .as_str()
+[m[32m+        .is_some_and(|detail| detail.contains("missing transformed prepared support")));
+[m }
+ 
+ fn run_snow_free_non_target_control() -> PreChildRecorderProductionOutcomeV1 {
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:583:
+     assert_eq!(fixture.beginning_stage3_lane_count, 1);
+     assert!(fixture.beginning_native_v3_resident_present);
+     assert!(fixture.beginning_native_v4_resident_present);
+[31m-    assert!(
+[m[31m-        fixture
+[m[31m-            .beginning_complete_owner_canonical_bytes
+[m[31m-            .contains_key("soil_thermal")
+[m[31m-    );
+[m[31m-    assert!(
+[m[31m-        fixture
+[m[31m-            .beginning_complete_owner_canonical_bytes
+[m[31m-            .contains_key("land_surface_energy")
+[m[31m-    );
+[m[32m+    assert!(fixture
+[m[32m+        .beginning_complete_owner_canonical_bytes
+[m[32m+        .contains_key("soil_thermal"));
+[m[32m+    assert!(fixture
+[m[32m+        .beginning_complete_owner_canonical_bytes
+[m[32m+        .contains_key("land_surface_energy"));
+[m     assert_native_mixed_phase_transition(fixture);
+     assert_eq!(
+         production.0.parent_support,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:627:
+         parcel.posture,
+         crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcelPosture::Consumed
+     );
+[31m-    assert!(
+[m[31m-        group
+[m[31m-            .produced_unconsumed_parcel_digests
+[m[31m-            .contains(&parcel.parcel_digest)
+[m[31m-    );
+[m[32m+    assert!(group
+[m[32m+        .produced_unconsumed_parcel_digests
+[m[32m+        .contains(&parcel.parcel_digest));
+[m     assert!(!fixture.subslabs.is_empty());
+     assert_eq!(
+         fixture.subslabs[0].support.start_ns(),
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:640:
+     assert!(fixture.subslabs.iter().all(|receipt| {
+         receipt.lane_receipts.len() == 1 && receipt.lane_receipts.contains_key(&1)
+     }));
+[31m-    assert!(
+[m[31m-        fixture
+[m[31m-            .subslabs
+[m[31m-            .windows(2)
+[m[31m-            .all(|pair| pair[0].support.end_ns() == pair[1].support.start_ns())
+[m[31m-    );
+[m[32m+    assert!(fixture
+[m[32m+        .subslabs
+[m[32m+        .windows(2)
+[m[32m+        .all(|pair| pair[0].support.end_ns() == pair[1].support.start_ns()));
+[m     assert_eq!(
+         fixture
+             .subslabs
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:902:
+     assert!(promotion_audit.projection_promotion_entry_count >= 1);
+     assert!(promotion_audit.projection_promotion_success_count >= 1);
+     assert_eq!(
+[31m-        promotion_audit.promotion_entry_count,
+[m[31m-        promotion_audit.candidate_only_promotion_entry_count,
+[m[32m+        promotion_audit.promotion_entry_count, promotion_audit.candidate_only_promotion_entry_count,
+[m         "only candidate-only V4 custody may enter deferred promotion"
+     );
+[31m-    assert_eq!(value.native_physical_audit.snow_free_litter_physics_call_count, 0);
+[m[31m-    assert_eq!(value.native_physical_audit.snow_free_surface_physics_call_count, 0);
+[m[31m-    assert_eq!(value.native_physical_audit.snow_free_wb14_physics_call_count, 0);
+[m[32m+    assert_eq!(
+[m[32m+        value
+[m[32m+            .native_physical_audit
+[m[32m+            .snow_free_litter_physics_call_count,
+[m[32m+        0
+[m[32m+    );
+[m[32m+    assert_eq!(
+[m[32m+        value
+[m[32m+            .native_physical_audit
+[m[32m+            .snow_free_surface_physics_call_count,
+[m[32m+        0
+[m[32m+    );
+[m[32m+    assert_eq!(
+[m[32m+        value
+[m[32m+            .native_physical_audit
+[m[32m+            .snow_free_wb14_physics_call_count,
+[m[32m+        0
+[m[32m+    );
+[m     assert!(promotion_audit.snow_free_litter_low_level_count >= 1);
+     assert!(promotion_audit.snow_free_surface_low_level_count >= 1);
+     assert!(promotion_audit.snow_free_wb14_low_level_count >= 1);
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1353:
+         .expect("join adaptive transient production coverage")
+ }
+ 
+[31m-fn run_full_duration_complete_owner_qualification()
+[m[31m--> crate::snow_stage3_v11_attachment::Stage3AdaptiveSupportReceiptV1 {
+[m[32m+fn run_full_duration_complete_owner_qualification(
+[m[32m+) -> crate::snow_stage3_v11_attachment::Stage3AdaptiveSupportReceiptV1 {
+[m     std::thread::Builder::new()
+         .name("adaptive-full-parent-qualification".to_owned())
+         .stack_size(64 * 1024 * 1024)
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1520:
+         comparison_audits,
+     ) = run_equilibrium_complete_owner();
+     assert!(comparison_audits.is_empty());
+[31m-    assert!(
+[m[31m-        performance_spans
+[m[31m-            .iter()
+[m[31m-            .any(|span| span.label == "complete_owner_direct_trial")
+[m[31m-    );
+[m[31m-    assert!(
+[m[31m-        !performance_spans
+[m[31m-            .iter()
+[m[31m-            .any(|span| span.label == "complete_owner_composed_trial")
+[m[31m-    );
+[m[32m+    assert!(performance_spans
+[m[32m+        .iter()
+[m[32m+        .any(|span| span.label == "complete_owner_direct_trial"));
+[m[32m+    assert!(!performance_spans
+[m[32m+        .iter()
+[m[32m+        .any(|span| span.label == "complete_owner_composed_trial"));
+[m     receipt
+         .validate()
+         .expect("stable adaptive receipt validates");
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1865:
+     assert!(!audit.solves.is_empty(), "missing covered solve audit");
+     for solve in &audit.solves {
+         assert!(solve.completed);
+[31m-        assert!((2..=u32::from(crate::v9_real_consumer_shadow::v11_covered::canonical_covered_max_authentic_maps_v1())).contains(&solve.charged_map_attempt_count));
+[m[32m+        assert!((2..=u32::from(
+[m[32m+            crate::v9_real_consumer_shadow::v11_covered::canonical_covered_max_authentic_maps_v1()
+[m[32m+        ))
+[m[32m+            .contains(&solve.charged_map_attempt_count));
+[m         assert_eq!(
+             solve.charged_roles.len(),
+             usize::try_from(solve.charged_map_attempt_count).expect("charged role count"),
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2429:
+             .map(|(ofe_id, _)| ofe_id)
+             .collect::<std::collections::BTreeSet<_>>();
+         assert!(!lower_boundary_ofes.is_empty());
+[31m-        assert!(
+[m[31m-            lower_boundary_ofes
+[m[31m-                .iter()
+[m[31m-                .all(|ofe_id| topology.contains(ofe_id))
+[m[31m-        );
+[m[32m+        assert!(lower_boundary_ofes
+[m[32m+            .iter()
+[m[32m+            .all(|ofe_id| topology.contains(ofe_id)));
+[m         let binding = crate::direct_runtime::stage3_covered_native_inactive_child_custody_binding(
+             &endpoint.wb14_child_replay_bytes,
+             &topology,
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2732:
+             .rejected_candidate_count
+             >= 1
+     );
+[31m-    assert!(
+[m[31m-        receipt.accepted_microsteps.iter().any(|accepted| accepted
+[m[31m-            .context
+[m[31m-            .step_support
+[m[31m-            .duration_ns()
+[m[31m-            == MINIMUM_STEP_NS)
+[m[31m-    );
+[m[31m-    assert!(
+[m[31m-        carrier_supports
+[m[31m-            .iter()
+[m[31m-            .all(|support| support.duration_ns() >= MINIMUM_STEP_NS)
+[m[31m-    );
+[m[31m-    assert!(
+[m[31m-        comparison_audits
+[m[31m-            .iter()
+[m[31m-            .any(|audit| audit.maximum_scaled_error > 1.0)
+[m[31m-    );
+[m[32m+    assert!(receipt.accepted_microsteps.iter().any(|accepted| accepted
+[m[32m+        .context
+[m[32m+        .step_support
+[m[32m+        .duration_ns()
+[m[32m+        == MINIMUM_STEP_NS));
+[m[32m+    assert!(carrier_supports
+[m[32m+        .iter()
+[m[32m+        .all(|support| support.duration_ns() >= MINIMUM_STEP_NS));
+[m[32m+    assert!(comparison_audits
+[m[32m+        .iter()
+[m[32m+        .any(|audit| audit.maximum_scaled_error > 1.0));
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2924:
+     assert!(batches.iter().any(|batch| {
+         batch.ending_terminal_lanes == vec![1] && batch.ending_surviving_lanes == vec![2]
+     }));
+[31m-    assert!(
+[m[31m-        carrier_supports
+[m[31m-            .iter()
+[m[31m-            .all(|support| support.duration_ns() >= MINIMUM_STEP_NS)
+[m[31m-    );
+[m[32m+    assert!(carrier_supports
+[m[32m+        .iter()
+[m[32m+        .all(|support| support.duration_ns() >= MINIMUM_STEP_NS));
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:2936:
+ #[ignore = "contract-first expected red: retained 52-map terminal-parent validation audit is not implemented"]
+ fn carrier_parent_static_and_same_map_validation_once_has_authentic_1_52_52_counts() {
+     use crate::v9_real_consumer_shadow::v11_covered::{
+[31m-        CarrierValidationCallStageV1 as Stage, begin_carrier_parent_validation_once_audit_v1,
+[m[31m-        take_carrier_parent_validation_once_audit_v1,
+[m[32m+        begin_carrier_parent_validation_once_audit_v1,
+[m[32m+        take_carrier_parent_validation_once_audit_v1, CarrierValidationCallStageV1 as Stage,
+[m     };
+ 
+     let (outcome, audit) = std::thread::Builder::new()
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:3007:
+ #[ignore = "contract-first expected red: forced-full versus admitted validation oracle is not implemented"]
+ fn carrier_validation_once_is_bitwise_equal_for_every_role_path_and_regime() {
+     use crate::v9_real_consumer_shadow::v11_covered::{
+[32m+        carrier_parent_validation_once_parity_for_test,
+[m         CanonicalCoveredPhysicalParityCaseV1 as Case, CarrierValidationMapPathV1 as Path,
+[31m-        CarrierValidationRoleV1 as Role, carrier_parent_validation_once_parity_for_test,
+[m[32m+        CarrierValidationRoleV1 as Role,
+[m     };
+ 
+     for case in [
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:3100:
+ #[ignore = "contract-first expected red: validation-once poison injection is not implemented"]
+ fn carrier_validation_once_poisons_keep_first_error_no_fallback_and_rollback() {
+     use crate::v9_real_consumer_shadow::v11_covered::{
+[31m-        CarrierParentValidationOncePoisonV1 as Poison,
+[m         carrier_parent_validation_once_competing_poisons_for_test,
+         carrier_parent_validation_once_poison_for_test,
+[32m+        CarrierParentValidationOncePoisonV1 as Poison,
+[m     };
+ 
+     for poison in [

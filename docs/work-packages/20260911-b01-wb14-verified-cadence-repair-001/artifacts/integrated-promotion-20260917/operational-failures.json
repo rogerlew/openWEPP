@@ -1,0 +1,12 @@
+{
+  "carried_failure_floor": 168,
+  "new_observed_failures": [
+    {
+      "kind": "read-only command",
+      "exit": 2,
+      "command": "ls -l /home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917",
+      "reason": "Evidence directory had not yet been created; no scientific execution or source loss."
+    }
+  ],
+  "failure_floor": 169
+}
