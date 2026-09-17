@@ -1,0 +1,17 @@
+{
+  "as_of_utc": "2026-09-17T00:57:17.236661+00:00",
+  "writer": "/root/six_owner_writer",
+  "correctness": "/root/six_owner_correctness",
+  "list_agents": "both pending_init, no output or source work observed",
+  "writer_interrupt_previous_status": "pending_init",
+  "after_interrupt": "list still pending_init",
+  "qa_spawn": "six_owner_qa rust_qa_reviewer: agent thread limit reached",
+  "response": "Parent takes sole source ownership for small attribution instrumentation; independent reviews remain unmet. No alternate-model or CLI bypass.",
+  "followup_status_utc": "2026-09-17T02:04:27.810182+00:00",
+  "last_observed_status": "Both existing child conversations remain pending_init; no delivered review or source work. Writer ownership was explicitly revoked before parent source edits.",
+  "required_reviews": {
+    "correctness": "UNAVAILABLE / NOT MET",
+    "qa": "UNAVAILABLE / NOT MET; distinct QA replacement rejected by thread limit"
+  },
+  "prior_review_reuse": "Unchanged independently reviewed prototype/authority portions only, not new implementation acceptance."
+}

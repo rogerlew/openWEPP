@@ -1,0 +1,41 @@
+{
+  "original_member": {
+    "event": "external_json_end",
+    "path": [
+      {
+        "member": "complete_owner_canonical_bytes",
+        "position": 7
+      }
+    ],
+    "file": "rows/123091.7.json",
+    "bytes": 60023,
+    "sha256": "fb40ea15c6a88d624ad7ac344d05f936c12aeb9f5b211ff483872511b601a3df"
+  },
+  "original_row_ordinal": 123091,
+  "owners": {
+    "bgc": {
+      "bytes": 572,
+      "sha256": "b9933ca19331e9fbbb0daa6c273c4a45c60289221040973098b2a14532be6aeb"
+    },
+    "hydrology": {
+      "bytes": 1183,
+      "sha256": "4a37f6f8f668669caf9bda7db998f2905ad3140017ff8b38fecb81f2d8dad704"
+    },
+    "land_surface_energy": {
+      "bytes": 9421,
+      "sha256": "ace2a96ab772387e2f0dbbc8b7dd2bb6a4416eb433903dacbd7cca039ef29850"
+    },
+    "soil_thermal": {
+      "bytes": 2499,
+      "sha256": "9049413f4f5fc2767df155d6c2d4cc73cec916d142d2ddebd9add6d1ca839e3f"
+    },
+    "surface_liquid": {
+      "bytes": 1065,
+      "sha256": "a64d5cd3dec70bac8f079d0256ad063af49063dab9d8a96414b6999b5c5f963f"
+    },
+    "vegetation": {
+      "bytes": 3826,
+      "sha256": "d9b2ba9a3dde54ed0d245ab86efc431143660c19b179a4cc69a57a7281a8dcce"
+    }
+  }
+}

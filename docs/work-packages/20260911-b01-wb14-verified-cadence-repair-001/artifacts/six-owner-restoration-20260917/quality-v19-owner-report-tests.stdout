@@ -1,0 +1,8 @@
+
+running 3 tests
+test snow_stage3_v11_current_context_capture::member_restoration::owner_comparison::owner_report_io_failure_preserves_comparison_refusal ... ok
+test snow_stage3_v11_current_context_capture::member_restoration::owner_comparison::owner_report_equal_missing_extra_and_byte_boundaries ... ok
+test snow_stage3_v11_current_context_capture::member_restoration::owner_comparison::owner_report_saves_exact_bytes_and_refuses_overwrite ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1499 filtered out; finished in 0.00s
+

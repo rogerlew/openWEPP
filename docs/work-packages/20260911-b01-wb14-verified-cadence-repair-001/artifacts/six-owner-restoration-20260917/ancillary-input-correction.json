@@ -1,0 +1,8 @@
+{
+  "failed_attempt": "report-v16-build",
+  "cause": "Parent initially linked current main tests rather than retained S/R ancillary tests, exposing three inherited compatibility arms",
+  "correction": "Only new development tests symlink rebound to retained R/tests; original tests never modified",
+  "supplemental_custody_sha256": "2e9e27eeb0a355672e7a74c8fd645a2ce95182ae88bf78741bc8f98ecac9b082",
+  "all_retained_added_inputs_verified": true,
+  "verified_count": 7980
+}

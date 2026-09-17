@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: full supplemental manifest byte verification and original v15 binary preservation",
+  "utc": "2026-09-17T01:51:02.487580+00:00",
+  "manifest": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/reference-input-recovery-20260915/input-custody.json",
+  "manifest_sha256": "2e9e27eeb0a355672e7a74c8fd645a2ce95182ae88bf78741bc8f98ecac9b082",
+  "verified_entries": 7980,
+  "all_equal": true,
+  "candidate_tests_link": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests",
+  "v15_binary": "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/private-v15.frozen",
+  "v15_binary_sha256": "d9158bba8e25413aa15bc316ee5f09618a11de3f3f5ef3daf62076e02ef05e96",
+  "source_observation_sha256": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+  "observation_full_stream_rescan": false,
+  "original_49_members": "Checked before and after every recorded command against retained input-custody-before.json."
+}

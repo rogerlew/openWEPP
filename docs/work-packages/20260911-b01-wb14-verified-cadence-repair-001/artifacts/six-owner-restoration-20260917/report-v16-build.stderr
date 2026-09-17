@@ -1,0 +1,80 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-unit-boundary v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-unit-boundary)
+   Compiling openwepp-sim-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-sim-contract)
+   Compiling openwepp-management-schema v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-management-schema)
+   Compiling openwepp-kernel-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-kernel-contract)
+   Compiling openwepp-coupled-time v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-coupled-time)
+   Compiling openwepp-input-contract v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-input-contract)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-land-surface-energy)
+   Compiling openwepp-biogeochemistry v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-biogeochemistry)
+   Compiling openwepp-topology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-topology)
+   Compiling openwepp-meteorology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-meteorology)
+   Compiling openwepp-plant-phenology v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-plant-phenology)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-hillslope-orchestrator)
+error[E0004]: non-exhaustive patterns: `&mut surface_liquid_ingress::DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { .. }` not covered
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/../../../../tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs:220:15
+    |
+220 |         match &mut ingress.tile_ingress[0] {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ pattern `&mut surface_liquid_ingress::DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { .. }` not covered
+    |
+note: `surface_liquid_ingress::DirectTileGroundIngress` defined here
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:188:10
+    |
+188 | pub enum DirectTileGroundIngress {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^
+...
+214 |     CoveredCanopyReleaseAndTerminalGround {
+    |     ------------------------------------- not covered
+    = note: the matched value is of type `&mut surface_liquid_ingress::DirectTileGroundIngress`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown
+    |
+226 ~             },
+227 +             &mut surface_liquid_ingress::DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { .. } => todo!()
+    |
+
+error[E0004]: non-exhaustive patterns: `&mut surface_liquid_ingress::DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { .. }` not covered
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/../../../../tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs:192:23
+    |
+192 |                 match &mut ingress.tile_ingress[0] {
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ pattern `&mut surface_liquid_ingress::DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { .. }` not covered
+    |
+note: `surface_liquid_ingress::DirectTileGroundIngress` defined here
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:188:10
+    |
+188 | pub enum DirectTileGroundIngress {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^
+...
+214 |     CoveredCanopyReleaseAndTerminalGround {
+    |     ------------------------------------- not covered
+    = note: the matched value is of type `&mut surface_liquid_ingress::DirectTileGroundIngress`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown
+    |
+198 ~                     },
+199 +                     &mut surface_liquid_ingress::DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { .. } => todo!()
+    |
+
+error[E0004]: non-exhaustive patterns: `&mut surface_liquid_ingress::DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { .. }` not covered
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/../../../../tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs:710:28
+    |
+710 |                 0 => match &mut ingress.tile_ingress[0] {
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ pattern `&mut surface_liquid_ingress::DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { .. }` not covered
+    |
+note: `surface_liquid_ingress::DirectTileGroundIngress` defined here
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:188:10
+    |
+188 | pub enum DirectTileGroundIngress {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^
+...
+214 |     CoveredCanopyReleaseAndTerminalGround {
+    |     ------------------------------------- not covered
+    = note: the matched value is of type `&mut surface_liquid_ingress::DirectTileGroundIngress`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown
+    |
+716 ~                     },
+717 +                     &mut surface_liquid_ingress::DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { .. } => todo!()
+    |
+
+For more information about this error, try `rustc --explain E0004`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 3 previous errors

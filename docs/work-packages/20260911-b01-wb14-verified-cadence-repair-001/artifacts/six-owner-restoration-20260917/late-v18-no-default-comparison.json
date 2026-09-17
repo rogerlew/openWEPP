@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Ran: compared complete compiler error code/message multisets; original/current source paths retained in raw streams; no green-mode claim",
+  "baseline": "../deferred-context-admission-20260916/candidate-terminal-no-default-tests-check.stderr",
+  "candidate": "late-v18-no-default-tests.stderr",
+  "baseline_errors": 61,
+  "candidate_errors": 61,
+  "same_multiset": true,
+  "introduced": [],
+  "removed": []
+}

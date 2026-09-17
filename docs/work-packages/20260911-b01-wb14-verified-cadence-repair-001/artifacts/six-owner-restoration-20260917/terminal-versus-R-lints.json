@@ -1,0 +1,2007 @@
+{
+  "evidence_class": "Ran: matched diagnostic content comparison, not strict-lint acceptance",
+  "baseline": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/baseline-capped-clippy-diagnostics.stdout",
+  "candidate": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/terminal-v20-capped-clippy.stdout",
+  "baseline_count": 2860,
+  "candidate_count": 2880,
+  "introduced_or_changed": [
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "text": [
+            "            || expected.0 != sensible"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "text": [
+            "            || expected.1 != vapor"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/hydrology_restart.rs",
+          "text": [
+            "                        || summary.max_dt_s != config.max_dt_s"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "text": [
+            "            != self",
+            "                .exposure",
+            "                .diagnostic_digest()",
+            "                .as_bytes()",
+            "                .iter()",
+            "                .map(|byte| format!(\"{byte:02x}\"))",
+            "                .collect::<String>()"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs",
+          "text": [
+            "                    receipt_chain_sha256: value",
+            "                        .receipt_sha256",
+            "                        .as_bytes()",
+            "                        .iter()",
+            "                        .map(|byte| format!(\"{byte:02x}\"))",
+            "                        .collect(),"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_publication.rs",
+          "text": [
+            "        value",
+            "            .as_bytes()",
+            "            .iter()",
+            "            .map(|byte| format!(\"{byte:02x}\"))",
+            "            .collect::<String>(),"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::items_after_statements",
+      "level": "warning",
+      "message": "adding items after statements is confusing, since items exist from the start of the scope",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "text": [
+            "        NativeSoilRestartAdmissionV1, NativeSoilRestartPositionV1,"
+          ]
+        }
+      ],
+      "count": 4
+    },
+    {
+      "code": "clippy::items_after_statements",
+      "level": "warning",
+      "message": "adding items after statements is confusing, since items exist from the start of the scope",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "text": [
+            "    use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::{",
+            "        NativeSoilRestartAdmissionV1, NativeSoilRestartPositionV1,",
+            "    };"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::items_after_test_module",
+      "level": "warning",
+      "message": "items after a test module",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v4_exact_enthalpy.rs",
+          "text": [
+            "mod tests {"
+          ]
+        },
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v4_exact_enthalpy.rs",
+          "text": [
+            "pub(crate) fn restore_native_supplement_base(",
+            "    nested_bytes: &[u8],",
+            "    stage3: &ExpectedSnowStage3V11RestartContext<'_>,",
+            "    archive: &ExpectedStage3CommittedDayArchiveV3<'_>,",
+            "    installer: &dyn SnowStage3V11ExactResidentRestorerV4,",
+            "    native_routing: bool,",
+            ") -> Result<DirectSnowStage3V11ShadowAttachment, SnowStage3V11RestartError> {"
+          ]
+        },
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v4_exact_enthalpy.rs",
+          "text": [
+            "pub(crate) fn native_supplement_active_v2_bytes(",
+            "    nested_bytes: &[u8],",
+            ") -> Result<Vec<u8>, SnowStage3V11RestartError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::needless_borrow",
+      "level": "warning",
+      "message": "this expression creates a reference which is immediately dereferenced by the compiler",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "text": [
+            "        find_surface_v2_records(&identity, surface_configuration, surface_beginning)?;"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this closure is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs",
+          "text": [
+            "            .map(|v| {",
+            "                let c = v.surface_configuration();",
+            "                let bytes = v",
+            "                    .surface_owner()",
+            "                    .canonical_bytes(c.parent(), Some(c))",
+            "                    .map_err(|_| {",
+            "                        DirectV11RealConsumerError::Identity(",
+            "                            \"inventory native surface canonical bytes\",",
+            "                        )",
+            "                    })?;",
+            "                serde_json::from_slice::<serde_json::Value>(&bytes)",
+            "                    .map_err(DirectV11RealConsumerError::from)",
+            "            })"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs",
+          "text": [
+            "    ) -> Result<serde_json::Value, DirectV11RealConsumerError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_publication.rs",
+          "text": [
+            "    ) -> Result<Option<(Self, NativeSnowLiquidPublicationV1)>, super::DirectV11RealConsumerError>"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_arguments",
+      "level": "warning",
+      "message": "this function has too many arguments (12/7)",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "text": [
+            "fn restore_real_consumer(",
+            "    value: &DirectSnowStage3V11CommittedRestartV2,",
+            "    context: &ExpectedRestartStaticContext<'_>,",
+            "    posture: CommittedRestartPosture,",
+            "    coupled_clock: &openwepp_coupled_time::CoupledClockStateV1,",
+            "    for_v3: bool,",
+            "    represented_snow: bool,",
+            "    admission: ScientificAdmission,",
+            "    native_surface_bytes: Option<&[u8]>,",
+            "    exact_position: SnowStage3V11ExactResidentPositionV4,",
+            "    bootstrap_soil: Option<",
+            "        &openwepp_hillslope_orchestrator::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,",
+            "    >,",
+            "    native_surface_configuration: Option<",
+            "        &openwepp_hillslope_orchestrator::SurfaceLiquidConfigurationV2,",
+            "    >,",
+            "    native_wb14_bytes: Option<&[u8]>,",
+            ") -> Result<DirectV10RealConsumerShadow, SnowStage3V11RestartError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (101/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_derived_ingress.rs",
+          "text": [
+            "pub(super) fn derive_fixed_cap_canopy_ingress(",
+            "    configuration: &DirectSurfaceLiquidConfiguration,",
+            "    final_tiles: &[FinalCoveredTileCandidate],",
+            "    schedule: &CoveredIngressSchedule,",
+            ") -> Result<DirectSurfaceLiquidIngressInput, LandSurfaceEnergyShadowError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (107/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs",
+          "text": [
+            "    pub(crate) fn advance(",
+            "        &mut self,",
+            "        entry: &FrozenLitterHistoryEntryV1,",
+            "        current: FrozenLitterHistoryIdentityV1,",
+            "    ) -> Result<(), crate::DirectSurfaceLiquidError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (108/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs",
+          "text": [
+            "fn append_tile_ingress(",
+            "    configured: &DirectSurfaceLiquidConfigurationRecord,",
+            "    ingress: &DirectTileGroundIngress,",
+            "    transaction_id: TransactionId,",
+            "    interval_s: f64,",
+            "    parcels: &mut Vec<TimedParcel>,",
+            ") -> Result<(), DirectSurfaceLiquidError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (109/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2_ingress_tests.rs",
+          "text": [
+            "fn native_drain_active_parent_updates_only_candidate_mirrors_and_rejects_stale_join() {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (113/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/unified_entry_preflight.rs",
+          "text": [
+            "fn frame_tile_ingress(out: &mut FramedSha256, tile: &crate::DirectTileGroundIngress) {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (115/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "text": [
+            "    fn current_phase_semantic_substitutions_refuse_without_physics() {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (117/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+          "text": [
+            "fn native_dirty_parent_survives_actual_partial_phase_and_rejects_foreign_drain() {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (119/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "fn validate_authenticated_gsi_preimages_with_evidence(",
+            "    seed: &Value,",
+            "    native: &Value,",
+            "    outer_cursor_canonical_json: &Value,",
+            "    provider: &crate::runtime_inputs::PreparedSnowFreeGsiDayV1,",
+            "    provider_configuration: &crate::runtime_inputs::SnowFreeHalfHourStaticConfiguration,",
+            "    evidence: &Value,",
+            "    climate: &crate::runtime_inputs::HillslopeClimateRuntimeRequest,",
+            ") -> Result<AuthenticatedGsiPreimagesV1, String> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (120/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+          "text": [
+            "fn native_drain_histories_retain_partial_state_finalize_dry_tail_and_reject_replay() {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (125/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "text": [
+            "    fn deferred_context_raw_correspondence_refuses_semantic_poison() {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (133/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/multi_tile_runtime.rs",
+          "text": [
+            "    fn covered_beginning(",
+            "        &mut self,",
+            "        value: &openwepp_land_surface_energy::CoveredColumnInputs,",
+            "    ) -> Result<(), LandSurfaceEnergyShadowError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (147/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_tests.rs",
+          "text": [
+            "fn native_snow_liquid_publication_authenticates_replay_and_rejects_substitution() {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (157/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "fn inactive_counter_custody_refuses_actual_member_substitutions_without_installation() {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (185/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_custody.rs",
+          "text": [
+            "pub(crate) fn prepare_native_snow_liquid_candidate_v1(",
+            "    configuration: &SurfaceLiquidConfigurationV2,",
+            "    lse_configuration: &LandSurfaceEnergyConfiguration,",
+            "    beginning_lse: &LandSurfaceEnergyV3State,",
+            "    beginning_surface: &SurfaceLiquidOwnerEnvelopeV2,",
+            "    beginning_exact: &LseSurfaceEnthalpyOwnerEnvelopeV1,",
+            "    inputs: &[DirectZeroDurationSnowLiquidInputV1],",
+            "    transaction: TransactionId,",
+            "    ending_marker: Option<TransactionId>,",
+            ") -> Result<UnpublishedNativeSnowLiquidCandidateV1, DirectSurfaceLiquidError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (188/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "fn authenticated_gsi_joins_refuse_semantic_substitutions_without_mutating_capture() {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (195/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "text": [
+            "pub(crate) fn project_native_frozen_litter_v3_solver_inputs<'a>(",
+            "    projection: &ValidatedV8RuntimeInputProjection,",
+            "    vegetation_owner_id: &openwepp_kernel_contract::ResourceOwnerId,",
+            "    authority: openwepp_land_surface_energy::CoveredColumnAuthority,",
+            "    lower_boundaries: Option<",
+            "        &BTreeMap<(OfeId, TileId), openwepp_land_surface_energy::Stage3SnowCoveredLowerBoundary>,",
+            "    >,",
+            "    lse_configuration: &LandSurfaceEnergyConfiguration,",
+            "    lse_beginning: &LandSurfaceEnergyV3State,",
+            "    surface_configuration: &'a SurfaceLiquidConfigurationV2,",
+            "    surface_beginning: &'a SurfaceLiquidOwnerEnvelopeV2,",
+            ") -> Result<",
+            "    (",
+            "        StrictProjectedV3RuntimeInputs,",
+            "        ValidatedV3SurfaceBeginning<'a>,",
+            "    ),",
+            "    LandSurfaceEnergyShadowError,",
+            "> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (197/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_tests.rs",
+          "text": [
+            "fn native_snow_liquid_candidate_preserves_ice_and_reprojects_zero_heat_credit() {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (202/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "text": [
+            "fn derive_ingress(",
+            "    configuration: &DirectSurfaceLiquidConfiguration,",
+            "    schedule: &CoveredIngressSchedule,",
+            "    legacy: &[FinalizedRuntimeTile],",
+            "    frozen: &[AcceptedV3ForestLitterTile],",
+            "    stage3_native: &[AcceptedStage3CoveredNativeTile],",
+            ") -> Result<DirectSurfaceLiquidIngressInput, LandSurfaceEnergyShadowError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (263/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "fn restore_native_result(",
+            "    target: &Value,",
+            "    context: &NativeRestorationContext<'_>,",
+            "    inputs: crate::DirectRunConstructorInputs,",
+            "    surface: &crate::DirectSurfaceLiquidConfiguration,",
+            "    position: u128,",
+            "    authenticated_gsi: AuthenticatedGsiPreimagesV1,",
+            "    lifecycle_control: DeferredLifecycleControlV1,",
+            ") -> Result<(), String> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (497/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs",
+          "text": [
+            "fn aggregate_accepted_lane_day(",
+            "    supports: &[Stage3AcceptedPublicationSupportV1],",
+            "    event_handoffs: &[AcceptedEventReceiptV1],",
+            "    terminal_event_groups: &[crate::snow_stage3_v11_attachment::Stage3V11TerminalEventGroupV1],",
+            "    coupled_subslabs: &[crate::snow_stage3_v11_attachment::Stage3CoupledSubslabReceiptV1],",
+            "    binding: &DirectSurfaceLiquidOfeBinding,",
+            "    surface_configuration: &DirectSurfaceLiquidConfiguration,",
+            ") -> Result<AcceptedLaneDay, DirectRuntimeError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (502/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "text": [
+            "    pub(super) fn validate_b01_retained_soil_trial_correspondence_v1(",
+            "        export: &std::path::Path,",
+            "        primitives: &serde_json::Value,",
+            "        subslabs: &serde_json::Value,",
+            "    ) -> Result<(), String> {"
+          ]
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "removed_or_changed": [
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "text": [
+            "            || expected.0 != sensible || expected.1 != vapor {"
+          ]
+        }
+      ],
+      "count": 4
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/hydrology_restart.rs",
+          "text": [
+            "                    if summary.mesh_policy != config.mesh_policy.summary() || summary.max_dt_s != config.max_dt_s"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "text": [
+            "        if self.exchange.exposure_sha256.as_str() != self.exposure.diagnostic_digest().as_bytes().iter().map(|byte| format!(\"{byte:02x}\")).collect::<String>()"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs",
+          "text": [
+            "                    receipt_chain_sha256:value.receipt_sha256.as_bytes().iter().map(|byte|format!(\"{byte:02x}\")).collect()})"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_publication.rs",
+          "text": [
+            "    Sha256Digest::try_new(value.as_bytes().iter().map(|byte|format!(\"{byte:02x}\")).collect::<String>())"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::items_after_statements",
+      "level": "warning",
+      "message": "adding items after statements is confusing, since items exist from the start of the scope",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "text": [
+            "    use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::{NativeSoilRestartAdmissionV1, NativeSoilRestartPositionV1};"
+          ]
+        }
+      ],
+      "count": 6
+    },
+    {
+      "code": "clippy::items_after_test_module",
+      "level": "warning",
+      "message": "items after a test module",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v4_exact_enthalpy.rs",
+          "text": [
+            "mod tests {"
+          ]
+        },
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v4_exact_enthalpy.rs",
+          "text": [
+            "pub(crate) fn restore_native_supplement_base(",
+            "    nested_bytes: &[u8],",
+            "    stage3: &ExpectedSnowStage3V11RestartContext<'_>,",
+            "    archive: &ExpectedStage3CommittedDayArchiveV3<'_>,",
+            "    installer: &dyn SnowStage3V11ExactResidentRestorerV4,",
+            "    native_routing: bool,",
+            ") -> Result<DirectSnowStage3V11ShadowAttachment, SnowStage3V11RestartError> {"
+          ]
+        },
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v4_exact_enthalpy.rs",
+          "text": [
+            "pub(crate) fn native_supplement_active_v2_bytes(nested_bytes: &[u8]) -> Result<Vec<u8>, SnowStage3V11RestartError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::needless_borrow",
+      "level": "warning",
+      "message": "this expression creates a reference which is immediately dereferenced by the compiler",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "text": [
+            "                        &identity,"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this closure is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs",
+          "text": [
+            "        let native_surface_owner = self.frozen_litter_v3_resident().map(|v| {",
+            "            let c=v.surface_configuration();",
+            "            let bytes=v.surface_owner().canonical_bytes(c.parent(),Some(c))",
+            "                .map_err(|_|DirectV11RealConsumerError::Identity(\"inventory native surface canonical bytes\"))?;",
+            "            serde_json::from_slice::<serde_json::Value>(&bytes).map_err(DirectV11RealConsumerError::from)",
+            "        }).transpose()?;"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs",
+          "text": [
+            "    pub(crate) fn accuracy_inventory_owners(&self) -> Result<serde_json::Value, DirectV11RealConsumerError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_publication.rs",
+          "text": [
+            "    ) -> Result<Option<(Self, NativeSnowLiquidPublicationV1)>, super::DirectV11RealConsumerError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_arguments",
+      "level": "warning",
+      "message": "this function has too many arguments (12/7)",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "text": [
+            "fn restore_real_consumer(",
+            "    value: &DirectSnowStage3V11CommittedRestartV2,",
+            "    context: &ExpectedRestartStaticContext<'_>,",
+            "    posture: CommittedRestartPosture,",
+            "    coupled_clock: &openwepp_coupled_time::CoupledClockStateV1,",
+            "    for_v3: bool,",
+            "    represented_snow: bool,",
+            "    admission: ScientificAdmission,",
+            "    native_surface_bytes: Option<&[u8]>,",
+            "    exact_position: SnowStage3V11ExactResidentPositionV4,",
+            "    bootstrap_soil: Option<&openwepp_hillslope_orchestrator::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2>,",
+            "    native_surface_configuration: Option<&openwepp_hillslope_orchestrator::SurfaceLiquidConfigurationV2>,",
+            "    native_wb14_bytes: Option<&[u8]>,",
+            ") -> Result<DirectV10RealConsumerShadow, SnowStage3V11RestartError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (104/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/unified_entry_preflight.rs",
+          "text": [
+            "fn frame_tile_ingress(out: &mut FramedSha256, tile: &crate::DirectTileGroundIngress) {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (128/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/multi_tile_runtime.rs",
+          "text": [
+            "    fn covered_beginning(",
+            "        &mut self,",
+            "        value: &openwepp_land_surface_energy::CoveredColumnInputs,",
+            "    ) -> Result<(), LandSurfaceEnergyShadowError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (169/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "text": [
+            "pub(crate) fn project_native_frozen_litter_v3_solver_inputs<'a>(",
+            "    projection: &ValidatedV8RuntimeInputProjection,",
+            "    vegetation_owner_id: &openwepp_kernel_contract::ResourceOwnerId,",
+            "    authority: openwepp_land_surface_energy::CoveredColumnAuthority,",
+            "    lower_boundaries: Option<",
+            "        &BTreeMap<(OfeId, TileId), openwepp_land_surface_energy::Stage3SnowCoveredLowerBoundary>,",
+            "    >,",
+            "    lse_configuration: &LandSurfaceEnergyConfiguration,",
+            "    lse_beginning: &LandSurfaceEnergyV3State,",
+            "    surface_configuration: &'a SurfaceLiquidConfigurationV2,",
+            "    surface_beginning: &'a SurfaceLiquidOwnerEnvelopeV2,",
+            ") -> Result<",
+            "    (",
+            "        StrictProjectedV3RuntimeInputs,",
+            "        ValidatedV3SurfaceBeginning<'a>,",
+            "    ),",
+            "    LandSurfaceEnergyShadowError,",
+            "> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (199/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "text": [
+            "fn derive_ingress(",
+            "    configuration: &DirectSurfaceLiquidConfiguration,",
+            "    schedule: &CoveredIngressSchedule,",
+            "    legacy: &[FinalizedRuntimeTile],",
+            "    frozen: &[AcceptedV3ForestLitterTile],",
+            "    stage3_native: &[AcceptedStage3CoveredNativeTile],",
+            ") -> Result<DirectSurfaceLiquidIngressInput, LandSurfaceEnergyShadowError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (484/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs",
+          "text": [
+            "fn aggregate_accepted_lane_day(",
+            "    supports: &[Stage3AcceptedPublicationSupportV1],",
+            "    event_handoffs: &[AcceptedEventReceiptV1],",
+            "    terminal_event_groups: &[crate::snow_stage3_v11_attachment::Stage3V11TerminalEventGroupV1],",
+            "    coupled_subslabs: &[crate::snow_stage3_v11_attachment::Stage3CoupledSubslabReceiptV1],",
+            "    binding: &DirectSurfaceLiquidOfeBinding,",
+            "    surface_configuration: &DirectSurfaceLiquidConfiguration,",
+            ") -> Result<AcceptedLaneDay, DirectRuntimeError> {"
+          ]
+        }
+      ],
+      "count": 2
+    }
+  ],
+  "candidate_locations": [
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (101/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_derived_ingress.rs",
+          "line": 201,
+          "text": [
+            "pub(super) fn derive_fixed_cap_canopy_ingress(",
+            "    configuration: &DirectSurfaceLiquidConfiguration,",
+            "    final_tiles: &[FinalCoveredTileCandidate],",
+            "    schedule: &CoveredIngressSchedule,",
+            ") -> Result<DirectSurfaceLiquidIngressInput, LandSurfaceEnergyShadowError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::needless_borrow",
+      "level": "warning",
+      "message": "this expression creates a reference which is immediately dereferenced by the compiler",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "line": 82,
+          "text": [
+            "        find_surface_v2_records(&identity, surface_configuration, surface_beginning)?;"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (195/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "line": 258,
+          "text": [
+            "pub(crate) fn project_native_frozen_litter_v3_solver_inputs<'a>(",
+            "    projection: &ValidatedV8RuntimeInputProjection,",
+            "    vegetation_owner_id: &openwepp_kernel_contract::ResourceOwnerId,",
+            "    authority: openwepp_land_surface_energy::CoveredColumnAuthority,",
+            "    lower_boundaries: Option<",
+            "        &BTreeMap<(OfeId, TileId), openwepp_land_surface_energy::Stage3SnowCoveredLowerBoundary>,",
+            "    >,",
+            "    lse_configuration: &LandSurfaceEnergyConfiguration,",
+            "    lse_beginning: &LandSurfaceEnergyV3State,",
+            "    surface_configuration: &'a SurfaceLiquidConfigurationV2,",
+            "    surface_beginning: &'a SurfaceLiquidOwnerEnvelopeV2,",
+            ") -> Result<",
+            "    (",
+            "        StrictProjectedV3RuntimeInputs,",
+            "        ValidatedV3SurfaceBeginning<'a>,",
+            "    ),",
+            "    LandSurfaceEnergyShadowError,",
+            "> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (202/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "line": 1402,
+          "text": [
+            "fn derive_ingress(",
+            "    configuration: &DirectSurfaceLiquidConfiguration,",
+            "    schedule: &CoveredIngressSchedule,",
+            "    legacy: &[FinalizedRuntimeTile],",
+            "    frozen: &[AcceptedV3ForestLitterTile],",
+            "    stage3_native: &[AcceptedStage3CoveredNativeTile],",
+            ") -> Result<DirectSurfaceLiquidIngressInput, LandSurfaceEnergyShadowError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (113/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/unified_entry_preflight.rs",
+          "line": 637,
+          "text": [
+            "fn frame_tile_ingress(out: &mut FramedSha256, tile: &crate::DirectTileGroundIngress) {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "line": 628,
+          "text": [
+            "            != self",
+            "                .exposure",
+            "                .diagnostic_digest()",
+            "                .as_bytes()",
+            "                .iter()",
+            "                .map(|byte| format!(\"{byte:02x}\"))",
+            "                .collect::<String>()"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "line": 670,
+          "text": [
+            "            || expected.0 != sensible"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "line": 671,
+          "text": [
+            "            || expected.1 != vapor"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (101/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_derived_ingress.rs",
+          "line": 201,
+          "text": [
+            "pub(super) fn derive_fixed_cap_canopy_ingress(",
+            "    configuration: &DirectSurfaceLiquidConfiguration,",
+            "    final_tiles: &[FinalCoveredTileCandidate],",
+            "    schedule: &CoveredIngressSchedule,",
+            ") -> Result<DirectSurfaceLiquidIngressInput, LandSurfaceEnergyShadowError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (133/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/multi_tile_runtime.rs",
+          "line": 1116,
+          "text": [
+            "    fn covered_beginning(",
+            "        &mut self,",
+            "        value: &openwepp_land_surface_energy::CoveredColumnInputs,",
+            "    ) -> Result<(), LandSurfaceEnergyShadowError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs",
+          "line": 2392,
+          "text": [
+            "    ) -> Result<serde_json::Value, DirectV11RealConsumerError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this closure is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs",
+          "line": 2400,
+          "text": [
+            "            .map(|v| {",
+            "                let c = v.surface_configuration();",
+            "                let bytes = v",
+            "                    .surface_owner()",
+            "                    .canonical_bytes(c.parent(), Some(c))",
+            "                    .map_err(|_| {",
+            "                        DirectV11RealConsumerError::Identity(",
+            "                            \"inventory native surface canonical bytes\",",
+            "                        )",
+            "                    })?;",
+            "                serde_json::from_slice::<serde_json::Value>(&bytes)",
+            "                    .map_err(DirectV11RealConsumerError::from)",
+            "            })"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::needless_borrow",
+      "level": "warning",
+      "message": "this expression creates a reference which is immediately dereferenced by the compiler",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "line": 82,
+          "text": [
+            "        find_surface_v2_records(&identity, surface_configuration, surface_beginning)?;"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (195/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "line": 258,
+          "text": [
+            "pub(crate) fn project_native_frozen_litter_v3_solver_inputs<'a>(",
+            "    projection: &ValidatedV8RuntimeInputProjection,",
+            "    vegetation_owner_id: &openwepp_kernel_contract::ResourceOwnerId,",
+            "    authority: openwepp_land_surface_energy::CoveredColumnAuthority,",
+            "    lower_boundaries: Option<",
+            "        &BTreeMap<(OfeId, TileId), openwepp_land_surface_energy::Stage3SnowCoveredLowerBoundary>,",
+            "    >,",
+            "    lse_configuration: &LandSurfaceEnergyConfiguration,",
+            "    lse_beginning: &LandSurfaceEnergyV3State,",
+            "    surface_configuration: &'a SurfaceLiquidConfigurationV2,",
+            "    surface_beginning: &'a SurfaceLiquidOwnerEnvelopeV2,",
+            ") -> Result<",
+            "    (",
+            "        StrictProjectedV3RuntimeInputs,",
+            "        ValidatedV3SurfaceBeginning<'a>,",
+            "    ),",
+            "    LandSurfaceEnergyShadowError,",
+            "> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (202/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_multitile_adoption.rs",
+          "line": 1402,
+          "text": [
+            "fn derive_ingress(",
+            "    configuration: &DirectSurfaceLiquidConfiguration,",
+            "    schedule: &CoveredIngressSchedule,",
+            "    legacy: &[FinalizedRuntimeTile],",
+            "    frozen: &[AcceptedV3ForestLitterTile],",
+            "    stage3_native: &[AcceptedStage3CoveredNativeTile],",
+            ") -> Result<DirectSurfaceLiquidIngressInput, LandSurfaceEnergyShadowError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (113/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/unified_entry_preflight.rs",
+          "line": 637,
+          "text": [
+            "fn frame_tile_ingress(out: &mut FramedSha256, tile: &crate::DirectTileGroundIngress) {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (197/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_tests.rs",
+          "line": 2258,
+          "text": [
+            "fn native_snow_liquid_candidate_preserves_ice_and_reprojects_zero_heat_credit() {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (147/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_tests.rs",
+          "line": 2534,
+          "text": [
+            "fn native_snow_liquid_publication_authenticates_replay_and_rejects_substitution() {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs",
+          "line": 433,
+          "text": [
+            "                    receipt_chain_sha256: value",
+            "                        .receipt_sha256",
+            "                        .as_bytes()",
+            "                        .iter()",
+            "                        .map(|byte| format!(\"{byte:02x}\"))",
+            "                        .collect(),"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (107/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs",
+          "line": 496,
+          "text": [
+            "    pub(crate) fn advance(",
+            "        &mut self,",
+            "        entry: &FrozenLitterHistoryEntryV1,",
+            "        current: FrozenLitterHistoryIdentityV1,",
+            "    ) -> Result<(), crate::DirectSurfaceLiquidError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "line": 628,
+          "text": [
+            "            != self",
+            "                .exposure",
+            "                .diagnostic_digest()",
+            "                .as_bytes()",
+            "                .iter()",
+            "                .map(|byte| format!(\"{byte:02x}\"))",
+            "                .collect::<String>()"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "line": 670,
+          "text": [
+            "            || expected.0 != sensible"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs",
+          "line": 671,
+          "text": [
+            "            || expected.1 != vapor"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (185/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_custody.rs",
+          "line": 33,
+          "text": [
+            "pub(crate) fn prepare_native_snow_liquid_candidate_v1(",
+            "    configuration: &SurfaceLiquidConfigurationV2,",
+            "    lse_configuration: &LandSurfaceEnergyConfiguration,",
+            "    beginning_lse: &LandSurfaceEnergyV3State,",
+            "    beginning_surface: &SurfaceLiquidOwnerEnvelopeV2,",
+            "    beginning_exact: &LseSurfaceEnthalpyOwnerEnvelopeV1,",
+            "    inputs: &[DirectZeroDurationSnowLiquidInputV1],",
+            "    transaction: TransactionId,",
+            "    ending_marker: Option<TransactionId>,",
+            ") -> Result<UnpublishedNativeSnowLiquidCandidateV1, DirectSurfaceLiquidError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_publication.rs",
+          "line": 76,
+          "text": [
+            "        value",
+            "            .as_bytes()",
+            "            .iter()",
+            "            .map(|byte| format!(\"{byte:02x}\"))",
+            "            .collect::<String>(),"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_publication.rs",
+          "line": 547,
+          "text": [
+            "    ) -> Result<Option<(Self, NativeSnowLiquidPublicationV1)>, super::DirectV11RealConsumerError>"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (497/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs",
+          "line": 973,
+          "text": [
+            "fn aggregate_accepted_lane_day(",
+            "    supports: &[Stage3AcceptedPublicationSupportV1],",
+            "    event_handoffs: &[AcceptedEventReceiptV1],",
+            "    terminal_event_groups: &[crate::snow_stage3_v11_attachment::Stage3V11TerminalEventGroupV1],",
+            "    coupled_subslabs: &[crate::snow_stage3_v11_attachment::Stage3CoupledSubslabReceiptV1],",
+            "    binding: &DirectSurfaceLiquidOfeBinding,",
+            "    surface_configuration: &DirectSurfaceLiquidConfiguration,",
+            ") -> Result<AcceptedLaneDay, DirectRuntimeError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (108/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs",
+          "line": 1839,
+          "text": [
+            "fn append_tile_ingress(",
+            "    configured: &DirectSurfaceLiquidConfigurationRecord,",
+            "    ingress: &DirectTileGroundIngress,",
+            "    transaction_id: TransactionId,",
+            "    interval_s: f64,",
+            "    parcels: &mut Vec<TimedParcel>,",
+            ") -> Result<(), DirectSurfaceLiquidError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs",
+          "line": 2392,
+          "text": [
+            "    ) -> Result<serde_json::Value, DirectV11RealConsumerError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this closure is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs",
+          "line": 2400,
+          "text": [
+            "            .map(|v| {",
+            "                let c = v.surface_configuration();",
+            "                let bytes = v",
+            "                    .surface_owner()",
+            "                    .canonical_bytes(c.parent(), Some(c))",
+            "                    .map_err(|_| {",
+            "                        DirectV11RealConsumerError::Identity(",
+            "                            \"inventory native surface canonical bytes\",",
+            "                        )",
+            "                    })?;",
+            "                serde_json::from_slice::<serde_json::Value>(&bytes)",
+            "                    .map_err(DirectV11RealConsumerError::from)",
+            "            })"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs",
+          "line": 433,
+          "text": [
+            "                    receipt_chain_sha256: value",
+            "                        .receipt_sha256",
+            "                        .as_bytes()",
+            "                        .iter()",
+            "                        .map(|byte| format!(\"{byte:02x}\"))",
+            "                        .collect(),"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (107/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs",
+          "line": 496,
+          "text": [
+            "    pub(crate) fn advance(",
+            "        &mut self,",
+            "        entry: &FrozenLitterHistoryEntryV1,",
+            "        current: FrozenLitterHistoryIdentityV1,",
+            "    ) -> Result<(), crate::DirectSurfaceLiquidError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (120/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+          "line": 1648,
+          "text": [
+            "fn native_drain_histories_retain_partial_state_finalize_dry_tail_and_reject_replay() {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (117/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+          "line": 1905,
+          "text": [
+            "fn native_dirty_parent_survives_actual_partial_phase_and_rejects_foreign_drain() {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (185/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_custody.rs",
+          "line": 33,
+          "text": [
+            "pub(crate) fn prepare_native_snow_liquid_candidate_v1(",
+            "    configuration: &SurfaceLiquidConfigurationV2,",
+            "    lse_configuration: &LandSurfaceEnergyConfiguration,",
+            "    beginning_lse: &LandSurfaceEnergyV3State,",
+            "    beginning_surface: &SurfaceLiquidOwnerEnvelopeV2,",
+            "    beginning_exact: &LseSurfaceEnthalpyOwnerEnvelopeV1,",
+            "    inputs: &[DirectZeroDurationSnowLiquidInputV1],",
+            "    transaction: TransactionId,",
+            "    ending_marker: Option<TransactionId>,",
+            ") -> Result<UnpublishedNativeSnowLiquidCandidateV1, DirectSurfaceLiquidError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::format_collect",
+      "level": "warning",
+      "message": "use of `format!` to build up a string from an iterator",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_publication.rs",
+          "line": 76,
+          "text": [
+            "        value",
+            "            .as_bytes()",
+            "            .iter()",
+            "            .map(|byte| format!(\"{byte:02x}\"))",
+            "            .collect::<String>(),"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "warning",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_snow_liquid_publication.rs",
+          "line": 547,
+          "text": [
+            "    ) -> Result<Option<(Self, NativeSnowLiquidPublicationV1)>, super::DirectV11RealConsumerError>"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/hydrology_restart.rs",
+          "line": 1208,
+          "text": [
+            "                        || summary.max_dt_s != config.max_dt_s"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (497/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs",
+          "line": 973,
+          "text": [
+            "fn aggregate_accepted_lane_day(",
+            "    supports: &[Stage3AcceptedPublicationSupportV1],",
+            "    event_handoffs: &[AcceptedEventReceiptV1],",
+            "    terminal_event_groups: &[crate::snow_stage3_v11_attachment::Stage3V11TerminalEventGroupV1],",
+            "    coupled_subslabs: &[crate::snow_stage3_v11_attachment::Stage3CoupledSubslabReceiptV1],",
+            "    binding: &DirectSurfaceLiquidOfeBinding,",
+            "    surface_configuration: &DirectSurfaceLiquidConfiguration,",
+            ") -> Result<AcceptedLaneDay, DirectRuntimeError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_arguments",
+      "level": "warning",
+      "message": "this function has too many arguments (12/7)",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "line": 1166,
+          "text": [
+            "fn restore_real_consumer(",
+            "    value: &DirectSnowStage3V11CommittedRestartV2,",
+            "    context: &ExpectedRestartStaticContext<'_>,",
+            "    posture: CommittedRestartPosture,",
+            "    coupled_clock: &openwepp_coupled_time::CoupledClockStateV1,",
+            "    for_v3: bool,",
+            "    represented_snow: bool,",
+            "    admission: ScientificAdmission,",
+            "    native_surface_bytes: Option<&[u8]>,",
+            "    exact_position: SnowStage3V11ExactResidentPositionV4,",
+            "    bootstrap_soil: Option<",
+            "        &openwepp_hillslope_orchestrator::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,",
+            "    >,",
+            "    native_surface_configuration: Option<",
+            "        &openwepp_hillslope_orchestrator::SurfaceLiquidConfigurationV2,",
+            "    >,",
+            "    native_wb14_bytes: Option<&[u8]>,",
+            ") -> Result<DirectV10RealConsumerShadow, SnowStage3V11RestartError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::items_after_statements",
+      "level": "warning",
+      "message": "adding items after statements is confusing, since items exist from the start of the scope",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "line": 1261,
+          "text": [
+            "    use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::{",
+            "        NativeSoilRestartAdmissionV1, NativeSoilRestartPositionV1,",
+            "    };"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::items_after_statements",
+      "level": "warning",
+      "message": "adding items after statements is confusing, since items exist from the start of the scope",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "line": 1262,
+          "text": [
+            "        NativeSoilRestartAdmissionV1, NativeSoilRestartPositionV1,"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::items_after_statements",
+      "level": "warning",
+      "message": "adding items after statements is confusing, since items exist from the start of the scope",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "line": 1262,
+          "text": [
+            "        NativeSoilRestartAdmissionV1, NativeSoilRestartPositionV1,"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (108/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs",
+          "line": 1839,
+          "text": [
+            "fn append_tile_ingress(",
+            "    configured: &DirectSurfaceLiquidConfigurationRecord,",
+            "    ingress: &DirectTileGroundIngress,",
+            "    transaction_id: TransactionId,",
+            "    interval_s: f64,",
+            "    parcels: &mut Vec<TimedParcel>,",
+            ") -> Result<(), DirectSurfaceLiquidError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (109/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2_ingress_tests.rs",
+          "line": 1230,
+          "text": [
+            "fn native_drain_active_parent_updates_only_candidate_mirrors_and_rejects_stale_join() {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "warning",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/hydrology_restart.rs",
+          "line": 1208,
+          "text": [
+            "                        || summary.max_dt_s != config.max_dt_s"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_arguments",
+      "level": "warning",
+      "message": "this function has too many arguments (12/7)",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "line": 1166,
+          "text": [
+            "fn restore_real_consumer(",
+            "    value: &DirectSnowStage3V11CommittedRestartV2,",
+            "    context: &ExpectedRestartStaticContext<'_>,",
+            "    posture: CommittedRestartPosture,",
+            "    coupled_clock: &openwepp_coupled_time::CoupledClockStateV1,",
+            "    for_v3: bool,",
+            "    represented_snow: bool,",
+            "    admission: ScientificAdmission,",
+            "    native_surface_bytes: Option<&[u8]>,",
+            "    exact_position: SnowStage3V11ExactResidentPositionV4,",
+            "    bootstrap_soil: Option<",
+            "        &openwepp_hillslope_orchestrator::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,",
+            "    >,",
+            "    native_surface_configuration: Option<",
+            "        &openwepp_hillslope_orchestrator::SurfaceLiquidConfigurationV2,",
+            "    >,",
+            "    native_wb14_bytes: Option<&[u8]>,",
+            ") -> Result<DirectV10RealConsumerShadow, SnowStage3V11RestartError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::items_after_statements",
+      "level": "warning",
+      "message": "adding items after statements is confusing, since items exist from the start of the scope",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "line": 1261,
+          "text": [
+            "    use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::{",
+            "        NativeSoilRestartAdmissionV1, NativeSoilRestartPositionV1,",
+            "    };"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::items_after_statements",
+      "level": "warning",
+      "message": "adding items after statements is confusing, since items exist from the start of the scope",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "line": 1262,
+          "text": [
+            "        NativeSoilRestartAdmissionV1, NativeSoilRestartPositionV1,"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::items_after_statements",
+      "level": "warning",
+      "message": "adding items after statements is confusing, since items exist from the start of the scope",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs",
+          "line": 1262,
+          "text": [
+            "        NativeSoilRestartAdmissionV1, NativeSoilRestartPositionV1,"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::items_after_test_module",
+      "level": "warning",
+      "message": "items after a test module",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v4_exact_enthalpy.rs",
+          "line": 502,
+          "text": [
+            "mod tests {"
+          ]
+        },
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v4_exact_enthalpy.rs",
+          "line": 539,
+          "text": [
+            "pub(crate) fn restore_native_supplement_base(",
+            "    nested_bytes: &[u8],",
+            "    stage3: &ExpectedSnowStage3V11RestartContext<'_>,",
+            "    archive: &ExpectedStage3CommittedDayArchiveV3<'_>,",
+            "    installer: &dyn SnowStage3V11ExactResidentRestorerV4,",
+            "    native_routing: bool,",
+            ") -> Result<DirectSnowStage3V11ShadowAttachment, SnowStage3V11RestartError> {"
+          ]
+        },
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v4_exact_enthalpy.rs",
+          "line": 627,
+          "text": [
+            "pub(crate) fn native_supplement_active_v2_bytes(",
+            "    nested_bytes: &[u8],",
+            ") -> Result<Vec<u8>, SnowStage3V11RestartError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (119/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "line": 456,
+          "text": [
+            "fn validate_authenticated_gsi_preimages_with_evidence(",
+            "    seed: &Value,",
+            "    native: &Value,",
+            "    outer_cursor_canonical_json: &Value,",
+            "    provider: &crate::runtime_inputs::PreparedSnowFreeGsiDayV1,",
+            "    provider_configuration: &crate::runtime_inputs::SnowFreeHalfHourStaticConfiguration,",
+            "    evidence: &Value,",
+            "    climate: &crate::runtime_inputs::HillslopeClimateRuntimeRequest,",
+            ") -> Result<AuthenticatedGsiPreimagesV1, String> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (263/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "line": 900,
+          "text": [
+            "fn restore_native_result(",
+            "    target: &Value,",
+            "    context: &NativeRestorationContext<'_>,",
+            "    inputs: crate::DirectRunConstructorInputs,",
+            "    surface: &crate::DirectSurfaceLiquidConfiguration,",
+            "    position: u128,",
+            "    authenticated_gsi: AuthenticatedGsiPreimagesV1,",
+            "    lifecycle_control: DeferredLifecycleControlV1,",
+            ") -> Result<(), String> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (188/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "line": 1177,
+          "text": [
+            "fn authenticated_gsi_joins_refuse_semantic_substitutions_without_mutating_capture() {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (157/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "line": 1468,
+          "text": [
+            "fn inactive_counter_custody_refuses_actual_member_substitutions_without_installation() {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (115/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "line": 4671,
+          "text": [
+            "    fn current_phase_semantic_substitutions_refuse_without_physics() {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (502/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "line": 4862,
+          "text": [
+            "    pub(super) fn validate_b01_retained_soil_trial_correspondence_v1(",
+            "        export: &std::path::Path,",
+            "        primitives: &serde_json::Value,",
+            "        subslabs: &serde_json::Value,",
+            "    ) -> Result<(), String> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (125/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "line": 5501,
+          "text": [
+            "    fn deferred_context_raw_correspondence_refuses_semantic_poison() {"
+          ]
+        }
+      ]
+    }
+  ]
+}

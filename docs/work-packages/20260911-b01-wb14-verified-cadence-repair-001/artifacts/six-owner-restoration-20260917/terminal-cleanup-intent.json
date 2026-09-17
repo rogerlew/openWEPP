@@ -1,0 +1,7 @@
+{
+  "evidence_class": "Static: one private quality cleanup planned after running v19 checks finish",
+  "change": "Use String::clone_from for the authenticated prior receipt digest in private from-proof restoration. The assigned string and installation order stay identical.",
+  "reason": "Clippy assigning_clones appeared in v19 after structural cleanup; same statement exists in starting S, but this private restoration quality issue is in authorized scope.",
+  "reuse": "v19 early bound-use controls execute before from-proof restoration; their bound operand code is unchanged by this one statement. Rerun late controls and positive composition on final v20, plus cheap traits/report checks and final quality.",
+  "long_function_debt": "restore_native_result remains the same historical long function: 261 lines in S, 263 in v19. This changed warning is attributed structural debt, not an introduced new long function or a strict-lint waiver."
+}

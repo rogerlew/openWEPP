@@ -7,8 +7,11 @@ the prepared day-4 receipt remains a distinct phase. Canonical composite admissi
 is an unpromoted draft. Raw records for all twelve deferred credit groups have been
 recovered and source-defined correspondence has passed canonical component checks.
 The complete-bundle expected-RED and both independent preimplementation reviews
-permitted the bounded private prototype. Its constructor accepted the original operands,
-but the full probe failed the subsequent six-owner projection comparison. Production, scientific qualification,
+permitted the bounded private prototype. The original v15 six-owner failure is now
+attributed to a missing private runtime-mode restoration step. The existing guarded
+clock-mode installer yields complete six-owner byte parity. Terminal v20 passes the
+fresh complete composition and all six reachable late rollback/precedence controls.
+Required independent acceptance remains unavailable. Production, scientific qualification,
 restart, conservation and cadence remain HOLD.
 
 Authentic capture, witness and corrected-recorder acquisition allowances remain
@@ -16,6 +19,150 @@ exhausted (1/1 each). Bounded native diagnostics have executed under the adopted
 amendment below; they do not release a physical successor.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Six-owner restoration continuation — adopted 2026-09-17
+
+**Ran: terminal private restoration PASS; overall acceptance INCOMPLETE / HOLD.**
+The owner adopted `/tmp/openwepp_b01_wb14_six_owner_restoration_authorization.md`
+within **B01-WB14-CURRENT-CONTEXT-CAPTURE / A-001**, starting from evidence revision
+`54623eb0d5fe64bb40c98759d5af4747e00cd017`. The [adopted authorization](artifacts/six-owner-restoration-20260917/owner-authorization.md)
+and [terminal results](artifacts/six-owner-restoration-20260917/terminal-results.json)
+bind this bounded disposition. Constructor acceptance, diagnostic byte parity and
+production qualification remain separate outcomes.
+
+Intent declared before edits: preserve S/R/Q and v15; instrument the existing exact
+six-owner comparison; attribute every mismatch from actual buffers; correct only a
+supported private restoration defect within the reviewed draft; complete reachable
+late controls, affected quality/compatibility and independent review. No acquisition,
+model/collector, physical successor, replay/install, protected continuation, public API,
+wire, dependency, scientific rule, canonical promotion or production adoption was released.
+All three historical physical acquisition/witness allowances remain exhausted 1/1 each.
+
+The attributable v16 probe **FAILED** at the unchanged comparison. Its only differing
+owner was **`land_surface_energy`**, at byte 105: expected 9,421 bytes, actual 9,433.
+The sole decoded difference was `/runtime_authority`: captured `V11SnowCovered`
+versus constructed `V10NonpositiveAssimilation`. `bgc`, `hydrology`, `soil_thermal`,
+`surface_liquid` and `vegetation` already matched exactly. All other LSE fields and
+nested component bytes/digests matched. The independent original clock LSE bytes
+also exactly equal the expected LSE bytes; the distinct six- and seven-owner maps
+are **not** equated wholesale. [All owner lengths, hashes and offsets](artifacts/six-owner-restoration-20260917/report-v16-owner-bytes/owners.json),
+[exact expected bytes](artifacts/six-owner-restoration-20260917/report-v16-owner-bytes/2-expected.bin),
+[exact actual bytes](artifacts/six-owner-restoration-20260917/report-v16-owner-bytes/2-actual.bin),
+[original-field provenance](artifacts/six-owner-restoration-20260917/expected-owner-provenance.json)
+and [causal trace](artifacts/six-owner-restoration-20260917/report-v16-causal-attribution.json)
+are retained.
+
+Static cause: ordinary native construction initializes the V10 runtime mode; the
+private from-proof path omitted the existing guarded clock-runtime-mode installation
+used by the persisted native reader. The correction selects the unique authenticated
+clock LSE owner, calls that existing installer, and requires complete LSE byte equality.
+It then retains full six-owner equality against the original producer field and checks
+the complete dynamic frame, provider cursor and consumed capability. No owner payload
+was copied wholesale, expected bytes replaced, field omitted, tolerance introduced or
+identifier rebased. v17 first demonstrated parity; terminal v20 confirms it after the
+quality cleanup. The reviewed draft remains unchanged and unpromoted, SHA-256
+`0be23fc073d31503f34cda01ea7dc485634d44d890a6bbcc371a657d117d43d1`.
+Ordinary admission guards and the later physical boundary remain intact.
+
+| Check | Result and evidence |
+| --- | --- |
+| Fresh frozen terminal composition | **PASS 1/1**, 502.29s; [command/source/input/binary](artifacts/six-owner-restoration-20260917/terminal-v20-composed-parity.json), [raw output](artifacts/six-owner-restoration-20260917/terminal-v20-composed-parity.stdout), [all six owner bytes equal](artifacts/six-owner-restoration-20260917/terminal-v20-owner-bytes/owners.json) |
+| Terminal late actual-entry lifecycle | **PASS 6 cases in 1 test**, 1,216.81s; [receipt](artifacts/six-owner-restoration-20260917/terminal-v20-late-controls.json), [typed errors, reached stages and rollback](artifacts/six-owner-restoration-20260917/terminal-v20-late-controls.stdout) |
+| Ordinary resident-only admission refusal | **PASS 1/1**, 18.47s, exact resident/bootstrap/clock preservation; [receipt](artifacts/six-owner-restoration-20260917/terminal-v20-ordinary-refusal.json) |
+| Early bound-use/single-use lifecycle | **PASS 1/1** on v19, 404.50s; [receipt](artifacts/six-owner-restoration-20260917/quality-v19-early-lifecycle.json); the sole later edit is an unreachable-at-this-early-refusal same-value string `clone_from`, with [source-bound reuse](artifacts/six-owner-restoration-20260917/terminal-evidence-reuse.json) |
+| Non-Clone/non-Copy/non-Serde capability traits | **PASS 1/1** on terminal v20; [receipt](artifacts/six-owner-restoration-20260917/terminal-v20-capability-traits.json) |
+| Owner report controls | **PASS 3/3** on terminal v20: exact/missing/extra/length/byte differences and output failures; [receipt](artifacts/six-owner-restoration-20260917/terminal-v20-owner-report-tests.json) |
+| Policy14 transport | **PASS 2/2** on v17; entire affected coupled-time crate unchanged through terminal, [reuse reconciliation](artifacts/six-owner-restoration-20260917/terminal-evidence-reuse.json) |
+| Affected-file formatting / default library check | **PASS**, all seven changed Rust files only; [format](artifacts/six-owner-restoration-20260917/terminal-v20-format.json), [default check](artifacts/six-owner-restoration-20260917/terminal-v20-default-check.json). A validator is not a default-feature test workflow. |
+| Strict Clippy | **FAIL**, the same 27 reported diagnostic identities as S; [comparison](artifacts/six-owner-restoration-20260917/terminal-versus-S-strict.json) |
+| No-default / evidence-only test compilation | **FAIL 61 / 33 errors** respectively; no-default matches S's 61, evidence-only reduces S's 50 by 17 with no introduced code/message entries; [comparisons](artifacts/six-owner-restoration-20260917/terminal-quality-disposition.json) |
+
+Late controls use the actual entry and individually valid original receipts in the
+wrong semantic phase. Independent prior and prepared substitutions select the GSI
+custody error before an armed later projection fault. A combined altered source-bound
+posture plus receipt selects the source-bound error. Injected failures after full
+proof, private native construction and complete LSE projection confirm the reached
+boundary, consumed capability/retry refusal and byte-exact retained native/resident/
+bootstrap/phase/lane/clock/frame/input rollback. Original files are checked before and
+after each command. New raw-operand/preimage records carry no admission authority;
+neither opaque capability gained Clone, Copy or Serde.
+
+Measured terminal composition: **9 frame constructions, 0 GSI prepare advances,
+9 GSI validator advances**. Terminal late controls: **37 / 0 / 17** respectively.
+Both have zero solver mechanism work, native snow-free litter/surface/WB14 physics,
+direct compute/state mutation, commits and publication. These counters are diagnostic
+scope evidence, not conservation evidence. Serial large decodes had a 16 GiB address
+space and 1 GiB per-output-file cap; timeouts were 900s for composition and 2,100s for
+late controls, grounded in [retained resource measurements](artifacts/six-owner-restoration-20260917/terminal-run-bounds.json).
+All terminal source/binary/pin/original-input stability checks passed.
+
+The actual physical promotion-precondition matrix remains **BLOCKED**: the retained
+soil candidate is not the complete accepted V3/V4 runtime candidate, whose available
+factory executes excluded physical work. No accepted candidate was fabricated.
+Wire-posture precedence plus an injected late fault is not substituted for that
+obligation. [Source-specific boundary](artifacts/six-owner-restoration-20260917/promotion-precondition-scope.json).
+Original regression/E008 **FAIL**, Critical/full-workspace/default-test gaps,
+conservation, restart, production and cadence **HOLD** remain unchanged. Applicable
+canonical promotion gates are not waived by diagnostic parity.
+
+Quality cleanup replaced truncating provider-test casts with checked conversions,
+removed mechanical clone/map/match/semicolon/import issues, grouped the same eight
+borrowed operands and factored the guarded mode step. No provider algorithm changed.
+Capped diagnostics are **2,880 terminal versus 2,892 S**: 1 changed record and 13
+removed/changed records. The one changed record is the existing restoration function's
+line count, 261 to 263. Against R: 2,860 versus 2,880, with 58 introduced/changed and
+38 removed/changed records; 51 are on unchanged S formatting-only surfaces and 7 are
+retained private long-function debt. No recursive formatting or broad historical
+cleanup was performed. Capped exit zero is never strict-quality acceptance.
+[Complete triage](artifacts/six-owner-restoration-20260917/terminal-quality-disposition.json);
+[losslessly compressed raw compiler streams](artifacts/six-owner-restoration-20260917/compressed-streams.json)
+retain exact round-trip hashes, with original raw files preserved locally.
+
+**Independent correctness: UNAVAILABLE / NOT MET. Independent QA: UNAVAILABLE / NOT MET.**
+Old reviewer conversations were unreachable. The authorized replacement writer and
+correctness conversations stayed `pending_init`; writer ownership was explicitly
+revoked, and the parent performed the sole source edits. A distinct QA spawn was
+rejected with `agent thread limit reached`. No fallback-model/CLI bypass or parent
+self-review was presented as independence. Previous reviewed prototype/draft portions
+are reused only where unchanged. [Attributable runtime/review status](artifacts/six-owner-restoration-20260917/terminal-review-status.json).
+
+Terminal source: `/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917`,
+tree **`d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01`**.
+Frozen binary: `/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/terminal-v20.frozen`,
+SHA-256 **`512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd`**.
+[Exact terminal diff reconciliation](artifacts/six-owner-restoration-20260917/terminal-diff-reconciliation.json)
+covers four modified and three new files relative to S. All 746 source entries were
+reconstructed exactly from preserved S plus [terminal-incremental-from-S.patch](artifacts/six-owner-restoration-20260917/terminal-incremental-from-S.patch),
+SHA-256 `06fdf4dd080560a29298920f73dcd37c5a619a63213f4f83be9f33b18c878d74`.
+[Recovery receipt and available-base recipe](artifacts/six-owner-restoration-20260917/terminal-source-reconstruction.json)
+bind S/R/Q and the terminal reconstruction; never apply the cumulative patch atop S/R/Q.
+All original bases and failed v15 remain unchanged. [Supplemental custody](artifacts/six-owner-restoration-20260917/terminal-supplementary-custody.json)
+reverified all 7,980 supplementary inputs and v15 binary. The unchanged 49-member
+original export, seed, climate, authenticated GSI preimages and trial/subslab records
+are pinned in each result-bearing command. Original observation SHA-256 remains
+`1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c`;
+no new acquisition or unnecessary full-stream rescan occurred.
+
+Retained failures include the first build against the wrong ancillary test link
+(corrected to the verified retained R tests), a misordered wrapper argument that never
+ran the binary, and the attributable v16 mismatch, plus all quality failures. Nothing
+was overwritten or relabeled green. Internal reassessments selected supported
+continuation without extending scope or allowance; the [terminal reassessment](artifacts/six-owner-restoration-20260917/internal-reassessment-terminal.json)
+records the final execution/publication decision.
+
+Budget anchor **2026-09-17 00:30:00 UTC**, carried **78,130.26014s**, fixed cumulative
+ceiling **92,530.26s**, hard deadline **04:29:59.999860 UTC**. Concurrent wall time is
+charged once; no wait deductions or old 597.34s remainder are added. Failure floor is
+**at least 149**: prior at least 137 plus 12 retained nonzero command receipts, not an
+invented exact global count. The [prepublication budget](artifacts/six-owner-restoration-20260917/prepublication-ledger.json)
+is followed by the local final charged ledger at
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/six-owner-restoration-final-20260917.json`,
+including publication, remote verification and return. Authorized publication is a
+scoped evidence/patch commit on current `main`, not Rust adoption. Exact-commit remote
+verification is retained at
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/six-owner-restoration-remote-20260917.json`.
+Published patches/logs are remotely available after verification; complete source
+bases, frozen binaries and original corpus remain local, not a full remote recovery claim.
 
 ## Deferred-context admission — adopted 2026-09-16
 

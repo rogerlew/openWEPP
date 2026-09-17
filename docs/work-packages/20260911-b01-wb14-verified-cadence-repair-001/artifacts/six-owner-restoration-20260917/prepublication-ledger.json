@@ -1,0 +1,63 @@
+{
+  "utc": "2026-09-17T02:30:34.476176+00:00",
+  "anchor_utc": "2026-09-17T00:30:00+00:00",
+  "carried_seconds": 78130.26014,
+  "supplement_charged_seconds": 7234.476176,
+  "cumulative_charged_seconds": 85364.736316,
+  "fixed_ceiling_seconds": 92530.26,
+  "remaining_seconds": 7165.523683999996,
+  "wait_deductions_seconds": 0,
+  "new_retained_nonzero_receipts": [
+    {
+      "receipt": "late-v18-no-default-tests.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "late-v18-strict-clippy.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "preserved-S-evidence-only-tests.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "quality-v19-evidence-only-tests.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "quality-v19-no-default-tests.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "quality-v19-strict-clippy.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "report-v16-attributable-probe.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "report-v16-build.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "report-v16-cheap-controls.json",
+      "exit_code": 125
+    },
+    {
+      "receipt": "terminal-v20-evidence-only-tests.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "terminal-v20-no-default-tests.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "terminal-v20-strict-clippy.json",
+      "exit_code": 101
+    }
+  ],
+  "failure_floor_at_least": 149,
+  "not_final": "Publication, remote verification and return continue to be charged in the external final ledger; no renewal.",
+  "physical_allowances": "All three remain separately exhausted1/1; no new physical run."
+}

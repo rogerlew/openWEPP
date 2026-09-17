@@ -1,0 +1,7 @@
+patching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
+patching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_late_controls.rs
+patching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs
+patching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_owner_comparison.rs
+patching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+patching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/deferred_diagnostic_faults.rs
+patching file crates/openwepp-persisted-restart-v1/src/gsi_forcing.rs

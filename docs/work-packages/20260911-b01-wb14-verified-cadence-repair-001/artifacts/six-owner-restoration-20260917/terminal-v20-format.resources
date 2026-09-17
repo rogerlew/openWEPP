@@ -1,0 +1,23 @@
+	Command being timed: "nix develop /workdir/openWEPP --command rustfmt --edition 2024 --config skip_children=true --check /workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs /workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_late_controls.rs /workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs /workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_owner_comparison.rs /workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs /workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/deferred_diagnostic_faults.rs /workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-persisted-restart-v1/src/gsi_forcing.rs"
+	User time (seconds): 0.37
+	System time (seconds): 0.09
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.47
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 160512
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 11765
+	Voluntary context switches: 135
+	Involuntary context switches: 17
+	Swaps: 0
+	File system inputs: 480
+	File system outputs: 432
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

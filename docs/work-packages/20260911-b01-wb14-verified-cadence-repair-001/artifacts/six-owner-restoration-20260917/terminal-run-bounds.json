@@ -1,0 +1,31 @@
+{
+  "utc": "2026-09-17T01:58:04.402553+00:00",
+  "measured": [
+    {
+      "run": "mode-v17-composed-probe",
+      "elapsed_seconds": 508.2763624228537,
+      "max_rss_KiB": 9443296
+    },
+    {
+      "run": "late-v18-actual-entry-controls",
+      "elapsed_seconds": 1224.0065551851876,
+      "max_rss_KiB": 9736588
+    },
+    {
+      "run": "quality-v19-early-lifecycle",
+      "elapsed_seconds": 404.49622797593474,
+      "max_rss_KiB": 8764244
+    }
+  ],
+  "available_host_memory_KiB": 28169516,
+  "execution": "Serial large original-member decodes; no physical execution. Concurrent bounded compiler checks only.",
+  "address_space_bytes_per_process": 17179869184,
+  "file_output_limit_bytes": 1073741824,
+  "timeouts_seconds": {
+    "late_controls": 2100,
+    "composed_parity": 900,
+    "ordinary_refusal": 900
+  },
+  "budget_deadline": "2026-09-17T04:29:59.999860+00:00",
+  "allowance": "Same fixed supplement; no retry/renewal."
+}

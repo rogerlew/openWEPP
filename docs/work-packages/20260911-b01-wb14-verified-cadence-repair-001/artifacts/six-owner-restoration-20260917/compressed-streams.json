@@ -1,0 +1,34 @@
+{
+  "evidence_class": "Ran: lossless compression and byte-exact round-trip verification",
+  "entries": [
+    {
+      "raw_path": "late-v18-capped-clippy.stdout",
+      "raw_bytes": 13654959,
+      "raw_sha256": "4ebce2b0d3b1cf9acb6dd3f8aef093b59148e8072d61fc9630e4fcf939a0eaee",
+      "published_path": "late-v18-capped-clippy.stdout.gz",
+      "gzip_bytes": 565019,
+      "gzip_sha256": "405bf80dc8baef9efa7a3a4438550d6efd62ec91229a827b65855a7c13269901",
+      "round_trip_equal": true
+    },
+    {
+      "raw_path": "quality-v19-capped-clippy.stdout",
+      "raw_bytes": 13638994,
+      "raw_sha256": "1cc2dd74e078a0e375caeb2bb01ffd89dd2ebe7c588c5a495e161871a3e0e66d",
+      "published_path": "quality-v19-capped-clippy.stdout.gz",
+      "gzip_bytes": 564467,
+      "gzip_sha256": "7be506c948d3c25225ce0230ec9386a998f9dfdbf1064200556818856673a476",
+      "round_trip_equal": true
+    },
+    {
+      "raw_path": "terminal-v20-capped-clippy.stdout",
+      "raw_bytes": 13636266,
+      "raw_sha256": "d34e6c1a84ba3f7b6f2afc1eea20b529b635a51c0fd53153709df3bd3682e289",
+      "published_path": "terminal-v20-capped-clippy.stdout.gz",
+      "gzip_bytes": 573632,
+      "gzip_sha256": "4d1674f11f94e1e34b67d838e066e6037b74f0616e4f6f7254cdddf748cdadac",
+      "round_trip_equal": true
+    }
+  ],
+  "availability": "Original raw streams remain local unchanged; publish gzip copies and this receipt. All other small logs remain plain files.",
+  "recovery": "gzip -dc FILE.stdout.gz > FILE.stdout; compare raw_sha256 before using existing diagnostic comparison commands."
+}

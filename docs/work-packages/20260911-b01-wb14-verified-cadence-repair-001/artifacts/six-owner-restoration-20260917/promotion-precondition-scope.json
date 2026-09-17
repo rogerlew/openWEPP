@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Static: bounded source inspection; not an executed promotion matrix",
+  "actual_entry": "v9_real_consumer_shadow/frozen_litter_v4_adoption.rs::accept_promoted_candidate_only_frozen_litter_v4",
+  "argument_type": "AcceptedFrozenLitterV4RuntimeCandidate",
+  "source_dependencies": [
+    "land_surface_energy_shadow/v3_execution.rs::execute_frozen_litter_v4_common",
+    "land_surface_energy_shadow/v3_execution.rs::promote_candidate_only_soil_after_final_replay"
+  ],
+  "retained_input": "original phase member has a deferred soil candidate and continuation, not the complete AcceptedFrozenLitterV4RuntimeCandidate",
+  "finding": "The available complete-candidate factory executes physical V3/V4 work; the retained soil-trial member does not supply all complete-candidate operands. No fabricated accepted candidate or physical execution is authorized.",
+  "executed_scope": "Real composite-entry receipt/source-custody precedence versus injected later private restoration faults. This is not actual physical promotion-precondition validation.",
+  "disposition": "Actual promotion-precondition/physical replay-install qualification BLOCKED; ordinary refusal and reachable late nonphysical controls remain required and executable."
+}

@@ -1,0 +1,1141 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs
+@@ -5626,11 +5626,9 @@
+             .expect("raw record order is not correspondence authority");
+     }
+ 
+-    /// Contract-derived RED: all currently retained component evidence is
+-    /// authenticated first, then the real ordinary restoration edge is asked
+-    /// for the future private-composite outcome.  Until that separately gated
+-    /// constructor exists, this must fail at the ordinary native admission
+-    /// guard; it is never a passing acceptance test for the current runtime.
++    /// Private diagnostic composition after the retained contract-derived RED.
++    /// Authenticates original operands and checks complete restoration bytes.
++    /// A pass is neither canonical promotion nor physical/restart qualification.
+     #[test]
+     #[ignore = "requires owner-authorized pinned B01 corpus/provider computation"]
+     fn deferred_context_complete_bundle_private_diagnostic_restoration() {
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_late_controls.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_late_controls.rs
+@@ -0,0 +1,237 @@
++//! Actual-entry lifecycle controls over the authenticated original operand bundle.
++use super::*;
++use crate::v9_real_consumer_shadow::{
++    DirectV9RealConsumerError, DirectV10RealConsumerError,
++    deferred_diagnostic_faults::{self as faults, Point, Progress},
++};
++
++pub(super) struct Context<'a> {
++    pub native: &'a Value,
++    pub soil: &'a crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,
++    pub bootstrap: &'a crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,
++    pub phase: &'a Value,
++    pub lane_maps: &'a Value,
++    pub clock: &'a CoupledClockStateV1,
++    pub frame: &'a crate::DirectRunFrame,
++    pub inputs: &'a crate::DirectRunConstructorInputs,
++    pub surface: &'a crate::DirectSurfaceLiquidConfiguration,
++    pub lse: &'a openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
++    pub frozen_lse: &'a openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
++    pub provider: &'a crate::runtime_inputs::SnowFreeHalfHourStaticConfiguration,
++    pub gsi: &'a AuthenticatedGsiPreimagesV1,
++}
++
++impl Context<'_> {
++    fn snapshot(&self) -> Result<Vec<Vec<u8>>, String> {
++        let frame = capture_direct_run_frame_dynamic(self.frame, self.inputs, self.surface)?;
++        let inputs = capture_direct_run_constructor_inputs(self.inputs);
++        [
++            serde_json::to_vec(self.native),
++            serde_json::to_vec(self.soil),
++            serde_json::to_vec(self.bootstrap),
++            serde_json::to_vec(self.phase),
++            serde_json::to_vec(self.lane_maps),
++            serde_json::to_vec(self.clock),
++            serde_json::to_vec(&frame),
++            serde_json::to_vec(&inputs),
++        ]
++        .into_iter()
++        .map(|result| result.map_err(|error| error.to_string()))
++        .collect()
++    }
++
++    fn mint(&self) -> Result<ValidatedDeferredContextV1, String> {
++        ValidatedDeferredContextV1::mint(
++            &DeferredContextOperandsV1 {
++                native: self.native,
++                soil: self.soil,
++                clock: self.clock,
++                phase: self.phase,
++                lane_maps: self.lane_maps,
++                bootstrap: self.bootstrap,
++                frame: self.frame,
++                inputs: self.inputs,
++            },
++            self.gsi.clone(),
++            self.surface,
++        )
++    }
++
++    fn attempt(
++        &self,
++        phase: &Value,
++        slot: &mut Option<ValidatedDeferredContextV1>,
++    ) -> Result<DirectV10RealConsumerShadow, DirectV10RealConsumerError> {
++        DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_with_deferred_composite_v1(
++            self.native,
++            self.soil.clone(),
++            self.bootstrap.clone(),
++            phase,
++            self.lane_maps,
++            self.clock,
++            self.frame.clone(),
++            self.surface,
++            self.lse,
++            self.frozen_lse,
++            self.provider,
++            std::sync::Arc::new(self.inputs.clone()),
++            slot,
++        )
++    }
++}
++
++#[derive(Clone, Copy, Debug)]
++enum Substitution {
++    None,
++    PriorReceipt,
++    PreparedReceipt,
++    PriorAndPrematurePosture,
++}
++
++struct Case {
++    name: &'static str,
++    substitution: Substitution,
++    fault: Point,
++    expected: &'static str,
++    progress: Progress,
++}
++
++fn cases() -> [Case; 6] {
++    [
++        Case {
++            name: "prior receipt before late projection fault",
++            substitution: Substitution::PriorReceipt,
++            fault: Point::LseProjection,
++            expected: "deferred composite GSI prior/prepared custody",
++            progress: Progress::default(),
++        },
++        Case {
++            name: "prepared receipt before late projection fault",
++            substitution: Substitution::PreparedReceipt,
++            fault: Point::LseProjection,
++            expected: "deferred composite GSI prior/prepared custody",
++            progress: Progress::default(),
++        },
++        Case {
++            name: "source-bound premature posture before receipt and late fault",
++            substitution: Substitution::PriorAndPrematurePosture,
++            fault: Point::LseProjection,
++            expected: "deferred composite source-bound use",
++            progress: Progress::default(),
++        },
++        Case {
++            name: "failure after complete proof",
++            substitution: Substitution::None,
++            fault: Point::FullProof,
++            expected: "injected after complete deferred proof",
++            progress: Progress {
++                full_proof: true,
++                private_candidate: false,
++                lse_projection: false,
++            },
++        },
++        Case {
++            name: "failure after private construction",
++            substitution: Substitution::None,
++            fault: Point::PrivateCandidate,
++            expected: "injected after private native construction",
++            progress: Progress {
++                full_proof: true,
++                private_candidate: true,
++                lse_projection: false,
++            },
++        },
++        Case {
++            name: "failure after native LSE projection",
++            substitution: Substitution::None,
++            fault: Point::LseProjection,
++            expected: "injected after complete native LSE projection",
++            progress: Progress {
++                full_proof: true,
++                private_candidate: true,
++                lse_projection: true,
++            },
++        },
++    ]
++}
++
++fn assert_identity(
++    result: Result<DirectV10RealConsumerShadow, DirectV10RealConsumerError>,
++    expected: &str,
++) {
++    match result {
++        Err(DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(actual))) => {
++            assert_eq!(actual, expected);
++        }
++        Err(error) => panic!("wrong owning typed error: {error:?}; expected {expected}"),
++        Ok(_) => panic!("unexpected constructor success; expected {expected}"),
++    }
++}
++
++pub(super) fn run(context: &Context<'_>) -> Result<(), String> {
++    let before = context.snapshot()?;
++    for case in cases() {
++        println!("late control starting: {}", case.name);
++        let _fault_scope = faults::Scope::begin(case.fault);
++        let mut token = context.mint()?;
++        let mut phase = context.phase.clone();
++        match case.substitution {
++            Substitution::None => {}
++            Substitution::PriorReceipt | Substitution::PriorAndPrematurePosture => {
++                // Both are original, individually validated canonical receipts.
++                // Substitution changes their semantic phase, not their encoding.
++                token.prior_receipt = context.gsi.prepared_receipt.clone();
++            }
++            Substitution::PreparedReceipt => {
++                token.prepared_receipt = context.gsi.prior_receipt.clone();
++            }
++        }
++        if matches!(case.substitution, Substitution::PriorAndPrematurePosture) {
++            phase["deferred_native_v2_soil_custody"]["posture"] =
++                serde_json::json!("installable_capability");
++        }
++        let mut slot = Some(token);
++        let gsi_before = crate::runtime_inputs::gsi_receipt_advance_audit_v1();
++        let work_before = crate::direct_runtime::direct_runtime_audit_snapshot();
++        assert_identity(context.attempt(&phase, &mut slot), case.expected);
++        assert!(
++            slot.is_none(),
++            "attempt consumes capability on every outcome"
++        );
++        assert_eq!(faults::progress(), case.progress, "actual reached boundary");
++        assert_identity(
++            context.attempt(context.phase, &mut slot),
++            "deferred composite capability consumed",
++        );
++        assert_eq!(
++            context.snapshot()?,
++            before,
++            "every retained resident/bootstrap/native/phase/lane/clock/frame/input byte unchanged"
++        );
++        let gsi_after = crate::runtime_inputs::gsi_receipt_advance_audit_v1();
++        let work_after = crate::direct_runtime::direct_runtime_audit_snapshot();
++        assert_eq!(
++            work_after.direct_compute_operations,
++            work_before.direct_compute_operations
++        );
++        assert_eq!(
++            work_after.direct_state_mutations,
++            work_before.direct_state_mutations
++        );
++        assert_eq!(work_after.day_frame_commits, work_before.day_frame_commits);
++        assert_eq!(
++            work_after.publication_capture_runs,
++            work_before.publication_capture_runs
++        );
++        println!(
++            "late control PASS: {}; typed={}; progress={:?}; consumed=true; exact_rollback=true; frame_constructions={}; gsi_prepare={}; gsi_validate={}",
++            case.name,
++            case.expected,
++            faults::progress(),
++            work_after.run_frame_constructions - work_before.run_frame_constructions,
++            gsi_after.prepare_advances - gsi_before.prepare_advances,
++            gsi_after.validator_advances - gsi_before.validator_advances
++        );
++    }
++    Ok(())
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs
+@@ -274,19 +274,35 @@
+     prior_cursor: crate::runtime_inputs::SnowFreeHalfHourProviderCursor,
+ }
+ 
++/// Borrowed operands only: this record carries no admission authority.
++#[derive(Clone, Copy)]
++pub(crate) struct DeferredContextOperandsV1<'a> {
++    pub native: &'a Value,
++    pub soil: &'a crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,
++    pub clock: &'a CoupledClockStateV1,
++    pub phase: &'a Value,
++    pub lane_maps: &'a Value,
++    pub bootstrap: &'a crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,
++    pub frame: &'a crate::DirectRunFrame,
++    pub inputs: &'a crate::DirectRunConstructorInputs,
++}
++
+ impl ValidatedDeferredContextV1 {
+     fn mint(
+-        native: &Value,
+-        soil: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,
+-        clock: &CoupledClockStateV1,
+-        phase: &Value,
+-        lane_maps: &Value,
+-        bootstrap: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,
+-        frame: &crate::DirectRunFrame,
+-        inputs: &crate::DirectRunConstructorInputs,
++        operands: &DeferredContextOperandsV1<'_>,
+         evidence: AuthenticatedGsiPreimagesV1,
+         surface: &crate::DirectSurfaceLiquidConfiguration,
+     ) -> Result<Self, String> {
++        let DeferredContextOperandsV1 {
++            native,
++            soil,
++            clock,
++            phase,
++            lane_maps,
++            bootstrap,
++            frame,
++            inputs,
++        } = *operands;
+         Ok(Self {
+             surface_configuration: surface.clone(),
+             native_digest: digest_bytes(
+@@ -308,11 +324,8 @@
+                 &serde_json::to_vec(bootstrap).map_err(|error| error.to_string())?,
+             ),
+             frame_digest: digest_bytes(
+-                &serde_json::to_vec(
+-                    &capture_direct_run_frame_dynamic(frame, inputs, surface)
+-                        .map_err(|error| error.to_string())?,
+-                )
+-                .map_err(|error| error.to_string())?,
++                &serde_json::to_vec(&capture_direct_run_frame_dynamic(frame, inputs, surface)?)
++                    .map_err(|error| error.to_string())?,
+             ),
+             constructor_inputs_digest: digest_bytes(
+                 &serde_json::to_vec(&capture_direct_run_constructor_inputs(inputs))
+@@ -327,15 +340,18 @@
+ 
+     pub(crate) fn validate_bound_v1(
+         &self,
+-        native: &Value,
+-        soil: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,
+-        clock: &CoupledClockStateV1,
+-        phase: &Value,
+-        lane_maps: &Value,
+-        bootstrap: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,
+-        frame: &crate::DirectRunFrame,
+-        inputs: &crate::DirectRunConstructorInputs,
++        operands: &DeferredContextOperandsV1<'_>,
+     ) -> Result<(), String> {
++        let DeferredContextOperandsV1 {
++            native,
++            soil,
++            clock,
++            phase,
++            lane_maps,
++            bootstrap,
++            frame,
++            inputs,
++        } = *operands;
+         if self.native_digest
+             != digest_bytes(&serde_json::to_vec(native).map_err(|error| error.to_string())?)
+             || self.soil_digest
+@@ -350,14 +366,11 @@
+                 != digest_bytes(&serde_json::to_vec(bootstrap).map_err(|error| error.to_string())?)
+             || self.frame_digest
+                 != digest_bytes(
+-                    &serde_json::to_vec(
+-                        &capture_direct_run_frame_dynamic(
+-                            frame,
+-                            inputs,
+-                            &self.surface_configuration,
+-                        )
+-                        .map_err(|error| error.to_string())?,
+-                    )
++                    &serde_json::to_vec(&capture_direct_run_frame_dynamic(
++                        frame,
++                        inputs,
++                        &self.surface_configuration,
++                    )?)
+                     .map_err(|error| error.to_string())?,
+                 )
+             || self.constructor_inputs_digest
+@@ -373,14 +386,7 @@
+ 
+     pub(crate) fn consume_gsi_v1(
+         self,
+-        native: &Value,
+-        soil: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,
+-        clock: &CoupledClockStateV1,
+-        phase: &Value,
+-        lane_maps: &Value,
+-        bootstrap: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,
+-        frame: &crate::DirectRunFrame,
+-        inputs: &crate::DirectRunConstructorInputs,
++        operands: &DeferredContextOperandsV1<'_>,
+         surface: &crate::DirectSurfaceLiquidConfiguration,
+     ) -> Result<
+         (
+@@ -401,9 +407,7 @@
+         {
+             return Err("deferred composite source-bound use".into());
+         }
+-        self.validate_bound_v1(
+-            native, soil, clock, phase, lane_maps, bootstrap, frame, inputs,
+-        )?;
++        self.validate_bound_v1(operands)?;
+         Ok((
+             self.prior_receipt,
+             self.prepared_receipt,
+@@ -413,7 +417,7 @@
+     }
+ }
+ 
+-#[derive(Debug, PartialEq)]
++#[derive(Clone, Debug, PartialEq)]
+ struct AuthenticatedGsiPreimagesV1 {
+     prior_receipt: crate::runtime_inputs::DirectGsiDailyReceiptV1,
+     prepared_receipt: crate::runtime_inputs::DirectGsiDailyReceiptV1,
+@@ -515,7 +519,7 @@
+     let prior = receipts.last().ok_or("authenticated committed GSI tail")?;
+     if receipts
+         .first()
+-        .map_or(true, |receipt| receipt.beginning_state != seed_state)
++        .is_none_or(|receipt| receipt.beginning_state != seed_state)
+     {
+         return Err("authenticated GSI bootstrap state".into());
+     }
+@@ -677,6 +681,8 @@
+ enum DeferredLifecycleControlV1 {
+     None,
+     AuditBoundLifecycle,
++    #[cfg(feature = "persisted-restart-v1")]
++    AuditLateLifecycle,
+ }
+ 
+ struct NativeRestorationContext<'a> {
+@@ -932,18 +938,39 @@
+         "native_committed_bootstrap_soil_v2_constructor_operands",
+     )?)?;
+     let lane_maps_value = required(target, "native_lane_map_constructor_operands")?;
+-    let admission = ValidatedDeferredContextV1::mint(
++    #[cfg(feature = "persisted-restart-v1")]
++    if matches!(
++        lifecycle_control,
++        DeferredLifecycleControlV1::AuditLateLifecycle
++    ) {
++        return late_controls::run(&late_controls::Context {
++            native,
++            soil: &target_soil,
++            bootstrap: &committed_bootstrap,
++            phase: required(target, "phase_diagnostics")?,
++            lane_maps: lane_maps_value,
++            clock: &clock_parent.clock,
++            frame: &frame,
++            inputs: &inputs,
++            surface,
++            lse: &pin.lse,
++            frozen_lse: &frozen_lse,
++            provider: provider_configuration,
++            gsi: &authenticated_gsi,
++        });
++    }
++    let original_phase = required(target, "phase_diagnostics")?;
++    let operands = DeferredContextOperandsV1 {
+         native,
+-        &target_soil,
+-        &clock_parent.clock,
+-        required(target, "phase_diagnostics")?,
+-        lane_maps_value,
+-        &committed_bootstrap,
+-        &frame,
+-        &inputs,
+-        authenticated_gsi,
+-        surface,
+-    )?;
++        soil: &target_soil,
++        clock: &clock_parent.clock,
++        phase: original_phase,
++        lane_maps: lane_maps_value,
++        bootstrap: &committed_bootstrap,
++        frame: &frame,
++        inputs: &inputs,
++    };
++    let admission = ValidatedDeferredContextV1::mint(&operands, authenticated_gsi, surface)?;
+     let native_before = serde_json::to_vec(native).map_err(|error| error.to_string())?;
+     let soil_before = serde_json::to_vec(&target_soil).map_err(|error| error.to_string())?;
+     let frame_before =
+@@ -954,20 +981,10 @@
+         lifecycle_control,
+         DeferredLifecycleControlV1::AuditBoundLifecycle
+     ) {
+-        let original_phase = required(target, "phase_diagnostics")?;
+         admission_slot
+             .as_ref()
+             .ok_or("deferred composite capability missing")?
+-            .validate_bound_v1(
+-                native,
+-                &target_soil,
+-                &clock_parent.clock,
+-                original_phase,
+-                lane_maps_value,
+-                &committed_bootstrap,
+-                &frame,
+-                &inputs,
+-            )?;
++            .validate_bound_v1(&operands)?;
+         let bound = admission_slot
+             .as_ref()
+             .ok_or("deferred composite capability missing")?;
+@@ -975,45 +992,27 @@
+         changed_stage["current_stage3"] = serde_json::Value::Null;
+         assert!(
+             bound
+-                .validate_bound_v1(
+-                    native,
+-                    &target_soil,
+-                    &clock_parent.clock,
+-                    &changed_stage,
+-                    lane_maps_value,
+-                    &committed_bootstrap,
+-                    &frame,
+-                    &inputs
+-                )
++                .validate_bound_v1(&DeferredContextOperandsV1 {
++                    phase: &changed_stage,
++                    ..operands
++                })
+                 .is_err()
+         );
+         let foreign_native = serde_json::json!({"gsi_owner_state": native["gsi_owner_state"]});
+         assert!(
+             bound
+-                .validate_bound_v1(
+-                    &foreign_native,
+-                    &target_soil,
+-                    &clock_parent.clock,
+-                    original_phase,
+-                    lane_maps_value,
+-                    &committed_bootstrap,
+-                    &frame,
+-                    &inputs
+-                )
++                .validate_bound_v1(&DeferredContextOperandsV1 {
++                    native: &foreign_native,
++                    ..operands
++                })
+                 .is_err()
+         );
+         assert!(
+             bound
+-                .validate_bound_v1(
+-                    native,
+-                    &target_soil,
+-                    &clock_parent.clock,
+-                    original_phase,
+-                    lane_maps_value,
+-                    &target_soil,
+-                    &frame,
+-                    &inputs
+-                )
++                .validate_bound_v1(&DeferredContextOperandsV1 {
++                    bootstrap: &target_soil,
++                    ..operands
++                })
+                 .is_err(),
+             "another valid resident cannot replace the committed bootstrap"
+         );
+@@ -1021,32 +1020,20 @@
+         foreign_lanes[0]["lane_id"] = serde_json::json!(u32::MAX);
+         assert!(
+             bound
+-                .validate_bound_v1(
+-                    native,
+-                    &target_soil,
+-                    &clock_parent.clock,
+-                    original_phase,
+-                    &foreign_lanes,
+-                    &committed_bootstrap,
+-                    &frame,
+-                    &inputs
+-                )
++                .validate_bound_v1(&DeferredContextOperandsV1 {
++                    lane_maps: &foreign_lanes,
++                    ..operands
++                })
+                 .is_err()
+         );
+         let mut changed_frame = frame.clone();
+         changed_frame.lanes[0].transfer.surface_carry_m[0] += 0.000_001;
+         assert!(
+             bound
+-                .validate_bound_v1(
+-                    native,
+-                    &target_soil,
+-                    &clock_parent.clock,
+-                    original_phase,
+-                    lane_maps_value,
+-                    &committed_bootstrap,
+-                    &changed_frame,
+-                    &inputs
+-                )
++                .validate_bound_v1(&DeferredContextOperandsV1 {
++                    frame: &changed_frame,
++                    ..operands
++                })
+                 .is_err(),
+             "full dynamic transfer carry is use-bound"
+         );
+@@ -1054,16 +1041,10 @@
+         changed_inputs.identity.run_id ^= 1;
+         assert!(
+             bound
+-                .validate_bound_v1(
+-                    native,
+-                    &target_soil,
+-                    &clock_parent.clock,
+-                    original_phase,
+-                    lane_maps_value,
+-                    &committed_bootstrap,
+-                    &frame,
+-                    &changed_inputs
+-                )
++                .validate_bound_v1(&DeferredContextOperandsV1 {
++                    inputs: &changed_inputs,
++                    ..operands
++                })
+                 .is_err()
+         );
+         let mut altered_phase = original_phase.clone();
+@@ -1154,13 +1135,40 @@
+     let consumer = native_result?;
+     let expected: BTreeMap<String, Vec<u8>> =
+         decode(required(target, "complete_owner_canonical_bytes")?)?;
++    let actual = consumer
++        .canonical_v11_parent_owner_state_bytes()
++        .map_err(|error| error.to_string())?;
++    let output =
++        std::env::var_os("OPENWEPP_B01_OWNER_COMPARISON_DIR").map(std::path::PathBuf::from);
++    owner_comparison::compare(&expected, &actual, output.as_deref())?;
++    let restored_inputs = consumer
++        .diagnostic_hydrology_constructor_inputs_v1()
++        .ok_or("restored native constructor inputs missing")?;
++    if serde_json::to_vec(&capture_direct_run_frame_dynamic(
++        consumer.restart_authority_hydrology_frame(),
++        restored_inputs,
++        surface,
++    )?)
++    .map_err(|error| error.to_string())?
++        != frame_before
++    {
++        return Err("restored native complete dynamic frame".into());
++    }
++    let expected_cursor: Vec<u8> = decode(required(target, "provider_cursor_canonical_json")?)?;
+     if consumer
+-        .canonical_v11_parent_owner_state_bytes()
++        .provider_cursor()
++        .to_json_bytes()
+         .map_err(|error| error.to_string())?
+-        != expected
++        != expected_cursor
+     {
+-        return Err("native six-owner projection".into());
+-    }
++        return Err("restored native provider cursor".into());
++    }
++    if admission_slot.is_some() {
++        return Err("restored native capability not consumed".into());
++    }
++    println!(
++        "restored native: six-owner exact equality, complete LSE clock mode/owner, full dynamic frame, provider cursor and consumed capability PASS; current/deferred and seven-owner clock checks retained"
++    );
+     Ok(())
+ }
+ 
+@@ -1571,7 +1579,7 @@
+                     .as_mut()
+                     .expect("surface")
+                     .continuations[0]
+-                    .day_index = 1
++                    .day_index = 1;
+             }
+             1 => {
+                 foreign_frame
+@@ -1579,7 +1587,7 @@
+                     .as_mut()
+                     .expect("surface")
+                     .continuations[0]
+-                    .cumulative_supply_m = -0.0
++                    .cumulative_supply_m = -0.0;
+             }
+             _ => foreign_frame.identity.run_id += 1,
+         }
+@@ -2284,3 +2292,32 @@
+     }
+     Ok(())
+ }
++
++#[path = "snow_stage3_v11_owner_comparison.rs"]
++mod owner_comparison;
++
++#[cfg(feature = "persisted-restart-v1")]
++#[path = "snow_stage3_v11_late_controls.rs"]
++mod late_controls;
++
++#[test]
++#[cfg(feature = "persisted-restart-v1")]
++#[ignore = "requires owner-authorized pinned B01 corpus/provider computation"]
++fn deferred_context_late_actual_entry_rollback_and_receipt_precedence() {
++    let _native_audit =
++        crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
++    let _probe_audit = super::member_backed_restore_tests::ProbeAudit::begin();
++    openwepp_land_surface_energy::snow_accuracy_policy::Policy::B01
++        .install()
++        .expect("B01 policy");
++    let export =
++        std::path::PathBuf::from(std::env::var_os("OPENWEPP_B01_MEMBER_EXPORT").expect("export"));
++    let seed =
++        std::path::PathBuf::from(std::env::var_os("OPENWEPP_B01_PINNED_SEED").expect("seed"));
++    restore_with_control(
++        &export,
++        &seed,
++        DeferredLifecycleControlV1::AuditLateLifecycle,
++    )
++    .expect("late actual-entry controls without physical work/publication");
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_owner_comparison.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_owner_comparison.rs
+@@ -0,0 +1,189 @@
++//! Test-only diagnostic. Expected bytes remain the independent captured map.
++use serde_json::{Value, json};
++use sha2::{Digest, Sha256};
++use std::{
++    collections::{BTreeMap, BTreeSet},
++    io::Write,
++    path::Path,
++};
++
++type Owners = BTreeMap<String, Vec<u8>>;
++const REFUSAL: &str = "native six-owner projection";
++const MAX_SAVED_BYTES: usize = 64 * 1024 * 1024;
++
++fn rows(expected: &Owners, actual: &Owners) -> Vec<Value> {
++    expected.keys().chain(actual.keys()).collect::<BTreeSet<_>>()
++        .into_iter().enumerate().map(|(index, key)| {
++            let left = expected.get(key);
++            let right = actual.get(key);
++            let first_difference = match (left, right) {
++                (Some(a), Some(b)) => a.iter().zip(b).position(|(x,y)| x != y)
++                    .or_else(|| (a.len() != b.len()).then_some(a.len().min(b.len()))),
++                _ => Some(0),
++            };
++            json!({"owner":key, "file_index":index,
++                "expected_present":left.is_some(), "actual_present":right.is_some(),
++                "expected_len":left.map(Vec::len), "actual_len":right.map(Vec::len),
++                "expected_sha256":left.map(|b| format!("{:x}", Sha256::digest(b))),
++                "actual_sha256":right.map(|b| format!("{:x}", Sha256::digest(b))),
++                "equal":left == right, "first_difference_offset_or_length_boundary":first_difference,
++                "expected_file":left.filter(|_|left != right).map(|_|format!("{index}-expected.bin")),
++                "actual_file":right.filter(|_|left != right).map(|_|format!("{index}-actual.bin"))})
++        }).collect()
++}
++
++fn write_new(path: &Path, bytes: &[u8]) -> Result<(), String> {
++    std::fs::OpenOptions::new()
++        .write(true)
++        .create_new(true)
++        .open(path)
++        .and_then(|mut f| f.write_all(bytes))
++        .map_err(|error| format!("{}: {error}", path.display()))
++}
++
++fn save(expected: &Owners, actual: &Owners, directory: &Path) -> Result<(), String> {
++    let report = rows(expected, actual);
++    let bytes = expected
++        .keys()
++        .chain(actual.keys())
++        .collect::<BTreeSet<_>>()
++        .into_iter()
++        .filter(|key| expected.get(*key) != actual.get(*key))
++        .try_fold(0usize, |sum, key| {
++            sum.checked_add(expected.get(key).map_or(0, Vec::len))
++                .and_then(|sum| sum.checked_add(actual.get(key).map_or(0, Vec::len)))
++        })
++        .ok_or("owner report length overflow")?;
++    if bytes > MAX_SAVED_BYTES {
++        return Err("owner report exceeds 64 MiB total byte limit".into());
++    }
++    std::fs::create_dir(directory).map_err(|error| format!("{}: {error}", directory.display()))?;
++    for row in &report {
++        let key = row["owner"].as_str().ok_or("report key")?;
++        for (field, owners) in [("expected_file", expected), ("actual_file", actual)] {
++            if let Some(name) = row[field].as_str() {
++                write_new(
++                    &directory.join(name),
++                    owners.get(key).ok_or("report source missing")?,
++                )?;
++            }
++        }
++    }
++    let value = json!({"comparison":"canonical_v11_parent_owner_state_bytes exact map equality",
++        "expected_provenance":"original b01_wb14_snow_free_pre_child_current_context_v1 /complete_owner_canonical_bytes",
++        "actual_provenance":"private restored consumer canonical_v11_parent_owner_state_bytes()",
++        "execution_binding":"enclosing source/binary/input/argv receipt and OPENWEPP_B01_OWNER_COMPARISON_DIR",
++        "all_equal":expected==actual,"saved_bytes":bytes,"owners":report});
++    write_new(
++        &directory.join("owners.json"),
++        &serde_json::to_vec_pretty(&value).map_err(|error| error.to_string())?,
++    )
++}
++
++pub(super) fn compare(
++    expected: &Owners,
++    actual: &Owners,
++    output: Option<&Path>,
++) -> Result<(), String> {
++    let diagnostics = output.map_or_else(
++        || Err("owner report output directory not configured".into()),
++        |directory| save(expected, actual, directory),
++    );
++    match (expected == actual, diagnostics) {
++        (false, Ok(())) => Err(REFUSAL.into()),
++        (false, Err(error)) => Err(format!("{REFUSAL}; diagnostic output failure: {error}")),
++        (true, result) => result,
++    }
++}
++
++#[test]
++fn owner_report_equal_missing_extra_and_byte_boundaries() {
++    let expected = Owners::from([
++        ("same".into(), vec![1, 2]),
++        ("missing".into(), vec![3]),
++        ("changed".into(), vec![1, 2]),
++        ("longer".into(), vec![1, 2, 3]),
++        ("shorter".into(), vec![1]),
++    ]);
++    let actual = Owners::from([
++        ("same".into(), vec![1, 2]),
++        ("extra".into(), vec![4]),
++        ("changed".into(), vec![1, 3]),
++        ("longer".into(), vec![1, 2]),
++        ("shorter".into(), vec![1, 2]),
++    ]);
++    let report = rows(&expected, &actual);
++    assert_eq!(report.len(), 6);
++    for (key, equal, offset) in [
++        ("same", true, None),
++        ("missing", false, Some(0)),
++        ("extra", false, Some(0)),
++        ("changed", false, Some(1)),
++        ("longer", false, Some(2)),
++        ("shorter", false, Some(1)),
++    ] {
++        let row = report
++            .iter()
++            .find(|row| row["owner"] == key)
++            .expect("union key");
++        assert_eq!(row["equal"], json!(equal));
++        assert_eq!(
++            row["first_difference_offset_or_length_boundary"],
++            json!(offset)
++        );
++    }
++    assert!(
++        rows(&expected, &expected)
++            .iter()
++            .all(|row| row["equal"] == true)
++    );
++}
++
++#[test]
++fn owner_report_io_failure_preserves_comparison_refusal() {
++    let expected = Owners::from([("owner".into(), vec![1])]);
++    let actual = Owners::from([("owner".into(), vec![2])]);
++    let error = compare(&expected, &actual, Some(Path::new("/dev/null/impossible")))
++        .expect_err("IO refusal");
++    assert!(error.starts_with("native six-owner projection; diagnostic output failure:"));
++    assert!(
++        compare(
++            &expected,
++            &expected,
++            Some(Path::new("/dev/null/impossible"))
++        )
++        .is_err()
++    );
++}
++
++#[test]
++fn owner_report_saves_exact_bytes_and_refuses_overwrite() {
++    let directory = std::env::temp_dir().join(format!(
++        "b01-owner-report-{}-{}",
++        std::process::id(),
++        std::time::SystemTime::now()
++            .duration_since(std::time::UNIX_EPOCH)
++            .expect("time")
++            .as_nanos()
++    ));
++    let expected = Owners::from([("owner/unsafe-key".into(), vec![0, 255, 1])]);
++    let actual = Owners::from([("owner/unsafe-key".into(), vec![0, 255, 2])]);
++    assert_eq!(
++        compare(&expected, &actual, Some(&directory)),
++        Err(REFUSAL.into())
++    );
++    assert_eq!(
++        std::fs::read(directory.join("0-expected.bin")).expect("expected bytes"),
++        expected["owner/unsafe-key"]
++    );
++    assert_eq!(
++        std::fs::read(directory.join("0-actual.bin")).expect("actual bytes"),
++        actual["owner/unsafe-key"]
++    );
++    assert!(
++        compare(&expected, &actual, Some(&directory))
++            .expect_err("existing output")
++            .contains("diagnostic output failure")
++    );
++    std::fs::remove_dir_all(directory).expect("temporary test output cleanup");
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+@@ -134,6 +134,7 @@
+ #[cfg(test)]
+ pub(crate) use v11_covered::audit_covered_carrier_support;
+ pub(crate) use v11_covered::normalize_v11_staged_parent_lineage;
++#[cfg(test)]
+ pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+ pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1;
+ pub(crate) use v11_covered::physical_outcome_ledger::ledger_set_digest as stage3_physical_outcome_ledger_set_digest;
+@@ -885,7 +886,7 @@
+             .map_err(Into::into)
+     }
+ 
+-    #[cfg(test)]
++    #[cfg(all(test, feature = "persisted-restart-v1"))]
+     #[allow(clippy::too_many_arguments)]
+     fn diagnostic_restore_native_consumer_from_proof_v1(
+         captured: &serde_json::Value,
+@@ -995,7 +996,47 @@
+         restored.diagnostic_install_hydrology_constructor_inputs_v1(
+             pinned_hydrology_constructor_inputs,
+         );
++        restored.diagnostic_restore_bound_clock_mode_v1(clock)?;
+         Ok(restored)
++    }
++
++    #[cfg(all(test, feature = "persisted-restart-v1"))]
++    fn diagnostic_restore_bound_clock_mode_v1(
++        &mut self,
++        clock: &openwepp_coupled_time::CoupledClockStateV1,
++    ) -> Result<(), DirectV10RealConsumerError> {
++        // Native construction starts in the ordinary V10 mode. Restore the
++        // independently authenticated clock mode through the existing guarded
++        // installer, as the persisted native reader does. Never copy owner bytes.
++        let mut lse_owners = clock
++            .owners()
++            .iter()
++            .filter(|owner| owner.owner_id() == "land_surface_energy");
++        let lse_bytes = lse_owners
++            .next()
++            .ok_or(DirectV9RealConsumerError::Identity(
++                "native unique LSE clock mode absent",
++            ))?
++            .state_bytes();
++        if lse_owners.next().is_some() {
++            return Err(
++                DirectV9RealConsumerError::Identity("native duplicate LSE clock mode").into(),
++            );
++        }
++        self.restart_authority_install_clock_runtime_mode(lse_bytes)?;
++        deferred_diagnostic_faults::reached(deferred_diagnostic_faults::Point::PrivateCandidate)?;
++        if self
++            .restart_authority_complete_lse_clock_bytes()?
++            .as_slice()
++            != lse_bytes
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native exact complete LSE clock mode/owner",
++            )
++            .into());
++        }
++        deferred_diagnostic_faults::reached(deferred_diagnostic_faults::Point::LseProjection)?;
++        Ok(())
+     }
+ 
+     #[cfg(all(test, feature = "persisted-restart-v1"))]
+@@ -1022,18 +1063,18 @@
+             .ok_or(DirectV9RealConsumerError::Identity(
+                 "deferred composite capability consumed",
+             ))?;
++        let operands = crate::snow_stage3_v11_current_context_capture::member_restoration::DeferredContextOperandsV1 {
++            native: captured,
++            soil: &target_soil,
++            clock,
++            phase: phase_diagnostics,
++            lane_maps: lane_maps_value,
++            bootstrap: &committed_bootstrap,
++            frame: &hydrology_frame,
++            inputs: pinned_hydrology_constructor_inputs.as_ref(),
++        };
+         let (prior_gsi_receipt, prepared_gsi_receipt, prior_gsi_state, prior_cursor) = admission
+-            .consume_gsi_v1(
+-                captured,
+-                &target_soil,
+-                clock,
+-                phase_diagnostics,
+-                lane_maps_value,
+-                &committed_bootstrap,
+-                &hydrology_frame,
+-                pinned_hydrology_constructor_inputs.as_ref(),
+-                pinned_surface_configuration,
+-            )
++            .consume_gsi_v1(&operands, pinned_surface_configuration)
+             .map_err(|_| {
+                 DirectV9RealConsumerError::Identity("deferred composite source-bound use")
+             })?;
+@@ -1055,6 +1096,7 @@
+             prior_gsi_state,
+             prior_cursor,
+         )?;
++        deferred_diagnostic_faults::reached(deferred_diagnostic_faults::Point::FullProof)?;
+         let DeferredNativeCompositeAdmissionV1 {
+             native: proof,
+             prior_gsi_receipt,
+@@ -1137,24 +1179,21 @@
+         pinned_surface_configuration: &DirectSurfaceLiquidConfiguration,
+         trusted_frozen_residents: Option<(FrozenLitterV3Resident, FrozenLitterV4Resident)>,
+     ) -> Result<(), DirectV10RealConsumerError> {
+-        match trusted_frozen_residents {
+-            Some((physical, exact)) => {
+-                self.install_validated_frozen_litter_v4_residents(physical, exact)?;
+-            }
+-            None => {
+-                let frozen_litter_residents: Option<DiagnosticFrozenLitterResidentsV1> =
+-                    diagnostic_native_field(captured, "frozen_litter_residents")?;
+-                let frozen = frozen_litter_residents.ok_or(DirectV10RealConsumerError::Runtime(
+-                    DirectV9RealConsumerError::Identity(
+-                        "diagnostic native target requires frozen-litter V3/V4 residents",
+-                    ),
+-                ))?;
+-                self.diagnostic_restore_frozen_litter_residents_v1(
+-                    frozen,
+-                    pinned_frozen_litter_lse_configuration,
+-                    pinned_surface_configuration,
+-                )?;
+-            }
++        if let Some((physical, exact)) = trusted_frozen_residents {
++            self.install_validated_frozen_litter_v4_residents(physical, exact)?;
++        } else {
++            let frozen_litter_residents: Option<DiagnosticFrozenLitterResidentsV1> =
++                diagnostic_native_field(captured, "frozen_litter_residents")?;
++            let frozen = frozen_litter_residents.ok_or(DirectV10RealConsumerError::Runtime(
++                DirectV9RealConsumerError::Identity(
++                    "diagnostic native target requires frozen-litter V3/V4 residents",
++                ),
++            ))?;
++            self.diagnostic_restore_frozen_litter_residents_v1(
++                frozen,
++                pinned_frozen_litter_lse_configuration,
++                pinned_surface_configuration,
++            )?;
+         }
+         let accepted_interval_count: u64 =
+             diagnostic_native_field(captured, "accepted_interval_count")?;
+@@ -4026,3 +4065,7 @@
+         assert_all!(DeferredNativeCompositeAdmissionV1);
+     }
+ }
++
++#[cfg(all(test, feature = "persisted-restart-v1"))]
++#[path = "v9_real_consumer_shadow/deferred_diagnostic_faults.rs"]
++pub(crate) mod deferred_diagnostic_faults;
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/deferred_diagnostic_faults.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/deferred_diagnostic_faults.rs
+@@ -0,0 +1,65 @@
++//! Test-only faults at actual private restoration boundaries; never a production path.
++use super::{DirectV9RealConsumerError, DirectV10RealConsumerError};
++use std::cell::Cell;
++
++#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
++pub(crate) enum Point {
++    #[default]
++    Disabled,
++    FullProof,
++    PrivateCandidate,
++    LseProjection,
++}
++
++#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
++pub(crate) struct Progress {
++    pub full_proof: bool,
++    pub private_candidate: bool,
++    pub lse_projection: bool,
++}
++
++thread_local! {
++    static FAULT: Cell<Point> = const { Cell::new(Point::Disabled) };
++    static PROGRESS: Cell<Progress> = const { Cell::new(Progress {
++        full_proof: false, private_candidate: false, lse_projection: false,
++    }) };
++}
++
++pub(crate) struct Scope;
++impl Scope {
++    pub(crate) fn begin(point: Point) -> Self {
++        FAULT.set(point);
++        PROGRESS.set(Progress::default());
++        Self
++    }
++}
++impl Drop for Scope {
++    fn drop(&mut self) {
++        FAULT.set(Point::Disabled);
++    }
++}
++
++pub(crate) fn progress() -> Progress {
++    PROGRESS.get()
++}
++
++pub(crate) fn reached(point: Point) -> Result<(), DirectV10RealConsumerError> {
++    let mut progress = PROGRESS.get();
++    match point {
++        Point::Disabled => {}
++        Point::FullProof => progress.full_proof = true,
++        Point::PrivateCandidate => progress.private_candidate = true,
++        Point::LseProjection => progress.lse_projection = true,
++    }
++    PROGRESS.set(progress);
++    if point != Point::Disabled && FAULT.get() == point {
++        let boundary = match point {
++            Point::FullProof => "injected after complete deferred proof",
++            Point::PrivateCandidate => "injected after private native construction",
++            Point::LseProjection => "injected after complete native LSE projection",
++            Point::Disabled => unreachable!("disabled is not an injected fault"),
++        };
++        return Err(DirectV9RealConsumerError::Identity(boundary).into());
++    }
++    Ok(())
++}
+--- a/crates/openwepp-persisted-restart-v1/src/gsi_forcing.rs
++++ b/crates/openwepp-persisted-restart-v1/src/gsi_forcing.rs
+@@ -1182,10 +1182,14 @@
+                 .as_ref()
+                 .map(|date| (date.year, date.ordinal_day)),
+             Some((
+-                expected_date["year"].as_i64().expect("captured GSI year") as i32,
+-                expected_date["ordinal_day"]
+-                    .as_u64()
+-                    .expect("captured GSI ordinal day") as u16,
++                i32::try_from(expected_date["year"].as_i64().expect("captured GSI year"))
++                    .expect("captured GSI year fits i32"),
++                u16::try_from(
++                    expected_date["ordinal_day"]
++                        .as_u64()
++                        .expect("captured GSI ordinal day")
++                )
++                .expect("captured GSI ordinal day fits u16"),
+             )),
+             "generated day3 GSI date equals captured tuple"
+         );

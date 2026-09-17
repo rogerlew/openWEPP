@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Ran: complete compiler error code/message multiset comparison; raw source locations retained; not a compatibility pass",
+  "baseline": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/preserved-S-evidence-only-tests.stderr",
+  "candidate": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/quality-v19-evidence-only-tests.stderr",
+  "baseline_errors": 50,
+  "candidate_errors": 33,
+  "same_multiset": false,
+  "introduced": [],
+  "removed": [
+    {
+      "code": "E0425",
+      "message": "cannot find function `diagnostic_native_field` in this scope",
+      "count": 15
+    },
+    {
+      "code": "E0599",
+      "message": "no function or associated item named `diagnostic_validate_surface_configuration_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope",
+      "count": 1
+    },
+    {
+      "code": "E0599",
+      "message": "no method named `diagnostic_restore_captured_residents_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope",
+      "count": 1
+    }
+  ]
+}

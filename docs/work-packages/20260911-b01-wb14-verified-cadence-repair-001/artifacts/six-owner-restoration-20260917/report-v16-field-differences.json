@@ -1,0 +1,13 @@
+{
+  "owner": "land_surface_energy",
+  "expected_sha256": "ace2a96ab772387e2f0dbbc8b7dd2bb6a4416eb433903dacbd7cca039ef29850",
+  "actual_sha256": "2ed76f2937dd2c9e28f4e649f1ff22b917024b36b460d2c9a306c3973c1f53ce",
+  "semantic_differences": [
+    {
+      "path": "/runtime_authority",
+      "expected": "V11SnowCovered",
+      "actual": "V10NonpositiveAssimilation"
+    }
+  ],
+  "note": "Parsed fields explain exact byte differences; byte comparison remains required."
+}

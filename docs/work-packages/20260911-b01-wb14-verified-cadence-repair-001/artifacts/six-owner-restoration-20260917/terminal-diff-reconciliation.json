@@ -1,0 +1,69 @@
+{
+  "evidence_class": "Static: parent author terminal diff reconciliation, not independent review; executed checks have separate receipts",
+  "utc": "2026-09-17T01:59:49.031743+00:00",
+  "starting_source_sha256": "ab221bc5280eaee458be9a6066ba628efe292c0a17394ed1e754ff8f265d8eed",
+  "terminal_source_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+  "terminal_binary": "/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/terminal-v20.frozen",
+  "terminal_binary_sha256": "512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd",
+  "changed_files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "before_sha256": "b084b59b9a936a1040fad586cdc62156141a86a27e74798ab1a092b945f642f5",
+      "after_sha256": "d8a1932ec23c64391fde132538a6b2bf12e474fb9e9b63afbab2dd44ab658468",
+      "reason": "Update private composition documentation only."
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_late_controls.rs",
+      "before_sha256": null,
+      "after_sha256": "c70865d4299dff430cfc7b096d9a9e2d13ad5aec57213538f047d95cda4ee07c",
+      "reason": "Test-only actual-entry receipt/source precedence and three real late fault boundaries, byte-exact retained operand rollback, consumed-capability retry refusal, separate work counters."
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+      "before_sha256": "a8887bf5024e5f78fa67c89eb763a4bb733342adc7b2c05719638dab4928729f",
+      "after_sha256": "5eab93ea417b1b6a82ef5cc4187d5b4ff07425861084a9fdc542d979ce651c67",
+      "reason": "Required union-keyed exact comparison, complete restored frame/cursor/capability postconditions, late-control dispatch, immutable operand record and mechanical lint fixes. Original expected field and equality refusal retained."
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_owner_comparison.rs",
+      "before_sha256": null,
+      "after_sha256": "f5bc8400b8bba214bebfa80c9c58c80110ab017375fd03eda888fc8cc6fedc50",
+      "reason": "Bounded report logic and cheap failure-sensitive tests; exact mismatch bytes, hashes/offsets, exclusive files, IO failures preserve original refusal."
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+      "before_sha256": "a1b68d1730c1c4c6b42dc38c6b62f27f4e1064c90f49f551d821464b35a638af",
+      "after_sha256": "a937052b21a389d24a01a55dd638836a21c6ff797aa636683be6a3c7f8d71f3e",
+      "reason": "Private mode restoration uses existing authenticated clock-mode installer and full LSE byte guard. Test-only real boundary fault hooks; immutable operand forwarding; same-value clone_from, cfg gate, match simplification and test-only import hygiene."
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/deferred_diagnostic_faults.rs",
+      "before_sha256": null,
+      "after_sha256": "7005096aab75157d5216b9799f7fa37f6b5d3419c92f9d4251c867668489fbe9",
+      "reason": "Test-only thread-local fault/progress scope; disabled by default, cleared on scope drop. No production physical branch."
+    },
+    {
+      "path": "crates/openwepp-persisted-restart-v1/src/gsi_forcing.rs",
+      "before_sha256": "aefd2fe8b2f1becbbca85b420fa55b09230a27919d43fe99591b23d6a5d612ed",
+      "after_sha256": "79ad8761f448ea8eb53f9a2957a21699fec377f1007c19d3aee5310df33e6e2a",
+      "reason": "Checked conversion replaces potentially truncating test-only date casts; provider physics/validation algorithm unchanged."
+    }
+  ],
+  "unchanged_source_entries": 739,
+  "new_files": 3,
+  "historical_formatting": "All 61 S versus R formatting-only differences preserved; no new recursive formatting. Seven actual S-to-terminal surfaces formatted with skip_children=true.",
+  "authority": "Existing reviewed draft domain retained; draft remains unpromoted; no canonical contract edits or new admission/physical rule.",
+  "ordinary_entry": "Ordinary constructors and later physical replay/install boundary unchanged.",
+  "oracle": "Original complete_owner_canonical_bytes retained independently; no returned-owner replacement, field omission or normalization.",
+  "physical_scope": "No new model/collector/acquisition/successor, physical replay/install or protected continuation. Historical three allowances exhausted 1/1 each.",
+  "validation_scope": "Required fresh frozen composed check and reachable late controls; early-bound control reuse from v19 is limited to unchanged code before from-proof private restoration. Exact check dispositions retained separately.",
+  "nontriggered": [
+    "No manifest/dependency change: dependency-deny not triggered.",
+    "No external-authority suite posture/cohort fixture/required-case binding change: anti-evasion guards not triggered."
+  ],
+  "unmet": [
+    "Two independent acceptance reviews unavailable.",
+    "Actual physical promotion-precondition matrix and campaign/restart/conservation/production qualification remain blocked by envelope.",
+    "Strict Clippy and feature compatibility test modes retain attributable failures; default cargo check is not default test execution."
+  ]
+}

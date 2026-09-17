@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/six-owner-restoration-20260917-a87283f44e3b
+  scratch: /tmp/openwepp-roger-six-owner-restoration-20260917-a87283f44e3b
+  cache:   /workdir/.cache/openwepp

@@ -1,0 +1,1384 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-hillslope-orchestrator)
+error[E0425]: cannot find function `restore_provider_bound_context_from_file` in module `crate::snow_stage3_v11_current_context_capture`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1628:13
+     |
+1628 |             restore_provider_bound_context_from_file(
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `crate::snow_stage3_v11_current_context_capture`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4016:15
+     |
+4014 | #[cfg(feature = "persisted-restart-v1")]
+     |       -------------------------------- the item is gated behind the `persisted-restart-v1` feature
+4015 | #[cfg(test)]
+4016 | pub(crate) fn restore_provider_bound_context_from_file(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `restore_provider_bound_context_from_file` in module `crate::snow_stage3_v11_current_context_capture`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1674:13
+     |
+1674 |             restore_provider_bound_context_from_file(
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `crate::snow_stage3_v11_current_context_capture`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4016:15
+     |
+4014 | #[cfg(feature = "persisted-restart-v1")]
+     |       -------------------------------- the item is gated behind the `persisted-restart-v1` feature
+4015 | #[cfg(test)]
+4016 | pub(crate) fn restore_provider_bound_context_from_file(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `restart_authority_v11_bgc_debit_scope_v1` in module `crate::v9_real_consumer_shadow`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2581:49
+     |
+2581 |     let scope = crate::v9_real_consumer_shadow::restart_authority_v11_bgc_debit_scope_v1(
+     |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `crate::v9_real_consumer_shadow`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v11_error.rs:5:8
+     |
+   4 | #[cfg(any(feature = "persisted-restart-v1", feature = "restart-authority-evidence"))]
+     |          -------------------------------------------------------------------------- the item is gated here
+   5 | pub fn restart_authority_v11_bgc_debit_scope_v1(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:115:5
+    |
+115 | use crate::DirectRunConstructorInputs;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `crate::vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:117:5
+    |
+117 | use crate::vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:138:16
+    |
+138 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `restart_authority_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3071:21
+     |
+3071 |     let wb14 = base.restart_authority_wb14_parent_canonical_bytes().unwrap();
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_wb14_parent_canonical_bytes` not found for this struct
+
+error[E0599]: no method named `restart_authority_restore_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3073:18
+     |
+3073 |     assert!(host.restart_authority_restore_wb14_parent_canonical_bytes(None).is_err());
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_restore_wb14_parent_canonical_bytes` not found for this struct
+
+error[E0599]: no method named `restart_authority_restore_native_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3075:18
+     |
+3075 |     assert!(host.restart_authority_restore_native_wb14_parent_canonical_bytes(None,&proof,&clock,Position::PendingCandidate).is_er...
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_restore_native_wb14_parent_canonical_bytes` not found for this struct
+
+error[E0599]: no method named `restart_authority_restore_native_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3077:10
+     |
+3077 |     host.restart_authority_restore_native_wb14_parent_canonical_bytes(None,&proof,&clock,Position::Committed).unwrap();
+     |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_restore_native_wb14_parent_canonical_bytes` not found for this struct
+
+error[E0599]: no method named `restart_authority_install_scheduler_position` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3114:10
+     |
+3114 |     host.restart_authority_install_scheduler_position(48).unwrap();
+     |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_install_scheduler_position` not found for this struct
+
+error[E0599]: no method named `restart_authority_install_scheduler_position` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3115:18
+     |
+3115 |     assert!(host.restart_authority_install_scheduler_position(0).is_err());
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_install_scheduler_position` not found for this struct
+
+error[E0599]: no method named `restart_authority_install_native_inactive_scheduler_position` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3116:18
+     |
+3116 |     assert!(host.restart_authority_install_native_inactive_scheduler_position(&scheduler_proof,&clock,Position::PendingCandidate)....
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_install_native_inactive_scheduler_position` not found for this struct
+
+error[E0599]: no method named `restart_authority_accepted_interval_count` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3117:21
+     |
+3117 |     assert_eq!(host.restart_authority_accepted_interval_count(),48);
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_accepted_interval_count` not found for this struct
+
+error[E0599]: no method named `restart_authority_install_native_inactive_scheduler_position` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3118:10
+     |
+3118 |     host.restart_authority_install_native_inactive_scheduler_position(&scheduler_proof,&clock,Position::Committed).unwrap();
+     |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_install_native_inactive_scheduler_position` not found for this struct
+
+error[E0599]: no method named `restart_authority_accepted_interval_count` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3119:21
+     |
+3119 |     assert_eq!(host.restart_authority_accepted_interval_count(),0);
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_accepted_interval_count` not found for this struct
+
+error[E0599]: no method named `restart_authority_restore_parent_finalization_logical_owners` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3124:18
+     |
+3124 |     assert!(host.restart_authority_restore_parent_finalization_logical_owners(finalized.clone(),bgc.clone()).is_err());
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_restore_parent_finalization_logical_owners` not found for this struct
+
+error[E0599]: no method named `restart_authority_restore_native_parent_finalization_logical_owners` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3126:10
+     |
+3126 |     host.restart_authority_restore_native_parent_finalization_logical_owners(finalized.clone(),bgc.clone(),&proof,&clock,Position:...
+     |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_restore_native_parent_finalization_logical_owners` not found for this struct
+
+error[E0599]: no method named `restart_authority_restore_native_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3131:18
+     |
+3131 |     assert!(host.restart_authority_restore_native_wb14_parent_canonical_bytes(None,&proof,&clock,Position::Committed).is_err(),"ol...
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_restore_native_wb14_parent_canonical_bytes` not found for this struct
+
+error[E0599]: no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2092:10
+     |
+2091 | /     exact
+2092 | |         .restart_authority_validate_native_exact_adoption(&physical, &authentic)
+     | |         -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `FrozenLitterV4Resident`
+     | |_________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:345:1
+     |
+ 345 |   pub struct FrozenLitterV4Resident {
+     |   --------------------------------- method `restart_authority_validate_native_exact_adoption` not found for this struct
+
+error[E0599]: no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2117:14
+     |
+2116 | /         forged_exact
+2117 | |             .restart_authority_validate_native_exact_adoption(&physical, &authentic)
+     | |             -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `FrozenLitterV4Resident`
+     | |_____________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:345:1
+     |
+ 345 |   pub struct FrozenLitterV4Resident {
+     |   --------------------------------- method `restart_authority_validate_native_exact_adoption` not found for this struct
+
+error[E0599]: no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2138:14
+     |
+2137 | /         reconstructed
+2138 | |             .restart_authority_validate_native_exact_adoption(&after, &authentic)
+     | |             -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `FrozenLitterV4Resident`
+     | |_____________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:345:1
+     |
+ 345 |   pub struct FrozenLitterV4Resident {
+     |   --------------------------------- method `restart_authority_validate_native_exact_adoption` not found for this struct
+
+error[E0599]: no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2159:10
+     |
+2158 | /     phase_exact
+2159 | |         .restart_authority_validate_native_exact_adoption(&phase_physical, &authentic)
+     | |         -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `FrozenLitterV4Resident`
+     | |_________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:345:1
+     |
+ 345 |   pub struct FrozenLitterV4Resident {
+     |   --------------------------------- method `restart_authority_validate_native_exact_adoption` not found for this struct
+
+error[E0599]: no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2165:14
+     |
+2164 | /         phase_exact
+2165 | |             .restart_authority_validate_native_exact_adoption(&phase_physical, &foreign)
+     | |             -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `FrozenLitterV4Resident`
+     | |_____________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:345:1
+     |
+ 345 |   pub struct FrozenLitterV4Resident {
+     |   --------------------------------- method `restart_authority_validate_native_exact_adoption` not found for this struct
+
+error[E0599]: no method named `diagnostic_hydrology_constructor_inputs_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1393:18
+     |
+1392 |               let mut expanded_hydrology = shadow
+     |  __________________________________________-
+1393 | |                 .diagnostic_hydrology_constructor_inputs_v1()
+     | |                 -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     | |_________________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 |   pub struct DirectV10RealConsumerShadow {
+     |   -------------------------------------- method `diagnostic_hydrology_constructor_inputs_v1` not found for this struct
+
+error[E0599]: no method named `restart_authority_hydrology_frame` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1398:44
+     |
+1398 |             let initial_hydrology = shadow.restart_authority_hydrology_frame().clone();
+     |                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_hydrology_frame` not found for this struct
+
+error[E0599]: no method named `diagnostic_constructor_inputs_snapshot_v1` found for struct `direct_runtime::DirectRunFrame` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1422:37
+     |
+1422 |                 validated_hydrology.diagnostic_constructor_inputs_snapshot_v1(),
+     |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `direct_runtime::DirectRunFrame`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:580:1
+     |
+ 580 | pub struct DirectRunFrame {
+     | ------------------------- method `diagnostic_constructor_inputs_snapshot_v1` not found for this struct
+
+error[E0599]: no method named `restart_authority_install_hydrology_continuation_inputs_v3` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1431:18
+     |
+1430 | /             shadow
+1431 | |                 .restart_authority_install_hydrology_continuation_inputs_v3(&continuation_inputs)
+     | |                 -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     | |_________________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 |   pub struct DirectV10RealConsumerShadow {
+     |   -------------------------------------- method `restart_authority_install_hydrology_continuation_inputs_v3` not found for this struct
+
+error[E0599]: no method named `restart_authority_hydrology_frame` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1435:22
+     |
+1434 | /                 shadow
+1435 | |                     .restart_authority_hydrology_frame()
+     | |                     -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     | |_____________________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 |   pub struct DirectV10RealConsumerShadow {
+     |   -------------------------------------- method `restart_authority_hydrology_frame` not found for this struct
+
+error[E0599]: no method named `diagnostic_install_hydrology_constructor_inputs_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1439:20
+     |
+1439 |             shadow.diagnostic_install_hydrology_constructor_inputs_v1(std::sync::Arc::new(
+     |             -------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `diagnostic_install_hydrology_constructor_inputs_v1` not found for this struct
+
+error[E0599]: no method named `diagnostic_hydrology_constructor_inputs_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1451:18
+     |
+1450 |               let pinned_hydrology = shadow
+     |  ____________________________________-
+1451 | |                 .diagnostic_hydrology_constructor_inputs_v1()
+     | |                 -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     | |_________________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 |   pub struct DirectV10RealConsumerShadow {
+     |   -------------------------------------- method `diagnostic_hydrology_constructor_inputs_v1` not found for this struct
+
+error[E0599]: no method named `restart_authority_hydrology_frame` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1465:22
+     |
+1464 | /                 shadow
+1465 | |                     .restart_authority_hydrology_frame()
+     | |                     -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     | |_____________________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 |   pub struct DirectV10RealConsumerShadow {
+     |   -------------------------------------- method `restart_authority_hydrology_frame` not found for this struct
+
+error[E0599]: no method named `restart_authority_hydrology_frame` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1472:30
+     |
+1472 |                 .zip(&shadow.restart_authority_hydrology_frame().lanes)
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `restart_authority_hydrology_frame` not found for this struct
+
+error[E0599]: no method named `restart_authority_hydrology_frame` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1542:22
+     |
+1539 |                   let live_initial_storage = attachment
+     |  ____________________________________________-
+1540 | |                     .committed
+1541 | |                     .real_consumer
+1542 | |                     .restart_authority_hydrology_frame()
+     | |                     -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     | |_____________________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:455:1
+     |
+ 455 |   pub struct DirectV10RealConsumerShadow {
+     |   -------------------------------------- method `restart_authority_hydrology_frame` not found for this struct
+
+error[E0599]: no method named `restart_authority_complete_commit_and_stage_archive_day_v3` found for struct `snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1570:22
+     |
+1569 | /                 attachment
+1570 | |                     .restart_authority_complete_commit_and_stage_archive_day_v3(&publication_inputs)
+     | |                     -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment`
+     | |_____________________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2915:1
+     |
+2915 |   pub struct DirectSnowStage3V11ShadowAttachment {
+     |   ---------------------------------------------- method `restart_authority_complete_commit_and_stage_archive_day_v3` not found for this struct
+
+error[E0277]: the trait bound `direct_runtime::DirectPublicationFrame: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1583:13
+     |
+1583 | /             serde_json::json!({
+1584 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+1585 | |                 "downstream_lane_id": lane.downstream_lane_id,
+1586 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+1600 | |                 "day_inputs": lane.day_inputs,
+1601 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectPublicationFrame`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:3:1
+     |
+   3 | pub struct DirectPublicationFrame {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectPublicationFrame` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `&direct_runtime::DirectPublicationFrame` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `subsurface::DirectSubsurfaceLayerState: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1583:13
+     |
+1583 | /             serde_json::json!({
+1584 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+1585 | |                 "downstream_lane_id": lane.downstream_lane_id,
+1586 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+1600 | |                 "day_inputs": lane.day_inputs,
+1601 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `subsurface::DirectSubsurfaceLayerState`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs:713:1
+     |
+ 713 | pub struct DirectSubsurfaceLayerState {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `subsurface::DirectSubsurfaceLayerState` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `Vec<subsurface::DirectSubsurfaceLayerState>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&Vec<subsurface::DirectSubsurfaceLayerState>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `evapotranspiration::DirectEvapotranspirationStageState: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1583:13
+     |
+1583 | /             serde_json::json!({
+1584 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+1585 | |                 "downstream_lane_id": lane.downstream_lane_id,
+1586 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+1600 | |                 "day_inputs": lane.day_inputs,
+1601 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `evapotranspiration::DirectEvapotranspirationStageState`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs:605:1
+     |
+ 605 | pub struct DirectEvapotranspirationStageState {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `evapotranspiration::DirectEvapotranspirationStageState` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `Box<evapotranspiration::DirectEvapotranspirationStageState>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 2 redundant requirements hidden
+     = note: required for `&std::option::Option<Box<evapotranspiration::DirectEvapotranspirationStageState>>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `growth::DirectGrowthStateSurface: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1583:13
+     |
+1583 | /             serde_json::json!({
+1584 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+1585 | |                 "downstream_lane_id": lane.downstream_lane_id,
+1586 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+1600 | |                 "day_inputs": lane.day_inputs,
+1601 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `growth::DirectGrowthStateSurface`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs:361:1
+     |
+ 361 | pub struct DirectGrowthStateSurface {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `growth::DirectGrowthStateSurface` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `Box<growth::DirectGrowthStateSurface>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&Box<growth::DirectGrowthStateSurface>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectSnowRuntimeCarry: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1583:13
+     |
+1583 | /             serde_json::json!({
+1584 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+1585 | |                 "downstream_lane_id": lane.downstream_lane_id,
+1586 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+1600 | |                 "day_inputs": lane.day_inputs,
+1601 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectSnowRuntimeCarry`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:172:1
+     |
+ 172 | pub struct DirectSnowRuntimeCarry {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectSnowRuntimeCarry` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `&direct_runtime::DirectSnowRuntimeCarry` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectFrostRuntimeCarry: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1583:13
+     |
+1583 | /             serde_json::json!({
+1584 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+1585 | |                 "downstream_lane_id": lane.downstream_lane_id,
+1586 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+1600 | |                 "day_inputs": lane.day_inputs,
+1601 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectFrostRuntimeCarry`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:252:1
+     |
+ 252 | pub struct DirectFrostRuntimeCarry {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectFrostRuntimeCarry` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `&direct_runtime::DirectFrostRuntimeCarry` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectSnowRuntimeCarry: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1583:13
+     |
+1583 | /             serde_json::json!({
+1584 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+1585 | |                 "downstream_lane_id": lane.downstream_lane_id,
+1586 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+1600 | |                 "day_inputs": lane.day_inputs,
+1601 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectSnowRuntimeCarry`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:172:1
+     |
+ 172 | pub struct DirectSnowRuntimeCarry {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectSnowRuntimeCarry` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `std::option::Option<direct_runtime::DirectSnowRuntimeCarry>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&std::option::Option<direct_runtime::DirectSnowRuntimeCarry>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectFrostRuntimeCarry: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1583:13
+     |
+1583 | /             serde_json::json!({
+1584 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+1585 | |                 "downstream_lane_id": lane.downstream_lane_id,
+1586 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+1600 | |                 "day_inputs": lane.day_inputs,
+1601 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectFrostRuntimeCarry`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:252:1
+     |
+ 252 | pub struct DirectFrostRuntimeCarry {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectFrostRuntimeCarry` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `std::option::Option<direct_runtime::DirectFrostRuntimeCarry>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&std::option::Option<direct_runtime::DirectFrostRuntimeCarry>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectDayConstructorInputs: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1583:13
+     |
+1583 | /             serde_json::json!({
+1584 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+1585 | |                 "downstream_lane_id": lane.downstream_lane_id,
+1586 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+1600 | |                 "day_inputs": lane.day_inputs,
+1601 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectDayConstructorInputs`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:508:1
+     |
+ 508 | pub struct DirectDayConstructorInputs {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectDayConstructorInputs` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `Vec<direct_runtime::DirectDayConstructorInputs>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&Vec<direct_runtime::DirectDayConstructorInputs>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0599]: no method named `diagnostic_native_lane_maps_v1` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1731:37
+     |
+1731 |     let native_lane_maps = consumer.diagnostic_native_lane_maps_v1();
+     |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+
+error[E0599]: no method named `diagnostic_native_soil_v2` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1733:10
+     |
+1732 |       let native_soil = consumer
+     |  _______________________-
+1733 | |         .diagnostic_native_soil_v2()
+     | |         -^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     | |_________|
+     |
+
+error[E0599]: no method named `diagnostic_hydrology_constructor_inputs_v1` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1740:10
+     |
+1739 |       let native_hydrology_constructor_inputs = consumer
+     |  _______________________________________________-
+1740 | |         .diagnostic_hydrology_constructor_inputs_v1()
+     | |         -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     | |_________|
+     |
+
+error[E0599]: no method named `restart_authority_hydrology_frame` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1743:18
+     |
+1743 |         consumer.restart_authority_hydrology_frame(),
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+
+error[E0599]: no method named `diagnostic_native_consumer_constructor_operands_v1` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1748:10
+     |
+1747 |       let native_consumer_constructor_operands = consumer
+     |  ________________________________________________-
+1748 | |         .diagnostic_native_consumer_constructor_operands_v1()
+     | |         -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     | |_________|
+     |
+
+error[E0277]: the trait bound `direct_runtime::DirectPublicationFrame: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2007:13
+     |
+2007 | /             serde_json::json!({
+2008 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+2009 | |                 "downstream_lane_id": lane.downstream_lane_id,
+2010 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+2024 | |                 "day_inputs": lane.day_inputs,
+2025 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectPublicationFrame`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:3:1
+     |
+   3 | pub struct DirectPublicationFrame {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectPublicationFrame` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `&direct_runtime::DirectPublicationFrame` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `subsurface::DirectSubsurfaceLayerState: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2007:13
+     |
+2007 | /             serde_json::json!({
+2008 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+2009 | |                 "downstream_lane_id": lane.downstream_lane_id,
+2010 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+2024 | |                 "day_inputs": lane.day_inputs,
+2025 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `subsurface::DirectSubsurfaceLayerState`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs:713:1
+     |
+ 713 | pub struct DirectSubsurfaceLayerState {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `subsurface::DirectSubsurfaceLayerState` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `Vec<subsurface::DirectSubsurfaceLayerState>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&Vec<subsurface::DirectSubsurfaceLayerState>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `evapotranspiration::DirectEvapotranspirationStageState: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2007:13
+     |
+2007 | /             serde_json::json!({
+2008 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+2009 | |                 "downstream_lane_id": lane.downstream_lane_id,
+2010 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+2024 | |                 "day_inputs": lane.day_inputs,
+2025 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `evapotranspiration::DirectEvapotranspirationStageState`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs:605:1
+     |
+ 605 | pub struct DirectEvapotranspirationStageState {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `evapotranspiration::DirectEvapotranspirationStageState` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `Box<evapotranspiration::DirectEvapotranspirationStageState>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 2 redundant requirements hidden
+     = note: required for `&std::option::Option<Box<evapotranspiration::DirectEvapotranspirationStageState>>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `growth::DirectGrowthStateSurface: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2007:13
+     |
+2007 | /             serde_json::json!({
+2008 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+2009 | |                 "downstream_lane_id": lane.downstream_lane_id,
+2010 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+2024 | |                 "day_inputs": lane.day_inputs,
+2025 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `growth::DirectGrowthStateSurface`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs:361:1
+     |
+ 361 | pub struct DirectGrowthStateSurface {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `growth::DirectGrowthStateSurface` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `Box<growth::DirectGrowthStateSurface>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&Box<growth::DirectGrowthStateSurface>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectSnowRuntimeCarry: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2007:13
+     |
+2007 | /             serde_json::json!({
+2008 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+2009 | |                 "downstream_lane_id": lane.downstream_lane_id,
+2010 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+2024 | |                 "day_inputs": lane.day_inputs,
+2025 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectSnowRuntimeCarry`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:172:1
+     |
+ 172 | pub struct DirectSnowRuntimeCarry {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectSnowRuntimeCarry` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `&direct_runtime::DirectSnowRuntimeCarry` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectFrostRuntimeCarry: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2007:13
+     |
+2007 | /             serde_json::json!({
+2008 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+2009 | |                 "downstream_lane_id": lane.downstream_lane_id,
+2010 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+2024 | |                 "day_inputs": lane.day_inputs,
+2025 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectFrostRuntimeCarry`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:252:1
+     |
+ 252 | pub struct DirectFrostRuntimeCarry {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectFrostRuntimeCarry` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `&direct_runtime::DirectFrostRuntimeCarry` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectSnowRuntimeCarry: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2007:13
+     |
+2007 | /             serde_json::json!({
+2008 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+2009 | |                 "downstream_lane_id": lane.downstream_lane_id,
+2010 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+2024 | |                 "day_inputs": lane.day_inputs,
+2025 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectSnowRuntimeCarry`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:172:1
+     |
+ 172 | pub struct DirectSnowRuntimeCarry {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectSnowRuntimeCarry` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `std::option::Option<direct_runtime::DirectSnowRuntimeCarry>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&std::option::Option<direct_runtime::DirectSnowRuntimeCarry>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectFrostRuntimeCarry: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2007:13
+     |
+2007 | /             serde_json::json!({
+2008 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+2009 | |                 "downstream_lane_id": lane.downstream_lane_id,
+2010 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+2024 | |                 "day_inputs": lane.day_inputs,
+2025 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectFrostRuntimeCarry`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:252:1
+     |
+ 252 | pub struct DirectFrostRuntimeCarry {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectFrostRuntimeCarry` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `std::option::Option<direct_runtime::DirectFrostRuntimeCarry>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&std::option::Option<direct_runtime::DirectFrostRuntimeCarry>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectDayConstructorInputs: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2007:13
+     |
+2007 | /             serde_json::json!({
+2008 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+2009 | |                 "downstream_lane_id": lane.downstream_lane_id,
+2010 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+2024 | |                 "day_inputs": lane.day_inputs,
+2025 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectDayConstructorInputs`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:508:1
+     |
+ 508 | pub struct DirectDayConstructorInputs {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectDayConstructorInputs` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `Vec<direct_runtime::DirectDayConstructorInputs>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&Vec<direct_runtime::DirectDayConstructorInputs>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `subsurface::DirectSubsurfaceLayerState: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2052:21
+     |
+2052 |           .map(|lane| serde_json::json!({
+     |  _____________________^
+2053 | |             "water": [lane.water.soil_water_m, lane.water.infiltration_m, lane.water.runoff_m,
+2054 | |                 lane.water.evapotranspiration_m, lane.water.drainage_m, lane.water.lateral_flow_m],
+2055 | |             "subsurface_layers": lane.subsurface_layers,
+...    |
+2062 | |                 lane.publication.lateral_flow_m],
+2063 | |         }))
+     | |          ^
+     | |          |
+     | |__________unsatisfied trait bound
+     |            required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `subsurface::DirectSubsurfaceLayerState`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs:713:1
+     |
+ 713 | pub struct DirectSubsurfaceLayerState {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `subsurface::DirectSubsurfaceLayerState` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 687 others
+     = note: required for `Vec<subsurface::DirectSubsurfaceLayerState>` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 1 redundant requirement hidden
+     = note: required for `&Vec<subsurface::DirectSubsurfaceLayerState>` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-20247ec05875d928.long-type-17033587840935626711.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0599]: no method named `diagnostic_native_consumer_constructor_operands_v1` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2441:64
+     |
+2441 | ...ctor_operands": input.consumer.diagnostic_native_consumer_constructor_operands_v1().expect("test live native consumer operands"),
+     |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+
+error[E0599]: no method named `diagnostic_native_lane_maps_v1` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2454:64
+     |
+2454 |         "native_lane_map_constructor_operands": input.consumer.diagnostic_native_lane_maps_v1(),
+     |                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+
+error[E0599]: no method named `diagnostic_native_soil_v2` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2455:63
+     |
+2455 | ...put.consumer.diagnostic_native_soil_v2().expect("test live native soil diagnostics"),
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+
+error[E0599]: no method named `restart_authority_hydrology_frame` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2456:121
+     |
+2456 | ...consumer.restart_authority_hydrology_frame(), &input.context.surface_liquid_configuration).expect("test live hydrology frame dy...
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+
+error[E0599]: no method named `diagnostic_hydrology_constructor_inputs_v1` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2457:110
+     |
+2457 | ...mer.diagnostic_hydrology_constructor_inputs_v1().expect("test live hydrology constructor pin").as_ref()),
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+
+Some errors have detailed explanations: E0277, E0425, E0599.
+For more information about an error, try `rustc --explain E0277`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 3 warnings
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 61 previous errors; 3 warnings emitted

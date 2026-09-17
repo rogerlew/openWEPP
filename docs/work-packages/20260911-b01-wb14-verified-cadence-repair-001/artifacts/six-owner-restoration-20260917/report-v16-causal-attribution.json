@@ -1,0 +1,31 @@
+{
+  "evidence_class": "Ran: exact original clock/expected/restored owner file comparison plus Static: causal source trace",
+  "differing_owners": [
+    "land_surface_energy"
+  ],
+  "only_differing_field": "/runtime_authority",
+  "expected": "V11SnowCovered",
+  "actual": "V10NonpositiveAssimilation",
+  "all_other_owner_keys_equal": true,
+  "all_other_lse_fields_equal": {
+    "schema": true,
+    "policy_id": true,
+    "active_covered_runtime_lse_v1": true,
+    "active_covered_sha256": true,
+    "native_litter_lse_v3": true,
+    "native_litter_sha256": true,
+    "native_exact_surface_enthalpy_v4": true,
+    "native_exact_sha256": true
+  },
+  "expected_lse_exactly_equals_original_clock_lse": true,
+  "clock_member": "rows/123091.6.json",
+  "clock_member_sha256": "de5ba0989f4a66c81e7eb1c5b0b5c5e6e75fe36658141608572a9e6032a6e5a6",
+  "source_trace": [
+    "canonical_v11_parent_owner_state_bytes -> canonical_v11_lse_owner_bytes -> actual_runtime_authority(self.inner.authority)",
+    "try_new_with_soil_resident initializes inner with CoveredColumnAuthority::V10NonpositiveAssimilation",
+    "private diagnostic_restore_native_consumer_from_proof_v1 restores resident/history/GSI/counter but omits existing restart_authority_install_clock_runtime_mode",
+    "existing persisted-restart snow_stage3_v11.rs:945-990 selects unique authenticated clock LSE, calls existing runtime-mode installer, then requires complete LSE byte equality"
+  ],
+  "proposed_correction": "Use existing validated-clock runtime-mode installer on private restored candidate and retain full LSE-clock and six-owner byte equality; no copied owner payload or new mode semantics.",
+  "offline_exact_byte_edit_explanation": "Replacing only the one runtime_authority JSON string in the saved actual file yields exact saved expected bytes. This check edits no capture, source comparison, owner or expected oracle."
+}

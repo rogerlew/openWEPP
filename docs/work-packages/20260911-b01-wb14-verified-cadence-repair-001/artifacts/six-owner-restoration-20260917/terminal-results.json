@@ -1,0 +1,158 @@
+{
+  "evidence_class": "Ran: terminal receipt, exact owner bytes, source recovery and work-counter reconciliation; not independent review",
+  "utc": "2026-09-17T02:28:31.804939+00:00",
+  "source_tree_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+  "binary_sha256": "512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd",
+  "preserved_base_trees": {
+    "deferred-context-admission-20260916": "ab221bc5280eaee458be9a6066ba628efe292c0a17394ed1e754ff8f265d8eed",
+    "native-context-restoration-reader-20260916": "7c04f52e6cae6327202591b37f0c4e7a5fff3ae34a103255a35c49a3dbdf37ab",
+    "snowfree-recorder-candidate-20260915": "ecc48d5235d8d53af496856459e3eaa29cca2dda2511697350a67bac172f9592"
+  },
+  "reconstructed_source_equal": true,
+  "runs": [
+    {
+      "receipt": "terminal-v20-ordinary-refusal.json",
+      "source_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+      "binary_sha256": "512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd",
+      "exit_code": 0,
+      "elapsed_seconds": 18.47046710830182,
+      "maximum_rss_KiB": 5015036,
+      "counters": {
+        "probe-mechanism-audit:": "probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })",
+        "probe-direct-audit:": "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 0, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-gsi-receipt-advance-audit:": "probe-gsi-receipt-advance-audit: GsiReceiptAdvanceAuditV1 { prepare_advances: 0, validator_advances: 0 }",
+        "probe-native-physics-audit:": "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      }
+    },
+    {
+      "receipt": "terminal-v20-late-controls.json",
+      "source_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+      "binary_sha256": "512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd",
+      "exit_code": 0,
+      "elapsed_seconds": 1216.8129995251074,
+      "maximum_rss_KiB": 9396428,
+      "counters": {
+        "probe-mechanism-audit:": "probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })",
+        "probe-direct-audit:": "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 37, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-gsi-receipt-advance-audit:": "probe-gsi-receipt-advance-audit: GsiReceiptAdvanceAuditV1 { prepare_advances: 0, validator_advances: 17 }",
+        "probe-native-physics-audit:": "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      }
+    },
+    {
+      "receipt": "terminal-v20-composed-parity.json",
+      "source_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+      "binary_sha256": "512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd",
+      "exit_code": 0,
+      "elapsed_seconds": 502.2943925438449,
+      "maximum_rss_KiB": 9443112,
+      "counters": {
+        "probe-mechanism-audit:": "probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })",
+        "probe-direct-audit:": "probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 9, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }",
+        "probe-gsi-receipt-advance-audit:": "probe-gsi-receipt-advance-audit: GsiReceiptAdvanceAuditV1 { prepare_advances: 0, validator_advances: 9 }",
+        "probe-native-physics-audit:": "probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }"
+      }
+    }
+  ],
+  "six_owner_exact_equality": true,
+  "original_expected_map_unchanged": true,
+  "owners": [
+    {
+      "actual_file": null,
+      "actual_len": 572,
+      "actual_present": true,
+      "actual_sha256": "b9933ca19331e9fbbb0daa6c273c4a45c60289221040973098b2a14532be6aeb",
+      "equal": true,
+      "expected_file": null,
+      "expected_len": 572,
+      "expected_present": true,
+      "expected_sha256": "b9933ca19331e9fbbb0daa6c273c4a45c60289221040973098b2a14532be6aeb",
+      "file_index": 0,
+      "first_difference_offset_or_length_boundary": null,
+      "owner": "bgc"
+    },
+    {
+      "actual_file": null,
+      "actual_len": 1183,
+      "actual_present": true,
+      "actual_sha256": "4a37f6f8f668669caf9bda7db998f2905ad3140017ff8b38fecb81f2d8dad704",
+      "equal": true,
+      "expected_file": null,
+      "expected_len": 1183,
+      "expected_present": true,
+      "expected_sha256": "4a37f6f8f668669caf9bda7db998f2905ad3140017ff8b38fecb81f2d8dad704",
+      "file_index": 1,
+      "first_difference_offset_or_length_boundary": null,
+      "owner": "hydrology"
+    },
+    {
+      "actual_file": null,
+      "actual_len": 9421,
+      "actual_present": true,
+      "actual_sha256": "ace2a96ab772387e2f0dbbc8b7dd2bb6a4416eb433903dacbd7cca039ef29850",
+      "equal": true,
+      "expected_file": null,
+      "expected_len": 9421,
+      "expected_present": true,
+      "expected_sha256": "ace2a96ab772387e2f0dbbc8b7dd2bb6a4416eb433903dacbd7cca039ef29850",
+      "file_index": 2,
+      "first_difference_offset_or_length_boundary": null,
+      "owner": "land_surface_energy"
+    },
+    {
+      "actual_file": null,
+      "actual_len": 2499,
+      "actual_present": true,
+      "actual_sha256": "9049413f4f5fc2767df155d6c2d4cc73cec916d142d2ddebd9add6d1ca839e3f",
+      "equal": true,
+      "expected_file": null,
+      "expected_len": 2499,
+      "expected_present": true,
+      "expected_sha256": "9049413f4f5fc2767df155d6c2d4cc73cec916d142d2ddebd9add6d1ca839e3f",
+      "file_index": 3,
+      "first_difference_offset_or_length_boundary": null,
+      "owner": "soil_thermal"
+    },
+    {
+      "actual_file": null,
+      "actual_len": 1065,
+      "actual_present": true,
+      "actual_sha256": "a64d5cd3dec70bac8f079d0256ad063af49063dab9d8a96414b6999b5c5f963f",
+      "equal": true,
+      "expected_file": null,
+      "expected_len": 1065,
+      "expected_present": true,
+      "expected_sha256": "a64d5cd3dec70bac8f079d0256ad063af49063dab9d8a96414b6999b5c5f963f",
+      "file_index": 4,
+      "first_difference_offset_or_length_boundary": null,
+      "owner": "surface_liquid"
+    },
+    {
+      "actual_file": null,
+      "actual_len": 3826,
+      "actual_present": true,
+      "actual_sha256": "d9b2ba9a3dde54ed0d245ab86efc431143660c19b179a4cc69a57a7281a8dcce",
+      "equal": true,
+      "expected_file": null,
+      "expected_len": 3826,
+      "expected_present": true,
+      "expected_sha256": "d9b2ba9a3dde54ed0d245ab86efc431143660c19b179a4cc69a57a7281a8dcce",
+      "file_index": 5,
+      "first_difference_offset_or_length_boundary": null,
+      "owner": "vegetation"
+    }
+  ],
+  "subsequent_postconditions": "restored native: six-owner exact equality, complete LSE clock mode/owner, full dynamic frame, provider cursor and consumed capability PASS; current/deferred and seven-owner clock checks retained",
+  "late_cases": [
+    "late control PASS: prior receipt before late projection fault; typed=deferred composite GSI prior/prepared custody; progress=Progress { full_proof: false, private_candidate: false, lse_projection: false }; consumed=true; exact_rollback=true; frame_constructions=4; gsi_prepare=0; gsi_validate=2",
+    "late control PASS: prepared receipt before late projection fault; typed=deferred composite GSI prior/prepared custody; progress=Progress { full_proof: false, private_candidate: false, lse_projection: false }; consumed=true; exact_rollback=true; frame_constructions=4; gsi_prepare=0; gsi_validate=2",
+    "late control PASS: source-bound premature posture before receipt and late fault; typed=deferred composite source-bound use; progress=Progress { full_proof: false, private_candidate: false, lse_projection: false }; consumed=true; exact_rollback=true; frame_constructions=2; gsi_prepare=0; gsi_validate=0",
+    "late control PASS: failure after complete proof; typed=injected after complete deferred proof; progress=Progress { full_proof: true, private_candidate: false, lse_projection: false }; consumed=true; exact_rollback=true; frame_constructions=4; gsi_prepare=0; gsi_validate=2",
+    "late control PASS: failure after private construction; typed=injected after private native construction; progress=Progress { full_proof: true, private_candidate: true, lse_projection: false }; consumed=true; exact_rollback=true; frame_constructions=4; gsi_prepare=0; gsi_validate=2",
+    "late control PASS: failure after native LSE projection; typed=injected after complete native LSE projection; progress=Progress { full_proof: true, private_candidate: true, lse_projection: true }; consumed=true; exact_rollback=true; frame_constructions=4; gsi_prepare=0; gsi_validate=2"
+  ],
+  "early_lifecycle_reuse": "terminal-evidence-reuse.json",
+  "quality": "terminal-quality-disposition.json",
+  "independent_correctness": "UNAVAILABLE / NOT MET",
+  "independent_QA": "UNAVAILABLE / NOT MET",
+  "disposition": "Private diagnostic byte parity and reachable controls PASS; overall acceptance INCOMPLETE / HOLD. Draft unpromoted; no production adoption or scientific/restart/conservation/cadence qualification."
+}

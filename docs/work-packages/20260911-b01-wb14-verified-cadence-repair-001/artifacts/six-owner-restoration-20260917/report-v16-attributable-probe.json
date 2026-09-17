@@ -1,0 +1,61 @@
+{
+  "label": "report-v16-attributable-probe",
+  "argv": [
+    "/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/report-v16.frozen",
+    "--include-ignored",
+    "--nocapture",
+    "deferred_context_complete_bundle_private_diagnostic_restoration"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/report-v16-attributable-probe.resources",
+    "/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/report-v16.frozen",
+    "--include-ignored",
+    "--nocapture",
+    "deferred_context_complete_bundle_private_diagnostic_restoration"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917",
+  "start_utc": "2026-09-17T01:00:39.203785+00:00",
+  "source_tree_sha256": "eee0e74cdf89104217d87d4e3c3564dea30a0e98be80e1ddeb7f3395c993ceb3",
+  "patch_sha256": "2989e4281fb696c467bbd64cd599849e761167e87d22090468f8f3bb508e3b21",
+  "source_receipt": "report-v16-attributable-probe-source.json",
+  "input_manifest": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/input-custody-before.json",
+  "input_manifest_sha256": "b78f2956b99079d6447aacb51c95e087093b858d90b47f65f601e0b3d53748b3",
+  "environment": {
+    "OPENWEPP_B01_MEMBER_EXPORT": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1",
+    "OPENWEPP_B01_PINNED_SEED": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1/snow_accuracy_continuous_1789528435904586137/case.run.snow_stage3_v11_owner_seed.json",
+    "OPENWEPP_B01_ORIGINAL_CLIMATE": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1/snow_accuracy_continuous_1789528435904586137/p102.cli",
+    "OPENWEPP_B01_AUTHENTICATED_GSI_PREIMAGES": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/authenticated-gsi-preimages.json",
+    "OPENWEPP_B01_RETAINED_SOIL_TRIAL_PRIMITIVES": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-soil-trial-primitives.json",
+    "OPENWEPP_B01_RETAINED_SUBSLAB_PRIMITIVES": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-subslab-primitives.json",
+    "OPENWEPP_B01_OWNER_COMPARISON_DIR": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/report-v16-owner-bytes"
+  },
+  "pinned_files": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/run_recorded.py": "a4901c3d89714ba48aad4025f61ad05e546d960f47e07995a151432a85c47f38",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/summary.json": "cf5f6612d65c3b5a2a53583560730e8d5c551795efc73ff6b3fd5735e41c17bb",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1/snow_accuracy_continuous_1789528435904586137/case.run.snow_stage3_v11_owner_seed.json": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1/snow_accuracy_continuous_1789528435904586137/p102.cli": "5af208853205300ab2cc606070407fccccba3b4c8d770f5e242613033fa2508a",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-soil-trial-primitives.json": "dfb4185058d7115727382b96a3bd879c255f888c6947863f015daceb2b987dc4",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/authenticated-gsi-preimages.json": "88c358c45c827606b8781ddfce59d4251ed639cb37ec286ee552f587ae35f6b9",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-subslab-primitives.json": "e2434197840c651db67cc52769cf1076d62905e5fcbe80b46cdd14cb05599114"
+  },
+  "timeout_seconds": 900,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/report-v16.frozen",
+  "binary_sha256": "9eb51a049e12ae937314a79ff6f62db2c46797a428cad152e4e9e73978d8416c",
+  "process_group": 2395183,
+  "exit_code": 101,
+  "timed_out": false,
+  "elapsed_seconds": 507.66625866061077,
+  "end_utc": "2026-09-17T01:09:07.091542+00:00",
+  "source_unchanged": true,
+  "binary_unchanged": true,
+  "pinned_files_unchanged": true,
+  "inputs_unchanged": true
+}

@@ -1,0 +1,333 @@
+{
+  "evidence_class": "Ran: matched diagnostic content comparison, not strict-lint acceptance",
+  "baseline": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/candidate-terminal-capped-clippy-diagnostics.stdout",
+  "candidate": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/quality-v19-capped-clippy.stdout",
+  "baseline_count": 2892,
+  "candidate_count": 2881,
+  "introduced_or_changed": [
+    {
+      "code": "clippy::assigning_clones",
+      "level": "warning",
+      "message": "assigning the result of `Clone::clone()` may be inefficient",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+          "text": [
+            "            restored.inner.provider_gsi_receipt_sha256 = prior_receipt.receipt_sha256.clone();"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (263/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "fn restore_native_result(",
+            "    target: &Value,",
+            "    context: &NativeRestorationContext<'_>,",
+            "    inputs: crate::DirectRunConstructorInputs,",
+            "    surface: &crate::DirectSurfaceLiquidConfiguration,",
+            "    position: u128,",
+            "    authenticated_gsi: AuthenticatedGsiPreimagesV1,",
+            "    lifecycle_control: DeferredLifecycleControlV1,",
+            ") -> Result<(), String> {"
+          ]
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "removed_or_changed": [
+    {
+      "code": "clippy::cast_possible_truncation",
+      "level": "warning",
+      "message": "casting `i64` to `i32` may truncate the value",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/gsi_forcing.rs",
+          "text": [
+            "                expected_date[\"year\"].as_i64().expect(\"captured GSI year\") as i32,"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::cast_possible_truncation",
+      "level": "warning",
+      "message": "casting `u64` to `u16` may truncate the value",
+      "spans": [
+        {
+          "file": "crates/openwepp-persisted-restart-v1/src/gsi_forcing.rs",
+          "text": [
+            "                expected_date[\"ordinal_day\"]",
+            "                    .as_u64()",
+            "                    .expect(\"captured GSI ordinal day\") as u16,"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::implicit_clone",
+      "level": "warning",
+      "message": "implicitly cloning a `String` by calling `to_string` on its dereferenced type",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "                        .map_err(|error| error.to_string())?,"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::semicolon_if_nothing_returned",
+      "level": "warning",
+      "message": "consider adding a `;` to the last statement for consistent formatting",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "                foreign_frame",
+            "                    .surface_liquid_shadow",
+            "                    .as_mut()",
+            "                    .expect(\"surface\")",
+            "                    .continuations[0]",
+            "                    .cumulative_supply_m = -0.0"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::semicolon_if_nothing_returned",
+      "level": "warning",
+      "message": "consider adding a `;` to the last statement for consistent formatting",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "                foreign_frame",
+            "                    .surface_liquid_shadow",
+            "                    .as_mut()",
+            "                    .expect(\"surface\")",
+            "                    .continuations[0]",
+            "                    .day_index = 1"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::single_match_else",
+      "level": "warning",
+      "message": "you seem to be trying to use `match` for destructuring a single pattern. Consider using `if let`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+          "text": [
+            "        match trusted_frozen_residents {",
+            "            Some((physical, exact)) => {",
+            "                self.install_validated_frozen_litter_v4_residents(physical, exact)?;",
+            "            }",
+            "            None => {",
+            "                let frozen_litter_residents: Option<DiagnosticFrozenLitterResidentsV1> =",
+            "                    diagnostic_native_field(captured, \"frozen_litter_residents\")?;",
+            "                let frozen = frozen_litter_residents.ok_or(DirectV10RealConsumerError::Runtime(",
+            "                    DirectV9RealConsumerError::Identity(",
+            "                        \"diagnostic native target requires frozen-litter V3/V4 residents\",",
+            "                    ),",
+            "                ))?;",
+            "                self.diagnostic_restore_frozen_litter_residents_v1(",
+            "                    frozen,",
+            "                    pinned_frozen_litter_lse_configuration,",
+            "                    pinned_surface_configuration,",
+            "                )?;",
+            "            }",
+            "        }"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_arguments",
+      "level": "warning",
+      "message": "this function has too many arguments (10/7)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "    fn mint(",
+            "        native: &Value,",
+            "        soil: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,",
+            "        clock: &CoupledClockStateV1,",
+            "        phase: &Value,",
+            "        lane_maps: &Value,",
+            "        bootstrap: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,",
+            "        frame: &crate::DirectRunFrame,",
+            "        inputs: &crate::DirectRunConstructorInputs,",
+            "        evidence: AuthenticatedGsiPreimagesV1,",
+            "        surface: &crate::DirectSurfaceLiquidConfiguration,",
+            "    ) -> Result<Self, String> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_arguments",
+      "level": "warning",
+      "message": "this function has too many arguments (10/7)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "    pub(crate) fn consume_gsi_v1(",
+            "        self,",
+            "        native: &Value,",
+            "        soil: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,",
+            "        clock: &CoupledClockStateV1,",
+            "        phase: &Value,",
+            "        lane_maps: &Value,",
+            "        bootstrap: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,",
+            "        frame: &crate::DirectRunFrame,",
+            "        inputs: &crate::DirectRunConstructorInputs,",
+            "        surface: &crate::DirectSurfaceLiquidConfiguration,",
+            "    ) -> Result<",
+            "        (",
+            "            crate::runtime_inputs::DirectGsiDailyReceiptV1,",
+            "            crate::runtime_inputs::DirectGsiDailyReceiptV1,",
+            "            crate::runtime_inputs::DirectGsiOwnerStateV1,",
+            "            crate::runtime_inputs::SnowFreeHalfHourProviderCursor,",
+            "        ),",
+            "        String,",
+            "    > {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_arguments",
+      "level": "warning",
+      "message": "this function has too many arguments (9/7)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "    pub(crate) fn validate_bound_v1(",
+            "        &self,",
+            "        native: &Value,",
+            "        soil: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,",
+            "        clock: &CoupledClockStateV1,",
+            "        phase: &Value,",
+            "        lane_maps: &Value,",
+            "        bootstrap: &crate::v9_real_consumer_shadow::DirectV10SoilThermalResidentV2,",
+            "        frame: &crate::DirectRunFrame,",
+            "        inputs: &crate::DirectRunConstructorInputs,",
+            "    ) -> Result<(), String> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (261/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "fn restore_native_result(",
+            "    target: &Value,",
+            "    context: &NativeRestorationContext<'_>,",
+            "    inputs: crate::DirectRunConstructorInputs,",
+            "    surface: &crate::DirectSurfaceLiquidConfiguration,",
+            "    position: u128,",
+            "    authenticated_gsi: AuthenticatedGsiPreimagesV1,",
+            "    lifecycle_control: DeferredLifecycleControlV1,",
+            ") -> Result<(), String> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::unnecessary_map_or",
+      "level": "warning",
+      "message": "this `map_or` can be simplified",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "text": [
+            "    if receipts",
+            "        .first()",
+            "        .map_or(true, |receipt| receipt.beginning_state != seed_state)"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "unused_imports",
+      "level": "warning",
+      "message": "unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+          "text": [
+            "pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;"
+          ]
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "candidate_locations": [
+    {
+      "code": "clippy::assigning_clones",
+      "level": "warning",
+      "message": "assigning the result of `Clone::clone()` may be inefficient",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+          "line": 983,
+          "text": [
+            "            restored.inner.provider_gsi_receipt_sha256 = prior_receipt.receipt_sha256.clone();"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "warning",
+      "message": "this function has too many lines (263/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs",
+          "line": 900,
+          "text": [
+            "fn restore_native_result(",
+            "    target: &Value,",
+            "    context: &NativeRestorationContext<'_>,",
+            "    inputs: crate::DirectRunConstructorInputs,",
+            "    surface: &crate::DirectSurfaceLiquidConfiguration,",
+            "    position: u128,",
+            "    authenticated_gsi: AuthenticatedGsiPreimagesV1,",
+            "    lifecycle_control: DeferredLifecycleControlV1,",
+            ") -> Result<(), String> {"
+          ]
+        }
+      ]
+    }
+  ]
+}

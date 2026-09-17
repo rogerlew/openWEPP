@@ -1,0 +1,450 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917/crates/openwepp-hillslope-orchestrator)
+error[E0425]: cannot find type `Stage3V11ParentReceiptRestartWireV2` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs:1670:14
+     |
+1583 | struct Stage3V11ParentReceiptRestartWireRefV2<'a> {
+     | ------------------------------------------------- similarly named struct `Stage3V11ParentReceiptRestartWireRefV2` defined here
+...
+1670 |     receipt: Stage3V11ParentReceiptRestartWireV2,
+     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+1670 |     receipt: Stage3V11ParentReceiptRestartWireRefV2,
+     |                                               +++
+
+error[E0425]: cannot find type `Stage3V11ParentReceiptRestartWireV2` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs:1684:18
+     |
+1583 | struct Stage3V11ParentReceiptRestartWireRefV2<'a> {
+     | ------------------------------------------------- similarly named struct `Stage3V11ParentReceiptRestartWireRefV2` defined here
+...
+1684 |     receipt: &'a Stage3V11ParentReceiptRestartWireV2,
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+1684 |     receipt: &'a Stage3V11ParentReceiptRestartWireRefV2,
+     |                                                   +++
+
+error[E0425]: cannot find function `restore_provider_bound_context_from_file` in module `crate::snow_stage3_v11_current_context_capture`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1628:13
+     |
+1628 |             restore_provider_bound_context_from_file(
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `crate::snow_stage3_v11_current_context_capture`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4016:15
+     |
+4014 | #[cfg(feature = "persisted-restart-v1")]
+     |       -------------------------------- the item is gated behind the `persisted-restart-v1` feature
+4015 | #[cfg(test)]
+4016 | pub(crate) fn restore_provider_bound_context_from_file(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `restore_provider_bound_context_from_file` in module `crate::snow_stage3_v11_current_context_capture`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1674:13
+     |
+1674 |             restore_provider_bound_context_from_file(
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `crate::snow_stage3_v11_current_context_capture`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4016:15
+     |
+4014 | #[cfg(feature = "persisted-restart-v1")]
+     |       -------------------------------- the item is gated behind the `persisted-restart-v1` feature
+4015 | #[cfg(test)]
+4016 | pub(crate) fn restore_provider_bound_context_from_file(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:138:16
+    |
+138 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:639:13
+    |
+639 |             diagnostic_native_field(captured, "vegetation_configuration")?;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:641:13
+    |
+641 |             diagnostic_native_field(captured, "vegetation_state")?;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:642:35
+    |
+642 |         let vegetation_owner_id = diagnostic_native_field(captured, "vegetation_owner_id")?;
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:644:13
+    |
+644 |             diagnostic_native_field(captured, "lse_configuration")?;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:652:51
+    |
+652 |         let lse_state: LandSurfaceEnergyV2State = diagnostic_native_field(captured, "lse_state")?;
+    |                                                   ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0599]: no function or associated item named `diagnostic_validate_surface_configuration_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:653:15
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- function or associated item `diagnostic_validate_surface_configuration_v1` not found for this struct
+...
+ 653 |         Self::diagnostic_validate_surface_configuration_v1(captured, pinned_surface_configuration)?;
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ function or associated item not found in `v9_real_consumer_shadow::DirectV10RealConsumerShadow`
+     |
+note: if you're trying to build a new `v9_real_consumer_shadow::DirectV10RealConsumerShadow` consider using one of the following associated functions:
+      v9_real_consumer_shadow::DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_v1
+      v9_real_consumer_shadow::DirectV10RealConsumerShadow::try_new
+      v9_real_consumer_shadow::DirectV10RealConsumerShadow::try_new_v2
+      v9_real_consumer_shadow::DirectV10RealConsumerShadow::restart_authority_try_new_with_native_soil
+      v9_real_consumer_shadow::DirectV10RealConsumerShadow::try_new_with_soil_resident
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:625:5
+     |
+ 625 | /     pub(crate) fn diagnostic_restore_native_consumer_v1(
+ 626 | |         captured: &serde_json::Value,
+ 627 | |         target_soil: DirectV10SoilThermalResidentV2,
+ 628 | |         committed_bootstrap: DirectV10SoilThermalResidentV2,
+...    |
+ 636 | |         pinned_hydrology_constructor_inputs: std::sync::Arc<DirectRunConstructorInputs>,
+ 637 | |     ) -> Result<Self, DirectV10RealConsumerError> {
+     | |_________________________________________________^
+...
+2924 | /     pub fn try_new(
+2925 | |         vegetation_configuration: VegetationConfiguration,
+2926 | |         vegetation_state: V10CoupledOwnedState,
+2927 | |         vegetation_owner_id: ResourceOwnerId,
+...    |
+2940 | |         root_zone_hydraulic_configuration: DirectRootZoneHydraulicConfiguration,
+2941 | |     ) -> Result<Self, DirectV10RealConsumerError> {
+     | |_________________________________________________^
+...
+2964 | /     pub fn try_new_v2(
+2965 | |         vegetation_configuration: VegetationConfiguration,
+2966 | |         vegetation_state: V10CoupledOwnedState,
+2967 | |         vegetation_owner_id: ResourceOwnerId,
+...    |
+2981 | |         root_zone_hydraulic_configuration: DirectRootZoneHydraulicConfiguration,
+2982 | |     ) -> Result<Self, DirectV10RealConsumerError> {
+     | |_________________________________________________^
+...
+3009 | /     pub fn restart_authority_try_new_with_native_soil(
+3010 | |         vegetation_configuration: VegetationConfiguration,
+3011 | |         vegetation_state: V10CoupledOwnedState,
+3012 | |         vegetation_owner_id: ResourceOwnerId,
+...    |
+3028 | |         position: NativeSoilRestartPositionV1,
+3029 | |     ) -> Result<Self, DirectV10RealConsumerError> {
+     | |_________________________________________________^
+...
+3068 | /     fn try_new_with_soil_resident(
+3069 | |         vegetation_configuration: VegetationConfiguration,
+3070 | |         vegetation_state: V10CoupledOwnedState,
+3071 | |         vegetation_owner_id: ResourceOwnerId,
+...    |
+3085 | |         native_proof: Option<&NativeSoilRestartAdmissionV1>,
+3086 | |     ) -> Result<Self, DirectV10RealConsumerError> {
+     | |_________________________________________________^
+help: there is a method `gsi_owner_configuration` with a similar name, but with different arguments
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:560:5
+     |
+ 560 |     pub const fn gsi_owner_configuration(&self) -> &DirectGsiOwnerConfigurationV1 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:655:31
+    |
+655 |         let biogeochemistry = diagnostic_native_field(captured, "biogeochemistry")?;
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:656:30
+    |
+656 |         let next_day_index = diagnostic_native_field(captured, "next_day_index")?;
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:657:39
+    |
+657 |         let gsi_owner_configuration = diagnostic_native_field(captured, "gsi_owner_configuration")?;
+    |                                       ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:659:13
+    |
+659 |             diagnostic_native_field(captured, "gsi_owner_state")?;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:663:52
+    |
+663 |             ProviderStaticConfigurationCaptureV1 = diagnostic_native_field(captured, "provider_static_configuration")?;
+    |                                                    ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:667:13
+    |
+667 |             diagnostic_native_field(captured, "provider_cursor_canonical_json")?;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:674:13
+    |
+674 |             diagnostic_native_field(captured, "root_zone_hydraulic_configuration")?;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:711:32
+    |
+711 |         let history: Vec<u8> = diagnostic_native_field(captured, "accepted_publication_rotation")?;
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:714:37
+    |
+714 |         let wb14: Option<Vec<u8>> = diagnostic_native_field(captured, "wb14_parent")?;
+    |                                     ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0599]: no method named `diagnostic_restore_captured_residents_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:721:18
+     |
+ 455 | pub struct DirectV10RealConsumerShadow {
+     | -------------------------------------- method `diagnostic_restore_captured_residents_v1` not found for this struct
+...
+ 721 |         restored.diagnostic_restore_captured_residents_v1(
+     |         ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: there is a method `diagnostic_restore_frozen_litter_residents_v1` with a similar name, but with different arguments
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1230:5
+     |
+1230 | /     fn diagnostic_restore_frozen_litter_residents_v1(
+1231 | |         &mut self,
+1232 | |         frozen: DiagnosticFrozenLitterResidentsV1,
+1233 | |         pinned_frozen_litter_lse_configuration: &LandSurfaceEnergyConfiguration,
+1234 | |         pinned_surface_configuration: &DirectSurfaceLiquidConfiguration,
+1235 | |     ) -> Result<(), DirectV10RealConsumerError> {
+     | |_______________________________________________^
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1335:13
+     |
+1335 |             diagnostic_native_field(captured, "frozen_litter_residents")?;
+     |             ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1368:26
+     |
+1368 |         let count: u64 = diagnostic_native_field(captured, "accepted_interval_count")?;
+     |                          ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_native_field` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1369:37
+     |
+1369 |         let wb14: Option<Vec<u8>> = diagnostic_native_field(captured, "wb14_parent")?;
+     |                                     ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0599]: no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2092:10
+     |
+2091 | /     exact
+2092 | |         .restart_authority_validate_native_exact_adoption(&physical, &authentic)
+     | |         -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `FrozenLitterV4Resident`
+     | |_________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:345:1
+     |
+ 345 |   pub struct FrozenLitterV4Resident {
+     |   --------------------------------- method `restart_authority_validate_native_exact_adoption` not found for this struct
+
+error[E0599]: no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2117:14
+     |
+2116 | /         forged_exact
+2117 | |             .restart_authority_validate_native_exact_adoption(&physical, &authentic)
+     | |             -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `FrozenLitterV4Resident`
+     | |_____________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:345:1
+     |
+ 345 |   pub struct FrozenLitterV4Resident {
+     |   --------------------------------- method `restart_authority_validate_native_exact_adoption` not found for this struct
+
+error[E0599]: no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2138:14
+     |
+2137 | /         reconstructed
+2138 | |             .restart_authority_validate_native_exact_adoption(&after, &authentic)
+     | |             -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `FrozenLitterV4Resident`
+     | |_____________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:345:1
+     |
+ 345 |   pub struct FrozenLitterV4Resident {
+     |   --------------------------------- method `restart_authority_validate_native_exact_adoption` not found for this struct
+
+error[E0599]: no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2159:10
+     |
+2158 | /     phase_exact
+2159 | |         .restart_authority_validate_native_exact_adoption(&phase_physical, &authentic)
+     | |         -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `FrozenLitterV4Resident`
+     | |_________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:345:1
+     |
+ 345 |   pub struct FrozenLitterV4Resident {
+     |   --------------------------------- method `restart_authority_validate_native_exact_adoption` not found for this struct
+
+error[E0599]: no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2165:14
+     |
+2164 | /         phase_exact
+2165 | |             .restart_authority_validate_native_exact_adoption(&phase_physical, &foreign)
+     | |             -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `FrozenLitterV4Resident`
+     | |_____________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:345:1
+     |
+ 345 |   pub struct FrozenLitterV4Resident {
+     |   --------------------------------- method `restart_authority_validate_native_exact_adoption` not found for this struct
+
+error[E0599]: no method named `restart_authority_complete_commit_and_stage_archive_day_v3` found for struct `snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1570:22
+     |
+1569 | /                 attachment
+1570 | |                     .restart_authority_complete_commit_and_stage_archive_day_v3(&publication_inputs)
+     | |                     -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment`
+     | |_____________________|
+     |
+     |
+    ::: crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:2915:1
+     |
+2915 |   pub struct DirectSnowStage3V11ShadowAttachment {
+     |   ---------------------------------------------- method `restart_authority_complete_commit_and_stage_archive_day_v3` not found for this struct
+
+error[E0599]: no method named `restart_authority_support_checkpoint_v2` found for reference `&ValidatedPreparedStage3V11DayV1` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1272:31
+     |
+1272 |         .map(|index| prepared.restart_authority_support_checkpoint_v2(index))
+     |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&ValidatedPreparedStage3V11DayV1`
+
+error[E0599]: no method named `restart_authority_validate_support_checkpoint_v2` found for reference `&ValidatedPreparedStage3V11DayV1` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1294:14
+     |
+1293 | /         prepared
+1294 | |             .restart_authority_validate_support_checkpoint_v2(checkpoint)
+     | |             -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&ValidatedPreparedStage3V11DayV1`
+     | |_____________|
+     |
+
+error[E0277]: the trait bound `direct_runtime::DirectPublicationFrame: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1583:13
+     |
+1583 | /             serde_json::json!({
+1584 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+1585 | |                 "downstream_lane_id": lane.downstream_lane_id,
+1586 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+1600 | |                 "day_inputs": lane.day_inputs,
+1601 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectPublicationFrame`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:3:1
+     |
+   3 | pub struct DirectPublicationFrame {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectPublicationFrame` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 755 others
+     = note: required for `&direct_runtime::DirectPublicationFrame` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-b4d1b77de1892700.long-type-13734517454683909422.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `direct_runtime::DirectPublicationFrame: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2007:13
+     |
+2007 | /             serde_json::json!({
+2008 | |                 "lane_id": lane.lane_id, "upstream_lane_id": lane.upstream_lane_id,
+2009 | |                 "downstream_lane_id": lane.downstream_lane_id,
+2010 | |                 "upstream_area_ratio": lane.upstream_area_ratio, "area_m2": lane.area_m2,
+...    |
+2024 | |                 "day_inputs": lane.day_inputs,
+2025 | |             })
+     | |              ^
+     | |              |
+     | |______________unsatisfied trait bound
+     |                required by a bound introduced by this call
+     |
+help: the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `direct_runtime::DirectPublicationFrame`
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:3:1
+     |
+   3 | pub struct DirectPublicationFrame {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `direct_runtime::DirectPublicationFrame` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 755 others
+     = note: required for `&direct_runtime::DirectPublicationFrame` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-b4d1b77de1892700.long-type-13734517454683909422.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+Some errors have detailed explanations: E0277, E0425, E0599.
+For more information about an error, try `rustc --explain E0277`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 1 warning
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 33 previous errors; 1 warning emitted

@@ -1,0 +1,33 @@
+{
+  "evidence_class": "Static: source identity and reachability reconciliation for reused execution/review portions; not fresh independent acceptance",
+  "terminal_source_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+  "early_lifecycle": {
+    "receipt": "quality-v19-early-lifecycle.json",
+    "result": "PASS1 test,404.496s",
+    "changed_files_after_run": [
+      "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs"
+    ],
+    "only_edit": "String assignment replaced by same-value clone_from in private from-proof restoration.",
+    "reachability": "Early bound-use refusal/consumption path returns before complete proof/from-proof construction, so edited assignment is not reached. All raw operand binding/test source unchanged. Final late and positive composed paths rerun on terminal cut."
+  },
+  "policy14_transport": {
+    "receipt": "mode-v17-policy14-transport.json",
+    "result": "PASS2/2",
+    "unchanged_crate_entries": 14,
+    "changed_clock_crate_entries": 0
+  },
+  "prior_GSI_authentication": {
+    "reuse": "Original bootstrap prefix and original committed/prepared preimages retained. Provider implementation and canonical validators unchanged. New checked casts affect only test date conversion; source dates are unchanged and in range.",
+    "fresh_validation": "Canonical receipt/custody validation still executes inside each terminal composed invocation; prepare and validator counters reported separately."
+  },
+  "draft_authority": {
+    "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/reviewed-canonical-draft.patch",
+    "sha256": "0be23fc073d31503f34cda01ea7dc485634d44d890a6bbcc371a657d117d43d1",
+    "status": "Prior independently reviewed prototype gate reused; draft unpromoted. This is not review of current implementation."
+  },
+  "not_reused_as_pass": [
+    "v15 six-owner failure retained as failure",
+    "prior independent reviews do not cover new mode correction/lifecycle code",
+    "strict lint failure and full correctness/default-test/physical qualification gaps remain"
+  ]
+}

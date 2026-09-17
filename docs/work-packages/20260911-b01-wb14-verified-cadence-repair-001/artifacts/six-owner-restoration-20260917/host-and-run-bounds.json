@@ -1,0 +1,16 @@
+{
+  "as_of_utc": "2026-09-17T00:53:33.258435+00:00",
+  "host_memory": "MemTotal:       32064532 kB\nMemFree:        26246916 kB\nMemAvailable:   28291852 kB\nBuffers:          343800 kB\nCached:          1746468 kB\nSwapCached:        52216 kB\nActive:          1466012 kB\nInactive:        2649860 kB\nActive(anon):     762068 kB\nInactive(anon):  1480444 kB\nActive(file):     703944 kB\nInactive(file):  1169416 kB\nUnevictable:       21952 kB\nMlocked:              32 kB\nSwapTotal:       8388604 kB\nSwapFree:        3060652 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:               828 kB\nWriteback:             0 kB\nAnonPages:       1997068 kB\nMapped:           390340 kB\nShmem:            274404 kB\nKReclaimable:     757872 kB\nSlab:            1253476 kB\nSReclaimable:     757872 kB\nSUnreclaim:       495604 kB\nKernelStack:       22032 kB\nPageTables:        55716 kB\nSecPageTables:     10148 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    24420868 kB\nCommitted_AS:   17027176 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:       73232 kB\nVmallocChunk:          0 kB\nPercpu:            23296 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:    61440 kB\nShmemPmdMapped:        0 kB\nFileHugePages:     20480 kB\nFilePmdMapped:         0 kB\nCmaTotal:              0 kB\nCmaFree:               0 kB\nUnaccepted:            0 kB\nBalloon:               0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:      330408 kB\nDirectMap2M:     5691392 kB\nDirectMap1G:    28311552 kB\n",
+  "disk": "Filesystem                         Size  Used Avail Use% Mounted on\n/dev/mapper/workdir_crypt          1.3T  1.3T  523M 100% /workdir\n/dev/mapper/tmp_crypt              503G   76G  428G  15% /tmp\n/dev/mapper/ubuntu--vg-ubuntu--lv  466G  145G  298G  33% /\n",
+  "large_decode_bounds": {
+    "address_space_bytes": 17179869184,
+    "output_file_limit_bytes": 1073741824,
+    "composed_timeout_seconds": 900,
+    "prior_composed_elapsed_seconds": 502.507037403062,
+    "prior_lifecycle_elapsed_seconds": 401.636619,
+    "concurrent_large_decodes": 1
+  },
+  "build_target": "/tmp/openwepp-b01-wb14-six-owner-target",
+  "frozen_binary_root": "/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917",
+  "inputs": "Unchanged49 original members/pinned seed/climate/GSI and raw trial/subslab correspondence, pre/post command hash checks. Raw observation not rescanned."
+}

@@ -1,0 +1,9 @@
+{
+  "as_of_utc": "2026-09-17T01:29:00.713805+00:00",
+  "charged_this_supplement_seconds": 3540.713805,
+  "cumulative_seconds": 81670.973945,
+  "fixed_ceiling_seconds": 92530.26,
+  "remaining_seconds": 10859.28605499999,
+  "wait_deductions": 0,
+  "decision": "CONTINUE: exact owner attribution and existing-hook correction proved by full composed parity; execute new reachable late controls and current quality attribution. Independent reviews still unavailable; no acceptance waiver or physical release."
+}

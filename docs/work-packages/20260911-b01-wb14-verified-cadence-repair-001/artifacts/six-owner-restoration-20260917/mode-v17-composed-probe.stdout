@@ -1,0 +1,23 @@
+
+running 1 test
+composed archive day 0: canonical authentication and ordered manifest PASS
+test snow_stage3_v11_current_context_capture::member_backed_restore_tests::deferred_context_complete_bundle_private_diagnostic_restoration has been running for over 60 seconds
+composed archive day 1: canonical authentication and ordered manifest PASS
+composed archive day 2: canonical authentication and ordered manifest PASS
+composed archive day 3: canonical authentication and ordered manifest PASS
+composed archive/provider prefix PASS
+composed actual native member decoded
+provider/GSI computation: canonical prepared receipt and original climate-source custody validated; no LSE, soil, or WB14 operation
+native inactive physical-counter custody: outer=214; captured=0; exact frame/native/clock custody PASS; no scalar installation
+native GSI validation: captured="e1ca5d7e2f8088c68d3acdd0a7a8073bd3b5c7b6a1b632d58782d01ebc961887"; authenticated before native custody; no receipt installation
+composed immutable operands, current/deferred phase and provisional checks PASS; invoking canonical native constructor with original unadmitted position/GSI operands
+canonical native constructor: accepted original operands
+restored native: six-owner exact equality, complete LSE clock mode/owner, full dynamic frame, provider cursor and consumed capability PASS; current/deferred and seven-owner clock checks retained
+probe-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })
+probe-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 9, day_frame_constructions: 0, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }
+probe-gsi-receipt-advance-audit: GsiReceiptAdvanceAuditV1 { prepare_advances: 0, validator_advances: 9 }
+probe-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }
+test snow_stage3_v11_current_context_capture::member_backed_restore_tests::deferred_context_complete_bundle_private_diagnostic_restoration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1500 filtered out; finished in 508.24s
+

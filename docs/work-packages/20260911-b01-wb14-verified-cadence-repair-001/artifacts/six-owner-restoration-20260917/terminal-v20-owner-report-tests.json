@@ -1,0 +1,45 @@
+{
+  "label": "terminal-v20-owner-report-tests",
+  "argv": [
+    "/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/terminal-v20.frozen",
+    "--nocapture",
+    "owner_report_"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/terminal-v20-owner-report-tests.resources",
+    "/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/terminal-v20.frozen",
+    "--nocapture",
+    "owner_report_"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917",
+  "start_utc": "2026-09-17T01:58:45.358930+00:00",
+  "source_tree_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+  "patch_sha256": "8266d2b2987293af17d983998a9cb1a881b44d1fcf12d8641c50ccc763ddf68f",
+  "source_receipt": "terminal-v20-owner-report-tests-source.json",
+  "input_manifest": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/input-custody-before.json",
+  "input_manifest_sha256": "b78f2956b99079d6447aacb51c95e087093b858d90b47f65f601e0b3d53748b3",
+  "environment": {},
+  "pinned_files": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/run_recorded.py": "a4901c3d89714ba48aad4025f61ad05e546d960f47e07995a151432a85c47f38",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6"
+  },
+  "timeout_seconds": 900,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/terminal-v20.frozen",
+  "binary_sha256": "512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd",
+  "process_group": 2453656,
+  "exit_code": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.010048060212284327,
+  "end_utc": "2026-09-17T01:58:45.597949+00:00",
+  "source_unchanged": true,
+  "binary_unchanged": true,
+  "pinned_files_unchanged": true,
+  "inputs_unchanged": true
+}

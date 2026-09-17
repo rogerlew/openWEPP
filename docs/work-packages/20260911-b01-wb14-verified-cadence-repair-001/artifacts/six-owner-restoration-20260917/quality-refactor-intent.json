@@ -1,0 +1,35 @@
+{
+  "evidence_class": "Static: planned private quality changes before source edit",
+  "files": [
+    {
+      "path": "snow_stage3_v11_member_restoration.rs",
+      "before_sha256": "c8f73d2134cac7134fdf4fd72e72d3c59f1f06727df9b5bf7d7def9d3646ea7c",
+      "draft_sha256": "5eab93ea417b1b6a82ef5cc4187d5b4ff07425861084a9fdc542d979ce651c67"
+    },
+    {
+      "path": "snow_stage3_v11_late_controls.rs",
+      "before_sha256": "c2ba1f97fb5af665111d340d12cf03421f6db38b09c463e70b00b377758a526b",
+      "draft_sha256": "c70865d4299dff430cfc7b096d9a9e2d13ad5aec57213538f047d95cda4ee07c"
+    },
+    {
+      "path": "v9_real_consumer_shadow.rs",
+      "before_sha256": "60ea932f90f951987e26c0fec87c30620113aefe12f84288452cc6dde8da0a21",
+      "draft_sha256": "dd54dda7f76b1b7aaa5bd8bfa38561197fbdfa085ed0c43303f7336ba89b85e1"
+    }
+  ],
+  "changes": [
+    "Bundle the same eight immutable source operands in a borrowed non-authority record; keep all hash predicates, phase substitutions and actual-entry consumption unchanged.",
+    "Extract the existing exact clock-mode installation/guard into a private test-only helper; retain fault boundary ordering.",
+    "Gate the private from-proof path to its actual persisted-feature caller.",
+    "Fix two missing semicolons in the new late controls."
+  ],
+  "required_affected_verification": [
+    "feature-selected build",
+    "capability traits",
+    "early actual-entry lifecycle",
+    "late actual-entry controls",
+    "final frozen composed parity",
+    "attributable quality and compatibility"
+  ],
+  "not_a_waiver": "Old structural private-function lint debt remains attributable; capped lint exit zero is never strict acceptance."
+}

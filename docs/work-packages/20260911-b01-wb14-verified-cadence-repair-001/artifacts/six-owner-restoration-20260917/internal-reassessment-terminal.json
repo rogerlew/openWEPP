@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Ran: terminal late controls completed; internal milestone reassessment, not acceptance",
+  "utc": "2026-09-17T02:20:03.504781+00:00",
+  "supplement_charged_seconds": 6603.504781,
+  "cumulative_charged_seconds": 84733.764921,
+  "fixed_ceiling_seconds": 92530.26,
+  "remaining_seconds": 7796.495079,
+  "wait_deductions_seconds": 0,
+  "decision": "CONTINUE: final ordinary refusal and composed byte parity on frozen v20, then source/evidence reconciliation and scoped publication/remote verification.",
+  "support": "Terminal late controls PASS all6 cases; traits/report/format/build/default check pass; remaining quality failures attributable; source/binary/input pins unchanged. No source edit or physical run planned.",
+  "reviews": "Both independent acceptance reviews unavailable, remain NOT MET. Publication will preserve HOLD.",
+  "budget_change": false
+}
