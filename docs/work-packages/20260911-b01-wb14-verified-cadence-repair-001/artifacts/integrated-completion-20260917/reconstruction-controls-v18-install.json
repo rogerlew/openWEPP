@@ -1,0 +1,200 @@
+{
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/positive-reach-v18.stdout",
+  "input_sha256": "0daba3a9dd4e4f84479b63e2e16c9ed7df62f6e5c80e4adffab62191018b2e43",
+  "scope": "Evidence reconstruction corruption controls only; no physical runs",
+  "cases": [
+    {
+      "case": "receiver_missing_operand",
+      "rejected": true,
+      "error": "required accumulated operand inventory"
+    },
+    {
+      "case": "receiver_wrong_ordinal",
+      "rejected": true,
+      "error": "source-defined accumulated reordinalization/order"
+    },
+    {
+      "case": "receiver_duplicate_layer",
+      "rejected": true,
+      "error": "complete 90-row path/layer inventory mismatch"
+    },
+    {
+      "case": "donor_wrong_source_transaction",
+      "rejected": true,
+      "error": "primitive prefix source/credit exact membership"
+    },
+    {
+      "case": "donor_missing_selected_phase",
+      "rejected": true,
+      "error": "complete endpoint phase-record inventory/order"
+    },
+    {
+      "case": "donor_wrong_source_primitive",
+      "rejected": true,
+      "error": "primitive prefix source/credit exact membership"
+    },
+    {
+      "case": "donor_unselected_receipt_substitution",
+      "rejected": true,
+      "error": "reseal exact credit payload"
+    },
+    {
+      "case": "donor_wrong_area_basis",
+      "rejected": true,
+      "error": "primitive prefix source/credit exact membership"
+    },
+    {
+      "case": "donor_endpoint_success_false",
+      "rejected": true,
+      "error": "endpoint-local finalizer success"
+    },
+    {
+      "case": "reseal_wrong_canonical_identity",
+      "rejected": true,
+      "error": "probe canonical framed receipt digest"
+    },
+    {
+      "case": "reseal_wrong_selected_ending",
+      "rejected": true,
+      "error": "reseal selected ending joint"
+    },
+    {
+      "case": "reseal_wrong_phase_probe",
+      "rejected": true,
+      "error": "reseal phase receipt"
+    },
+    {
+      "case": "reseal_wrong_retained_source",
+      "rejected": true,
+      "error": "reseal exact source payload"
+    },
+    {
+      "case": "install_wrong_original_namespace",
+      "rejected": true,
+      "error": "installed exact original prepared predecessor"
+    },
+    {
+      "case": "install_wrong_selected_state",
+      "rejected": true,
+      "error": "canonical original/trial/installed state digest"
+    },
+    {
+      "case": "install_wrong_installed_state",
+      "rejected": true,
+      "error": "canonical original/trial/installed state digest"
+    },
+    {
+      "case": "install_wrong_receipt_hash",
+      "rejected": true,
+      "error": "complete installed envelope transformation"
+    },
+    {
+      "case": "install_wrong_expected_source_seal",
+      "rejected": true,
+      "error": "canonical expected operand/temperature set seal"
+    },
+    {
+      "case": "install_wrong_restart_seal",
+      "rejected": true,
+      "error": "canonical restart digest"
+    },
+    {
+      "case": "install_wrong_checkpoint_seal",
+      "rejected": true,
+      "error": "canonical checkpoint digest"
+    },
+    {
+      "case": "install_wrong_orchestrator_seal",
+      "rejected": true,
+      "error": "canonical orchestrator seal"
+    },
+    {
+      "case": "B01_INTEGRATED_LINEAGE_missing",
+      "rejected": true,
+      "error": "B01_INTEGRATED_LINEAGE: expected exactly one record, got 0"
+    },
+    {
+      "case": "B01_INTEGRATED_LINEAGE_duplicate",
+      "rejected": true,
+      "error": "B01_INTEGRATED_LINEAGE: expected exactly one record, got 2"
+    },
+    {
+      "case": "B01_INTEGRATED_LINEAGE_malformed",
+      "rejected": true,
+      "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "case": "B01_INTEGRATED_LINEAGE_duplicate_key",
+      "rejected": true,
+      "error": "duplicate JSON key: x"
+    },
+    {
+      "case": "B01_INTEGRATED_INSTALLED_missing",
+      "rejected": true,
+      "error": "B01_INTEGRATED_INSTALLED: expected exactly one record, got 0"
+    },
+    {
+      "case": "B01_INTEGRATED_INSTALLED_duplicate",
+      "rejected": true,
+      "error": "B01_INTEGRATED_INSTALLED: expected exactly one record, got 2"
+    },
+    {
+      "case": "B01_INTEGRATED_INSTALLED_malformed",
+      "rejected": true,
+      "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "case": "B01_INTEGRATED_INSTALLED_duplicate_key",
+      "rejected": true,
+      "error": "duplicate JSON key: x"
+    },
+    {
+      "case": "B01_INTEGRATED_ACCEPTED_PHASE_CHAIN_missing",
+      "rejected": true,
+      "error": "required nine endpoint phase-chain observations"
+    },
+    {
+      "case": "B01_INTEGRATED_ACCEPTED_PHASE_CHAIN_duplicate",
+      "rejected": true,
+      "error": "required nine endpoint phase-chain observations"
+    },
+    {
+      "case": "B01_INTEGRATED_ACCEPTED_PHASE_CHAIN_malformed",
+      "rejected": true,
+      "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "case": "B01_INTEGRATED_ACCEPTED_PHASE_CHAIN_duplicate_key",
+      "rejected": true,
+      "error": "duplicate JSON key: x"
+    },
+    {
+      "case": "B01_INTEGRATED_PROBE_RESEAL_missing",
+      "rejected": true,
+      "error": "required eleven canonical reseal records"
+    },
+    {
+      "case": "B01_INTEGRATED_PROBE_RESEAL_duplicate",
+      "rejected": true,
+      "error": "required eleven canonical reseal records"
+    },
+    {
+      "case": "B01_INTEGRATED_PROBE_RESEAL_malformed",
+      "rejected": true,
+      "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "case": "B01_INTEGRATED_PROBE_RESEAL_duplicate_key",
+      "rejected": true,
+      "error": "duplicate JSON key: x"
+    }
+  ],
+  "passed": true,
+  "scripts": {
+    "test_reconstruction_controls.py": "b210fbb3478666e622c0893d5b115a786c9cc63331cf8ec9bdbd8c0831ecc226",
+    "reconstruct_credits.py": "0a52fa7f3b6d801aa180c1550223fc52381d59708a0f965a1ded8743a0f2a56b",
+    "reconstruct_donors.py": "fa0e54cedc80016df530b493efe20916ae8a18d9cf277c28cd382f566350dec8",
+    "source_digest_helpers.py": "01e1ce3d97516e41b8ab96c067a4d270840a0dc7ca28bce65c25f84fc1d8b031",
+    "reconstruct_install.py": "e2165963db068003586497af754373a1398ade6db2c3020a7c3dcd80c293b432"
+  }
+}

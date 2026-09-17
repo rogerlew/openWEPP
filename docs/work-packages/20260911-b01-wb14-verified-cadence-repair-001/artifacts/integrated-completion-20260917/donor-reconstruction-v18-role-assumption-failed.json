@@ -1,0 +1,5 @@
+{
+  "passed": false,
+  "error": "ValueError: native fixture full probe role",
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/positive-reach-v18.stdout"
+}

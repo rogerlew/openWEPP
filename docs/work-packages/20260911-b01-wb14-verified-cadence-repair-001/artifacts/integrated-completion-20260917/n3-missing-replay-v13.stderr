@@ -1,0 +1,8 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+
+thread 'native-mixed-phase-missing-replay-n3' (3312175) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs:2284:19:
+synchronized covered parent cadence: V11(Executor(Runtime(Runtime(OwnerClosure("V2 resident custody cardinality")))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_missing_accepted_replay_at_promotion_entry' (3312174) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1004:5:
+assertion failed: panic.downcast_ref::<crate::v9_real_consumer_shadow::B01IntegratedMissingReplayN3Sentinel>().is_some()

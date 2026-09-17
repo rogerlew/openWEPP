@@ -1,0 +1,181 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator)
+warning: method `restart_authority_state_derived_active_snow_lanes_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:981:19
+    |
+973 | impl DirectSnowStage3V11PreparedSupport {
+    | --------------------------------------- method in this implementation
+...
+981 |     pub(crate) fn restart_authority_state_derived_active_snow_lanes_v1(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `diagnostic_restore_parent_receipt_archive_with_configured_scope_v3` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs:1818:15
+     |
+1818 | pub(crate) fn diagnostic_restore_parent_receipt_archive_with_configured_scope_v3(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RestoredStage3PublicationDayEvidenceV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1731:19
+     |
+1731 | pub(crate) struct RestoredStage3PublicationDayEvidenceV1 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restart_authority_restore_archived_publication_day_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1759:15
+     |
+1759 | pub(crate) fn restart_authority_restore_archived_publication_day_v1(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `diagnostic_install_hydrology_constructor_inputs_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:4064:19
+     |
+3145 | impl DirectV10RealConsumerShadow {
+     | -------------------------------- method in this implementation
+...
+4064 |     pub(crate) fn diagnostic_install_hydrology_constructor_inputs_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `restart_authority_from_canonical_bytes` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2.rs:207:19
+    |
+161 | impl SurfaceLiquidOwnerModelDefinitionV2 {
+    | ---------------------------------------- associated function in this implementation
+...
+207 |     pub(crate) fn restart_authority_from_canonical_bytes(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1193:9
+     |
+1173 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1193 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: function `restore_covered_interval` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:669:4
+    |
+669 | fn restore_covered_interval(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_destination_capability` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:685:4
+    |
+685 | fn restore_destination_capability(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `provider_interval_for_destination` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:733:4
+    |
+733 | fn provider_interval_for_destination<'a>(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_prepared_support` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:771:4
+    |
+771 | fn restore_prepared_support(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_support_forcing` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:889:4
+    |
+889 | fn restore_support_forcing(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `active_snow_restore` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1002:4
+     |
+1002 | fn active_snow_restore(
+     |    ^^^^^^^^^^^^^^^^^^^
+
+warning: method `validate_against` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1226:19
+     |
+1204 | impl ProviderStaticConfigurationCaptureV1 {
+     | ----------------------------------------- method in this implementation
+...
+1226 |     pub(crate) fn validate_against(
+     |                   ^^^^^^^^^^^^^^^^
+
+warning: struct `PreparedDayCaptureV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1260:8
+     |
+1260 | struct PreparedDayCaptureV1 {
+     |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_prepared_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1268:4
+     |
+1268 | fn capture_prepared_day(
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_prepared_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1285:4
+     |
+1285 | fn validate_prepared_day(
+     |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_provider_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1331:4
+     |
+1331 | fn restore_provider_day(
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 18 warnings
+warning: struct `PreparedDayCaptureV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1260:8
+     |
+1260 | struct PreparedDayCaptureV1 {
+     |        ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `capture_prepared_day_row_for_test` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1891:15
+     |
+1891 | pub(crate) fn capture_prepared_day_row_for_test(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `prepared_support`, `forcing_receipt`, and `snow_enthalpy_material_resident` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2979:9
+     |
+2974 | pub(crate) struct RestoredProviderBoundContextV1 {
+     |                   ------------------------------ fields in this struct
+...
+2979 |     pub prepared_support: crate::DirectSnowStage3V11PreparedSupport,
+     |         ^^^^^^^^^^^^^^^^
+2980 |     pub forcing_receipt: openwepp_coupled_time::Digest32,
+     |         ^^^^^^^^^^^^^^^
+...
+2983 |     pub snow_enthalpy_material_resident:
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `parent`, `pending_terminal_parcels`, `reduction`, `ledger`, `receipt`, and `binding` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3197:9
+     |
+3196 | pub(crate) struct RestoredCapturedPreChildContextV1 {
+     |                   --------------------------------- fields in this struct
+3197 |     pub parent: V11ParentTransaction,
+     |         ^^^^^^
+...
+3200 |     pub pending_terminal_parcels:
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+3204 |     pub reduction: ConstraintReductionReceiptV1,
+     |         ^^^^^^^^^
+3205 |     pub ledger: LedgerEntryV1,
+     |         ^^^^^^
+3206 |     pub receipt: AcceptedSlabReceiptV1,
+     |         ^^^^^^^
+3207 |     pub binding: serde_json::Value,
+     |         ^^^^^^^
+
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 6 warnings (2 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.75s
+  Executable unittests src/lib.rs (/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab)

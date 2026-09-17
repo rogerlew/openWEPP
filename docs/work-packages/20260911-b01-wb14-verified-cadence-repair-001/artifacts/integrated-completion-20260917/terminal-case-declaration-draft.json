@@ -1,0 +1,170 @@
+{
+  "status": "DRAFT pending terminal source and binary freeze; not execution evidence",
+  "fixture": "Unchanged NativeMixedPhase, parent 0..1800s, SWE 0.0006m, cold delta0, 60s boundary, native V3/V4, single lane, terminal event, production-only route",
+  "process_policy": "Fresh process and legitimate native lineage for every case; serial; no automatic retry",
+  "timeout_seconds_per_case": 180,
+  "address_space_bytes": 17179869184,
+  "output_limit_bytes": 1073741824,
+  "cases": [
+    {
+      "number": 1,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_reaches_deferred_v4_promotion_boundary",
+      "expected_guard": "successful exact pair install and complete parent return",
+      "expected_test_count": 1,
+      "semantic_id": "positive",
+      "typed_variant": null,
+      "exact_payload": null,
+      "scope": "Exact local V3/V4 pair install, soil replay seals and accepted parent return; no global clock commit or full scientific qualification"
+    },
+    {
+      "number": 2,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_wrong_original_owner_at_promotion_entry",
+      "expected_guard": "original custody",
+      "expected_test_count": 1,
+      "semantic_id": "N2",
+      "typed_variant": "RuntimeSerialization",
+      "exact_payload": "frozen-litter V4 deferred projection promotion: frozen-litter V3 identity failure: candidate-only aggregate/child-local promotion custody",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 3,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_missing_accepted_replay_at_promotion_entry",
+      "expected_guard": "missing accepted replay",
+      "expected_test_count": 1,
+      "semantic_id": "N3",
+      "typed_variant": "RuntimeOwnerClosure",
+      "exact_payload": "V4 deferred promotion requires one accepted soil replay",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 4,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_original_support_at_promotion_entry",
+      "expected_guard": "original custody",
+      "expected_test_count": 1,
+      "semantic_id": "original-support",
+      "typed_variant": "RuntimeSerialization",
+      "exact_payload": "frozen-litter V4 deferred projection promotion: frozen-litter V3 identity failure: candidate-only aggregate/child-local promotion custody",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 5,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_original_predecessor_at_promotion_entry",
+      "expected_guard": "original custody",
+      "expected_test_count": 1,
+      "semantic_id": "original-predecessor",
+      "typed_variant": "RuntimeSerialization",
+      "exact_payload": "frozen-litter V4 deferred projection promotion: frozen-litter V3 identity failure: candidate-only aggregate/child-local promotion custody",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 6,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_original_receipt_chain_at_promotion_entry",
+      "expected_guard": "original custody",
+      "expected_test_count": 1,
+      "semantic_id": "original-receipt-chain",
+      "typed_variant": "RuntimeSerialization",
+      "exact_payload": "frozen-litter V4 deferred projection promotion: frozen-litter V3 identity failure: candidate-only aggregate/child-local promotion custody",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 7,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_wrong_accepted_restart_at_promotion_entry",
+      "expected_guard": "accepted restart identity",
+      "expected_test_count": 1,
+      "semantic_id": "N5",
+      "typed_variant": "RuntimeSerialization",
+      "exact_payload": "frozen-litter V4 deferred projection promotion: surface-liquid identity failure: soil-thermal restart V2 identity join",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 8,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_second_promotion_of_publishable_candidate",
+      "expected_guard": "candidate-only guard on second promotion",
+      "expected_test_count": 1,
+      "semantic_id": "N6",
+      "typed_variant": "RuntimeOwnerClosure",
+      "exact_payload": "V4 deferred promotion requires candidate-only soil custody",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 9,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_prefers_publishable_guard_before_wrong_original",
+      "expected_guard": "candidate-only precedence before wrong original",
+      "expected_test_count": 1,
+      "semantic_id": "N7",
+      "typed_variant": "RuntimeOwnerClosure",
+      "exact_payload": "V4 deferred promotion requires candidate-only soil custody",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 10,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_selected_ending_at_final_replay",
+      "expected_guard": "selected final replay join",
+      "expected_test_count": 1,
+      "semantic_id": "N8",
+      "typed_variant": "RuntimeOwnerClosure",
+      "exact_payload": "V2 selected continuation final replay join",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 11,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_credit_lineage_at_final_replay",
+      "expected_guard": "credit final replay join",
+      "expected_test_count": 1,
+      "semantic_id": "N9",
+      "typed_variant": "RuntimeOwnerClosure",
+      "exact_payload": "V2 selected continuation final replay join",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 12,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_accumulated_source_identity_at_final_replay",
+      "expected_guard": "accumulated source final replay join",
+      "expected_test_count": 1,
+      "semantic_id": "N10",
+      "typed_variant": "RuntimeOwnerClosure",
+      "exact_payload": "V2 selected continuation final replay join",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 13,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_late_v4_exact_receipt_after_private_projection",
+      "expected_guard": "late V4 exact owner/receipt join after private projection",
+      "expected_test_count": 1,
+      "semantic_id": "N11",
+      "typed_variant": "RuntimeSerialization",
+      "exact_payload": "frozen-litter V4 deferred projection promotion: LSEB-E-050 / SURFACELIQUID-E-012: identity refusal: projection V3/exact owner/receipt join",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    },
+    {
+      "number": 14,
+      "selector": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rolls_back_final_owner_join_fault",
+      "expected_guard": "injected post-owner-join rollback",
+      "expected_test_count": 1,
+      "semantic_id": "N12",
+      "typed_variant": "DirectSnowStage3V11AttachmentError::Identity",
+      "exact_payload": "injected post-owner-join rollback",
+      "scope": "Actual reached guard plus method-local receiver and separately observed outer caller roots; empty parcels are value-equivalent, not same-object/nonempty/external-outbox proof"
+    }
+  ],
+  "reconstruction_scripts": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/reconstruct_credits.py": "0a52fa7f3b6d801aa180c1550223fc52381d59708a0f965a1ded8743a0f2a56b",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/reconstruct_donors.py": "644b47584f370b9a4d7991722bd3cd55b9f3b79f12b90a54787345a9b863ce84",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/source_digest_helpers.py": "01e1ce3d97516e41b8ab96c067a4d270840a0dc7ca28bce65c25f84fc1d8b031",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/reconstruct_install.py": "ea6cb09b1e9a3bc72d135b34b064d73333a8e853c53917a7795cc59f532e1aa6",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/test_reconstruction_controls.py": "8a18226b48935d0e912d3c5a77225669849a7259a0596ce4cea223d316f233dd",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/reconstruct_parent.py": "81dcf50531a0f69f9f1d2f6f19dfe254cae60ce994872ea7e92d0191d5a0e570"
+  },
+  "reconstruction_protocol": {
+    "input": "fresh terminal positive stdout only",
+    "required_credit_rows": 90,
+    "required_accumulated_operands": 92,
+    "required_probe_reseals": 11,
+    "required_parent_segments": 8,
+    "required_parent_events": 2,
+    "receiver_donor_install_corruption_controls": 40,
+    "parent_corruption_controls": 28,
+    "strict_required_tag_inventory": true,
+    "physical_conservation_or_constitutive_qualification": false
+  }
+}

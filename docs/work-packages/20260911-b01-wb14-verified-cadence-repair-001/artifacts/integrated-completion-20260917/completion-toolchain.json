@@ -1,0 +1,65 @@
+{
+  "utc": "2026-09-17T18:36:30.751296+00:00",
+  "purpose": "Actual selected Nix toolchain metadata; no fixture or workflow execution",
+  "commands": [
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "/workdir/openWEPP",
+        "--command",
+        "rustc",
+        "--version",
+        "--verbose"
+      ],
+      "exit_code": 0,
+      "stdout": "openWEPP Nix shell\n  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9\n  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9\n  cache:   /workdir/.cache/openwepp\nrustc 1.95.0 (59807616e 2026-04-14) (built from a source tarball)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 21.1.8\n",
+      "stderr": "waiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...\nwaiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...\nwarning: Git tree '/workdir/openWEPP' is dirty\n"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "/workdir/openWEPP",
+        "--command",
+        "cargo",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "openWEPP Nix shell\n  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9\n  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9\n  cache:   /workdir/.cache/openwepp\ncargo 1.95.0 (f2d3ce0bd 2026-03-21)\n",
+      "stderr": "warning: Git tree '/workdir/openWEPP' is dirty\n"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "/workdir/openWEPP",
+        "--command",
+        "cargo",
+        "clippy",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "openWEPP Nix shell\n  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9\n  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9\n  cache:   /workdir/.cache/openwepp\nclippy 0.1.95\n",
+      "stderr": "waiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...\nwaiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...\nwaiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...\nwarning: Git tree '/workdir/openWEPP' is dirty\n"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "/workdir/openWEPP",
+        "--command",
+        "rustfmt",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "openWEPP Nix shell\n  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9\n  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9\n  cache:   /workdir/.cache/openwepp\nrustfmt 1.9.0\n",
+      "stderr": "waiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...\nwarning: Git tree '/workdir/openWEPP' is dirty\n"
+    }
+  ],
+  "pins": {
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openWEPP/tools/dev/openwepp-env": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+  }
+}

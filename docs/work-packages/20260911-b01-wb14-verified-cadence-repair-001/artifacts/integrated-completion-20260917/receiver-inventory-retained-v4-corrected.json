@@ -1,0 +1,919 @@
+{
+  "input_sha256": "744e3ead30c0cb342a99d519d910e854d7f0bbb9fdb654b4a6d3bc47f022f7e8",
+  "required_tags": [
+    "B01_INTEGRATED_LINEAGE",
+    "B01_INTEGRATED_INSTALLED"
+  ],
+  "required_row_count": 90,
+  "row_count": 90,
+  "credit_rows": [
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[0][0]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[0][1]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[0][2]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[0][3]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[0][4]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[0][5]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[1][0]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[1][1]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[1][2]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[1][3]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[1][4]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[1][5]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[2][0]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[2][1]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[2][2]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[2][3]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[2][4]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[2][5]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[3][0]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[3][1]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[3][2]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[3][3]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[3][4]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[3][5]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[4][0]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[4][1]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[4][2]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[4][3]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[4][4]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[4][5]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[5][0]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[5][1]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[5][2]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[5][3]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[5][4]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[5][5]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[6][0]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 4,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[6][1]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[6][2]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[6][3]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[6][4]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.ordered_layer_credit_chain[6][5]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.physical_trial.layer_credits[0]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 4,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.physical_trial.layer_credits[1]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.physical_trial.layer_credits[2]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.physical_trial.layer_credits[3]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.physical_trial.layer_credits[4]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_LINEAGE",
+      "path": "$.physical_trial.layer_credits[5]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[0]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[1]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[2]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[3]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[4]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[5]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[6]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[7]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[8]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[9]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[10]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[11]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[12]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[13]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[14]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[15]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[16]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[17]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[18]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[19]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[20]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[21]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[22]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[23]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[24]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[25]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[26]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[27]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[28]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[29]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[30]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 3,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[31]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[32]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[33]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[34]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[35]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[36]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-1",
+      "operand_count": 4,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[37]",
+      "ofe_id": "ofe-1",
+      "layer_id": "thermal-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[38]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-1",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[39]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-2",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[40]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-dry",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    },
+    {
+      "tag": "B01_INTEGRATED_INSTALLED",
+      "path": "$.soil_latest_accepted.credit_receipt.layer_credits[41]",
+      "ofe_id": "ofe-1",
+      "layer_id": "soil-frozen",
+      "operand_count": 2,
+      "exact_sum_equal": true,
+      "nearest_even_high_equal": true,
+      "exact_residual": "0"
+    }
+  ],
+  "complete_required_receiver_inventory": true,
+  "ordered_credit_chain_equal": true,
+  "accumulated_membership_equal": true,
+  "installed_source_sequence_equal": true,
+  "pass_receiver_arithmetic": true,
+  "scope": "Receiver arithmetic and complete selected receiver inventory only; independent donor correspondence and scientific conservation remain separate.",
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/lineage-positive-v4.stdout",
+  "passed": true
+}

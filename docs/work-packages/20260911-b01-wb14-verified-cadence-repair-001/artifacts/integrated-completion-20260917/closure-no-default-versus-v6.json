@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Ran: matched diagnostic content comparison, not strict-lint acceptance",
+  "baseline": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/no-default-baseline-v6.stdout",
+  "candidate": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-quality-no-default.stdout",
+  "baseline_count": 66,
+  "candidate_count": 66,
+  "introduced_or_changed": [],
+  "removed_or_changed": [],
+  "candidate_locations": []
+}

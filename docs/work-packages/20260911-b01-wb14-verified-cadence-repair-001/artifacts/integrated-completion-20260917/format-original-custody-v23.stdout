@@ -1,0 +1,106 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-integrated-promotion-20260917-fdc1afd6fadb
+  scratch: /tmp/openwepp-roger-b01-wb14-integrated-promotion-20260917-fdc1afd6fadb
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2351:
+                 let caller_before = caller_snapshot()?;
+                 let mut disposable = authoritative_complete_envelope.clone();
+                 let receiver_before = disposable.clone();
+-                let receiver_before_owner_state = disposable.canonical_v11_parent_owner_state_bytes()?;
++                let receiver_before_owner_state =
++                    disposable.canonical_v11_parent_owner_state_bytes()?;
+                 let receiver_at_guard_debug = format!("{disposable:#?}");
+                 let accepted = &mut frozen_litter_v4
+                     .as_mut()
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2368:
+                     .expect_err("missing accepted replay must reject deferred V4 promotion");
+                 let expected_detail = "V4 deferred promotion requires one accepted soil replay";
+                 assert_eq!(error.category(), "owner_closure");
+-                let DirectV10RealConsumerError::Runtime(
+-                    DirectV9RealConsumerError::OwnerClosure(detail),
+-                ) = &error
++                let DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::OwnerClosure(
++                    detail,
++                )) = &error
+                 else {
+                     panic!("N3 must retain the source-defined missing-replay wrapper: {error}");
+                 };
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2377:
+                 assert_eq!(*detail, expected_detail);
+-                let receiver_after_owner_state = disposable.canonical_v11_parent_owner_state_bytes()?;
++                let receiver_after_owner_state =
++                    disposable.canonical_v11_parent_owner_state_bytes()?;
+                 let receiver_after_debug = format!("{disposable:#?}");
+                 let caller_after = caller_snapshot()?;
+                 let receiver_unchanged = disposable == receiver_before;
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2399:
+                     }))
+                     .expect("N3 audit JSON")
+                 );
+-                assert!(receiver_unchanged, "genuine missing-replay receiver changed on rejection");
+-                assert!(receiver_debug_unchanged, "genuine missing-replay receiver debug state changed on rejection");
+-                assert!(caller_unchanged, "caller changed during genuine missing-replay rejection");
++                assert!(
++                    receiver_unchanged,
++                    "genuine missing-replay receiver changed on rejection"
++                );
++                assert!(
++                    receiver_debug_unchanged,
++                    "genuine missing-replay receiver debug state changed on rejection"
++                );
++                assert!(
++                    caller_unchanged,
++                    "caller changed during genuine missing-replay rejection"
++                );
+                 std::panic::panic_any(B01IntegratedMissingReplayN3Sentinel);
+             }
+             let transaction_authority = candidate
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2450:
+                             "whole-original-owner"
+                         }
+                         B01IntegratedOriginalCustodyControlV1::SupportStart => {
+-                            wrong_original_owner.support_start_ns = wrong_original_owner
+-                                .support_start_ns
+-                                .checked_add(1)
+-                                .expect("native fixture support start admits one-ns custody mutation");
++                            wrong_original_owner.support_start_ns =
++                                wrong_original_owner.support_start_ns.checked_add(1).expect(
++                                    "native fixture support start admits one-ns custody mutation",
++                                );
+                             "support-start"
+                         }
+                         B01IntegratedOriginalCustodyControlV1::ExpectedPredecessor => {
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2476:
+                             &wrong_original_owner,
+                             accepted,
+                         )
+-                        .expect_err("wrong original custody field must fail aggregate/child-local custody");
++                        .expect_err(
++                            "wrong original custody field must fail aggregate/child-local custody",
++                        );
+                     let expected_detail = "frozen-litter V4 deferred projection promotion: \
+ frozen-litter V3 identity failure: candidate-only aggregate/child-local promotion custody";
+                     let expected_display =
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2486:
+                         DirectV9RealConsumerError::Serialization(detail),
+                     ) = &error
+                     else {
+-                        panic!("original-custody control must retain the source-defined serialization wrapper: {error}");
++                        panic!(
++                            "original-custody control must retain the source-defined serialization wrapper: {error}"
++                        );
+                     };
+                     assert_eq!(detail, expected_detail);
+                     assert_eq!(error.to_string(), expected_display);
+Diff in /home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2512:
+                         .expect("original-custody audit JSON")
+                     );
+                     assert!(unchanged, "disposable promotion host changed on rejection");
+-                    assert!(debug_unchanged, "disposable full receiver changed on rejection");
++                    assert!(
++                        debug_unchanged,
++                        "disposable full receiver changed on rejection"
++                    );
+                     match control {
+                         B01IntegratedOriginalCustodyControlV1::WholeOriginalOwnerN2 => {
+                             std::panic::panic_any(B01IntegratedWrongOriginalN2Sentinel);

@@ -1,0 +1,5 @@
+{
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/lineage-positive-v4.stdout",
+  "passed": false,
+  "error": "ValueError: accumulated versus credit membership"
+}

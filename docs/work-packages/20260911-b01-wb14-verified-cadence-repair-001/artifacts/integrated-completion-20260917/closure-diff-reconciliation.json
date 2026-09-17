@@ -1,0 +1,33 @@
+{
+  "baseline_tree_sha256": "50672ab77e97334e731c99ccbc869ecdcc213da7257b86b141c5b1879104b6c5",
+  "final_tree_sha256": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+  "changed_entries": [
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_carrier_phase.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_preterminal_replay.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_terminal_accepted_endpoint.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs"
+  ],
+  "main_publication_scope": [
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/"
+  ],
+  "implementation_classification": "Bounded detached local-control experiment: test assertions/observers/faults plus behavior-preserving reseal staging; no production Rust adoption",
+  "physical_inputs_math_guard_semantics_changed": false,
+  "public_api_wire_or_dependencies_changed": false,
+  "external_authority_suite_posture_cohorts_required_case_bindings_changed": false,
+  "checks": "Locked selected build; targeted normal formatting; all14 exact cases; complete reconstruction and40/28 corruption controls; exact strict/no-deps/config baselines; distinct correctness+QA; source recovery and remote publication byte verification",
+  "not_qualified": [
+    "WB14-RQ1",
+    "A-001",
+    "captured E008",
+    "original B01 inputs/corpus",
+    "constitutive/conservation/restart workflow",
+    "full workspace/Critical campaign",
+    "cadence"
+  ]
+}

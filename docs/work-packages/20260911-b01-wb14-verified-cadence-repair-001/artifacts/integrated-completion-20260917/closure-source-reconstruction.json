@@ -1,0 +1,44 @@
+{
+  "utc": "2026-09-17T19:07:29.230502+00:00",
+  "source_tree_sha256": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+  "recovery_tree": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-source-reconstruction",
+  "all_entries_equal": true,
+  "entries": 746,
+  "single_copy_reused": true,
+  "old_recovery_source_tree_sha256": "d059b87c867309bebe0f0d43bf071b82af1c4934bef87d9b2afbcc5256d0af8f",
+  "old_source_preserved_as_T_plus_patch": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-compile-incremental-from-T.patch",
+  "verified_return_to_exact_T_before_final_patch": true,
+  "commands": [
+    {
+      "argv": [
+        "patch",
+        "-p1",
+        "--batch",
+        "-R",
+        "-i",
+        "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-compile-incremental-from-T.patch"
+      ],
+      "exit_code": 0,
+      "stdout": "patching file crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_carrier_phase.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_preterminal_replay.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_terminal_accepted_endpoint.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "patch",
+        "-p1",
+        "--batch",
+        "--forward",
+        "-i",
+        "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-quality-nodeps-incremental-from-T.patch"
+      ],
+      "exit_code": 0,
+      "stdout": "patching file crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_carrier_phase.rs\npatching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_preterminal_replay.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_terminal_accepted_endpoint.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs\npatching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs\n",
+      "stderr": ""
+    }
+  ],
+  "terminal_T_relative_patch": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-quality-nodeps-incremental-from-T.patch",
+  "terminal_patch_sha256": "66806ad7ba7cfd29ef82ebc3d91ff4c707ea70139071d8a4a92194dfd9237614",
+  "source_unchanged": true,
+  "T_unchanged": true,
+  "scope": "Reuse the existing one recovery copy: reverse preserved v67 patch, verify exact T, apply final T-relative patch; no fresh framework or source copy"
+}

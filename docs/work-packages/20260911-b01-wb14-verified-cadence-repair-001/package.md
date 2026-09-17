@@ -21,6 +21,683 @@ amendment below; they do not release a physical successor.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
 
+## Integrated promotion completion — adopted 2026-09-17
+
+**BOUNDED LOCAL CONTROLS COMPLETE; scoped evidence publication in progress. A-001 and qualification remain HOLD.** The owner's instruction to execute
+[the completion authorization](artifacts/integrated-completion-20260917/owner-authorization.md)
+adopts its bounded local-control scope. Evidence baseline is
+`654c62e71c05dbb28905e379a36dfa4a710ba9be`; starting executable source was the
+existing detached integrated tree, verified SHA-256
+`50672ab77e97334e731c99ccbc869ecdcc213da7257b86b141c5b1879104b6c5`.
+No terminal-v6 execution was inherited. The final cut is identified below.
+
+### Final local-control results
+
+Ran: frozen source
+`e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7`,
+frozen binary
+`3ee09e2d800d145494dd38280e26a89fb95447284120112041bfef3e00b65169`.
+The [prospective case declaration](artifacts/integrated-completion-20260917/closure-case-declaration.json)
+and [complete matrix](artifacts/integrated-completion-20260917/closure-matrix-results.json)
+bind all14 exact selectors, typed payloads, expected stage counts, unchanged native
+fixture, source/binary and resource bounds. **PASS14/14**, one test per fresh
+process, no automatic retries or source/binary drift. Locked selected build and
+targeted formatting pass. This is local component execution, not original B01.
+
+| Case | Actual result on final cut |
+|---|---|
+| Positive | One final soil replay and canonical projection promotion; exact V3/V4 pair installed, each history preserves its prior prefix and appends once; complete parent returns |
+| N2 plus original support/predecessor/receipt-chain variants (4) | Exact `RuntimeSerialization` custody rejection; complete method-entry receiver preserved |
+| N3 missing accepted replay | Exact `RuntimeOwnerClosure`; promotion entry1, projection entry0 |
+| N5 wrong accepted-replay restart proof | Exact `RuntimeSerialization` soil-thermal restart V2 identity join refusal |
+| N6 publishable second promotion | Legitimate first success, then exact candidate-only custody refusal; promotion entries2/success1 |
+| N7 publishable plus wrong original | Same early custody guard wins before later original-owner validation |
+| N8 selected physical ending / N9 credit lineage / N10 accumulated source identity (3) | Exact final-replay join refusal; replay entry1/success0, promotion0 |
+| N11 late V4 exact receipt | Exact V4 owner/receipt join refusal after private projection mutation; authoritative receiver unchanged, rejected private candidate discarded |
+| N12 late parent fault | Exact existing post-owner-join error; successful private promotion precedes refusal, no successful candidate escapes, observed caller roots preserved |
+
+Receiver rollback combines same-object complete native-state Debug and canonical
+bytes, including histories/receipts/publication state, rather than six owner
+projections alone. Separate actual caller comparisons cover parent checkpoint and
+Debug, native shadow bytes and Debug, clock bytes and Debug, prepared/context,
+Stage3 owner bytes and Debug, and the explicitly empty owned parcel map. The call
+receives a value-equivalent empty parcel clone; this is not same-object parcel,
+nonempty parcel, external outbox, global commit or consumed-capability revival
+coverage. N6/N7 rollback starts after their legitimate first promotion. N11 does
+not claim rollback of its discarded private projection. Exact owning errors and
+full payloads are checked before typed completion sentinels; unrelated panics fail.
+
+Ran: [independent reconstruction bindings](artifacts/integrated-completion-20260917/closure-reconstruction-checks.json)
+cover the fresh positive raw stream SHA-256
+`58640feb6e8c7e1dc1370ae930eab701cfb81ba2048e0fff57156566164d5df3`.
+Complete required inventories pass:90 receiver-credit rows;92 ordered primitive
+operands;9 endpoint records and11 phase/reseal records with6 accepted selected
+contributions; exact source digests/energies/reordinalization; selected transaction47
+to installed transaction41 physical inventory and canonical owner/receipt/restart
+seals. All11 old/new probe identities follow source-defined resealing. Missing,
+malformed, duplicate and unknown required evidence fail. **40/40** corruption
+controls reject on the unchanged scripts/input.
+
+The actual later parent replay also passes:8 segments, one terminal event group
+and two clock event receipts, six represented-snow prefix slabs followed by physical360..420 and420..1800 supports;
+seven beginning/final owner inventories, clocks, complete accepted events/parcels,
+WB14 source-defined receipt/input/body/chain/parent hashes and accepted parent
+history. **28/28** targeted parent corruption controls reject, with a passing no-op
+control. The partial360..420 child is not misrepresented as the1800s parent.
+Global clock commit/checkpoint-finalization flags are false in the observed local
+boundary. This authenticates local source/receipt/history correspondence, not an
+independent constitutive solver, full scientific conservation or restart workflow.
+
+Positive measured low-level litter/surface/WB14 work is **2/2/3**, with two V4
+runtime successes and one replay/promotion/projection success. Protected
+represented-snow counters at zero do not mean zero physical computation. Negative
+case counters retain their actual earlier/later stage differences in the matrix.
+
+[Final quality evidence](artifacts/integrated-completion-20260917/closure-quality-disposition.json)
+retains **FAIL** for strict Clippy and both checked feature configurations.
+The exact original strict diagnostic set is27/27 unchanged; no-default66/66 and
+evidence-only36/36 diagnostic records match baseline content. Complementary
+no-deps has2,851 versus2,853 records: the same inherited parent-helper length
+253→264 appears twice, from one normally formatted11-line test observer call;
+two inherited redundant closures were removed. All new closure/length/semicolon
+lint defects were corrected. This is the prospectively declared bounded inherited
+debt treatment, not a strict-quality, compatibility or full-workspace PASS.
+
+[Final source recovery](artifacts/integrated-completion-20260917/closure-source-reconstruction.json)
+reuses the one recovery copy: undo the preserved v67 patch, verify exact T, then
+apply final T-relative patch SHA-256
+`66806ad7ba7cfd29ef82ebc3d91ff4c707ea70139071d8a4a92194dfd9237614`.
+All746 recorded entries match final source; T/U/v20 remain preserved. Nine detached
+Rust files differ from v6. The increment adds test controls/observations and two
+behavior-preserving probe-identity staging edits (borrow-to-clone and a checked
+reseal local before the same assignment). No math, physical inputs, guards,
+public wire/API, dependency, suite posture, authority or main Rust changes.
+No new Critical campaign/default/full-workspace, anti-evasion suite-binding or
+manifest/dependency trigger is introduced; full qualification remains unmet.
+
+Correctness and QA review dispositions and publication/ledger are finalized below;
+LP-C2/LP-C4 and WB14-RC1/RQ2 may be satisfied only for this demonstrated local
+fixture. **WB14-RQ1, A-001, captured E008, original-input correspondence, full
+constitutive/conservation/restart qualification and cadence remain HOLD.**
+
+### Independent disposition and publication custody
+
+[Correctness review](artifacts/integrated-completion-20260917/correctness-review-terminal.md),
+`/root/completion_correctness`, approves bounded local correctness with no unresolved
+source blocker. It independently reconstructed the v67 positive, inspected all
+final v70 receipts/results, verified the formatter-only four-file delta and five
+unit-return semicolons, all746 source/recovery entries, and its own earlier findings'
+fixes. [QA review](artifacts/integrated-completion-20260917/qa-review-terminal.md),
+`/root/completion_qa`, independently approves the final diagnostic-test/evidence
+increment and inherited-quality attribution. QA authored the parent script and is
+explicitly excluded from independent acceptance of that script; correctness covers
+it. Neither reviewer claims to have executed a Rust physical fixture. Root executed
+the final Rust matrix and corruption suite; reviews distinguish Static from retained
+Ran evidence. The complete local V3/V4 pair-install predicate is accepted; global/
+production installation remains unqualified.
+
+| Obligation | Final bounded disposition |
+|---|---|
+| LP-C2 | Local native donor-to-credit/selected-ending/install correspondence complete; original B01 and constitutive/conservation qualification not supplied |
+| LP-C4 | Local valid candidate/parent-history/promotion construction and complete matrix satisfied |
+| WB14-RC1 / WB14-RQ2 | Required local positive, semantic-negative, precedence, rollback and prescribed install evidence satisfied at the stated ownership boundaries |
+| WB14-RQ1 | Strict/feature checks remain FAIL; broader quality/compatibility qualification HOLD |
+| A-001 / E008 / original-input and full qualification / cadence | Unchanged INCOMPLETE / HOLD; no production adoption or physical successor released |
+
+[Exact diff reconciliation](artifacts/integrated-completion-20260917/closure-diff-reconciliation.json)
+records nine changed completion-v6 Rust paths (twelve in the inherited T-relative
+patch) and the selected checks. Main publication is limited to this package and
+its new artifact directory. The three pre-existing untracked restoration stdout
+files remain outside the commit. All failed/provisional cuts remain in local custody. The [frozen-binary preservation
+audit](artifacts/integrated-completion-20260917/closure-frozen-binary-preservation.json)
+checks all26 recorded frozen binaries (11.7GB), including v20, against their
+original hashes; all match. [Command audit](artifacts/integrated-completion-20260917/closure-command-audit.json)
+retains220 command receipts,55 nonzero outcomes, two invalid zero-test successes,
+and intentional formatter mutations; no frozen-T/pin/binary drift was observed.
+Conservative cumulative failure floor is **at least251**, including three confirmed
+initial navigation failures and one publication whitespace-check failure (two QA
+Markdown hard breaks, corrected by that reviewer); additional unquantified tooling/edit failures are not
+erased or presented as an exact total. There is no failure-count stop.
+
+Publication includes complete raw scientific streams in losslessly verified gzip
+where large, command/source/patch/result records, scripts and both reviews. Frozen
+binaries and full source/recovery trees stay local. The final return ledger is
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/integrated-completion-final-20260917.json`;
+it charges through publication/return under the unchanged106,868.925s ceiling.
+Exact commit IDs and remote verification are recorded after publication.
+
+### Adopted scope and initial intent
+
+Intent: complete missing accepted primitive-source/ordered-credit and parent-final
+correspondence; real typed semantic negatives and combined precedence; complete
+receiver/caller rollback at explicitly named ownership boundaries; one prescribed
+successful replay/seal/install with changed-state and identity checks. Keep LP-C2,
+LP-C4, WB14-RC1/RQ2 and WB14-RQ1 separate. Preserve NativeMixedPhase physical inputs,
+T/U/v20, failed cuts and unique binaries. No production Rust adoption, physical
+input tuning, authority changes, original successor/corpus run or cadence release.
+
+Sole source writer `/root/completion_writer` owns detached test-only observation,
+interception and semantic controls. Root owns reconstruction, package record,
+independent correctness/QA integration and publication. No nested spawning; at
+most two children. New durable raw evidence directory:
+`/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917`.
+Only scoped records/test patches are published to the current branch.
+
+Selected checks before edits: resume existing Nix selected compile with bounded
+adequate timeout; discover/bind executable tests; freeze source, binary, original
+fixture, cases, expected guards and resource bounds before result-bearing batches;
+run focused serial positive/negative/precedence/rollback/install tests without
+automatic retries; strict affected quality and configuration checks on final cut;
+complete-inventory independent reconstruction; two distinct correctness and QA
+reviews with same-reviewer fix verification. This isolated test increment has no
+intended production semantic change. Exact terminal diff determines affected
+checks; Critical/full qualification and original-B01 obligations remain unmet,
+not waived or supplied by these local controls.
+
+Prospective quality selection: because this remains a bounded test-only increment
+and the retained baseline has strict lint debt, use the testing strategy's bounded
+inherited-lint policy: run identical strict command/toolchain on unchanged v6 and
+the final candidate; compare lint identity, location/content and dependency
+surface with independent QA. New relevant diagnostics must be corrected; neither
+capped lint nor diagnostic counts alone satisfy acceptance. Any production-impact
+change reopens classification. No lint-debt cleanup or Critical acceptance is claimed.
+
+The prior final ledger was read once: **92,468.924918s**, failure floor **190**.
+Conservative adopted continuation anchor **2026-09-17 16:27:00 UTC**; fixed new
+cumulative ceiling **106,868.925s**, conservative hard stop **20:27:00 UTC**.
+All concurrent elapsed wall time counts once, no wait deductions or reclaimed
+reserves. Retain approximately 30 minutes for review/preservation/publication.
+Host initially has 26GiB available RAM and 278GiB free on /home/roger, but only
+448MiB on /workdir; new logs/builds stay on the durable home filesystem. Existing
+2-job, 16GiB address-space, 1GiB output and no-core bounds remain appropriate.
+One initial targeted authority-path glob failed (naming mismatch); no scientific
+execution or source mutation resulted. Failure floor is conservatively **191**.
+
+### Completion baseline and receiver-inventory checks
+
+Ran: unchanged v6 source compiled successfully as `compile-n2-v7` in72.66s;
+frozen executable SHA-256 `14c35f556376cfe0aa54eec7827074019d382a0db443748d596101142a28dac5`.
+This is a build result; no N2 behavior result follows yet. Baseline strict Clippy
+v7 FAIL exit101,27 inherited LSE diagnostics,10.58s. Both command receipts and
+source/T-relative recovery evidence are retained in the new durable directory.
+
+Ran: extended existing receiver reconstruction enforces exactly one LINEAGE and
+INSTALLED tag, duplicate-key/malformed-record rejection, the exact90 tag/path/
+OFE/layer rows, seven groups of six credit rows, selected-child tail identity,
+credit continuity, exact high/carry arithmetic and complete92 operand membership.
+Its initial implementation rejected the retained data because child-local ordinals
+are transformed by the canonical accumulated-source ordering. That failed check
+is retained; the corrected version independently reconstructs the actual
+`reordinal_and_canonicalize_v2_operands` transformation and matches all92 operands
+including their digests and ordinals. It does not erase identities. All90 retained
+receiver rows pass; eight deliberately corrupted parser/inventory controls reject.
+These are receiver/evidence-integrity checks, not new physical runs or proof of
+missing donor provenance. Donor selection, semantic controls and parent-final
+correspondence remain in progress. Conservative failure floor **195** includes
+three failed path-glob inspections, baseline strict failure and the initial
+reconstruction mismatch (carried190); negative-control expected rejections do not
+count as failed commands. Distinct replacement reviewers are
+`/root/completion_correctness` and `/root/completion_qa`.
+
+### Completion v8/v9 development results
+
+Independent correctness caught an observer before its build: the proposed helper
+could label speculative maps as accepted, omitted earlier top-boundary donors,
+and referred to an out-of-scope variable. Writer removed that observer and records
+endpoint-local successful finalization after its actual guards, with test audit
+enablement. This is still not final parent acceptance: v8 emits nine records with
+11 phases, of which only six donor receipt identities belong to the selected
+92-operand chain. Five alternatives remain explicitly unselected. The next
+observer cut adds actual source transaction IDs; complete correspondence remains
+pending that source-bound capture and independent checks.
+
+Ran v8 positive **PASS1/1**,10.497933s, source
+`3478533674170b8c289dd3c2decff055facc7afe07823ffa92af2520c84e1f0f`, binary
+`797116942f8b1ed6d82057592fa08e0520ce22c83c5c2a5965cf16f0089368f9`.
+The two preceding v8 commands selected zero tests and are **INVALID**, despite
+exit0. Exact libtest listing identified the corrected selectors. N2 v8 then
+**FAIL1/1**,9.300295s: the new expected error literal was wrong. It reached the
+actual guard, but assertion failure correctly did not count as the typed
+completion sentinel. This was corrected from the owning error display source.
+
+Ran N2 v9 **PASS1/1**,9.298947s, source
+`662485c0e550c635c71b2ea58433fb342af0213c9988be9a31c49040c4b4f2bb`, binary
+`82c94500ad765a2155155111f2685cda4efad94da8052c5e8698424ef22e38b7`.
+It matches `DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization)`
+with exact full source-defined detail, category and display, verifies its existing
+six-owner projection comparison, then emits the expected typed sentinel. It does
+not yet prove full authoritative rollback or the remaining semantic matrix.
+Conservative failure floor **198** includes the two zero-test commands and failed
+v8 literal assertion. These development cuts do not substitute for terminal checks.
+
+Ran independent Python reconstruction of all14 retained selected-child primitive
+source tuples, including complete digest preimages and exact energies, and all11
+v8 endpoint-local snow trial receipt canonical hashes. Their selected membership,
+earlier internal source transactions, later parent replay and full qualification
+remain separate. QA `/root/completion_qa` independently reran the strict receiver
+script, verified its source-defined ordinal transformation, and rejected additional
+source-kind/layer corruptions. No blocking finding in that bounded receiver scope.
+
+### Completion v10 donor correspondence
+
+Ran v10 positive **PASS1/1**,10.605s, source
+`57bb3064f61660223cdefbfbaa263facec12eda049533ac4cc664c353523725c`, binary
+`2096feff7d8ad203ad59b7343611c7987a557fae0db1e7f370f2baf595998b16`.
+The source-bound observer labels endpoint-local finalizer success and records actual
+source transactions. Independent reconstruction verifies **all92 primitive-source /
+selected-credit tuples**:84 soil-internal,6 snow-boundary,2 infiltration, including
+full canonical source hashes and exact energy bits. The nine endpoint records /
+11 phase payloads contain six globally selected donor receipt identities and five
+unselected alternatives; only exact receipt/credit membership admits a phase.
+Strict receiver reconstruction passes all90 rows. Twenty-one deliberate evidence
+corruptions are rejected. QA `/root/completion_qa` independently reran all three
+scripts and verified raw/source/binary bindings with no blocking finding in this
+bounded scope.
+
+The first donor reconstruction FAIL is preserved: it required physical trial
+source and later probe-child hashes to be equal. Independent correctness traced
+canonical probe ordinal/support resealing at the existing preterminal and accepted
+carrier-chain boundaries. The corrected result preserves the distinct namespaces
+and explicitly reports **probe_reseal_authenticated=false**. It is complete
+primitive donor-to-credit correspondence, not yet complete cross-boundary selection
+history, parent-final correspondence or scientific conservation. Writer is adding
+actual old/new child identities and ending-joint keys to authenticate that
+transformation. No production identity is normalized or rewritten by the audit.
+Failure floor conservatively **200** includes this reconstruction mismatch and
+one additional failed source-directory lookup. LP-C2 retains the remaining
+selection/installation obligation; LP-C4/RC1/RQ2, RQ1 and A-001 remain open/HOLD.
+
+### Internal reassessment during completion controls
+
+The writer's v11 compile FAIL (test helper/type errors) is preserved; corrected
+v12/v13 compile succeeded. N3 v13 then FAIL before the intended promotion call:
+clearing only `latest_accepted` left the disposable native resident's associated
+custody inconsistent, and the snapshot helper rejected `V2 resident custody
+cardinality`. The typed sentinel correctly did not count that early failure as
+its expected negative. This is an introduced test-setup defect, not a demonstrated
+promotion defect. Failure floor conservatively **202**.
+
+Astra reassesses after these unsuccessful corrections: continue within the same
+scope using the genuine private receiver already captured before final soil
+installation, rather than invalidating only one coupled custody field. Complete
+receiver snapshots must include accepted replay/seals and V3/V4/history state;
+six owner projections remain expressly insufficient. Existing source/custody
+guards and physical inputs remain unchanged. Concrete progress is full92 donor
+correspondence plus exact N2; remaining controls and parent/reseal evidence are
+still authorized, with over three hours under the fixed ceiling. No new allowance
+or owner handoff is created by this reassessment.
+
+### Completion v18 selection and missing-replay control
+
+Ran: v18 source `8f42228733fae03afdc6a8cdf2b442590608e785e3bf504a65c1831426495461`,
+binary `a11bbc26c2cf3c0a0b68ca8364ca1960f177e934f89174c7fdaf43122fe88e3f`:
+positive **PASS1/1** and missing-replay N3 **PASS1/1**. N3 uses the genuine
+pre-install receiver and matches the actual `Runtime(OwnerClosure)` error with
+exact payload `V4 deferred promotion requires one accepted soil replay`.
+Its method-entry count is one; later installation/promotion counters remain zero.
+Receiver comparison includes complete clone/equality plus before/after Debug
+(history equality alone omits caches), with separate borrowed caller stack fields.
+This does not yet prove preservation of every outside parent/clock/outbox root.
+The v15 compile failure and v16 wrong-stage counter failure are preserved.
+
+Ran: v18 independent donor reconstruction authenticates all11 canonical old/new
+probe hashes, source-receipt hashes, allowed physical-ordinal-only reseals, exact
+ending-joint and credit payload joins; all92 primitive tuples still match.
+All29 parser/inventory/source/reseal corruption controls reject. The initial v18
+audit incorrectly assumed all probe roles were Full; retained failed evidence
+led to the exact source-defined Full/Retry role inventory. No producer identity
+was changed. Receiver arithmetic, donor correspondence, parent chronology and
+scientific qualification remain separate. Parent chronology reconstruction is
+being extended to the full clock/owner receipt chain. The first later parent-final
+hook did not fire; this is a non-reach observation, not parent-final acceptance.
+
+Strict v18 `--lib` Clippy fails on22 inherited LSE diagnostics, but its command
+differs from v7's all-targets/configuration baseline. It is not the selected
+terminal quality comparison and upstream refusal does not establish introduced
+test lint cleanliness. The final cut retains the exact baseline command plus
+affected visibility checks. Remaining semantic and rollback cases remain ACTIVE.
+
+### Completion correspondence review and v22 parent replay
+
+Independent correctness `/root/completion_correctness` verified the v18 donor
+reconstruction and identified missing complete segment, beginning-owner,
+event and parcel joins in the initial parent script. Root corrected those joins;
+the same reviewer independently reran the clean reconstruction and14 corruption
+controls, all successful for their intended outcomes. The
+[attributable interim review](artifacts/integrated-completion-20260917/correctness-review-interim-v18.md)
+records source/binary/raw/script identities and bounded acceptance. The parent
+script now checks8 actual segment payloads,8 clock slabs,2 clock events,7 owner
+inventories, full receipt/owner chains and the complete single consumed parcel.
+It preserves the actual local uncommitted clock/unfinalized checkpoint posture.
+
+Ran v22 source `603a541a4c24afa7ab4a1194f29cc179cb6cecbc3a49b1531046543fc5497547`,
+binary `ef10237830961edd9fa3f608475ab75759b3d50a6e68a2ed2913d50f56d12bd2`:
+compile PASS and positive **PASS1/1**. The installed trusted publication-history
+observer now records exactly one actual later WB14 parent replay,1656 bytes,
+at420..1800s. Its independent replay/source/parent joins remain under verification.
+The preceding v19 hook non-reach, v20 compile failure and v21 observation JSON
+serialization failure remain retained. Root caught three ungated diagnostic
+snapshot locals in v21; writer confined them to tests before v22. No production
+effect from that observation is accepted.
+
+Ran independent installed-soil reconstruction against v18: full selected physical
+state at transaction47 is transformed exactly as the canonical composition source
+prescribes to original/install transaction41, including all6 layers and the
+recomputed state hash. Original predecessor, complete envelope,42-row receipt,
+92-operand expected-set digest and restart/checkpoint/orchestrator hashes match.
+Receiver/donor/install corruption controls now reject37 deliberately altered
+records. This proves the observed soil transform/seals, not restart execution,
+full V3/V4 install, scientific conservation or package qualification.
+
+### Sixty-minute internal reassessment and original-custody cases
+
+At the60-minute management checkpoint, concrete progress is complete92 donor
+correspondence with authenticated reseals, selected-to-installed soil state/seals,
+eight-segment local chronology and a captured real later parent replay. Continue
+the same authorized bounded effort: wrong-replay/publishable/combined cases,
+selected-ending/credit negatives and full outer-attempt rollback remain necessary
+and reachable. No new allowance or owner handoff is created; the hard stop remains
+20:27 UTC and the cumulative ceiling106,868.925s.
+
+Ran v24 source `04db6bde37c97c43e521933a7cd971c533084b7304fd8b9e36c75fe78768fa41`,
+binary `291649ade8a6c9a6f3212deb87048269ac0185c45174ed8d857a3f3593c8a60c`:
+three fresh actual-entry controls **PASS1/1 each** for original support,
+predecessor and receipt-chain mismatch. Prospective case declaration retains exact
+selectors, single-field substitutions, stage counters, owning wrapper/full payload,
+guard and snapshot boundary. These are promotion-method checks; full outer roots
+are being added separately. Prior format-check failure was corrected only on the
+touched file. v23 build failed because the Nix environment reset an outer target
+assignment and exhausted /workdir. The exact established inner-env /tmp cache
+command compiled v24 successfully. Root preserved the failed438MiB cache by moving
+it to the durable evidence filesystem; no unique evidence was deleted.
+
+The initial v22 parent-script extension dropped other required records in its
+mutation controls, allowing an unintended missing-replay rejection. Root found
+this evidence-test defect; QA is correcting full-stream mutation controls and
+independent replay digest reconstruction. That provisional result is not terminal
+acceptance. The v18 chronology review remains valid for its frozen script.
+
+Affected quality visibility selection: in addition to the original identical
+strict all-targets command, run strict `--no-deps` on the already-reconstructed
+unchanged v6 tree and final tree with the same packages/features/toolchain. This
+exposes target-crate diagnostics hidden by upstream Clippy refusal; it does not
+waive the original strict failure or turn diagnostic lint caps into acceptance.
+
+Ran baseline strict `--no-deps` on the verified unchanged v6 reconstruction:
+FAIL exit101,44.76s,2,853 target-crate diagnostics across lib and lib-test. The
+source hash remains `50672ab7…` and all recorded entries stayed unchanged.
+This is inherited diagnostic evidence, not a green lint result. Matched current
+diagnostic comparisons retain exact code/message/file/primary-source content,
+with shifted line numbers retained separately.
+
+### Completion v34 replay/custody precedence controls
+
+Ran v34 source `2df748fc2b79b2a0fd4a07b4b4fdf0abbd55d98774831929de36098c575c6ad7`,
+binary `d3b2779b5b566cae179eb4d8a1fa866fdd8a68811f97a0222aff8ba8e578ca2d`:
+wrong accepted restart, publishable second promotion, and publishable plus wrong
+original each **PASS1/1** on fresh NativeMixedPhase trajectories. The restart
+substitution changes a cloned local argument; the authoritative resident remains
+valid. Exact `Runtime(Serialization)` detail is
+`frozen-litter V4 deferred projection promotion: surface-liquid identity failure: soil-thermal restart V2 identity join`.
+The latter two cases first complete one genuine canonical promotion, then reject
+the second call as exact `Runtime(OwnerClosure)` with
+`V4 deferred promotion requires candidate-only soil custody` before original-owner
+validation. Their snapshot boundary is after the legitimate first promotion.
+Canonical receiver bytes and full Debug are unchanged at each rejected boundary.
+
+The v29 wrong-restart PASS lacked its required exact typed assertion and is retained
+only as diagnostic reach; v34 supplies that assertion. Compile failures v26/v28/
+v31/v32 and v33's wrong expected Display spelling remain preserved. Actual display
+uses `owner closure`, while the category is `owner_closure`; no production error
+was redesigned. Current hooks remain test-scoped; introduced diagnostic mutability
+is also cfg-gated. Selected-ending/credit and whole-attempt/late rollback remain
+ACTIVE, followed by terminal reruns and independent reviews.
+
+Independent install review found that extra unknown state/expected-source fields
+could survive the Python projection even though the corresponding Rust wire types
+deny unknown fields. Root added exact state/OFE/layer/envelope/custody/source/seal
+field inventories and discriminating corruptions. One in-progress control run
+overlapped the second script edit; it is INVALID for source identity and will be
+replaced by an explicitly frozen rerun. That invalid observation is preserved,
+not counted as verification. Parent replay author verification now includes28
+targeted corruptions and a no-op control, plus canonical inactive-prefix proof,
+working/receipt chains and the exact unchanged physical input inventory.
+Independent correctness is reviewing the new parent/install scope; QA's author
+verification of its own parent script does not supply that independent review.
+
+### Frozen correspondence controls and remaining terminal work
+
+Ran: the frozen v22 reconstruction control rerun passes all40 discriminating
+corruptions with all five recorded script hashes unchanged during execution.
+Independent correctness verified the receipt, raw identity and corrected exact
+field inventories; its [v22 review](artifacts/integrated-completion-20260917/correctness-review-interim-v22.md)
+now includes these results. Independent parent review also verifies the actual
+later WB14 replay and28 targeted corruptions. This closes the identified evidence
+parser gaps for these retained cuts; it does not confer constitutive, conservation,
+restart or global parent-commit qualification. The overlapping39-control run
+remains invalid and preserved.
+
+Writer v35 quality compilation failed on a test conversion; corrected v36 and
+v37 compile pass. v37 adds the exact late `FinalOwnerJoinCompleted` typed error
+assertion; its changed physical control is not yet run. Selected-ending/credit
+semantic substitutions and same-object outer-root observations remain in progress.
+Root additionally found the installed-state observer cfg(test)-only rather than
+explicitly audit-enabled; writer is gating that observation before terminal runs.
+Independent QA is reviewing the full successful-install claim and introduced
+quality diagnostics while the sole writer completes this bounded batch.
+
+Ran: unchanged-v6 affected configuration diagnostics use the existing verified
+recovery tree and exact original test configurations with JSON diagnostic output.
+`no-default-baseline-v6` FAIL exit101 in21.99s and
+`evidence-only-baseline-v6` FAIL exit101 in65.65s; source identity stayed unchanged.
+These establish attribution baselines only. Terminal checks must still run, new
+instrumentation errors must be corrected, and existing configuration failures
+remain explicit failures rather than workflow qualification.
+
+Independent correctness caught a not-yet-executed selected-ending control that
+changed only the state hash, which the physical-ending predicate intentionally
+does not compare. Writer is replacing it with an observed physical coordinate
+substitution so the required final-replay join guard is actually discriminated.
+This is an in-scope test correction, not a newly demonstrated production defect.
+
+### Final-replay development cut and review corrections
+
+Ran v41 compile PASS73.16s, source
+`5b16342f76e73f1d29139850699d10651e57a1b2fecfaa5b7d3ed92c42e8b2cc`.
+Credit receipt-predecessor-lineage control passed its owning final-replay join;
+selected-ending control failed because the hash-only substitution was accepted
+by the physical-ending predicate. Root inspected the recorded patch: despite the
+writer's initial temperature-mutation description, this cut changed only
+`state_sha256`. That inaccurate description is withdrawn. Two earlier run commands
+failed exit127 due binary lookup. Corrected commands used the frozen executable
+path but omitted the recorder's explicit binary-hash option, so these remain
+provisional development evidence and will not replace properly bound terminal runs.
+
+Independent correctness distinguished three still-required controls: physical
+ending mismatch, accumulated expected-source membership (separate from receipt
+predecessor lineage), and V4 exact-receipt rejection after private physical
+projection assignment. The latter must preserve authoritative receiver/caller
+state while recording that the disposable private candidate changed; capability
+consumption is not rolled back. The existing late-parent injection loop is gated
+by child17 and does not run in NativeMixedPhase; a dedicated same-input late-parent
+control is required instead of counting that loop. Writer continues these concrete
+in-scope corrections, with no production defect or new authority inferred.
+
+Ran v42 selected-ending **PASS1/1**,8.896s, on source
+`c7953fd64baf4697f0632d8df8c45c44cc162a89a405fa0b5df050207cdcc0e6`,
+bound executable `4812a5e324da83441b2977a708ab30621d849dec7ac4afa4ef0560bc8e301c6a`.
+The corrected test first asserts that selected and original-beginning temperature
+bits differ, then substitutes the genuine observed beginning coordinate only in
+the disposable proposed ending. It reaches the exact final-replay join rejection.
+The frozen recorder verifies executable/source stability. This fixes the hash-only
+development control; accumulated-source, late private projection, outer roots,
+full successful install and final quality remain in progress.
+
+Ran accumulated-source v44 **PASS1/1**,8.946s, source
+`825b512eaab10550dc7fd1a971183660c939063b76d117587dd53930a43b5ebd`,
+binary `9d0ac765a038fe5da255d965f6f80f1881e1974cad2f11d34ab1871fcf86c3ed`.
+A single source identity is changed in the otherwise genuine accepted operand
+inventory, rebuilt through canonical `try_new`; exact final-replay join rejection
+is asserted. This is distinct from receipt-predecessor lineage.
+
+Ran late V4 v46 **PASS1/1**,9.097s, source
+`833dd996ace656ac1feae8e1aabf73dc030ba3164f293b46221bd7c27dea02b2`,
+binary `709af901747cd0a98a1e819b9b4f1589309f9b8f9adc367d58b664ba4e111825`.
+Changing only the disposable exact-surface receipt digest reaches V4 validation
+after private physical projection promotion. The owning serialization wrapper and
+full `LSEB-E-050 / SURFACELIQUID-E-012` identity payload are asserted. Complete
+method receiver canonical bytes and Debug remain unchanged; the private argument
+is explicitly changed and discarded. These bound runs preserve source, executable
+and tool pins. Same-reviewer correctness verifies the three targeted fixes against
+v46 source and primary run evidence; whole outer-root and native late-parent
+coverage remain open. A v45 insertion-anchor mismatch caused no source change;
+its no-op compile does not establish a new control. Audit counters now stay off
+outside explicit scope, and taking the audit clears outstanding one-shot controls.
+
+Ran v47 outer-call observations on source `7f965b894be47831f4bfae1e61aeca03c0b9c03735ea7df8247098f52b39800f`,
+binary `bd49940c1429d524dc246095889c4c4ab341057516a6b0aaee580ac1f2ef8acf`:
+positive, early N2 and late V4 N11 each **PASS1/1** with bound executables.
+The actual outer call is caught only in the explicitly enabled audit; parent
+checkpoint/Debug, receiver canonical/Debug, clock bytes/Debug, prepared/context
+and snow-root snapshots compare before the original unwind resumes. Dedicated
+NativeMixedPhase whole-parent late failure, final successful-install assertions
+and terminal checks remain in progress.
+
+Independent correctness's API review clarifies N5's exact scope: **wrong
+accepted-replay restart proof**, copied from an otherwise valid accepted resident.
+The promotion API obtains the owner and custody from that resident; it has no
+independently supplied accepted-owner parameter. N3 covers absent replay, and
+N8/N10 cover ending/source mismatches before installation. No claim of replacing
+an entire accepted resident follows from N5, and no additional valid alternate-owner
+case was identified for this bounded API flow.
+
+### Whole-parent late failure and successful-pair evidence
+
+Ran dedicated NativeMixedPhase N12 v49 **PASS1/1**,10.084s, source
+`d88632ec4c75c933f0673523b8d22a3f911c897153dff4ec17154da3ebb59ee6`,
+binary `d8f6c6925c63f849bd8abd4a5a5a13637ea0130abe4d6da3e05b21857c91f632`.
+The existing `FinalOwnerJoinCompleted` fault reaches exact
+`Identity("injected post-owner-join rollback")` after one successful private
+promotion. The real outer call returns an error; no successful candidate escapes.
+This supplements, rather than replaces, semantic precondition negatives.
+
+QA identified missing Stage3 Debug coverage and an implicit empty parcel argument.
+Writer v52 adds the Debug comparison and names/asserts the empty owned parcel map;
+positive and N12 bound reruns each **PASS1/1**. The same reviewer verifies the fixes
+in [the v52 QA review](artifacts/integrated-completion-20260917/qa-review-outer-roots-v52.md).
+The argument is an empty value-equivalent map clone; no same-object identity or
+nonempty/durable external-outbox rollback claim follows. An insertion-anchor
+mismatch left v50 unchanged; its no-op compile is not new behavioral evidence.
+
+Root found that the first successful-install extension proved changed aggregate
+owners but omitted direct pair predicates. The subsequent v55 method comparison
+also compared a nested Option's Debug with a vector's Debug, a tautological
+inequality. Neither is accepted as full pair-install evidence. Compile failures
+v53/v54 remain retained. Corrected v56 positive **PASS1/1** now checks same-type
+V3/V4 histories, exact prior prefixes and one appended entry, actual V3 ending
+surface/LSE states, actual V4 exact owner/projection bytes, and all11 non-V3/V4
+receiver fields via same-object Debug. Native WB14 parent and V3 last-publication
+identity/bytes joins are the final requested predicates before source freeze.
+Terminal quality and complete same-source matrix/reconstruction/reviews remain
+required; earlier partial cuts do not substitute for them.
+
+### Two-hour management reassessment
+
+Approaching the second60-minute checkpoint, all required semantic cases and the
+dedicated whole-parent late fault have meaningful bound development passes.
+Complete92-operand correspondence and later parent replay already have independent
+reconstruction/review. Continue with the remaining direct install predicates,
+introduced-quality correction, frozen terminal reruns and existing reviewers'
+closure, then recovery/publication. These are supported in-scope next actions;
+ordinary assertion/typing/insertion corrections do not require owner handoff.
+The fixed20:27 UTC hard stop and106,868.925s cumulative ceiling remain unchanged;
+reserve30 minutes for final review/preservation/publication, without reclaiming
+prior reserves or adding a new allowance.
+
+### Frozen v57 core and introduced-quality correction
+
+Ran v57 direct V3 publication/parent predicates and bound positive **PASS1/1**,
+source `c252f07b84a751b9c267ed26c3f185c16e5e857cdce9e5e69e5da14223cdb0c5`,
+binary `bef56ac6779dece9a0154d55327f304771d98ab8945a72e72fb61211ba5da14e`.
+The V3 last publication's canonical projection bytes/hash/receipt join and native
+WB14 parent/predecessor join now match the actual accepted physical candidate.
+The previously missing install predicates are implemented; terminal source review
+and complete matrix remain required after quality correction.
+
+Ran the identical original strict command on v57: **FAIL27**,9.755s, with
+**zero introduced or changed diagnostics** versus v6. The complementary strict
+`--no-deps` check **FAIL**,44.059s, has2,859 diagnostics versus2,853: eight
+introduced/changed instances and two replaced baseline instances. Concrete defects
+are two large closures, the enlarged positive test, the new long promotion-method
+audit, one redundant closure, and inherited parent-helper length growth. Writer
+is factoring only audit/test code, preserving every predicate. No lint allow/cap,
+production error redesign, or inherited-debt cleanup substitutes for correction.
+Correctness also requests one shared test-only probe-identity JSON builder for
+the two reseal seams to prevent their required20-field inventories diverging.
+Neither failed strict result is relabeled PASS; frozen terminal commands and
+independent quality attribution still follow.
+
+### Audit factoring and terminal preparation
+
+Ran the v60 promotion audit extraction compile **PASS**,15.82s. Its strict
+no-deps command remains **FAIL**,37.55s; the introduced long-method and redundant
+closure diagnostics are removed. Source `0f02f102ed7948bc39708c0467d0f2b18cc9660425fe2cc2148fad8a720dbab7`.
+All full V3/V4 installation predicates remain in test-only helpers. The sole
+writer is completing the remaining parent observation/outer unwind/positive-test
+factoring, shared probe identity builder, and explicit per-case stage-counter
+assertions. No physical input or production promotion sequence change is intended.
+
+The explicit terminal declaration contains14 exact native cases, each requiring
+one selected test in a fresh process; source and binary binding follows freeze.
+Recorded actual Nix toolchain is rustc/cargo1.95.0, Clippy0.1.95 and rustfmt1.9.0.
+Both unchanged-v6 feature baselines ran and remain **FAIL** (no-default21.995s,
+evidence-only65.653s); terminal comparisons must establish actual applicability.
+Independent QA has resumed baseline/configuration evidence assessment while the
+writer finishes. Neither build success nor inherited diagnostics close behavior
+or full-quality obligations.
+
+### Quality review correction before freeze
+
+Root static review caught a v66 `rustfmt::skip` condensation of an unchanged
+production statement to reduce the inherited parent-helper line count. This is
+not acceptable quality evidence: restore its original normal formatting and
+blank separation, and format the new observer call normally. Preserve the
+intermediate source/commands. The natural test-only observation call may change
+the existing over-length diagnostic; exact content comparison and independent QA
+must attribute that change rather than hide it or refactor unrelated production
+logic. Strict Clippy remains FAIL. No terminal physical result has been measured
+on these quality cuts.
+
+### Complete v67 matrix and formatting correction
+
+Ran all14 declared exact native cases **PASS14/14** on frozen source
+`d059b87c867309bebe0f0d43bf071b82af1c4934bef87d9b2afbcc5256d0af8f`,
+binary `bca82dd32f04859c8bdeab5433db3ff1a1a9ed96e44acf808a5d4ecc316e641a`.
+Every process selected exactly one test and retained source/binary/T identity.
+Complete receiver90/donor92/selected-to-installed47→41 and actual parent8-segment
+reconstruction passed, with40/40 receiver/donor/install corruption controls and
+28/28 parent controls. Scripts and positive raw input remained unchanged. Independent
+correctness independently reconstructed the positive trace and verified all14
+receipts; no global commit, constitutive or full conservation acceptance follows.
+The one recovery copy reconstructs all746 recorded entries, with T/U/v20 unchanged.
+
+Ran v67 strict **FAIL27**, exact same baseline diagnostics. Complementary no-deps
+**FAIL2,851** versus baseline2,853: two instances of the same inherited parent-helper
+length253→264, from its naturally formatted11-line test-only observer call; two
+inherited redundant closures removed. Correctness accepts that bounded attribution,
+not strict PASS. No-default **FAIL66 diagnostics** and evidence-only **FAIL36** match
+baseline content exactly (including non-error diagnostics); no new configuration
+errors. Targeted formatting **FAIL** exposed unformatted test-helper edits.
+
+The writer applied only targeted rustfmt to the nine changed Rust paths. v68
+format/check both **PASS**, frozen tree
+`d31a8840022b1ecf665c07dc6735f687260c5d97555aa8922bf87d217648e864`.
+The old binary/source receipts remain preserved. Correctness is verifying the
+formatter-only delta from the existing v67 recovery bytes. Actual final-source
+quality, build,14-case matrix and reconstruction follow; v67 passes are not silently
+relabelled as v68 executions. The failed format check is an ordinary supported
+correction, with unchanged authorization and fixed time ceiling.
+
 ## Integrated native promotion control — adopted 2026-09-17
 
 **BOUNDED PARTIAL DISPOSITION; A-001 remains INCOMPLETE / HOLD.** Owner execution adopts the

@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "input_sha256": "58640feb6e8c7e1dc1370ae930eab701cfb81ba2048e0fff57156566164d5df3",
+  "selected_transaction": 47,
+  "installed_transaction": 41,
+  "complete_physical_inventory_preserved": true,
+  "canonical_state_transformation": true,
+  "complete_credit_receipt_digest": true,
+  "expected_operand_set_digest": true,
+  "restart_checkpoint_and_orchestrator_seals": true,
+  "scope": "Exact native soil selected-state transformation and installed receipt/seals; no runtime restart, full V3/V4 installation, or scientific qualification claim.",
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-case-01.stdout"
+}

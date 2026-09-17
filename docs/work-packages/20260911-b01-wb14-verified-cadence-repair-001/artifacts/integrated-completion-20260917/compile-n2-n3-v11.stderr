@@ -1,0 +1,52 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator)
+error[E0428]: the name `b01_integrated_probe_child_identity_json_v1` is defined multiple times
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_preterminal_replay.rs:253:1
+    |
+253 | / fn b01_integrated_probe_child_identity_json_v1(
+254 | |     identity: &crate::hydrology::CoveredProbeChildIdentityV1,
+255 | | ) -> serde_json::Value {
+256 | |     serde_json::json!({
+...   |
+268 | |     })
+269 | | }
+    | |_^ `b01_integrated_probe_child_identity_json_v1` redefined here
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_carrier_phase.rs:227:1
+    |
+227 | / fn b01_integrated_probe_child_identity_json_v1(
+228 | |     identity: &crate::hydrology::CoveredProbeChildIdentityV1,
+229 | | ) -> serde_json::Value {
+230 | |     serde_json::json!({
+...   |
+242 | |     })
+243 | | }
+    | |_- previous definition of the value `b01_integrated_probe_child_identity_json_v1` here
+    |
+    = note: `b01_integrated_probe_child_identity_json_v1` must be defined only once in the value namespace of this module
+
+error[E0599]: no method named `canonical_v11_parent_owner_state_bytes` found for mutable reference `&mut v9_real_consumer_shadow::v11_covered::DirectV11RealConsumerStack<'_>` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2378:46
+     |
+2378 |                     let caller_before = self.canonical_v11_parent_owner_state_bytes()?;
+     |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&mut v9_real_consumer_shadow::v11_covered::DirectV11RealConsumerStack<'_>`
+     |
+help: one of the expressions' fields has a method of the same name
+     |
+2378 |                     let caller_before = self.beginning.canonical_v11_parent_owner_state_bytes()?;
+     |                                              ++++++++++
+
+error[E0599]: no method named `canonical_v11_parent_owner_state_bytes` found for mutable reference `&mut v9_real_consumer_shadow::v11_covered::DirectV11RealConsumerStack<'_>` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2404:45
+     |
+2404 |                     let caller_after = self.canonical_v11_parent_owner_state_bytes()?;
+     |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `&mut v9_real_consumer_shadow::v11_covered::DirectV11RealConsumerStack<'_>`
+     |
+help: one of the expressions' fields has a method of the same name
+     |
+2404 |                     let caller_after = self.beginning.canonical_v11_parent_owner_state_bytes()?;
+     |                                             ++++++++++
+
+Some errors have detailed explanations: E0428, E0599.
+For more information about an error, try `rustc --explain E0428`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 3 previous errors

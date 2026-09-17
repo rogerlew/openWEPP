@@ -1,0 +1,25 @@
+{
+  "utc": "2026-09-17T18:57:14.769093+00:00",
+  "terminal_source_tree_sha256": "d059b87c867309bebe0f0d43bf071b82af1c4934bef87d9b2afbcc5256d0af8f",
+  "recovery_tree": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-source-reconstruction",
+  "recorded_entries": 746,
+  "all_entries_equal": true,
+  "patch_argv": [
+    "patch",
+    "-p1",
+    "--batch",
+    "--forward",
+    "-i",
+    "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-compile-incremental-from-T.patch"
+  ],
+  "patch_exit_code": 0,
+  "incremental_patch_sha256": "2b88b0e66aeea8670c6f27a1f8bd74cf704533ebca67fca071c5011ab7a7a599",
+  "base_T_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+  "T_unchanged": true,
+  "U_sha256": "eba402ae70511df0026fe103dc83c2239de3e26a3e34bbbd8066c478141c2d0c",
+  "U_preserved": true,
+  "v20_binary_sha256": "512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd",
+  "v20_preserved": true,
+  "source_unchanged": true,
+  "scope": "One T-plus-patch recovery of all recorded crates files and six root build/toolchain files; binaries remain separately frozen"
+}

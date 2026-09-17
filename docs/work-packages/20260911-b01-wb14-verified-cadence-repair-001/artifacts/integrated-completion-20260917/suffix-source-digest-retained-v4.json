@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "scope": "Retained selected child source payloads only; no earlier donor or acceptance claim",
+  "source_support_ns": [
+    360000000000,
+    420000000000
+  ],
+  "matched_operands": 14,
+  "matched_full_digest_and_energy": true,
+  "source_transaction_id": 41,
+  "soil_transaction_id": 41,
+  "selected_trial_transaction_id": 47,
+  "script_sha256": "0691558a9fc63926580475c890b42f7a2f93b1b174cb915e9e67a898987db58d"
+}

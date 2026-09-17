@@ -1,0 +1,44 @@
+{
+  "label": "terminal-list",
+  "argv": [
+    "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-completion.frozen",
+    "--list"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-list.resources",
+    "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-completion.frozen",
+    "--list"
+  ],
+  "cwd": "/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917",
+  "source_tree_sha256": "d059b87c867309bebe0f0d43bf071b82af1c4934bef87d9b2afbcc5256d0af8f",
+  "source_receipt": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-list-source.json",
+  "pinned_files": {
+    "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/run_recorded.py": "464d022fb3810df65197a1c52d8a7266c552b484d489e08735b7614e4c71bbd1",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openWEPP/tools/dev/openwepp-env": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+  },
+  "start_utc": "2026-09-17T18:56:16.435492+00:00",
+  "timeout_seconds": 60,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-completion.frozen",
+  "binary_sha256": "bca82dd32f04859c8bdeab5433db3ff1a1a9ed96e44acf808a5d4ecc316e641a",
+  "environment_policy": "Inherited environment excluding OPENWEPP_*; explicit env assignments in argv",
+  "input_scope": "Source-defined local component fixtures only; no original corpus inputs",
+  "process_group": 3517304,
+  "exit_code": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.017966081853955984,
+  "end_utc": "2026-09-17T18:56:16.671463+00:00",
+  "source_unchanged": true,
+  "frozen_T_unchanged": true,
+  "binary_unchanged": true,
+  "pinned_files_unchanged": true,
+  "stdout_sha256": "7f6da00946a1d62e1aa6057312e4decac33d5fe4a993a0b5eeb5eb3696f27613",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

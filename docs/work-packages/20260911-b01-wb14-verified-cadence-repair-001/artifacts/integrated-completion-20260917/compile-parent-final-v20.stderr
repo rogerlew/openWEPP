@@ -1,0 +1,10 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator)
+error[E0599]: no method named `checkpoint` found for struct `openwepp_vegetation::V11ParentCandidate` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:2071:58
+     |
+2071 |                 "parent_checkpoint_finalized": finalized.checkpoint(),
+     |                                                          ^^^^^^^^^^ method not found in `openwepp_vegetation::V11ParentCandidate`
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error

@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "input_sha256": "8c7120c296bf1aaac99ffefcb636aff114627e97e7321f6728f529b345596cb2",
+  "selected_transaction": 47,
+  "installed_transaction": 41,
+  "complete_physical_inventory_preserved": true,
+  "canonical_state_transformation": true,
+  "complete_credit_receipt_digest": true,
+  "expected_operand_set_digest": true,
+  "restart_checkpoint_and_orchestrator_seals": true,
+  "scope": "Exact native soil selected-state transformation and installed receipt/seals; no runtime restart, full V3/V4 installation, or scientific qualification claim.",
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/positive-parent-replay-v22.stdout",
+  "script_sha256": "e2165963db068003586497af754373a1398ade6db2c3020a7c3dcd80c293b432"
+}

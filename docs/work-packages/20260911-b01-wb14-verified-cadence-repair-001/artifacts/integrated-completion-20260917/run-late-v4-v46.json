@@ -1,0 +1,48 @@
+{
+  "label": "run-late-v4-v46",
+  "argv": [
+    "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/late-v4-v46.frozen",
+    "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_late_v4_exact_receipt_after_private_projection",
+    "--exact",
+    "--nocapture"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/run-late-v4-v46.resources",
+    "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/late-v4-v46.frozen",
+    "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_late_v4_exact_receipt_after_private_projection",
+    "--exact",
+    "--nocapture"
+  ],
+  "cwd": "/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917",
+  "source_tree_sha256": "833dd996ace656ac1feae8e1aabf73dc030ba3164f293b46221bd7c27dea02b2",
+  "source_receipt": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/run-late-v4-v46-source.json",
+  "pinned_files": {
+    "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/run_recorded.py": "464d022fb3810df65197a1c52d8a7266c552b484d489e08735b7614e4c71bbd1",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openWEPP/tools/dev/openwepp-env": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+  },
+  "start_utc": "2026-09-17T18:04:47.618724+00:00",
+  "timeout_seconds": 180,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/late-v4-v46.frozen",
+  "binary_sha256": "709af901747cd0a98a1e819b9b4f1589309f9b8f9adc367d58b664ba4e111825",
+  "environment_policy": "Inherited environment excluding OPENWEPP_*; explicit env assignments in argv",
+  "input_scope": "Source-defined local component fixtures only; no original corpus inputs",
+  "process_group": 3431590,
+  "exit_code": 0,
+  "timed_out": false,
+  "elapsed_seconds": 9.097424626816064,
+  "end_utc": "2026-09-17T18:04:56.935627+00:00",
+  "source_unchanged": true,
+  "frozen_T_unchanged": true,
+  "binary_unchanged": true,
+  "pinned_files_unchanged": true,
+  "stdout_sha256": "a3d74519448273b53e385830eb36022645a0b5301c6d0997446b752b76f39ba8",
+  "stderr_sha256": "aa90a685de06733c0f38fe9f207a4fbd2805c0849a165750ee95222b21596179"
+}

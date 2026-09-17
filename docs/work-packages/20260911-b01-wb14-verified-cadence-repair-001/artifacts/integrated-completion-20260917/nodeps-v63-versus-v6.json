@@ -1,0 +1,137 @@
+{
+  "evidence_class": "Ran: matched diagnostic content comparison, not strict-lint acceptance",
+  "baseline": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/strict-clippy-baseline-v6-nodeps.stdout",
+  "candidate": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/strict-clippy-nodeps-quality-batch-v63.stdout",
+  "baseline_count": 2853,
+  "candidate_count": 2851,
+  "introduced_or_changed": [
+    {
+      "code": "clippy::too_many_lines",
+      "level": "error",
+      "message": "this function has too many lines (265/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+          "text": [
+            "fn close_deferred_native_v2_soil_at_parent_end_v1(",
+            "    context: &DirectSnowStage3V11StaticContext,",
+            "    prepared: &DirectSnowStage3V11PreparedSupport,",
+            "    day_index: usize,",
+            "    owner_joins: &[Stage3CoupledSubslabReceiptV1],",
+            "    parent: &mut V11ParentTransaction,",
+            "    consumer: &mut DirectV10RealConsumerShadow,",
+            "    clock: &mut CoupledClockStateV1,",
+            "    expected_child_beginning: &mut Digest32,",
+            "    custody: &mut Option<crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1>,",
+            ") -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ],
+      "count": 2
+    }
+  ],
+  "removed_or_changed": [
+    {
+      "code": "clippy::redundant_closure_for_method_calls",
+      "level": "error",
+      "message": "redundant closure",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+          "text": [
+            "                    .map(|value| value.accepted_publication_supports_canonical_bytes())"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::redundant_closure_for_method_calls",
+      "level": "error",
+      "message": "redundant closure",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+          "text": [
+            "                    .map(|value| value.restart_wb14_parent_working_state_bytes())"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "error",
+      "message": "this function has too many lines (253/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+          "text": [
+            "fn close_deferred_native_v2_soil_at_parent_end_v1(",
+            "    context: &DirectSnowStage3V11StaticContext,",
+            "    prepared: &DirectSnowStage3V11PreparedSupport,",
+            "    day_index: usize,",
+            "    owner_joins: &[Stage3CoupledSubslabReceiptV1],",
+            "    parent: &mut V11ParentTransaction,",
+            "    consumer: &mut DirectV10RealConsumerShadow,",
+            "    clock: &mut CoupledClockStateV1,",
+            "    expected_child_beginning: &mut Digest32,",
+            "    custody: &mut Option<crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1>,",
+            ") -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ],
+      "count": 2
+    }
+  ],
+  "candidate_locations": [
+    {
+      "code": "clippy::too_many_lines",
+      "level": "error",
+      "message": "this function has too many lines (265/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+          "line": 1679,
+          "text": [
+            "fn close_deferred_native_v2_soil_at_parent_end_v1(",
+            "    context: &DirectSnowStage3V11StaticContext,",
+            "    prepared: &DirectSnowStage3V11PreparedSupport,",
+            "    day_index: usize,",
+            "    owner_joins: &[Stage3CoupledSubslabReceiptV1],",
+            "    parent: &mut V11ParentTransaction,",
+            "    consumer: &mut DirectV10RealConsumerShadow,",
+            "    clock: &mut CoupledClockStateV1,",
+            "    expected_child_beginning: &mut Digest32,",
+            "    custody: &mut Option<crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1>,",
+            ") -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "error",
+      "message": "this function has too many lines (265/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+          "line": 1679,
+          "text": [
+            "fn close_deferred_native_v2_soil_at_parent_end_v1(",
+            "    context: &DirectSnowStage3V11StaticContext,",
+            "    prepared: &DirectSnowStage3V11PreparedSupport,",
+            "    day_index: usize,",
+            "    owner_joins: &[Stage3CoupledSubslabReceiptV1],",
+            "    parent: &mut V11ParentTransaction,",
+            "    consumer: &mut DirectV10RealConsumerShadow,",
+            "    clock: &mut CoupledClockStateV1,",
+            "    expected_child_beginning: &mut Digest32,",
+            "    custody: &mut Option<crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1>,",
+            ") -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    }
+  ]
+}

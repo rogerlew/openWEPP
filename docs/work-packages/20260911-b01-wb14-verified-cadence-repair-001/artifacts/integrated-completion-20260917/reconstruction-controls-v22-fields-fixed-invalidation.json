@@ -1,0 +1,7 @@
+{
+  "target": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/reconstruction-controls-v22-fields-fixed.json",
+  "target_sha256": "2d6253f25920ead119b66a8b3f51fb648664fe7e3274f0c0eda7342a58ee5a79",
+  "passed": false,
+  "disposition": "INVALID: verification scripts changed while the process was running; no acceptance credit",
+  "invalidated_utc": "2026-09-17T17:41:26.896793+00:00"
+}

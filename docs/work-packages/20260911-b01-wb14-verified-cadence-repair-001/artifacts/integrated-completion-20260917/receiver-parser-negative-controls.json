@@ -1,0 +1,47 @@
+{
+  "scope": "Parser/evidence integrity only; no physical test execution",
+  "script_sha256": "0a52fa7f3b6d801aa180c1550223fc52381d59708a0f965a1ded8743a0f2a56b",
+  "cases": [
+    {
+      "case": "missing_required_tag",
+      "rejected": true,
+      "error": "B01_INTEGRATED_INSTALLED: expected exactly one record, got 0"
+    },
+    {
+      "case": "duplicate_required_tag",
+      "rejected": true,
+      "error": "B01_INTEGRATED_LINEAGE: expected exactly one record, got 2"
+    },
+    {
+      "case": "malformed_required_tag",
+      "rejected": true,
+      "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "case": "duplicate_json_key",
+      "rejected": true,
+      "error": "duplicate JSON key: x"
+    },
+    {
+      "case": "missing_credit_group",
+      "rejected": true,
+      "error": "required seven selected credit groups"
+    },
+    {
+      "case": "duplicate_layer_membership",
+      "rejected": true,
+      "error": "complete 90-row path/layer inventory mismatch"
+    },
+    {
+      "case": "source_ordinal_substitution",
+      "rejected": true,
+      "error": "source-defined accumulated reordinalization/order"
+    },
+    {
+      "case": "missing_operand",
+      "rejected": true,
+      "error": "required accumulated operand inventory"
+    }
+  ],
+  "passed": true
+}

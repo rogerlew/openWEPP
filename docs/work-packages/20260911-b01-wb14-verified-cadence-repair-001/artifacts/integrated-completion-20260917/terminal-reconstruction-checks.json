@@ -1,0 +1,50 @@
+{
+  "utc": "2026-09-17T19:00:44.903878+00:00",
+  "source_tree_sha256": "d059b87c867309bebe0f0d43bf071b82af1c4934bef87d9b2afbcc5256d0af8f",
+  "binary_sha256": "bca82dd32f04859c8bdeab5433db3ff1a1a9ed96e44acf808a5d4ecc316e641a",
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-case-01.stdout",
+  "input_sha256": "4a3ffaedc023c5dad93d09e4b64dfb7126a32499d794e60fd754016fc2325191",
+  "input_unchanged": true,
+  "scripts": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/reconstruct_credits.py": "0a52fa7f3b6d801aa180c1550223fc52381d59708a0f965a1ded8743a0f2a56b",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/reconstruct_donors.py": "644b47584f370b9a4d7991722bd3cd55b9f3b79f12b90a54787345a9b863ce84",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/source_digest_helpers.py": "01e1ce3d97516e41b8ab96c067a4d270840a0dc7ca28bce65c25f84fc1d8b031",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/reconstruct_install.py": "ea6cb09b1e9a3bc72d135b34b064d73333a8e853c53917a7795cc59f532e1aa6",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/test_reconstruction_controls.py": "8a18226b48935d0e912d3c5a77225669849a7259a0596ce4cea223d316f233dd",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/integrated-completion-20260917/reconstruct_parent.py": "81dcf50531a0f69f9f1d2f6f19dfe254cae60ce994872ea7e92d0191d5a0e570"
+  },
+  "scripts_unchanged": true,
+  "results": [
+    {
+      "name": "credits",
+      "exit_code": 0,
+      "result": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-credits-result.json",
+      "receipt": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-reconstruct-credits.json"
+    },
+    {
+      "name": "donors",
+      "exit_code": 0,
+      "result": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-donors-result.json",
+      "receipt": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-reconstruct-donors.json"
+    },
+    {
+      "name": "install",
+      "exit_code": 0,
+      "result": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-install-result.json",
+      "receipt": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-reconstruct-install.json"
+    },
+    {
+      "name": "controls",
+      "exit_code": 0,
+      "result": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-controls-result.json",
+      "receipt": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-reconstruct-controls.json"
+    },
+    {
+      "name": "parent",
+      "exit_code": 0,
+      "result": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-parent-result.json",
+      "receipt": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-reconstruct-parent.json"
+    }
+  ],
+  "all_passed": true
+}

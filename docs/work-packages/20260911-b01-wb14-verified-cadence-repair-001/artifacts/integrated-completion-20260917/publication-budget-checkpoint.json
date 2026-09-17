@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-17T19:20:43.326052+00:00",
+  "anchor_utc": "2026-09-17T16:27:00+00:00",
+  "prior_charged_seconds": 92468.924918,
+  "continuation_charged_seconds": 10423.326052,
+  "cumulative_charged_seconds": 102892.25097000001,
+  "cumulative_ceiling_seconds": 106868.925,
+  "remaining_seconds": 3976.6740299999983,
+  "failure_floor": 250,
+  "scope": "Pre-publication checkpoint only; final external ledger includes all later publication/verification/return time; concurrency charged wall time once, no wait deductions or reclaimed reserves",
+  "final_ledger": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/integrated-completion-final-20260917.json"
+}

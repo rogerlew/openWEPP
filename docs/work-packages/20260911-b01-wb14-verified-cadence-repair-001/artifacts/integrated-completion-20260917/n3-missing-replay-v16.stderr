@@ -1,0 +1,8 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+
+thread 'native-mixed-phase-missing-replay-n3' (3319334) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2373:17:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_missing_accepted_replay_at_promotion_entry' (3319333) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1010:5:
+assertion failed: audit.promotion_attempt_count >= 1

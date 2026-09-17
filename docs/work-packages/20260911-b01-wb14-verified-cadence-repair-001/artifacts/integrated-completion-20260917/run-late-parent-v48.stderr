@@ -1,0 +1,9 @@
+
+thread 'native-mixed-phase-final-owner-join-n12' (3442256) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs:2274:9:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rolls_back_final_owner_join_fault' (3442255) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1159:5:
+assertion `left == right` failed
+  left: 1
+ right: 0

@@ -1,0 +1,54 @@
+{
+  "source_tree_sha256": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+  "checks": [
+    {
+      "kind": "strict",
+      "exit_code": 101,
+      "elapsed_seconds": 9.554602406919003,
+      "baseline_count": 27,
+      "candidate_count": 27,
+      "introduced_or_changed_instances": 0,
+      "removed_or_changed_instances": 0,
+      "comparison": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-strict-versus-v6.json"
+    },
+    {
+      "kind": "nodeps",
+      "exit_code": 101,
+      "elapsed_seconds": 42.454259735066444,
+      "baseline_count": 2853,
+      "candidate_count": 2851,
+      "introduced_or_changed_instances": 2,
+      "removed_or_changed_instances": 4,
+      "comparison": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-nodeps-versus-v6.json"
+    },
+    {
+      "kind": "no-default",
+      "exit_code": 101,
+      "elapsed_seconds": 22.29488189611584,
+      "baseline_count": 66,
+      "candidate_count": 66,
+      "introduced_or_changed_instances": 0,
+      "removed_or_changed_instances": 0,
+      "comparison": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-no-default-versus-v6.json"
+    },
+    {
+      "kind": "evidence-only",
+      "exit_code": 101,
+      "elapsed_seconds": 22.94574624625966,
+      "baseline_count": 36,
+      "candidate_count": 36,
+      "introduced_or_changed_instances": 0,
+      "removed_or_changed_instances": 0,
+      "comparison": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-evidence-only-versus-v6.json"
+    }
+  ],
+  "strict_and_feature_status": "FAIL; unchanged inherited debt/configuration failures, never a warnings-denied or compatibility pass",
+  "nodeps_attribution": "Only two instances of same inherited parent helper length253\u2192264, adding one naturally formatted11-line test-only observer call; two inherited redundant closures removed; no new remaining diagnostic kind/site",
+  "prospective_policy": "Bounded isolated-test inherited-debt comparison declared before edits; distinct correctness and QA accept the bounded attribution while retaining strict/configuration FAILs",
+  "format_check_receipt": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/semicolon-unit-controls-check-v70.json",
+  "full_qualification": "HOLD; not run",
+  "review_records": [
+    "correctness-review-terminal.md",
+    "qa-review-terminal.md"
+  ]
+}

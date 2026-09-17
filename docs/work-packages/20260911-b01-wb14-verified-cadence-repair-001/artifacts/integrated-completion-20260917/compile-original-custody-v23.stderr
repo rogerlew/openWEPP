@@ -1,0 +1,58 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling serde_core v1.0.228
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling syn v2.0.117
+   Compiling typenum v1.20.0
+   Compiling serde v1.0.228
+   Compiling serde_derive v1.0.228
+   Compiling cfg-if v1.0.4
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling itoa v1.0.18
+   Compiling digest v0.10.7
+   Compiling syn v3.0.3
+   Compiling thiserror v2.0.20
+   Compiling autocfg v1.5.1
+   Compiling cpufeatures v0.2.17
+   Compiling sha2 v0.10.9
+   Compiling num-traits v0.2.19
+   Compiling thiserror-impl v2.0.20
+   Compiling zmij v1.0.21
+   Compiling equivalent v1.0.2
+   Compiling serde_json v1.0.150
+   Compiling openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-unit-boundary)
+   Compiling openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-sim-contract)
+   Compiling hashbrown v0.17.1
+   Compiling crc32fast v1.5.0
+   Compiling indexmap v2.14.0
+   Compiling ryu v1.0.23
+   Compiling memchr v2.8.0
+   Compiling simd-adler32 v0.3.9
+   Compiling unsafe-libyaml v0.2.11
+   Compiling adler2 v2.0.1
+   Compiling miniz_oxide v0.8.9
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling num-integer v0.1.46
+   Compiling openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-kernel-contract)
+   Compiling num-bigint v0.4.6
+   Compiling flate2 v1.1.9
+   Compiling openwepp-management-schema v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-management-schema)
+   Compiling libm v0.2.16
+   Compiling base64 v0.22.1
+   Compiling openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-coupled-time)
+   Compiling openwepp-input-contract v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-input-contract)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-vegetation)
+   Compiling openwepp-biogeochemistry v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-biogeochemistry)
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-land-surface-energy)
+error: failed to write to `/workdir/.cache/openwepp/targets/b01-wb14-integrated-promotion-20260917-fdc1afd6fadb/debug/deps/rmetaKrebkC/full.rmeta`: No space left on device (os error 28)
+
+error: could not compile `openwepp-vegetation` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: failed to write to `/workdir/.cache/openwepp/targets/b01-wb14-integrated-promotion-20260917-fdc1afd6fadb/debug/deps/rmetacv53SU/full.rmeta`: No space left on device (os error 28)
+
+error: could not compile `openwepp-land-surface-energy` (lib) due to 1 previous error

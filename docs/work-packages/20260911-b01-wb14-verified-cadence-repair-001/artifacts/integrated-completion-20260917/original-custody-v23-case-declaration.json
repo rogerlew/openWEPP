@@ -1,0 +1,18 @@
+{
+  "record_version": 1,
+  "source_cut": "v23-original-custody",
+  "fresh_trajectory": "each libtest selector spawns an independent NativeMixedPhase thread and one-shot audit control",
+  "receiver_boundary": "post-native-V2-install disposable DirectV10 candidate, immediately before accept_promoted_candidate_only_frozen_litter_v4",
+  "caller_boundary": "borrowed production caller remains outside the disposable receiver control; the production trajectory aborts through a typed test sentinel before normal install",
+  "expected_guard": "candidate-only aggregate/child-local promotion custody",
+  "expected_outer_variant": "DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Serialization)",
+  "expected_category": "serialization",
+  "expected_detail": "frozen-litter V4 deferred projection promotion: frozen-litter V3 identity failure: candidate-only aggregate/child-local promotion custody",
+  "expected_audit": {"promotion_attempt_count": 1, "promotion_entry_count": 1, "promotion_success_count": 0},
+  "cases": [
+    {"id":"N4-support", "selector":"v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_original_support_at_promotion_entry", "mutation":"original prepared support_start_ns + 1", "order":"V3 aggregate/child-local custody comparison"},
+    {"id":"N5-predecessor", "selector":"v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_original_predecessor_at_promotion_entry", "mutation":"original prepared expected_predecessor_transaction_id = transaction_id", "order":"V3 aggregate/child-local custody comparison"},
+    {"id":"N6-receipt-chain", "selector":"v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_original_receipt_chain_at_promotion_entry", "mutation":"original prepared receipt_chain_sha256 = fixed valid unequal digest", "order":"V3 aggregate/child-local custody comparison"}
+  ],
+  "snapshot": "canonical_v11_parent_owner_state_bytes and full DirectV10 Debug before/after must match"
+}

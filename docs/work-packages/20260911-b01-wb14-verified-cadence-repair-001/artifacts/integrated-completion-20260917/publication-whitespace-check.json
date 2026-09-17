@@ -1,0 +1,31 @@
+{
+  "recorded_utc": "2026-09-17T19:24:31.599457+00:00",
+  "check_argv": [
+    "git",
+    "diff",
+    "--cached",
+    "--check",
+    "--",
+    "*.md",
+    "*.py",
+    "*.json"
+  ],
+  "initial_exit_code": 2,
+  "findings": [
+    {
+      "path": "qa-review-outer-roots-v52.md",
+      "line": 4,
+      "finding": "two Markdown hard-break trailing spaces"
+    },
+    {
+      "path": "qa-review-terminal.md",
+      "line": 3,
+      "finding": "two Markdown hard-break trailing spaces"
+    }
+  ],
+  "fix_owner": "/root/completion_qa",
+  "fix": "Removed the two trailing hard-break spaces only; review meanings and dispositions unchanged",
+  "cumulative_failure_floor": 251,
+  "scope": "Maintained narrative/scripts/JSON; byte-exact raw logs and unified patch data retained unchanged",
+  "corrected_exit_code": 0
+}

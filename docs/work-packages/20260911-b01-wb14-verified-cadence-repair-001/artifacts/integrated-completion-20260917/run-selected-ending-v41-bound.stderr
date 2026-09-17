@@ -1,0 +1,7 @@
+
+thread 'native-mixed-phase-selected-ending-n8' (3415278) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2372:22:
+poisoned selected final replay join must fail: ()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_rejects_selected_ending_at_final_replay' (3415277) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1062:5:
+projection control reached an unexpected panic payload

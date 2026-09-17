@@ -1,0 +1,224 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator)
+error: expected one of `)`, `,`, `.`, `?`, or an operator, found `;`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1904:6
+     |
+1904 |     );    tick,
+     |      ^
+     |      |
+     |      expected one of `)`, `,`, `.`, `?`, or an operator
+     |      help: missing `,`
+
+error[E0425]: cannot find value `accepted_event` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1908:73
+     |
+1908 |     candidate_consumer.retain_accepted_publication_zero_duration_event(&accepted_event)?;
+     |                                                                         ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `candidate_parent` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1911:10
+     |
+1911 |         &candidate_parent,
+     |          ^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `candidate_clock` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1913:10
+     |
+1913 |         &candidate_clock,
+     |          ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `candidate_parent` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1941:15
+     |
+1941 |     *parent = candidate_parent;
+     |               ^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `candidate_clock` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1943:14
+     |
+1943 |     *clock = candidate_clock;
+     |              ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `candidate_parent` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1897:9
+     |
+1897 |         candidate_parent,
+     |         ^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `candidate_clock` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1899:9
+     |
+1899 |         candidate_clock,
+     |         ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `accepted_event` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1902:9
+     |
+1902 |         accepted_event,
+     |         ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `candidate_parent` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1929:55
+     |
+1929 |                 "parent_checkpoint_after_soil_close": candidate_parent.checkpoint(),
+     |                                                       ^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `candidate_clock` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1931:53
+     |
+1931 |                 "clock_after_soil_close": format!("{candidate_clock:#?}"),
+     |                                                     ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `accepted_event` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1934:46
+     |
+1934 |                 "accepted_soil_close_event": accepted_event,
+     |                                              ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0308]: `?` operator has incompatible types
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1905:9
+     |
+1905 |         owner_envelopes_from_states(&ending_owners)?,
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `BTreeMap<String, V11OwnerEnvelope>`
+     |
+     = note: `?` operator cannot convert from `std::collections::BTreeMap<std::string::String, openwepp_vegetation::V11OwnerEnvelope>` to `std::string::String`
+     = note: expected struct `std::string::String`
+                found struct `std::collections::BTreeMap<std::string::String, openwepp_vegetation::V11OwnerEnvelope>`
+
+error[E0061]: this function takes 5 arguments but 3 arguments were supplied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1892:18
+     |
+1892 |       let ledger = LedgerEntryV1::new(
+     |  __________________^^^^^^^^^^^^^^^^^^-
+1893 | |     #[cfg(test)]
+1894 | |     observe_b01_integrated_parent_final_v1!(
+1895 | |         endpoint,
+...    |
+1904 | |     );    tick,
+     | |           ---- expected `String`, found `ModelTimeNs`
+1905 | |         owner_envelopes_from_states(&ending_owners)?,
+1906 | |         &mutation_set,
+1907 | |     )?;
+     | |_____- two arguments of type `openwepp_coupled_time::Digest32` and `openwepp_coupled_time::Digest32` are missing
+     |
+note: expected `Digest32`, found `&Vec<String>`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1906:9
+     |
+1906 |         &mutation_set,
+     |         ^^^^^^^^^^^^^
+     = note: expected struct `openwepp_coupled_time::Digest32`
+             found reference `&Vec<std::string::String>`
+note: associated function defined here
+    --> crates/openwepp-coupled-time/src/transaction.rs:17:12
+     |
+  17 |     pub fn new(
+     |            ^^^
+help: provide the arguments
+     |
+1892 -     let ledger = LedgerEntryV1::new(
+1893 -     #[cfg(test)]
+1894 -     observe_b01_integrated_parent_final_v1!(
+1895 -         endpoint,
+1896 -         parent,
+1897 -         candidate_parent,
+1898 -         clock,
+1899 -         candidate_clock,
+1900 -         consumer,
+1901 -         candidate_consumer,
+1902 -         accepted_event,
+1903 -         ending_owner_set
+1904 -     );    tick,
+1905 -         owner_envelopes_from_states(&ending_owners)?,
+1906 -         &mutation_set,
+1907 -     )?;
+1892 +     let ledger = LedgerEntryV1::new(/* std::string::String */, owner_envelopes_from_states(&ending_owners)?, /* openwepp_coupled_time::Digest32 */, /* openwepp_coupled_time::Digest32 */, /* openwepp_coupled_time::Digest32 */)?;
+     |
+
+error[E0308]: mismatched types
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1651:93
+     |
+1651 |           if crate::v9_real_consumer_shadow::integrated_promotion_boundary_audit_enabled_v1() {
+     |  _____________________________________________________________________________________________^
+1652 | |             println!(
+1653 | |                 "B01_INTEGRATED_PARENT_FINAL {}",
+1654 | |                 serde_json::to_string(&serde_json::json!({
+...    |
+1672 | |             );
+1673 | |         }
+     | |_________^ expected `String`, found `()`
+...
+1894 | /     observe_b01_integrated_parent_final_v1!(
+1895 | |         endpoint,
+1896 | |         parent,
+1897 | |         candidate_parent,
+...    |
+1903 | |         ending_owner_set
+1904 | |     );    tick,
+     | |_____- in this macro invocation
+     |
+     = note: this error originates in the macro `observe_b01_integrated_parent_final_v1` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0308]: `?` operator has incompatible types
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1905:9
+     |
+1905 |         owner_envelopes_from_states(&ending_owners)?,
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Digest32`, found `BTreeMap<String, V11OwnerEnvelope>`
+     |
+     = note: `?` operator cannot convert from `std::collections::BTreeMap<std::string::String, openwepp_vegetation::V11OwnerEnvelope>` to `openwepp_coupled_time::Digest32`
+     = note: expected struct `openwepp_coupled_time::Digest32`
+                found struct `std::collections::BTreeMap<std::string::String, openwepp_vegetation::V11OwnerEnvelope>`
+
+error[E0061]: this function takes 5 arguments but 4 arguments were supplied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1892:18
+     |
+1892 |       let ledger = LedgerEntryV1::new(
+     |  __________________^^^^^^^^^^^^^^^^^^-
+1893 | |     #[cfg(test)]
+1894 | |     observe_b01_integrated_parent_final_v1!(
+1895 | |         endpoint,
+...    |
+1904 | |     );    tick,
+     | |           ---- expected `String`, found `ModelTimeNs`
+1905 | |         owner_envelopes_from_states(&ending_owners)?,
+1906 | |         &mutation_set,
+1907 | |     )?;
+     | |_____- argument #5 of type `openwepp_coupled_time::Digest32` is missing
+     |
+note: expected `Digest32`, found `&Vec<String>`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:1906:9
+     |
+1906 |         &mutation_set,
+     |         ^^^^^^^^^^^^^
+     = note: expected struct `openwepp_coupled_time::Digest32`
+             found reference `&Vec<std::string::String>`
+note: associated function defined here
+    --> crates/openwepp-coupled-time/src/transaction.rs:17:12
+     |
+  17 |     pub fn new(
+     |            ^^^
+help: provide the argument
+     |
+1892 ~     let ledger = LedgerEntryV1::new(
+1893 +     observe_b01_integrated_parent_final_v1!(
+1894 +         endpoint,
+1895 +         parent,
+1896 +         candidate_parent,
+1897 +         clock,
+1898 +         candidate_clock,
+1899 +         consumer,
+1900 +         candidate_consumer,
+1901 +         accepted_event,
+1902 +         ending_owner_set
+1903 +     ),
+1904 +     /* std::string::String */,
+1905 +         owner_envelopes_from_states(&ending_owners)?,
+1906 +     /* openwepp_coupled_time::Digest32 */,
+1907 +     /* openwepp_coupled_time::Digest32 */,
+1908 ~     )?;
+     |
+
+Some errors have detailed explanations: E0061, E0308, E0425.
+For more information about an error, try `rustc --explain E0061`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 8 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 15 previous errors

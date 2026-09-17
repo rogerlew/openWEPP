@@ -1,0 +1,9 @@
+
+thread 'native-mixed-phase-publishable-wrong-original-n7' (3379353) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2684:21:
+assertion `left == right` failed
+  left: "V9 real-consumer owner closure failure: V4 deferred promotion requires candidate-only soil custody"
+ right: "V9 real-consumer owner-closure failure: V4 deferred promotion requires candidate-only soil custody"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_prefers_publishable_guard_before_wrong_original' (3379352) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:1068:5:
+projection control reached an unexpected panic payload

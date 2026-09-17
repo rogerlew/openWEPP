@@ -1,0 +1,1688 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v3_execution.rs
+@@ -978,6 +978,11 @@
+     input: &FrozenLitterV4RuntimeInput<'_>,
+     heterogeneous_surface_protocol: Option<(&[WaterAmount], &[WaterAuthorization], &[WaterAmount])>,
+ ) -> Result<AcceptedFrozenLitterV4RuntimeCandidate, FrozenLitterV3RuntimeError> {
++    #[cfg(test)]
++    crate::v9_real_consumer_shadow::record_integrated_promotion_boundary_v1(
++        "v4-runtime-entry",
++        false,
++    );
+     input
+         .beginning_exact_surface_owner
+         .validate_frozen_parent_join(
+@@ -1027,11 +1032,17 @@
+             &exact.ending_owner,
+             &exact.receipt,
+         )?;
+-    Ok(AcceptedFrozenLitterV4RuntimeCandidate {
++    let accepted = AcceptedFrozenLitterV4RuntimeCandidate {
+         physical,
+         ending_exact_surface_owner: exact.ending_owner,
+         exact_surface_receipt: exact.receipt,
+         complete_owner_projection: projection,
+         complete_owner_projection_canonical_bytes: bytes,
+-    })
+-}
++    };
++    #[cfg(test)]
++    crate::v9_real_consumer_shadow::record_integrated_promotion_boundary_v1(
++        "v4-runtime-success",
++        false,
++    );
++    Ok(accepted)
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs
+@@ -1910,6 +1910,31 @@
+         &candidate_clock,
+     )?;
+ 
++    #[cfg(test)]
++    if crate::v9_real_consumer_shadow::integrated_promotion_boundary_audit_enabled_v1() {
++        println!(
++            "B01_INTEGRATED_PARENT_FINAL {}",
++            serde_json::to_string(&serde_json::json!({
++                "record_version": 1,
++                "boundary": "later accepted parent endpoint native-V2 soil close before parent finalization",
++                "endpoint_support": endpoint.support,
++                "endpoint_wb14_child_receipt_set_sha256": endpoint.wb14_child_receipt_set_sha256,
++                "endpoint_wb14_parent_receipt_set_sha256": endpoint.wb14_parent_receipt_set_sha256,
++                "endpoint_wb14_child_replay_bytes": endpoint.wb14_child_replay_bytes,
++                "endpoint_wb14_parent_replay_bytes": endpoint.wb14_parent_replay_bytes,
++                "parent_checkpoint_before": parent.checkpoint(),
++                "parent_checkpoint_after_soil_close": candidate_parent.checkpoint(),
++                "clock_before": format!("{clock:#?}"),
++                "clock_after_soil_close": format!("{candidate_clock:#?}"),
++                "consumer_before_owner_bytes": consumer.canonical_owner_state_bytes()?,
++                "consumer_after_owner_bytes": candidate_consumer.canonical_owner_state_bytes()?,
++                "accepted_soil_close_event": accepted_event,
++                "expected_child_beginning_owner_set": ending_owner_set,
++            }))
++            .expect("integrated parent final JSON")
++        );
++    }
++
+     *parent = candidate_parent;
+     *consumer = candidate_consumer;
+     *clock = candidate_clock;
+@@ -2013,6 +2038,12 @@
+             "injected post-owner-join rollback",
+         ));
+     }
++    #[cfg(test)]
++    let parent_checkpoint_before_finalization = parent.checkpoint();
++    #[cfg(test)]
++    let clock_before_finalization = format!("{clock:#?}");
++    #[cfg(test)]
++    let consumer_before_finalization = consumer.canonical_owner_state_bytes()?;
+     let (mut finalized, finalized_handoff) = parent
+         .clone()
+         .finalize_with_validated_handoff(&context.vegetation_configuration)?;
+@@ -2031,6 +2062,29 @@
+         &consumer,
+         day_index,
+     )?;
++    #[cfg(test)]
++    if crate::v9_real_consumer_shadow::integrated_promotion_boundary_audit_enabled_v1() {
++        println!(
++            "B01_INTEGRATED_PARENT_FINAL {}",
++            serde_json::to_string(&serde_json::json!({
++                "record_version": 1,
++                "boundary": "actual adaptive parent finalization after validated handoff and publication crossjoin",
++                "prepared_support": prepared.support,
++                "parent_checkpoint_before_finalization_debug": format!("{parent_checkpoint_before_finalization:#?}"),
++                "finalized_parent_candidate_debug": format!("{finalized:#?}"),
++                "clock_before_finalization": clock_before_finalization,
++                "clock_after_finalization": format!("{clock:#?}"),
++                "consumer_before_owner_bytes": consumer_before_finalization,
++                "consumer_after_owner_bytes": consumer.canonical_owner_state_bytes()?,
++                "adaptive_support_receipt_debug": format!("{adaptive_support_receipt:#?}"),
++                "owner_joins_debug": format!("{owner_joins:#?}"),
++                "event_groups_debug": format!("{event_groups:#?}"),
++                "terminal_parcels_debug": format!("{terminal_parcels:#?}"),
++                "snow_free_successor_receipts_debug": format!("{snow_free_successor_receipts:#?}"),
++            }))
++            .expect("integrated adaptive parent final JSON")
++        );
++    }
+     if crate::snow_stage3_v11_attachment::adaptive_parent_telemetry_enabled_v1() {
+         let transient_diagnostics = adaptive_support_receipt.transient_diagnostics()?;
+         let parent_elapsed = parent_telemetry_started.elapsed();
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
+@@ -495,6 +495,9 @@
+ struct NativeMixedPhaseFixtureOutcomeV1 {
+     production: AdaptiveProductionOutcomeV1,
+     fixture: super::CompleteWb14CadenceFixtureResultV1,
++    native_physical_audit: crate::v9_real_consumer_shadow::CoveredNativePhysicalPathAuditV1,
++    carrier_live_audit:
++        crate::v9_real_consumer_shadow::v11_covered::CoveredCarrierLiveConsumptionAuditV1,
+ }
+ 
+ fn run_native_mixed_phase_terminal_on_large_stack() -> NativeMixedPhaseFixtureOutcomeV1 {
+@@ -503,6 +506,8 @@
+     begin_adaptive_controller_test_audit(AdaptiveControllerTestPolicyV1::default());
+     begin_adaptive_performance_test_audit();
+     begin_adaptive_comparison_test_audit();
++    let _native_physical_audit =
++        crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
+     crate::v9_real_consumer_shadow::v11_covered::begin_covered_carrier_support_audit();
+     crate::v9_real_consumer_shadow::v11_covered::begin_covered_carrier_live_consumption_audit();
+     begin_terminal_batch_production_audit();
+@@ -530,8 +535,13 @@
+     let publication_captures = take_accepted_publication_capture_audit();
+     let performance_spans = take_adaptive_performance_test_audit();
+     let comparison_audits = take_adaptive_comparison_test_audit();
+-    let _live_carrier_audit =
++    let carrier_live_audit =
+         crate::v9_real_consumer_shadow::v11_covered::take_covered_carrier_live_consumption_audit();
++    let native_physical_audit =
++        crate::v9_real_consumer_shadow::take_covered_native_physical_path_audit_v1();
++    println!(
++        "B01_NATIVE_MIXED_PHASE_RAW native_physical={native_physical_audit:?} carrier_live={carrier_live_audit:?}"
++    );
+     let receipt = receipts
+         .last()
+         .cloned()
+@@ -549,6 +559,8 @@
+     NativeMixedPhaseFixtureOutcomeV1 {
+         production,
+         fixture,
++        native_physical_audit,
++        carrier_live_audit,
+     }
+ }
+ 
+@@ -819,6 +831,248 @@
+         serde_json::to_string(&native_mixed_phase_diagnostic_payload(&value))
+             .expect("native diagnostic payload")
+     );
++}
++
++#[test]
++fn native_mixed_phase_fixture_reaches_deferred_v4_promotion_boundary() {
++    let (value, promotion_audit) = std::thread::Builder::new()
++        .name("native-mixed-phase-integrated-promotion".to_owned())
++        .stack_size(64 * 1024 * 1024)
++        .spawn(|| {
++            use crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1 as Case;
++
++            CANONICAL_PARITY_CASE.with(|slot| slot.set(Some(Case::NativeMixedPhase)));
++            crate::v9_real_consumer_shadow::begin_integrated_promotion_boundary_audit_v1();
++            match std::panic::catch_unwind(std::panic::AssertUnwindSafe(
++                run_native_mixed_phase_terminal_on_large_stack,
++            )) {
++                Ok(value) => {
++                    let promotion_audit = crate::v9_real_consumer_shadow::
++                        take_integrated_promotion_boundary_audit_v1();
++                    println!(
++                        "B01_INTEGRATED_PROMOTION outcome=success promotion={promotion_audit:?} native_physical={:?} carrier_live={:?}",
++                        value.native_physical_audit,
++                        value.carrier_live_audit,
++                    );
++                    (value, promotion_audit)
++                }
++                Err(panic) => {
++                    let promotion_audit = crate::v9_real_consumer_shadow::
++                        take_integrated_promotion_boundary_audit_v1();
++                    let native_physical = crate::v9_real_consumer_shadow::
++                        take_covered_native_physical_path_audit_v1();
++                    let carrier_live = crate::v9_real_consumer_shadow::v11_covered::
++                        take_covered_carrier_live_consumption_audit();
++                    println!(
++                        "B01_INTEGRATED_PROMOTION outcome=unwind promotion={promotion_audit:?} native_physical={native_physical:?} carrier_live={carrier_live:?}"
++                    );
++                    std::panic::resume_unwind(panic);
++                }
++            }
++        })
++        .expect("spawn native mixed-phase integrated promotion")
++        .join()
++        .expect("join native mixed-phase integrated promotion");
++
++    assert_eq!(
++        value.fixture.fixture_inputs["parity_profile"],
++        "native-mixed-phase"
++    );
++    assert_eq!(
++        value.fixture.fixture_inputs["hard_boundary_ns"],
++        serde_json::json!(60_000_000_000_u128)
++    );
++    assert_eq!(
++        value.production.0.parent_support,
++        openwepp_coupled_time::TimeSupport::new(
++            openwepp_coupled_time::ModelTimeNs::new(0),
++            openwepp_coupled_time::ModelTimeNs::new(1_800_000_000_000)
++        )
++        .expect("native parent support")
++    );
++    assert!(value.fixture.beginning_native_v3_resident_present);
++    assert!(value.fixture.beginning_native_v4_resident_present);
++    assert_eq!(promotion_audit.deferred_completion_count, 1);
++    assert_eq!(promotion_audit.v4_runtime_entry_count, 2);
++    assert_eq!(promotion_audit.v4_runtime_success_count, 2);
++    assert_eq!(promotion_audit.final_replay_entry_count, 1);
++    assert_eq!(promotion_audit.final_replay_success_count, 1);
++    assert_eq!(promotion_audit.promotion_attempt_count, 1);
++    assert_eq!(promotion_audit.promotion_entry_count, 1);
++    assert_eq!(promotion_audit.promotion_success_count, 1);
++    assert_eq!(promotion_audit.projection_promotion_entry_count, 1);
++    assert_eq!(promotion_audit.projection_promotion_success_count, 1);
++    assert_eq!(
++        promotion_audit.promotion_entry_count, promotion_audit.candidate_only_promotion_entry_count,
++        "only candidate-only V4 custody may enter deferred promotion"
++    );
++    assert_eq!(
++        value
++            .native_physical_audit
++            .snow_free_litter_physics_call_count,
++        0
++    );
++    assert_eq!(
++        value
++            .native_physical_audit
++            .snow_free_surface_physics_call_count,
++        0
++    );
++    assert_eq!(
++        value
++            .native_physical_audit
++            .snow_free_wb14_physics_call_count,
++        0
++    );
++    assert_eq!(promotion_audit.snow_free_litter_low_level_count, 2);
++    assert_eq!(promotion_audit.snow_free_surface_low_level_count, 2);
++    assert_eq!(promotion_audit.snow_free_wb14_low_level_count, 3);
++    assert!(!value.carrier_live_audit.carrier_rows.is_empty());
++    assert_native_mixed_phase_transition(&value.fixture);
++    println!(
++        "B01_INTEGRATED_PARENT {}",
++        serde_json::to_string(&serde_json::json!({
++            "record_version": 1,
++            "boundary": "native mixed-phase accepted parent after complete terminal execution",
++            "parent": value.fixture.canonical_comparison_payload(),
++        }))
++        .expect("integrated parent JSON")
++    );
++}
++
++#[test]
++fn native_mixed_phase_fixture_rejects_wrong_original_owner_at_promotion_entry() {
++    let sentinel = std::thread::Builder::new()
++        .name("native-mixed-phase-wrong-original-n2".to_owned())
++        .stack_size(64 * 1024 * 1024)
++        .spawn(|| {
++            use crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1 as Case;
++
++            CANONICAL_PARITY_CASE.with(|slot| slot.set(Some(Case::NativeMixedPhase)));
++            crate::v9_real_consumer_shadow::begin_integrated_promotion_boundary_audit_v1();
++            crate::v9_real_consumer_shadow::enable_integrated_wrong_original_n2_v1();
++            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(
++                run_native_mixed_phase_terminal_on_large_stack,
++            ));
++            let audit = crate::v9_real_consumer_shadow::take_integrated_promotion_boundary_audit_v1();
++            (result, audit)
++        })
++        .expect("spawn native mixed-phase wrong-original N2")
++        .join()
++        .expect("join native mixed-phase wrong-original N2");
++    let (sentinel, audit) = sentinel;
++    let panic = match sentinel {
++        Err(panic) => panic,
++        Ok(_) => panic!("N2 must stop after the rejected disposable promotion"),
++    };
++    assert!(
++        panic
++            .downcast_ref::<crate::v9_real_consumer_shadow::B01IntegratedWrongOriginalN2Sentinel>()
++            .is_some()
++    );
++    println!("B01_INTEGRATED_N2_WRONG_ORIGINAL promotion={audit:?}");
++    assert!(audit.promotion_attempt_count >= 1);
++    assert!(audit.promotion_entry_count >= 1);
++    assert_eq!(audit.promotion_success_count, 0);
++}
++
++fn run_native_mixed_phase_original_custody_control_v1(
++    control: crate::v9_real_consumer_shadow::B01IntegratedOriginalCustodyControlV1,
++) -> crate::v9_real_consumer_shadow::IntegratedPromotionBoundaryAuditV1 {
++    let sentinel = std::thread::Builder::new()
++        .name(format!("native-mixed-phase-original-custody-{control:?}"))
++        .stack_size(64 * 1024 * 1024)
++        .spawn(move || {
++            use crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1 as Case;
++
++            CANONICAL_PARITY_CASE.with(|slot| slot.set(Some(Case::NativeMixedPhase)));
++            crate::v9_real_consumer_shadow::begin_integrated_promotion_boundary_audit_v1();
++            crate::v9_real_consumer_shadow::enable_integrated_original_custody_control_v1(control);
++            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(
++                run_native_mixed_phase_terminal_on_large_stack,
++            ));
++            let audit = crate::v9_real_consumer_shadow::take_integrated_promotion_boundary_audit_v1();
++            (result, audit)
++        })
++        .expect("spawn native mixed-phase original-custody control")
++        .join()
++        .expect("join native mixed-phase original-custody control");
++    let (sentinel, audit) = sentinel;
++    let panic = match sentinel {
++        Err(panic) => panic,
++        Ok(_) => panic!("original-custody control must stop after rejected disposable promotion"),
++    };
++    assert!(
++        panic
++            .downcast_ref::<crate::v9_real_consumer_shadow::B01IntegratedOriginalCustodyN4Sentinel>()
++            .is_some()
++    );
++    assert_eq!(audit.promotion_attempt_count, 1);
++    assert_eq!(audit.promotion_entry_count, 1);
++    assert_eq!(audit.promotion_success_count, 0);
++    audit
++}
++
++#[test]
++fn native_mixed_phase_fixture_rejects_original_support_at_promotion_entry() {
++    let audit = run_native_mixed_phase_original_custody_control_v1(
++        crate::v9_real_consumer_shadow::B01IntegratedOriginalCustodyControlV1::SupportStart,
++    );
++    println!("B01_INTEGRATED_N4_ORIGINAL_SUPPORT promotion={audit:?}");
++}
++
++#[test]
++fn native_mixed_phase_fixture_rejects_original_predecessor_at_promotion_entry() {
++    let audit = run_native_mixed_phase_original_custody_control_v1(
++        crate::v9_real_consumer_shadow::B01IntegratedOriginalCustodyControlV1::ExpectedPredecessor,
++    );
++    println!("B01_INTEGRATED_N4_ORIGINAL_PREDECESSOR promotion={audit:?}");
++}
++
++#[test]
++fn native_mixed_phase_fixture_rejects_original_receipt_chain_at_promotion_entry() {
++    let audit = run_native_mixed_phase_original_custody_control_v1(
++        crate::v9_real_consumer_shadow::B01IntegratedOriginalCustodyControlV1::ReceiptChain,
++    );
++    println!("B01_INTEGRATED_N4_ORIGINAL_RECEIPT_CHAIN promotion={audit:?}");
++}
++
++#[test]
++fn native_mixed_phase_fixture_rejects_missing_accepted_replay_at_promotion_entry() {
++    let sentinel = std::thread::Builder::new()
++        .name("native-mixed-phase-missing-replay-n3".to_owned())
++        .stack_size(64 * 1024 * 1024)
++        .spawn(|| {
++            use crate::v9_real_consumer_shadow::v11_covered::CanonicalCoveredPhysicalParityCaseV1 as Case;
++
++            CANONICAL_PARITY_CASE.with(|slot| slot.set(Some(Case::NativeMixedPhase)));
++            crate::v9_real_consumer_shadow::begin_integrated_promotion_boundary_audit_v1();
++            crate::v9_real_consumer_shadow::enable_integrated_missing_replay_n3_v1();
++            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(
++                run_native_mixed_phase_terminal_on_large_stack,
++            ));
++            let audit = crate::v9_real_consumer_shadow::take_integrated_promotion_boundary_audit_v1();
++            (result, audit)
++        })
++        .expect("spawn native mixed-phase missing-replay N3")
++        .join()
++        .expect("join native mixed-phase missing-replay N3");
++    let (sentinel, audit) = sentinel;
++    let panic = match sentinel {
++        Err(panic) => panic,
++        Ok(_) => panic!("N3 must stop after the rejected disposable promotion"),
++    };
++    assert!(
++        panic
++            .downcast_ref::<crate::v9_real_consumer_shadow::B01IntegratedMissingReplayN3Sentinel>()
++            .is_some()
++    );
++    println!("B01_INTEGRATED_N3_MISSING_REPLAY promotion={audit:?}");
++    assert_eq!(audit.promotion_attempt_count, 0);
++    assert_eq!(audit.promotion_entry_count, 1);
++    assert_eq!(audit.promotion_success_count, 0);
++    assert_eq!(audit.projection_promotion_entry_count, 0);
++    assert_eq!(audit.projection_promotion_success_count, 0);
+ }
+ 
+ fn run_equilibrium_complete_owner_for_duration(
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_carrier_phase.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_carrier_phase.rs
+@@ -166,7 +166,7 @@
+         .probe_child_identity
+         .physical_child_ordinal;
+     for (index, phase) in carrier_phase_chain.iter_mut().enumerate() {
+-        let prior_child = &phase.transition.probe_child_identity;
++        let prior_child = phase.transition.probe_child_identity.clone();
+         let physical_child_ordinal = first_physical_child_ordinal
+             .checked_add(u32::try_from(index).map_err(|_| {
+                 DirectSnowStage3V11AttachmentError::Identity(
+@@ -176,7 +176,7 @@
+             .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                 "exact endpoint physical-child ordinal overflow",
+             ))?;
+-        phase.transition.probe_child_identity =
++        let resealed_child =
+             CoveredProbeChildIdentityV1::try_new(ProbeChildAuthorityV1 {
+                 parent_transaction_sha256: prior_child.parent_transaction_sha256,
+                 enclosing_parent_support: prior_child.enclosing_parent_support,
+@@ -189,6 +189,24 @@
+                 complete_forcing_sha256: prior_child.complete_forcing_sha256,
+                 topology_sha256: prior_child.topology_sha256,
+             })?;
++        #[cfg(test)]
++        if crate::v9_real_consumer_shadow::integrated_promotion_boundary_audit_enabled_v1() {
++            println!(
++                "B01_INTEGRATED_PROBE_RESEAL {}",
++                serde_json::to_string(&serde_json::json!({
++                    "record_version": 1,
++                    "boundary": "exact endpoint selected carrier-phase physical ordinal reseal",
++                    "chain_index": index,
++                    "carrier_ending_joint_sha256": phase.ending_candidates.joint().receipt_sha256(),
++                    "trial_source_receipts_by_lane": phase.batch_terminal_snow_soil_trial_receipts_by_lane,
++                    "top_boundary_credits_by_lane": phase.batch_soil_top_boundary_credits_by_lane,
++                    "old_identity": b01_integrated_probe_child_identity_json_v1(&prior_child),
++                    "new_identity": b01_integrated_probe_child_identity_json_v1(&resealed_child),
++                }))
++                .expect("integrated probe reseal JSON")
++            );
++        }
++        phase.transition.probe_child_identity = resealed_child;
+     }
+     if u32::try_from(carrier_phase_chain.len()).ok() != Some(accepted_child_count) {
+         return Err(DirectSnowStage3V11AttachmentError::Identity(
+@@ -204,3 +222,23 @@
+         wb14_replay_trial_sha256,
+     ))
+ }
++
++#[cfg(test)]
++fn b01_integrated_probe_child_identity_json_v1(
++    identity: &crate::hydrology::CoveredProbeChildIdentityV1,
++) -> serde_json::Value {
++    serde_json::json!({
++        "parent_transaction_sha256": identity.parent_transaction_sha256,
++        "enclosing_parent_support": identity.enclosing_parent_support,
++        "trial_support": identity.trial_support,
++        "physical_child_ordinal": identity.physical_child_ordinal,
++        "attempt_ordinal": identity.attempt_ordinal,
++        "role": format!("{:?}", identity.role),
++        "role_u8": identity.role as u8,
++        "beginning_joint_sha256": identity.beginning_joint_sha256,
++        "beginning_owner_set_sha256": identity.beginning_owner_set_sha256,
++        "complete_forcing_sha256": identity.complete_forcing_sha256,
++        "topology_sha256": identity.topology_sha256,
++        "receipt_sha256": identity.receipt_sha256,
++    })
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_preterminal_replay.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_preterminal_replay.rs
+@@ -59,7 +59,7 @@
+         .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+             "adaptive terminal receipt ordinal overflow",
+         ))?;
+-    let prior_identity = &carrier_phase.transition.probe_child_identity;
++    let prior_identity = carrier_phase.transition.probe_child_identity.clone();
+     let wb14_replay_trial_sha256 = prior_identity.receipt_sha256;
+     let wb14_ofe_topology = &carrier_phase
+         .beginning_candidates
+@@ -108,7 +108,7 @@
+         )?;
+     let wb14_replay_beginning_owner_set_sha256 =
+         Digest32::from_bytes(replay_binding.parent_beginning_complete_owner_set_sha256);
+-    carrier_phase.transition.probe_child_identity =
++    let resealed_child =
+         CoveredProbeChildIdentityV1::try_new(ProbeChildAuthorityV1 {
+             parent_transaction_sha256: prior_identity.parent_transaction_sha256,
+             enclosing_parent_support: prior_identity.enclosing_parent_support,
+@@ -121,6 +121,24 @@
+             complete_forcing_sha256: prior_identity.complete_forcing_sha256,
+             topology_sha256: prior_identity.topology_sha256,
+         })?;
++    #[cfg(test)]
++    if crate::v9_real_consumer_shadow::integrated_promotion_boundary_audit_enabled_v1() {
++        println!(
++            "B01_INTEGRATED_PROBE_RESEAL {}",
++            serde_json::to_string(&serde_json::json!({
++                "record_version": 1,
++                "boundary": "preterminal accepted replay child physical ordinal reseal",
++                "lane_id": lane_id,
++                "carrier_ending_joint_sha256": carrier_phase.ending_candidates.joint().receipt_sha256(),
++                "trial_source_receipts_by_lane": carrier_phase.batch_terminal_snow_soil_trial_receipts_by_lane,
++                "top_boundary_credits_by_lane": carrier_phase.batch_soil_top_boundary_credits_by_lane,
++                "old_identity": b01_integrated_preterminal_probe_child_identity_json_v1(&prior_identity),
++                "new_identity": b01_integrated_preterminal_probe_child_identity_json_v1(&resealed_child),
++            }))
++            .expect("integrated probe reseal JSON")
++        );
++    }
++    carrier_phase.transition.probe_child_identity = resealed_child;
+     let trial_receipt = carrier_phase
+         .ending_candidates
+         .terminal_snow_soil_trial_receipt()
+@@ -231,6 +249,26 @@
+     }))
+ }
+ 
++#[cfg(test)]
++fn b01_integrated_preterminal_probe_child_identity_json_v1(
++    identity: &crate::hydrology::CoveredProbeChildIdentityV1,
++) -> serde_json::Value {
++    serde_json::json!({
++        "parent_transaction_sha256": identity.parent_transaction_sha256,
++        "enclosing_parent_support": identity.enclosing_parent_support,
++        "trial_support": identity.trial_support,
++        "physical_child_ordinal": identity.physical_child_ordinal,
++        "attempt_ordinal": identity.attempt_ordinal,
++        "role": format!("{:?}", identity.role),
++        "role_u8": identity.role as u8,
++        "beginning_joint_sha256": identity.beginning_joint_sha256,
++        "beginning_owner_set_sha256": identity.beginning_owner_set_sha256,
++        "complete_forcing_sha256": identity.complete_forcing_sha256,
++        "topology_sha256": identity.topology_sha256,
++        "receipt_sha256": identity.receipt_sha256,
++    })
++}
++
+ #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+ #[inline(never)]
+ fn execute_preterminal_replay_step_v1(
+--- a/crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_terminal_accepted_endpoint.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_terminal_accepted_endpoint.rs
+@@ -776,6 +776,62 @@
+             AcceptedPublicationFinalizationPostureV1::RetainFinal
+                 | AcceptedPublicationFinalizationPostureV1::RetainFinalWithDeferredNativeV2Soil { .. }
+         ));
++        #[cfg(test)]
++        if crate::v9_real_consumer_shadow::integrated_promotion_boundary_audit_enabled_v1() {
++            let selected_phase_chain = endpoint
++                .carrier_phase_chain
++                .iter()
++                .map(|phase| {
++                    let pre_ingress_soil_thermal = phase
++                        .carrier_envelope
++                        .hydrology()
++                        .pre_ingress_soil_thermal_candidates()
++                        .iter()
++                        .map(|tile| {
++                            serde_json::json!({
++                                "owner_id": tile.owner_id,
++                                "ofe_id": tile.ofe_id,
++                                "tile_id": tile.tile_id,
++                                "beginning_state_sha256": tile.beginning_state_sha256,
++                                "beginning_identity": tile.beginning_identity,
++                                "layers": tile.layers.iter().map(|layer| serde_json::json!({
++                                    "layer_id": layer.layer_id,
++                                    "beginning_enthalpy_bits": layer.beginning_enthalpy_j_m2_ofe_ground.to_bits(),
++                                    "ground_heat_credit_bits": layer.ground_heat_credit_j_m2_ofe_ground.to_bits(),
++                                    "infiltration_enthalpy_credit_bits": layer.infiltration_enthalpy_credit_j_m2_ofe_ground.to_bits(),
++                                    "ending_enthalpy_bits": layer.ending_enthalpy_j_m2_ofe_ground.to_bits(),
++                                    "ending_temperature_bits": layer.ending_temperature_k.to_bits(),
++                                })).collect::<Vec<_>>(),
++                            })
++                        })
++                        .collect::<Vec<_>>();
++                    serde_json::json!({
++                        "physical_child_ordinal": phase.transition.probe_child_identity.physical_child_ordinal,
++                        "child_transaction_id": phase.carrier_envelope.transaction_id().0,
++                        "carrier_ending_joint_sha256": phase.ending_candidates.joint().receipt_sha256(),
++                        "support": phase.transition.boundary.support,
++                        "probe_child_receipt_sha256": phase.transition.probe_child_identity.receipt_sha256,
++                        "pre_ingress_soil_thermal": pre_ingress_soil_thermal,
++                        "surface_ingress_receipts": phase.carrier_envelope.hydrology().surface_ingress().receipts(),
++                        "surface_ingress_ledgers": phase.carrier_envelope.hydrology().surface_ingress().ledgers(),
++                        "top_boundary_credits_by_lane": phase.batch_soil_top_boundary_credits_by_lane,
++                        "terminal_snow_soil_trial_receipts_by_lane": phase.batch_terminal_snow_soil_trial_receipts_by_lane,
++                    })
++                })
++                .collect::<Vec<_>>();
++            println!(
++                "B01_INTEGRATED_ACCEPTED_PHASE_CHAIN {}",
++                serde_json::to_string(&serde_json::json!({
++                    "record_version": 1,
++                    "selection_boundary": "endpoint-local terminal finalizer success; global donor membership unresolved",
++                    "endpoint_finalizer_succeeded": true,
++                    "selected_phase_chain": selected_phase_chain,
++                    "installed_soil_top_boundary_credits": soil_credits,
++                    "installed_terminal_trial_receipts": self.last_adaptive_terminal_snow_soil_trial_receipts,
++                }))
++                .expect("integrated accepted phase-chain JSON")
++            );
++        }
+         Ok(output)
+     }
+ }
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+@@ -174,6 +174,203 @@
+ 
+ const INTERVALS_PER_DAY: usize = 48;
+ const INTERVAL_S: f64 = 1_800.0;
++
++/// Test-only reachability counters for the complete deferred-native-V2 to V4
++/// promotion path. They observe only existing production seams and never
++/// retain, clone, or alter capability-bearing values.
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
++pub(crate) struct IntegratedPromotionBoundaryAuditV1 {
++    pub deferred_completion_count: u32,
++    pub v4_runtime_entry_count: u32,
++    pub v4_runtime_success_count: u32,
++    pub final_replay_entry_count: u32,
++    pub final_replay_success_count: u32,
++    pub projection_promotion_entry_count: u32,
++    pub projection_promotion_success_count: u32,
++    pub promotion_attempt_count: u32,
++    pub promotion_entry_count: u32,
++    pub promotion_success_count: u32,
++    pub candidate_only_promotion_entry_count: u32,
++    pub snow_free_litter_low_level_count: u32,
++    pub snow_free_surface_low_level_count: u32,
++    pub snow_free_wb14_low_level_count: u32,
++}
++
++#[cfg(test)]
++std::thread_local! {
++    static INTEGRATED_PROMOTION_BOUNDARY_AUDIT: std::cell::RefCell<IntegratedPromotionBoundaryAuditV1> = const {
++        std::cell::RefCell::new(IntegratedPromotionBoundaryAuditV1 {
++            deferred_completion_count: 0,
++            v4_runtime_entry_count: 0,
++            v4_runtime_success_count: 0,
++            final_replay_entry_count: 0,
++            final_replay_success_count: 0,
++            projection_promotion_entry_count: 0,
++            projection_promotion_success_count: 0,
++            promotion_attempt_count: 0,
++            promotion_entry_count: 0,
++            promotion_success_count: 0,
++            candidate_only_promotion_entry_count: 0,
++            snow_free_litter_low_level_count: 0,
++            snow_free_surface_low_level_count: 0,
++            snow_free_wb14_low_level_count: 0,
++        })
++    };
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub(crate) enum B01IntegratedOriginalCustodyControlV1 {
++    WholeOriginalOwnerN2,
++    SupportStart,
++    ExpectedPredecessor,
++    ReceiptChain,
++}
++
++#[cfg(test)]
++std::thread_local! {
++    static B01_INTEGRATED_ORIGINAL_CUSTODY_CONTROL: std::cell::Cell<Option<B01IntegratedOriginalCustodyControlV1>> = const { std::cell::Cell::new(None) };
++}
++
++#[cfg(test)]
++std::thread_local! {
++    static B01_INTEGRATED_MISSING_REPLAY_N3: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub(crate) enum B01IntegratedPublishableControlV1 {
++    SecondPromotion,
++    SecondPromotionWrongOriginal,
++}
++
++#[cfg(test)]
++std::thread_local! {
++    static B01_INTEGRATED_WRONG_ACCEPTED_RESTART: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
++    static B01_INTEGRATED_PUBLISHABLE_CONTROL: std::cell::Cell<Option<B01IntegratedPublishableControlV1>> = const { std::cell::Cell::new(None) };
++}
++
++#[cfg(test)]
++std::thread_local! {
++    static B01_INTEGRATED_PROMOTION_AUDIT_ENABLED: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
++}
++
++#[cfg(test)]
++#[derive(Debug)]
++pub(crate) struct B01IntegratedWrongOriginalN2Sentinel;
++
++#[cfg(test)]
++#[derive(Debug)]
++pub(crate) struct B01IntegratedMissingReplayN3Sentinel;
++
++#[cfg(test)]
++#[derive(Debug)]
++pub(crate) struct B01IntegratedOriginalCustodyN4Sentinel;
++
++#[cfg(test)]
++#[derive(Debug)]
++pub(crate) struct B01IntegratedWrongAcceptedRestartN5Sentinel;
++
++#[cfg(test)]
++#[derive(Debug)]
++pub(crate) struct B01IntegratedPublishableN6Sentinel;
++
++#[cfg(test)]
++pub(crate) fn enable_integrated_wrong_original_n2_v1() {
++    enable_integrated_original_custody_control_v1(
++        B01IntegratedOriginalCustodyControlV1::WholeOriginalOwnerN2,
++    );
++}
++
++#[cfg(test)]
++pub(crate) fn enable_integrated_original_custody_control_v1(
++    control: B01IntegratedOriginalCustodyControlV1,
++) {
++    B01_INTEGRATED_ORIGINAL_CUSTODY_CONTROL.with(|slot| slot.set(Some(control)));
++}
++
++#[cfg(test)]
++pub(crate) fn enable_integrated_missing_replay_n3_v1() {
++    B01_INTEGRATED_MISSING_REPLAY_N3.with(|enabled| enabled.set(true));
++}
++
++#[cfg(test)]
++pub(crate) fn enable_integrated_wrong_accepted_restart_n5_v1() {
++    B01_INTEGRATED_WRONG_ACCEPTED_RESTART.with(|enabled| enabled.set(true));
++}
++
++#[cfg(test)]
++pub(crate) fn enable_integrated_publishable_control_v1(
++    control: B01IntegratedPublishableControlV1,
++) {
++    B01_INTEGRATED_PUBLISHABLE_CONTROL.with(|slot| slot.set(Some(control)));
++}
++
++#[cfg(test)]
++fn take_integrated_original_custody_control_v1() -> Option<B01IntegratedOriginalCustodyControlV1> {
++    B01_INTEGRATED_ORIGINAL_CUSTODY_CONTROL.with(std::cell::Cell::take)
++}
++
++#[cfg(test)]
++fn take_integrated_missing_replay_n3_v1() -> bool {
++    B01_INTEGRATED_MISSING_REPLAY_N3.with(|enabled| enabled.replace(false))
++}
++
++#[cfg(test)]
++pub(super) fn take_integrated_wrong_accepted_restart_n5_v1() -> bool {
++    B01_INTEGRATED_WRONG_ACCEPTED_RESTART.with(|enabled| enabled.replace(false))
++}
++
++#[cfg(test)]
++fn take_integrated_publishable_control_v1() -> Option<B01IntegratedPublishableControlV1> {
++    B01_INTEGRATED_PUBLISHABLE_CONTROL.with(std::cell::Cell::take)
++}
++
++#[cfg(test)]
++pub(crate) fn begin_integrated_promotion_boundary_audit_v1() {
++    B01_INTEGRATED_PROMOTION_AUDIT_ENABLED.with(|enabled| enabled.set(true));
++    INTEGRATED_PROMOTION_BOUNDARY_AUDIT.with(|audit| {
++        *audit.borrow_mut() = IntegratedPromotionBoundaryAuditV1::default();
++    });
++}
++
++#[cfg(test)]
++pub(crate) fn take_integrated_promotion_boundary_audit_v1() -> IntegratedPromotionBoundaryAuditV1 {
++    B01_INTEGRATED_PROMOTION_AUDIT_ENABLED.with(|enabled| enabled.set(false));
++    INTEGRATED_PROMOTION_BOUNDARY_AUDIT.with(|audit| std::mem::take(&mut *audit.borrow_mut()))
++}
++
++#[cfg(test)]
++pub(crate) fn integrated_promotion_boundary_audit_enabled_v1() -> bool {
++    B01_INTEGRATED_PROMOTION_AUDIT_ENABLED.with(std::cell::Cell::get)
++}
++
++#[cfg(test)]
++pub(crate) fn record_integrated_promotion_boundary_v1(stage: &'static str, candidate_only: bool) {
++    INTEGRATED_PROMOTION_BOUNDARY_AUDIT.with(|audit| {
++        let mut audit = audit.borrow_mut();
++        match stage {
++            "deferred-completion" => audit.deferred_completion_count += 1,
++            "v4-runtime-entry" => audit.v4_runtime_entry_count += 1,
++            "v4-runtime-success" => audit.v4_runtime_success_count += 1,
++            "final-replay-entry" => audit.final_replay_entry_count += 1,
++            "final-replay-success" => audit.final_replay_success_count += 1,
++            "projection-promotion-entry" => audit.projection_promotion_entry_count += 1,
++            "projection-promotion-success" => audit.projection_promotion_success_count += 1,
++            "promotion-attempt" => audit.promotion_attempt_count += 1,
++            "promotion-entry" => {
++                audit.promotion_entry_count += 1;
++                audit.candidate_only_promotion_entry_count += u32::from(candidate_only);
++            }
++            "promotion-success" => audit.promotion_success_count += 1,
++            "snow-free-litter-low-level" => audit.snow_free_litter_low_level_count += 1,
++            "snow-free-surface-low-level" => audit.snow_free_surface_low_level_count += 1,
++            "snow-free-wb14-low-level" => audit.snow_free_wb14_low_level_count += 1,
++            _ => unreachable!("known integrated-promotion test boundary"),
++        }
++    });
++}
+ include!("v9_real_consumer_shadow_v11_error.rs");
+ include!("v9_real_consumer_shadow_physical_custody_error.rs");
+ include!("v9_real_consumer_shadow_serialization.rs");
+@@ -2054,12 +2251,63 @@
+             .map(|custody| custody.advance_snow_free_child(&self.beginning, input, &envelope))
+             .transpose()?;
+         if let Some(custody) = completed_deferred_soil.as_ref() {
++            #[cfg(test)]
++            record_integrated_promotion_boundary_v1("deferred-completion", false);
+             let continuation =
+                 custody
+                     .continuation()
+                     .ok_or(DirectV11RealConsumerError::Identity(
+                         "deferred native V2 soil final continuation",
+                     ))?;
++            #[cfg(test)]
++            record_integrated_promotion_boundary_v1("final-replay-entry", false);
++            #[cfg(test)]
++            if integrated_promotion_boundary_audit_enabled_v1() {
++                let trial = continuation.physical_trial();
++                let hydrology = envelope.hydrology();
++                let pre_ingress_soil = hydrology
++                    .pre_ingress_soil_thermal_candidates()
++                    .iter()
++                    .map(|tile| serde_json::json!({
++                        "owner_id": tile.owner_id,
++                        "ofe_id": tile.ofe_id,
++                        "tile_id": tile.tile_id,
++                        "beginning_state_sha256": tile.beginning_state_sha256,
++                        "beginning_identity": tile.beginning_identity,
++                        "layers": tile.layers.iter().map(|layer| serde_json::json!({
++                            "layer_id": layer.layer_id,
++                            "beginning_enthalpy_bits": layer.beginning_enthalpy_j_m2_ofe_ground.to_bits(),
++                            "ground_heat_credit_bits": layer.ground_heat_credit_j_m2_ofe_ground.to_bits(),
++                            "infiltration_enthalpy_credit_bits": layer.infiltration_enthalpy_credit_j_m2_ofe_ground.to_bits(),
++                            "ending_enthalpy_bits": layer.ending_enthalpy_j_m2_ofe_ground.to_bits(),
++                            "ending_temperature_bits": layer.ending_temperature_k.to_bits(),
++                        })).collect::<Vec<_>>(),
++                    }))
++                    .collect::<Vec<_>>();
++                let ingress = hydrology.surface_ingress();
++                println!("B01_INTEGRATED_LINEAGE {}", serde_json::to_string(&serde_json::json!({
++                    "original_prepared_owner": continuation.original_prepared().beginning_owner(),
++                    "physical_trial": {
++                        "transaction_id": trial.transaction_id().0,
++                        "predecessor_transaction_id": trial.predecessor_transaction_id().map(|id| id.0),
++                        "support_start_ns": trial.support_start_ns(),
++                        "support_end_ns": trial.support_end_ns(),
++                        "beginning_state_sha256": trial.beginning_state_sha256(),
++                        "accepted_predecessor_receipt_chain_sha256": trial.accepted_predecessor_receipt_chain_sha256(),
++                        "unpublished_predecessor_trial_sha256": trial.unpublished_predecessor_trial_sha256(),
++                        "unpublished_trial_sha256": trial.unpublished_trial_sha256(),
++                        "selected_ending_state": trial.ending_state(),
++                        "layer_credits": trial.layer_credits(),
++                    },
++                    "accumulated_operands": continuation.accumulated_operands(),
++                    "ordered_layer_credit_chain": continuation.diagnostic_layer_credit_chain(),
++                    "pre_ingress_soil_thermal": pre_ingress_soil,
++                    "surface_ingress_receipts": ingress.receipts(),
++                    "surface_ingress_ledgers": ingress.ledgers(),
++                    "wb14_child_replay_bytes": ingress.wb14_child_replay_bytes(),
++                    "wb14_parent_replay_bytes": ingress.wb14_parent_replay_bytes(),
++                })).expect("integrated lineage JSON"));
++            }
+             let accepted = continuation
+                 .compose_accepted_outer_candidate(&self.beginning.inner.lse_configuration)
+                 .map_err(|error| {
+@@ -2080,6 +2328,8 @@
+                     &accepted,
+                 )
+                 .map_err(DirectV11RealConsumerError::Runtime)?;
++            #[cfg(test)]
++            record_integrated_promotion_boundary_v1("final-replay-success", false);
+             candidate
+                 .inner
+                 .accept_envelope_preserving_native_v2_soil(envelope.transaction_id(), &envelope)
+@@ -2113,6 +2363,101 @@
+                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
+             })?;
+             let authoritative_complete_envelope = candidate.clone();
++            #[cfg(test)]
++            if take_integrated_missing_replay_n3_v1() {
++                assert!(
++                    self.snow_free_physical_reuse_pending.is_none()
++                        && self.snow_free_physical_reuse_seed.is_none(),
++                    "N3 genuine pre-install boundary has no deferred reuse capability"
++                );
++                let caller_snapshot = || {
++                    serde_json::to_vec(&serde_json::json!({
++                        "beginning": self.beginning.canonical_v11_parent_owner_state_bytes()?,
++                        "beginning_debug": format!("{:#?}", self.beginning),
++                        "interval": format!("{:?}", self.interval),
++                        "day_index": self.day_index,
++                        "interval_index": self.interval_index,
++                        "finalize_wb14_parent_interval": self.finalize_wb14_parent_interval,
++                        "wb14_coupled_child_binding": format!("{:?}", self.wb14_coupled_child_binding),
++                        "native_inactive_wb14_prefix": format!("{:?}", self.native_inactive_wb14_prefix),
++                        "ending": self.ending.as_ref().map(DirectV10RealConsumerShadow::canonical_v11_parent_owner_state_bytes).transpose()?,
++                        "ending_debug": self.ending.as_ref().map(|ending| format!("{ending:#?}")),
++                        "last_support_receipt": &self.last_support_receipt,
++                        "last_hydrology_candidate": format!("{:?}", self.last_hydrology_candidate),
++                        "ending_snow_owner_bytes": &self.ending_snow_owner_bytes,
++                        "deferred_native_v2_soil_custody": format!("{:?}", self.deferred_native_v2_soil_custody),
++                        "snow_free_physical_reuse_pending_present": self.snow_free_physical_reuse_pending.is_some(),
++                        "snow_free_physical_reuse_seed_present": self.snow_free_physical_reuse_seed.is_some(),
++                    }))
++                    .map_err(DirectV11RealConsumerError::from)
++                };
++                let caller_before = caller_snapshot()?;
++                let mut disposable = authoritative_complete_envelope.clone();
++                let receiver_before = disposable.clone();
++                let receiver_before_owner_state =
++                    disposable.canonical_v11_parent_owner_state_bytes()?;
++                let receiver_at_guard_debug = format!("{disposable:#?}");
++                let accepted = &mut frozen_litter_v4
++                    .as_mut()
++                    .ok_or(DirectV11RealConsumerError::Identity(
++                        "missing-replay N3 requires genuine V4 candidate",
++                    ))?
++                    .1;
++                let error = disposable
++                    .accept_promoted_candidate_only_frozen_litter_v4(
++                        &self.beginning,
++                        continuation.original_prepared().beginning_owner(),
++                        accepted,
++                    )
++                    .expect_err("missing accepted replay must reject deferred V4 promotion");
++                let expected_detail = "V4 deferred promotion requires one accepted soil replay";
++                assert_eq!(error.category(), "owner_closure");
++                let DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::OwnerClosure(
++                    detail,
++                )) = &error
++                else {
++                    panic!("N3 must retain the source-defined missing-replay wrapper: {error}");
++                };
++                assert_eq!(*detail, expected_detail);
++                let receiver_after_owner_state =
++                    disposable.canonical_v11_parent_owner_state_bytes()?;
++                let receiver_after_debug = format!("{disposable:#?}");
++                let caller_after = caller_snapshot()?;
++                let receiver_unchanged = disposable == receiver_before;
++                let receiver_debug_unchanged = receiver_at_guard_debug == receiver_after_debug;
++                let caller_unchanged = caller_before == caller_after;
++                println!(
++                    "B01_INTEGRATED_N3 {}",
++                    serde_json::to_string(&serde_json::json!({
++                        "guard": expected_detail,
++                        "outer_error_category": error.category(),
++                        "outer_error_display": error.to_string(),
++                        "receiver_before_owner_state": &receiver_before_owner_state,
++                        "receiver_at_guard_debug": receiver_at_guard_debug,
++                        "receiver_after_owner_state": &receiver_after_owner_state,
++                        "receiver_after_debug": receiver_after_debug,
++                        "caller_stack_roots_before": &caller_before,
++                        "caller_stack_roots_after": &caller_after,
++                        "receiver_unchanged": receiver_unchanged,
++                        "receiver_debug_unchanged": receiver_debug_unchanged,
++                        "caller_stack_roots_unchanged": caller_unchanged,
++                    }))
++                    .expect("N3 audit JSON")
++                );
++                assert!(
++                    receiver_unchanged,
++                    "genuine missing-replay receiver changed on rejection"
++                );
++                assert!(
++                    receiver_debug_unchanged,
++                    "genuine missing-replay receiver debug state changed on rejection"
++                );
++                assert!(
++                    caller_unchanged,
++                    "caller changed during genuine missing-replay rejection"
++                );
++                std::panic::panic_any(B01IntegratedMissingReplayN3Sentinel);
++            }
+             let transaction_authority = candidate
+                 .authenticate_soil_thermal_unpublished_continuation_install_authority_v3(
+                     &authoritative_complete_envelope,
+@@ -2131,6 +2476,169 @@
+                 )
+                 .map_err(DirectV11RealConsumerError::Runtime)?;
+             if let Some((_, accepted)) = frozen_litter_v4.as_mut() {
++                #[cfg(test)]
++                record_integrated_promotion_boundary_v1(
++                    "promotion-attempt",
++                    accepted
++                        .physical
++                        .complete_owner_projection
++                        .is_candidate_only_unpublished_soil(),
++                );
++                #[cfg(test)]
++                if let Some(control) = take_integrated_original_custody_control_v1() {
++                    let mut disposable = candidate.clone();
++                    let before = disposable.canonical_v11_parent_owner_state_bytes()?;
++                    let before_debug = format!("{disposable:?}");
++                    let mut wrong_original_owner = match control {
++                        B01IntegratedOriginalCustodyControlV1::WholeOriginalOwnerN2 => disposable
++                            .inner
++                            .soil_thermal
++                            .v2()
++                            .expect("N2 genuine native V2 receiver")
++                            .owner()
++                            .clone(),
++                        _ => continuation.original_prepared().beginning_owner().clone(),
++                    };
++                    let control_name = match control {
++                        B01IntegratedOriginalCustodyControlV1::WholeOriginalOwnerN2 => {
++                            "whole-original-owner"
++                        }
++                        B01IntegratedOriginalCustodyControlV1::SupportStart => {
++                            wrong_original_owner.support_start_ns =
++                                wrong_original_owner.support_start_ns.checked_add(1).expect(
++                                    "native fixture support start admits one-ns custody mutation",
++                                );
++                            "support-start"
++                        }
++                        B01IntegratedOriginalCustodyControlV1::ExpectedPredecessor => {
++                            wrong_original_owner.expected_predecessor_transaction_id =
++                                Some(wrong_original_owner.transaction_id);
++                            "expected-predecessor"
++                        }
++                        B01IntegratedOriginalCustodyControlV1::ReceiptChain => {
++                            wrong_original_owner.receipt_chain_sha256 =
++                                openwepp_land_surface_energy::Sha256Digest::try_new(
++                                    "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
++                                )
++                                .expect("fixed receipt-chain mismatch digest is valid");
++                            "receipt-chain"
++                        }
++                    };
++                    let error = disposable
++                        .accept_promoted_candidate_only_frozen_litter_v4(
++                            &self.beginning,
++                            &wrong_original_owner,
++                            accepted,
++                        )
++                        .expect_err(
++                            "wrong original custody field must fail aggregate/child-local custody",
++                        );
++                    let expected_detail = "frozen-litter V4 deferred projection promotion: \
++frozen-litter V3 identity failure: candidate-only aggregate/child-local promotion custody";
++                    let expected_display =
++                        format!("V9 real-consumer serialization failure: {expected_detail}");
++                    assert_eq!(error.category(), "serialization");
++                    let DirectV10RealConsumerError::Runtime(
++                        DirectV9RealConsumerError::Serialization(detail),
++                    ) = &error
++                    else {
++                        panic!(
++                            "original-custody control must retain the source-defined serialization wrapper: {error}"
++                        );
++                    };
++                    assert_eq!(detail, expected_detail);
++                    assert_eq!(error.to_string(), expected_display);
++                    let after = disposable.canonical_v11_parent_owner_state_bytes()?;
++                    let after_debug = format!("{disposable:?}");
++                    let unchanged = before == after;
++                    let debug_unchanged = before_debug == after_debug;
++                    println!(
++                        "B01_INTEGRATED_ORIGINAL_CUSTODY {}",
++                        serde_json::to_string(&serde_json::json!({
++                            "control": control_name,
++                            "guard": "candidate-only aggregate/child-local promotion custody",
++                            "outer_error_category": error.category(),
++                            "outer_error_display": error.to_string(),
++                            "outer_serialization_detail": detail,
++                            "before_owner_state_bytes": &before,
++                            "after_owner_state_bytes": &after,
++                            "unchanged": unchanged,
++                            "before_receiver_debug": before_debug,
++                            "after_receiver_debug": after_debug,
++                            "debug_unchanged": debug_unchanged,
++                        }))
++                        .expect("original-custody audit JSON")
++                    );
++                    assert!(unchanged, "disposable promotion host changed on rejection");
++                    assert!(
++                        debug_unchanged,
++                        "disposable full receiver changed on rejection"
++                    );
++                    match control {
++                        B01IntegratedOriginalCustodyControlV1::WholeOriginalOwnerN2 => {
++                            std::panic::panic_any(B01IntegratedWrongOriginalN2Sentinel);
++                        }
++                        _ => std::panic::panic_any(B01IntegratedOriginalCustodyN4Sentinel),
++                    }
++                }
++                #[cfg(test)]
++                if take_integrated_wrong_accepted_restart_n5_v1() {
++                    let mut disposable = candidate.clone();
++                    let before = disposable.canonical_v11_parent_owner_state_bytes()?;
++                    let before_debug = format!("{disposable:?}");
++                    enable_integrated_wrong_accepted_restart_n5_v1();
++                    let error = disposable
++                        .accept_promoted_candidate_only_frozen_litter_v4(
++                            &self.beginning,
++                            continuation.original_prepared().beginning_owner(),
++                            accepted,
++                        )
++                        .expect_err("wrong accepted restart must fail deferred projection promotion");
++                    let after = disposable.canonical_v11_parent_owner_state_bytes()?;
++                    let after_debug = format!("{disposable:?}");
++                    assert_eq!(before, after, "receiver changed on rejected accepted-restart join");
++                    assert_eq!(before_debug, after_debug, "full receiver changed on rejected accepted-restart join");
++                    println!("B01_INTEGRATED_WRONG_ACCEPTED_RESTART {}", serde_json::to_string(&serde_json::json!({
++                        "error_category": error.category(), "error_display": error.to_string(),
++                        "before_owner_state_bytes": before, "after_owner_state_bytes": after,
++                        "debug_unchanged": true,
++                    })).expect("wrong accepted restart audit JSON"));
++                    std::panic::panic_any(B01IntegratedWrongAcceptedRestartN5Sentinel);
++                }
++                #[cfg(test)]
++                if let Some(control) = take_integrated_publishable_control_v1() {
++                    let mut disposable = candidate.clone();
++                    disposable
++                        .accept_promoted_candidate_only_frozen_litter_v4(
++                            &self.beginning,
++                            continuation.original_prepared().beginning_owner(),
++                            accepted,
++                        )
++                        .expect("first genuine candidate-only promotion must succeed");
++                    let before = disposable.canonical_v11_parent_owner_state_bytes()?;
++                    let before_debug = format!("{disposable:?}");
++                    let wrong_original = disposable.inner.soil_thermal.v2()?.owner().clone();
++                    let original = match control {
++                        B01IntegratedPublishableControlV1::SecondPromotion => continuation.original_prepared().beginning_owner(),
++                        B01IntegratedPublishableControlV1::SecondPromotionWrongOriginal => &wrong_original,
++                    };
++                    let error = disposable
++                        .accept_promoted_candidate_only_frozen_litter_v4(&self.beginning, original, accepted)
++                        .expect_err("publishable candidate must fail before a second promotion");
++                    let after = disposable.canonical_v11_parent_owner_state_bytes()?;
++                    let after_debug = format!("{disposable:?}");
++                    assert_eq!(before, after, "publishable receiver changed on rejected second promotion");
++                    assert_eq!(before_debug, after_debug, "publishable full receiver changed on rejected second promotion");
++                    let expected = "V4 deferred promotion requires candidate-only soil custody";
++                    assert_eq!(error.category(), "owner_closure");
++                    assert_eq!(error.to_string(), format!("V9 real-consumer owner-closure failure: {expected}"));
++                    println!("B01_INTEGRATED_PUBLISHABLE_CONTROL {}", serde_json::to_string(&serde_json::json!({
++                        "control": format!("{control:?}"), "error_category":error.category(), "error_display":error.to_string(),
++                        "guard": expected, "before_owner_state_bytes":before, "after_owner_state_bytes":after,
++                        "debug_unchanged":true,
++                    })).expect("publishable control audit JSON"));
++                    std::panic::panic_any(B01IntegratedPublishableN6Sentinel);
++                }
+                 candidate
+                     .accept_promoted_candidate_only_frozen_litter_v4(
+                         &self.beginning,
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs
+@@ -610,6 +610,19 @@
+                     record_canonical_covered_successful_history_append_v1(
+                         accepted.receipt_sha256,
+                     );
++                if crate::v9_real_consumer_shadow::integrated_promotion_boundary_audit_enabled_v1()
++                    && accepted.wb14_parent_replay_bytes.is_some()
++                {
++                    println!(
++                        "B01_INTEGRATED_ACCEPTED_PARENT_REPLAY {}",
++                        serde_json::to_string(&serde_json::json!({
++                            "record_version": 1,
++                            "boundary": "accepted publication-history support with retained WB14 parent replay",
++                            "accepted_support": accepted.accuracy_observation_wire(),
++                        }))
++                        .expect("integrated accepted parent replay JSON")
++                    );
++                }
+             }
+         }
+         if let Some(started) = telemetry_started {
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs
+@@ -264,6 +264,9 @@
+ 
+ #[cfg(test)]
+ pub(crate) fn record_native_litter_physics_entry_v1() {
++    if !COVERED_REPRESENTED_SNOW_PHYSICAL_SCOPE.with(|scope| scope.get() > 0) {
++        super::record_integrated_promotion_boundary_v1("snow-free-litter-low-level", false);
++    }
+     record_native_physical_boundary_v1(|audit| {
+         audit.snow_free_litter_physics_call_count =
+             audit.snow_free_litter_physics_call_count.saturating_add(1);
+@@ -272,6 +275,9 @@
+ 
+ #[cfg(test)]
+ pub(crate) fn record_native_surface_resource_entry_v1() {
++    if !COVERED_REPRESENTED_SNOW_PHYSICAL_SCOPE.with(|scope| scope.get() > 0) {
++        super::record_integrated_promotion_boundary_v1("snow-free-surface-low-level", false);
++    }
+     record_native_physical_boundary_v1(|audit| {
+         audit.snow_free_surface_physics_call_count =
+             audit.snow_free_surface_physics_call_count.saturating_add(1);
+@@ -280,6 +286,9 @@
+ 
+ #[cfg(test)]
+ pub(crate) fn record_native_surface_ingress_entry_v1() {
++    if !COVERED_REPRESENTED_SNOW_PHYSICAL_SCOPE.with(|scope| scope.get() > 0) {
++        super::record_integrated_promotion_boundary_v1("snow-free-surface-low-level", false);
++    }
+     record_native_physical_boundary_v1(|audit| {
+         audit.snow_free_surface_physics_call_count =
+             audit.snow_free_surface_physics_call_count.saturating_add(1);
+@@ -288,6 +297,9 @@
+ 
+ #[cfg(test)]
+ pub(crate) fn record_native_wb14_physics_entry_v1() {
++    if !COVERED_REPRESENTED_SNOW_PHYSICAL_SCOPE.with(|scope| scope.get() > 0) {
++        super::record_integrated_promotion_boundary_v1("snow-free-wb14-low-level", false);
++    }
+     record_native_physical_boundary_v1(|audit| {
+         audit.snow_free_wb14_physics_call_count =
+             audit.snow_free_wb14_physics_call_count.saturating_add(1);
+@@ -1580,6 +1592,14 @@
+         original_prepared_owner: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+         accepted: &mut crate::land_surface_energy_shadow::v3_execution::AcceptedFrozenLitterV4RuntimeCandidate,
+     ) -> Result<(), DirectV10RealConsumerError> {
++        #[cfg(test)]
++        super::record_integrated_promotion_boundary_v1(
++            "promotion-entry",
++            accepted
++                .physical
++                .complete_owner_projection
++                .is_candidate_only_unpublished_soil(),
++        );
+         if !accepted
+             .physical
+             .complete_owner_projection
+@@ -1612,7 +1632,16 @@
+                     "V4 deferred promotion requires one accepted soil replay",
+                 ))?;
+         let accepted_owner = resident.owner().clone();
+-        let accepted_restart = accepted_custody.seals().restart.clone();
++        let mut accepted_restart = accepted_custody.seals().restart.clone();
++        #[cfg(test)]
++        if super::take_integrated_wrong_accepted_restart_n5_v1() {
++            accepted_restart.receipt_chain_sha256 = openwepp_land_surface_energy::Sha256Digest::try_new(
++                "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
++            )
++            .expect("fixed accepted-restart mismatch digest is valid");
++        }
++        #[cfg(test)]
++        super::record_integrated_promotion_boundary_v1("projection-promotion-entry", true);
+         accepted
+             .promote_candidate_only_soil_after_final_replay(
+                 beginning_physical.surface_configuration(),
+@@ -1627,12 +1656,31 @@
+                     "frozen-litter V4 deferred projection promotion: {error}"
+                 ))
+             })?;
++        #[cfg(test)]
++        super::record_integrated_promotion_boundary_v1("projection-promotion-success", true);
+         let mut next_physical = beginning_physical.clone();
+         let mut next_exact = beginning_exact;
+         next_physical.accept_runtime_candidate(&accepted.physical)?;
+         next_exact.accept_runtime_candidate(&beginning_physical, accepted)?;
+         self.frozen_litter_v3 = Some(next_physical);
+         self.frozen_litter_v4 = Some(next_exact);
++        #[cfg(test)]
++        {
++            super::record_integrated_promotion_boundary_v1("promotion-success", true);
++            let resident = self.inner.soil_thermal.v2()?;
++            println!("B01_INTEGRATED_INSTALLED {}", serde_json::to_string(&serde_json::json!({
++                "soil_owner": resident.owner(),
++                "soil_latest_accepted": resident.latest_accepted(),
++                "v3_publication_support_bytes": self.frozen_litter_v3.as_ref()
++                    .map(|value| value.accepted_publication_supports_canonical_bytes())
++                    .transpose()?,
++                "v3_restart_parent_bytes": self.frozen_litter_v3.as_ref()
++                    .map(|value| value.restart_wb14_parent_working_state_bytes())
++                    .transpose()?,
++                "v4_publication_support_bytes": self.frozen_litter_v4.as_ref()
++                    .map(|value| value.accepted_publication_supports_canonical_bytes().to_vec()),
++            })).expect("integrated installed JSON"));
++        }
+         Ok(())
+     }
+ }
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs
+@@ -2027,7 +2027,15 @@
+     );
+ }
+ 
+-pub(super) fn unpublished_aggregate_candidate_only_behavior() {
++/// Builds the existing aggregate unpublished continuation without accepting
++/// its selected ending.  The promotion-boundary test consumes this fixture
++/// through the same continuation and replay APIs as the source test below.
++pub(super) fn unpublished_aggregate_candidate_only_fixture() -> (
++    DirectV10RealConsumerShadow,
++    DirectSoilThermalCandidate,
++    openwepp_land_surface_energy::SoilThermalTrialStateV2,
++    DirectSoilThermalUnpublishedContinuationResultV2,
++) {
+     let (authoritative, _) = native_v2_shadow_for_parent('a');
+     let parent = authoritative
+         .prepare_next_soil_thermal_support_v2(0, 1_800_000_000_000)
+@@ -2107,6 +2115,104 @@
+     let result = installed
+         .advance_soil_thermal_unpublished_continuation_v2(&continuation, &child_operands)
+         .expect("aggregate child result");
++    (installed, retained_candidate, retained_trial, result)
++}
++
++/// Builds the same retained 60-second child continuation used above, but
++/// leaves its native V2 host's complete owner state untouched.  The frozen
++/// litter factory needs that host to remain a valid V2-to-V3 migration source;
++/// this is not an accepted-parent installation fixture.
++pub(super) fn unpublished_aggregate_candidate_only_from_native_v2_fixture() -> (
++    DirectV10RealConsumerShadow,
++    DirectSoilThermalCandidate,
++    openwepp_land_surface_energy::SoilThermalTrialStateV2,
++    DirectSoilThermalUnpublishedContinuationResultV2,
++) {
++    let (authoritative, _) = native_v2_shadow_for_parent('a');
++    let retained_prepared = authoritative
++        .prepare_next_soil_thermal_support_v2(1_800_000_000_000, 1_860_000_000_000)
++        .expect("native retained trial support");
++    let retained_trial = unpublished_composed_trial(
++        &retained_prepared,
++        &authoritative.inner.lse_configuration,
++        1_800_000_000_000,
++        1_860_000_000_000,
++        f64::from_bits(1),
++        'c',
++    );
++    let retained_candidate =
++        DirectSoilThermalCandidate::from_v2(retained_trial.clone()).expect("native retained candidate");
++    let aggregate = authoritative
++        .prepare_base_soil_thermal_unpublished_aggregate_support_v2(
++            &retained_candidate,
++            1_860_000_000_000,
++            1_920_000_000_000,
++        )
++        .expect("native authenticated aggregate support");
++    let continuation = authoritative
++        .prepare_soil_thermal_base_unpublished_continuation_v2(
++            &aggregate,
++            &retained_trial,
++            retained_candidate.state_sha256(),
++            1_860_000_000_000,
++            1_920_000_000_000,
++        )
++        .expect("native aggregate base continuation");
++    let snow_owner = ResourceOwnerId::try_new("aggregate-snow").expect("snow owner");
++    let child_credit = continuation_credit(
++        continuation.child_beginning_state(),
++        1_860_000_000_000,
++        1_920_000_000_000,
++        'd',
++    );
++    let child_operands = continuation
++        .child_top_boundary_operands_v2(&[child_credit], &snow_owner)
++        .expect("native aggregate child operands");
++    let result = authoritative
++        .advance_soil_thermal_unpublished_continuation_v2(&continuation, &child_operands)
++        .expect("native aggregate child result");
++    (authoritative, retained_candidate, retained_trial, result)
++}
++
++/// The source-bound V39 receipt-free-native control: the native owner covers
++/// [0, 1800s], its first unpublished child is [0, 60s], and the physical
++/// beginning is the existing second-child [60, 1800s] range.  It deliberately
++/// carries no aggregate-final-replay claim.
++pub(super) fn v39_second_child_native_physical_beginning_fixture() -> (
++    DirectV10RealConsumerShadow,
++    openwepp_land_surface_energy::SoilThermalUnpublishedPhysicalBeginningV2,
++) {
++    let (authoritative, _) = native_v2_shadow_for_parent('c');
++    let original = authoritative
++        .prepare_next_soil_thermal_support_v2(0, 1_800_000_000_000)
++        .expect("V39 original parent support");
++    let first_trial = unpublished_composed_trial(
++        &original,
++        &authoritative.inner.lse_configuration,
++        0,
++        60_000_000_000,
++        f64::from_bits(1),
++        'd',
++    );
++    let first_candidate =
++        DirectSoilThermalCandidate::from_v2(first_trial).expect("V39 first unpublished candidate");
++    let beginning = authoritative
++        .inner
++        .soil_thermal
++        .prepare_unpublished_physical_beginning_v2(
++            &authoritative.inner.lse_configuration,
++            &first_candidate,
++            None,
++            60_000_000_000,
++            1_800_000_000_000,
++        )
++        .expect("V39 authenticated second-child physical beginning");
++    (authoritative, beginning)
++}
++
++pub(super) fn unpublished_aggregate_candidate_only_behavior() {
++    let (installed, retained_candidate, retained_trial, result) =
++        unpublished_aggregate_candidate_only_fixture();
+     let selected = result.physical_trial();
+     let beginning = result.original_prepared().beginning_owner();
+     let resident = installed.soil_thermal_v2().expect("installed V2 resident");
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
+@@ -608,6 +608,10 @@
+     configuration
+         .records()
+         .iter()
++        // `project_frozen_litter_v3_phase` admits one phase input per
++        // `litter_depth_m.is_some()` row only; bare rows remain in the owner
++        // projection and are handled by the V16 high-mirror projection.
++        .filter(|configured| configured.litter_depth_m.is_some())
+         .map(|configured| {
+             let state = owner
+                 .v2_state()
+@@ -734,16 +738,28 @@
+             .parent()
+             .records
+             .iter()
+-            .map(|record| DirectTileGroundIngress::CoveredCanopyRelease {
+-                ofe_id: record.key.ofe_id.clone(),
+-                tile_id: record.key.tile_id.clone(),
+-                surface_id: record.key.surface_id.clone(),
+-                release: DirectCanopyLiquidRelease {
+-                    throughfall: amount(0.02),
+-                    initial_drainage: amount(0.0),
+-                    second_drainage: amount(0.0),
+-                    stemflow: amount(0.0),
+-                },
++            .map(|record| match record.ground_ingress_mode {
++                DirectGroundIngressMode::CoveredCanopyRelease => {
++                    DirectTileGroundIngress::CoveredCanopyRelease {
++                        ofe_id: record.key.ofe_id.clone(),
++                        tile_id: record.key.tile_id.clone(),
++                        surface_id: record.key.surface_id.clone(),
++                        release: DirectCanopyLiquidRelease {
++                            throughfall: amount(0.02),
++                            initial_drainage: amount(0.0),
++                            second_drainage: amount(0.0),
++                            stemflow: amount(0.0),
++                        },
++                    }
++                }
++                DirectGroundIngressMode::OpenRawPrecipitation => {
++                    DirectTileGroundIngress::OpenRawPrecipitation {
++                        ofe_id: record.key.ofe_id.clone(),
++                        tile_id: record.key.tile_id.clone(),
++                        surface_id: record.key.surface_id.clone(),
++                        raw_precipitation: amount(0.02),
++                    }
++                }
+             })
+             .collect(),
+         wb14_parameters: vec![DirectOfeWb14Parameters {
+@@ -882,6 +898,219 @@
+         beginning_exact_surface_owner: exact.exact_surface_owner(),
+     })
+     .expect("accepted V4 runtime candidate")
++}
++
++// Test supports are source-fixed below 2^53 ns, so the integer-to-f64 conversion is exact.
++#[allow(clippy::cast_precision_loss)]
++fn execute_runtime_v4_candidate_only(
++    physical: &FrozenLitterV3Resident,
++    exact: &FrozenLitterV4Resident,
++    soil_beginning: &openwepp_land_surface_energy::SoilThermalUnpublishedPhysicalBeginningV2,
++    support_start_ns: u128,
++    support_end_ns: u128,
++) -> AcceptedFrozenLitterV4RuntimeCandidate {
++    let support_s = (support_end_ns - support_start_ns) as f64 / 1_000_000_000.0;
++    let phase_inputs = runtime_phase_inputs(
++        physical.surface_configuration(),
++        physical.surface_owner(),
++        physical.lse_configuration(),
++        physical.lse_state(),
++        support_s,
++    );
++    let ingress = runtime_ingress(
++        physical.surface_configuration(),
++        TRANSACTION,
++        support_start_ns,
++        support_end_ns,
++        0,
++    );
++    execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
++        physical: FrozenLitterV3RuntimeInput {
++            transaction_id: TRANSACTION,
++            soil_transaction_authority: PhysicalSoilEnergyTransactionAuthorityV2::try_new(
++                TRANSACTION,
++                soil_beginning.transaction_id(),
++            )
++            .expect("candidate-only physical transaction authority"),
++            predecessor_transaction_id: physical.lse_state().0.last_accepted_transaction_id,
++            parent_support_start_ns: support_start_ns,
++            parent_support_end_ns: support_end_ns,
++            support_start_ns,
++            support_end_ns,
++            predecessor_receipt_chain_sha256: physical
++                .predecessor_receipt_chain_sha256()
++                .to_owned(),
++            surface_configuration: physical.surface_configuration(),
++            beginning_surface_owner: physical.surface_owner(),
++            lse_configuration: physical.lse_configuration(),
++            beginning_lse_state: physical.lse_state(),
++            phase_inputs: &phase_inputs,
++            current_ingress: &ingress,
++            wb14_parent: physical.wb14_parent(),
++            finalize_wb14_parent_interval: true,
++            coupled_binding: runtime_binding(support_start_ns, support_end_ns),
++            soil_beginning: FrozenLitterV3SoilBeginningV1::CandidateOnlyUnpublishedSoil(
++                soil_beginning,
++            ),
++        },
++        beginning_exact_surface_owner: exact.exact_surface_owner(),
++    })
++    .expect("accepted candidate-only V4 runtime candidate")
++}
++
++struct CandidateOnlyFactoryAudit {
++    mechanism: Option<openwepp_land_surface_energy::solver_mechanism_audit::Session>,
++}
++
++impl CandidateOnlyFactoryAudit {
++    fn begin() -> Self {
++        crate::direct_runtime::reset_direct_runtime_audit_counters();
++        crate::runtime_inputs::reset_gsi_receipt_advance_audit_v1();
++        Self {
++            mechanism: Some(
++                openwepp_land_surface_energy::solver_mechanism_audit::begin_mechanism_audit(
++                    false, 0,
++                )
++                .expect("begin candidate-only V4 factory mechanism audit"),
++            ),
++        }
++    }
++
++    fn setup_complete() {
++        println!(
++            "lp-c1-setup-direct-audit: {:?}",
++            crate::direct_runtime::direct_runtime_audit_snapshot()
++        );
++        println!(
++            "lp-c1-setup-gsi-receipt-advance-audit: {:?}",
++            crate::runtime_inputs::gsi_receipt_advance_audit_v1()
++        );
++    }
++}
++
++impl Drop for CandidateOnlyFactoryAudit {
++    fn drop(&mut self) {
++        println!(
++            "lp-c1-unwind-mechanism-audit: {:?}",
++            self.mechanism
++                .take()
++                .expect("candidate-only V4 factory mechanism audit")
++                .finish()
++        );
++        println!(
++            "lp-c1-unwind-direct-audit: {:?}",
++            crate::direct_runtime::direct_runtime_audit_snapshot()
++        );
++        println!(
++            "lp-c1-unwind-gsi-receipt-advance-audit: {:?}",
++            crate::runtime_inputs::gsi_receipt_advance_audit_v1()
++        );
++        println!(
++            "lp-c1-unwind-native-physics-audit: {:?}",
++            crate::v9_real_consumer_shadow::take_covered_native_physical_path_audit_v1()
++        );
++    }
++}
++
++#[test]
++fn real_candidate_only_v4_factory_uses_authenticated_aggregate_custody() {
++    const CHILD_START_NS: u128 = 1_860_000_000_000;
++    const CHILD_END_NS: u128 = 1_920_000_000_000;
++
++    let _native_audit =
++        crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
++    let _audit = CandidateOnlyFactoryAudit::begin();
++    let (mut beginning, retained_candidate, _, _) =
++        super::direct_v10_soil_thermal_v2_tests::unpublished_aggregate_candidate_only_from_native_v2_fixture();
++    let (physical, exact_surface_owner) = native_v4_resident_pair_fixture(&beginning);
++    beginning
++        .install_frozen_litter_v4_resident(physical, exact_surface_owner)
++        .expect("host-bound native V3/V4 resident installation");
++    let physical = beginning
++        .frozen_litter_v3_resident()
++        .expect("installed native V3 resident")
++        .clone();
++    let exact = beginning
++        .frozen_litter_v4_resident()
++        .expect("installed native V4 resident")
++        .clone();
++    let soil_beginning = beginning
++        .inner
++        .soil_thermal
++        .prepare_unpublished_physical_beginning_v2(
++            &beginning.inner.lse_configuration,
++            &retained_candidate,
++            None,
++            CHILD_START_NS,
++            CHILD_END_NS,
++        )
++        .expect("authenticated candidate-only physical beginning");
++    println!(
++        "lp-c1-stage: authenticated-host-installed candidate-only-beginning transaction={} support=[{CHILD_START_NS},{CHILD_END_NS})",
++        soil_beginning.transaction_id().0,
++    );
++    CandidateOnlyFactoryAudit::setup_complete();
++    let candidate = execute_runtime_v4_candidate_only(
++        &physical,
++        &exact,
++        &soil_beginning,
++        CHILD_START_NS,
++        CHILD_END_NS,
++    );
++    assert!(
++        candidate
++            .physical
++            .complete_owner_projection
++            .is_candidate_only_unpublished_soil()
++    );
++    println!("lp-c1-stage: accepted-frozen-litter-v4-runtime-candidate candidate-only=true");
++}
++
++#[test]
++fn v39_native_second_child_candidate_only_v4_factory() {
++    const CHILD_START_NS: u128 = 60_000_000_000;
++    const CHILD_END_NS: u128 = 1_800_000_000_000;
++
++    let _native_audit =
++        crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
++    let _audit = CandidateOnlyFactoryAudit::begin();
++    let (mut beginning, soil_beginning) =
++        super::direct_v10_soil_thermal_v2_tests::v39_second_child_native_physical_beginning_fixture(
++        );
++    let (physical, exact_surface_owner) = native_v4_resident_pair_fixture(&beginning);
++    beginning
++        .install_frozen_litter_v4_resident(physical, exact_surface_owner)
++        .expect("V39 host-bound native V3/V4 resident installation");
++    let physical = beginning
++        .frozen_litter_v3_resident()
++        .expect("V39 installed native V3 resident")
++        .clone();
++    let exact = beginning
++        .frozen_litter_v4_resident()
++        .expect("V39 installed native V4 resident")
++        .clone();
++    println!(
++        "lp3-stage: V39-native-host physical-beginning transaction={} support=[{CHILD_START_NS},{CHILD_END_NS})",
++        soil_beginning.transaction_id().0,
++    );
++    CandidateOnlyFactoryAudit::setup_complete();
++    let candidate = execute_runtime_v4_candidate_only(
++        &physical,
++        &exact,
++        &soil_beginning,
++        CHILD_START_NS,
++        CHILD_END_NS,
++    );
++    assert!(
++        candidate
++            .physical
++            .complete_owner_projection
++            .is_candidate_only_unpublished_soil()
++    );
++    println!(
++        "lp3-stage: accepted-frozen-litter-v4-runtime-candidate candidate-only=true litter-phase-receipts={}",
++        candidate.physical.litter_phase_receipts.len(),
++    );
+ }
+ 
+ fn v3_resident_canonical_bytes(resident: &FrozenLitterV3Resident) -> Vec<u8> {

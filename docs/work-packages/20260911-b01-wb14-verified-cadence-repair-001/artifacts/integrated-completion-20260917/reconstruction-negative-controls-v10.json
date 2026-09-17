@@ -1,0 +1,119 @@
+{
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/positive-reach-v10.stdout",
+  "input_sha256": "bd8226f62da59866b82d25aa4785bb750d630f48f08dbed298e2cf0f2e26d2c5",
+  "scope": "Evidence reconstruction corruption controls only; no physical runs",
+  "cases": [
+    {
+      "case": "receiver_missing_operand",
+      "rejected": true,
+      "error": "required accumulated operand inventory"
+    },
+    {
+      "case": "receiver_wrong_ordinal",
+      "rejected": true,
+      "error": "source-defined accumulated reordinalization/order"
+    },
+    {
+      "case": "receiver_duplicate_layer",
+      "rejected": true,
+      "error": "complete 90-row path/layer inventory mismatch"
+    },
+    {
+      "case": "donor_wrong_source_transaction",
+      "rejected": true,
+      "error": "primitive prefix source/credit exact membership"
+    },
+    {
+      "case": "donor_missing_selected_phase",
+      "rejected": true,
+      "error": "complete endpoint phase-record inventory/order"
+    },
+    {
+      "case": "donor_wrong_source_primitive",
+      "rejected": true,
+      "error": "primitive prefix source/credit exact membership"
+    },
+    {
+      "case": "donor_unselected_receipt_substitution",
+      "rejected": true,
+      "error": "credit source receipt identity"
+    },
+    {
+      "case": "donor_wrong_area_basis",
+      "rejected": true,
+      "error": "primitive prefix source/credit exact membership"
+    },
+    {
+      "case": "donor_endpoint_success_false",
+      "rejected": true,
+      "error": "endpoint-local finalizer success"
+    },
+    {
+      "case": "B01_INTEGRATED_LINEAGE_missing",
+      "rejected": true,
+      "error": "B01_INTEGRATED_LINEAGE: expected exactly one record, got 0"
+    },
+    {
+      "case": "B01_INTEGRATED_LINEAGE_duplicate",
+      "rejected": true,
+      "error": "B01_INTEGRATED_LINEAGE: expected exactly one record, got 2"
+    },
+    {
+      "case": "B01_INTEGRATED_LINEAGE_malformed",
+      "rejected": true,
+      "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "case": "B01_INTEGRATED_LINEAGE_duplicate_key",
+      "rejected": true,
+      "error": "duplicate JSON key: x"
+    },
+    {
+      "case": "B01_INTEGRATED_INSTALLED_missing",
+      "rejected": true,
+      "error": "B01_INTEGRATED_INSTALLED: expected exactly one record, got 0"
+    },
+    {
+      "case": "B01_INTEGRATED_INSTALLED_duplicate",
+      "rejected": true,
+      "error": "B01_INTEGRATED_INSTALLED: expected exactly one record, got 2"
+    },
+    {
+      "case": "B01_INTEGRATED_INSTALLED_malformed",
+      "rejected": true,
+      "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "case": "B01_INTEGRATED_INSTALLED_duplicate_key",
+      "rejected": true,
+      "error": "duplicate JSON key: x"
+    },
+    {
+      "case": "B01_INTEGRATED_ACCEPTED_PHASE_CHAIN_missing",
+      "rejected": true,
+      "error": "required nine endpoint phase-chain observations"
+    },
+    {
+      "case": "B01_INTEGRATED_ACCEPTED_PHASE_CHAIN_duplicate",
+      "rejected": true,
+      "error": "required nine endpoint phase-chain observations"
+    },
+    {
+      "case": "B01_INTEGRATED_ACCEPTED_PHASE_CHAIN_malformed",
+      "rejected": true,
+      "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "case": "B01_INTEGRATED_ACCEPTED_PHASE_CHAIN_duplicate_key",
+      "rejected": true,
+      "error": "duplicate JSON key: x"
+    }
+  ],
+  "passed": true,
+  "scripts": {
+    "test_reconstruction_controls.py": "4d09ade5cd8608e7e0625bae82a3bf477daf7eb523af0edb4226e38d26b7dc52",
+    "reconstruct_credits.py": "0a52fa7f3b6d801aa180c1550223fc52381d59708a0f965a1ded8743a0f2a56b",
+    "reconstruct_donors.py": "5c953344e97370fa56f8d6a48162bb852224a515652463956f3e339666669419",
+    "source_digest_helpers.py": "8b80e0424ac4c999217528b9e7553caab4329ae6563c2d228036c16fa978730e"
+  }
+}

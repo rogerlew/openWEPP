@@ -1,0 +1,161 @@
+{
+  "passed": true,
+  "input_sha256": "4a3ffaedc023c5dad93d09e4b64dfb7126a32499d794e60fd754016fc2325191",
+  "represented_prefix_slabs": 6,
+  "snowfree_successor_slabs": 2,
+  "final_projection_segments": 8,
+  "observed_terminal_event_groups": 1,
+  "clock_event_receipts": 2,
+  "terminal_parcel_consumed": true,
+  "checkpoint_finalized": false,
+  "clock_committed": false,
+  "wb14_parent_replay_correspondence": true,
+  "global_commit_authenticated": false,
+  "installation_authenticated": false,
+  "scope": "Exact local parent chronology and retained WB14 parent-replay correspondence only; global commit, installation, and conservation remain open.",
+  "no_op_positive_control": true,
+  "controls": [
+    {
+      "case": "missing_required_tag",
+      "rejected": true,
+      "error": "B01_INTEGRATED_PARENT: expected exactly one record, got 0"
+    },
+    {
+      "case": "duplicate_required_tag",
+      "rejected": true,
+      "error": "B01_INTEGRATED_PARENT: expected exactly one record, got 2"
+    },
+    {
+      "case": "clock_ordinal",
+      "rejected": true,
+      "error": "ending clock ordinals"
+    },
+    {
+      "case": "clock_receipt",
+      "rejected": true,
+      "error": "actual accepted segment full clock receipt"
+    },
+    {
+      "case": "owner_join",
+      "rejected": true,
+      "error": "observed event to first clock receipt join"
+    },
+    {
+      "case": "second_event",
+      "rejected": true,
+      "error": "two clock event inventory"
+    },
+    {
+      "case": "fixture_swe",
+      "rejected": true,
+      "error": "native fixture exact input inventory"
+    },
+    {
+      "case": "prefix_support",
+      "rejected": true,
+      "error": "represented-prefix slab support/order"
+    },
+    {
+      "case": "parcel_digest",
+      "rejected": true,
+      "error": "event to consumed parcel join"
+    },
+    {
+      "case": "extra_produced_parcel",
+      "rejected": true,
+      "error": "complete produced-to-consumed parcel payload and inventory"
+    },
+    {
+      "case": "group_event_payload",
+      "rejected": true,
+      "error": "observed event to first clock receipt join"
+    },
+    {
+      "case": "projection_slab",
+      "rejected": true,
+      "error": "final projection slab identity join"
+    },
+    {
+      "case": "actual_segment_slab",
+      "rejected": true,
+      "error": "actual accepted segment full clock receipt"
+    },
+    {
+      "case": "actual_segment_payload",
+      "rejected": true,
+      "error": "actual accepted segment/checkpoint payload material_transfers"
+    },
+    {
+      "case": "beginning_owner_digest",
+      "rejected": true,
+      "error": "projection beginning clock complete owners"
+    },
+    {
+      "case": "replay_missing",
+      "rejected": true,
+      "error": "B01_INTEGRATED_ACCEPTED_PARENT_REPLAY: expected exactly one record, got 0"
+    },
+    {
+      "case": "replay_duplicate",
+      "rejected": true,
+      "error": "B01_INTEGRATED_ACCEPTED_PARENT_REPLAY: expected exactly one record, got 2"
+    },
+    {
+      "case": "replay_malformed",
+      "rejected": true,
+      "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "case": "replay_child_mutation",
+      "rejected": true,
+      "error": "physical child chronology"
+    },
+    {
+      "case": "replay_parent_digest",
+      "rejected": true,
+      "error": "replay source-defined parent receipt digest"
+    },
+    {
+      "case": "replay_owner_join",
+      "rejected": true,
+      "error": "replay parent beginning owner join"
+    },
+    {
+      "case": "replay_parent_chain",
+      "rejected": true,
+      "error": "replay parent receipt chain"
+    },
+    {
+      "case": "replay_persistent_cursor",
+      "rejected": true,
+      "error": "replay persistent cursor payload"
+    },
+    {
+      "case": "replay_child_metadata",
+      "rejected": true,
+      "error": "replay child immutable identity"
+    },
+    {
+      "case": "replay_child_duration",
+      "rejected": true,
+      "error": "replay child accepted duration"
+    },
+    {
+      "case": "replay_prefix_chain",
+      "rejected": true,
+      "error": "replay inactive-prefix coupled receipt digest"
+    },
+    {
+      "case": "replay_prefix_proof",
+      "rejected": true,
+      "error": "replay source-defined parent identity"
+    },
+    {
+      "case": "replay_prefix_owner",
+      "rejected": true,
+      "error": "replay inactive-prefix ending owner join"
+    }
+  ],
+  "controls_passed": true,
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-case-01.stdout"
+}

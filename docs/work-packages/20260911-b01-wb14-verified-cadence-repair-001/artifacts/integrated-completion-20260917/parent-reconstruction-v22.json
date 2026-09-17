@@ -1,0 +1,89 @@
+{
+  "passed": true,
+  "input_sha256": "8c7120c296bf1aaac99ffefcb636aff114627e97e7321f6728f529b345596cb2",
+  "represented_prefix_slabs": 6,
+  "snowfree_successor_slabs": 2,
+  "final_projection_segments": 8,
+  "observed_terminal_event_groups": 1,
+  "clock_event_receipts": 2,
+  "terminal_parcel_consumed": true,
+  "checkpoint_finalized": false,
+  "clock_committed": false,
+  "later_parent_final_replay_authenticated": false,
+  "later_parent_replay_authenticated": true,
+  "scope": "Exact local parent chronology, clock/checkpoint identity joins, terminal parcel consumption, and final-projection inventory only; later WB14 parent-final replay, global commit, parent-final installation, and conservation remain open.",
+  "controls": [
+    {
+      "case": "missing_required_tag",
+      "rejected": true,
+      "error": "B01_INTEGRATED_PARENT: expected exactly one record, got 0"
+    },
+    {
+      "case": "duplicate_required_tag",
+      "rejected": true,
+      "error": "B01_INTEGRATED_PARENT: expected exactly one record, got 2"
+    },
+    {
+      "case": "clock_ordinal",
+      "rejected": true,
+      "error": "ending clock ordinals"
+    },
+    {
+      "case": "clock_receipt",
+      "rejected": true,
+      "error": "actual accepted segment full clock receipt"
+    },
+    {
+      "case": "owner_join",
+      "rejected": true,
+      "error": "observed event to first clock receipt join"
+    },
+    {
+      "case": "second_event",
+      "rejected": true,
+      "error": "two clock event inventory"
+    },
+    {
+      "case": "prefix_support",
+      "rejected": true,
+      "error": "represented-prefix slab support/order"
+    },
+    {
+      "case": "parcel_digest",
+      "rejected": true,
+      "error": "event to consumed parcel join"
+    },
+    {
+      "case": "extra_produced_parcel",
+      "rejected": true,
+      "error": "complete produced-to-consumed parcel payload and inventory"
+    },
+    {
+      "case": "group_event_payload",
+      "rejected": true,
+      "error": "observed event to first clock receipt join"
+    },
+    {
+      "case": "projection_slab",
+      "rejected": true,
+      "error": "final projection slab identity join"
+    },
+    {
+      "case": "actual_segment_slab",
+      "rejected": true,
+      "error": "actual accepted segment full clock receipt"
+    },
+    {
+      "case": "actual_segment_payload",
+      "rejected": true,
+      "error": "actual accepted segment/checkpoint payload material_transfers"
+    },
+    {
+      "case": "beginning_owner_digest",
+      "rejected": true,
+      "error": "projection beginning clock complete owners"
+    }
+  ],
+  "controls_passed": true,
+  "input": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/positive-parent-replay-v22.stdout"
+}

@@ -1,0 +1,85 @@
+{
+  "passed": true,
+  "all_observed_receipts": [
+    {
+      "receipt_sha256": "0416cec1a31b651d3464b373d6721eb8240546a48b14f916073369c2f8bbd972",
+      "support": {
+        "end_ns": "60000000000",
+        "start_ns": "0"
+      }
+    },
+    {
+      "receipt_sha256": "589ed14c0070486d86339ec53f2ecf7e1e2d2c4d84b93de035e48376a9c87c5c",
+      "support": {
+        "end_ns": "120000000000",
+        "start_ns": "60000000000"
+      }
+    },
+    {
+      "receipt_sha256": "4efec2995a60aca5069f342d2d052b28fffd7c3f04c6e79eb99843fd707dba81",
+      "support": {
+        "end_ns": "180000000000",
+        "start_ns": "120000000000"
+      }
+    },
+    {
+      "receipt_sha256": "6bff2178d3dde946f377594b375aa06c3f738f43bb2d4b2e3f313e54f3fe7496",
+      "support": {
+        "end_ns": "120000000000",
+        "start_ns": "60000000000"
+      }
+    },
+    {
+      "receipt_sha256": "bf00988d9fe4ba50a6ce99bb2396581f3c7356f871b3ce5fe8e9ddefa1becc8b",
+      "support": {
+        "end_ns": "180000000000",
+        "start_ns": "120000000000"
+      }
+    },
+    {
+      "receipt_sha256": "55d4ab3ab47e7d46b0a70c2896badbb4106613ae01db731e15ef8e0425a1563d",
+      "support": {
+        "end_ns": "240000000000",
+        "start_ns": "180000000000"
+      }
+    },
+    {
+      "receipt_sha256": "3ae896e3a786483e9561488cf220c2b571e492cd549b5990f3a5245effd7a688",
+      "support": {
+        "end_ns": "300000000000",
+        "start_ns": "240000000000"
+      }
+    },
+    {
+      "receipt_sha256": "17c4e3e6736c1adbad82afe2c04647c91078c08d985bd50b350228196bb64352",
+      "support": {
+        "end_ns": "360000000000",
+        "start_ns": "300000000000"
+      }
+    },
+    {
+      "receipt_sha256": "a0d98fb9d52a7a93b599e679a8275198460c956b5b39ecb04e204a5f90280ae8",
+      "support": {
+        "end_ns": "240000000000",
+        "start_ns": "180000000000"
+      }
+    },
+    {
+      "receipt_sha256": "8c54f978528e0004da376dab9ba80f3ab5141961817c118909962e35f71aec77",
+      "support": {
+        "end_ns": "300000000000",
+        "start_ns": "240000000000"
+      }
+    },
+    {
+      "receipt_sha256": "21219ab5b0fe22b16f168cd216d7b7704b0e33dc8d617889c5811439e8f4d285",
+      "support": {
+        "end_ns": "360000000000",
+        "start_ns": "300000000000"
+      }
+    }
+  ],
+  "count": 11,
+  "scope": "All endpoint-local source receipt digests independently reconstructed; final selected membership not established by this check",
+  "input_sha256": "8dbed9b0da57471c1117a00da2991996503b3581036fd0a00643a7f86b21ea81"
+}

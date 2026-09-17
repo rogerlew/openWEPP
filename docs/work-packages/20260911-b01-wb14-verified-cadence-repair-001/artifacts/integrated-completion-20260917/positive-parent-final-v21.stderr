@@ -1,0 +1,8 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+
+thread 'native-mixed-phase-integrated-promotion' (3334992) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs:2066:36:
+called `Result::unwrap()` on an `Err` value: Error("key must be a string", line: 0, column: 0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_mixed_phase_fixture_reaches_deferred_v4_promotion_boundary' (3334991) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs:875:10:
+join native mixed-phase integrated promotion: Any { .. }

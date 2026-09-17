@@ -1,0 +1,18 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-unit-boundary)
+    Checking openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-sim-contract)
+    Checking openwepp-management-schema v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-management-schema)
+    Checking openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-kernel-contract)
+    Checking openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-coupled-time)
+    Checking openwepp-input-contract v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-input-contract)
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-vegetation)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-biogeochemistry v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-biogeochemistry)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-land-surface-energy)
+    Checking openwepp-topology v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-topology)
+    Checking openwepp-meteorology v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-meteorology)
+    Checking openwepp-plant-phenology v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-plant-phenology)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/terminal-source-reconstruction/crates/openwepp-hillslope-orchestrator)
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1265 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1588 previous errors

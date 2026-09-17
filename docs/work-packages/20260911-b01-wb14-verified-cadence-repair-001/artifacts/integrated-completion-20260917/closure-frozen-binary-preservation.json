@@ -1,0 +1,241 @@
+{
+  "utc": "2026-09-17T19:18:55.322728+00:00",
+  "scope": "All frozen binaries with explicit hashes in current and prior integrated command receipts, plus canonical v20; transient Cargo build-cache executables are not represented as frozen evidence",
+  "binaries": [
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/accumulated-v44.frozen",
+      "expected_sha256": [
+        "9d0ac765a038fe5da255d965f6f80f1881e1974cad2f11d34ab1871fcf86c3ed"
+      ],
+      "actual_sha256": "9d0ac765a038fe5da255d965f6f80f1881e1974cad2f11d34ab1871fcf86c3ed",
+      "bytes": 450847880,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/atomic-install-v55.frozen",
+      "expected_sha256": [
+        "0b50a82f50a53041fb7e5e1f30a0c1ee344af5452c6d22df0de097e343328fbc"
+      ],
+      "actual_sha256": "0b50a82f50a53041fb7e5e1f30a0c1ee344af5452c6d22df0de097e343328fbc",
+      "bytes": 451208888,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/atomic-install-v56.frozen",
+      "expected_sha256": [
+        "9c8f749ae42d9c55441c71dc5129e40a4fe1b7c27f18d7eccbc87b73180611ac"
+      ],
+      "actual_sha256": "9c8f749ae42d9c55441c71dc5129e40a4fe1b7c27f18d7eccbc87b73180611ac",
+      "bytes": 451113120,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/atomic-install-v57.frozen",
+      "expected_sha256": [
+        "bef56ac6779dece9a0154d55327f304771d98ab8945a72e72fb61211ba5da14e"
+      ],
+      "actual_sha256": "bef56ac6779dece9a0154d55327f304771d98ab8945a72e72fb61211ba5da14e",
+      "bytes": 451204232,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-completion.frozen",
+      "expected_sha256": [
+        "3ee09e2d800d145494dd38280e26a89fb95447284120112041bfef3e00b65169"
+      ],
+      "actual_sha256": "3ee09e2d800d145494dd38280e26a89fb95447284120112041bfef3e00b65169",
+      "bytes": 450785376,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/install-outer-v52.frozen",
+      "expected_sha256": [
+        "b0bb683b2ca586fd7f16d63d5be351eff584e434bd70e67dcf6ec827b78cf662"
+      ],
+      "actual_sha256": "b0bb683b2ca586fd7f16d63d5be351eff584e434bd70e67dcf6ec827b78cf662",
+      "bytes": 451170640,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/late-parent-v48.frozen",
+      "expected_sha256": [
+        "0a34c1524fcdb1c31af28de3d9bf4c373bee3ff24ce634dfe35dec7d439c9db2"
+      ],
+      "actual_sha256": "0a34c1524fcdb1c31af28de3d9bf4c373bee3ff24ce634dfe35dec7d439c9db2",
+      "bytes": 451061576,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/late-parent-v49.frozen",
+      "expected_sha256": [
+        "d8f6c6925c63f849bd8abd4a5a5a13637ea0130abe4d6da3e05b21857c91f632"
+      ],
+      "actual_sha256": "d8f6c6925c63f849bd8abd4a5a5a13637ea0130abe4d6da3e05b21857c91f632",
+      "bytes": 451061576,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/late-v4-v46.frozen",
+      "expected_sha256": [
+        "709af901747cd0a98a1e819b9b4f1589309f9b8f9adc367d58b664ba4e111825"
+      ],
+      "actual_sha256": "709af901747cd0a98a1e819b9b4f1589309f9b8f9adc367d58b664ba4e111825",
+      "bytes": 451239528,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/n2-n3-v13.frozen",
+      "expected_sha256": [
+        "123dd7faf4484d7951238b3a3d7590af597657b65e4d0c821eb7ed5216724cdd"
+      ],
+      "actual_sha256": "123dd7faf4484d7951238b3a3d7590af597657b65e4d0c821eb7ed5216724cdd",
+      "bytes": 449790728,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/n2-n3-v16.frozen",
+      "expected_sha256": [
+        "bf5476a8b37c56fb7a33e284cd83c73f5e903e72bdde01620c1bb9e993354af7"
+      ],
+      "actual_sha256": "bf5476a8b37c56fb7a33e284cd83c73f5e903e72bdde01620c1bb9e993354af7",
+      "bytes": 449884992,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/n2-n3-v17.frozen",
+      "expected_sha256": [
+        "82dad9eac45835e45e74ca8250a6afa48094f546f7a424655a9bcdde2863d802"
+      ],
+      "actual_sha256": "82dad9eac45835e45e74ca8250a6afa48094f546f7a424655a9bcdde2863d802",
+      "bytes": 449885352,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/n2-n3-v18.frozen",
+      "expected_sha256": [
+        "a11bbc26c2cf3c0a0b68ca8364ca1960f177e934f89174c7fdaf43122fe88e3f"
+      ],
+      "actual_sha256": "a11bbc26c2cf3c0a0b68ca8364ca1960f177e934f89174c7fdaf43122fe88e3f",
+      "bytes": 449900456,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/n2-v10.frozen",
+      "expected_sha256": [
+        "2096feff7d8ad203ad59b7343611c7987a557fae0db1e7f370f2baf595998b16"
+      ],
+      "actual_sha256": "2096feff7d8ad203ad59b7343611c7987a557fae0db1e7f370f2baf595998b16",
+      "bytes": 450079920,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/n2-v7.frozen",
+      "expected_sha256": [
+        "14c35f556376cfe0aa54eec7827074019d382a0db443748d596101142a28dac5"
+      ],
+      "actual_sha256": "14c35f556376cfe0aa54eec7827074019d382a0db443748d596101142a28dac5",
+      "bytes": 449920120,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/n2-v8.frozen",
+      "expected_sha256": [
+        "797116942f8b1ed6d82057592fa08e0520ce22c83c5c2a5965cf16f0089368f9"
+      ],
+      "actual_sha256": "797116942f8b1ed6d82057592fa08e0520ce22c83c5c2a5965cf16f0089368f9",
+      "bytes": 450079752,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/n2-v9.frozen",
+      "expected_sha256": [
+        "82c94500ad765a2155155111f2685cda4efad94da8052c5e8698424ef22e38b7"
+      ],
+      "actual_sha256": "82c94500ad765a2155155111f2685cda4efad94da8052c5e8698424ef22e38b7",
+      "bytes": 450079752,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/outer-roots-v47.frozen",
+      "expected_sha256": [
+        "bd49940c1429d524dc246095889c4c4ab341057516a6b0aaee580ac1f2ef8acf"
+      ],
+      "actual_sha256": "bd49940c1429d524dc246095889c4c4ab341057516a6b0aaee580ac1f2ef8acf",
+      "bytes": 451065192,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/parent-final-v19.frozen",
+      "expected_sha256": [
+        "8d0a3ad31e7c8fa0db4b3cb732ac79d7f5496847f851b1ee6f5877f3080d615e"
+      ],
+      "actual_sha256": "8d0a3ad31e7c8fa0db4b3cb732ac79d7f5496847f851b1ee6f5877f3080d615e",
+      "bytes": 450029256,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/parent-final-v21.frozen",
+      "expected_sha256": [
+        "ce2b5900fb96ab4a3ec68ea59d123093eb7142857346c46af7a0f3b808f31243"
+      ],
+      "actual_sha256": "ce2b5900fb96ab4a3ec68ea59d123093eb7142857346c46af7a0f3b808f31243",
+      "bytes": 450054640,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/parent-replay-v22.frozen",
+      "expected_sha256": [
+        "ef10237830961edd9fa3f608475ab75759b3d50a6e68a2ed2913d50f56d12bd2"
+      ],
+      "actual_sha256": "ef10237830961edd9fa3f608475ab75759b3d50a6e68a2ed2913d50f56d12bd2",
+      "bytes": 449979256,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/selected-physical-v42.frozen",
+      "expected_sha256": [
+        "4812a5e324da83441b2977a708ab30621d849dec7ac4afa4ef0560bc8e301c6a"
+      ],
+      "actual_sha256": "4812a5e324da83441b2977a708ab30621d849dec7ac4afa4ef0560bc8e301c6a",
+      "bytes": 450620256,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-completion.frozen",
+      "expected_sha256": [
+        "bca82dd32f04859c8bdeab5433db3ff1a1a9ed96e44acf808a5d4ecc316e641a"
+      ],
+      "actual_sha256": "bca82dd32f04859c8bdeab5433db3ff1a1a9ed96e44acf808a5d4ecc316e641a",
+      "bytes": 450785408,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/integrated-v3.frozen",
+      "expected_sha256": [
+        "9f8857fff5d4203c4b91c5294d9eb57d6224ad088caa17f80493f63d34bb5198"
+      ],
+      "actual_sha256": "9f8857fff5d4203c4b91c5294d9eb57d6224ad088caa17f80493f63d34bb5198",
+      "bytes": 449558384,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-evidence-20260917/lineage-v4.frozen",
+      "expected_sha256": [
+        "d3794d9fa84ff8ca24b2ea466346dcb642856395ca30ddbb506be23f79425b83"
+      ],
+      "actual_sha256": "d3794d9fa84ff8ca24b2ea466346dcb642856395ca30ddbb506be23f79425b83",
+      "bytes": 449714496,
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/terminal-v20.frozen",
+      "expected_sha256": [
+        "512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd"
+      ],
+      "actual_sha256": "512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd",
+      "bytes": 448838176,
+      "matches": true
+    }
+  ],
+  "all_preserved": true
+}

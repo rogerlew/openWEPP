@@ -1,0 +1,16 @@
+{
+  "baseline_tree_sha256": "50672ab77e97334e731c99ccbc869ecdcc213da7257b86b141c5b1879104b6c5",
+  "terminal_tree_sha256": "d059b87c867309bebe0f0d43bf071b82af1c4934bef87d9b2afbcc5256d0af8f",
+  "changed_entries": [
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_stack_helpers.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_carrier_phase.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_preterminal_replay.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_terminal_accepted_endpoint.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs"
+  ],
+  "main_rust_adoption": false
+}

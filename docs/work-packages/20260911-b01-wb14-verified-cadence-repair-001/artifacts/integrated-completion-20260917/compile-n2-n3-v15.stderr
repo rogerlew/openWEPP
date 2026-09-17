@@ -1,0 +1,63 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/crates/openwepp-hillslope-orchestrator)
+error[E0277]: `SnowFreePhysicalReusePendingV1` doesn't implement `Debug`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2317:77
+     |
+2317 |                         "snow_free_physical_reuse_pending": format!("{:?}", self.snow_free_physical_reuse_pending),
+     |                                                                      ----   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `SnowFreePhysicalReusePendingV1` cannot be formatted using `{:?}` because it doesn't implement `Debug`
+     |                                                                      |
+     |                                                                      required by this formatting parameter
+     |
+help: the trait `Debug` is not implemented for `SnowFreePhysicalReusePendingV1`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs:291:1
+     |
+ 291 | pub(crate) struct SnowFreePhysicalReusePendingV1 {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: add `#[derive(Debug)]` to `SnowFreePhysicalReusePendingV1` or manually `impl Debug for SnowFreePhysicalReusePendingV1`
+help: the trait `Debug` is implemented for `std::option::Option<T>`
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/option.rs:594:15
+     = note: required for `std::option::Option<SnowFreePhysicalReusePendingV1>` to implement `Debug`
+
+error[E0277]: `SnowFreePhysicalReuseSeedV1` doesn't implement `Debug`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2318:74
+     |
+2318 |                         "snow_free_physical_reuse_seed": format!("{:?}", self.snow_free_physical_reuse_seed),
+     |                                                                   ----   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `SnowFreePhysicalReuseSeedV1` cannot be formatted using `{:?}` because it doesn't implement `Debug`
+     |                                                                   |
+     |                                                                   required by this formatting parameter
+     |
+help: the trait `Debug` is not implemented for `SnowFreePhysicalReuseSeedV1`
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs:374:1
+     |
+ 374 | pub(crate) enum SnowFreePhysicalReuseSeedV1 {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: add `#[derive(Debug)]` to `SnowFreePhysicalReuseSeedV1` or manually `impl Debug for SnowFreePhysicalReuseSeedV1`
+help: the trait `Debug` is implemented for `std::option::Option<T>`
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/option.rs:594:15
+     = note: required for `std::option::Option<SnowFreePhysicalReuseSeedV1>` to implement `Debug`
+
+error[E0308]: mismatched types
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2337:25
+     |
+2334 |                     .accept_promoted_candidate_only_frozen_litter_v4(
+     |                      ----------------------------------------------- arguments to this method are incorrect
+...
+2337 |                         accepted,
+     |                         ^^^^^^^^ expected `&mut ...`, found `AcceptedFrozenLitterV4RuntimeCandidate`
+     |
+note: method defined here
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:1589:19
+     |
+1589 |     pub(super) fn accept_promoted_candidate_only_frozen_litter_v4(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1593 |         accepted: &mut crate::land_surface_energy_shadow::v3_execution::AcceptedFrozenLitterV4RuntimeCandidate,
+     |         ------------------------------------------------------------------------------------------------------
+help: consider mutably borrowing here
+     |
+2337 |                         &mut accepted,
+     |                         ++++
+
+Some errors have detailed explanations: E0277, E0308.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 3 previous errors
