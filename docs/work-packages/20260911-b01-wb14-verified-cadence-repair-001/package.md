@@ -142,6 +142,19 @@ additional unquantified edit/tool failures remain uncertain. Exact final ledger
 will include safe preservation/publication/return. Scoped publication remains
 authorized; remote verification status is recorded separately from local custody.
 
+Custody: commit **`b236f01af4627c22c3cf493f38346a4f6daace4c`** pushed to
+existing main; [exact-commit remote verification](artifacts/feature-compatibility-20260917/remote-primary-verification.json)
+matched all99 published files /5,288,696 bytes. Full detached source/binaries
+remain local, patches/evidence remote. Terminal no-default stderr reports26 errors;
+no new-source tests executed. [QA interim preservation](artifacts/feature-compatibility-20260917/feature-qa-interim.md)
+is an attributable parent summary of received interim findings, not a terminal
+review. Both active children were interrupted at hard stop before any resumed
+work. [Final charged ledger](artifacts/feature-compatibility-20260917/final-ledger.json)
+records **113900.205s**, including60s final publication/return reserve, zero
+balance and failure floor **at least268**. No old reserve is reclaimed. This
+custody supplement is separately committed/pushed; its verification receipt stays
+in the durable external evidence directory to avoid recursive claims.
+
 ## Integrated promotion completion — adopted 2026-09-17
 
 **BOUNDED LOCAL CONTROLS COMPLETE; primary evidence published and byte-verified. A-001 and qualification remain HOLD.** The owner's instruction to execute

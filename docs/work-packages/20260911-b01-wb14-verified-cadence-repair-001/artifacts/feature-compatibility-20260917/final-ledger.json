@@ -1,0 +1,15 @@
+{
+  "accounted_utc": "2026-09-17T22:51:59.436964+00:00",
+  "return_and_final_publication_reserve_seconds": 60,
+  "charged_seconds": 113900.204964,
+  "ceiling_seconds": 106868.925,
+  "remaining_seconds": 0,
+  "failure_floor": 268,
+  "failure_uncertainty": "At least268; six known navigation/parser failures and11 nonzero command outcomes added to251, unquantified edit/tool errors not erased",
+  "clock_gap": "No wait deduction; full observed wall time conservatively charged despite20:21-to22:49 continuation gap",
+  "status": "HARD STOP HOLD INCOMPLETE; only safe custody and return",
+  "primary_commit": "b236f01af4627c22c3cf493f38346a4f6daace4c",
+  "remote_primary_verified_files": 99,
+  "remote_primary_all_byte_equal": true,
+  "terminal_source_sha256": "68600a01f8a90f2ef036fd966cd26dceb26c936a4efad3870dd3aa1096d1e12b"
+}

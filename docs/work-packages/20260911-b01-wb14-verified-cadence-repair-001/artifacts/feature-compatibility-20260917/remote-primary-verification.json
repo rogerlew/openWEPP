@@ -1,0 +1,505 @@
+{
+  "utc": "2026-09-17T22:51:16.794545+00:00",
+  "commit": "b236f01af",
+  "parent": "d3baae40b598a058b910729dc7a50f8dac54d419",
+  "method": "independent exact-commit HTTPS raw fetch; byte-for-byte comparison to git show",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/baseline-full-feature-inventory.json",
+      "bytes": 192133,
+      "sha256": "eb3294bcb8a242d43cc611332c64f69e42425486f47efd9d3da5dde63def767d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/baseline-standalone-default-library-incremental-from-T.patch",
+      "bytes": 120371,
+      "sha256": "66806ad7ba7cfd29ef82ebc3d91ff4c707ea70139071d8a4a92194dfd9237614"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/baseline-standalone-default-library-source.json",
+      "bytes": 109306,
+      "sha256": "d33f6c0e6a0fd5cbf2ba56c96b37f1a157af12a4da06740e783b5814df2b0df7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/baseline-standalone-default-library.json",
+      "bytes": 2831,
+      "sha256": "50d689de13c82359e1bb3f2ea577d08fc1f998448aa9e9cc9228c9dbca636e1e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/baseline-standalone-default-library.resources",
+      "bytes": 1074,
+      "sha256": "3674e804ece1da44830e0c41a78483e6050afdbfb88fe255c584db4d7e77b628"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/baseline-standalone-default-library.stderr",
+      "bytes": 303,
+      "sha256": "f57678316dcf1b61602f0d4d569d334190a8798694de076f4eae438850cc79a8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/baseline-standalone-default-library.stdout.gz",
+      "bytes": 49735,
+      "sha256": "9fa77ac7c04586737706067b27194d4dbaa528275c313ba620fb47dab5cbd931"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/compare_diagnostics.py",
+      "bytes": 2291,
+      "sha256": "fcbf99635d1f28480ef1641164355b0988baf594776bc3f603cbc10b963e0a48"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/continuation-ledger-start.json",
+      "bytes": 615,
+      "sha256": "8d0ffdb3503acddf9bd37e4caadaf2ee4fea760cc3d9f3cf5e435fb14d3a9f5a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-correctness-interim.md",
+      "bytes": 2073,
+      "sha256": "17b05a1f598034ea2c7f3b22d3497f72661c4916234001720bae7f5b2e31913a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-default-library-check-incremental-from-T.patch",
+      "bytes": 129889,
+      "sha256": "6f76710300932265d607acdb9b94559ce186c97af762441c6078867276217d51"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-default-library-check-source.json",
+      "bytes": 109301,
+      "sha256": "424f8f5ea14ee08b8b5d11a6200b95b48f8defab9daa9cceb30cd50f150b4ee2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-default-library-check.json",
+      "bytes": 2840,
+      "sha256": "32862e014508ff3fcc87cf8f3f226bbefc684808058dd9ffddaf2238d0337400"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-default-library-check.resources",
+      "bytes": 1095,
+      "sha256": "2d4eaaa3deeee8dcf0e1b81c9431225f101a28c9e83df8b1a422d65e4d53f020"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-default-library-check.stderr",
+      "bytes": 304,
+      "sha256": "bb1bc7af3cb8e0a9e8c305e4f06715947ca41bc0fa1cc66b25260628d120efd2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-default-library-check.stdout.gz",
+      "bytes": 55920,
+      "sha256": "1efccc8fd524a1ebc4f59e3c5a4c4d98ad6f1ab7d16564ecc5730cd247d4ff94"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-2-incremental-from-T.patch",
+      "bytes": 128178,
+      "sha256": "44fffd570d91cbfd781a0f90952e343e86bf3413fab64d089975018aecafa6a8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-2-source.json",
+      "bytes": 109301,
+      "sha256": "42de96f879d2d1f0ec3571ed1db1a4cc1a433fed5b20bdc23ef330a69653153a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-2.json",
+      "bytes": 2975,
+      "sha256": "3f9d03ef93cc9753c62dce25325c537bcf343fe764b137057fd96db2fd0cdfc4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-2.resources",
+      "bytes": 1139,
+      "sha256": "1efed618824ec8880d63d28d94e8ba9d19d4dc028f339c08bd1132ea408fac68"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-2.stderr",
+      "bytes": 327,
+      "sha256": "4263d64b5983ee1341f027b37654202cbd2b0280ba975e7c669edd2890576870"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-2.stdout",
+      "bytes": 93058,
+      "sha256": "8716d8f22a33b5986c254c982ae5a65330c1f6a38d47f554f8e20a47369390a7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-3-incremental-from-T.patch",
+      "bytes": 128837,
+      "sha256": "ce111e387803ed5734d69ef9ce1972c0565450c141d071913f9f1ab0b0db1663"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-3-source.json",
+      "bytes": 109301,
+      "sha256": "db5337b4f38ceb90c737526d63cf46f842e9f74fbfbf36220b8cc0595106a820"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-3.json",
+      "bytes": 2973,
+      "sha256": "e0f0b173c9f9414a0f8ea255d2817d14a8adb73c228cad0a9c85777e40d22718"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-3.resources",
+      "bytes": 1097,
+      "sha256": "03216494d7bad03e1483cf2bc85dba7dc7437c499427070651433fbbb91cde33"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-3.stderr",
+      "bytes": 286,
+      "sha256": "de0103cb9a6bd69bfbd94211ae440f5fa9066317b3f5db1062803bb564c39ff7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-3.stdout",
+      "bytes": 143806,
+      "sha256": "92adff85cc804723f60ef781acf9c68d9a024563957730f5958c7bfdba80a5ce"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-incremental-from-T.patch",
+      "bytes": 126806,
+      "sha256": "1542f17eb91dbac38947aff8c8be30a6a86404dfbbab9360d5f0a3e31f2ad3c7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check-source.json",
+      "bytes": 109299,
+      "sha256": "fdbacdc4a6b384cd57dc968adf24b722e5c84c26b6cd702cad19dc14877d37cb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check.json",
+      "bytes": 2969,
+      "sha256": "10f93ff500aad74766cf12267d594121760ecb429d99ee53311cac605b3a08f0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check.resources",
+      "bytes": 1137,
+      "sha256": "5f12b9ee1547fb3e9bbc8071ef55ffcb7587a3d9293f09dd03fa9bb31e83c1a3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check.stderr",
+      "bytes": 327,
+      "sha256": "e2116c083f3a2a1c0f17089f021c5888f2bf77bde31be63eeb5b67691e210d84"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-evidence-only-check.stdout",
+      "bytes": 72620,
+      "sha256": "d57469d011d502e97805a4f495e1cb3681ae07926b626937adf9a450d49b3fe1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-2-incremental-from-T.patch",
+      "bytes": 126774,
+      "sha256": "72a376b628b621224cc739805be4defae5ae5bf91e1aee999cdcc02ea10a2fe4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-2-source.json",
+      "bytes": 109298,
+      "sha256": "319dbc2203b8a439c1ce69cd11d46797a497b4f1fdcd2691d632205bacd585e0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-2.json",
+      "bytes": 2861,
+      "sha256": "46ff0a440b6fbf8f7d2124babb43739a682bc012627cb2eafeab6cd1f00c4057"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-2.resources",
+      "bytes": 1101,
+      "sha256": "6d7b5de1552926a52f6bbe4d702f32a2efcb6a846ffa2d5420c62ce770eb904f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-2.stderr",
+      "bytes": 329,
+      "sha256": "d231b49a350f998cc88b235b5a7ba9a50fea9512f28b467fe9ddd31aa2c54dd3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-2.stdout.gz",
+      "bytes": 98552,
+      "sha256": "bc8126ab6c432a801fed897a3b84523489517084961bbd21065529751becb0d7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-3-incremental-from-T.patch",
+      "bytes": 127832,
+      "sha256": "23a31c62ca8849862a9fd97a07f926303b1cedbdc7850ce4abec335ab71719ac"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-3-source.json",
+      "bytes": 109298,
+      "sha256": "5a365cac2b7f00febe499d29e671607fb82d671d706da4614135fbbc693bf337"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-3.json",
+      "bytes": 2862,
+      "sha256": "1a3c38424d261c0aa758ffa1e196a20cadcba0f381270b7edbc40cd36ddc4e18"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-3.resources",
+      "bytes": 1101,
+      "sha256": "c7e355ab589f5526e2dd02d3ef02bcd1253cae07292cd4afcebd69fb01c2c6f4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-3.stderr",
+      "bytes": 329,
+      "sha256": "3336875dafce7c06bb7d5faa408af9e26bf80170b0176db8b816d1b53113da9a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-3.stdout.gz",
+      "bytes": 40474,
+      "sha256": "303e89335096da1a7d042a73ee5cf78e065b9e59348eec0a68f0fecf727a5cf0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-4-incremental-from-T.patch",
+      "bytes": 130446,
+      "sha256": "15250f1d3fe4253eda95d4934fd2e05f6d9dbdee9e42754c878fe8f046251ded"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-4-source.json",
+      "bytes": 109298,
+      "sha256": "accb831bd339408206c09eda53375c7fd5e3a7b0f97480b25f23032f3adf8e27"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-4.json",
+      "bytes": 2862,
+      "sha256": "84d324d51a0e802c023b630894c9302cfb5795c5ec194c0c4833d138ffc268bb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-4.resources",
+      "bytes": 1100,
+      "sha256": "fefa1de261b9cfdb70b185c97feec15cb60a41287c1da751a2dbc608e5cbe646"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-4.stderr",
+      "bytes": 329,
+      "sha256": "e1a129690f86fbbd44c531080f1fa22e31cba5810985d4eec1b16ded67f34452"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-4.stdout.gz",
+      "bytes": 24358,
+      "sha256": "e113b046c7313ddbd735207aa8af7de4684d345322f32721944ba37d7f3cd00c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-5-incremental-from-T.patch",
+      "bytes": 129602,
+      "sha256": "6e5f77ffd8b47c44a8d65a0d8301da5a71ee106771a3e82557578cc545a61dd6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-5-source.json",
+      "bytes": 109298,
+      "sha256": "76f75f18301b6083f412b3457beac672c2b294f73a31fdb67c00f2ee1cb48746"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-5.json",
+      "bytes": 2862,
+      "sha256": "5cdd7eb9ca6ba8e873e076e924a57e19a7e35c3499ab725916ed04c8694e1269"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-5.resources",
+      "bytes": 1100,
+      "sha256": "96a23f13bf1350c9eb60e9dd07fb162feb0f1175ec0223f56ade411547b16f68"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-5.stderr",
+      "bytes": 329,
+      "sha256": "e1a129690f86fbbd44c531080f1fa22e31cba5810985d4eec1b16ded67f34452"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-5.stdout.gz",
+      "bytes": 24369,
+      "sha256": "243b669b0c488df4b9269afafc4016cf7d7a71ad671286ee0c1fb3ae81d3727e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-6-incremental-from-T.patch",
+      "bytes": 129545,
+      "sha256": "07dedc6e2b5929c228afac1b8ddbe44c6eebe10067b2082aa49b57a04247926c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-6-source.json",
+      "bytes": 109298,
+      "sha256": "22840ca29d7317bb8ee86a26f96b0c4755461a73eda2967fcd93c9f97b121962"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-6.json",
+      "bytes": 2861,
+      "sha256": "f2ec8830ce17317f9ff2dafef79481ba23a001e32b9b4998aea87e82c2eff154"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-6.resources",
+      "bytes": 1100,
+      "sha256": "2422fcb088dfcfd24ab0df6f0e90ef6baf1ca7711ec2dc18275bd02c401257e6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-6.stderr",
+      "bytes": 329,
+      "sha256": "44336457414756727adc54d7b20ce4f999600f26fbebb1be8b1531c4003504bc"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-6.stdout.gz",
+      "bytes": 44991,
+      "sha256": "e140b7980743154029d95de1b4e416334d1cdc4c7c46cb9f95471192f0e79afb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-incremental-from-T.patch",
+      "bytes": 124890,
+      "sha256": "97ae8ee3ae09ddf26a572efcd61246713225806c4d62194f2f08328886a3efe6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check-source.json",
+      "bytes": 109296,
+      "sha256": "c9024dc3b37c67cc2e0035acc1b31d15725ebadb8914b6db9979fce67c3280fb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check.json",
+      "bytes": 2856,
+      "sha256": "3532f9650689dfafd6d5f7c9ae8424d65698c00bfb36919d0eb3ff2c33dc6603"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check.resources",
+      "bytes": 1106,
+      "sha256": "25576c515db119b36dc8279e76df202abf13eeaacfeb52af3d19a38ef4815752"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check.stderr",
+      "bytes": 329,
+      "sha256": "28081ed4f9514c37cb20d428b26474cc7a66c261b3dc1e1ab78b6230278a5715"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-check.stdout.gz",
+      "bytes": 99578,
+      "sha256": "f0496bd05af72fdd7701508046af0c94479f633c253bf9eca7530d761b075bd9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-final-attempt-incremental-from-T.patch",
+      "bytes": 127581,
+      "sha256": "1ad17e5adaa9d1fac0d190b5bb85966b6fa965a89393928d83befc1bb78455ab"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-final-attempt-source.json",
+      "bytes": 109304,
+      "sha256": "86ff8fe06a6004270b5dbbf4e376a3fa14caacc409dd58b14cb04a5260b84c98"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-final-attempt.json",
+      "bytes": 2880,
+      "sha256": "115e45eefce9661c452a37a501af00d2bb8651e0a21b18a5a017d77ff1acb604"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-final-attempt.resources",
+      "bytes": 1103,
+      "sha256": "6363e809956f4d262a922ef6f5459c69d12b65dfbf9eee6d566e0bc5c353e9e3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-final-attempt.stderr",
+      "bytes": 329,
+      "sha256": "83e3d2150f2edfffe6db4b195bf83208314a6d3d2ea7be07f9afcfffed47e046"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-no-default-final-attempt.stdout.gz",
+      "bytes": 81006,
+      "sha256": "906c9cd069f76f5ac0d85da90ab346a89ba9870fd5fd64258ee64265c0a52a3e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-check-incremental-from-T.patch",
+      "bytes": 128837,
+      "sha256": "ce111e387803ed5734d69ef9ce1972c0565450c141d071913f9f1ab0b0db1663"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-check-source.json",
+      "bytes": 109299,
+      "sha256": "9dd8ba6ca1714bfd6a9a9991eec079e52ea1d4b1712a207238aab31351865806"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-check.json",
+      "bytes": 3008,
+      "sha256": "ef87cbcc6a2c357c4a4f4a58c73a6093792029b61a2e18e095b3cc40f2f07484"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-check.resources",
+      "bytes": 1116,
+      "sha256": "2ad0ea1a5f5efb9e4d67a2be73daded896781025ded3b18236156d69131f860e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-check.stderr",
+      "bytes": 286,
+      "sha256": "281f368f5f95e97fcac43e1695353b31dedc0bfbebb2c946b8f3f1b49d44a72c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-check.stdout",
+      "bytes": 68610,
+      "sha256": "a6d5dd93aa41e801ba60a8fc6d4afb714b163f26af0f23d089db73e9f33a3a86"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-no-run-incremental-from-T.patch",
+      "bytes": 127581,
+      "sha256": "1ad17e5adaa9d1fac0d190b5bb85966b6fa965a89393928d83befc1bb78455ab"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-no-run-source.json",
+      "bytes": 109300,
+      "sha256": "9531fbcd1bdf8a4f6532603271a396d7e4aee35b33c07caefa901a540280bf6d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-no-run.json",
+      "bytes": 2953,
+      "sha256": "5e3abfac5fed9daa9476d9ef2613c3013bc960ed5a4dea96aa32ab1b27cf7fd7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-no-run.resources",
+      "bytes": 1107,
+      "sha256": "5f435c40cfa48baacdbc630be6ff6bbb682a589bc5bd783f7102e405adf8a5d7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-no-run.stderr",
+      "bytes": 8481,
+      "sha256": "c085a30c39610c57e3ecee6e6dd26638566c6cbe756b4e872046f186cb8b5a69"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/feature-selected-full-no-run.stdout",
+      "bytes": 236,
+      "sha256": "d401b20eddf311f126a937a0e5c74aeacfec400086cc59c139b1201dc9c5cea9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/frozen-binary-continuity.json",
+      "bytes": 351,
+      "sha256": "947e89af8e71ec6d7782d9f4b14faf7c495ffd339471f9ea88812e4a45e5fbfd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/owner-authorization.md",
+      "bytes": 13519,
+      "sha256": "8f66fbc4efed1accc03636c5db5475dd162ef02c4dd26c8018aeb48907db9051"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/publication-manifest.json",
+      "bytes": 46584,
+      "sha256": "93dc1e9cee16d2782e078a2e9fa0fb82a9ce9831c67e5f6a9cdd346a80f3edbb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/publish_evidence.py",
+      "bytes": 1716,
+      "sha256": "ae5eaa2dc036ec37ee4ef107d86784dc80c3db22b99297845ba0d139804d69a7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/run_frozen_baseline.py",
+      "bytes": 6126,
+      "sha256": "e5b00d9168384742a65bf271bff28845d3dab4d14cfed2d9c1cd798c7abbba86"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/run_recorded.py",
+      "bytes": 6127,
+      "sha256": "51d1059ad0b321d78a4177d0f05fcabc0abbf0725a0d0155b597dae842cf7b67"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/starting-recovery.json",
+      "bytes": 620,
+      "sha256": "ddf9000f874285bfa1ff3a849de10fdb8134ea7d5db27cec96e5c108d93c52f1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/stopped-from-frozen-integrated.patch",
+      "bytes": 7780,
+      "sha256": "48a54e35dd7ddb4c77fa93d64e4e7c442bb2c07716bcc26b106a416bdb2b1abd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/stopped-source-and-command-audit.json",
+      "bytes": 115566,
+      "sha256": "c43c77ed5314cf40cf8b2261d7cc12bd7448478ac2db375ccb1a0471316d4dd1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/feature-compatibility-20260917/verify_remote_evidence.py",
+      "bytes": 1685,
+      "sha256": "81544bedace25a9142a3754fe0fba390d028eedfacb7b555e05add5a9328481c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 608145,
+      "sha256": "0bbf29d97bb5cc57c907ff77b601ea21d9ddf1029c628d8e5171e009d2882095"
+    }
+  ],
+  "all_match": true,
+  "scope": "Published package/evidence/patch files only; external source trees, frozen binaries and large corpus remain local custody."
+}
