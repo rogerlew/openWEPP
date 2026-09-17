@@ -1,0 +1,64 @@
+{
+  "final_source_tree_sha256": "6a9352297216e25d4ec872b3622a086b9367f107222cddb431fcecac175e7101",
+  "strict_clippy": {
+    "baseline": "terminal-v20-strict-clippy.stdout",
+    "current": "quality-strict-clippy-v1.stdout",
+    "baseline_emissions": 27,
+    "current_emissions": 27,
+    "baseline_unique_identities": 15,
+    "current_unique_identities": 15,
+    "identities_match": true,
+    "note": "strict aborts upstream; capped run supplies touched-test reachability"
+  },
+  "no_default": {
+    "baseline": {
+      "emissions": 62,
+      "substantive_emissions": 61,
+      "unique_identities": 34,
+      "identities_match": true
+    },
+    "current": {
+      "emissions": 62,
+      "substantive_emissions": 61,
+      "unique_identities": 34,
+      "identities_match": true
+    }
+  },
+  "evidence_only": {
+    "baseline": {
+      "emissions": 34,
+      "substantive_emissions": 33,
+      "unique_identities": 10,
+      "identities_match": true
+    },
+    "current": {
+      "emissions": 34,
+      "substantive_emissions": 33,
+      "unique_identities": 10,
+      "identities_match": true
+    }
+  },
+  "capped_clippy": {
+    "receipt": "quality-capped-clippy-v2.json",
+    "exit_code": 0,
+    "touched_test_diagnostics": 33,
+    "new_helper_cast_precision_loss_present": false,
+    "note": "remaining touched diagnostics are inherited; source-owned helper lint removed",
+    "new_helper_source_line_after_final": 912,
+    "remaining_v3_cast_precision_loss_lines": [
+      724,
+      779,
+      797,
+      851,
+      2072
+    ]
+  },
+  "rustfmt": {
+    "attempts": [
+      "quality-rustfmt-v1.json",
+      "quality-rustfmt-v2.json",
+      "quality-rustfmt-v3.json"
+    ],
+    "result": "FAIL inherited whole-file formatting; v1 option unsupported, v2/v3 use --config skip_children=true; LP3-owned wraps corrected; no broad cleanup"
+  }
+}

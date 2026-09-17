@@ -1,0 +1,50 @@
+{
+  "label": "factory-control-v6",
+  "argv": [
+    "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/openwepp_hillslope_orchestrator-lp3-v39-v6-6acf9a74daf335ab",
+    "--exact",
+    "v9_real_consumer_shadow::v3_publication_retention_tests::v39_native_second_child_candidate_only_v4_factory",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v6.resources",
+    "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/openwepp_hillslope_orchestrator-lp3-v39-v6-6acf9a74daf335ab",
+    "--exact",
+    "v9_real_consumer_shadow::v3_publication_retention_tests::v39_native_second_child_candidate_only_v4_factory",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917",
+  "source_tree_sha256": "30fe39089cf38baf696fead5c5c7b2d26be6a263ac7e07dbae5425d34a616380",
+  "source_receipt": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v6-source.json",
+  "pinned_files": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/local-promotion-controls-20260917/run_recorded.py": "855b1f9071976429567297ac88c69b3e172e48c8ffbd167d6f78e130dbfa0f25",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openWEPP/tools/dev/openwepp-env": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+  },
+  "start_utc": "2026-09-17T04:36:07.944464+00:00",
+  "timeout_seconds": 300,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/openwepp_hillslope_orchestrator-lp3-v39-v6-6acf9a74daf335ab",
+  "binary_sha256": "d18cc6d06935dc086eb7f1f0e50d9fc9e9bc51720e01c094663e9a023a4a703d",
+  "environment_policy": "Inherited environment excluding OPENWEPP_*; explicit env assignments in argv",
+  "input_scope": "Source-defined local component fixtures only; no original corpus inputs",
+  "process_group": 2613530,
+  "exit_code": 101,
+  "timed_out": false,
+  "elapsed_seconds": 0.11611100099980831,
+  "end_utc": "2026-09-17T04:36:08.281786+00:00",
+  "source_unchanged": true,
+  "frozen_T_unchanged": true,
+  "binary_unchanged": true,
+  "pinned_files_unchanged": true,
+  "stdout_sha256": "5a6aa6ffa48f01e0575d3f5a1727cdaba91404daf50515b65c38e93c57dd5a5e",
+  "stderr_sha256": "0a6780104a892a1a8e6db68093492156a5fe84e083411728ea202f9c6f7b0652"
+}

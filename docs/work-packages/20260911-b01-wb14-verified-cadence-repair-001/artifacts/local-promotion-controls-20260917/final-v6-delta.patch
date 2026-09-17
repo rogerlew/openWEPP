@@ -1,0 +1,31 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
+@@ -900,6 +900,8 @@
+     .expect("accepted V4 runtime candidate")
+ }
+ 
++// Test supports are source-fixed below 2^53 ns, so this seconds conversion is exact.
++#[allow(clippy::cast_precision_loss)]
+ fn execute_runtime_v4_candidate_only(
+     physical: &FrozenLitterV3Resident,
+     exact: &FrozenLitterV4Resident,
+@@ -1015,7 +1017,8 @@
+     const CHILD_START_NS: u128 = 1_860_000_000_000;
+     const CHILD_END_NS: u128 = 1_920_000_000_000;
+ 
+-    let _native_audit = crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
++    let _native_audit =
++        crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
+     let audit = CandidateOnlyFactoryAudit::begin();
+     let (mut beginning, retained_candidate, _, _) =
+         super::direct_v10_soil_thermal_v2_tests::unpublished_aggregate_candidate_only_from_native_v2_fixture();
+@@ -1069,7 +1072,8 @@
+     let _native_audit = crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
+     let audit = CandidateOnlyFactoryAudit::begin();
+     let (mut beginning, soil_beginning) =
+-        super::direct_v10_soil_thermal_v2_tests::v39_second_child_native_physical_beginning_fixture();
++        super::direct_v10_soil_thermal_v2_tests::v39_second_child_native_physical_beginning_fixture(
++        );
+     let (physical, exact_surface_owner) = native_v4_resident_pair_fixture(&beginning);
+     beginning
+         .install_frozen_litter_v4_resident(physical, exact_surface_owner)

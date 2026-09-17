@@ -1,0 +1,1495 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-promotion-controls-20260917-b05de7b2caf3
+  scratch: /tmp/openwepp-roger-b01-wb14-promotion-controls-20260917-b05de7b2caf3
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:1:
+ use super::*;
+ use crate::land_surface_energy_shadow::endpoint_fixture;
+ use openwepp_land_surface_energy::{
+[32m+    migrate_soil_thermal_v1_to_v2, seal_soil_thermal_receipt_free_owner_v2,
+[m     SoilThermalAcceptedEnergyOperandV2, SoilThermalEnergyOperandKindV2,
+[31m-    SoilThermalV2MigrationIdentity, migrate_soil_thermal_v1_to_v2,
+[m[31m-    seal_soil_thermal_receipt_free_owner_v2,
+[m[32m+    SoilThermalV2MigrationIdentity,
+[m };
+ 
+ fn digest(byte: char) -> Sha256Digest {
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:661:
+         .soil_thermal_resident()
+         .canonical_active_owner_bytes()
+         .expect("generic split refusal beginning bytes");
+[31m-    assert!(
+[m[31m-        candidate
+[m[31m-            .install_soil_thermal_accepted_v2(prepared.beginning_owner(), accepted, seals)
+[m[31m-            .is_err(),
+[m[31m-    );
+[m[32m+    assert!(candidate
+[m[32m+        .install_soil_thermal_accepted_v2(prepared.beginning_owner(), accepted, seals)
+[m[32m+        .is_err(),);
+[m     assert_eq!(
+         candidate
+             .soil_thermal_resident()
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:731:
+             target,
+         )
+         .expect("foreign explicit authority poison");
+[31m-    assert!(
+[m[31m-        candidate
+[m[31m-            .install_soil_thermal_accepted_v2_from_authenticated_beginning(
+[m[31m-                &authoritative_beginning,
+[m[31m-                prepared.beginning_owner(),
+[m[31m-                foreign,
+[m[31m-                accepted,
+[m[31m-                seals,
+[m[31m-            )
+[m[31m-            .is_err(),
+[m[31m-    );
+[m[32m+    assert!(candidate
+[m[32m+        .install_soil_thermal_accepted_v2_from_authenticated_beginning(
+[m[32m+            &authoritative_beginning,
+[m[32m+            prepared.beginning_owner(),
+[m[32m+            foreign,
+[m[32m+            accepted,
+[m[32m+            seals,
+[m[32m+        )
+[m[32m+        .is_err(),);
+[m     assert_eq!(
+         candidate
+             .soil_thermal_resident()
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:1645:
+             &accepted_second,
+         )
+         .expect("typed selected unpublished continuation validation");
+[31m-    assert!(
+[m[31m-        validated
+[m[31m-            .validate_soil_thermal_accepted_v2_from_unpublished_continuation(
+[m[31m-                &first_trial,
+[m[31m-                &second_result,
+[m[31m-                original.beginning_owner(),
+[m[31m-                &accepted_second,
+[m[31m-            )
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(validated
+[m[32m+        .validate_soil_thermal_accepted_v2_from_unpublished_continuation(
+[m[32m+            &first_trial,
+[m[32m+            &second_result,
+[m[32m+            original.beginning_owner(),
+[m[32m+            &accepted_second,
+[m[32m+        )
+[m[32m+        .is_err());
+[m     assert_eq!(
+         validated
+             .soil_thermal_resident()
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:1931:
+         .expect("same-support cached base result");
+     let fixed_point_candidate = DirectSoilThermalCandidate::from_v2(child_trial.clone())
+         .expect("same-support fixed-point candidate");
+[31m-    assert!(
+[m[31m-        installed
+[m[31m-            .inner
+[m[31m-            .soil_thermal
+[m[31m-            .validate_unpublished_fixed_point_v2(
+[m[31m-                &installed.inner.lse_configuration,
+[m[31m-                &fixed_point_candidate,
+[m[31m-                Some(&prior),
+[m[31m-                1_800_000_000_000,
+[m[31m-                3_600_000_000_000,
+[m[31m-            )
+[m[31m-            .expect("authenticate same-support fixed-point history")
+[m[31m-    );
+[m[31m-    assert!(
+[m[31m-        installed
+[m[31m-            .inner
+[m[31m-            .soil_thermal
+[m[31m-            .validate_unpublished_fixed_point_v2(
+[m[31m-                &installed.inner.lse_configuration,
+[m[31m-                &fixed_point_candidate,
+[m[31m-                None,
+[m[31m-                1_800_000_000_000,
+[m[31m-                3_600_000_000_000,
+[m[31m-            )
+[m[31m-            .expect("authenticate candidate-only same-support base trial")
+[m[31m-    );
+[m[32m+    assert!(installed
+[m[32m+        .inner
+[m[32m+        .soil_thermal
+[m[32m+        .validate_unpublished_fixed_point_v2(
+[m[32m+            &installed.inner.lse_configuration,
+[m[32m+            &fixed_point_candidate,
+[m[32m+            Some(&prior),
+[m[32m+            1_800_000_000_000,
+[m[32m+            3_600_000_000_000,
+[m[32m+        )
+[m[32m+        .expect("authenticate same-support fixed-point history"));
+[m[32m+    assert!(installed
+[m[32m+        .inner
+[m[32m+        .soil_thermal
+[m[32m+        .validate_unpublished_fixed_point_v2(
+[m[32m+            &installed.inner.lse_configuration,
+[m[32m+            &fixed_point_candidate,
+[m[32m+            None,
+[m[32m+            1_800_000_000_000,
+[m[32m+            3_600_000_000_000,
+[m[32m+        )
+[m[32m+        .expect("authenticate candidate-only same-support base trial"));
+[m     let before = installed
+         .soil_thermal_resident()
+         .canonical_active_owner_bytes()
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:1990:
+         before
+     );
+ 
+[31m-    assert!(
+[m[31m-        installed
+[m[31m-            .inner
+[m[31m-            .soil_thermal
+[m[31m-            .validate_unpublished_fixed_point_v2(
+[m[31m-                &installed.inner.lse_configuration,
+[m[31m-                &fixed_point_candidate,
+[m[31m-                Some(&prior),
+[m[31m-                1_800_000_000_000,
+[m[31m-                3_600_000_000_000,
+[m[31m-            )
+[m[31m-            .is_ok()
+[m[31m-    );
+[m[32m+    assert!(installed
+[m[32m+        .inner
+[m[32m+        .soil_thermal
+[m[32m+        .validate_unpublished_fixed_point_v2(
+[m[32m+            &installed.inner.lse_configuration,
+[m[32m+            &fixed_point_candidate,
+[m[32m+            Some(&prior),
+[m[32m+            1_800_000_000_000,
+[m[32m+            3_600_000_000_000,
+[m[32m+        )
+[m[32m+        .is_ok());
+[m     let mut substituted_prior = prior.clone();
+     substituted_prior.physical_trial = retained_trial;
+[31m-    assert!(
+[m[31m-        installed
+[m[31m-            .inner
+[m[31m-            .soil_thermal
+[m[31m-            .validate_unpublished_fixed_point_v2(
+[m[31m-                &installed.inner.lse_configuration,
+[m[31m-                &fixed_point_candidate,
+[m[31m-                Some(&substituted_prior),
+[m[31m-                1_800_000_000_000,
+[m[31m-                3_600_000_000_000,
+[m[31m-            )
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(installed
+[m[32m+        .inner
+[m[32m+        .soil_thermal
+[m[32m+        .validate_unpublished_fixed_point_v2(
+[m[32m+            &installed.inner.lse_configuration,
+[m[32m+            &fixed_point_candidate,
+[m[32m+            Some(&substituted_prior),
+[m[32m+            1_800_000_000_000,
+[m[32m+            3_600_000_000_000,
+[m[32m+        )
+[m[32m+        .is_err());
+[m     assert_eq!(
+         installed
+             .soil_thermal_resident()
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2140:
+         f64::from_bits(1),
+         'c',
+     );
+[31m-    let retained_candidate =
+[m[31m-        DirectSoilThermalCandidate::from_v2(retained_trial.clone()).expect("native retained candidate");
+[m[32m+    let retained_candidate = DirectSoilThermalCandidate::from_v2(retained_trial.clone())
+[m[32m+        .expect("native retained candidate");
+[m     let aggregate = authoritative
+         .prepare_base_soil_thermal_unpublished_aggregate_support_v2(
+             &retained_candidate,
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2223:
+     assert_eq!(beginning.support_end_ns, selected.support_end_ns());
+     assert!(resident.owner().support_end_ns <= selected.support_start_ns());
+     assert!(selected.unpublished_predecessor_trial_sha256().is_some());
+[31m-    assert!(
+[m[31m-        selected
+[m[31m-            .accepted_predecessor_receipt_chain_sha256()
+[m[31m-            .is_none()
+[m[31m-    );
+[m[32m+    assert!(selected
+[m[32m+        .accepted_predecessor_receipt_chain_sha256()
+[m[32m+        .is_none());
+[m     let accepted = result
+         .compose_accepted_outer_candidate(&installed.inner.lse_configuration)
+         .expect("aggregate accepted outer candidate");
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2478:
+                    expected: &Sha256Digest,
+                    start: u128,
+                    end: u128| {
+[31m-        assert!(
+[m[31m-            authoritative
+[m[31m-                .prepare_soil_thermal_unpublished_continuation_v2(
+[m[31m-                    &original, prior, trial, expected, start, end,
+[m[31m-                )
+[m[31m-                .is_err()
+[m[31m-        );
+[m[32m+        assert!(authoritative
+[m[32m+            .prepare_soil_thermal_unpublished_continuation_v2(
+[m[32m+                &original, prior, trial, expected, start, end,
+[m[32m+            )
+[m[32m+            .is_err());
+[m         assert_eq!(
+             authoritative
+                 .soil_thermal_resident()
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2845:
+         .prepare_next_soil_thermal_support_v2(0, 1_800_000_000_000)
+         .expect("V43 prepared support");
+     let projected = v43_top_coordinate_candidate(&authoritative, &prepared);
+[31m-    assert!(
+[m[31m-        authoritative
+[m[31m-            .inner
+[m[31m-            .soil_thermal
+[m[31m-            .validate_unpublished_fixed_point_v2(
+[m[31m-                &authoritative.inner.lse_configuration,
+[m[31m-                &projected,
+[m[31m-                None,
+[m[31m-                0,
+[m[31m-                1_800_000_000_000,
+[m[31m-            )
+[m[31m-            .expect("typed projected fixed-point custody")
+[m[31m-    );
+[m[32m+    assert!(authoritative
+[m[32m+        .inner
+[m[32m+        .soil_thermal
+[m[32m+        .validate_unpublished_fixed_point_v2(
+[m[32m+            &authoritative.inner.lse_configuration,
+[m[32m+            &projected,
+[m[32m+            None,
+[m[32m+            0,
+[m[32m+            1_800_000_000_000,
+[m[32m+        )
+[m[32m+        .expect("typed projected fixed-point custody"));
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2879:
+         .soil_thermal_resident()
+         .canonical_active_owner_bytes()
+         .expect("before ordinary base validation");
+[31m-    assert!(
+[m[31m-        authoritative
+[m[31m-            .inner
+[m[31m-            .soil_thermal
+[m[31m-            .validate_unpublished_fixed_point_v2(
+[m[31m-                &authoritative.inner.lse_configuration,
+[m[31m-                &candidate,
+[m[31m-                None,
+[m[31m-                0,
+[m[31m-                1_800_000_000_000,
+[m[31m-            )
+[m[31m-            .expect("ordinary base reconstruction")
+[m[31m-    );
+[m[32m+    assert!(authoritative
+[m[32m+        .inner
+[m[32m+        .soil_thermal
+[m[32m+        .validate_unpublished_fixed_point_v2(
+[m[32m+            &authoritative.inner.lse_configuration,
+[m[32m+            &candidate,
+[m[32m+            None,
+[m[32m+            0,
+[m[32m+            1_800_000_000_000,
+[m[32m+        )
+[m[32m+        .expect("ordinary base reconstruction"));
+[m     assert_eq!(
+         authoritative
+             .soil_thermal_resident()
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2923:
+         .prepare_next_soil_thermal_support_v2(0, 1_800_000_000_000)
+         .expect("V43 foreign support");
+     let foreign_projected = v43_top_coordinate_candidate(&foreign, &foreign_prepared);
+[31m-    assert!(
+[m[31m-        authoritative
+[m[31m-            .inner
+[m[31m-            .soil_thermal
+[m[31m-            .validate_unpublished_fixed_point_v2(
+[m[31m-                &authoritative.inner.lse_configuration,
+[m[31m-                &foreign_projected,
+[m[31m-                None,
+[m[31m-                0,
+[m[31m-                1_800_000_000_000,
+[m[31m-            )
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(authoritative
+[m[32m+        .inner
+[m[32m+        .soil_thermal
+[m[32m+        .validate_unpublished_fixed_point_v2(
+[m[32m+            &authoritative.inner.lse_configuration,
+[m[32m+            &foreign_projected,
+[m[32m+            None,
+[m[32m+            0,
+[m[32m+            1_800_000_000_000,
+[m[32m+        )
+[m[32m+        .is_err());
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2945:
+         .prepare_next_soil_thermal_support_v2(0, 1_800_000_000_000)
+         .expect("V43 authoritative support");
+     let projected = v43_top_coordinate_candidate(&authoritative, &prepared);
+[31m-    assert!(
+[m[31m-        !authoritative
+[m[31m-            .inner
+[m[31m-            .soil_thermal
+[m[31m-            .validate_unpublished_fixed_point_v2(
+[m[31m-                &authoritative.inner.lse_configuration,
+[m[31m-                &projected,
+[m[31m-                None,
+[m[31m-                60_000_000_000,
+[m[31m-                1_800_000_000_000,
+[m[31m-            )
+[m[31m-            .expect("wrong support is ineligible")
+[m[31m-    );
+[m[32m+    assert!(!authoritative
+[m[32m+        .inner
+[m[32m+        .soil_thermal
+[m[32m+        .validate_unpublished_fixed_point_v2(
+[m[32m+            &authoritative.inner.lse_configuration,
+[m[32m+            &projected,
+[m[32m+            None,
+[m[32m+            60_000_000_000,
+[m[32m+            1_800_000_000_000,
+[m[32m+        )
+[m[32m+        .expect("wrong support is ineligible"));
+[m     let mut missing = prepared
+         .beginning_owner()
+         .state
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3031:
+         .expect("V44 prepared support");
+     let projected = v43_top_coordinate_candidate(&authoritative, &prepared);
+     let resident = &authoritative.inner.soil_thermal;
+[31m-    assert!(
+[m[31m-        !resident
+[m[31m-            .read_view()
+[m[31m-            .physically_equals(projected.read_view())
+[m[31m-    );
+[m[32m+    assert!(!resident
+[m[32m+        .read_view()
+[m[32m+        .physically_equals(projected.read_view()));
+[m 
+     let selected = crate::v9_real_consumer_shadow::direct_v9_select_v8_soil_beginning_v44(
+         resident,
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3086:
+ 
+ include!("v10_soil_thermal_v2_resident_install_tests.rs");
+ 
+[31m-
+[m #[test]
+ fn native_soil_restart_preserves_full_custody_and_rejects_poison() {
+     let (shadow, _, accepted, _, _, _, _) = v47_atomic_posture_fixture('c');
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3096:
+     for resident in [receipt_free, &accepted] {
+         let bytes = serde_json::to_vec(resident).unwrap();
+         let restored: DirectV10SoilThermalResidentV2 = serde_json::from_slice(&bytes).unwrap();
+[31m-        restored.restart_authority_validate(configuration,
+[m[31m-            &resident.owner.state.owner_id, &resident.owner.state.configuration_sha256).unwrap();
+[m[32m+        restored
+[m[32m+            .restart_authority_validate(
+[m[32m+                configuration,
+[m[32m+                &resident.owner.state.owner_id,
+[m[32m+                &resident.owner.state.configuration_sha256,
+[m[32m+            )
+[m[32m+            .unwrap();
+[m         assert_eq!(restored, *resident);
+         assert_eq!(serde_json::to_vec(&restored).unwrap(), bytes);
+[31m-        assert_eq!(restored.canonical_active_owner_bytes().unwrap(), resident.canonical_active_owner_bytes().unwrap());
+[m[31m-        assert!(restored.restart_authority_validate(configuration,
+[m[31m-            &ResourceOwnerId::try_new("foreign-soil-owner").unwrap(),
+[m[31m-            &resident.owner.state.configuration_sha256).is_err());
+[m[32m+        assert_eq!(
+[m[32m+            restored.canonical_active_owner_bytes().unwrap(),
+[m[32m+            resident.canonical_active_owner_bytes().unwrap()
+[m[32m+        );
+[m[32m+        assert!(restored
+[m[32m+            .restart_authority_validate(
+[m[32m+                configuration,
+[m[32m+                &ResourceOwnerId::try_new("foreign-soil-owner").unwrap(),
+[m[32m+                &resident.owner.state.configuration_sha256
+[m[32m+            )
+[m[32m+            .is_err());
+[m         let mut both = restored.clone();
+         both.latest_accepted = accepted.latest_accepted.clone();
+         both.receipt_free_seals = receipt_free.receipt_free_seals.clone();
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3110:
+[31m-        assert!(both.restart_authority_validate(configuration,
+[m[31m-            &resident.owner.state.owner_id, &resident.owner.state.configuration_sha256).is_err());
+[m[32m+        assert!(both
+[m[32m+            .restart_authority_validate(
+[m[32m+                configuration,
+[m[32m+                &resident.owner.state.owner_id,
+[m[32m+                &resident.owner.state.configuration_sha256
+[m[32m+            )
+[m[32m+            .is_err());
+[m         let mut neither = restored.clone();
+         neither.latest_accepted = None;
+         neither.receipt_free_seals = None;
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3115:
+[31m-        assert!(neither.restart_authority_validate(configuration,
+[m[31m-            &resident.owner.state.owner_id, &resident.owner.state.configuration_sha256).is_err());
+[m[32m+        assert!(neither
+[m[32m+            .restart_authority_validate(
+[m[32m+                configuration,
+[m[32m+                &resident.owner.state.owner_id,
+[m[32m+                &resident.owner.state.configuration_sha256
+[m[32m+            )
+[m[32m+            .is_err());
+[m         assert_eq!(serde_json::to_vec(resident).unwrap(), bytes);
+     }
+[31m-    assert_ne!(accepted.owner.state.ofes[0].ordered_layers[0].enthalpy_carry.sign, 0);
+[m[32m+    assert_ne!(
+[m[32m+        accepted.owner.state.ofes[0].ordered_layers[0]
+[m[32m+            .enthalpy_carry
+[m[32m+            .sign,
+[m[32m+        0
+[m[32m+    );
+[m     let mut bad_sources = accepted.clone();
+[31m-    bad_sources.latest_accepted.as_mut().unwrap().expected_sources =
+[m[31m-        SoilThermalExpectedAcceptedOperandSetV2::try_new(
+[m[31m-            &accepted.latest_accepted.as_ref().unwrap().predecessor, configuration, vec![]).unwrap();
+[m[31m-    assert!(bad_sources.restart_authority_validate(configuration,
+[m[31m-        &accepted.owner.state.owner_id, &accepted.owner.state.configuration_sha256).is_err());
+[m[32m+    bad_sources
+[m[32m+        .latest_accepted
+[m[32m+        .as_mut()
+[m[32m+        .unwrap()
+[m[32m+        .expected_sources = SoilThermalExpectedAcceptedOperandSetV2::try_new(
+[m[32m+        &accepted.latest_accepted.as_ref().unwrap().predecessor,
+[m[32m+        configuration,
+[m[32m+        vec![],
+[m[32m+    )
+[m[32m+    .unwrap();
+[m[32m+    assert!(bad_sources
+[m[32m+        .restart_authority_validate(
+[m[32m+            configuration,
+[m[32m+            &accepted.owner.state.owner_id,
+[m[32m+            &accepted.owner.state.configuration_sha256
+[m[32m+        )
+[m[32m+        .is_err());
+[m     let mut foreign_configuration = configuration.clone();
+     foreign_configuration.ofes[0].soil_interface_layers[0].areal_heat_capacity_j_m2_k *= 2.0;
+[31m-    assert!(accepted.restart_authority_validate(&foreign_configuration,
+[m[31m-        &accepted.owner.state.owner_id, &accepted.owner.state.configuration_sha256).is_err());
+[m[32m+    assert!(accepted
+[m[32m+        .restart_authority_validate(
+[m[32m+            &foreign_configuration,
+[m[32m+            &accepted.owner.state.owner_id,
+[m[32m+            &accepted.owner.state.configuration_sha256
+[m[32m+        )
+[m[32m+        .is_err());
+[m }
+ 
+[31m-
+[m #[test]
+ #[ignore = "fresh B01 process; typed native constructor and restoration proof fixture"]
+ fn native_soil_restart_proof_constructor_and_both_restore_hooks_preserve_exact_custody() {
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3136:
+[31m-    use openwepp_coupled_time::{CoupledClockStateV1, OwnerState, ModelTimeNs, TimeSupport,
+[m[31m-        ParentAuthorityV1, complete_owner_set_digest, digest_bytes};
+[m[32m+    use openwepp_coupled_time::{
+[m[32m+        complete_owner_set_digest, digest_bytes, CoupledClockStateV1, ModelTimeNs, OwnerState,
+[m[32m+        ParentAuthorityV1, TimeSupport,
+[m[32m+    };
+[m     use NativeSoilRestartPositionV1 as Position;
+[31m-    openwepp_land_surface_energy::snow_accuracy_policy::Policy::B01.install().unwrap();
+[m[32m+    openwepp_land_surface_energy::snow_accuracy_policy::Policy::B01
+[m[32m+        .install()
+[m[32m+        .unwrap();
+[m     let (base, _) = native_v2_shadow_for_parent('c');
+     let (first_host, prepared, accepted, _, _, _, _) = v47_atomic_posture_fixture('c');
+     let bootstrap = base.inner.soil_thermal.v2().unwrap();
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3143:
+     let cfg = &base.lse_configuration.soil_thermal_configuration;
+     let clock_for = |resident: &DirectV10SoilThermalResidentV2, time: u128| {
+         let mut owners = base.canonical_owner_state_bytes().unwrap();
+[31m-        owners.insert("soil_thermal".into(), DirectSoilThermalResident::V2(resident.clone()).canonical_active_owner_bytes().unwrap());
+[m[31m-        let owners = owners.into_iter().map(|(id,bytes)|OwnerState::new(id,bytes).unwrap()).collect::<Vec<_>>();
+[m[31m-        let support = TimeSupport::new(ModelTimeNs::new(time),ModelTimeNs::new(time+1_800_000_000_000)).unwrap();
+[m[31m-        let authority = ParentAuthorityV1::new(digest_bytes(b"fixture run"),digest_bytes(b"fixture calendar"),
+[m[31m-            digest_bytes(b"fixture forcing"),40,support,complete_owner_set_digest(&owners).unwrap()).unwrap();
+[m[31m-        let participants = owners.iter().map(|owner|owner.owner_id().to_owned()).collect();
+[m[31m-        CoupledClockStateV1::new(authority,owners,"native proof fixture".into(),participants,digest_bytes(b"fixture segment"),Vec::new()).unwrap()
+[m[32m+        owners.insert(
+[m[32m+            "soil_thermal".into(),
+[m[32m+            DirectSoilThermalResident::V2(resident.clone())
+[m[32m+                .canonical_active_owner_bytes()
+[m[32m+                .unwrap(),
+[m[32m+        );
+[m[32m+        let owners = owners
+[m[32m+            .into_iter()
+[m[32m+            .map(|(id, bytes)| OwnerState::new(id, bytes).unwrap())
+[m[32m+            .collect::<Vec<_>>();
+[m[32m+        let support = TimeSupport::new(
+[m[32m+            ModelTimeNs::new(time),
+[m[32m+            ModelTimeNs::new(time + 1_800_000_000_000),
+[m[32m+        )
+[m[32m+        .unwrap();
+[m[32m+        let authority = ParentAuthorityV1::new(
+[m[32m+            digest_bytes(b"fixture run"),
+[m[32m+            digest_bytes(b"fixture calendar"),
+[m[32m+            digest_bytes(b"fixture forcing"),
+[m[32m+            40,
+[m[32m+            support,
+[m[32m+            complete_owner_set_digest(&owners).unwrap(),
+[m[32m+        )
+[m[32m+        .unwrap();
+[m[32m+        let participants = owners
+[m[32m+            .iter()
+[m[32m+            .map(|owner| owner.owner_id().to_owned())
+[m[32m+            .collect();
+[m[32m+        CoupledClockStateV1::new(
+[m[32m+            authority,
+[m[32m+            owners,
+[m[32m+            "native proof fixture".into(),
+[m[32m+            participants,
+[m[32m+            digest_bytes(b"fixture segment"),
+[m[32m+            Vec::new(),
+[m[32m+        )
+[m[32m+        .unwrap()
+[m     };
+[31m-    let clock = clock_for(&accepted,accepted.owner().support_end_ns);
+[m[32m+    let clock = clock_for(&accepted, accepted.owner().support_end_ns);
+[m     let logical = base.vegetation_state.0.last_transaction_id;
+     let day = base.inner.next_day_index;
+     let run = base.inner.hydrology_frame.identity.run_id;
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:3158:
+[31m-    let mint = |resident: &DirectV10SoilThermalResidentV2, clock: &CoupledClockStateV1, expected_run: &str| {
+[m[31m-        NativeSoilRestartAdmissionV1::authenticate(resident,bootstrap,&base.lse_configuration,
+[m[31m-            &cfg.owner_id,&cfg.configuration_sha256,expected_run,clock,Position::Committed,logical,day,run)
+[m[32m+    let mint = |resident: &DirectV10SoilThermalResidentV2,
+[m[32m+                clock: &CoupledClockStateV1,
+[m[32m+                expected_run: &str| {
+[m[32m+        NativeSoilRestartAdmissionV1::authenticate(
+[m[32m+            resident,
+[m[32m+            bootstrap,
+[m[32m+            &base.lse_configuration,
+[m[32m+            &cfg.owner_id,
+[m[32m+            &cfg.configuration_sha256,
+[m[32m+            expected_run,
+[m[32m+            clock,
+[m[32m+            Position::Committed,
+[m[32m+            logical,
+[m[32m+            day,
+[m[32m+            run,
+[m[32m+        )
+[m     };
+[31m-    let proof = mint(&accepted,&clock,"direct-v10-authoritative-c").unwrap();
+[m[31m-    let construct = |soil: DirectSoilThermalResident, native: Option<&NativeSoilRestartAdmissionV1>| {
+[m[32m+    let proof = mint(&accepted, &clock, "direct-v10-authoritative-c").unwrap();
+[m[32m+    let construct = |soil: DirectSoilThermalResident,
+[m[32m+                     native: Option<&NativeSoilRestartAdmissionV1>| {
+[m         DirectV10RealConsumerShadow::try_new_with_soil_resident(
+[31m-            base.vegetation_configuration.clone(),base.vegetation_state.clone(),base.inner.vegetation_owner_id.clone(),
+[m[31m-            base.lse_configuration.clone(),base.lse_state.clone(),base.inner.surface_configuration.clone(),
+[m[31m-            base.inner.layer_maps.clone(),soil,base.inner.biogeochemistry.clone(),base.inner.hydrology_frame.clone(),day,
+[m[31m-            base.gsi_owner_configuration.clone(),base.gsi_state.clone(),base.provider_static_configuration.clone(),
+[m[31m-            base.provider_cursor.clone(),base.root_zone_hydraulic_configuration.clone(),native)
+[m[32m+            base.vegetation_configuration.clone(),
+[m[32m+            base.vegetation_state.clone(),
+[m[32m+            base.inner.vegetation_owner_id.clone(),
+[m[32m+            base.lse_configuration.clone(),
+[m[32m+            base.lse_state.clone(),
+[m[32m+            base.inner.surface_configuration.clone(),
+[m[32m+            base.inner.layer_maps.clone(),
+[m[32m+            soil,
+[m[32m+            base.inner.biogeochemistry.clone(),
+[m[32m+            base.inner.hydrology_frame.clone(),
+[m[32m+            day,
+[m[32m+            base.gsi_owner_configuration.clone(),
+[m[32m+            base.gsi_state.clone(),
+[m[32m+            base.provider_static_configuration.clone(),
+[m[32m+            base.provider_cursor.clone(),
+[m[32m+            base.root_zone_hydraulic_configuration.clone(),
+[m[32m+            native,
+[m[32m+        )
+[m     };
+[31m-    assert!(construct(DirectSoilThermalResident::V2(accepted.clone()),None).is_err(),"ordinary constructor refuses separate native revision");
+[m[31m-    proof.validate_constructor_context(&DirectSoilThermalResident::V2(accepted.clone()),&base.lse_configuration,
+[m[31m-        &clock,Position::Committed,logical,day,run).unwrap();
+[m[31m-    let mut host = construct(DirectSoilThermalResident::V2(accepted.clone()),Some(&proof)).unwrap();
+[m[32m+    assert!(
+[m[32m+        construct(DirectSoilThermalResident::V2(accepted.clone()), None).is_err(),
+[m[32m+        "ordinary constructor refuses separate native revision"
+[m[32m+    );
+[m[32m+    proof
+[m[32m+        .validate_constructor_context(
+[m[32m+            &DirectSoilThermalResident::V2(accepted.clone()),
+[m[32m+            &base.lse_configuration,
+[m[32m+            &clock,
+[m[32m+            Position::Committed,
+[m[32m+            logical,
+[m[32m+            day,
+[m[32m+            run,
+[m[32m+        )
+[m[32m+        .unwrap();
+[m[32m+    let mut host = construct(
+[m[32m+        DirectSoilThermalResident::V2(accepted.clone()),
+[m[32m+        Some(&proof),
+[m[32m+    )
+[m[32m+    .unwrap();
+[m     let before = host.canonical_owner_state_bytes().unwrap();
+[31m-    let soil_before = host.inner.soil_thermal.canonical_active_owner_bytes().unwrap();
+[m[31m-    let wb14 = base.restart_authority_wb14_parent_canonical_bytes().unwrap();
+[m[31m-    assert!(wb14.is_none(),"this vector covers empty WB14; populated parser is separate");
+[m[31m-    assert!(host.restart_authority_restore_wb14_parent_canonical_bytes(None).is_err());
+[m[31m-    assert_eq!(host.canonical_owner_state_bytes().unwrap(),before);
+[m[31m-    assert!(host.restart_authority_restore_native_wb14_parent_canonical_bytes(None,&proof,&clock,Position::PendingCandidate).is_err());
+[m[31m-    assert_eq!(host.canonical_owner_state_bytes().unwrap(),before);
+[m[31m-    host.restart_authority_restore_native_wb14_parent_canonical_bytes(None,&proof,&clock,Position::Committed).unwrap();
+[m[31m-    assert_eq!(host.canonical_owner_state_bytes().unwrap(),before);
+[m[31m-    assert!(mint(&accepted,&clock,"foreign run").is_err());
+[m[31m-    assert!(mint(&accepted,&clock_for(&accepted,accepted.owner().support_end_ns+1),"direct-v10-authoritative-c").is_err());
+[m[31m-    assert!(NativeSoilRestartAdmissionV1::authenticate(&accepted,bootstrap,&base.lse_configuration,
+[m[31m-        &ResourceOwnerId::try_new("foreign owner").unwrap(),&cfg.configuration_sha256,"direct-v10-authoritative-c",
+[m[31m-        &clock,Position::Committed,logical,day,run).is_err());
+[m[31m-    assert!(NativeSoilRestartAdmissionV1::authenticate(&accepted,bootstrap,&base.lse_configuration,
+[m[31m-        &cfg.owner_id,&digest('f'),"direct-v10-authoritative-c",
+[m[31m-        &clock,Position::Committed,logical,day,run).is_err());
+[m[31m-    let (alternate, seals) = accepted_bundle(&prepared,&first_host.inner.lse_configuration,f64::from_bits(3),'d');
+[m[31m-    let alternate = first_host.inner.soil_thermal.v2().unwrap().accepted(prepared.beginning_owner(),alternate,seals).unwrap();
+[m[31m-    mint(&alternate,&clock_for(&alternate,alternate.owner().support_end_ns),"direct-v10-authoritative-c").unwrap();
+[m[31m-    assert!(proof.validate_private_owner(&DirectSoilThermalResident::V2(alternate),logical,day,run).is_err(),"lawfully resealed different carry cannot reuse proof");
+[m[31m-    let initial_clock = clock_for(bootstrap,0);
+[m[31m-    mint(bootstrap,&initial_clock,"direct-v10-authoritative-c").unwrap();
+[m[31m-    assert!(mint(bootstrap,&clock_for(bootstrap,1),"direct-v10-authoritative-c").is_err());
+[m[31m-    let surface_bytes = base.inner.hydrology_frame.surface_liquid_shadow.as_ref().unwrap()
+[m[31m-        .canonical_bytes(&base.inner.surface_configuration).unwrap();
+[m[32m+    let soil_before = host
+[m[32m+        .inner
+[m[32m+        .soil_thermal
+[m[32m+        .canonical_active_owner_bytes()
+[m[32m+        .unwrap();
+[m[32m+    let wb14 = base
+[m[32m+        .restart_authority_wb14_parent_canonical_bytes()
+[m[32m+        .unwrap();
+[m[32m+    assert!(
+[m[32m+        wb14.is_none(),
+[m[32m+        "this vector covers empty WB14; populated parser is separate"
+[m[32m+    );
+[m[32m+    assert!(host
+[m[32m+        .restart_authority_restore_wb14_parent_canonical_bytes(None)
+[m[32m+        .is_err());
+[m[32m+    assert_eq!(host.canonical_owner_state_bytes().unwrap(), before);
+[m[32m+    assert!(host
+[m[32m+        .restart_authority_restore_native_wb14_parent_canonical_bytes(
+[m[32m+            None,
+[m[32m+            &proof,
+[m[32m+            &clock,
+[m[32m+            Position::PendingCandidate
+[m[32m+        )
+[m[32m+        .is_err());
+[m[32m+    assert_eq!(host.canonical_owner_state_bytes().unwrap(), before);
+[m[32m+    host.restart_authority_restore_native_wb14_parent_canonical_bytes(
+[m[32m+        None,
+[m[32m+        &proof,
+[m[32m+        &clock,
+[m[32m+        Position::Committed,
+[m[32m+    )
+[m[32m+    .unwrap();
+[m[32m+    assert_eq!(host.canonical_owner_state_bytes().unwrap(), before);
+[m[32m+    assert!(mint(&accepted, &clock, "foreign run").is_err());
+[m[32m+    assert!(mint(
+[m[32m+        &accepted,
+[m[32m+        &clock_for(&accepted, accepted.owner().support_end_ns + 1),
+[m[32m+        "direct-v10-authoritative-c"
+[m[32m+    )
+[m[32m+    .is_err());
+[m[32m+    assert!(NativeSoilRestartAdmissionV1::authenticate(
+[m[32m+        &accepted,
+[m[32m+        bootstrap,
+[m[32m+        &base.lse_configuration,
+[m[32m+        &ResourceOwnerId::try_new("foreign owner").unwrap(),
+[m[32m+        &cfg.configuration_sha256,
+[m[32m+        "direct-v10-authoritative-c",
+[m[32m+        &clock,
+[m[32m+        Position::Committed,
+[m[32m+        logical,
+[m[32m+        day,
+[m[32m+        run
+[m[32m+    )
+[m[32m+    .is_err());
+[m[32m+    assert!(NativeSoilRestartAdmissionV1::authenticate(
+[m[32m+        &accepted,
+[m[32m+        bootstrap,
+[m[32m+        &base.lse_configuration,
+[m[32m+        &cfg.owner_id,
+[m[32m+        &digest('f'),
+[m[32m+        "direct-v10-authoritative-c",
+[m[32m+        &clock,
+[m[32m+        Position::Committed,
+[m[32m+        logical,
+[m[32m+        day,
+[m[32m+        run
+[m[32m+    )
+[m[32m+    .is_err());
+[m[32m+    let (alternate, seals) = accepted_bundle(
+[m[32m+        &prepared,
+[m[32m+        &first_host.inner.lse_configuration,
+[m[32m+        f64::from_bits(3),
+[m[32m+        'd',
+[m[32m+    );
+[m[32m+    let alternate = first_host
+[m[32m+        .inner
+[m[32m+        .soil_thermal
+[m[32m+        .v2()
+[m[32m+        .unwrap()
+[m[32m+        .accepted(prepared.beginning_owner(), alternate, seals)
+[m[32m+        .unwrap();
+[m[32m+    mint(
+[m[32m+        &alternate,
+[m[32m+        &clock_for(&alternate, alternate.owner().support_end_ns),
+[m[32m+        "direct-v10-authoritative-c",
+[m[32m+    )
+[m[32m+    .unwrap();
+[m[32m+    assert!(
+[m[32m+        proof
+[m[32m+            .validate_private_owner(&DirectSoilThermalResident::V2(alternate), logical, day, run)
+[m[32m+            .is_err(),
+[m[32m+        "lawfully resealed different carry cannot reuse proof"
+[m[32m+    );
+[m[32m+    let initial_clock = clock_for(bootstrap, 0);
+[m[32m+    mint(bootstrap, &initial_clock, "direct-v10-authoritative-c").unwrap();
+[m[32m+    assert!(mint(
+[m[32m+        bootstrap,
+[m[32m+        &clock_for(bootstrap, 1),
+[m[32m+        "direct-v10-authoritative-c"
+[m[32m+    )
+[m[32m+    .is_err());
+[m[32m+    let surface_bytes = base
+[m[32m+        .inner
+[m[32m+        .hydrology_frame
+[m[32m+        .surface_liquid_shadow
+[m[32m+        .as_ref()
+[m[32m+        .unwrap()
+[m[32m+        .canonical_bytes(&base.inner.surface_configuration)
+[m[32m+        .unwrap();
+[m     let parent = &base.inner.surface_configuration;
+[31m-    let depths = parent.records.iter().filter(|value| value.key.surface_class == openwepp_land_surface_energy::SurfaceClass::ForestLitter
+[m[31m-        && value.key.source_type == openwepp_land_surface_energy::WaterSourceType::LitterLiquid).map(|value|(value.key.clone(),0.03125)).collect();
+[m[31m-    let native_cfg = crate::SurfaceLiquidConfigurationV2::new(parent.clone(),
+[m[31m-        crate::SurfaceLiquidOwnerModelDefinitionV2::new("1".repeat(64),"2".repeat(64),"3".repeat(64)).unwrap(),&depths).unwrap();
+[m[31m-    let surface = base.inner.hydrology_frame.surface_liquid_shadow.as_ref().unwrap();
+[m[31m-    let enthalpies = surface.records.iter().map(|value|(value.key.clone(),0.0)).collect();
+[m[31m-    let native_surface = crate::SurfaceLiquidOwnedStateV2::migrate_from_v1(&native_cfg,surface,&enthalpies).unwrap();
+[m[31m-    let native_envelope = crate::SurfaceLiquidOwnerEnvelopeV2::wrap_v2(&native_cfg,native_surface).unwrap();
+[m[31m-    let native_bytes = native_envelope.canonical_bytes(parent,Some(&native_cfg)).unwrap();
+[m[31m-    let scheduler_proof = mint(&accepted,&clock,"direct-v10-authoritative-c").unwrap()
+[m[31m-        .bind_inactive_scheduler(0,&base.inner.surface_configuration,&surface_bytes,None,Some(&native_bytes),Some(&native_cfg),None).unwrap();
+[m[31m-    assert!(mint(&accepted,&clock,"direct-v10-authoritative-c").unwrap()
+[m[31m-        .bind_inactive_scheduler(1,&base.inner.surface_configuration,&surface_bytes,None,Some(&native_bytes),Some(&native_cfg),None).is_err());
+[m[31m-    assert!(mint(&accepted,&clock,"direct-v10-authoritative-c").unwrap()
+[m[31m-        .bind_inactive_scheduler(0,&base.inner.surface_configuration,&surface_bytes,Some(b"foreign"),Some(&native_bytes),Some(&native_cfg),None).is_err());
+[m[31m-    assert!(mint(&accepted,&clock,"direct-v10-authoritative-c").unwrap()
+[m[31m-        .bind_inactive_scheduler(0,parent,&surface_bytes,None,Some(&native_bytes),Some(&native_cfg),Some(b"native WB14 present")).is_err());
+[m[31m-    host.restart_authority_install_scheduler_position(48).unwrap();
+[m[31m-    assert!(host.restart_authority_install_scheduler_position(0).is_err());
+[m[31m-    assert!(host.restart_authority_install_native_inactive_scheduler_position(&scheduler_proof,&clock,Position::PendingCandidate).is_err());
+[m[31m-    assert_eq!(host.restart_authority_accepted_interval_count(),48);
+[m[31m-    host.restart_authority_install_native_inactive_scheduler_position(&scheduler_proof,&clock,Position::Committed).unwrap();
+[m[31m-    assert_eq!(host.restart_authority_accepted_interval_count(),0);
+[m[31m-    assert_eq!(host.canonical_owner_state_bytes().unwrap(),before);
+[m[31m-    let finalized = restart_authority_vegetation_for_predecessor_admission(&base.vegetation_state,logical+1);
+[m[32m+    let depths = parent
+[m[32m+        .records
+[m[32m+        .iter()
+[m[32m+        .filter(|value| {
+[m[32m+            value.key.surface_class == openwepp_land_surface_energy::SurfaceClass::ForestLitter
+[m[32m+                && value.key.source_type
+[m[32m+                    == openwepp_land_surface_energy::WaterSourceType::LitterLiquid
+[m[32m+        })
+[m[32m+        .map(|value| (value.key.clone(), 0.03125))
+[m[32m+        .collect();
+[m[32m+    let native_cfg = crate::SurfaceLiquidConfigurationV2::new(
+[m[32m+        parent.clone(),
+[m[32m+        crate::SurfaceLiquidOwnerModelDefinitionV2::new(
+[m[32m+            "1".repeat(64),
+[m[32m+            "2".repeat(64),
+[m[32m+            "3".repeat(64),
+[m[32m+        )
+[m[32m+        .unwrap(),
+[m[32m+        &depths,
+[m[32m+    )
+[m[32m+    .unwrap();
+[m[32m+    let surface = base
+[m[32m+        .inner
+[m[32m+        .hydrology_frame
+[m[32m+        .surface_liquid_shadow
+[m[32m+        .as_ref()
+[m[32m+        .unwrap();
+[m[32m+    let enthalpies = surface
+[m[32m+        .records
+[m[32m+        .iter()
+[m[32m+        .map(|value| (value.key.clone(), 0.0))
+[m[32m+        .collect();
+[m[32m+    let native_surface =
+[m[32m+        crate::SurfaceLiquidOwnedStateV2::migrate_from_v1(&native_cfg, surface, &enthalpies)
+[m[32m+            .unwrap();
+[m[32m+    let native_envelope =
+[m[32m+        crate::SurfaceLiquidOwnerEnvelopeV2::wrap_v2(&native_cfg, native_surface).unwrap();
+[m[32m+    let native_bytes = native_envelope
+[m[32m+        .canonical_bytes(parent, Some(&native_cfg))
+[m[32m+        .unwrap();
+[m[32m+    let scheduler_proof = mint(&accepted, &clock, "direct-v10-authoritative-c")
+[m[32m+        .unwrap()
+[m[32m+        .bind_inactive_scheduler(
+[m[32m+            0,
+[m[32m+            &base.inner.surface_configuration,
+[m[32m+            &surface_bytes,
+[m[32m+            None,
+[m[32m+            Some(&native_bytes),
+[m[32m+            Some(&native_cfg),
+[m[32m+            None,
+[m[32m+        )
+[m[32m+        .unwrap();
+[m[32m+    assert!(mint(&accepted, &clock, "direct-v10-authoritative-c")
+[m[32m+        .unwrap()
+[m[32m+        .bind_inactive_scheduler(
+[m[32m+            1,
+[m[32m+            &base.inner.surface_configuration,
+[m[32m+            &surface_bytes,
+[m[32m+            None,
+[m[32m+            Some(&native_bytes),
+[m[32m+            Some(&native_cfg),
+[m[32m+            None
+[m[32m+        )
+[m[32m+        .is_err());
+[m[32m+    assert!(mint(&accepted, &clock, "direct-v10-authoritative-c")
+[m[32m+        .unwrap()
+[m[32m+        .bind_inactive_scheduler(
+[m[32m+            0,
+[m[32m+            &base.inner.surface_configuration,
+[m[32m+            &surface_bytes,
+[m[32m+            Some(b"foreign"),
+[m[32m+            Some(&native_bytes),
+[m[32m+            Some(&native_cfg),
+[m[32m+            None
+[m[32m+        )
+[m[32m+        .is_err());
+[m[32m+    assert!(mint(&accepted, &clock, "direct-v10-authoritative-c")
+[m[32m+        .unwrap()
+[m[32m+        .bind_inactive_scheduler(
+[m[32m+            0,
+[m[32m+            parent,
+[m[32m+            &surface_bytes,
+[m[32m+            None,
+[m[32m+            Some(&native_bytes),
+[m[32m+            Some(&native_cfg),
+[m[32m+            Some(b"native WB14 present")
+[m[32m+        )
+[m[32m+        .is_err());
+[m[32m+    host.restart_authority_install_scheduler_position(48)
+[m[32m+        .unwrap();
+[m[32m+    assert!(host
+[m[32m+        .restart_authority_install_scheduler_position(0)
+[m[32m+        .is_err());
+[m[32m+    assert!(host
+[m[32m+        .restart_authority_install_native_inactive_scheduler_position(
+[m[32m+            &scheduler_proof,
+[m[32m+            &clock,
+[m[32m+            Position::PendingCandidate
+[m[32m+        )
+[m[32m+        .is_err());
+[m[32m+    assert_eq!(host.restart_authority_accepted_interval_count(), 48);
+[m[32m+    host.restart_authority_install_native_inactive_scheduler_position(
+[m[32m+        &scheduler_proof,
+[m[32m+        &clock,
+[m[32m+        Position::Committed,
+[m[32m+    )
+[m[32m+    .unwrap();
+[m[32m+    assert_eq!(host.restart_authority_accepted_interval_count(), 0);
+[m[32m+    assert_eq!(host.canonical_owner_state_bytes().unwrap(), before);
+[m[32m+    let finalized =
+[m[32m+        restart_authority_vegetation_for_predecessor_admission(&base.vegetation_state, logical + 1);
+[m     finalized.validate(&base.vegetation_configuration).unwrap();
+[31m-    let mut bgc=base.inner.biogeochemistry.clone();bgc.last_transaction_id=logical+1;
+[m[31m-    assert!(host.restart_authority_restore_parent_finalization_logical_owners(finalized.clone(),bgc.clone()).is_err());
+[m[31m-    assert_eq!(host.canonical_owner_state_bytes().unwrap(),before);
+[m[31m-    host.restart_authority_restore_native_parent_finalization_logical_owners(finalized.clone(),bgc.clone(),&proof,&clock,Position::Committed).unwrap();
+[m[31m-    assert_eq!(host.vegetation_state,finalized);
+[m[31m-    assert_eq!(host.inner.biogeochemistry,bgc);
+[m[31m-    assert_eq!(host.inner.soil_thermal.canonical_active_owner_bytes().unwrap(),soil_before);
+[m[31m-    let finalized_before=host.canonical_owner_state_bytes().unwrap();
+[m[31m-    assert!(host.restart_authority_restore_native_wb14_parent_canonical_bytes(None,&proof,&clock,Position::Committed).is_err(),"old logical proof cannot be reused after finalization");
+[m[31m-    assert_eq!(host.canonical_owner_state_bytes().unwrap(),finalized_before);
+[m[31m-    assert_eq!(base.inner.soil_thermal.v2().unwrap(),bootstrap);
+[m[32m+    let mut bgc = base.inner.biogeochemistry.clone();
+[m[32m+    bgc.last_transaction_id = logical + 1;
+[m[32m+    assert!(host
+[m[32m+        .restart_authority_restore_parent_finalization_logical_owners(
+[m[32m+            finalized.clone(),
+[m[32m+            bgc.clone()
+[m[32m+        )
+[m[32m+        .is_err());
+[m[32m+    assert_eq!(host.canonical_owner_state_bytes().unwrap(), before);
+[m[32m+    host.restart_authority_restore_native_parent_finalization_logical_owners(
+[m[32m+        finalized.clone(),
+[m[32m+        bgc.clone(),
+[m[32m+        &proof,
+[m[32m+        &clock,
+[m[32m+        Position::Committed,
+[m[32m+    )
+[m[32m+    .unwrap();
+[m[32m+    assert_eq!(host.vegetation_state, finalized);
+[m[32m+    assert_eq!(host.inner.biogeochemistry, bgc);
+[m[32m+    assert_eq!(
+[m[32m+        host.inner
+[m[32m+            .soil_thermal
+[m[32m+            .canonical_active_owner_bytes()
+[m[32m+            .unwrap(),
+[m[32m+        soil_before
+[m[32m+    );
+[m[32m+    let finalized_before = host.canonical_owner_state_bytes().unwrap();
+[m[32m+    assert!(
+[m[32m+        host.restart_authority_restore_native_wb14_parent_canonical_bytes(
+[m[32m+            None,
+[m[32m+            &proof,
+[m[32m+            &clock,
+[m[32m+            Position::Committed
+[m[32m+        )
+[m[32m+        .is_err(),
+[m[32m+        "old logical proof cannot be reused after finalization"
+[m[32m+    );
+[m[32m+    assert_eq!(
+[m[32m+        host.canonical_owner_state_bytes().unwrap(),
+[m[32m+        finalized_before
+[m[32m+    );
+[m[32m+    assert_eq!(base.inner.soil_thermal.v2().unwrap(), bootstrap);
+[m }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2:
+ 
+ use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
+ use openwepp_land_surface_energy::{
+[32m+    evaluate_raw_litter_vapor, execute_litter_phase_v3, finalize_litter_vapor,
+[m[32m+    install_finalized_vapor, migrate_soil_thermal_v1_to_v2, migrate_v2_configuration_to_v3,
+[m[32m+    migrate_v2_state_to_v3, project_validated_v1_runtime_to_v2, saturation_specific_humidity,
+[m     BeginningLitterPhaseState, FinalizedLitterVapor, LitterPhaseConfiguration, LitterPhaseReceipt,
+     LitterPhaseTransactionIdentity, LitterPhaseTransactionInput, LitterVaporEnvironment, OfeId,
+     Sha256Digest, SoilThermalLayerSnapshot, SoilThermalOfeSnapshot, SoilThermalOwnerEnvelopeV2,
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:8:
+     SoilThermalOwnerRestartV2, SoilThermalSnapshot, SoilThermalV2MigrationIdentity, SourceId,
+[31m-    SurfaceClass, SurfaceConfiguration, SurfaceId, V2_MODEL_DEFINITION_SHA256, V2_MODEL_VERSION,
+[m[31m-    V2_VEGETATION_MODEL_DEFINITION_SHA256, V2_VEGETATION_MODEL_VERSION,
+[m[31m-    V3PhaseFreeSurfaceEnergyLedger, WaterSourceType, evaluate_raw_litter_vapor,
+[m[31m-    execute_litter_phase_v3, finalize_litter_vapor, install_finalized_vapor,
+[m[31m-    migrate_soil_thermal_v1_to_v2, migrate_v2_configuration_to_v3, migrate_v2_state_to_v3,
+[m[31m-    project_validated_v1_runtime_to_v2, saturation_specific_humidity,
+[m[32m+    SurfaceClass, SurfaceConfiguration, SurfaceId, V3PhaseFreeSurfaceEnergyLedger, WaterSourceType,
+[m[32m+    V2_MODEL_DEFINITION_SHA256, V2_MODEL_VERSION, V2_VEGETATION_MODEL_DEFINITION_SHA256,
+[m[32m+    V2_VEGETATION_MODEL_VERSION,
+[m };
+ 
+ use crate::direct_runtime::{
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:18:
+[31m-    DirectCanopyLiquidRelease, DirectIngressAmount, DirectSurfaceLiquidIngressInput,
+[m[31m-    DirectTileGroundIngress, DirectWb14CoupledChildBindingV1,
+[m     execute_surface_liquid_ingress_v2_with_parent_state_and_coupled_binding,
+[31m-    prepare_surface_liquid_resource_candidate_v2,
+[m[32m+    prepare_surface_liquid_resource_candidate_v2, DirectCanopyLiquidRelease, DirectIngressAmount,
+[m[32m+    DirectSurfaceLiquidIngressInput, DirectTileGroundIngress, DirectWb14CoupledChildBindingV1,
+[m };
+ use crate::{
+     DirectGroundIngressMode, DirectOfeWb14Parameters, DirectSurfaceLiquidConfiguration,
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:35:
+     frozen_litter_v3_handoff_counters_for_test, reset_frozen_litter_v3_handoff_counters_for_test,
+ };
+ use super::{
+[31m-    Digest32, FrozenLitterV3PublicationSupportV1, FrozenLitterV3Resident, FrozenLitterV4Resident,
+[m[31m-    digest_bytes,
+[m[32m+    digest_bytes, Digest32, FrozenLitterV3PublicationSupportV1, FrozenLitterV3Resident,
+[m[32m+    FrozenLitterV4Resident,
+[m };
+[31m-use crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2;
+[m use crate::land_surface_energy_shadow::v3_execution::{
+[31m-    AcceptedFrozenLitterV3RuntimeCandidate, AcceptedFrozenLitterV4RuntimeCandidate,
+[m[31m-    FrozenLitterV3RuntimeInput, FrozenLitterV3SoilBeginningV1, FrozenLitterV4RuntimeInput,
+[m[31m-    execute_frozen_litter_v3, execute_frozen_litter_v4,
+[m[32m+    execute_frozen_litter_v3, execute_frozen_litter_v4, AcceptedFrozenLitterV3RuntimeCandidate,
+[m[32m+    AcceptedFrozenLitterV4RuntimeCandidate, FrozenLitterV3RuntimeInput,
+[m[32m+    FrozenLitterV3SoilBeginningV1, FrozenLitterV4RuntimeInput,
+[m };
+ use crate::land_surface_energy_shadow::v3_input_projection::FrozenLitterV3PhaseFreeInput;
+[32m+use crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2;
+[m 
+ const TRANSACTION: TransactionId = TransactionId(703);
+ const SUPPORT_END_NS: u128 = 900_000_000_000;
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1067:
+     const CHILD_START_NS: u128 = 60_000_000_000;
+     const CHILD_END_NS: u128 = 1_800_000_000_000;
+ 
+[31m-    let _native_audit = crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
+[m[32m+    let _native_audit =
+[m[32m+        crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
+[m     let audit = CandidateOnlyFactoryAudit::begin();
+     let (mut beginning, soil_beginning) =
+         super::direct_v10_soil_thermal_v2_tests::v39_second_child_native_physical_beginning_fixture(
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1352:
+ 
+     let mut omitted = wire(&fixture);
+     omitted.ordered_litter_phase_receipts.pop();
+[31m-    assert!(
+[m[31m-        FrozenLitterV3PublicationSupportV1::from_canonical_bytes(
+[m[31m-            &fixture.configuration,
+[m[31m-            &reseal(omitted),
+[m[31m-        )
+[m[31m-        .is_err()
+[m[31m-    );
+[m[32m+    assert!(FrozenLitterV3PublicationSupportV1::from_canonical_bytes(
+[m[32m+        &fixture.configuration,
+[m[32m+        &reseal(omitted),
+[m[32m+    )
+[m[32m+    .is_err());
+[m 
+     let mut reordered = wire(&fixture);
+     reordered.ordered_litter_phase_receipts.swap(0, 1);
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1369:
+     {
+         frame.ordinal = u32::try_from(ordinal).expect("ordinal");
+     }
+[31m-    assert!(
+[m[31m-        FrozenLitterV3PublicationSupportV1::from_canonical_bytes(
+[m[31m-            &fixture.configuration,
+[m[31m-            &reseal(reordered),
+[m[31m-        )
+[m[31m-        .is_err()
+[m[31m-    );
+[m[32m+    assert!(FrozenLitterV3PublicationSupportV1::from_canonical_bytes(
+[m[32m+        &fixture.configuration,
+[m[32m+        &reseal(reordered),
+[m[32m+    )
+[m[32m+    .is_err());
+[m 
+     let mut substituted = wire(&fixture);
+     substituted.ordered_litter_phase_receipts[0].model_definition_sha256 = digest('f');
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1382:
+[31m-    assert!(
+[m[31m-        FrozenLitterV3PublicationSupportV1::from_canonical_bytes(
+[m[31m-            &fixture.configuration,
+[m[31m-            &reseal(substituted),
+[m[31m-        )
+[m[31m-        .is_err()
+[m[31m-    );
+[m[32m+    assert!(FrozenLitterV3PublicationSupportV1::from_canonical_bytes(
+[m[32m+        &fixture.configuration,
+[m[32m+        &reseal(substituted),
+[m[32m+    )
+[m[32m+    .is_err());
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1393:
+     let fixture = fixture();
+     let mut projection = wire(&fixture);
+     projection.canonical_projection_bytes[0] ^= 1;
+[31m-    assert!(
+[m[31m-        FrozenLitterV3PublicationSupportV1::from_canonical_bytes(
+[m[31m-            &fixture.configuration,
+[m[31m-            &reseal(projection),
+[m[31m-        )
+[m[31m-        .is_err()
+[m[31m-    );
+[m[32m+    assert!(FrozenLitterV3PublicationSupportV1::from_canonical_bytes(
+[m[32m+        &fixture.configuration,
+[m[32m+        &reseal(projection),
+[m[32m+    )
+[m[32m+    .is_err());
+[m 
+     let mut chain = wire(&fixture);
+     chain.projection_receipt_chain_sha256 = digest('e');
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1406:
+[31m-    assert!(
+[m[31m-        FrozenLitterV3PublicationSupportV1::from_canonical_bytes(
+[m[31m-            &fixture.configuration,
+[m[31m-            &reseal(chain),
+[m[31m-        )
+[m[31m-        .is_err()
+[m[31m-    );
+[m[32m+    assert!(FrozenLitterV3PublicationSupportV1::from_canonical_bytes(
+[m[32m+        &fixture.configuration,
+[m[32m+        &reseal(chain),
+[m[32m+    )
+[m[32m+    .is_err());
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1515:
+         .accepted_publication_supports_canonical_bytes()
+         .expect("beginning history");
+     resident.corrupt_validated_tail_for_test();
+[31m-    assert!(
+[m[31m-        resident
+[m[31m-            .validate_new_publication_tail_for_test(&projection, &fixture.receipts)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(resident
+[m[32m+        .validate_new_publication_tail_for_test(&projection, &fixture.receipts)
+[m[32m+        .is_err());
+[m     assert_eq!(resident.lse_state(), &beginning_lse);
+     assert_eq!(resident.surface_owner(), &beginning_surface);
+     assert_eq!(
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1585:
+         .expect("forced-deep production acceptance");
+ 
+     assert!(!shared_anchor.publication_history_shares_allocation_with_for_test(&shared));
+[31m-    assert!(
+[m[31m-        shared
+[m[31m-            .has_same_validated_physical_history(&forced_deep)
+[m[31m-            .expect("accepted revision parity")
+[m[31m-    );
+[m[32m+    assert!(shared
+[m[32m+        .has_same_validated_physical_history(&forced_deep)
+[m[32m+        .expect("accepted revision parity"));
+[m     assert_eq!(
+         v3_resident_canonical_bytes(&shared),
+         v3_resident_canonical_bytes(&forced_deep),
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1620:
+     rejected_shared.ending_lse_state.0.configuration_sha256 = typed_digest('f');
+     rejected_forced.ending_lse_state.0.configuration_sha256 = typed_digest('f');
+     assert!(shared.accept_runtime_candidate(&rejected_shared).is_err());
+[31m-    assert!(
+[m[31m-        forced_deep
+[m[31m-            .accept_runtime_candidate(&rejected_forced)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(forced_deep
+[m[32m+        .accept_runtime_candidate(&rejected_forced)
+[m[32m+        .is_err());
+[m     assert_eq!(
+         v3_resident_canonical_bytes(&shared),
+         shared_before_rejection
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1633:
+         v3_resident_canonical_bytes(&forced_deep),
+         forced_before_rejection,
+     );
+[31m-    assert!(
+[m[31m-        shared
+[m[31m-            .has_same_validated_physical_history(&forced_deep)
+[m[31m-            .expect("rejected revision parity")
+[m[31m-    );
+[m[32m+    assert!(shared
+[m[32m+        .has_same_validated_physical_history(&forced_deep)
+[m[32m+        .expect("rejected revision parity"));
+[m     shared
+         .validated_handoff_for_test()
+         .expect("shared rejected-flow revision");
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1704:
+     rejected_forced_candidate
+         .ending_exact_surface_owner
+         .state_sha256 = typed_digest('f');
+[31m-    assert!(
+[m[31m-        rejected_shared
+[m[31m-            .accept_runtime_candidate(&physical, &rejected_shared_candidate)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[31m-    assert!(
+[m[31m-        rejected_forced
+[m[31m-            .accept_runtime_candidate(&physical, &rejected_forced_candidate)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(rejected_shared
+[m[32m+        .accept_runtime_candidate(&physical, &rejected_shared_candidate)
+[m[32m+        .is_err());
+[m[32m+    assert!(rejected_forced
+[m[32m+        .accept_runtime_candidate(&physical, &rejected_forced_candidate)
+[m[32m+        .is_err());
+[m     assert_eq!(
+         rejected_shared
+             .canonical_inactive_projection_v1()
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1792:
+     use super::native_snow_liquid_publication::{
+         NativeSnowCustodyIdentityV1, NativeSnowCustodyKindV1, NativeSnowLiquidPublicationV1,
+     };
+[31m-    use openwepp_coupled_time::{FramedField, ModelTimeNs, TimeSupport, framed_sha256};
+[m[32m+    use openwepp_coupled_time::{framed_sha256, FramedField, ModelTimeNs, TimeSupport};
+[m     let mut outputs = Vec::new();
+     if !finalize {
+         let config = physical.surface_configuration().parent();
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1880:
+         .unwrap();
+     assert_eq!(physical.lse_state().0.last_accepted_transaction_id, None);
+     let previous = physical.clone();
+[31m-    assert!(
+[m[31m-        physical
+[m[31m-            .accept_native_snow_publication(first.clone(), &first.outputs)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(physical
+[m[32m+        .accept_native_snow_publication(first.clone(), &first.outputs)
+[m[32m+        .is_err());
+[m     assert_eq!(physical, previous);
+     let finalization = native_drain_record_for_history_test(
+         &physical,
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:1960:
+     .unwrap();
+     assert_eq!(restored_exact, exact);
+     let before = restored.clone();
+[31m-    assert!(
+[m[31m-        restored
+[m[31m-            .restore_restart_authority(
+[m[31m-                &[bytes[1].clone()],
+[m[31m-                None,
+[m[31m-                physical.predecessor_receipt_chain_sha256()
+[m[31m-            )
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(restored
+[m[32m+        .restore_restart_authority(
+[m[32m+            &[bytes[1].clone()],
+[m[32m+            None,
+[m[32m+            physical.predecessor_receipt_chain_sha256()
+[m[32m+        )
+[m[32m+        .is_err());
+[m     assert_eq!(restored, before);
+[31m-    assert!(
+[m[31m-        restored
+[m[31m-            .restore_restart_authority(
+[m[31m-                &[bytes[1].clone(), bytes[0].clone()],
+[m[31m-                None,
+[m[31m-                physical.predecessor_receipt_chain_sha256()
+[m[31m-            )
+[m[31m-            .is_err()
+[m[31m-    );
+[m[31m-    assert!(
+[m[31m-        FrozenLitterV4Resident::try_restore(
+[m[31m-            &restored,
+[m[31m-            exact.exact_surface_owner().clone(),
+[m[31m-            &[bytes[0].clone()],
+[m[31m-            &adoption
+[m[32m+    assert!(restored
+[m[32m+        .restore_restart_authority(
+[m[32m+            &[bytes[1].clone(), bytes[0].clone()],
+[m[32m+            None,
+[m[32m+            physical.predecessor_receipt_chain_sha256()
+[m         )
+[31m-        .is_err()
+[m[31m-    );
+[m[32m+        .is_err());
+[m[32m+    assert!(FrozenLitterV4Resident::try_restore(
+[m[32m+        &restored,
+[m[32m+        exact.exact_surface_owner().clone(),
+[m[32m+        &[bytes[0].clone()],
+[m[32m+        &adoption
+[m[32m+    )
+[m[32m+    .is_err());
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2040:
+     assert_eq!(original.1.to_bits(), reversed.1.to_bits());
+     assert_eq!(original.2.to_bits(), reversed.2.to_bits());
+     assert_ne!(original.0, summarize(&outputs[..2]).0);
+[31m-    assert!(
+[m[31m-        positive_support_output_summary_v1(
+[m[31m-            &[outputs[0].clone(), outputs[0].clone()],
+[m[31m-            0,
+[m[31m-            60_000_000_000
+[m[31m-        )
+[m[31m-        .is_err()
+[m[31m-    );
+[m[32m+    assert!(positive_support_output_summary_v1(
+[m[32m+        &[outputs[0].clone(), outputs[0].clone()],
+[m[32m+        0,
+[m[32m+        60_000_000_000
+[m[32m+    )
+[m[32m+    .is_err());
+[m     assert!(positive_support_output_summary_v1(&outputs, 60_000_000_000, 120_000_000_000).is_err());
+     // A different vector sum is deliberately present; shared summary order,
+     // not accidental equality for uniform lanes, establishes the context.
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2126:
+ #[test]
+ fn native_dirty_parent_survives_actual_partial_phase_and_rejects_foreign_drain() {
+     use super::frozen_litter_v3_publication_retention::{
+[31m-        FrozenLitterHistoryEntryV1, validate_native_history_v1,
+[m[32m+        validate_native_history_v1, FrozenLitterHistoryEntryV1,
+[m     };
+     use super::native_snow_liquid_publication::{
+         NativeSnowCustodyKindV1, NativeSnowLiquidPublicationV1,
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2199:
+         Digest32::from_bytes([9; 32]),
+     );
+     let before = physical.clone();
+[31m-    assert!(
+[m[31m-        physical
+[m[31m-            .accept_native_snow_publication(foreign.clone(), &foreign.outputs)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(physical
+[m[32m+        .accept_native_snow_publication(foreign.clone(), &foreign.outputs)
+[m[32m+        .is_err());
+[m     assert_eq!(physical, before);
+     let mut history = physical.accepted_history_entries().to_vec();
+     history.push(FrozenLitterHistoryEntryV1::Custody(Box::new(foreign)));
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2210:
+[31m-    assert!(
+[m[31m-        validate_native_history_v1(
+[m[31m-            &history,
+[m[31m-            physical.surface_configuration(),
+[m[31m-            physical.lse_configuration()
+[m[31m-        )
+[m[31m-        .is_err()
+[m[31m-    );
+[m[32m+    assert!(validate_native_history_v1(
+[m[32m+        &history,
+[m[32m+        physical.surface_configuration(),
+[m[32m+        physical.lse_configuration()
+[m[32m+    )
+[m[32m+    .is_err());
+[m     // Custody-only endpoint tests the dirty-history obligation independently
+     // of completing the staged physical WB14 parent in this local fixture.
+     let mut id = drain.identity.clone();
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2248:
+ 
+ #[test]
+ fn native_composite_support_role_rejects_half_owner_and_stale_active() {
+[31m-    use super::{CoveredColumnAuthority, V11SupportLseRole, v11_support_lse_beginning};
+[m[32m+    use super::{v11_support_lse_beginning, CoveredColumnAuthority, V11SupportLseRole};
+[m     openwepp_land_surface_energy::snow_accuracy_policy::Policy::B01
+         .install()
+         .unwrap();
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2334:
+         authentic.frozen_surface_owner_v2_sha256
+     );
+     let mut forged_exact = FrozenLitterV4Resident::try_new(&physical, forged).unwrap();
+[31m-    assert!(
+[m[31m-        forged_exact
+[m[31m-            .restart_authority_validate_native_exact_adoption(&physical, &authentic)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(forged_exact
+[m[32m+        .restart_authority_validate_native_exact_adoption(&physical, &authentic)
+[m[32m+        .is_err());
+[m     let mut after = physical.clone();
+     let drain =
+         native_drain_record_for_history_test(&after, &forged_exact, 0, 60_000_000_000, false);
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2355:
+         &authentic.frozen_lse_v3_state_sha256,
+     )
+     .unwrap();
+[31m-    assert!(
+[m[31m-        reconstructed
+[m[31m-            .restart_authority_validate_native_exact_adoption(&after, &authentic)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(reconstructed
+[m[32m+        .restart_authority_validate_native_exact_adoption(&after, &authentic)
+[m[32m+        .is_err());
+[m     // Authentic phase-first history is admitted against the same external full owner.
+     let mut phase_physical = physical.clone();
+     let mut phase_exact = exact.clone();
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2382:
+         .unwrap();
+     let mut foreign = authentic.clone();
+     foreign.owner_id = ResourceOwnerId::try_new("foreign-adoption").unwrap();
+[31m-    assert!(
+[m[31m-        phase_exact
+[m[31m-            .restart_authority_validate_native_exact_adoption(&phase_physical, &foreign)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(phase_exact
+[m[32m+        .restart_authority_validate_native_exact_adoption(&phase_physical, &foreign)
+[m[32m+        .is_err());
+[m     assert_eq!(exact.exact_surface_owner(), &authentic);
+ }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2434:
+     let mut base = shadow.restart_authority_native_without_routing().unwrap();
+     assert_eq!(base.canonical_owner_state_bytes().unwrap(), bytes);
+     let unchanged = base.clone();
+[31m-    assert!(
+[m[31m-        base.restart_authority_install_native_routing(config.clone(), summary.clone(), &None)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(base
+[m[32m+        .restart_authority_install_native_routing(config.clone(), summary.clone(), &None)
+[m[32m+        .is_err());
+[m     assert_eq!(base, unchanged);
+     base.restart_authority_install_native_routing(config.clone(), summary.clone(), &config)
+         .unwrap();
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2444:
+     assert_eq!(base, shadow);
+[31m-    assert!(
+[m[31m-        base.restart_authority_install_native_routing(config.clone(), summary, &config)
+[m[31m-            .is_err()
+[m[31m-    );
+[m[32m+    assert!(base
+[m[32m+        .restart_authority_install_native_routing(config.clone(), summary, &config)
+[m[32m+        .is_err());
+[m     assert_eq!(base, shadow);
+ }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2462:
+     let initial_physical = physical.clone();
+     let initial_exact = exact.clone();
+     let adoption = physical.lse_state().0.state_sha256.clone();
+[31m-    assert!(
+[m[31m-        initial_physical
+[m[31m-            .surface_owner()
+[m[31m-            .v2_state()
+[m[31m-            .unwrap()
+[m[31m-            .continuations()
+[m[31m-            .iter()
+[m[31m-            .all(|c| c.next_interval_index == 0 && c.last_accepted_transaction_id.is_none())
+[m[31m-    );
+[m[32m+    assert!(initial_physical
+[m[32m+        .surface_owner()
+[m[32m+        .v2_state()
+[m[32m+        .unwrap()
+[m[32m+        .continuations()
+[m[32m+        .iter()
+[m[32m+        .all(|c| c.next_interval_index == 0 && c.last_accepted_transaction_id.is_none()));
+[m     let first = execute_runtime_v4_candidate(&physical, &exact, TRANSACTION, 0, RUNTIME_SUPPORT_NS);
+     physical.accept_runtime_candidate(&first.physical).unwrap();
+     exact
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2477:
+         .accept_runtime_candidate(&initial_physical, &first)
+         .unwrap();
+[31m-    assert!(
+[m[31m-        physical
+[m[31m-            .surface_owner()
+[m[31m-            .v2_state()
+[m[31m-            .unwrap()
+[m[31m-            .continuations()
+[m[31m-            .iter()
+[m[31m-            .all(|c| c.next_interval_index == 1 && c.last_accepted_transaction_id.is_some())
+[m[31m-    );
+[m[32m+    assert!(physical
+[m[32m+        .surface_owner()
+[m[32m+        .v2_state()
+[m[32m+        .unwrap()
+[m[32m+        .continuations()
+[m[32m+        .iter()
+[m[32m+        .all(|c| c.next_interval_index == 1 && c.last_accepted_transaction_id.is_some()));
+[m     let physical_history = physical
+         .accepted_publication_supports_canonical_bytes()
+         .unwrap();
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2533:
+ #[cfg(feature = "persisted-restart-v1")]
+ #[test]
+ fn native_clock_mode_restore_preserves_exact_owner_and_refuses_foreign_inputs_atomically() {
+[31m-    use super::{CoveredColumnAuthority, V11SupportLseRole, v11_support_lse_beginning};
+[m[32m+    use super::{v11_support_lse_beginning, CoveredColumnAuthority, V11SupportLseRole};
+[m     use openwepp_coupled_time::{Policy14LseOwnerTransport, Policy14RuntimeAuthority};
+     openwepp_land_surface_energy::snow_accuracy_policy::Policy::B01
+         .install()
+Diff in /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:2567:
+             2 => wire["runtime_authority"] = serde_json::json!("HistoricalV8"),
+             _ => wire["active_covered_runtime_lse_v1"] = serde_json::json!([0]),
+         }
+[31m-        assert!(
+[m[31m-            restored
+[m[31m-                .restart_authority_install_clock_runtime_mode(&serde_json::to_vec(&wire).unwrap())
+[m[31m-                .is_err()
+[m[31m-        );
+[m[32m+        assert!(restored
+[m[32m+            .restart_authority_install_clock_runtime_mode(&serde_json::to_vec(&wire).unwrap())
+[m[32m+            .is_err());
+[m         assert_eq!(restored, original);
+     }
+     let mut mode_swap = Policy14LseOwnerTransport::from_canonical_bytes(&expected).unwrap();

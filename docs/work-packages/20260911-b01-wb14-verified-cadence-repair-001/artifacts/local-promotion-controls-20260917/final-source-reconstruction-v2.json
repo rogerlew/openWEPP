@@ -1,0 +1,18 @@
+{
+  "patch": "final-source-incremental-from-T.patch",
+  "patch_sha256": "fa62ef52e276b5ff584158f6c94c0f1c56e61fbe90466dd5a0b60d388bcf2de8",
+  "files": {
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs": {
+      "reconstructed_sha256": "77a1d815bb25cb851677428aa47ebfd3c5980629121364f04ad73723744de468",
+      "derived_sha256": "77a1d815bb25cb851677428aa47ebfd3c5980629121364f04ad73723744de468",
+      "equal": true
+    },
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs": {
+      "reconstructed_sha256": "4362cc24446d051e399a82884e2a207b1505fc475753eded50ac89a57e2aaf75",
+      "derived_sha256": "4362cc24446d051e399a82884e2a207b1505fc475753eded50ac89a57e2aaf75",
+      "equal": true
+    }
+  },
+  "forward_apply": "PASS",
+  "reverse_dry_run": "PASS"
+}

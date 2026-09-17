@@ -1,0 +1,69 @@
+{
+  "final_source_tree_sha256": "eba402ae70511df0026fe103dc83c2239de3e26a3e34bbbd8066c478141c2d0c",
+  "supersedes": "quality-comparison-v4.json",
+  "strict_clippy_reused": {
+    "baseline": "terminal-v20-strict-clippy.stdout",
+    "current": "quality-strict-clippy-v1.stdout",
+    "baseline_emissions": 27,
+    "current_emissions": 27,
+    "baseline_unique_identities": 15,
+    "current_unique_identities": 15,
+    "identities_match": true,
+    "note": "strict aborts upstream; capped run supplies touched-test reachability"
+  },
+  "no_default_reused": {
+    "baseline": {
+      "emissions": 62,
+      "substantive_emissions": 61,
+      "unique_identities": 34,
+      "identities_match": true
+    },
+    "current": {
+      "emissions": 62,
+      "substantive_emissions": 61,
+      "unique_identities": 34,
+      "identities_match": true
+    }
+  },
+  "evidence_only_reused": {
+    "baseline": {
+      "emissions": 34,
+      "substantive_emissions": 33,
+      "unique_identities": 10,
+      "identities_match": true
+    },
+    "current": {
+      "emissions": 34,
+      "substantive_emissions": 33,
+      "unique_identities": 10,
+      "identities_match": true
+    }
+  },
+  "reuse_scope": "Strict/no-default were recorded on frozen LP3 tree30fe3908; evidence-only on formatting-only treefe880e37. Exact trees in reused_check_source_trees. All precede final test-audit/lint corrections and are retained raw failure evidence, not final-source rerun claims. Capped-v4 is the final-source compile/lint attribution check.",
+  "final_compile_reachability": {
+    "receipt": "quality-capped-clippy-v4.json",
+    "exit_code": 0,
+    "source_tree_sha256": "eba402ae70511df0026fe103dc83c2239de3e26a3e34bbbd8066c478141c2d0c",
+    "scope": "all targets, selected two crates, persisted-restart-v1/restart-authority-evidence/fixtures; --cap-lints warn",
+    "result": "PASS; introduced helper cast and unused-self/unused-variable warnings absent"
+  },
+  "formatter": {
+    "receipts": [
+      "quality-rustfmt-v1.json",
+      "quality-rustfmt-v2.json",
+      "quality-rustfmt-v3.json"
+    ],
+    "result": "FAIL on inherited whole-file formatting; no broad cleanup. V1 used unsupported --skip-children; V2/V3 use --config skip_children=true.",
+    "final_v4_note": "No formatter rerun after comment/audit-only final corrections."
+  },
+  "lint_delta": "final-v4-lint-delta-v20.json",
+  "source_recovery": "final-v4-source-reconstruction.json",
+  "v6_delta": "final-v4-v6-delta.json",
+  "physical_execution": "No physical run after frozen V6; LP3 failure evidence remains factory-control-v6.json.",
+  "metadata_correction_by": "/root; independent receipt extraction, no source or check changes",
+  "reused_check_source_trees": {
+    "quality-strict-clippy-v1": "30fe39089cf38baf696fead5c5c7b2d26be6a263ac7e07dbae5425d34a616380",
+    "quality-no-default-tests-v1": "30fe39089cf38baf696fead5c5c7b2d26be6a263ac7e07dbae5425d34a616380",
+    "quality-evidence-only-tests-v1": "fe880e378ebda1bb01e5de3e3f4bebc806a446dbae1cb1eb87d1b51368732bdb"
+  }
+}

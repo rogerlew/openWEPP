@@ -1,0 +1,63 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
+@@ -900,6 +900,8 @@
+     .expect("accepted V4 runtime candidate")
+ }
+ 
++// Test supports are source-fixed below 2^53 ns, so the integer-to-f64 conversion is exact.
++#[allow(clippy::cast_precision_loss)]
+ fn execute_runtime_v4_candidate_only(
+     physical: &FrozenLitterV3Resident,
+     exact: &FrozenLitterV4Resident,
+@@ -974,7 +976,7 @@
+         }
+     }
+ 
+-    fn setup_complete(&self) {
++    fn setup_complete() {
+         println!(
+             "lp-c1-setup-direct-audit: {:?}",
+             crate::direct_runtime::direct_runtime_audit_snapshot()
+@@ -1015,8 +1017,9 @@
+     const CHILD_START_NS: u128 = 1_860_000_000_000;
+     const CHILD_END_NS: u128 = 1_920_000_000_000;
+ 
+-    let _native_audit = crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
+-    let audit = CandidateOnlyFactoryAudit::begin();
++    let _native_audit =
++        crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
++    let _audit = CandidateOnlyFactoryAudit::begin();
+     let (mut beginning, retained_candidate, _, _) =
+         super::direct_v10_soil_thermal_v2_tests::unpublished_aggregate_candidate_only_from_native_v2_fixture();
+     let (physical, exact_surface_owner) = native_v4_resident_pair_fixture(&beginning);
+@@ -1046,7 +1049,7 @@
+         "lp-c1-stage: authenticated-host-installed candidate-only-beginning transaction={} support=[{CHILD_START_NS},{CHILD_END_NS})",
+         soil_beginning.transaction_id().0,
+     );
+-    audit.setup_complete();
++    CandidateOnlyFactoryAudit::setup_complete();
+     let candidate = execute_runtime_v4_candidate_only(
+         &physical,
+         &exact,
+@@ -1067,9 +1070,10 @@
+     const CHILD_END_NS: u128 = 1_800_000_000_000;
+ 
+     let _native_audit = crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
+-    let audit = CandidateOnlyFactoryAudit::begin();
++    let _audit = CandidateOnlyFactoryAudit::begin();
+     let (mut beginning, soil_beginning) =
+-        super::direct_v10_soil_thermal_v2_tests::v39_second_child_native_physical_beginning_fixture();
++        super::direct_v10_soil_thermal_v2_tests::v39_second_child_native_physical_beginning_fixture(
++        );
+     let (physical, exact_surface_owner) = native_v4_resident_pair_fixture(&beginning);
+     beginning
+         .install_frozen_litter_v4_resident(physical, exact_surface_owner)
+@@ -1086,7 +1090,7 @@
+         "lp3-stage: V39-native-host physical-beginning transaction={} support=[{CHILD_START_NS},{CHILD_END_NS})",
+         soil_beginning.transaction_id().0,
+     );
+-    audit.setup_complete();
++    CandidateOnlyFactoryAudit::setup_complete();
+     let candidate = execute_runtime_v4_candidate_only(
+         &physical,
+         &exact,

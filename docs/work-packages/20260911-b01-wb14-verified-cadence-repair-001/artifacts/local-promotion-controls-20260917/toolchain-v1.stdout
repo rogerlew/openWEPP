@@ -1,0 +1,17 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-promotion-controls-20260917-b05de7b2caf3
+  scratch: /tmp/openwepp-roger-b01-wb14-promotion-controls-20260917-b05de7b2caf3
+  cache:   /workdir/.cache/openwepp
+rustc 1.95.0 (59807616e 2026-04-14) (built from a source tarball)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: x86_64-unknown-linux-gnu
+release: 1.95.0
+LLVM version: 21.1.8
+cargo 1.95.0 (f2d3ce0bd 2026-03-21)
+cargo-nextest 0.9.136
+release: 0.9.136
+host: x86_64-unknown-linux-gnu
+/nix/store/m4hrdkg9ypcw8y1banfc26q3f27kfqvb-rustc-wrapper-1.95.0/bin/rustc
+/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo

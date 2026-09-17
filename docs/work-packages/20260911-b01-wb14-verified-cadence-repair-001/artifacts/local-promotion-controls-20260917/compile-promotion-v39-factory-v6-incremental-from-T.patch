@@ -1,0 +1,387 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs
+@@ -2027,7 +2027,15 @@
+     );
+ }
+ 
+-pub(super) fn unpublished_aggregate_candidate_only_behavior() {
++/// Builds the existing aggregate unpublished continuation without accepting
++/// its selected ending.  The promotion-boundary test consumes this fixture
++/// through the same continuation and replay APIs as the source test below.
++pub(super) fn unpublished_aggregate_candidate_only_fixture() -> (
++    DirectV10RealConsumerShadow,
++    DirectSoilThermalCandidate,
++    openwepp_land_surface_energy::SoilThermalTrialStateV2,
++    DirectSoilThermalUnpublishedContinuationResultV2,
++) {
+     let (authoritative, _) = native_v2_shadow_for_parent('a');
+     let parent = authoritative
+         .prepare_next_soil_thermal_support_v2(0, 1_800_000_000_000)
+@@ -2107,6 +2115,104 @@
+     let result = installed
+         .advance_soil_thermal_unpublished_continuation_v2(&continuation, &child_operands)
+         .expect("aggregate child result");
++    (installed, retained_candidate, retained_trial, result)
++}
++
++/// Builds the same retained 60-second child continuation used above, but
++/// leaves its native V2 host's complete owner state untouched.  The frozen
++/// litter factory needs that host to remain a valid V2-to-V3 migration source;
++/// this is not an accepted-parent installation fixture.
++pub(super) fn unpublished_aggregate_candidate_only_from_native_v2_fixture() -> (
++    DirectV10RealConsumerShadow,
++    DirectSoilThermalCandidate,
++    openwepp_land_surface_energy::SoilThermalTrialStateV2,
++    DirectSoilThermalUnpublishedContinuationResultV2,
++) {
++    let (authoritative, _) = native_v2_shadow_for_parent('a');
++    let retained_prepared = authoritative
++        .prepare_next_soil_thermal_support_v2(1_800_000_000_000, 1_860_000_000_000)
++        .expect("native retained trial support");
++    let retained_trial = unpublished_composed_trial(
++        &retained_prepared,
++        &authoritative.inner.lse_configuration,
++        1_800_000_000_000,
++        1_860_000_000_000,
++        f64::from_bits(1),
++        'c',
++    );
++    let retained_candidate =
++        DirectSoilThermalCandidate::from_v2(retained_trial.clone()).expect("native retained candidate");
++    let aggregate = authoritative
++        .prepare_base_soil_thermal_unpublished_aggregate_support_v2(
++            &retained_candidate,
++            1_860_000_000_000,
++            1_920_000_000_000,
++        )
++        .expect("native authenticated aggregate support");
++    let continuation = authoritative
++        .prepare_soil_thermal_base_unpublished_continuation_v2(
++            &aggregate,
++            &retained_trial,
++            retained_candidate.state_sha256(),
++            1_860_000_000_000,
++            1_920_000_000_000,
++        )
++        .expect("native aggregate base continuation");
++    let snow_owner = ResourceOwnerId::try_new("aggregate-snow").expect("snow owner");
++    let child_credit = continuation_credit(
++        continuation.child_beginning_state(),
++        1_860_000_000_000,
++        1_920_000_000_000,
++        'd',
++    );
++    let child_operands = continuation
++        .child_top_boundary_operands_v2(&[child_credit], &snow_owner)
++        .expect("native aggregate child operands");
++    let result = authoritative
++        .advance_soil_thermal_unpublished_continuation_v2(&continuation, &child_operands)
++        .expect("native aggregate child result");
++    (authoritative, retained_candidate, retained_trial, result)
++}
++
++/// The source-bound V39 receipt-free-native control: the native owner covers
++/// [0, 1800s], its first unpublished child is [0, 60s], and the physical
++/// beginning is the existing second-child [60, 1800s] range.  It deliberately
++/// carries no aggregate-final-replay claim.
++pub(super) fn v39_second_child_native_physical_beginning_fixture() -> (
++    DirectV10RealConsumerShadow,
++    openwepp_land_surface_energy::SoilThermalUnpublishedPhysicalBeginningV2,
++) {
++    let (authoritative, _) = native_v2_shadow_for_parent('c');
++    let original = authoritative
++        .prepare_next_soil_thermal_support_v2(0, 1_800_000_000_000)
++        .expect("V39 original parent support");
++    let first_trial = unpublished_composed_trial(
++        &original,
++        &authoritative.inner.lse_configuration,
++        0,
++        60_000_000_000,
++        f64::from_bits(1),
++        'd',
++    );
++    let first_candidate =
++        DirectSoilThermalCandidate::from_v2(first_trial).expect("V39 first unpublished candidate");
++    let beginning = authoritative
++        .inner
++        .soil_thermal
++        .prepare_unpublished_physical_beginning_v2(
++            &authoritative.inner.lse_configuration,
++            &first_candidate,
++            None,
++            60_000_000_000,
++            1_800_000_000_000,
++        )
++        .expect("V39 authenticated second-child physical beginning");
++    (authoritative, beginning)
++}
++
++pub(super) fn unpublished_aggregate_candidate_only_behavior() {
++    let (installed, retained_candidate, retained_trial, result) =
++        unpublished_aggregate_candidate_only_fixture();
+     let selected = result.physical_trial();
+     let beginning = result.original_prepared().beginning_owner();
+     let resident = installed.soil_thermal_v2().expect("installed V2 resident");
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
+@@ -608,6 +608,10 @@
+     configuration
+         .records()
+         .iter()
++        // `project_frozen_litter_v3_phase` admits one phase input per
++        // `litter_depth_m.is_some()` row only; bare rows remain in the owner
++        // projection and are handled by the V16 high-mirror projection.
++        .filter(|configured| configured.litter_depth_m.is_some())
+         .map(|configured| {
+             let state = owner
+                 .v2_state()
+@@ -734,16 +738,28 @@
+             .parent()
+             .records
+             .iter()
+-            .map(|record| DirectTileGroundIngress::CoveredCanopyRelease {
+-                ofe_id: record.key.ofe_id.clone(),
+-                tile_id: record.key.tile_id.clone(),
+-                surface_id: record.key.surface_id.clone(),
+-                release: DirectCanopyLiquidRelease {
+-                    throughfall: amount(0.02),
+-                    initial_drainage: amount(0.0),
+-                    second_drainage: amount(0.0),
+-                    stemflow: amount(0.0),
+-                },
++            .map(|record| match record.ground_ingress_mode {
++                DirectGroundIngressMode::CoveredCanopyRelease => {
++                    DirectTileGroundIngress::CoveredCanopyRelease {
++                        ofe_id: record.key.ofe_id.clone(),
++                        tile_id: record.key.tile_id.clone(),
++                        surface_id: record.key.surface_id.clone(),
++                        release: DirectCanopyLiquidRelease {
++                            throughfall: amount(0.02),
++                            initial_drainage: amount(0.0),
++                            second_drainage: amount(0.0),
++                            stemflow: amount(0.0),
++                        },
++                    }
++                }
++                DirectGroundIngressMode::OpenRawPrecipitation => {
++                    DirectTileGroundIngress::OpenRawPrecipitation {
++                        ofe_id: record.key.ofe_id.clone(),
++                        tile_id: record.key.tile_id.clone(),
++                        surface_id: record.key.surface_id.clone(),
++                        raw_precipitation: amount(0.02),
++                    }
++                }
+             })
+             .collect(),
+         wb14_parameters: vec![DirectOfeWb14Parameters {
+@@ -882,6 +898,210 @@
+         beginning_exact_surface_owner: exact.exact_surface_owner(),
+     })
+     .expect("accepted V4 runtime candidate")
++}
++
++fn execute_runtime_v4_candidate_only(
++    physical: &FrozenLitterV3Resident,
++    exact: &FrozenLitterV4Resident,
++    soil_beginning: &openwepp_land_surface_energy::SoilThermalUnpublishedPhysicalBeginningV2,
++    support_start_ns: u128,
++    support_end_ns: u128,
++) -> AcceptedFrozenLitterV4RuntimeCandidate {
++    let support_s = (support_end_ns - support_start_ns) as f64 / 1_000_000_000.0;
++    let phase_inputs = runtime_phase_inputs(
++        physical.surface_configuration(),
++        physical.surface_owner(),
++        physical.lse_configuration(),
++        physical.lse_state(),
++        support_s,
++    );
++    let ingress = runtime_ingress(
++        physical.surface_configuration(),
++        TRANSACTION,
++        support_start_ns,
++        support_end_ns,
++        0,
++    );
++    execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
++        physical: FrozenLitterV3RuntimeInput {
++            transaction_id: TRANSACTION,
++            soil_transaction_authority: PhysicalSoilEnergyTransactionAuthorityV2::try_new(
++                TRANSACTION,
++                soil_beginning.transaction_id(),
++            )
++            .expect("candidate-only physical transaction authority"),
++            predecessor_transaction_id: physical.lse_state().0.last_accepted_transaction_id,
++            parent_support_start_ns: support_start_ns,
++            parent_support_end_ns: support_end_ns,
++            support_start_ns,
++            support_end_ns,
++            predecessor_receipt_chain_sha256: physical
++                .predecessor_receipt_chain_sha256()
++                .to_owned(),
++            surface_configuration: physical.surface_configuration(),
++            beginning_surface_owner: physical.surface_owner(),
++            lse_configuration: physical.lse_configuration(),
++            beginning_lse_state: physical.lse_state(),
++            phase_inputs: &phase_inputs,
++            current_ingress: &ingress,
++            wb14_parent: physical.wb14_parent(),
++            finalize_wb14_parent_interval: true,
++            coupled_binding: runtime_binding(support_start_ns, support_end_ns),
++            soil_beginning: FrozenLitterV3SoilBeginningV1::CandidateOnlyUnpublishedSoil(
++                soil_beginning,
++            ),
++        },
++        beginning_exact_surface_owner: exact.exact_surface_owner(),
++    })
++    .expect("accepted candidate-only V4 runtime candidate")
++}
++
++struct CandidateOnlyFactoryAudit {
++    mechanism: Option<openwepp_land_surface_energy::solver_mechanism_audit::Session>,
++}
++
++impl CandidateOnlyFactoryAudit {
++    fn begin() -> Self {
++        crate::direct_runtime::reset_direct_runtime_audit_counters();
++        crate::runtime_inputs::reset_gsi_receipt_advance_audit_v1();
++        Self {
++            mechanism: Some(
++                openwepp_land_surface_energy::solver_mechanism_audit::begin_mechanism_audit(
++                    false, 0,
++                )
++                .expect("begin candidate-only V4 factory mechanism audit"),
++            ),
++        }
++    }
++
++    fn setup_complete(&self) {
++        println!(
++            "lp-c1-setup-direct-audit: {:?}",
++            crate::direct_runtime::direct_runtime_audit_snapshot()
++        );
++        println!(
++            "lp-c1-setup-gsi-receipt-advance-audit: {:?}",
++            crate::runtime_inputs::gsi_receipt_advance_audit_v1()
++        );
++    }
++}
++
++impl Drop for CandidateOnlyFactoryAudit {
++    fn drop(&mut self) {
++        println!(
++            "lp-c1-unwind-mechanism-audit: {:?}",
++            self.mechanism
++                .take()
++                .expect("candidate-only V4 factory mechanism audit")
++                .finish()
++        );
++        println!(
++            "lp-c1-unwind-direct-audit: {:?}",
++            crate::direct_runtime::direct_runtime_audit_snapshot()
++        );
++        println!(
++            "lp-c1-unwind-gsi-receipt-advance-audit: {:?}",
++            crate::runtime_inputs::gsi_receipt_advance_audit_v1()
++        );
++        println!(
++            "lp-c1-unwind-native-physics-audit: {:?}",
++            crate::v9_real_consumer_shadow::take_covered_native_physical_path_audit_v1()
++        );
++    }
++}
++
++#[test]
++fn real_candidate_only_v4_factory_uses_authenticated_aggregate_custody() {
++    const CHILD_START_NS: u128 = 1_860_000_000_000;
++    const CHILD_END_NS: u128 = 1_920_000_000_000;
++
++    let _native_audit = crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
++    let audit = CandidateOnlyFactoryAudit::begin();
++    let (mut beginning, retained_candidate, _, _) =
++        super::direct_v10_soil_thermal_v2_tests::unpublished_aggregate_candidate_only_from_native_v2_fixture();
++    let (physical, exact_surface_owner) = native_v4_resident_pair_fixture(&beginning);
++    beginning
++        .install_frozen_litter_v4_resident(physical, exact_surface_owner)
++        .expect("host-bound native V3/V4 resident installation");
++    let physical = beginning
++        .frozen_litter_v3_resident()
++        .expect("installed native V3 resident")
++        .clone();
++    let exact = beginning
++        .frozen_litter_v4_resident()
++        .expect("installed native V4 resident")
++        .clone();
++    let soil_beginning = beginning
++        .inner
++        .soil_thermal
++        .prepare_unpublished_physical_beginning_v2(
++            &beginning.inner.lse_configuration,
++            &retained_candidate,
++            None,
++            CHILD_START_NS,
++            CHILD_END_NS,
++        )
++        .expect("authenticated candidate-only physical beginning");
++    println!(
++        "lp-c1-stage: authenticated-host-installed candidate-only-beginning transaction={} support=[{CHILD_START_NS},{CHILD_END_NS})",
++        soil_beginning.transaction_id().0,
++    );
++    audit.setup_complete();
++    let candidate = execute_runtime_v4_candidate_only(
++        &physical,
++        &exact,
++        &soil_beginning,
++        CHILD_START_NS,
++        CHILD_END_NS,
++    );
++    assert!(candidate
++        .physical
++        .complete_owner_projection
++        .is_candidate_only_unpublished_soil());
++    println!("lp-c1-stage: accepted-frozen-litter-v4-runtime-candidate candidate-only=true");
++}
++
++#[test]
++fn v39_native_second_child_candidate_only_v4_factory() {
++    const CHILD_START_NS: u128 = 60_000_000_000;
++    const CHILD_END_NS: u128 = 1_800_000_000_000;
++
++    let _native_audit = crate::v9_real_consumer_shadow::begin_covered_native_physical_path_audit_v1();
++    let audit = CandidateOnlyFactoryAudit::begin();
++    let (mut beginning, soil_beginning) =
++        super::direct_v10_soil_thermal_v2_tests::v39_second_child_native_physical_beginning_fixture();
++    let (physical, exact_surface_owner) = native_v4_resident_pair_fixture(&beginning);
++    beginning
++        .install_frozen_litter_v4_resident(physical, exact_surface_owner)
++        .expect("V39 host-bound native V3/V4 resident installation");
++    let physical = beginning
++        .frozen_litter_v3_resident()
++        .expect("V39 installed native V3 resident")
++        .clone();
++    let exact = beginning
++        .frozen_litter_v4_resident()
++        .expect("V39 installed native V4 resident")
++        .clone();
++    println!(
++        "lp3-stage: V39-native-host physical-beginning transaction={} support=[{CHILD_START_NS},{CHILD_END_NS})",
++        soil_beginning.transaction_id().0,
++    );
++    audit.setup_complete();
++    let candidate = execute_runtime_v4_candidate_only(
++        &physical,
++        &exact,
++        &soil_beginning,
++        CHILD_START_NS,
++        CHILD_END_NS,
++    );
++    assert!(candidate
++        .physical
++        .complete_owner_projection
++        .is_candidate_only_unpublished_soil());
++    println!(
++        "lp3-stage: accepted-frozen-litter-v4-runtime-candidate candidate-only=true litter-phase-receipts={}",
++        candidate.physical.litter_phase_receipts.len(),
++    );
+ }
+ 
+ fn v3_resident_canonical_bytes(resident: &FrozenLitterV3Resident) -> Vec<u8> {

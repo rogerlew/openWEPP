@@ -1,0 +1,1220 @@
+{
+  "scope": "Top-level evidence only; local binaries/full source trees intentionally not Git artifacts",
+  "entries": [
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-control-v1-reconstructed-exact-incremental-from-T.patch",
+      "raw_bytes": 7206,
+      "raw_sha256": "aa136f498b5a130213b0c24bade4741da45a9ec9af1d524a68550ef335ae8fc8",
+      "published_path": "compile-promotion-control-v1-reconstructed-exact-incremental-from-T.patch",
+      "published_bytes": 7206,
+      "published_sha256": "aa136f498b5a130213b0c24bade4741da45a9ec9af1d524a68550ef335ae8fc8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-control-v1-reconstructed-incremental-from-T.patch",
+      "raw_bytes": 5940,
+      "raw_sha256": "9b1a5963f2fe45ed6ba8842075120bd98362769e3fd41cbf2dcb89f6f02487f3",
+      "published_path": "compile-promotion-control-v1-reconstructed-incremental-from-T.patch",
+      "published_bytes": 5940,
+      "published_sha256": "9b1a5963f2fe45ed6ba8842075120bd98362769e3fd41cbf2dcb89f6f02487f3",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-control-v1-reconstruction-attempt2-valid.patch",
+      "raw_bytes": 7243,
+      "raw_sha256": "e9094c36dc56728a52d07d774275cb7b4c569af87e1d3ff221615cfc73f89ea3",
+      "published_path": "compile-promotion-control-v1-reconstruction-attempt2-valid.patch",
+      "published_bytes": 7243,
+      "published_sha256": "e9094c36dc56728a52d07d774275cb7b4c569af87e1d3ff221615cfc73f89ea3",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-control-v1-source.json",
+      "raw_bytes": 108946,
+      "raw_sha256": "84f4d58c40a5327e8acd1b368ce39424944ad33ab23a6b47d5a053f63dc00ad0",
+      "published_path": "compile-promotion-control-v1-source.json",
+      "published_bytes": 108946,
+      "published_sha256": "84f4d58c40a5327e8acd1b368ce39424944ad33ab23a6b47d5a053f63dc00ad0",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-control-v1.json",
+      "raw_bytes": 2935,
+      "raw_sha256": "64b2163ee345296c51a317810781a880e26bb1bcc5918ce1db8073a227264990",
+      "published_path": "compile-promotion-control-v1.json",
+      "published_bytes": 2935,
+      "published_sha256": "64b2163ee345296c51a317810781a880e26bb1bcc5918ce1db8073a227264990",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-control-v1.resources",
+      "raw_bytes": 1122,
+      "raw_sha256": "dee4e88b36783cd588f5e66fc4bc9f3be9ee5c548370ad743ab998b43c39256f",
+      "published_path": "compile-promotion-control-v1.resources",
+      "published_bytes": 1122,
+      "published_sha256": "dee4e88b36783cd588f5e66fc4bc9f3be9ee5c548370ad743ab998b43c39256f",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-control-v1.stderr",
+      "raw_bytes": 1031,
+      "raw_sha256": "e0f282fbaf47c08579453f1b7fce8366a540f9c34163cb13d6f5d8156bf29a96",
+      "published_path": "compile-promotion-control-v1.stderr",
+      "published_bytes": 1031,
+      "published_sha256": "e0f282fbaf47c08579453f1b7fce8366a540f9c34163cb13d6f5d8156bf29a96",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-control-v1.stdout",
+      "raw_bytes": 230,
+      "raw_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "published_path": "compile-promotion-control-v1.stdout",
+      "published_bytes": 230,
+      "published_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-audit-v3-incremental-from-T.patch",
+      "raw_bytes": 8359,
+      "raw_sha256": "3004e83c5d584e0762aa93e7bae3b97babecd98b34e98657a29e978655642d0f",
+      "published_path": "compile-promotion-factory-audit-v3-incremental-from-T.patch",
+      "published_bytes": 8359,
+      "published_sha256": "3004e83c5d584e0762aa93e7bae3b97babecd98b34e98657a29e978655642d0f",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-audit-v3-source.json",
+      "raw_bytes": 109291,
+      "raw_sha256": "eda909e8837b53c7e35f210357448b69ea196835686c380e47e1ee4a276be5bd",
+      "published_path": "compile-promotion-factory-audit-v3-source.json",
+      "published_bytes": 109291,
+      "published_sha256": "eda909e8837b53c7e35f210357448b69ea196835686c380e47e1ee4a276be5bd",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-audit-v3.json",
+      "raw_bytes": 2954,
+      "raw_sha256": "931e2a529c68788e91996667e0a340ef5fb77ad9043a05b3d3ced368d61852f3",
+      "published_path": "compile-promotion-factory-audit-v3.json",
+      "published_bytes": 2954,
+      "published_sha256": "931e2a529c68788e91996667e0a340ef5fb77ad9043a05b3d3ced368d61852f3",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-audit-v3.resources",
+      "raw_bytes": 1127,
+      "raw_sha256": "2638529051262e7def4c9d91815a74afc15519c0b290e05dd354340564ac0f77",
+      "published_path": "compile-promotion-factory-audit-v3.resources",
+      "published_bytes": 1127,
+      "published_sha256": "2638529051262e7def4c9d91815a74afc15519c0b290e05dd354340564ac0f77",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-audit-v3.stderr",
+      "raw_bytes": 2236,
+      "raw_sha256": "136d2b0627d39d99772fadda82bb8e373f1ae57f07c656e99c620b245b5f8bf2",
+      "published_path": "compile-promotion-factory-audit-v3.stderr",
+      "published_bytes": 2236,
+      "published_sha256": "136d2b0627d39d99772fadda82bb8e373f1ae57f07c656e99c620b245b5f8bf2",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-audit-v3.stdout",
+      "raw_bytes": 230,
+      "raw_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "published_path": "compile-promotion-factory-audit-v3.stdout",
+      "published_bytes": 230,
+      "published_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-topology-v4-incremental-from-T.patch",
+      "raw_bytes": 10562,
+      "raw_sha256": "5114dbf7755d1190b7dac1c47704bb2a048a4a35db62ef9f591af1ca4b49f556",
+      "published_path": "compile-promotion-factory-topology-v4-incremental-from-T.patch",
+      "published_bytes": 10562,
+      "published_sha256": "5114dbf7755d1190b7dac1c47704bb2a048a4a35db62ef9f591af1ca4b49f556",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-topology-v4-source.json",
+      "raw_bytes": 109294,
+      "raw_sha256": "12c8ab2772773292f47441fa0518fc56ee050642ea41039378e7044d56dfb06f",
+      "published_path": "compile-promotion-factory-topology-v4-source.json",
+      "published_bytes": 109294,
+      "published_sha256": "12c8ab2772773292f47441fa0518fc56ee050642ea41039378e7044d56dfb06f",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-topology-v4.json",
+      "raw_bytes": 2961,
+      "raw_sha256": "66305f32cc7e52a62db26c527ac815d947fe32420a4b42bbf98402d48bf0a298",
+      "published_path": "compile-promotion-factory-topology-v4.json",
+      "published_bytes": 2961,
+      "published_sha256": "66305f32cc7e52a62db26c527ac815d947fe32420a4b42bbf98402d48bf0a298",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-topology-v4.resources",
+      "raw_bytes": 1086,
+      "raw_sha256": "e12dd1b370a00e61ef3d87a5a6566f0623169c8a3a1a87a6159ad0ccccba9be1",
+      "published_path": "compile-promotion-factory-topology-v4.resources",
+      "published_bytes": 1086,
+      "published_sha256": "e12dd1b370a00e61ef3d87a5a6566f0623169c8a3a1a87a6159ad0ccccba9be1",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-topology-v4.stderr",
+      "raw_bytes": 3026,
+      "raw_sha256": "5e889dd623126798f526ae293a4e83712e0bf59128a4e1b39e1949f21cae70b9",
+      "published_path": "compile-promotion-factory-topology-v4.stderr",
+      "published_bytes": 3026,
+      "published_sha256": "5e889dd623126798f526ae293a4e83712e0bf59128a4e1b39e1949f21cae70b9",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-topology-v4.stdout",
+      "raw_bytes": 230,
+      "raw_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "published_path": "compile-promotion-factory-topology-v4.stdout",
+      "published_bytes": 230,
+      "published_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-v2-incremental-from-T.patch",
+      "raw_bytes": 6021,
+      "raw_sha256": "b2e81eef21571df9a96aedd30c562c22e31b789aca4a66315fad6d59f08b6d5a",
+      "published_path": "compile-promotion-factory-v2-incremental-from-T.patch",
+      "published_bytes": 6021,
+      "published_sha256": "b2e81eef21571df9a96aedd30c562c22e31b789aca4a66315fad6d59f08b6d5a",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-v2-source.json",
+      "raw_bytes": 109285,
+      "raw_sha256": "5dc6164e2ea2dc68103e8c3303ff54410745680e20380e334080f9abf61a5970",
+      "published_path": "compile-promotion-factory-v2-source.json",
+      "published_bytes": 109285,
+      "published_sha256": "5dc6164e2ea2dc68103e8c3303ff54410745680e20380e334080f9abf61a5970",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-v2.json",
+      "raw_bytes": 2933,
+      "raw_sha256": "fc26d8cdef84a6fe94bcfe08f508dc15897abb3de212ce3048cc2913fab07aaa",
+      "published_path": "compile-promotion-factory-v2.json",
+      "published_bytes": 2933,
+      "published_sha256": "fc26d8cdef84a6fe94bcfe08f508dc15897abb3de212ce3048cc2913fab07aaa",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-v2.resources",
+      "raw_bytes": 1089,
+      "raw_sha256": "e38b7d0945a520f0f36303edd61dba62585c2a8c041596fdd333aa2205b228de",
+      "published_path": "compile-promotion-factory-v2.resources",
+      "published_bytes": 1089,
+      "published_sha256": "e38b7d0945a520f0f36303edd61dba62585c2a8c041596fdd333aa2205b228de",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-v2.stderr",
+      "raw_bytes": 3845,
+      "raw_sha256": "02994878562215a15d85a761d8b80020fa50195a4abdccefd6166e936d9f57e6",
+      "published_path": "compile-promotion-factory-v2.stderr",
+      "published_bytes": 3845,
+      "published_sha256": "02994878562215a15d85a761d8b80020fa50195a4abdccefd6166e936d9f57e6",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-factory-v2.stdout",
+      "raw_bytes": 230,
+      "raw_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "published_path": "compile-promotion-factory-v2.stdout",
+      "published_bytes": 230,
+      "published_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-native-custody-v5-incremental-from-T.patch",
+      "raw_bytes": 13029,
+      "raw_sha256": "4e3b70a9938629a2c28aa94d4a207ac12612dd14220d2ee05fa6cd7703cff1d8",
+      "published_path": "compile-promotion-native-custody-v5-incremental-from-T.patch",
+      "published_bytes": 13029,
+      "published_sha256": "4e3b70a9938629a2c28aa94d4a207ac12612dd14220d2ee05fa6cd7703cff1d8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-native-custody-v5-source.json",
+      "raw_bytes": 109292,
+      "raw_sha256": "ced5995dfb59d9f72448b9840d36d0f2700c4a19582725c665266f5faf3ac236",
+      "published_path": "compile-promotion-native-custody-v5-source.json",
+      "published_bytes": 109292,
+      "published_sha256": "ced5995dfb59d9f72448b9840d36d0f2700c4a19582725c665266f5faf3ac236",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-native-custody-v5.json",
+      "raw_bytes": 2955,
+      "raw_sha256": "69cf7483ad30f696266d944bd35b34887aac11ecc6eaa28969c5d00118e101e9",
+      "published_path": "compile-promotion-native-custody-v5.json",
+      "published_bytes": 2955,
+      "published_sha256": "69cf7483ad30f696266d944bd35b34887aac11ecc6eaa28969c5d00118e101e9",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-native-custody-v5.resources",
+      "raw_bytes": 1086,
+      "raw_sha256": "8011ed653efd98ce172acb2584b158c8a4a97a6e28e11e27dc967d4faed1d886",
+      "published_path": "compile-promotion-native-custody-v5.resources",
+      "published_bytes": 1086,
+      "published_sha256": "8011ed653efd98ce172acb2584b158c8a4a97a6e28e11e27dc967d4faed1d886",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-native-custody-v5.stderr",
+      "raw_bytes": 3026,
+      "raw_sha256": "f863362c746bf7dbd4a0842ef984fe01b8d161ac0d1f7224dc04fbc5e1d01245",
+      "published_path": "compile-promotion-native-custody-v5.stderr",
+      "published_bytes": 3026,
+      "published_sha256": "f863362c746bf7dbd4a0842ef984fe01b8d161ac0d1f7224dc04fbc5e1d01245",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-native-custody-v5.stdout",
+      "raw_bytes": 230,
+      "raw_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "published_path": "compile-promotion-native-custody-v5.stdout",
+      "published_bytes": 230,
+      "published_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-v39-factory-v6-incremental-from-T.patch",
+      "raw_bytes": 16171,
+      "raw_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "published_path": "compile-promotion-v39-factory-v6-incremental-from-T.patch",
+      "published_bytes": 16171,
+      "published_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-v39-factory-v6-source.json",
+      "raw_bytes": 109289,
+      "raw_sha256": "4e31d50812bd659dbecb012f8616140eb90d57c4273b9c170c086f131dc8c6a6",
+      "published_path": "compile-promotion-v39-factory-v6-source.json",
+      "published_bytes": 109289,
+      "published_sha256": "4e31d50812bd659dbecb012f8616140eb90d57c4273b9c170c086f131dc8c6a6",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-v39-factory-v6.json",
+      "raw_bytes": 2945,
+      "raw_sha256": "c2e6bdac387b827c31c145a97c5a927522308c55ab79fe16e21c6e52ce688836",
+      "published_path": "compile-promotion-v39-factory-v6.json",
+      "published_bytes": 2945,
+      "published_sha256": "c2e6bdac387b827c31c145a97c5a927522308c55ab79fe16e21c6e52ce688836",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-v39-factory-v6.resources",
+      "raw_bytes": 1089,
+      "raw_sha256": "6d3bb7efe60bfef66cc6aee9da8f3346a095e31fb687a780c727b9d7c91cad6d",
+      "published_path": "compile-promotion-v39-factory-v6.resources",
+      "published_bytes": 1089,
+      "published_sha256": "6d3bb7efe60bfef66cc6aee9da8f3346a095e31fb687a780c727b9d7c91cad6d",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-v39-factory-v6.stderr",
+      "raw_bytes": 3026,
+      "raw_sha256": "550136599a394fbe27bb1c11c5e37d7f812c239d3909ec2f4f04e32d9a753be1",
+      "published_path": "compile-promotion-v39-factory-v6.stderr",
+      "published_bytes": 3026,
+      "published_sha256": "550136599a394fbe27bb1c11c5e37d7f812c239d3909ec2f4f04e32d9a753be1",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/compile-promotion-v39-factory-v6.stdout",
+      "raw_bytes": 230,
+      "raw_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "published_path": "compile-promotion-v39-factory-v6.stdout",
+      "published_bytes": 230,
+      "published_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v4-incremental-from-T.patch",
+      "raw_bytes": 10562,
+      "raw_sha256": "5114dbf7755d1190b7dac1c47704bb2a048a4a35db62ef9f591af1ca4b49f556",
+      "published_path": "factory-control-v4-incremental-from-T.patch",
+      "published_bytes": 10562,
+      "published_sha256": "5114dbf7755d1190b7dac1c47704bb2a048a4a35db62ef9f591af1ca4b49f556",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v4-source.json",
+      "raw_bytes": 109275,
+      "raw_sha256": "959570348c824a70748ec91c44f36d829a40471c03571f477236e6d3eaeaab87",
+      "published_path": "factory-control-v4-source.json",
+      "published_bytes": 109275,
+      "published_sha256": "959570348c824a70748ec91c44f36d829a40471c03571f477236e6d3eaeaab87",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v4.json",
+      "raw_bytes": 2827,
+      "raw_sha256": "529859d44a1de2da961abcc97e6ab804251f91fd8a1442a9a3b2e4b77bc470c0",
+      "published_path": "factory-control-v4.json",
+      "published_bytes": 2827,
+      "published_sha256": "529859d44a1de2da961abcc97e6ab804251f91fd8a1442a9a3b2e4b77bc470c0",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v4.resources",
+      "raw_bytes": 1057,
+      "raw_sha256": "21580a921920afd1a2b461bbe7733dfb7ca838f8e52836559d5292f156aa28ed",
+      "published_path": "factory-control-v4.resources",
+      "published_bytes": 1057,
+      "published_sha256": "21580a921920afd1a2b461bbe7733dfb7ca838f8e52836559d5292f156aa28ed",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v4.stderr",
+      "raw_bytes": 372,
+      "raw_sha256": "2aaa77cede2ff77815c8cabdc83a800eb4677f5cbb1cea6d3da901fb95f87197",
+      "published_path": "factory-control-v4.stderr",
+      "published_bytes": 372,
+      "published_sha256": "2aaa77cede2ff77815c8cabdc83a800eb4677f5cbb1cea6d3da901fb95f87197",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v4.stdout",
+      "raw_bytes": 1950,
+      "raw_sha256": "2c42027e2446d911753cc95974eeba1f7c12f4afcf28e741afec8996a99dff97",
+      "published_path": "factory-control-v4.stdout",
+      "published_bytes": 1950,
+      "published_sha256": "2c42027e2446d911753cc95974eeba1f7c12f4afcf28e741afec8996a99dff97",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v5-incremental-from-T.patch",
+      "raw_bytes": 13029,
+      "raw_sha256": "4e3b70a9938629a2c28aa94d4a207ac12612dd14220d2ee05fa6cd7703cff1d8",
+      "published_path": "factory-control-v5-incremental-from-T.patch",
+      "published_bytes": 13029,
+      "published_sha256": "4e3b70a9938629a2c28aa94d4a207ac12612dd14220d2ee05fa6cd7703cff1d8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v5-source.json",
+      "raw_bytes": 109275,
+      "raw_sha256": "c0ca50211b496f9d3a9ab3a41aee2dd1a4d5e609a2de61a11ae9f74c934d04dc",
+      "published_path": "factory-control-v5-source.json",
+      "published_bytes": 109275,
+      "published_sha256": "c0ca50211b496f9d3a9ab3a41aee2dd1a4d5e609a2de61a11ae9f74c934d04dc",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v5.json",
+      "raw_bytes": 2844,
+      "raw_sha256": "165f97df252432a059789a4d8254b315ba02343ad8f28da08c491f397440a5ec",
+      "published_path": "factory-control-v5.json",
+      "published_bytes": 2844,
+      "published_sha256": "165f97df252432a059789a4d8254b315ba02343ad8f28da08c491f397440a5ec",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v5.resources",
+      "raw_bytes": 1062,
+      "raw_sha256": "92453a04ce7a969ac78e66f1bedc1a7d66b061fee83e4b4e8f3c51dda615aa9e",
+      "published_path": "factory-control-v5.resources",
+      "published_bytes": 1062,
+      "published_sha256": "92453a04ce7a969ac78e66f1bedc1a7d66b061fee83e4b4e8f3c51dda615aa9e",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v5.stderr",
+      "raw_bytes": 434,
+      "raw_sha256": "b1e2a39a1eacc3a87e5ffe3924c495afa465eda8319904ebbcd20e039d2d143f",
+      "published_path": "factory-control-v5.stderr",
+      "published_bytes": 434,
+      "published_sha256": "b1e2a39a1eacc3a87e5ffe3924c495afa465eda8319904ebbcd20e039d2d143f",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v5.stdout",
+      "raw_bytes": 1950,
+      "raw_sha256": "32052a56203052cd63cc631f167dbca507cca07b7fb0bd0dccd7b23e1cb65bc8",
+      "published_path": "factory-control-v5.stdout",
+      "published_bytes": 1950,
+      "published_sha256": "32052a56203052cd63cc631f167dbca507cca07b7fb0bd0dccd7b23e1cb65bc8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v6-incremental-from-T.patch",
+      "raw_bytes": 16171,
+      "raw_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "published_path": "factory-control-v6-incremental-from-T.patch",
+      "published_bytes": 16171,
+      "published_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v6-source.json",
+      "raw_bytes": 109275,
+      "raw_sha256": "73bde7cd74ec8cd28ea2166915180bbe61602a6e27b33e045f9244076b0206c9",
+      "published_path": "factory-control-v6-source.json",
+      "published_bytes": 109275,
+      "published_sha256": "73bde7cd74ec8cd28ea2166915180bbe61602a6e27b33e045f9244076b0206c9",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v6.json",
+      "raw_bytes": 2770,
+      "raw_sha256": "9cad4f648952907a5092f83ac26d7db9e58c39dd732ce7dc7ba1a407e8724b95",
+      "published_path": "factory-control-v6.json",
+      "published_bytes": 2770,
+      "published_sha256": "9cad4f648952907a5092f83ac26d7db9e58c39dd732ce7dc7ba1a407e8724b95",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v6.resources",
+      "raw_bytes": 1032,
+      "raw_sha256": "a0b935c82d2bf5df905505581ca18e47926928242b84356c628908aa4b2cb0fa",
+      "published_path": "factory-control-v6.resources",
+      "published_bytes": 1032,
+      "published_sha256": "a0b935c82d2bf5df905505581ca18e47926928242b84356c628908aa4b2cb0fa",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v6.stderr",
+      "raw_bytes": 1024,
+      "raw_sha256": "0a6780104a892a1a8e6db68093492156a5fe84e083411728ea202f9c6f7b0652",
+      "published_path": "factory-control-v6.stderr",
+      "published_bytes": 1024,
+      "published_sha256": "0a6780104a892a1a8e6db68093492156a5fe84e083411728ea202f9c6f7b0652",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v6.stdout",
+      "raw_bytes": 2661,
+      "raw_sha256": "5a6aa6ffa48f01e0575d3f5a1727cdaba91404daf50515b65c38e93c57dd5a5e",
+      "published_path": "factory-control-v6.stdout",
+      "published_bytes": 2661,
+      "published_sha256": "5a6aa6ffa48f01e0575d3f5a1727cdaba91404daf50515b65c38e93c57dd5a5e",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/final-lint-delta-v20.json",
+      "raw_bytes": 1120,
+      "raw_sha256": "ee44e0e5d367384a5c84d2277a0c2e976c9d01ba495513867bfb1bd14152d0bf",
+      "published_path": "final-lint-delta-v20.json",
+      "published_bytes": 1120,
+      "published_sha256": "ee44e0e5d367384a5c84d2277a0c2e976c9d01ba495513867bfb1bd14152d0bf",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/final-source-incremental-from-T.patch",
+      "raw_bytes": 16316,
+      "raw_sha256": "fa62ef52e276b5ff584158f6c94c0f1c56e61fbe90466dd5a0b60d388bcf2de8",
+      "published_path": "final-source-incremental-from-T.patch",
+      "published_bytes": 16316,
+      "published_sha256": "fa62ef52e276b5ff584158f6c94c0f1c56e61fbe90466dd5a0b60d388bcf2de8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/final-source-reconstruction-v2.json",
+      "raw_bytes": 863,
+      "raw_sha256": "4cc2cc3d1627c3925fb77ed30acb5161cc452d09d03bf82fed9307a519915ad4",
+      "published_path": "final-source-reconstruction-v2.json",
+      "published_bytes": 863,
+      "published_sha256": "4cc2cc3d1627c3925fb77ed30acb5161cc452d09d03bf82fed9307a519915ad4",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/final-v4-lint-delta-v20.json",
+      "raw_bytes": 1094,
+      "raw_sha256": "e980c2c781c28354a9442661838324a7e8766d33aa2f40a27c2cd31da4d4d281",
+      "published_path": "final-v4-lint-delta-v20.json",
+      "published_bytes": 1094,
+      "published_sha256": "e980c2c781c28354a9442661838324a7e8766d33aa2f40a27c2cd31da4d4d281",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/final-v4-source-incremental-from-T.patch",
+      "raw_bytes": 16361,
+      "raw_sha256": "6ae760111daf399656b680a3d63c7eb11e19ef6999813dafbca434b085fad6f9",
+      "published_path": "final-v4-source-incremental-from-T.patch",
+      "published_bytes": 16361,
+      "published_sha256": "6ae760111daf399656b680a3d63c7eb11e19ef6999813dafbca434b085fad6f9",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/final-v4-source-reconstruction.json",
+      "raw_bytes": 1287,
+      "raw_sha256": "e7b82b7a72ca9a8bab8739fd6d6a81451463e17026a0c45f4eb466a67b6d6e4b",
+      "published_path": "final-v4-source-reconstruction.json",
+      "published_bytes": 1287,
+      "published_sha256": "e7b82b7a72ca9a8bab8739fd6d6a81451463e17026a0c45f4eb466a67b6d6e4b",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/final-v4-v6-delta.json",
+      "raw_bytes": 1142,
+      "raw_sha256": "ed061a33a53e04e6e6015e7c449d39280f8e6b264753a405a004e7a5e9f1936e",
+      "published_path": "final-v4-v6-delta.json",
+      "published_bytes": 1142,
+      "published_sha256": "ed061a33a53e04e6e6015e7c449d39280f8e6b264753a405a004e7a5e9f1936e",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/final-v4-v6-delta.patch",
+      "raw_bytes": 2941,
+      "raw_sha256": "1b7e293f236a88361ebf176604979e5e796a29cb76132229ba0622b79d2f2d3a",
+      "published_path": "final-v4-v6-delta.patch",
+      "published_bytes": 2941,
+      "published_sha256": "1b7e293f236a88361ebf176604979e5e796a29cb76132229ba0622b79d2f2d3a",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/final-v6-delta.json",
+      "raw_bytes": 897,
+      "raw_sha256": "da8ee91118c451ce2a5fea13a01b8466ccfeac0e134cb71fcb44c18939d1fb8e",
+      "published_path": "final-v6-delta.json",
+      "published_bytes": 897,
+      "published_sha256": "da8ee91118c451ce2a5fea13a01b8466ccfeac0e134cb71fcb44c18939d1fb8e",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/final-v6-delta.patch",
+      "raw_bytes": 1709,
+      "raw_sha256": "ef2d9a396fc4d7e3c1affec2934c83ee3acc5cac6327cf6f192b34ab27d139ab",
+      "published_path": "final-v6-delta.patch",
+      "published_bytes": 1709,
+      "published_sha256": "ef2d9a396fc4d7e3c1affec2934c83ee3acc5cac6327cf6f192b34ab27d139ab",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/parent-preservation-checks.json",
+      "raw_bytes": 1583,
+      "raw_sha256": "021cfeb339be549cd0a0b51e9d61200071e148f56bf6ca1f262c294bc15f8947",
+      "published_path": "parent-preservation-checks.json",
+      "published_bytes": 1583,
+      "published_sha256": "021cfeb339be549cd0a0b51e9d61200071e148f56bf6ca1f262c294bc15f8947",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v1-incremental-from-T.patch",
+      "raw_bytes": 16190,
+      "raw_sha256": "dff4368882cb4ce175512ddcbe78b3f55278ca14faa91cfde14d7a267ab2ae7d",
+      "published_path": "quality-capped-clippy-v1-incremental-from-T.patch",
+      "published_bytes": 16190,
+      "published_sha256": "dff4368882cb4ce175512ddcbe78b3f55278ca14faa91cfde14d7a267ab2ae7d",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v1-source.json",
+      "raw_bytes": 109281,
+      "raw_sha256": "0be66d45a816460f7906d4099111419f2365c5978fd8f2d8f17f16b988b6b48a",
+      "published_path": "quality-capped-clippy-v1-source.json",
+      "published_bytes": 109281,
+      "published_sha256": "0be66d45a816460f7906d4099111419f2365c5978fd8f2d8f17f16b988b6b48a",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v1.json",
+      "raw_bytes": 3248,
+      "raw_sha256": "7412cccc8510e73f068f122816ad508843992fe67f242589107a6503930474bd",
+      "published_path": "quality-capped-clippy-v1.json",
+      "published_bytes": 3248,
+      "published_sha256": "7412cccc8510e73f068f122816ad508843992fe67f242589107a6503930474bd",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v1.resources",
+      "raw_bytes": 1191,
+      "raw_sha256": "0eaadf76a8243c314f382926f2f580f9be53d5c744075febdef952989381612d",
+      "published_path": "quality-capped-clippy-v1.resources",
+      "published_bytes": 1191,
+      "published_sha256": "0eaadf76a8243c314f382926f2f580f9be53d5c744075febdef952989381612d",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v1.stderr",
+      "raw_bytes": 2357,
+      "raw_sha256": "b5dff9a519b9691a8457558ca2b384ca31c122269e8680920d342455d05c20ce",
+      "published_path": "quality-capped-clippy-v1.stderr",
+      "published_bytes": 2357,
+      "published_sha256": "b5dff9a519b9691a8457558ca2b384ca31c122269e8680920d342455d05c20ce",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v1.stdout",
+      "raw_bytes": 13570598,
+      "raw_sha256": "4122a1a243f9117de630f42f10f9247e6dc4052615adef4917faca34852a26f4",
+      "published_path": "quality-capped-clippy-v1.stdout.gz",
+      "published_bytes": 563625,
+      "published_sha256": "6ea63f257102f4ecbc366ffa3f2e1f33145140766dd411e65f99f08b1bdb7976",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v2-incremental-from-T.patch",
+      "raw_bytes": 16316,
+      "raw_sha256": "fa62ef52e276b5ff584158f6c94c0f1c56e61fbe90466dd5a0b60d388bcf2de8",
+      "published_path": "quality-capped-clippy-v2-incremental-from-T.patch",
+      "published_bytes": 16316,
+      "published_sha256": "fa62ef52e276b5ff584158f6c94c0f1c56e61fbe90466dd5a0b60d388bcf2de8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v2-source.json",
+      "raw_bytes": 109281,
+      "raw_sha256": "0e4cbdf3bcd79ec1fa57a0c802c7e19eda28b8c11946264286085d15b724b115",
+      "published_path": "quality-capped-clippy-v2-source.json",
+      "published_bytes": 109281,
+      "published_sha256": "0e4cbdf3bcd79ec1fa57a0c802c7e19eda28b8c11946264286085d15b724b115",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v2.json",
+      "raw_bytes": 3248,
+      "raw_sha256": "e5252c3d8e3f6a270aac98a2d01680930027d89da6ece75d140da896f7f742a7",
+      "published_path": "quality-capped-clippy-v2.json",
+      "published_bytes": 3248,
+      "published_sha256": "e5252c3d8e3f6a270aac98a2d01680930027d89da6ece75d140da896f7f742a7",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v2.resources",
+      "raw_bytes": 1185,
+      "raw_sha256": "dca788b4c1d9c5a14399322c542585f25cc267d55857086e89d6baba4f383d91",
+      "published_path": "quality-capped-clippy-v2.resources",
+      "published_bytes": 1185,
+      "published_sha256": "dca788b4c1d9c5a14399322c542585f25cc267d55857086e89d6baba4f383d91",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v2.stderr",
+      "raw_bytes": 283,
+      "raw_sha256": "266f9952227b3eba0a06474f1813b99c0f6625224d9b87ef55cd176c81d49da9",
+      "published_path": "quality-capped-clippy-v2.stderr",
+      "published_bytes": 283,
+      "published_sha256": "266f9952227b3eba0a06474f1813b99c0f6625224d9b87ef55cd176c81d49da9",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v2.stdout",
+      "raw_bytes": 13568488,
+      "raw_sha256": "975b98ad553d8a15b47ee399ca75dd04432ca3f83127443674b651db41931c6e",
+      "published_path": "quality-capped-clippy-v2.stdout.gz",
+      "published_bytes": 562916,
+      "published_sha256": "cc55e833054278db339dda0236d95c736ce24affe0f0095d2484ef6cac9a0575",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v3-incremental-from-T.patch",
+      "raw_bytes": 16359,
+      "raw_sha256": "7c411d99d5929a9119e1fc98ef69a5fd9d5bd86a11fd29de4024b0ef22ecb614",
+      "published_path": "quality-capped-clippy-v3-incremental-from-T.patch",
+      "published_bytes": 16359,
+      "published_sha256": "7c411d99d5929a9119e1fc98ef69a5fd9d5bd86a11fd29de4024b0ef22ecb614",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v3-source.json",
+      "raw_bytes": 109281,
+      "raw_sha256": "0cbc24b59883540a17e074e75ccd26611942fd39475e498bc45e4d93dbf0ee39",
+      "published_path": "quality-capped-clippy-v3-source.json",
+      "published_bytes": 109281,
+      "published_sha256": "0cbc24b59883540a17e074e75ccd26611942fd39475e498bc45e4d93dbf0ee39",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v3.json",
+      "raw_bytes": 3248,
+      "raw_sha256": "a62e7198bbb3769d9a7b4061a4a35c54f62740f0727562ff0267c41b285c8a6b",
+      "published_path": "quality-capped-clippy-v3.json",
+      "published_bytes": 3248,
+      "published_sha256": "a62e7198bbb3769d9a7b4061a4a35c54f62740f0727562ff0267c41b285c8a6b",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v3.resources",
+      "raw_bytes": 1191,
+      "raw_sha256": "2d27bbab5f0cdaa7c6d0dadc2e3f75b865ba1ee74719fef04ebeb0a831761a26",
+      "published_path": "quality-capped-clippy-v3.resources",
+      "published_bytes": 1191,
+      "published_sha256": "2d27bbab5f0cdaa7c6d0dadc2e3f75b865ba1ee74719fef04ebeb0a831761a26",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v3.stderr",
+      "raw_bytes": 283,
+      "raw_sha256": "76908a1385b04178efcf5ebb4b41b506d1c2e1f878b9c0e9d2f1aa48991e75f0",
+      "published_path": "quality-capped-clippy-v3.stderr",
+      "published_bytes": 283,
+      "published_sha256": "76908a1385b04178efcf5ebb4b41b506d1c2e1f878b9c0e9d2f1aa48991e75f0",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v3.stdout",
+      "raw_bytes": 13571224,
+      "raw_sha256": "1db6a3e14c47920eadd07ab59b947206af86bf8583fff3e6534c18b8bdccf889",
+      "published_path": "quality-capped-clippy-v3.stdout.gz",
+      "published_bytes": 563033,
+      "published_sha256": "6f10219b072c92bbc6448db579bfb49cfbdd98733e19cad6413108cdf9659753",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v4-incremental-from-T.patch",
+      "raw_bytes": 16361,
+      "raw_sha256": "6ae760111daf399656b680a3d63c7eb11e19ef6999813dafbca434b085fad6f9",
+      "published_path": "quality-capped-clippy-v4-incremental-from-T.patch",
+      "published_bytes": 16361,
+      "published_sha256": "6ae760111daf399656b680a3d63c7eb11e19ef6999813dafbca434b085fad6f9",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v4-source.json",
+      "raw_bytes": 109281,
+      "raw_sha256": "e29deec40ea6dd46c3e1a033c8191e73e111d7d17c04d9082dc0a368edab87c4",
+      "published_path": "quality-capped-clippy-v4-source.json",
+      "published_bytes": 109281,
+      "published_sha256": "e29deec40ea6dd46c3e1a033c8191e73e111d7d17c04d9082dc0a368edab87c4",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v4.json",
+      "raw_bytes": 3247,
+      "raw_sha256": "9dae77b02ae7e008ccc14961924514387a66da3d3b37e179081ab0a9dd572fe1",
+      "published_path": "quality-capped-clippy-v4.json",
+      "published_bytes": 3247,
+      "published_sha256": "9dae77b02ae7e008ccc14961924514387a66da3d3b37e179081ab0a9dd572fe1",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v4.resources",
+      "raw_bytes": 1186,
+      "raw_sha256": "1efb1679a750f1609c3ab74a72f992521d1ac7c8b7da3b639d84222e365a61e9",
+      "published_path": "quality-capped-clippy-v4.resources",
+      "published_bytes": 1186,
+      "published_sha256": "1efb1679a750f1609c3ab74a72f992521d1ac7c8b7da3b639d84222e365a61e9",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v4.stderr",
+      "raw_bytes": 283,
+      "raw_sha256": "0bc524bf443b225c5f8f302a30079a6a84176e766f44a746aadc591a106f2457",
+      "published_path": "quality-capped-clippy-v4.stderr",
+      "published_bytes": 283,
+      "published_sha256": "0bc524bf443b225c5f8f302a30079a6a84176e766f44a746aadc591a106f2457",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-capped-clippy-v4.stdout",
+      "raw_bytes": 13566572,
+      "raw_sha256": "eb1e668871a75e523d68116684b51b19ae6e5bf708b370147829bafc0745bf65",
+      "published_path": "quality-capped-clippy-v4.stdout.gz",
+      "published_bytes": 562776,
+      "published_sha256": "9bad2149eeeacd5c0ed6f14bff505519ce10f4139637e62af416244fcc59484d",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-comparison-v1.json",
+      "raw_bytes": 1838,
+      "raw_sha256": "35e878756cc263da60799646b16396812d808adf6feff36c66857815e4df65d3",
+      "published_path": "quality-comparison-v1.json",
+      "published_bytes": 1838,
+      "published_sha256": "35e878756cc263da60799646b16396812d808adf6feff36c66857815e4df65d3",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-comparison-v4.json",
+      "raw_bytes": 2508,
+      "raw_sha256": "fd5ba3f4b1b224535bf0abad76824819c6e48989bae7bd1a515dafa25e3b0478",
+      "published_path": "quality-comparison-v4.json",
+      "published_bytes": 2508,
+      "published_sha256": "fd5ba3f4b1b224535bf0abad76824819c6e48989bae7bd1a515dafa25e3b0478",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-comparison-v5.json",
+      "raw_bytes": 3024,
+      "raw_sha256": "333aec1b4ef9414ca89ffcba248f233e50407f39e20b1ad7c59bf596acfde335",
+      "published_path": "quality-comparison-v5.json",
+      "published_bytes": 3024,
+      "published_sha256": "333aec1b4ef9414ca89ffcba248f233e50407f39e20b1ad7c59bf596acfde335",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-evidence-only-tests-v1-incremental-from-T.patch",
+      "raw_bytes": 16190,
+      "raw_sha256": "dff4368882cb4ce175512ddcbe78b3f55278ca14faa91cfde14d7a267ab2ae7d",
+      "published_path": "quality-evidence-only-tests-v1-incremental-from-T.patch",
+      "published_bytes": 16190,
+      "published_sha256": "dff4368882cb4ce175512ddcbe78b3f55278ca14faa91cfde14d7a267ab2ae7d",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-evidence-only-tests-v1-source.json",
+      "raw_bytes": 109287,
+      "raw_sha256": "0715ee2e28544911b326f824294a3a1711adcd2342956a37f5a53c235365cef0",
+      "published_path": "quality-evidence-only-tests-v1-source.json",
+      "published_bytes": 109287,
+      "published_sha256": "0715ee2e28544911b326f824294a3a1711adcd2342956a37f5a53c235365cef0",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-evidence-only-tests-v1.json",
+      "raw_bytes": 2931,
+      "raw_sha256": "ad79a84f6ee13d08a1ce3355d63e9d3bc3236b4112b03146177a3263ec0506d2",
+      "published_path": "quality-evidence-only-tests-v1.json",
+      "published_bytes": 2931,
+      "published_sha256": "ad79a84f6ee13d08a1ce3355d63e9d3bc3236b4112b03146177a3263ec0506d2",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-evidence-only-tests-v1.resources",
+      "raw_bytes": 1113,
+      "raw_sha256": "4886a965751df49af92ba853e306465debe056c3e8f0606d069c67149f62b7c5",
+      "published_path": "quality-evidence-only-tests-v1.resources",
+      "published_bytes": 1113,
+      "published_sha256": "4886a965751df49af92ba853e306465debe056c3e8f0606d069c67149f62b7c5",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-evidence-only-tests-v1.stderr",
+      "raw_bytes": 26476,
+      "raw_sha256": "4844a592e406bcf3b3fe9a5e6cb79eee684bb33c88d2da1b5c758e53c499b7fe",
+      "published_path": "quality-evidence-only-tests-v1.stderr",
+      "published_bytes": 26476,
+      "published_sha256": "4844a592e406bcf3b3fe9a5e6cb79eee684bb33c88d2da1b5c758e53c499b7fe",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-evidence-only-tests-v1.stdout",
+      "raw_bytes": 230,
+      "raw_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "published_path": "quality-evidence-only-tests-v1.stdout",
+      "published_bytes": 230,
+      "published_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-no-default-tests-v1-incremental-from-T.patch",
+      "raw_bytes": 16171,
+      "raw_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "published_path": "quality-no-default-tests-v1-incremental-from-T.patch",
+      "published_bytes": 16171,
+      "published_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-no-default-tests-v1-source.json",
+      "raw_bytes": 109284,
+      "raw_sha256": "a72521519f42cda209d25a5eb9cdfa9fb91116c0aa509244c84452f9e4473d1b",
+      "published_path": "quality-no-default-tests-v1-source.json",
+      "published_bytes": 109284,
+      "published_sha256": "a72521519f42cda209d25a5eb9cdfa9fb91116c0aa509244c84452f9e4473d1b",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-no-default-tests-v1.json",
+      "raw_bytes": 2818,
+      "raw_sha256": "619b84efe08ed5b81ccc86636df67929c76d384b91d7063b63e44cf1201db30e",
+      "published_path": "quality-no-default-tests-v1.json",
+      "published_bytes": 2818,
+      "published_sha256": "619b84efe08ed5b81ccc86636df67929c76d384b91d7063b63e44cf1201db30e",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-no-default-tests-v1.resources",
+      "raw_bytes": 1075,
+      "raw_sha256": "57560c47fe0eedde3efc466494fe0d1f0b18774533d17bfffbdd52f0c3a3b498",
+      "published_path": "quality-no-default-tests-v1.resources",
+      "published_bytes": 1075,
+      "published_sha256": "57560c47fe0eedde3efc466494fe0d1f0b18774533d17bfffbdd52f0c3a3b498",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-no-default-tests-v1.stderr",
+      "raw_bytes": 87223,
+      "raw_sha256": "5ebd1b098c3a60837ef9b25a59967c954ccbf8cba57a1423cc99ff69bea8f39b",
+      "published_path": "quality-no-default-tests-v1.stderr",
+      "published_bytes": 87223,
+      "published_sha256": "5ebd1b098c3a60837ef9b25a59967c954ccbf8cba57a1423cc99ff69bea8f39b",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-no-default-tests-v1.stdout",
+      "raw_bytes": 230,
+      "raw_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "published_path": "quality-no-default-tests-v1.stdout",
+      "published_bytes": 230,
+      "published_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v1-incremental-from-T.patch",
+      "raw_bytes": 16171,
+      "raw_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "published_path": "quality-rustfmt-v1-incremental-from-T.patch",
+      "published_bytes": 16171,
+      "published_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v1-source.json",
+      "raw_bytes": 109275,
+      "raw_sha256": "74ce80d3b23fc12df169f9937ba4fa40f9cbc138f850030bbcbe6bb5e3b5497e",
+      "published_path": "quality-rustfmt-v1-source.json",
+      "published_bytes": 109275,
+      "published_sha256": "74ce80d3b23fc12df169f9937ba4fa40f9cbc138f850030bbcbe6bb5e3b5497e",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v1.json",
+      "raw_bytes": 2904,
+      "raw_sha256": "1fc14f0fdbebc6bc74afe4bf9fb80412a2a128c4eeb0265513ab51f83329073d",
+      "published_path": "quality-rustfmt-v1.json",
+      "published_bytes": 2904,
+      "published_sha256": "1fc14f0fdbebc6bc74afe4bf9fb80412a2a128c4eeb0265513ab51f83329073d",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v1.resources",
+      "raw_bytes": 1178,
+      "raw_sha256": "b43a9452129a97809693ebf093328b2e59aa6ff753845c66d22abe5cd1bdd59e",
+      "published_path": "quality-rustfmt-v1.resources",
+      "published_bytes": 1178,
+      "published_sha256": "b43a9452129a97809693ebf093328b2e59aa6ff753845c66d22abe5cd1bdd59e",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v1.stderr",
+      "raw_bytes": 84,
+      "raw_sha256": "b5468bdc6e8c651664a2ce61586b7b27a44912795a3bf545114daa679de95541",
+      "published_path": "quality-rustfmt-v1.stderr",
+      "published_bytes": 84,
+      "published_sha256": "b5468bdc6e8c651664a2ce61586b7b27a44912795a3bf545114daa679de95541",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v1.stdout",
+      "raw_bytes": 230,
+      "raw_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "published_path": "quality-rustfmt-v1.stdout",
+      "published_bytes": 230,
+      "published_sha256": "c9e4e3b8e93e183af16069434af541b7c85d95b75d1bad08d456294668d60910",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v2-incremental-from-T.patch",
+      "raw_bytes": 16171,
+      "raw_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "published_path": "quality-rustfmt-v2-incremental-from-T.patch",
+      "published_bytes": 16171,
+      "published_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v2-source.json",
+      "raw_bytes": 109275,
+      "raw_sha256": "4929bf3a9adbcc202e50b25fb75d8778af52075e5cbe2ea402e2ea3e4705eb88",
+      "published_path": "quality-rustfmt-v2-source.json",
+      "published_bytes": 109275,
+      "published_sha256": "4929bf3a9adbcc202e50b25fb75d8778af52075e5cbe2ea402e2ea3e4705eb88",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v2.json",
+      "raw_bytes": 2942,
+      "raw_sha256": "a01142418d2a5066cdfc780ace7bebe8b8d3b365f6e47d701d4ad98ebeefe40a",
+      "published_path": "quality-rustfmt-v2.json",
+      "published_bytes": 2942,
+      "published_sha256": "a01142418d2a5066cdfc780ace7bebe8b8d3b365f6e47d701d4ad98ebeefe40a",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v2.resources",
+      "raw_bytes": 1190,
+      "raw_sha256": "42506786293cc4d723328024a084c401987217c93c14d5876a015edc9caf2e5c",
+      "published_path": "quality-rustfmt-v2.resources",
+      "published_bytes": 1190,
+      "published_sha256": "42506786293cc4d723328024a084c401987217c93c14d5876a015edc9caf2e5c",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v2.stderr",
+      "raw_bytes": 47,
+      "raw_sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+      "published_path": "quality-rustfmt-v2.stderr",
+      "published_bytes": 47,
+      "published_sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v2.stdout",
+      "raw_bytes": 78696,
+      "raw_sha256": "6063de10d09d0fe6fc810d3fdb08f9f006ab5b10cbbc20e86e6c736d18d1eab3",
+      "published_path": "quality-rustfmt-v2.stdout",
+      "published_bytes": 78696,
+      "published_sha256": "6063de10d09d0fe6fc810d3fdb08f9f006ab5b10cbbc20e86e6c736d18d1eab3",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v3-incremental-from-T.patch",
+      "raw_bytes": 16190,
+      "raw_sha256": "dff4368882cb4ce175512ddcbe78b3f55278ca14faa91cfde14d7a267ab2ae7d",
+      "published_path": "quality-rustfmt-v3-incremental-from-T.patch",
+      "published_bytes": 16190,
+      "published_sha256": "dff4368882cb4ce175512ddcbe78b3f55278ca14faa91cfde14d7a267ab2ae7d",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v3-source.json",
+      "raw_bytes": 109275,
+      "raw_sha256": "798d32eec3a2d5d7b020e36726a277da076bb1702e5ae2747bb9f2321a886102",
+      "published_path": "quality-rustfmt-v3-source.json",
+      "published_bytes": 109275,
+      "published_sha256": "798d32eec3a2d5d7b020e36726a277da076bb1702e5ae2747bb9f2321a886102",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v3.json",
+      "raw_bytes": 2942,
+      "raw_sha256": "49031f0660f841832cc1a93ffd5c6bcc51d705901ec72646b15aeb9a07f5a5fa",
+      "published_path": "quality-rustfmt-v3.json",
+      "published_bytes": 2942,
+      "published_sha256": "49031f0660f841832cc1a93ffd5c6bcc51d705901ec72646b15aeb9a07f5a5fa",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v3.resources",
+      "raw_bytes": 1182,
+      "raw_sha256": "051811baaca32ca7053e645d0cc5e7096e5609778303a424e174176fc22b5bf8",
+      "published_path": "quality-rustfmt-v3.resources",
+      "published_bytes": 1182,
+      "published_sha256": "051811baaca32ca7053e645d0cc5e7096e5609778303a424e174176fc22b5bf8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v3.stderr",
+      "raw_bytes": 47,
+      "raw_sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+      "published_path": "quality-rustfmt-v3.stderr",
+      "published_bytes": 47,
+      "published_sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-rustfmt-v3.stdout",
+      "raw_bytes": 77621,
+      "raw_sha256": "a11e49aaf40e51175d0323f639f8939f1a696efa8139746ce0b4bf2987980010",
+      "published_path": "quality-rustfmt-v3.stdout",
+      "published_bytes": 77621,
+      "published_sha256": "a11e49aaf40e51175d0323f639f8939f1a696efa8139746ce0b4bf2987980010",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-strict-clippy-v1-incremental-from-T.patch",
+      "raw_bytes": 16171,
+      "raw_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "published_path": "quality-strict-clippy-v1-incremental-from-T.patch",
+      "published_bytes": 16171,
+      "published_sha256": "c6a1146864e8778b8fd678a43e9a387618ecdeea8d8d52a493f8142f7fee6140",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-strict-clippy-v1-source.json",
+      "raw_bytes": 109281,
+      "raw_sha256": "2cef6778ef25cd9256bbe75bb27e34ea95796e461f8385b65933b64e548518fd",
+      "published_path": "quality-strict-clippy-v1-source.json",
+      "published_bytes": 109281,
+      "published_sha256": "2cef6778ef25cd9256bbe75bb27e34ea95796e461f8385b65933b64e548518fd",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-strict-clippy-v1.json",
+      "raw_bytes": 3153,
+      "raw_sha256": "800d75b154dec26a4a54f4d753a33ceec6c152ec1c374125d293e29d22591707",
+      "published_path": "quality-strict-clippy-v1.json",
+      "published_bytes": 3153,
+      "published_sha256": "800d75b154dec26a4a54f4d753a33ceec6c152ec1c374125d293e29d22591707",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-strict-clippy-v1.resources",
+      "raw_bytes": 1198,
+      "raw_sha256": "7a3d64f441d940ddf347e36e6a2567182e6a7a67e532bdd1e227256814543782",
+      "published_path": "quality-strict-clippy-v1.resources",
+      "published_bytes": 1198,
+      "published_sha256": "7a3d64f441d940ddf347e36e6a2567182e6a7a67e532bdd1e227256814543782",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-strict-clippy-v1.stderr",
+      "raw_bytes": 292,
+      "raw_sha256": "11ecc98f4841761749bb7125bd3352d7ad57eb6c98196e8d0944567734cae092",
+      "published_path": "quality-strict-clippy-v1.stderr",
+      "published_bytes": 292,
+      "published_sha256": "11ecc98f4841761749bb7125bd3352d7ad57eb6c98196e8d0944567734cae092",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/quality-strict-clippy-v1.stdout",
+      "raw_bytes": 130754,
+      "raw_sha256": "52d4efc3e9c5e8d1d9b964243ef0ea78a82790ce675adc4746d0cd5e6f427e72",
+      "published_path": "quality-strict-clippy-v1.stdout",
+      "published_bytes": 130754,
+      "published_sha256": "52d4efc3e9c5e8d1d9b964243ef0ea78a82790ce675adc4746d0cd5e6f427e72",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/toolchain-v1-source.json",
+      "raw_bytes": 108946,
+      "raw_sha256": "a56ac942ba8b8ea0a66a413af1b5d9ab139d8b08be35d34d46c8001ba0b2211f",
+      "published_path": "toolchain-v1-source.json",
+      "published_bytes": 108946,
+      "published_sha256": "a56ac942ba8b8ea0a66a413af1b5d9ab139d8b08be35d34d46c8001ba0b2211f",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/toolchain-v1.json",
+      "raw_bytes": 2344,
+      "raw_sha256": "ed3fad077e4ba9606dee3140e74234504d88237dc4b8593f92758fa02121eb43",
+      "published_path": "toolchain-v1.json",
+      "published_bytes": 2344,
+      "published_sha256": "ed3fad077e4ba9606dee3140e74234504d88237dc4b8593f92758fa02121eb43",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/toolchain-v1.resources",
+      "raw_bytes": 883,
+      "raw_sha256": "d906ca4812538ed1f0cd32d3e94044b42cd3a741c2dc86144cbc8e43df223f69",
+      "published_path": "toolchain-v1.resources",
+      "published_bytes": 883,
+      "published_sha256": "d906ca4812538ed1f0cd32d3e94044b42cd3a741c2dc86144cbc8e43df223f69",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/toolchain-v1.stderr",
+      "raw_bytes": 47,
+      "raw_sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+      "published_path": "toolchain-v1.stderr",
+      "published_bytes": 47,
+      "published_sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/toolchain-v1.stdout",
+      "raw_bytes": 704,
+      "raw_sha256": "c88aec0a2284d8bc3dbaec3a922adf1f91a3bd231987c78b51bbe4ff407d5bc0",
+      "published_path": "toolchain-v1.stdout",
+      "published_bytes": 704,
+      "published_sha256": "c88aec0a2284d8bc3dbaec3a922adf1f91a3bd231987c78b51bbe4ff407d5bc0",
+      "gzip": false
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "v6_source_tree_sha256": "30fe39089cf38baf696fead5c5c7b2d26be6a263ac7e07dbae5425d34a616380",
+  "final_source_tree_sha256": "6a9352297216e25d4ec872b3622a086b9367f107222cddb431fcecac175e7101",
+  "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+  "v6_file_sha256": "47c80d114f17f6246464730f22f12f755d9eea53e1c647300f0bcc6dc66efe96",
+  "final_file_sha256": "4362cc24446d051e399a82884e2a207b1505fc475753eded50ac89a57e2aaf75",
+  "delta_patch": "final-v6-delta.patch",
+  "delta_patch_sha256": "ef2d9a396fc4d7e3c1affec2934c83ee3acc5cac6327cf6f192b34ab27d139ab",
+  "classification": [
+    "two rustfmt-only wraps in LP3 test",
+    "scoped test-only clippy::cast_precision_loss allow with fixed-support exactness comment"
+  ],
+  "physical_inputs_changed": false,
+  "runtime_formula_changed": false,
+  "physical_execution_after_v6": false
+}

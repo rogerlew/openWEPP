@@ -1,0 +1,18 @@
+{
+  "v6_source_tree_sha256": "30fe39089cf38baf696fead5c5c7b2d26be6a263ac7e07dbae5425d34a616380",
+  "final_v4_source_tree_sha256": "eba402ae70511df0026fe103dc83c2239de3e26a3e34bbbd8066c478141c2d0c",
+  "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+  "v6_file_sha256": "47c80d114f17f6246464730f22f12f755d9eea53e1c647300f0bcc6dc66efe96",
+  "final_file_sha256": "3f007e1490c8a030665347a718ce48ab23d51dc00bcb59c79c070c7aa19e6a47",
+  "delta_patch": "final-v4-v6-delta.patch",
+  "delta_patch_sha256": "1b7e293f236a88361ebf176604979e5e796a29cb76132229ba0622b79d2f2d3a",
+  "classification": [
+    "two rustfmt-only wraps in factory-control tests",
+    "scoped test-only clippy::cast_precision_loss allow with fixed-support integer-to-f64 exactness comment",
+    "test-only audit plumbing: `setup_complete` becomes associated function and RAII guards renamed `_audit`; setup output and Drop lifetime remain unchanged"
+  ],
+  "physical_inputs_changed": false,
+  "runtime_formula_changed": false,
+  "physical_execution_after_v6": false,
+  "known_physical_tests_not_rerun_after_v6": true
+}

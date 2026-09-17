@@ -1,0 +1,16 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator)
+error[E0425]: cannot find value `retained_trial` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2146:47
+     |
+2146 |     predecessor_substitution.physical_trial = retained_trial.clone();
+     |                                               ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `retained_candidate` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2167:22
+     |
+2167 |                     &retained_candidate,
+     |                      ^^^^^^^^^^^^^^^^^^ not found in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 2 previous errors

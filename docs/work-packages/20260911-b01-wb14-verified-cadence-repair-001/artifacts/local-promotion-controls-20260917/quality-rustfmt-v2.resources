@@ -1,0 +1,24 @@
+Command exited with non-zero status 1
+	Command being timed: "nix develop /workdir/openWEPP --command rustfmt --check --config skip_children=true /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs /home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs"
+	User time (seconds): 7.58
+	System time (seconds): 2.29
+	Percent of CPU this job got: 80%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:12.33
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 362968
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 70203
+	Voluntary context switches: 90564
+	Involuntary context switches: 170
+	Swaps: 0
+	File system inputs: 24312536
+	File system outputs: 744
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

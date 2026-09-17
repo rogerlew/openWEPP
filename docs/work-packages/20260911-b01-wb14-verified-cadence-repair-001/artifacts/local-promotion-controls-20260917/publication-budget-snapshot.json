@@ -1,0 +1,13 @@
+{
+  "kind": "pre-commit publication snapshot; not final ledger",
+  "anchor_utc": "2026-09-17T04:03:00+00:00",
+  "measured_utc": "2026-09-17T04:59:32.089864+00:00",
+  "carried_seconds": 86285.890396,
+  "elapsed_seconds": 3392.089864,
+  "cumulative_seconds": 89677.98026,
+  "ceiling_seconds": 92530.26,
+  "remaining_seconds": 2852.27974,
+  "wait_deductions_seconds": 0,
+  "failure_floor": 167,
+  "final_ledger": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/local-promotion-controls-final-20260917.json"
+}

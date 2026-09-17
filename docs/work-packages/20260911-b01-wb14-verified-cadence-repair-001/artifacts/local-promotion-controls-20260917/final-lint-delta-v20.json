@@ -1,0 +1,32 @@
+{
+  "baseline_receipt": "terminal-v20-capped-clippy.stdout",
+  "final_receipt": "quality-capped-clippy-v2.stdout",
+  "baseline_warning_emissions": 2880,
+  "final_warning_emissions": 2881,
+  "baseline_warning_identities": 660,
+  "final_warning_identities": 660,
+  "added_warning_keys": [
+    [
+      "clippy::too_many_lines",
+      "this function has too many lines (103/100)",
+      "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs"
+    ],
+    [
+      "clippy::unused_self",
+      "unused `self` argument",
+      "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs"
+    ]
+  ],
+  "removed_warning_keys": [
+    [
+      "clippy::too_many_lines",
+      "this function has too many lines (102/100)",
+      "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs"
+    ],
+    [
+      "clippy::too_many_lines",
+      "this function has too many lines (181/100)",
+      "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs"
+    ]
+  ]
+}

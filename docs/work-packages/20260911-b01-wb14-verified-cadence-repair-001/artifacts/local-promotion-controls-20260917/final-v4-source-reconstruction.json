@@ -1,0 +1,26 @@
+{
+  "final_source_tree_sha256": "eba402ae70511df0026fe103dc83c2239de3e26a3e34bbbd8066c478141c2d0c",
+  "source_entries": 746,
+  "base_entries": 746,
+  "changed_entries_vs_T": [
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs"
+  ],
+  "unchanged_entry_count": 744,
+  "patch": "final-v4-source-incremental-from-T.patch",
+  "patch_sha256": "6ae760111daf399656b680a3d63c7eb11e19ef6999813dafbca434b085fad6f9",
+  "files": {
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs": {
+      "reconstructed_sha256": "77a1d815bb25cb851677428aa47ebfd3c5980629121364f04ad73723744de468",
+      "derived_sha256": "77a1d815bb25cb851677428aa47ebfd3c5980629121364f04ad73723744de468",
+      "equal": true
+    },
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs": {
+      "reconstructed_sha256": "3f007e1490c8a030665347a718ce48ab23d51dc00bcb59c79c070c7aa19e6a47",
+      "derived_sha256": "3f007e1490c8a030665347a718ce48ab23d51dc00bcb59c79c070c7aa19e6a47",
+      "equal": true
+    }
+  },
+  "forward_apply": "PASS",
+  "reverse_dry_run": "PASS"
+}

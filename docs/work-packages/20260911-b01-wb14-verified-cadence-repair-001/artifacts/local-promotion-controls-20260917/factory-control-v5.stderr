@@ -1,0 +1,4 @@
+
+thread 'v9_real_consumer_shadow::v3_publication_retention_tests::real_candidate_only_v4_factory_uses_authenticated_aggregate_custody' (2605486) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2134:10:
+native retained trial support: Runtime(OwnerClosure("receipt-free V2 prepared support join"))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

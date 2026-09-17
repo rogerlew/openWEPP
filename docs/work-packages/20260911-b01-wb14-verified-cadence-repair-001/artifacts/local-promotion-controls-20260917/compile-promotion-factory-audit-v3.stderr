@@ -1,0 +1,41 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917/crates/openwepp-hillslope-orchestrator)
+error[E0425]: cannot find type `CoveredNativePhysicalPathAuditGuardV1` in module `crate::v9_real_consumer_shadow`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs:945:46
+    |
+945 |     _native: crate::v9_real_consumer_shadow::CoveredNativePhysicalPathAuditGuardV1,
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:19:1
+    |
+ 19 | pub(crate) struct CoveredNativePhysicalPathAuditV1 {
+    | -------------------------------------------------- similarly named struct `CoveredNativePhysicalPathAuditV1` defined here
+    |
+help: a struct with a similar name exists
+    |
+945 -     _native: crate::v9_real_consumer_shadow::CoveredNativePhysicalPathAuditGuardV1,
+945 +     _native: crate::v9_real_consumer_shadow::CoveredNativePhysicalPathAuditV1,
+    |
+help: consider importing this struct
+    |
+  3 + use crate::v9_real_consumer_shadow::frozen_litter_v4_adoption::CoveredNativePhysicalPathAuditGuardV1;
+    |
+help: if you import `CoveredNativePhysicalPathAuditGuardV1`, refer to it directly
+    |
+945 -     _native: crate::v9_real_consumer_shadow::CoveredNativePhysicalPathAuditGuardV1,
+945 +     _native: CoveredNativePhysicalPathAuditGuardV1,
+    |
+
+warning: variable does not need to be mutable
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs:2122:10
+     |
+2122 |     let (mut installed, retained_candidate, retained_trial, result) =
+     |          ----^^^^^^^^^
+     |          |
+     |          help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0425`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 1 warning
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error; 1 warning emitted

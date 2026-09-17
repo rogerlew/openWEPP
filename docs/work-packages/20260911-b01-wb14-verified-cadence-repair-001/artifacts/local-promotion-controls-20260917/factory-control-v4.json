@@ -1,0 +1,50 @@
+{
+  "label": "factory-control-v4",
+  "argv": [
+    "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/openwepp_hillslope_orchestrator-lp-c1-topology-v4-6acf9a74daf335ab",
+    "--exact",
+    "v9_real_consumer_shadow::v3_publication_retention_tests::real_candidate_only_v4_factory_uses_authenticated_aggregate_custody",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v4.resources",
+    "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/openwepp_hillslope_orchestrator-lp-c1-topology-v4-6acf9a74daf335ab",
+    "--exact",
+    "v9_real_consumer_shadow::v3_publication_retention_tests::real_candidate_only_v4_factory_uses_authenticated_aggregate_custody",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917",
+  "source_tree_sha256": "b1c2440ee638f208bb3f9ebfd2b2f9a63cb6b53cf85141bdded1b9b75015caa5",
+  "source_receipt": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/factory-control-v4-source.json",
+  "pinned_files": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/local-promotion-controls-20260917/run_recorded.py": "855b1f9071976429567297ac88c69b3e172e48c8ffbd167d6f78e130dbfa0f25",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openWEPP/tools/dev/openwepp-env": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+  },
+  "start_utc": "2026-09-17T04:23:05.583665+00:00",
+  "timeout_seconds": 300,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/openwepp_hillslope_orchestrator-lp-c1-topology-v4-6acf9a74daf335ab",
+  "binary_sha256": "754d3b1386095df7d2169f8a5cfec12cce96b1f489e5998d53374908467f0ff3",
+  "environment_policy": "Inherited environment excluding OPENWEPP_*; explicit env assignments in argv",
+  "input_scope": "Source-defined local component fixtures only; no original corpus inputs",
+  "process_group": 2595660,
+  "exit_code": 101,
+  "timed_out": false,
+  "elapsed_seconds": 0.11573133198544383,
+  "end_utc": "2026-09-17T04:23:05.915798+00:00",
+  "source_unchanged": true,
+  "frozen_T_unchanged": true,
+  "binary_unchanged": true,
+  "pinned_files_unchanged": true,
+  "stdout_sha256": "2c42027e2446d911753cc95974eeba1f7c12f4afcf28e741afec8996a99dff97",
+  "stderr_sha256": "2aaa77cede2ff77815c8cabdc83a800eb4677f5cbb1cea6d3da901fb95f87197"
+}

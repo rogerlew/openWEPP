@@ -1,0 +1,48 @@
+{
+  "frozen_T": {
+    "tree_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+    "entries": 746
+  },
+  "terminal": {
+    "tree_sha256": "eba402ae70511df0026fe103dc83c2239de3e26a3e34bbbd8066c478141c2d0c",
+    "entries": 746
+  },
+  "v20_sha256": "512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd",
+  "evidence_class": "Ran: parent preservation/identity checks, no model or tests",
+  "command_receipts_checked": [
+    "compile-promotion-control-v1",
+    "compile-promotion-factory-audit-v3",
+    "compile-promotion-factory-topology-v4",
+    "compile-promotion-factory-v2",
+    "compile-promotion-native-custody-v5",
+    "compile-promotion-v39-factory-v6",
+    "factory-control-v4",
+    "factory-control-v5",
+    "factory-control-v6",
+    "quality-capped-clippy-v1",
+    "quality-capped-clippy-v2",
+    "quality-capped-clippy-v3",
+    "quality-capped-clippy-v4",
+    "quality-evidence-only-tests-v1",
+    "quality-no-default-tests-v1",
+    "quality-rustfmt-v1",
+    "quality-rustfmt-v2",
+    "quality-rustfmt-v3",
+    "quality-strict-clippy-v1",
+    "toolchain-v1"
+  ],
+  "nonzero_command_receipts": [
+    "compile-promotion-control-v1",
+    "compile-promotion-factory-audit-v3",
+    "factory-control-v4",
+    "factory-control-v5",
+    "factory-control-v6",
+    "quality-evidence-only-tests-v1",
+    "quality-no-default-tests-v1",
+    "quality-rustfmt-v1",
+    "quality-rustfmt-v2",
+    "quality-rustfmt-v3",
+    "quality-strict-clippy-v1"
+  ],
+  "unpromoted_draft_sha256": "0be23fc073d31503f34cda01ea7dc485634d44d890a6bbcc371a657d117d43d1"
+}

@@ -21,6 +21,477 @@ amendment below; they do not release a physical successor.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
 
+## Local promotion controls — adopted 2026-09-17
+
+**BOUNDED NEGATIVE DISPOSITION; A-001 remains INCOMPLETE / HOLD.** Owner execution adopts the
+[local promotion-controls authorization](artifacts/local-promotion-controls-20260917/owner-authorization.md)
+at evidence HEAD `3ed778457d1863a366af21fe10be0f4fbea4ea51`. Intent before edits:
+exercise genuine complete candidate-only V4 construction, canonical final soil
+replay and the actual `accept_promoted_candidate_only_frozen_litter_v4` entry on
+isolated local component objects; cover a valid control, semantic negatives,
+source-defined combined precedence and authoritative-state atomicity. Address
+WB14-RC1/RQ2 only to the extent the local fixture actually represents their
+obligations. Preserve WB14-RQ1 and all original-corpus/Critical qualification gaps.
+
+Frozen starting T tree `d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01`
+and frozen v20 `512f71b04a0a78f4faa248d48e458d3888d4ddb189a0276effde1256aaa4e3cd`
+remain immutable, with the existing S-plus-incremental-patch recovery. The sole
+writer `/root/promotion_writer` (tool-configured implementer/Terra medium) owns
+one derived copy under `/home/roger/openwepp-experiments`; parent owns this record,
+command recording, integration and reviewer coordination. No nested agents;
+reuse distinct `/root/correctness_review` and `/root/qa_review` on the new cut.
+
+Canonical authority inspected before test edits: LSE soil-custody amendment
+INV-LANDSURFACEENERGY-155 / OBL-LANDSURFACEENERGY-C-010, surface-liquid candidate
+custody INV-SURFACELIQUID-027 / OBL-SURFACELIQUID-C-017, and snow-energy companion
+INV-SNOWENERGY-084 / OBL-SNOWENERGY-C-052. Typed non-owner custody cannot install;
+final acceptance requires complete original-owner replay, exact selected ending
+and credit lineage, one seal/install, and byte-exact rejection rollback. Success
+must change the local accepted state; unchanged bytes are a rejection criterion.
+The deferred-composite draft remains unpromoted and cannot authorize physical use.
+
+Permitted physical work is confined to the named local component-control effort.
+No original-input model, captured first-snow-free successor, collector/capture,
+GSI-prefix/archive rerun, multi-day replay, solver/physics/budget/tolerance change,
+public API/schema/dependency change, production adoption or cadence resumption.
+Historical acquisition/witness allowances remain separately exhausted 1/1 each.
+Tests/plumbing and affected quality fixes are permitted; any production-boundary
+fix needs a preceding source-bound discriminating test and canonical authority.
+Before each result-bearing batch this record will freeze exact cases, fixture,
+source/binary identities, expected outcomes, intended boundaries and limits.
+
+Budget carried from the once-read final review ledger: **86,285.890396s** charged,
+**6,244.369604s** remaining under **92,530.26s**. Conservative continuation anchor
+**2026-09-17 04:03:00 UTC** precedes the first recorded command at 04:03:33 UTC;
+hard deadline **05:47:04.369604 UTC**. Reserve at least 900s for review/preservation;
+all wall time, including concurrent work and waits, is charged once. Failure floor
+remains **at least 151**, without a new failure-count ceiling. Stops are unchanged
+owner/hard-budget/integrity/unavailable-input/excluded-authority/bounded-disposition
+conditions. Two unsuccessful corrections or 60 active minutes trigger internal
+reassessment, not an automatic owner handoff or renewed allowance.
+
+Initial host evidence: 31,313MiB RAM, 27,524MiB available, 8,191MiB swap (5,040MiB
+used); `/tmp` has 433GiB free, `/home/roger` 296GiB, `/workdir` only 462MiB. Store
+large source/build/binary/log artifacts off `/workdir`; publish only scoped compact
+evidence and recovery patches. Reuse build caches without changing frozen v20.
+
+### Pre-run fixture review and checks
+
+The first test-only proposal combined the existing two-forest-tile V4 fixture
+with the authenticated aggregate continuation. Before any physical execution,
+parent and independent correctness review identified direct assignment of an
+independent resident pair as bypassing the host identity join. **LP-C1: BLOCKING
+fixture defect**; writer must use a host-derived pair through the canonical
+install API. The initial compile also exposed moved local names in a test-helper
+extraction; that failed cut and error are retained. These are pre-run test/plumbing
+corrections, not permission to change a physical input after a factory refusal.
+No physical batch is authorized until the revised fixture/cases are recorded. Independent
+correctness also identified **LP-C2**: the standalone subnormal soil-credit
+fixture proves internal soil replay consistency, not its correspondence to the
+separately generated V4 physical result. The writer is tracing the existing
+`DeferredNativeV2SoilCustodyV1::advance_snow_free_child` envelope-derived operand
+path; a lower-level factory/API control cannot close that missing join. No
+physical execution or qualification is claimed from compilation or source tracing.
+
+The explicit [command recorder](artifacts/local-promotion-controls-20260917/run_recorded.py)
+records only parent-selected commands and identities, without selecting gates,
+retrying, or assigning acceptance. It uses a 16GiB address-space bound, 1GiB per
+output file, a named timeout and a 900s review/preservation reserve. Raw records
+live at `/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917`.
+New source is `/home/roger/openwepp-experiments/b01-wb14-promotion-controls-20260917`;
+per-command T-relative patches preserve changed cuts. Initial toolchain inspection
+PASS: Nix rustc **1.95.0**, commit `59807616e1fa2540724bfbac14d7976d7e4a3860`,
+Cargo **1.95.0**, nextest **0.9.136**, LLVM **21.1.8**. The new build uses
+`persisted-restart-v1,restart-authority-evidence`, `--locked --lib --no-run`;
+compile checking is not test execution. A frozen libtest binary will support
+exact-name, serial, source/binary-bound diagnostic controls and counter output.
+The ordinary default/campaign test workflow remains an unmet separate requirement.
+
+### Physical batch LP-1 — declared before execution
+
+Selected exact test:
+`v9_real_consumer_shadow::v3_publication_retention_tests::real_candidate_only_v4_factory_uses_authenticated_aggregate_custody`.
+Source tree **`b1c2440ee638f208bb3f9ebfd2b2f9a63cb6b53cf85141bdded1b9b75015caa5`**,
+built by `compile-promotion-factory-topology-v4` with the recorded Nix toolchain.
+Frozen binary `/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/openwepp_hillslope_orchestrator-lp-c1-topology-v4-6acf9a74daf335ab`,
+SHA-256 **`754d3b1386095df7d2169f8a5cfec12cce96b1f489e5998d53374908467f0ff3`**.
+Execution uses `--exact --nocapture --test-threads=1`, automatic retries zero,
+timeout **300s**, address-space **16GiB**, output-file **1GiB**, core dumps disabled.
+
+Fixture frozen before execution: existing native `ofe-1` host with forest fraction
+0.38 (litter capacity 6 kg/m² tile, depth 0.04m, density 24 kg/m³, specific heat
+3370.5 J/kg/K) and open bare-soil fraction 0.62. Canonical migration and
+`install_frozen_litter_v4_resident` establish the host/resident join. All complete
+owner records remain present. Test phase inputs use the canonical litter subset
+`litter_depth_m.is_some()`; ingress preserves each configured ground-ingress mode.
+This corrects pre-run **LP-C3**, the prior helper's all-forest assumption, without
+changing host physical inputs. Existing aggregate fixture support is parent
+0..1,800,000,000,000ns, retained child 1,800,000,000,000..1,860,000,000,000ns,
+next child 1,860,000,000,000..1,920,000,000,000ns. Original source-defined subnormal
+credits/identities remain unchanged. Fixture files are the two changed test files:
+V3 SHA-256 `35360eddfc5d6e22307ad1024545dcdc8729d4739093ff8b67f1bd506619373d`,
+V10 SHA-256 `2bf4ec81633271c49072884498021e9851fad97f0aed11d685be5d8bffb4c371`.
+
+Expected boundary/outcome: authentic continuation read plus real
+`execute_frozen_litter_v4` must yield candidate-only non-owner custody. Setup and
+factory stages plus mechanism/direct/GSI/native counters are printed on success
+or unwind. A refusal records its actual stage/error; it is not promotion coverage
+and does not permit physical-input tuning. The independently generated soil
+credits still lack LP-C2's full physical-output join. Thus even a PASS establishes
+only local factory reachability, not final replay, promotion, accepted-state
+installation, B01 original day-4/E008, restart or conservation. The full named
+promotion effort remains active beyond this prerequisite control.
+
+Internal reassessment after two compile failures: test-helper scope and audit API
+errors were localized and corrected, with a successful source-bound compile; a
+concrete canonical fixture path exists. Continue within the original balance,
+without changing authority or restoring any run/time allowance. Failed cuts and
+raw errors remain retained; no physical run occurred before LP-1.
+
+### LP-1 result and continuation classification
+
+Ran `factory-control-v4`: **FAIL 0/1**, exit 101, 0.115731s. The test refused
+before canonical V4 factory invocation at `native_v4_resident_pair_fixture`'s
+`migrate_v2_state_to_v3`, error **`ImportedV2`** (`v3_publication_retention_tests.rs:1116`).
+No factory, accepted physical candidate, final replay or promotion coverage is
+claimed. Unwind counters: run frames **1**, day frames **2**, mechanism operations
+**0**, direct compute/state mutation/commit/publication **0**, GSI prepare/validate
+**0/0**, reported native physical-path counters **0**. These counters describe
+this setup refusal, not a successful zero-work promotion. Source, frozen T, binary
+and pinned-file stability checks passed; raw receipt/stdout/stderr remain retained.
+
+Same correctness reviewer statically verified LP-C1's host install and LP-C3's
+canonical phase subset/ingress corrections before LP-1. LP-C2 remained open and
+is not closed by this failed run. Next in-scope action is exact setup-error
+attribution: a demonstrated test-plumbing/custody correction preserving physical
+inputs may proceed, but no migration guard bypass, digest repair, physical tuning
+or production solver change is permitted. Preserve the first refusal and failed
+source/binary regardless of subsequent result.
+
+Static attribution: the soil-only helper's `align_complete_owner_transaction`
+mutates `lse_state.0.last_accepted_transaction_id` without a canonical enclosing
+LSE reseal. `migrate_v2_state_to_v3` first validates that state; the observed
+`ImportedV2` is consistent with this invalid setup. That broad error alone does
+not identify the particular V2 validation check. This is unqualified cross-subsystem
+test-fixture custody, not observed V4 physical nonconvergence. The remedy must use valid canonical complete-owner
+or unpublished-continuation construction; manually repairing a digest is excluded.
+
+QA interim **LP-Q1**: first failed compile v1 initially retained only a source
+map. A separately named attempted reconstruction did not match that map and its
+text-edited patch was corrupt. Both failed reconstruction artifacts are retained;
+no exact v1 recovery claim is made. Writer is reconstructing from the initial
+source/edit evidence and must produce a valid patch plus byte-map equality.
+Current LP-1/v4 source, incremental T patch, frozen binary and raw result are
+independently verified and unaffected. This recovery gap remains open until
+same-reviewer verification.
+
+LP-Q1 fix subsequently verified by the same QA reviewer: corrected
+`compile-promotion-control-v1-reconstructed-exact-incremental-from-T.patch`
+SHA-256 `aa136f498b5a130213b0c24bade4741da45a9ec9af1d524a68550ef335ae8fc8`
+applies cleanly to immutable T. Durable `failed-v1-reconstruction` exactly
+matches all 746 entries and tree `d4b640d57d1d2e2e57d7c58153cfa63f78c255591c6584df2b12bf5f9903333d`
+in the original failed command receipt. **LP-Q1 CLOSED, recoverability only**;
+corrupt/nonmatching attempts remain historical failures, and LP-1 remains FAIL.
+
+
+### Physical batch LP-2 — declared before execution
+
+Deliberate focused rerun for the demonstrated fixture-custody defect; not an
+automatic retry. Same exact factory-only test name and 300s/16GiB/1GiB limits as
+LP-1, serial frozen libtest. Source **`b5a40104abf260eff168960f35a355cdc95410d85933e79284dca7ea7acf8b04`**,
+`compile-promotion-native-custody-v5` PASS; frozen binary
+`/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/openwepp_hillslope_orchestrator-lp-c2-native-custody-v5-6acf9a74daf335ab`,
+SHA-256 **`ec1e2938dfa5c7a9bf91f4a1d256726bd4a273061e4bc775e22ba2337acdcf56`**.
+Fixture file hashes: V3 `819b7fc237fda16913893abd3ab915dcde1871b9a07242c78bf2c40496c09b9f`,
+V10 `c1bcbbe4b44de88d330f52097fd25a92ffe8f487c81bd43c122b7dcefe03f159`.
+
+Retain LP-1's physical host configuration, 1800..1860/1860..1920s child supports,
+subnormal credit values and c/d identities. Replace only the invalid enclosing
+custody setup: use untouched `native_v2_shadow_for_parent('a')`, authenticate its
+retained trial/candidate and aggregate continuation, and omit synthetic accepted
+parent/transaction alignment. The V3/V4 pair is derived and canonically installed
+on this coherent host. This local initial-resident custody is not the original
+B01 accepted-prefix state; original-specific requirements remain separate.
+Expected result and reachability are unchanged: real factory returns candidate-only
+custody, with actual stage/counter output on success/unwind. No final replay or
+promotion claim; LP-C2 remains OPEN. Preserve every typed refusal and do not tune
+physical inputs or bypass canonical validation in response.
+
+### LP-2 result and second setup reassessment
+
+Ran `factory-control-v5`: **FAIL 0/1**, exit101, 0.116442s; setup refused at
+`v10_soil_thermal_v2_tests.rs:2134` with
+`Runtime(OwnerClosure("receipt-free V2 prepared support join"))` before V4 factory.
+All source/T/binary/pin checks passed; counters again run frames1/day frames2,
+mechanism/direct compute/native physical/GSI/commit/publication zero. LP-2 does
+not establish physical-factory reachability or promotion coverage.
+
+Internal reassessment: removing the invalid accepted prefix left a receipt-free
+native owner admitting supports inside its original 0..1800s interval. The attempted
+1800..1860s retained trial was correctly refused. No trial support may be rebound,
+owner/receipt fabricated, or physical value tuned to obtain acceptance. A source-
+legitimate setup may instead use a genuine complete-owner prefix or an existing
+initial-resident continuation fixture with its own canonical original supports,
+prospectively recorded and explicitly limited in correspondence. Independent
+correctness is assessing this authority boundary before another result-bearing
+batch. Both failed controls and their exact cuts remain preserved; the two-failure
+point is internal reassessment only, not a new allowance or gate waiver.
+
+### Source-bound fixture selection after reassessment
+
+Independent correctness classified LP-2 as missing canonical fixture custody,
+not a need to alter scientific authority: `validate_prepared_beginning` requires
+receipt-free support to remain inside the owner's sealed 0..1800s interval.
+An invented 60..120s replacement was proposed but **not adopted or executed**;
+that would change the failed fixture's frozen support. Instead parent selects a
+distinct already source-bound control from
+`v39_v47_second_child_continuation_transaction_behavior`: untouched native host,
+original0..1800s, first unpublished0..60s, next typed physical beginning60..1800s,
+with its existing primitive credits and identities. No numerical values are to
+be shortened/tuned. This selection is within the authorized existing-local-fixture
+effort; it is not rebinding or replacing any original/failed trial, nor a claim
+that their acceptance criteria changed. Prior LP-1/LP-2 failures remain failures.
+
+The preexisting soil-only positive does not establish V4 physical success or
+complete-owner replay; those remain the new control's questions. The selected
+fixture has no original B01 accepted-prefix/corpus correspondence. LP-C2 and the
+full required promotion matrix remain open. Exact source/binary, test name and
+resource bounds will be recorded after compilation and before execution.
+
+### Physical batch LP-3 — declared before execution
+
+Distinct existing V39 control, exact test
+`v9_real_consumer_shadow::v3_publication_retention_tests::v39_native_second_child_candidate_only_v4_factory`.
+Source **`30fe39089cf38baf696fead5c5c7b2d26be6a263ac7e07dbae5425d34a616380`**,
+frozen binary `/home/roger/openwepp-experiments/b01-wb14-promotion-evidence-20260917/openwepp_hillslope_orchestrator-lp3-v39-v6-6acf9a74daf335ab`,
+SHA-256 **`d18cc6d06935dc086eb7f1f0e50d9fc9e9bc51720e01c094663e9a023a4a703d`**.
+Build `compile-promotion-v39-factory-v6`
+uses the same features/Nix route. V3 fixture source SHA
+`47c80d114f17f6246464730f22f12f755d9eea53e1c647300f0bcc6dc66efe96`;
+V10 fixture source SHA `77a1d815bb25cb851677428aa47ebfd3c5980629121364f04ad73723744de468`.
+
+Frozen physical inputs are the existing V39 native host (receipt-chain identity c),
+original prepared support0..1800s, retained first trial0..60s with `f64::from_bits(1)`
+and identity d, and next physical beginning60..1800s. Host-derived canonical
+V3/V4 installation and complete topology remain required. No claim that these
+supports match LP-1/LP-2 or the B01 original. Expected: typed authenticated read
+and real factory candidate-only return; print reached stages, litter receipt count
+and unwind work counters. No replay/install/promotion is yet tested by this case.
+The same exact-name serial libtest execution, 300s/16GiB/1GiB limits, zero automatic
+retries and 900s review reserve apply. Preserve any factory refusal; do not tune
+this fixture afterward to obtain acceptance.
+
+### LP-3 result — actual factory refusal
+
+Ran `factory-control-v6`: **FAIL 0/1**, exit101, 0.116111s. The host install and
+V39 authenticated beginning succeeded (soil transaction41, child60..1800s).
+The real V4 factory then returned `SurfaceLiquid(Failure(...))`, **E008**, phase
+**Restart**, detail **"WB14 scalar parent begin: WB14 parent support is not exactly
+1,800 seconds"**, physical transaction703, owner`production-hydrology`, OFE`ofe-1`.
+Reported beginning and attempted owner hashes both equal
+`5051c218a63d2e050adcd209ef8c8ee2ebfad077bcd9d16db7e59c96b82400d6`.
+No complete candidate returned; actual promotion entry, accepted replay and
+successful/negative promotion matrix remain unexecuted. This local E008 is not
+an execution of the original B01 regression or its captured successor.
+
+Raw instrumented counters remain frames1/dayframes2 and zero mechanism/native
+wrapper/GSI/direct compute/commit/publication counters. Those counters do not
+cover every low-level physical call; factory reachability must not be described
+as zero physical computation. Writer and correctness reviewer traced its
+actual pre-refusal physical stages and the parent/child support mapping below.
+All source/T/binary/pin checks passed. Parent holds further physical execution:
+no guard relaxation, physical-input retuning or solver/cadence repair follows
+from this refusal. A demonstrated mismatch between planned original-parent
+custody and test plumbing must be classified against the exact authorization;
+missing parent/prefix authority must remain blocked rather than fabricated.
+
+### Terminal physical boundary and selected quality checks
+
+Writer and independent correctness agree on the source-bound blocker: the test
+helper aliases parent to child60..1800s, but the resident has no WB14 parent state;
+the soil-only V39 fixture contains no authenticated first-child WB14/surface/LSE
+prefix. Setting parent0..1800s alone would not supply that custody. E008 therefore
+exposes invalid cross-domain local fixture plumbing, not a production solver or
+WB14 guard defect. No guard relaxation, test permit, invented prefix, input retuning
+or replay of the captured successor is justified. Physical experimentation stops
+at this bounded negative result under the adopted no-retuning clause. This does
+not assert that a properly constructed local fixture is scientifically impossible.
+
+Static reached-stage evidence: V4 frozen-parent join and V3 runtime identity,
+rollback capture, phase projection/litter-phase loop, ending-LSE/resource preparation,
+then ingress scalar-parent construction. The failure precedes WB14 child acceptance/
+finalization, complete V4 candidate return, final soil replay/install and actual
+promotion. The zero outer-native/mechanism counters do **not** mean zero low-level
+phase work. The equal surface-liquid hashes prove that reported operand only;
+complete native/clock/publication atomicity has not been established. All required
+positive, semantic-negative, combined-precedence and successful single-install
+promotion outcomes remain **BLOCKED / NOT RUN**.
+
+Selected affected checks before disposition: two changed-file formatting with
+`skip_children`; same prior strict Clippy command on orchestrator/persisted restart,
+all targets and `persisted-restart-v1,restart-authority-evidence,fixtures`, `--locked`
+and warnings denied; same no-default and evidence-only test-compilation commands
+as frozen v20. Compare actual diagnostic identities against retained27/61/33 baselines.
+Capped lint is diagnostic attribution only if needed, not strict acceptance. Preserve
+any new mechanical failure and correct only test plumbing/lint within scope; no
+unrelated inherited cleanup. No default test/full Critical campaign is authorized
+or claimed by these checks. No new physical test follows from a mechanical quality
+fix without a separately recorded justification; frozen LP-3 execution remains
+failed and is reused only within a demonstrated unchanged-behavior scope.
+
+Source recovery must verify a terminal T-relative patch against preserved T,
+including ancillary source context. Keep failed v1 and v4/v5/v6 identities and raw
+outputs. Final independent correctness and QA are assigned to the same reviewers
+on this changed-source/evidence scope; no new wave and no parent self-approval.
+
+### Terminal acceptance matrix and independent correctness disposition
+
+| Required boundary | Observed result | Disposition |
+| --- | --- | --- |
+| Genuine candidate factory | LP-1/2 setup refused; LP-3 invoked V4 factory and refused E008 at WB14 scalar-parent begin | Reached, FAIL; no accepted candidate |
+| Valid candidate-only promotion control | No complete physical candidate returned | BLOCKED / NOT RUN |
+| Missing/wrong replay; original owner/support/predecessor/ending/credit and custody-mode negatives | No valid control against which to discriminate semantic rejection | BLOCKED / NOT RUN |
+| Combined early-custody/later-promotion precedence | Actual promotion entry never reached | BLOCKED / NOT RUN |
+| Full authoritative-state rollback on rejection | Reported surface-liquid owner hashes equal; whole host/clock/history/publication not compared | Partial operand evidence only; required atomicity NOT MET |
+| Canonical complete replay and single V3/V4 install | Not reached | BLOCKED / NOT RUN |
+| WB14-RC1 / WB14-RQ2 | Physical-candidate correspondence and promotion obligations unresolved | OPEN / BLOCKED |
+| WB14-RQ1 and full Critical qualification | Strict/compatibility failures retained; campaign/default/constitutive/conservation/restart not executed | FAIL / NOT MET / HOLD |
+
+**Static / inspected execution evidence — `/root/correctness_review`, distinct
+independent correctness reviewer (Sol/high), final delivered disposition:**
+
+> **Blocking:** LP3’s test helper assigns the 60–1800s child interval as the WB14 parent interval. The parent must span 1800 seconds, so the recorded E008 `Restart` refusal is correct. The native V3 resident also has no accepted WB14 first-child parent state; changing the interval fields alone would not establish that missing custody.
+>
+> **Inspected execution evidence:** LP1 and LP2 failed during setup; LP3 invoked the V4 factory, completed V3 phase projection and resource preparation, then failed at WB14 scalar-parent begin. Its zero mechanism/native-wrapper counters do **not** establish zero low-level physical computation. All three recorded runs failed 0/1; none returned an accepted V4 candidate or reached promotion.
+>
+> **Residual risk:** Equal LP3 beginning/attempted hashes cover the surface-liquid owner only. Full-host rollback, final replay/install, and promotion precedence remain untested. The frozen patch changes only test files; the recorder preserves source, binary, input-scope, limits, and output identities. I inspected these artifacts and ran no tests or model executions.
+>
+> These failures are valid diagnostic evidence. They provide no promotion-control acceptance or production qualification.
+
+Source locations in the frozen LP-3 cut: helper `v3_publication_retention_tests.rs:918`,
+guard `direct_runtime/surface_liquid_wb14.rs:1242`, resident
+`frozen_litter_v3_adoption.rs:289`. Raw [LP-3 receipt](artifacts/local-promotion-controls-20260917/factory-control-v6.json)
+and [error](artifacts/local-promotion-controls-20260917/factory-control-v6.stderr)
+support the inspected execution claims. Review found LP-C1/C3 corrected before
+physical execution; LP-C2 remains OPEN, and missing cross-domain prefix/invalid
+parent plumbing is terminal blocking finding **LP-C4**. Neither is a demonstrated
+production defect. This independently reviewed negative diagnostic does not close
+the requested promotion acceptance or reopen the already reviewed frozen v20.
+
+### Terminal source, quality evidence and preservation
+
+Terminal detached source is **`eba402ae70511df0026fe103dc83c2239de3e26a3e34bbbd8066c478141c2d0c`**.
+The [terminal T-relative patch](artifacts/local-promotion-controls-20260917/final-v4-source-incremental-from-T.patch)
+has SHA-256 **`6ae760111daf399656b680a3d63c7eb11e19ef6999813dafbca434b085fad6f9`**.
+[Reconstruction](artifacts/local-promotion-controls-20260917/final-v4-source-reconstruction.json)
+records 746 entries, exactly two changed test files and 744 unchanged entries;
+forward application, reconstructed-byte equality and reverse dry-run PASS.
+This is preserved detached test source, not Rust adoption into main. Original T/v20,
+failed cuts, frozen LP-1/2/3 binaries and original inputs remain retained.
+
+[Final-versus-LP3 delta](artifacts/local-promotion-controls-20260917/final-v4-v6-delta.json)
+is limited to two formatting wraps, a helper-scoped cast lint allowance with an
+accurate fixed-integer-conversion comment, and audit plumbing: remove unused
+`self`, use associated calls, and keep `_audit` bindings alive through scope exit.
+The same correctness reviewer verified the unchanged audit body/Drop lifetime,
+absence of changed physical operands, formulas or production guards, and final
+reconstruction. Its inspected capped-v4 receipt passed on the terminal tree;
+reviewer ran no tests/model. Physical execution was **not repeated** after frozen
+LP-3; its FAIL result remains tied to tree `30fe3908…`, not asserted as a run of
+the terminal source. Correctness still leaves LP-C2 OPEN and LP-C4 BLOCKING.
+
+| Affected check | Actual outcome and scope |
+| --- | --- |
+| Strict Clippy, selected two crates/all targets | FAIL, 27 emissions / 15 identities matching v20; aborts upstream |
+| No-default test compilation | FAIL, 61 substantive errors / 34 identities; 62 emissions including final abort, matching v20 |
+| Evidence-only test compilation | FAIL, 33 substantive errors / 10 identities; 34 emissions including final abort, matching v20 |
+| Changed-file rustfmt | FAIL on inherited whole-file formatting; first invocation also used unsupported flag; two introduced wraps corrected |
+| Capped Clippy v4 on terminal source | Exit0, reaches affected test code; **not strict acceptance** |
+| Full/default/Critical scientific workflows | NOT RUN; required qualification remains unmet |
+
+[Comparison v5](artifacts/local-promotion-controls-20260917/quality-comparison-v5.json)
+corrects v4's source attribution: strict/no-default ran on LP-3 tree `30fe3908…`;
+evidence-only ran on formatting-only tree `fe880e37…`. They are reused recorded
+failures, not rerun claims on terminal `eba402ae…`. Capped v4 supplies terminal
+compile/lint reachability. No formatter rerun followed the final comment/audit
+changes. Capped v1 exposed an introduced cast warning; v2 still exposed unused
+`self`; the associated-function correction exposed unused audit bindings in v3.
+Those introduced warnings are absent in v4. Earlier comparison v1's blanket
+inherited-warning claim was incorrect and is superseded; preserve its bytes.
+[Full lint delta](artifacts/local-promotion-controls-20260917/final-v4-lint-delta-v20.json)
+records 2,880 warning emissions both before/after, 660 versus 659 identity keys:
+V3 function-size warning changes 102/100 to 103/100, and the V10 181/100 key is
+removed by extraction. This is not a zero-difference or clean-lint claim. No strict
+waiver, inherited-debt cleanup or qualification upgrade follows.
+
+The [publication manifest](artifacts/local-promotion-controls-20260917/publication-manifest.json)
+binds every copied raw record to its published bytes. Large stdout is losslessly
+gzip-compressed with decompressed SHA-256 verification; binaries and full working
+copies remain at the recorded local paths. Superseded recovery/comparison attempts
+are retained as failed/prior evidence, not the terminal recovery authority. Failed
+v1 exact recovery remains independently QA-verified under LP-Q1; only the versioned
+`final-v4-*` files identify the final cut. The deferred-composite draft remains
+unpromoted at SHA-256 `0be23fc073d31503f34cda01ea7dc485634d44d890a6bbcc371a657d117d43d1`.
+
+### Independent final QA and bounded disposition
+
+**Static / inspected execution evidence — `/root/qa_review`, distinct independent
+QA reviewer (Terra/medium), final delivered review.** No new model/test execution;
+reviewer directly performed read-only hash/source-map/patch applicability checks.
+The earlier agent-capacity rejection resolved after writer completion; final QA
+is delivered, not replaced by parent or correctness review. Selected final review
+text is incorporated below; referenced raw receipts are in the manifest above.
+
+> **BLOCKING — WB14-RQ2 / LP-C4 remains open.** All three recorded factory controls fail before an accepted V4 candidate and before promotion: v4 `ImportedV2`, v5 receipt-free prepared-support refusal, v6 `E008` at WB14 scalar-parent begin. Raw v6 counters show zero commit/publication/direct-compute activity; the counters do not prove zero lower-level work. No replay, install, atomic rollback, precedence, or negative promotion matrix outcome was exercised.
+>
+> **BLOCKING — WB14-RQ1 remains HOLD.** Reused strict Clippy, no-default, and evidence-only checks are exit 101. The corrected comparison binds strict/no-default to `30fe3908…`, evidence-only to `fe880e37…`; these are recorded failures, not final-tree runs. Terminal `eba402…` has only capped-Clippy reachability exit 0, which is not a warnings-denied pass. No default/full-Critical workflow ran.
+>
+> **PASS — source/evidence custody.** I directly verified final patch SHA `6ae760111daf399656b680a3d63c7eb11e19ef6999813dafbca434b085fad6f9`; `git apply --check` succeeds against immutable T. The final 746-entry map matches the detached source and canonical map digest `eba402ae…`; only the two declared test files differ, with hashes `77a1…e468` and `3f007…6a47`. The derived directory also contains excluded `AGENTS.md` and generated `target/.../junit.xml`; neither belongs to the recorded source map.
+>
+> **PASS — LP-Q1 recovery only.** The corrected v1 recovery patch `aa136f…e8fc8` applies cleanly to T and the durable reconstruction matches all 746 recorded entries at `d4b640…3333d`. The prior corrupt reconstruction remains historical failed evidence.
+>
+> Non-blocking debt: the final capped lint delta retains a test-function `too_many_lines` warning shifted from 102 to 103 lines. Rustfmt remains an inherited whole-file failure and was not rerun after final audit/comment-only changes. These do not alter the two blocking dispositions.
+>
+> The published artifact manifest is complete: I verified all 135 entries, including decompressed gzip hashes, against their recorded raw bytes.
+>
+> QA verdict: **PASS for evidence integrity and accurate bounded disposition; package acceptance remains INCOMPLETE / HOLD under WB14-RQ1 and WB14-RQ2.**
+
+Parent final reconciliation: the exact terminal source diff is two detached test
+files only, with final patch/reconstruction reviewed by both independent reviewers.
+The main-repository publication diff is this maintained package plus the new
+`artifacts/local-promotion-controls-20260917/` evidence directory. No production
+Rust, canonical authority, dependencies, persisted/public API, solver, tolerance,
+WB14 guard or production-selection change is adopted. The three previously
+untracked six-owner capped-Clippy outputs remain untouched and uncommitted.
+Structure-only checks PASS: Python AST, JSON decoding, local evidence links,
+scoped structured-file diff whitespace, and published/raw SHA-256 correspondence.
+Verbatim patch/log whitespace is preserved and validated by hashes. Frozen T,
+v20 and draft identities were rechecked in [parent preservation checks](artifacts/local-promotion-controls-20260917/parent-preservation-checks.json);
+all 20 command records retain stable source/T/pins and, where applicable, binaries.
+
+**Bounded outcome:** real factory refusal preserved; actual promotion entry not
+reached; required positive/semantic-negative/precedence/atomicity/single-install
+matrix BLOCKED. Independent reviews support this negative disposition and source/
+evidence integrity only. WB14-RC1/RQ2 remain OPEN/BLOCKED, WB14-RQ1 remains FAIL/HOLD,
+and the original E008/scientific regression, restart/conservation/constitutive/full
+Critical acceptance and cadence remain unmet. No original-input run or captured
+successor is released. This ends the named local effort without accepting A-001.
+
+Budget and publication accounting: retain the original 92,530.26s ceiling and
+86,285.890396s carried charge; all elapsed time since 04:03:00 UTC counts once.
+[Publication budget snapshot](artifacts/local-promotion-controls-20260917/publication-budget-snapshot.json)
+is a pre-commit measurement, not the final ledger. The final local ledger is
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/local-promotion-controls-final-20260917.json`;
+it includes subsequent review/publication/remote verification and a 30s return
+reserve without reclaiming any prior charge. Failure floor is **at least 167**:
+carried151 + 11 recorded nonzero command exits + 5 directly observed tooling
+failures (three reviewer-capacity rejections and two premature missing-file reads).
+This is a lower bound, not an exhaustive count; earlier failed recovery attempts
+and all raw failed checks remain preserved. No failure ceiling or run allowance
+is reinstated. Scoped commit/push and exact-commit remote verification are required
+before final return; their resulting commit and remote proof live in that final
+ledger to avoid a self-referential commit claim.
+
 ## Independent restoration review pickup — adopted 2026-09-17
 
 **Static / inspected execution evidence / read-only checks: bounded review COMPLETE; checkpoint INCOMPLETE / HOLD.**

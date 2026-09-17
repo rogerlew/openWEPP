@@ -1,0 +1,18 @@
+
+running 1 test
+test v9_real_consumer_shadow::v3_publication_retention_tests::v39_native_second_child_candidate_only_v4_factory ... lp3-stage: V39-native-host physical-beginning transaction=41 support=[60000000000,1800000000000)
+lp-c1-setup-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 1, day_frame_constructions: 2, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }
+lp-c1-setup-gsi-receipt-advance-audit: GsiReceiptAdvanceAuditV1 { prepare_advances: 0, validator_advances: 0 }
+lp-c1-unwind-mechanism-audit: Ok(MechanismAudit { maps: Counts { starts: 0, completions: 0, errors: 0 }, solves: Counts { starts: 0, completions: 0, errors: 0 }, sweeps: Counts { starts: 0, completions: 0, errors: 0 }, probes: Counts { starts: 0, completions: 0, errors: 0 }, evaluations: Counts { starts: 0, completions: 0, errors: 0 }, complete: Counts { starts: 0, completions: 0, errors: 0 }, identity_anchor: Counts { starts: 0, completions: 0, errors: 0 }, component_replay: Counts { starts: 0, completions: 0, errors: 0 }, iterations: 0, leaf_calls: 0, dropped_events: 0, overflow: false, events: [] })
+lp-c1-unwind-direct-audit: DirectRuntimeAuditSnapshot { run_frame_constructions: 1, day_frame_constructions: 2, day_frame_commits: 0, executor_constructions: 0, skeleton_runs: 0, publication_capture_runs: 0, phase_view_constructions: 0, erod14_qin_clamped_events: 0, wave1_flux_refused_quanta: 0, phase_span_runs: 0, direct_phase_entries: 0, direct_compute_operations: 0, direct_state_mutations: 0, downstream_operand_productions: 0, shadow_projections: 0, compatibility_edge_invocations: 0, ksatadj_effective_conductivity_evaluations: 0 }
+lp-c1-unwind-gsi-receipt-advance-audit: GsiReceiptAdvanceAuditV1 { prepare_advances: 0, validator_advances: 0 }
+lp-c1-unwind-native-physics-audit: CoveredNativePhysicalPathAuditV1 { represented_snow_retention_validation_count: 0, represented_snow_retention_by_map: [], snow_free_litter_physics_call_count: 0, snow_free_surface_physics_call_count: 0, snow_free_wb14_physics_call_count: 0 }
+FAILED
+
+failures:
+
+failures:
+    v9_real_consumer_shadow::v3_publication_retention_tests::v39_native_second_child_candidate_only_v4_factory
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1503 filtered out; finished in 0.11s
+

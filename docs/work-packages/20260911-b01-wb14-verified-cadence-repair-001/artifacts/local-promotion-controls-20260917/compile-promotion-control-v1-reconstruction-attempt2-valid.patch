@@ -1,0 +1,168 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
+@@ -884,6 +884,134 @@
+     .expect("accepted V4 runtime candidate")
+ }
+ 
++fn execute_runtime_v4_candidate_only(
++    physical: &FrozenLitterV3Resident,
++    exact: &FrozenLitterV4Resident,
++    soil_beginning: &openwepp_land_surface_energy::SoilThermalUnpublishedPhysicalBeginningV2,
++    support_start_ns: u128,
++    support_end_ns: u128,
++) -> AcceptedFrozenLitterV4RuntimeCandidate {
++    let support_s = (support_end_ns - support_start_ns) as f64 / 1_000_000_000.0;
++    let phase_inputs = runtime_phase_inputs(
++        physical.surface_configuration(),
++        physical.surface_owner(),
++        physical.lse_configuration(),
++        physical.lse_state(),
++        support_s,
++    );
++    let ingress = runtime_ingress(
++        physical.surface_configuration(),
++        TRANSACTION,
++        support_start_ns,
++        support_end_ns,
++        0,
++    );
++    execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
++        physical: FrozenLitterV3RuntimeInput {
++            transaction_id: TRANSACTION,
++            soil_transaction_authority: PhysicalSoilEnergyTransactionAuthorityV2::try_new(
++                TRANSACTION,
++                soil_beginning.transaction_id(),
++            )
++            .expect("candidate-only physical transaction authority"),
++            predecessor_transaction_id: physical.lse_state().0.last_accepted_transaction_id,
++            parent_support_start_ns: support_start_ns,
++            parent_support_end_ns: support_end_ns,
++            support_start_ns,
++            support_end_ns,
++            predecessor_receipt_chain_sha256: physical
++                .predecessor_receipt_chain_sha256()
++                .to_owned(),
++            surface_configuration: physical.surface_configuration(),
++            beginning_surface_owner: physical.surface_owner(),
++            lse_configuration: physical.lse_configuration(),
++            beginning_lse_state: physical.lse_state(),
++            phase_inputs: &phase_inputs,
++            current_ingress: &ingress,
++            wb14_parent: physical.wb14_parent(),
++            finalize_wb14_parent_interval: true,
++            coupled_binding: runtime_binding(support_start_ns, support_end_ns),
++            soil_beginning: FrozenLitterV3SoilBeginningV1::CandidateOnlyUnpublishedSoil(
++                soil_beginning,
++            ),
++        },
++        beginning_exact_surface_owner: exact.exact_surface_owner(),
++    })
++    .expect("accepted candidate-only V4 runtime candidate")
++}
++
++#[test]
++fn real_candidate_only_v4_promotion_uses_authenticated_aggregate_replay() {
++    const CHILD_START_NS: u128 = 1_860_000_000_000;
++    const CHILD_END_NS: u128 = 1_920_000_000_000;
++
++    let (mut beginning, retained_candidate, continuation) =
++        super::direct_v10_soil_thermal_v2_tests::unpublished_aggregate_candidate_only_fixture();
++    let (physical, exact) = v4_resident_fixture();
++    beginning.frozen_litter_v3 = Some(physical.clone());
++    beginning.frozen_litter_v4 = Some(exact.clone());
++    let authoritative_beginning = beginning.clone();
++    let soil_beginning = beginning
++        .inner
++        .soil_thermal
++        .prepare_unpublished_physical_beginning_v2(
++            &beginning.inner.lse_configuration,
++            &retained_candidate,
++            None,
++            CHILD_START_NS,
++            CHILD_END_NS,
++        )
++        .expect("authenticated candidate-only physical beginning");
++    let mut candidate = execute_runtime_v4_candidate_only(
++        &physical,
++        &exact,
++        &soil_beginning,
++        CHILD_START_NS,
++        CHILD_END_NS,
++    );
++    assert!(candidate
++        .physical
++        .complete_owner_projection
++        .is_candidate_only_unpublished_soil());
++
++    let accepted = continuation
++        .compose_accepted_outer_candidate(&beginning.inner.lse_configuration)
++        .expect("canonical aggregate final replay");
++    let seals = super::seal_soil_thermal_accepted_candidate_v2(
++        continuation.original_prepared().beginning_owner(),
++        &accepted,
++    )
++    .expect("canonical aggregate final replay seals");
++    let replay_authority = beginning
++        .authenticate_soil_thermal_unpublished_continuation_install_authority_v3(
++            &authoritative_beginning,
++            &continuation,
++            continuation.original_prepared().beginning_owner(),
++        )
++        .expect("canonical aggregate replay authority");
++    beginning
++        .install_soil_thermal_accepted_v2_from_unpublished_continuation_v3(
++            &authoritative_beginning,
++            &continuation,
++            continuation.original_prepared().beginning_owner(),
++            replay_authority,
++            accepted,
++            seals,
++        )
++        .expect("canonical aggregate final replay install");
++    let before_v3 = beginning.frozen_litter_v3.clone();
++    let before_v4 = beginning.frozen_litter_v4.clone();
++    beginning
++        .accept_promoted_candidate_only_frozen_litter_v4(
++            &authoritative_beginning,
++            continuation.original_prepared().beginning_owner(),
++            &mut candidate,
++        )
++        .expect("candidate-only promotion after canonical final replay");
++    assert_ne!(beginning.frozen_litter_v3, before_v3);
++    assert_ne!(beginning.frozen_litter_v4, before_v4);
++}
++
+ fn v3_resident_canonical_bytes(resident: &FrozenLitterV3Resident) -> Vec<u8> {
+     fn push(out: &mut Vec<u8>, bytes: &[u8]) {
+         out.extend_from_slice(&(bytes.len() as u64).to_be_bytes());
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs
+@@ -2027,7 +2027,15 @@
+     );
+ }
+ 
+-pub(super) fn unpublished_aggregate_candidate_only_behavior() {
++/// Builds the existing aggregate unpublished continuation without accepting
++/// its selected ending.  The promotion-boundary test consumes this fixture
++/// through the same continuation and replay APIs as the source test below.
++pub(super) fn unpublished_aggregate_candidate_only_fixture() -> (
++    DirectV10RealConsumerShadow,
++    DirectSoilThermalCandidate,
++    openwepp_land_surface_energy::SoilThermalTrialStateV2,
++    DirectSoilThermalUnpublishedContinuationResultV2,
++) {
+     let (authoritative, _) = native_v2_shadow_for_parent('a');
+     let parent = authoritative
+         .prepare_next_soil_thermal_support_v2(0, 1_800_000_000_000)
+@@ -2107,6 +2115,11 @@
+     let result = installed
+         .advance_soil_thermal_unpublished_continuation_v2(&continuation, &child_operands)
+         .expect("aggregate child result");
++    (installed, result)
++}
++
++pub(super) fn unpublished_aggregate_candidate_only_behavior() {
++    let (mut installed, result) = unpublished_aggregate_candidate_only_fixture();
+     let selected = result.physical_trial();
+     let beginning = result.original_prepared().beginning_owner();
+     let resident = installed.soil_thermal_v2().expect("installed V2 resident");
