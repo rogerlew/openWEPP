@@ -265,6 +265,15 @@ remote byte receipt is retained beside that final ledger. Complete source/corpus
 binaries remain local; scoped remote evidence is not full remote corpus custody.
 The three pre-existing untracked capped-Clippy stdout files remain untouched.
 
+Publication completed: evidence/test-patch commit
+`b5331a12c66e7389a48cf84d18bf5d4c570767a8` pushed to existing origin/main.
+[Exact-commit remote byte verification](artifacts/integrated-promotion-20260917/remote-verification.json)
+matched all127files,3,880,232bytes without retries. This publication supplement is
+separately committed and verified; final ledger and supplement receipt remain in
+the external logs path above. No complete external source/corpus remote-custody
+claim follows. Tracked worktree was clean after publication; the same three
+unrelated untracked stdout files remain.
+
 ## Local promotion controls — adopted 2026-09-17
 
 **BOUNDED NEGATIVE DISPOSITION; A-001 remains INCOMPLETE / HOLD.** Owner execution adopts the
