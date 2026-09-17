@@ -21,6 +21,127 @@ amendment below; they do not release a physical successor.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
 
+## Feature compatibility repair — adopted 2026-09-17
+
+Execution of `/tmp/openwepp_b01_wb14_feature_compatibility_authorization.md`
+adopts the feature-build portion of WB14-RQ1 at A-001. Intent: repair inherited
+no-default and evidence-only test compilation at the owning feature boundaries,
+preserve default library and selected full-feature builds, exact valid test
+membership, all14 promotion selectors and restoration/capability controls. Run
+focused affected behavioral/negative checks and targeted formatting/source quality;
+obtain distinct correctness and QA review. No physics, operand, runtime guard,
+trusted-capability trait, public API/wire, dependency/toolchain/default feature or
+feature graph change is authorized. Strict lint and broader qualification remain
+unmet; no scientific campaign or cadence resumes. Select bounded inherited-lint
+attribution prospectively for this compatibility-only increment; strict failures
+remain visible, and no new relevant diagnostics may be hidden.
+
+Starting frozen source `e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7`
+and its existing recovery tree both rehashed to all746 entries; exact T and final
+T-relative patch were verified before creating one mutable24MB source copy at
+`/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917`.
+Frozen integrated source/binary and original inputs remain retained. Logs are at
+`/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917`;
+existing build infrastructure is reused. `/workdir` has310MB free, `/home/roger`
+265GB free; available memory25GiB. Bounded recorder retains16GiB address-space,
+1GiB output, two Cargo jobs, no automatic retries and a preservation reserve.
+
+Conservative continuation anchor **2026-09-17T20:01:00Z**, carried consumption
+**103,580.768s**, unchanged ceiling **106,868.925s**, deadline
+**2026-09-17T20:55:48.157Z**. Concurrent wall time including reading, review,
+preservation/publication/return is charged once; no reserve reclaimed or wait
+excluded. Failure floor remains **at least251**, uncertainty preserved.
+`/root/feature_implementer` (Terra/medium) is the sole detached source writer;
+Astra owns custody, integration, package and publication. Prior completion review
+conversations are not reachable in this session; attributable independent
+replacements will review only this new increment. Earlier frozen scientific and
+LP-C2/LP-C4/WB14-RC1/RQ2 claims are unchanged.
+
+Initial source inspection identifies missing per-test feature prerequisites,
+inconsistent private diagnostic/helper availability, and private archive DTO
+availability. The first no-default correction check remains **FAIL exit101**
+(30 errors versus the original61), preserved as `feature-no-default-check`.
+Independent correctness replacement `/root/feature_correctness` (Sol/high)
+identified **feature-C1**: a proposed no-feature recorder no-op would drop rows
+required by ordinary recorder controls. Astra independently identified the same
+violation; the stub is rejected and must be removed with actual ordinary-control
+execution. This finding does not reopen the previous frozen scientific matrix.
+SC-COUPLEDTIME-001 `INV-032/OBL-015` and SC-SNOWENERGY-001 `INV-082/086`
+retain private move-only/non-wire capability, exact custody and consuming-use
+obligations. The frozen full-feature listing has1518 distinct tests, with all14
+promotion selectors present; broken configurations have no baseline runtime
+listing and require source-declared expected membership.
+
+Internal reassessment after the initial three unsuccessful compilation
+corrections: retained compiler JSON still identifies diagnostic availability and
+nested state-DTO trait prerequisites, with no behavioral/scientific failure.
+Continue the authorized repair by closing the complete diagnostic dependency
+chain, preserving test-only trait conditions and production API absence.
+No resource reset or owner handoff is implied. Feature-C1 stub has been removed;
+its ordinary-control execution and final review are still pending.
+
+Ran: standalone frozen default-library baseline **FAIL exit101**,16 compiler
+error records on exact `e93175...` source (`baseline-standalone-default-library`).
+The historical `terminal-v20-default-check` selected both orchestrator and
+`openwepp-persisted-restart-v1`; dependency feature unification means that PASS
+was not a standalone no-feature library claim. Retain that exact historical
+claim and assess the standalone requirement separately. The failed candidate
+library attempt also exposed inadvertently ungated test-only helpers; attribution
+must distinguish those introduced errors from the frozen diagnostic/getter gap.
+Private diagnostic projections preserving exact fields/operands remain in scope;
+adding public production serialization traits or silent recorder stubs does not.
+
+### Stopped disposition — 2026-09-17
+
+**HOLD / INCOMPLETE.** On the next user continuation the actual clock read
+22:49:28Z, beyond the unchanged20:55:48.157Z hard deadline. No explicit time
+extension was supplied. All implementation/validation stopped; only safe source,
+evidence and disposition preservation follows. No pure-wait deduction is claimed
+for the observed timestamp gap. Conservative charging therefore exceeds the
+ceiling; this is an accounting overrun, not permission to continue execution.
+
+Terminal detached source is
+`68600a01f8a90f2ef036fd966cd26dceb26c936a4efad3870dd3aa1096d1e12b`.
+[Stopped audit](artifacts/feature-compatibility-20260917/stopped-source-and-command-audit.json)
+retains all746 entries, seven changed Rust paths, every command identity, and a
+[patch against frozen integrated source](artifacts/feature-compatibility-20260917/stopped-from-frozen-integrated.patch).
+The frozen baseline remains `e93175...`; its exact T-plus-patch recovery and
+14-case evidence remain unchanged. No main-checkout Rust was adopted.
+
+| Requirement | Actual result |
+|---|---|
+| No-default test compilation | FAIL exit101 on terminal source (`feature-no-default-final-attempt`); ordinary recorder diagnostic/getter and nested serialization prerequisites remain unresolved |
+| Evidence-only test compilation | PASS exit0 on intermediate `8c88b0...` (`feature-evidence-only-check-3`); terminal-source rerun NOT RUN |
+| Selected full-feature test build | PASS exit0 on terminal source (`feature-selected-full-no-run`),99.313s; this is build-only, not test execution |
+| Standalone default library | Frozen baseline FAIL exit101/16 error records; candidate earlier cut FAIL; terminal check NOT RUN |
+| Historical paired-package default check | Terminal rerun NOT RUN; prior PASS enabled restart features through dependency unification |
+| Exact new-source test membership / focused behavioral controls | NOT RUN; baseline1518-test listing and all14 selectors preserved, but new-source membership acceptance unmet |
+| Formatting / strict and no-deps lint | Terminal checks NOT RUN; prior strict27-diagnostic FAIL and complementary debt remain FAIL |
+| Independent correctness and QA | Interim findings only, no terminal approval; C1 no-op removed, C2 serialization-name mismatch route reverted, final fix execution unmet |
+
+Root causes and retained corrections are per-test persisted/both-feature
+prerequisites, evidence-only private restart DTO/helper availability, and two
+plain state test-serialization conditions. Failed broader trait experiments
+were reverted. No no-op recorder, trusted-capability trait, solver, guard,
+physical operand, dependency/default-feature graph, or canonical API/wire
+promotion is accepted. The independent raw test oracle remains separate.
+
+Correctness `/root/feature_correctness` and QA `/root/feature_qa` are distinct
+replacement conversations; neither authored source. The
+[correctness interim response](artifacts/feature-compatibility-20260917/feature-correctness-interim.md)
+is retained verbatim. Final independent acceptance is unmet. Scientific evidence
+is reused only on its prior reviewed frozen cut, never relabeled as terminal
+source execution. LP-C2/LP-C4 and WB14-RC1/RQ2 remain local frozen-cut claims;
+RQ1, A-001, E008, original-input correspondence, constitutive/conservation/restart
+qualification and cadence remain HOLD. Acquisition allowances remain1/1 each.
+
+At safe-preservation audit, charged wall time is **113730.438s**
+against **106,868.925s**, with zero balance. Failure floor is **at least268**
+(251 carried, six navigation/parser failures, 11 retained nonzero command outcomes);
+additional unquantified edit/tool failures remain uncertain. Exact final ledger
+will include safe preservation/publication/return. Scoped publication remains
+authorized; remote verification status is recorded separately from local custody.
+
 ## Integrated promotion completion — adopted 2026-09-17
 
 **BOUNDED LOCAL CONTROLS COMPLETE; primary evidence published and byte-verified. A-001 and qualification remain HOLD.** The owner's instruction to execute

@@ -1,0 +1,9 @@
+{
+  "path": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-completion.frozen",
+  "expected_sha256": [
+    "3ee09e2d800d145494dd38280e26a89fb95447284120112041bfef3e00b65169"
+  ],
+  "actual_sha256": "3ee09e2d800d145494dd38280e26a89fb95447284120112041bfef3e00b65169",
+  "bytes": 450785376,
+  "matches": true
+}

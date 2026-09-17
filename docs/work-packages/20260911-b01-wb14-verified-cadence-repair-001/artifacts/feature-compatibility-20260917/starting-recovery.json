@@ -1,0 +1,14 @@
+{
+  "/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917": {
+    "tree_sha256": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+    "entries": 746
+  },
+  "/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917": {
+    "tree_sha256": "d9d4006221cb858d7e4a205f7cd818b834808714d054ecb5c887033a69c8eb01",
+    "entries": 746
+  },
+  "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/terminal-source-reconstruction": {
+    "tree_sha256": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+    "entries": 746
+  }
+}

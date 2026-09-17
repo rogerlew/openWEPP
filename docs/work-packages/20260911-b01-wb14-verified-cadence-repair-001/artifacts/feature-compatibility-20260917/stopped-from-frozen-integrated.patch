@@ -1,0 +1,209 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs
+@@ -1,5 +1,8 @@
+ #[derive(Debug, Clone, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    any(test, feature = "persisted-restart-v1"),
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationFrame {
+     pub runoff_m: f64,
+     pub infiltration_m: f64,
+--- a/crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs
+@@ -597,6 +597,7 @@
+ #[derive(Debug, Clone, Copy, PartialEq)]
+ #[cfg_attr(
+     any(
++        test,
+         feature = "restart-authority-evidence",
+         feature = "persisted-restart-v1"
+     ),
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs
+@@ -232,7 +232,10 @@
+     }
+ }
+ 
+-#[cfg(feature = "persisted-restart-v1")]
++#[cfg(any(
++    feature = "persisted-restart-v1",
++    feature = "restart-authority-evidence"
++))]
+ #[derive(Clone, Deserialize, Serialize)]
+ #[serde(deny_unknown_fields)]
+ struct DirectSnowStage3V11InProgressMetadataWireV2 {
+@@ -258,7 +261,10 @@
+     adaptive_trial_quanta: String,
+ }
+ 
+-#[cfg(feature = "persisted-restart-v1")]
++#[cfg(any(
++    feature = "persisted-restart-v1",
++    feature = "restart-authority-evidence"
++))]
+ #[derive(Clone, Deserialize, Serialize)]
+ #[serde(deny_unknown_fields)]
+ struct Stage3DestinationBoundaryReceiptWireV2 {
+@@ -267,7 +273,10 @@
+     receipt: FinalStage3TileBoundaryReceiptV1,
+ }
+ 
+-#[cfg(feature = "persisted-restart-v1")]
++#[cfg(any(
++    feature = "persisted-restart-v1",
++    feature = "restart-authority-evidence"
++))]
+ #[derive(Clone, Deserialize, Serialize)]
+ #[serde(deny_unknown_fields)]
+ struct Stage3CoupledSubslabReceiptWireV2 {
+@@ -298,7 +307,10 @@
+     receipt_sha256: Digest32,
+ }
+ 
+-#[cfg(feature = "persisted-restart-v1")]
++#[cfg(any(
++    feature = "persisted-restart-v1",
++    feature = "restart-authority-evidence"
++))]
+ impl Stage3CoupledSubslabReceiptWireV2 {
+     fn project(value: &Stage3CoupledSubslabReceiptV1) -> Self {
+         Self {
+@@ -615,7 +627,10 @@
+ }
+ 
+ impl ValidatedPreparedStage3V11DayV1 {
+-    #[cfg(feature = "persisted-restart-v1")]
++    #[cfg(any(
++        feature = "persisted-restart-v1",
++        feature = "restart-authority-evidence"
++    ))]
+     pub fn restart_authority_support_checkpoint_v2(
+         &self,
+         support_index: usize,
+@@ -624,7 +639,10 @@
+         DirectSnowStage3V11PreparedSupportRestartV2::project(self, support_index)
+     }
+ 
+-    #[cfg(feature = "persisted-restart-v1")]
++    #[cfg(any(
++        feature = "persisted-restart-v1",
++        feature = "restart-authority-evidence"
++    ))]
+     pub fn restart_authority_validate_support_checkpoint_v2(
+         &self,
+         checkpoint: &DirectSnowStage3V11PreparedSupportRestartV2,
+@@ -1336,7 +1354,10 @@
+     receipt_chain: &'a [Stage3V11ParentReceiptRestartWireV2],
+ }
+ 
+-#[cfg(feature = "persisted-restart-v1")]
++#[cfg(any(
++    feature = "persisted-restart-v1",
++    feature = "restart-authority-evidence"
++))]
+ #[derive(Clone, Deserialize, Serialize)]
+ #[serde(deny_unknown_fields)]
+ struct Stage3V11ParentReceiptRestartWireV2 {
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+@@ -626,7 +626,11 @@
+ include!("v9_real_consumer_shadow_forcing.rs");
+ include!("v9_real_consumer_shadow/v10_soil_thermal_v2.rs");
+ 
+-#[cfg(feature = "persisted-restart-v1")]
++#[cfg(any(
++    test,
++    feature = "restart-authority-evidence",
++    feature = "persisted-restart-v1"
++))]
+ #[cfg(test)]
+ fn diagnostic_native_field<T: serde::de::DeserializeOwned>(
+     captured: &serde_json::Value,
+@@ -1419,7 +1423,13 @@
+         Ok(restored)
+     }
+ 
+-    #[cfg(all(test, feature = "persisted-restart-v1"))]
++    #[cfg(all(
++        test,
++        any(
++            feature = "restart-authority-evidence",
++            feature = "persisted-restart-v1"
++        )
++    ))]
+     fn diagnostic_validate_surface_configuration_v1(
+         captured: &serde_json::Value,
+         pinned_surface_configuration: &DirectSurfaceLiquidConfiguration,
+@@ -1441,7 +1451,13 @@
+         Ok(())
+     }
+ 
+-    #[cfg(all(test, feature = "persisted-restart-v1"))]
++    #[cfg(all(
++        test,
++        any(
++            feature = "restart-authority-evidence",
++            feature = "persisted-restart-v1"
++        )
++    ))]
+     fn diagnostic_restore_captured_residents_v1(
+         &mut self,
+         captured: &serde_json::Value,
+@@ -1591,7 +1607,13 @@
+         Ok(())
+     }
+ 
+-    #[cfg(test)]
++    #[cfg(all(
++        test,
++        any(
++            feature = "restart-authority-evidence",
++            feature = "persisted-restart-v1"
++        )
++    ))]
+     pub(crate) fn diagnostic_validate_inactive_scheduler_from_frozen_litter_v1(
+         captured: &serde_json::Value,
+         configuration: &DirectSurfaceLiquidConfiguration,
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs
+@@ -3132,6 +3132,7 @@
+ 
+ #[test]
+ #[ignore = "fresh B01 process; typed native constructor and restoration proof fixture"]
++#[cfg(feature = "persisted-restart-v1")]
+ fn native_soil_restart_proof_constructor_and_both_restore_hooks_preserve_exact_custody() {
+     use openwepp_coupled_time::{CoupledClockStateV1, OwnerState, ModelTimeNs, TimeSupport,
+         ParentAuthorityV1, complete_owner_set_digest, digest_bytes};
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs
+@@ -2312,6 +2312,7 @@
+ }
+ 
+ #[test]
++#[cfg(feature = "persisted-restart-v1")]
+ fn native_restart_full_exact_adoption_rejects_resealed_initial_carry() {
+     use openwepp_land_surface_energy::ExactDyadicEnthalpy;
+     use sha2::{Digest as _, Sha256};
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs
+@@ -1357,6 +1357,7 @@
+     }
+ 
+     #[test]
++    #[cfg(feature = "persisted-restart-v1")]
+     fn native_recorder_file_owned_reader_restores_local_fixture() {
+         const CLIMATE: &str = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 2.5 180.0 -15.0\n21 6 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 2.5 180.0 -15.0\n22 6 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 2.5 180.0 -15.0\n23 6 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 2.5 180.0 -15.0\n24 6 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 2.5 180.0 -15.0\n";
+         let root = std::env::temp_dir().join(format!(
+@@ -1697,6 +1698,10 @@
+     }
+ 
+     #[test]
++    #[cfg(all(
++        feature = "persisted-restart-v1",
++        feature = "restart-authority-evidence"
++    ))]
+     fn b01_current_context_importer_restores_fixture_without_physics() {
+         // The capture records native V2 custody.  Build it through the
+         // canonical V2 migration/admission fixture rather than asking the

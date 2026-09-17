@@ -1,0 +1,878 @@
+{
+  "scope": "Top-level evidence only; local binaries/full source trees intentionally not Git artifacts",
+  "entries": [
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/baseline-full-feature-inventory.json",
+      "raw_bytes": 192133,
+      "raw_sha256": "eb3294bcb8a242d43cc611332c64f69e42425486f47efd9d3da5dde63def767d",
+      "published_path": "baseline-full-feature-inventory.json",
+      "published_bytes": 192133,
+      "published_sha256": "eb3294bcb8a242d43cc611332c64f69e42425486f47efd9d3da5dde63def767d",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/baseline-standalone-default-library-incremental-from-T.patch",
+      "raw_bytes": 120371,
+      "raw_sha256": "66806ad7ba7cfd29ef82ebc3d91ff4c707ea70139071d8a4a92194dfd9237614",
+      "published_path": "baseline-standalone-default-library-incremental-from-T.patch",
+      "published_bytes": 120371,
+      "published_sha256": "66806ad7ba7cfd29ef82ebc3d91ff4c707ea70139071d8a4a92194dfd9237614",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/baseline-standalone-default-library-source.json",
+      "raw_bytes": 109306,
+      "raw_sha256": "d33f6c0e6a0fd5cbf2ba56c96b37f1a157af12a4da06740e783b5814df2b0df7",
+      "published_path": "baseline-standalone-default-library-source.json",
+      "published_bytes": 109306,
+      "published_sha256": "d33f6c0e6a0fd5cbf2ba56c96b37f1a157af12a4da06740e783b5814df2b0df7",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/baseline-standalone-default-library.json",
+      "raw_bytes": 2831,
+      "raw_sha256": "50d689de13c82359e1bb3f2ea577d08fc1f998448aa9e9cc9228c9dbca636e1e",
+      "published_path": "baseline-standalone-default-library.json",
+      "published_bytes": 2831,
+      "published_sha256": "50d689de13c82359e1bb3f2ea577d08fc1f998448aa9e9cc9228c9dbca636e1e",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/baseline-standalone-default-library.resources",
+      "raw_bytes": 1074,
+      "raw_sha256": "3674e804ece1da44830e0c41a78483e6050afdbfb88fe255c584db4d7e77b628",
+      "published_path": "baseline-standalone-default-library.resources",
+      "published_bytes": 1074,
+      "published_sha256": "3674e804ece1da44830e0c41a78483e6050afdbfb88fe255c584db4d7e77b628",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/baseline-standalone-default-library.stderr",
+      "raw_bytes": 303,
+      "raw_sha256": "f57678316dcf1b61602f0d4d569d334190a8798694de076f4eae438850cc79a8",
+      "published_path": "baseline-standalone-default-library.stderr",
+      "published_bytes": 303,
+      "published_sha256": "f57678316dcf1b61602f0d4d569d334190a8798694de076f4eae438850cc79a8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/baseline-standalone-default-library.stdout",
+      "raw_bytes": 1173713,
+      "raw_sha256": "f39a839412dfea92b61973b416e763e7a3130a8b94946ad696da657322f4cf58",
+      "published_path": "baseline-standalone-default-library.stdout.gz",
+      "published_bytes": 49735,
+      "published_sha256": "9fa77ac7c04586737706067b27194d4dbaa528275c313ba620fb47dab5cbd931",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/compare_diagnostics.py",
+      "raw_bytes": 2291,
+      "raw_sha256": "fcbf99635d1f28480ef1641164355b0988baf594776bc3f603cbc10b963e0a48",
+      "published_path": "compare_diagnostics.py",
+      "published_bytes": 2291,
+      "published_sha256": "fcbf99635d1f28480ef1641164355b0988baf594776bc3f603cbc10b963e0a48",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/continuation-ledger-start.json",
+      "raw_bytes": 615,
+      "raw_sha256": "8d0ffdb3503acddf9bd37e4caadaf2ee4fea760cc3d9f3cf5e435fb14d3a9f5a",
+      "published_path": "continuation-ledger-start.json",
+      "published_bytes": 615,
+      "published_sha256": "8d0ffdb3503acddf9bd37e4caadaf2ee4fea760cc3d9f3cf5e435fb14d3a9f5a",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-correctness-interim.md",
+      "raw_bytes": 2073,
+      "raw_sha256": "17b05a1f598034ea2c7f3b22d3497f72661c4916234001720bae7f5b2e31913a",
+      "published_path": "feature-correctness-interim.md",
+      "published_bytes": 2073,
+      "published_sha256": "17b05a1f598034ea2c7f3b22d3497f72661c4916234001720bae7f5b2e31913a",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-default-library-check-incremental-from-T.patch",
+      "raw_bytes": 129889,
+      "raw_sha256": "6f76710300932265d607acdb9b94559ce186c97af762441c6078867276217d51",
+      "published_path": "feature-default-library-check-incremental-from-T.patch",
+      "published_bytes": 129889,
+      "published_sha256": "6f76710300932265d607acdb9b94559ce186c97af762441c6078867276217d51",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-default-library-check-source.json",
+      "raw_bytes": 109301,
+      "raw_sha256": "424f8f5ea14ee08b8b5d11a6200b95b48f8defab9daa9cceb30cd50f150b4ee2",
+      "published_path": "feature-default-library-check-source.json",
+      "published_bytes": 109301,
+      "published_sha256": "424f8f5ea14ee08b8b5d11a6200b95b48f8defab9daa9cceb30cd50f150b4ee2",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-default-library-check.json",
+      "raw_bytes": 2840,
+      "raw_sha256": "32862e014508ff3fcc87cf8f3f226bbefc684808058dd9ffddaf2238d0337400",
+      "published_path": "feature-default-library-check.json",
+      "published_bytes": 2840,
+      "published_sha256": "32862e014508ff3fcc87cf8f3f226bbefc684808058dd9ffddaf2238d0337400",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-default-library-check.resources",
+      "raw_bytes": 1095,
+      "raw_sha256": "2d4eaaa3deeee8dcf0e1b81c9431225f101a28c9e83df8b1a422d65e4d53f020",
+      "published_path": "feature-default-library-check.resources",
+      "published_bytes": 1095,
+      "published_sha256": "2d4eaaa3deeee8dcf0e1b81c9431225f101a28c9e83df8b1a422d65e4d53f020",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-default-library-check.stderr",
+      "raw_bytes": 304,
+      "raw_sha256": "bb1bc7af3cb8e0a9e8c305e4f06715947ca41bc0fa1cc66b25260628d120efd2",
+      "published_path": "feature-default-library-check.stderr",
+      "published_bytes": 304,
+      "published_sha256": "bb1bc7af3cb8e0a9e8c305e4f06715947ca41bc0fa1cc66b25260628d120efd2",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-default-library-check.stdout",
+      "raw_bytes": 1228882,
+      "raw_sha256": "52d6b722b696bdb92ce89a8a5340098dc9bd89f6c2c45eb26d141bc87e617ad7",
+      "published_path": "feature-default-library-check.stdout.gz",
+      "published_bytes": 55920,
+      "published_sha256": "1efccc8fd524a1ebc4f59e3c5a4c4d98ad6f1ab7d16564ecc5730cd247d4ff94",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-2-incremental-from-T.patch",
+      "raw_bytes": 128178,
+      "raw_sha256": "44fffd570d91cbfd781a0f90952e343e86bf3413fab64d089975018aecafa6a8",
+      "published_path": "feature-evidence-only-check-2-incremental-from-T.patch",
+      "published_bytes": 128178,
+      "published_sha256": "44fffd570d91cbfd781a0f90952e343e86bf3413fab64d089975018aecafa6a8",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-2-source.json",
+      "raw_bytes": 109301,
+      "raw_sha256": "42de96f879d2d1f0ec3571ed1db1a4cc1a433fed5b20bdc23ef330a69653153a",
+      "published_path": "feature-evidence-only-check-2-source.json",
+      "published_bytes": 109301,
+      "published_sha256": "42de96f879d2d1f0ec3571ed1db1a4cc1a433fed5b20bdc23ef330a69653153a",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-2.json",
+      "raw_bytes": 2975,
+      "raw_sha256": "3f9d03ef93cc9753c62dce25325c537bcf343fe764b137057fd96db2fd0cdfc4",
+      "published_path": "feature-evidence-only-check-2.json",
+      "published_bytes": 2975,
+      "published_sha256": "3f9d03ef93cc9753c62dce25325c537bcf343fe764b137057fd96db2fd0cdfc4",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-2.resources",
+      "raw_bytes": 1139,
+      "raw_sha256": "1efed618824ec8880d63d28d94e8ba9d19d4dc028f339c08bd1132ea408fac68",
+      "published_path": "feature-evidence-only-check-2.resources",
+      "published_bytes": 1139,
+      "published_sha256": "1efed618824ec8880d63d28d94e8ba9d19d4dc028f339c08bd1132ea408fac68",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-2.stderr",
+      "raw_bytes": 327,
+      "raw_sha256": "4263d64b5983ee1341f027b37654202cbd2b0280ba975e7c669edd2890576870",
+      "published_path": "feature-evidence-only-check-2.stderr",
+      "published_bytes": 327,
+      "published_sha256": "4263d64b5983ee1341f027b37654202cbd2b0280ba975e7c669edd2890576870",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-2.stdout",
+      "raw_bytes": 93058,
+      "raw_sha256": "8716d8f22a33b5986c254c982ae5a65330c1f6a38d47f554f8e20a47369390a7",
+      "published_path": "feature-evidence-only-check-2.stdout",
+      "published_bytes": 93058,
+      "published_sha256": "8716d8f22a33b5986c254c982ae5a65330c1f6a38d47f554f8e20a47369390a7",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-3-incremental-from-T.patch",
+      "raw_bytes": 128837,
+      "raw_sha256": "ce111e387803ed5734d69ef9ce1972c0565450c141d071913f9f1ab0b0db1663",
+      "published_path": "feature-evidence-only-check-3-incremental-from-T.patch",
+      "published_bytes": 128837,
+      "published_sha256": "ce111e387803ed5734d69ef9ce1972c0565450c141d071913f9f1ab0b0db1663",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-3-source.json",
+      "raw_bytes": 109301,
+      "raw_sha256": "db5337b4f38ceb90c737526d63cf46f842e9f74fbfbf36220b8cc0595106a820",
+      "published_path": "feature-evidence-only-check-3-source.json",
+      "published_bytes": 109301,
+      "published_sha256": "db5337b4f38ceb90c737526d63cf46f842e9f74fbfbf36220b8cc0595106a820",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-3.json",
+      "raw_bytes": 2973,
+      "raw_sha256": "e0f0b173c9f9414a0f8ea255d2817d14a8adb73c228cad0a9c85777e40d22718",
+      "published_path": "feature-evidence-only-check-3.json",
+      "published_bytes": 2973,
+      "published_sha256": "e0f0b173c9f9414a0f8ea255d2817d14a8adb73c228cad0a9c85777e40d22718",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-3.resources",
+      "raw_bytes": 1097,
+      "raw_sha256": "03216494d7bad03e1483cf2bc85dba7dc7437c499427070651433fbbb91cde33",
+      "published_path": "feature-evidence-only-check-3.resources",
+      "published_bytes": 1097,
+      "published_sha256": "03216494d7bad03e1483cf2bc85dba7dc7437c499427070651433fbbb91cde33",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-3.stderr",
+      "raw_bytes": 286,
+      "raw_sha256": "de0103cb9a6bd69bfbd94211ae440f5fa9066317b3f5db1062803bb564c39ff7",
+      "published_path": "feature-evidence-only-check-3.stderr",
+      "published_bytes": 286,
+      "published_sha256": "de0103cb9a6bd69bfbd94211ae440f5fa9066317b3f5db1062803bb564c39ff7",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-3.stdout",
+      "raw_bytes": 143806,
+      "raw_sha256": "92adff85cc804723f60ef781acf9c68d9a024563957730f5958c7bfdba80a5ce",
+      "published_path": "feature-evidence-only-check-3.stdout",
+      "published_bytes": 143806,
+      "published_sha256": "92adff85cc804723f60ef781acf9c68d9a024563957730f5958c7bfdba80a5ce",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-incremental-from-T.patch",
+      "raw_bytes": 126806,
+      "raw_sha256": "1542f17eb91dbac38947aff8c8be30a6a86404dfbbab9360d5f0a3e31f2ad3c7",
+      "published_path": "feature-evidence-only-check-incremental-from-T.patch",
+      "published_bytes": 126806,
+      "published_sha256": "1542f17eb91dbac38947aff8c8be30a6a86404dfbbab9360d5f0a3e31f2ad3c7",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check-source.json",
+      "raw_bytes": 109299,
+      "raw_sha256": "fdbacdc4a6b384cd57dc968adf24b722e5c84c26b6cd702cad19dc14877d37cb",
+      "published_path": "feature-evidence-only-check-source.json",
+      "published_bytes": 109299,
+      "published_sha256": "fdbacdc4a6b384cd57dc968adf24b722e5c84c26b6cd702cad19dc14877d37cb",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check.json",
+      "raw_bytes": 2969,
+      "raw_sha256": "10f93ff500aad74766cf12267d594121760ecb429d99ee53311cac605b3a08f0",
+      "published_path": "feature-evidence-only-check.json",
+      "published_bytes": 2969,
+      "published_sha256": "10f93ff500aad74766cf12267d594121760ecb429d99ee53311cac605b3a08f0",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check.resources",
+      "raw_bytes": 1137,
+      "raw_sha256": "5f12b9ee1547fb3e9bbc8071ef55ffcb7587a3d9293f09dd03fa9bb31e83c1a3",
+      "published_path": "feature-evidence-only-check.resources",
+      "published_bytes": 1137,
+      "published_sha256": "5f12b9ee1547fb3e9bbc8071ef55ffcb7587a3d9293f09dd03fa9bb31e83c1a3",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check.stderr",
+      "raw_bytes": 327,
+      "raw_sha256": "e2116c083f3a2a1c0f17089f021c5888f2bf77bde31be63eeb5b67691e210d84",
+      "published_path": "feature-evidence-only-check.stderr",
+      "published_bytes": 327,
+      "published_sha256": "e2116c083f3a2a1c0f17089f021c5888f2bf77bde31be63eeb5b67691e210d84",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-evidence-only-check.stdout",
+      "raw_bytes": 72620,
+      "raw_sha256": "d57469d011d502e97805a4f495e1cb3681ae07926b626937adf9a450d49b3fe1",
+      "published_path": "feature-evidence-only-check.stdout",
+      "published_bytes": 72620,
+      "published_sha256": "d57469d011d502e97805a4f495e1cb3681ae07926b626937adf9a450d49b3fe1",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-2-incremental-from-T.patch",
+      "raw_bytes": 126774,
+      "raw_sha256": "72a376b628b621224cc739805be4defae5ae5bf91e1aee999cdcc02ea10a2fe4",
+      "published_path": "feature-no-default-check-2-incremental-from-T.patch",
+      "published_bytes": 126774,
+      "published_sha256": "72a376b628b621224cc739805be4defae5ae5bf91e1aee999cdcc02ea10a2fe4",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-2-source.json",
+      "raw_bytes": 109298,
+      "raw_sha256": "319dbc2203b8a439c1ce69cd11d46797a497b4f1fdcd2691d632205bacd585e0",
+      "published_path": "feature-no-default-check-2-source.json",
+      "published_bytes": 109298,
+      "published_sha256": "319dbc2203b8a439c1ce69cd11d46797a497b4f1fdcd2691d632205bacd585e0",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-2.json",
+      "raw_bytes": 2861,
+      "raw_sha256": "46ff0a440b6fbf8f7d2124babb43739a682bc012627cb2eafeab6cd1f00c4057",
+      "published_path": "feature-no-default-check-2.json",
+      "published_bytes": 2861,
+      "published_sha256": "46ff0a440b6fbf8f7d2124babb43739a682bc012627cb2eafeab6cd1f00c4057",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-2.resources",
+      "raw_bytes": 1101,
+      "raw_sha256": "6d7b5de1552926a52f6bbe4d702f32a2efcb6a846ffa2d5420c62ce770eb904f",
+      "published_path": "feature-no-default-check-2.resources",
+      "published_bytes": 1101,
+      "published_sha256": "6d7b5de1552926a52f6bbe4d702f32a2efcb6a846ffa2d5420c62ce770eb904f",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-2.stderr",
+      "raw_bytes": 329,
+      "raw_sha256": "d231b49a350f998cc88b235b5a7ba9a50fea9512f28b467fe9ddd31aa2c54dd3",
+      "published_path": "feature-no-default-check-2.stderr",
+      "published_bytes": 329,
+      "published_sha256": "d231b49a350f998cc88b235b5a7ba9a50fea9512f28b467fe9ddd31aa2c54dd3",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-2.stdout",
+      "raw_bytes": 2318788,
+      "raw_sha256": "e20df480faf4544562bac4a99ac51c964d839ca191536e04a118389769758cd4",
+      "published_path": "feature-no-default-check-2.stdout.gz",
+      "published_bytes": 98552,
+      "published_sha256": "bc8126ab6c432a801fed897a3b84523489517084961bbd21065529751becb0d7",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-3-incremental-from-T.patch",
+      "raw_bytes": 127832,
+      "raw_sha256": "23a31c62ca8849862a9fd97a07f926303b1cedbdc7850ce4abec335ab71719ac",
+      "published_path": "feature-no-default-check-3-incremental-from-T.patch",
+      "published_bytes": 127832,
+      "published_sha256": "23a31c62ca8849862a9fd97a07f926303b1cedbdc7850ce4abec335ab71719ac",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-3-source.json",
+      "raw_bytes": 109298,
+      "raw_sha256": "5a365cac2b7f00febe499d29e671607fb82d671d706da4614135fbbc693bf337",
+      "published_path": "feature-no-default-check-3-source.json",
+      "published_bytes": 109298,
+      "published_sha256": "5a365cac2b7f00febe499d29e671607fb82d671d706da4614135fbbc693bf337",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-3.json",
+      "raw_bytes": 2862,
+      "raw_sha256": "1a3c38424d261c0aa758ffa1e196a20cadcba0f381270b7edbc40cd36ddc4e18",
+      "published_path": "feature-no-default-check-3.json",
+      "published_bytes": 2862,
+      "published_sha256": "1a3c38424d261c0aa758ffa1e196a20cadcba0f381270b7edbc40cd36ddc4e18",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-3.resources",
+      "raw_bytes": 1101,
+      "raw_sha256": "c7e355ab589f5526e2dd02d3ef02bcd1253cae07292cd4afcebd69fb01c2c6f4",
+      "published_path": "feature-no-default-check-3.resources",
+      "published_bytes": 1101,
+      "published_sha256": "c7e355ab589f5526e2dd02d3ef02bcd1253cae07292cd4afcebd69fb01c2c6f4",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-3.stderr",
+      "raw_bytes": 329,
+      "raw_sha256": "3336875dafce7c06bb7d5faa408af9e26bf80170b0176db8b816d1b53113da9a",
+      "published_path": "feature-no-default-check-3.stderr",
+      "published_bytes": 329,
+      "published_sha256": "3336875dafce7c06bb7d5faa408af9e26bf80170b0176db8b816d1b53113da9a",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-3.stdout",
+      "raw_bytes": 874433,
+      "raw_sha256": "af5ddae1d542e3fc968e67d8dc18713149e63d49e829883e4b3e4a40f904eea8",
+      "published_path": "feature-no-default-check-3.stdout.gz",
+      "published_bytes": 40474,
+      "published_sha256": "303e89335096da1a7d042a73ee5cf78e065b9e59348eec0a68f0fecf727a5cf0",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-4-incremental-from-T.patch",
+      "raw_bytes": 130446,
+      "raw_sha256": "15250f1d3fe4253eda95d4934fd2e05f6d9dbdee9e42754c878fe8f046251ded",
+      "published_path": "feature-no-default-check-4-incremental-from-T.patch",
+      "published_bytes": 130446,
+      "published_sha256": "15250f1d3fe4253eda95d4934fd2e05f6d9dbdee9e42754c878fe8f046251ded",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-4-source.json",
+      "raw_bytes": 109298,
+      "raw_sha256": "accb831bd339408206c09eda53375c7fd5e3a7b0f97480b25f23032f3adf8e27",
+      "published_path": "feature-no-default-check-4-source.json",
+      "published_bytes": 109298,
+      "published_sha256": "accb831bd339408206c09eda53375c7fd5e3a7b0f97480b25f23032f3adf8e27",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-4.json",
+      "raw_bytes": 2862,
+      "raw_sha256": "84d324d51a0e802c023b630894c9302cfb5795c5ec194c0c4833d138ffc268bb",
+      "published_path": "feature-no-default-check-4.json",
+      "published_bytes": 2862,
+      "published_sha256": "84d324d51a0e802c023b630894c9302cfb5795c5ec194c0c4833d138ffc268bb",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-4.resources",
+      "raw_bytes": 1100,
+      "raw_sha256": "fefa1de261b9cfdb70b185c97feec15cb60a41287c1da751a2dbc608e5cbe646",
+      "published_path": "feature-no-default-check-4.resources",
+      "published_bytes": 1100,
+      "published_sha256": "fefa1de261b9cfdb70b185c97feec15cb60a41287c1da751a2dbc608e5cbe646",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-4.stderr",
+      "raw_bytes": 329,
+      "raw_sha256": "e1a129690f86fbbd44c531080f1fa22e31cba5810985d4eec1b16ded67f34452",
+      "published_path": "feature-no-default-check-4.stderr",
+      "published_bytes": 329,
+      "published_sha256": "e1a129690f86fbbd44c531080f1fa22e31cba5810985d4eec1b16ded67f34452",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-4.stdout",
+      "raw_bytes": 582148,
+      "raw_sha256": "60675037fc5e4313d5a1ba9f08d7f202e3b80e9e2dedcdc9ebf4e65d9c653112",
+      "published_path": "feature-no-default-check-4.stdout.gz",
+      "published_bytes": 24358,
+      "published_sha256": "e113b046c7313ddbd735207aa8af7de4684d345322f32721944ba37d7f3cd00c",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-5-incremental-from-T.patch",
+      "raw_bytes": 129602,
+      "raw_sha256": "6e5f77ffd8b47c44a8d65a0d8301da5a71ee106771a3e82557578cc545a61dd6",
+      "published_path": "feature-no-default-check-5-incremental-from-T.patch",
+      "published_bytes": 129602,
+      "published_sha256": "6e5f77ffd8b47c44a8d65a0d8301da5a71ee106771a3e82557578cc545a61dd6",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-5-source.json",
+      "raw_bytes": 109298,
+      "raw_sha256": "76f75f18301b6083f412b3457beac672c2b294f73a31fdb67c00f2ee1cb48746",
+      "published_path": "feature-no-default-check-5-source.json",
+      "published_bytes": 109298,
+      "published_sha256": "76f75f18301b6083f412b3457beac672c2b294f73a31fdb67c00f2ee1cb48746",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-5.json",
+      "raw_bytes": 2862,
+      "raw_sha256": "5cdd7eb9ca6ba8e873e076e924a57e19a7e35c3499ab725916ed04c8694e1269",
+      "published_path": "feature-no-default-check-5.json",
+      "published_bytes": 2862,
+      "published_sha256": "5cdd7eb9ca6ba8e873e076e924a57e19a7e35c3499ab725916ed04c8694e1269",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-5.resources",
+      "raw_bytes": 1100,
+      "raw_sha256": "96a23f13bf1350c9eb60e9dd07fb162feb0f1175ec0223f56ade411547b16f68",
+      "published_path": "feature-no-default-check-5.resources",
+      "published_bytes": 1100,
+      "published_sha256": "96a23f13bf1350c9eb60e9dd07fb162feb0f1175ec0223f56ade411547b16f68",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-5.stderr",
+      "raw_bytes": 329,
+      "raw_sha256": "e1a129690f86fbbd44c531080f1fa22e31cba5810985d4eec1b16ded67f34452",
+      "published_path": "feature-no-default-check-5.stderr",
+      "published_bytes": 329,
+      "published_sha256": "e1a129690f86fbbd44c531080f1fa22e31cba5810985d4eec1b16ded67f34452",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-5.stdout",
+      "raw_bytes": 582204,
+      "raw_sha256": "90a8e13b3945d705bc4692a76a257a74a0771f3259e14dafd450f5b5039d08f3",
+      "published_path": "feature-no-default-check-5.stdout.gz",
+      "published_bytes": 24369,
+      "published_sha256": "243b669b0c488df4b9269afafc4016cf7d7a71ad671286ee0c1fb3ae81d3727e",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-6-incremental-from-T.patch",
+      "raw_bytes": 129545,
+      "raw_sha256": "07dedc6e2b5929c228afac1b8ddbe44c6eebe10067b2082aa49b57a04247926c",
+      "published_path": "feature-no-default-check-6-incremental-from-T.patch",
+      "published_bytes": 129545,
+      "published_sha256": "07dedc6e2b5929c228afac1b8ddbe44c6eebe10067b2082aa49b57a04247926c",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-6-source.json",
+      "raw_bytes": 109298,
+      "raw_sha256": "22840ca29d7317bb8ee86a26f96b0c4755461a73eda2967fcd93c9f97b121962",
+      "published_path": "feature-no-default-check-6-source.json",
+      "published_bytes": 109298,
+      "published_sha256": "22840ca29d7317bb8ee86a26f96b0c4755461a73eda2967fcd93c9f97b121962",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-6.json",
+      "raw_bytes": 2861,
+      "raw_sha256": "f2ec8830ce17317f9ff2dafef79481ba23a001e32b9b4998aea87e82c2eff154",
+      "published_path": "feature-no-default-check-6.json",
+      "published_bytes": 2861,
+      "published_sha256": "f2ec8830ce17317f9ff2dafef79481ba23a001e32b9b4998aea87e82c2eff154",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-6.resources",
+      "raw_bytes": 1100,
+      "raw_sha256": "2422fcb088dfcfd24ab0df6f0e90ef6baf1ca7711ec2dc18275bd02c401257e6",
+      "published_path": "feature-no-default-check-6.resources",
+      "published_bytes": 1100,
+      "published_sha256": "2422fcb088dfcfd24ab0df6f0e90ef6baf1ca7711ec2dc18275bd02c401257e6",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-6.stderr",
+      "raw_bytes": 329,
+      "raw_sha256": "44336457414756727adc54d7b20ce4f999600f26fbebb1be8b1531c4003504bc",
+      "published_path": "feature-no-default-check-6.stderr",
+      "published_bytes": 329,
+      "published_sha256": "44336457414756727adc54d7b20ce4f999600f26fbebb1be8b1531c4003504bc",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-6.stdout",
+      "raw_bytes": 1118681,
+      "raw_sha256": "d72274d28909507ee543acb74a44a9e2428a85a12afe4464a8ca159a144d684c",
+      "published_path": "feature-no-default-check-6.stdout.gz",
+      "published_bytes": 44991,
+      "published_sha256": "e140b7980743154029d95de1b4e416334d1cdc4c7c46cb9f95471192f0e79afb",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-incremental-from-T.patch",
+      "raw_bytes": 124890,
+      "raw_sha256": "97ae8ee3ae09ddf26a572efcd61246713225806c4d62194f2f08328886a3efe6",
+      "published_path": "feature-no-default-check-incremental-from-T.patch",
+      "published_bytes": 124890,
+      "published_sha256": "97ae8ee3ae09ddf26a572efcd61246713225806c4d62194f2f08328886a3efe6",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check-source.json",
+      "raw_bytes": 109296,
+      "raw_sha256": "c9024dc3b37c67cc2e0035acc1b31d15725ebadb8914b6db9979fce67c3280fb",
+      "published_path": "feature-no-default-check-source.json",
+      "published_bytes": 109296,
+      "published_sha256": "c9024dc3b37c67cc2e0035acc1b31d15725ebadb8914b6db9979fce67c3280fb",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check.json",
+      "raw_bytes": 2856,
+      "raw_sha256": "3532f9650689dfafd6d5f7c9ae8424d65698c00bfb36919d0eb3ff2c33dc6603",
+      "published_path": "feature-no-default-check.json",
+      "published_bytes": 2856,
+      "published_sha256": "3532f9650689dfafd6d5f7c9ae8424d65698c00bfb36919d0eb3ff2c33dc6603",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check.resources",
+      "raw_bytes": 1106,
+      "raw_sha256": "25576c515db119b36dc8279e76df202abf13eeaacfeb52af3d19a38ef4815752",
+      "published_path": "feature-no-default-check.resources",
+      "published_bytes": 1106,
+      "published_sha256": "25576c515db119b36dc8279e76df202abf13eeaacfeb52af3d19a38ef4815752",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check.stderr",
+      "raw_bytes": 329,
+      "raw_sha256": "28081ed4f9514c37cb20d428b26474cc7a66c261b3dc1e1ab78b6230278a5715",
+      "published_path": "feature-no-default-check.stderr",
+      "published_bytes": 329,
+      "published_sha256": "28081ed4f9514c37cb20d428b26474cc7a66c261b3dc1e1ab78b6230278a5715",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-check.stdout",
+      "raw_bytes": 2336556,
+      "raw_sha256": "2f5001993a2bb6e494fddb819dd682a3236d64da8bc35eefb8d5e87b10702f02",
+      "published_path": "feature-no-default-check.stdout.gz",
+      "published_bytes": 99578,
+      "published_sha256": "f0496bd05af72fdd7701508046af0c94479f633c253bf9eca7530d761b075bd9",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-final-attempt-incremental-from-T.patch",
+      "raw_bytes": 127581,
+      "raw_sha256": "1ad17e5adaa9d1fac0d190b5bb85966b6fa965a89393928d83befc1bb78455ab",
+      "published_path": "feature-no-default-final-attempt-incremental-from-T.patch",
+      "published_bytes": 127581,
+      "published_sha256": "1ad17e5adaa9d1fac0d190b5bb85966b6fa965a89393928d83befc1bb78455ab",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-final-attempt-source.json",
+      "raw_bytes": 109304,
+      "raw_sha256": "86ff8fe06a6004270b5dbbf4e376a3fa14caacc409dd58b14cb04a5260b84c98",
+      "published_path": "feature-no-default-final-attempt-source.json",
+      "published_bytes": 109304,
+      "published_sha256": "86ff8fe06a6004270b5dbbf4e376a3fa14caacc409dd58b14cb04a5260b84c98",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-final-attempt.json",
+      "raw_bytes": 2880,
+      "raw_sha256": "115e45eefce9661c452a37a501af00d2bb8651e0a21b18a5a017d77ff1acb604",
+      "published_path": "feature-no-default-final-attempt.json",
+      "published_bytes": 2880,
+      "published_sha256": "115e45eefce9661c452a37a501af00d2bb8651e0a21b18a5a017d77ff1acb604",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-final-attempt.resources",
+      "raw_bytes": 1103,
+      "raw_sha256": "6363e809956f4d262a922ef6f5459c69d12b65dfbf9eee6d566e0bc5c353e9e3",
+      "published_path": "feature-no-default-final-attempt.resources",
+      "published_bytes": 1103,
+      "published_sha256": "6363e809956f4d262a922ef6f5459c69d12b65dfbf9eee6d566e0bc5c353e9e3",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-final-attempt.stderr",
+      "raw_bytes": 329,
+      "raw_sha256": "83e3d2150f2edfffe6db4b195bf83208314a6d3d2ea7be07f9afcfffed47e046",
+      "published_path": "feature-no-default-final-attempt.stderr",
+      "published_bytes": 329,
+      "published_sha256": "83e3d2150f2edfffe6db4b195bf83208314a6d3d2ea7be07f9afcfffed47e046",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-no-default-final-attempt.stdout",
+      "raw_bytes": 1930766,
+      "raw_sha256": "884e51b99b59895329cbf2fd37a7c42e07a725d51ad48c253c6a9b97b00588b3",
+      "published_path": "feature-no-default-final-attempt.stdout.gz",
+      "published_bytes": 81006,
+      "published_sha256": "906c9cd069f76f5ac0d85da90ab346a89ba9870fd5fd64258ee64265c0a52a3e",
+      "gzip": true
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-check-incremental-from-T.patch",
+      "raw_bytes": 128837,
+      "raw_sha256": "ce111e387803ed5734d69ef9ce1972c0565450c141d071913f9f1ab0b0db1663",
+      "published_path": "feature-selected-full-check-incremental-from-T.patch",
+      "published_bytes": 128837,
+      "published_sha256": "ce111e387803ed5734d69ef9ce1972c0565450c141d071913f9f1ab0b0db1663",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-check-source.json",
+      "raw_bytes": 109299,
+      "raw_sha256": "9dd8ba6ca1714bfd6a9a9991eec079e52ea1d4b1712a207238aab31351865806",
+      "published_path": "feature-selected-full-check-source.json",
+      "published_bytes": 109299,
+      "published_sha256": "9dd8ba6ca1714bfd6a9a9991eec079e52ea1d4b1712a207238aab31351865806",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-check.json",
+      "raw_bytes": 3008,
+      "raw_sha256": "ef87cbcc6a2c357c4a4f4a58c73a6093792029b61a2e18e095b3cc40f2f07484",
+      "published_path": "feature-selected-full-check.json",
+      "published_bytes": 3008,
+      "published_sha256": "ef87cbcc6a2c357c4a4f4a58c73a6093792029b61a2e18e095b3cc40f2f07484",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-check.resources",
+      "raw_bytes": 1116,
+      "raw_sha256": "2ad0ea1a5f5efb9e4d67a2be73daded896781025ded3b18236156d69131f860e",
+      "published_path": "feature-selected-full-check.resources",
+      "published_bytes": 1116,
+      "published_sha256": "2ad0ea1a5f5efb9e4d67a2be73daded896781025ded3b18236156d69131f860e",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-check.stderr",
+      "raw_bytes": 286,
+      "raw_sha256": "281f368f5f95e97fcac43e1695353b31dedc0bfbebb2c946b8f3f1b49d44a72c",
+      "published_path": "feature-selected-full-check.stderr",
+      "published_bytes": 286,
+      "published_sha256": "281f368f5f95e97fcac43e1695353b31dedc0bfbebb2c946b8f3f1b49d44a72c",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-check.stdout",
+      "raw_bytes": 68610,
+      "raw_sha256": "a6d5dd93aa41e801ba60a8fc6d4afb714b163f26af0f23d089db73e9f33a3a86",
+      "published_path": "feature-selected-full-check.stdout",
+      "published_bytes": 68610,
+      "published_sha256": "a6d5dd93aa41e801ba60a8fc6d4afb714b163f26af0f23d089db73e9f33a3a86",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-no-run-incremental-from-T.patch",
+      "raw_bytes": 127581,
+      "raw_sha256": "1ad17e5adaa9d1fac0d190b5bb85966b6fa965a89393928d83befc1bb78455ab",
+      "published_path": "feature-selected-full-no-run-incremental-from-T.patch",
+      "published_bytes": 127581,
+      "published_sha256": "1ad17e5adaa9d1fac0d190b5bb85966b6fa965a89393928d83befc1bb78455ab",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-no-run-source.json",
+      "raw_bytes": 109300,
+      "raw_sha256": "9531fbcd1bdf8a4f6532603271a396d7e4aee35b33c07caefa901a540280bf6d",
+      "published_path": "feature-selected-full-no-run-source.json",
+      "published_bytes": 109300,
+      "published_sha256": "9531fbcd1bdf8a4f6532603271a396d7e4aee35b33c07caefa901a540280bf6d",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-no-run.json",
+      "raw_bytes": 2953,
+      "raw_sha256": "5e3abfac5fed9daa9476d9ef2613c3013bc960ed5a4dea96aa32ab1b27cf7fd7",
+      "published_path": "feature-selected-full-no-run.json",
+      "published_bytes": 2953,
+      "published_sha256": "5e3abfac5fed9daa9476d9ef2613c3013bc960ed5a4dea96aa32ab1b27cf7fd7",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-no-run.resources",
+      "raw_bytes": 1107,
+      "raw_sha256": "5f435c40cfa48baacdbc630be6ff6bbb682a589bc5bd783f7102e405adf8a5d7",
+      "published_path": "feature-selected-full-no-run.resources",
+      "published_bytes": 1107,
+      "published_sha256": "5f435c40cfa48baacdbc630be6ff6bbb682a589bc5bd783f7102e405adf8a5d7",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-no-run.stderr",
+      "raw_bytes": 8481,
+      "raw_sha256": "c085a30c39610c57e3ecee6e6dd26638566c6cbe756b4e872046f186cb8b5a69",
+      "published_path": "feature-selected-full-no-run.stderr",
+      "published_bytes": 8481,
+      "published_sha256": "c085a30c39610c57e3ecee6e6dd26638566c6cbe756b4e872046f186cb8b5a69",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/feature-selected-full-no-run.stdout",
+      "raw_bytes": 236,
+      "raw_sha256": "d401b20eddf311f126a937a0e5c74aeacfec400086cc59c139b1201dc9c5cea9",
+      "published_path": "feature-selected-full-no-run.stdout",
+      "published_bytes": 236,
+      "published_sha256": "d401b20eddf311f126a937a0e5c74aeacfec400086cc59c139b1201dc9c5cea9",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/frozen-binary-continuity.json",
+      "raw_bytes": 351,
+      "raw_sha256": "947e89af8e71ec6d7782d9f4b14faf7c495ffd339471f9ea88812e4a45e5fbfd",
+      "published_path": "frozen-binary-continuity.json",
+      "published_bytes": 351,
+      "published_sha256": "947e89af8e71ec6d7782d9f4b14faf7c495ffd339471f9ea88812e4a45e5fbfd",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/owner-authorization.md",
+      "raw_bytes": 13519,
+      "raw_sha256": "8f66fbc4efed1accc03636c5db5475dd162ef02c4dd26c8018aeb48907db9051",
+      "published_path": "owner-authorization.md",
+      "published_bytes": 13519,
+      "published_sha256": "8f66fbc4efed1accc03636c5db5475dd162ef02c4dd26c8018aeb48907db9051",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/publish_evidence.py",
+      "raw_bytes": 1716,
+      "raw_sha256": "ae5eaa2dc036ec37ee4ef107d86784dc80c3db22b99297845ba0d139804d69a7",
+      "published_path": "publish_evidence.py",
+      "published_bytes": 1716,
+      "published_sha256": "ae5eaa2dc036ec37ee4ef107d86784dc80c3db22b99297845ba0d139804d69a7",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/run_frozen_baseline.py",
+      "raw_bytes": 6126,
+      "raw_sha256": "e5b00d9168384742a65bf271bff28845d3dab4d14cfed2d9c1cd798c7abbba86",
+      "published_path": "run_frozen_baseline.py",
+      "published_bytes": 6126,
+      "published_sha256": "e5b00d9168384742a65bf271bff28845d3dab4d14cfed2d9c1cd798c7abbba86",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/run_recorded.py",
+      "raw_bytes": 6127,
+      "raw_sha256": "51d1059ad0b321d78a4177d0f05fcabc0abbf0725a0d0155b597dae842cf7b67",
+      "published_path": "run_recorded.py",
+      "published_bytes": 6127,
+      "published_sha256": "51d1059ad0b321d78a4177d0f05fcabc0abbf0725a0d0155b597dae842cf7b67",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/starting-recovery.json",
+      "raw_bytes": 620,
+      "raw_sha256": "ddf9000f874285bfa1ff3a849de10fdb8134ea7d5db27cec96e5c108d93c52f1",
+      "published_path": "starting-recovery.json",
+      "published_bytes": 620,
+      "published_sha256": "ddf9000f874285bfa1ff3a849de10fdb8134ea7d5db27cec96e5c108d93c52f1",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/stopped-from-frozen-integrated.patch",
+      "raw_bytes": 7780,
+      "raw_sha256": "48a54e35dd7ddb4c77fa93d64e4e7c442bb2c07716bcc26b106a416bdb2b1abd",
+      "published_path": "stopped-from-frozen-integrated.patch",
+      "published_bytes": 7780,
+      "published_sha256": "48a54e35dd7ddb4c77fa93d64e4e7c442bb2c07716bcc26b106a416bdb2b1abd",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/stopped-source-and-command-audit.json",
+      "raw_bytes": 115566,
+      "raw_sha256": "c43c77ed5314cf40cf8b2261d7cc12bd7448478ac2db375ccb1a0471316d4dd1",
+      "published_path": "stopped-source-and-command-audit.json",
+      "published_bytes": 115566,
+      "published_sha256": "c43c77ed5314cf40cf8b2261d7cc12bd7448478ac2db375ccb1a0471316d4dd1",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/verify_remote_evidence.py",
+      "raw_bytes": 1685,
+      "raw_sha256": "81544bedace25a9142a3754fe0fba390d028eedfacb7b555e05add5a9328481c",
+      "published_path": "verify_remote_evidence.py",
+      "published_bytes": 1685,
+      "published_sha256": "81544bedace25a9142a3754fe0fba390d028eedfacb7b555e05add5a9328481c",
+      "gzip": false
+    }
+  ]
+}

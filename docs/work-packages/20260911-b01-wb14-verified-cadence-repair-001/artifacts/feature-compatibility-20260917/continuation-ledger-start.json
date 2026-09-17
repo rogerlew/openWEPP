@@ -1,0 +1,13 @@
+{
+  "anchor_utc": "2026-09-17T20:01:00+00:00",
+  "prior_charged_active_seconds": 103580.768,
+  "cumulative_ceiling_seconds": 106868.925,
+  "remaining_seconds": 3288.157,
+  "hard_stop_utc": "2026-09-17T20:55:48.157+00:00",
+  "failure_floor": 256,
+  "new_confirmed_failures": {
+    "root_navigation": 5
+  },
+  "accounting": "Concurrent wall time once; all reading, implementation, commands, review, preservation, publication and return; no waits excluded; prior reserves never reclaimed",
+  "prior_precision_policy": "Read prior final ledger once: 103580.767873; adopted rounded 103580.768 retained conservatively"
+}
