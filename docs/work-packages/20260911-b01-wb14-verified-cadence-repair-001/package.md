@@ -11,14 +11,170 @@ permitted the bounded private prototype. The original v15 six-owner failure is n
 attributed to a missing private runtime-mode restoration step. The existing guarded
 clock-mode installer yields complete six-owner byte parity. Terminal v20 passes the
 fresh complete composition and all six reachable late rollback/precedence controls.
-Required independent acceptance remains unavailable. Production, scientific qualification,
-restart, conservation and cadence remain HOLD.
+Distinct independent correctness and QA reviews now support the bounded frozen
+diagnostic claim. Required checkpoint acceptance remains incomplete: production,
+scientific qualification, restart, conservation and cadence remain HOLD.
 
 Authentic capture, witness and corrected-recorder acquisition allowances remain
 exhausted (1/1 each). Bounded native diagnostics have executed under the adopted
 amendment below; they do not release a physical successor.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Independent restoration review pickup — adopted 2026-09-17
+
+**Static / inspected execution evidence / read-only checks: bounded review COMPLETE; checkpoint INCOMPLETE / HOLD.**
+The owner adopted the [review completion authorization](artifacts/six-owner-restoration-20260917/review-completion-authorization.md)
+(`/tmp/openwepp_b01_wb14_restoration_review_completion_authorization.md`)
+at evidence commit `d96d72b305643fbc0db4f1379c89d2efa9fa7a2b` for the same
+**B01-WB14-CURRENT-CONTEXT-CAPTURE / A-001** checkpoint. Intent before edits:
+obtain distinct correctness/authority and QA/evidence reviews of frozen T/v20,
+verify primary source and retained operands, resolve demonstrated in-scope findings,
+and record the bounded diagnostic disposition separately from qualification.
+Only this record and necessary review evidence were initially writable; neither
+review found a defect requiring a source correction or fresh diagnostic. Frozen T, S/R/Q, failed
+v15/v16, inputs and all existing acceptance obligations remain preserved.
+
+Assigned read-only independent scopes: `/root/correctness_review` through the
+`rust_code_reviewer` role (configured Sol/high), and `/root/qa_review` through
+`rust_qa_reviewer` (configured Terra/medium). Roles are tool-configured routes;
+spawn acceptance alone is not a delivered review. Reviewers return findings for
+serialized incorporation here, without source edits or nested agents. Selected
+checks are actual-source inspection, byte/hash/decompression verification,
+receipt/raw-output reconciliation, evidence-reuse and quality-baseline assessment,
+and final documentation/diff checks. No new physical run, authority change,
+production adoption, campaign or default diagnostic rerun is released.
+
+The prior final ledger was read once: carried charge **85,620.532444s**, fixed
+ceiling **92,530.26s**, remaining **6,909.727556s**, failure floor **at least 149**.
+A conservative continuation anchor **2026-09-17 03:13:00 UTC** precedes the first
+recorded command timestamp (03:14:12 UTC), charging initial reading and dispatch.
+The resulting hard deadline is **2026-09-17 05:08:09.727556 UTC**. All work,
+concurrent review, waits, publication and return are charged as wall time once;
+no previous reservation is reclaimed. Stops remain the owner stop, hard ceiling,
+uncontained integrity failure, indispensable unavailable input after bounded
+recovery, completed bounded disposition, or exhausted useful in-scope work.
+Current-branch scoped commit/push and remote verification remain authorized.
+
+### Bounded disposition and finding reconciliation
+
+Both distinct tool-configured reviewers delivered reviews after confirming actual
+local access. They are independent of the previous author/adviser and each other;
+parent coordination is not counted as either review. The original returned final
+correctness record and final QA addendum are incorporated below (Markdown
+line-break whitespace normalized). Relative Rust
+locations in the correctness record refer to the detached T tree identified above,
+not repository HEAD. No review-scope input was reported inaccessible, except that
+the complete accepted physical candidate is absent from the retained input set.
+
+| Outcome | Disposition |
+| --- | --- |
+| Six-owner parity and subsequent joins | **PASS, bounded diagnostic**; frozen v20 composition 1/1, original expected bytes retained, exact LSE/full owner/frame/cursor joins independently inspected. |
+| Ordinary/capability/reachable controls | **PASS, bounded diagnostic**; ordinary 1/1, traits 1/1, owner reports 3/3, six precedence/late cases within one v20 test; v19 early lifecycle and v17 transport remain explicit source-bound reuse. |
+| Independent correctness and QA | **COMPLETE; favorable only for the bounded frozen diagnostic**, with the acceptance gaps below retained. |
+| Actual physical promotion-precondition matrix | **BLOCKED**; the complete-candidate factory needs excluded physical work. No fabricated candidate or substitute matrix. |
+| Quality/compatibility/Critical campaign | **FAIL / NOT MET**; strict Clippy 27, no-default/evidence-only compilation 61/33; default library checking does not establish test execution; no warnings-denied waiver or campaign acceptance. |
+| Canonical promotion/original regression/E008/restart/conservation/production/cadence | Draft **UNPROMOTED**; original regression/E008 **FAIL**; remaining qualification and cadence **HOLD**. |
+
+Stable finding mapping: correctness HIGH is **WB14-RC1** (physical promotion matrix,
+OPEN for acceptance; corroborates QA **WB14-RQ2**); correctness MEDIUM is
+**WB14-RC2** (mirrored restoration, nonblocking for this bounded diagnostic).
+QA **WB14-RQ1** (quality/compatibility) remains OPEN for acceptance. Retain A-001,
+DC-C1/C2/C3/C4 and DC-Q1/Q2/Q3 and all prior prototype finding histories; this pickup
+does not retrospectively rewrite their original verdicts. The reachable integrated
+receipt precedence and three late restoration boundaries now have reviewed evidence;
+the actual promotion obligation remains open.
+
+WB14-RC2 retention rationale: the private diagnostic independently reconstructs
+native state while using the same existing guarded runtime-mode installer as the
+persisted reader, then requires full LSE bytes and the unchanged original six-owner
+oracle. This avoids new restoration semantics within the authorized diagnostic.
+The demonstrated drift risk remains explicit; the owner of any subsequently
+adopted production scope must reassess sharing this sequence before adoption.
+The same correctness reviewer inspected this rationale and attribution and
+confirmed: “WB14-RC2 is addressed for the bounded frozen diagnostic”; production
+reassessment and WB14-RC1 remain blocked. No source change is needed for the
+present bounded claim, so source-fix verification is not applicable. Existing long private helpers remain recorded debt. No unrelated
+refactor or tooling enhancement is included in this pickup.
+
+Evidence reuse is bounded by unchanged T/binary/operands and inspected dependency
+exclusion, not by favorable review alone. QA recomputed T/S/reconstruction and
+selected primary input hashes; the full 49-member and 7,980-supplementary checks
+remain inspected historical evidence, not a fresh corpus sweep. Exact build
+features and pinned Nix/lock/source identities are retained; no exact compiler
+semantic-version claim is added. No Rust build, test workflow, model, physical
+run or original-input collector was run in this continuation. Earlier terminal
+JSON review-unavailable fields describe their historical stop and remain unchanged.
+
+The owner decision is disposition of this independently reviewed diagnostic and
+adoption, if desired, of a specifically bounded next qualification scope. No
+physical run, promotion or cadence resumption follows automatically. The final
+diff is only this maintained record plus the verbatim adopted authorization;
+production Rust, detached source, authority, fixtures and required-case bindings
+are unchanged. Selected validation is affected local-reference checking and
+`git diff --check`, plus the reviewers' read-only source/evidence checks.
+
+### Independent correctness — original returned record
+
+**Static; inspected execution evidence; Ran read-only byte and hash checks.** Independent reviewer: `/root/correctness_review`. I inspected the seven-file frozen S-to-T diff, detached T source, relevant restart and contract code, original owner rows, and retained receipts. I ran no Rust tests or model executions and edited nothing.
+
+- **HIGH — A-001 acceptance remains blocked by the unexecuted physical promotion-precondition matrix.** The real entry at `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs:1577` requires a complete `AcceptedFrozenLitterV4RuntimeCandidate`. The retained input supplies a deferred soil trial and continuation, while the available complete-candidate factory at `land_surface_energy_shadow/v3_execution.rs:977` performs excluded physical work. The six diagnostic controls do not exercise this entry. Do not approve checkpoint acceptance or canonical promotion on their basis.
+
+- **MEDIUM — mirrored clock-mode restoration needs an explicit retention rationale.** The private sequence at `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1007` mirrors the persisted reader at `crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs:949`; v16’s omitted mode installation demonstrates the drift risk. Retaining this separate **test-only** path is defensible for the bounded diagnostic because it calls the same guarded installer and requires complete LSE byte equality, followed by original six-owner equality. Reassess centralization before production adoption.
+
+The original `rows/123091.7.json` has six consumer owners; `rows/123091.6.json` has seven clock owners. Their LSE bytes match and specify `V11SnowCovered`; three other shared owner bytes differ, so the maps cannot be equated wholesale. Read-only checks confirmed both row hashes, all six original owner lengths and hashes against the v20 report, and that saved v16 actual LSE differs from the original expected LSE only at `/runtime_authority` (`V10NonpositiveAssimilation`). T selects the unique authenticated clock LSE owner, installs its mode through the existing guarded method, and checks complete LSE bytes; it does not copy the expected owner or weaken the comparison.
+
+The frozen v20 receipts and stdout show composed parity **1/1** and six actual-entry controls within one test. Source and output distinguish three early receipt/source refusals from faults reached after full proof, private construction, and complete LSE projection. Each attempt consumes its capability; retry is refused. The retained operand snapshots remain equal. Subsequent dynamic-frame and provider-cursor comparisons are present at `snow_stage3_v11_member_restoration.rs:1143–1167`; current seven-owner clock and deferred non-owner custody checks remain separate at `:1853` and `:2214`. Ordinary resident-only refusal also passed. These are inspected prior executions, not tests I reran.
+
+**Residual risk:** strict Clippy and feature-mode test compilation still fail; original regression/E008, physical promotion, conservation, restart, production, and cadence qualification remain unmet. The complete accepted physical candidate is absent from retained inputs; no assigned source or original owner-row bytes were inaccessible. I find no further blocker to the **bounded private diagnostic claim**, but A-001 and promotion remain **HOLD**.
+
+### Independent QA addendum — `rust_qa_reviewer`
+
+**Static:** actual local T/S/reconstruction, receipts, raw diagnostics, and source receipts inspected.
+
+**Inspected execution evidence:** terminal v20 plus explicitly source-bound v17/v19 receipts.
+
+**Actually Ran:** no Rust/model/physical execution; read-only hash, source-map, and patch checks only.
+
+- **WB14-RQ1 — BLOCKING qualification:** `artifacts/six-owner-restoration-20260917/terminal-v20-strict-clippy.json` records warnings-denied Clippy exit 101; `terminal-v20-no-default-tests.json` and `terminal-v20-evidence-only-tests.json` record exits 101. I inspected the raw streams and `terminal-quality-disposition.json` groups: diagnostics retain code, message, and span/location identity, not just counts. `terminal-versus-S-strict.json` reports no introduced/changed identities; this is inspected execution evidence, not fresh validation. Quality/compatibility remains HOLD.
+
+- **WB14-RQ2 — BLOCKING qualification:** `artifacts/six-owner-restoration-20260917/promotion-precondition-scope.json` still identifies the real complete-candidate factory as excluded physical work. The late-control diagnostic does not cover it. Preserve the historical blocked promotion, original-regression/E008, restart, conservation, production, and cadence dispositions.
+
+- **T/binary/source recovery:** I recomputed T’s 746-entry source map at `/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917` as `d9d400…c8eb01`; preserved S has 743 entries and hash `ab221b…265d`; `/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/terminal-reconstruction-v20` independently maps to T’s same hash. `artifacts/six-owner-restoration-20260917/terminal-incremental-from-S.patch` hashes `06fdf4…7874` and applies cleanly to S with `git apply --check`. Frozen `/home/roger/openwepp-experiments/b01-wb14-six-owner-restoration-20260917/terminal-v20.frozen` hashes `512f71…e3cd`.
+
+- **Features/toolchain:** `terminal-v20-build.json` binds the build to `cargo test -p openwepp-hillslope-orchestrator --features persisted-restart-v1,restart-authority-evidence --locked --lib --no-run`, run through `nix develop /workdir/openWEPP`; source receipt pins `flake.nix` `702c8…`, `flake.lock` `35e40…`, `Cargo.lock` `5787d…`, and `rust-toolchain.toml` `3e18e…`. The latter specifies `stable` with `rustfmt` and `clippy`; no exact `rustc --version` is retained, so no exact compiler semantic-version claim is made. Terminal binary executions are bound by the frozen binary SHA and this retained build receipt.
+
+- **Primary-input scope:** I directly rehashed the receipt’s nine pinned files plus `.6` and `.7`; all matched. In particular `rows/123091.6.json` is `de5ba0…e6a6` and `rows/123091.7.json` is `fb40ea…a3df`. I did **not** rehash all 49 payloads or all 7,980 supplementary files in this review. `artifacts/six-owner-restoration-20260917/terminal-supplementary-custody.json` is inspected historical execution evidence that 7,980 entries matched and that all 49 export members were checked before/after every recorded command against `artifacts/native-context-restoration-20260916/input-custody-before.json`; it must not be relabeled as a new QA hash sweep.
+
+- **Counters:** Raw v20 composition stdout records **9 frame constructions / 0 GSI prepare / 9 GSI validator** advances; raw v20 late-controls stdout records **37 / 0 / 17**. Both report zero direct compute, mutation, commits, publication, and native physical-path counters. These are nonzero diagnostic computations, not physical qualification.
+
+- **Reuse:** `terminal-evidence-reuse.json` is supported by actual source-receipt maps. v17’s 14 `crates/openwepp-coupled-time/` entries exactly equal terminal T’s 14 entries. v19-to-T changes only `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs`; the terminal source has the documented same-value `clone_from` at lines 974–991, after the from-proof entry. The reused early lifecycle refuses before that path; terminal v20 reran the positive composition and late paths. Neither v17 nor v19 is a v20 execution.
+
+**QA verdict:** No new QA defect blocks the bounded frozen six-owner diagnostic. It is **PASS only for its stated diagnostic evidence; checkpoint/package acceptance remains INCOMPLETE / HOLD** under WB14-RQ1 and WB14-RQ2.
+
+### Validation, accounting and publication
+
+Ran in this pickup: affected artifact references and verbatim authorization-byte
+checks PASS. The initial `git diff --check` detected two Markdown hard-break
+trailing spaces in the incorporated QA text; those were normalized and the check
+was rerun before commit. One read-only filename search also returned no match.
+The conservative failure floor is now **at least 151**, including these two
+nonzero pickup commands; this is not a new failure-count limit or exact global count.
+No source/test correction cycle occurred.
+
+Prepublication accounting at **2026-09-17T03:22:21.557833+00:00**: **86182.090277s**
+cumulative charged, **6348.169723s** remaining before publication and
+return. This is an intermediate measurement, not the final balance. Final charged
+accounting, current-branch commit/push outcome and remote verification are retained
+at `/workdir/openwepp-experiments/b01-wb14-cadence/logs/restoration-review-completion-final-20260917.json`;
+exact-commit remote verification is retained at
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/restoration-review-completion-remote-20260917.json`.
+All subsequent wall time and a return reserve remain charged under the original
+ceiling. The three preexisting untracked capped-Clippy stdout files remain untouched.
+Only the package record and copied adopted authorization are in the scoped commit;
+existing detached source/binaries/corpus remain locally preserved, not newly
+published as a full remote experiment copy. Stop basis: completed bounded review
+disposition, with required qualification still HOLD and no automatic successor.
 
 ## Six-owner restoration continuation — adopted 2026-09-17
 
