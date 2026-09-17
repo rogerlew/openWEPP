@@ -1,0 +1,11 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "tools/check_sc_binding_exposure.py",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-09-16T20:35:58.101589+00:00",
+  "exit_code": 1,
+  "diff_sha256": "0745d758d07992eeacf8d0b2ec9a3b93d69de6d28fe7f5496820db685f9e947c"
+}

@@ -1,0 +1,57 @@
+{
+  "label": "provider-prefix-authentication",
+  "argv": [
+    "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/provider-prefix-v1.frozen",
+    "--exact",
+    "gsi_forcing::b01_native_provider_prefix_authentication_tests::b01_pinned_bootstrap_provider_prefix_retains_receipts_and_keeps_day4_prepared",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/provider-prefix-authentication.resources",
+    "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/provider-prefix-v1.frozen",
+    "--exact",
+    "gsi_forcing::b01_native_provider_prefix_authentication_tests::b01_pinned_bootstrap_provider_prefix_retains_receipts_and_keeps_day4_prepared",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916",
+  "start_utc": "2026-09-16T20:47:06.906507+00:00",
+  "source_tree_sha256": "f50146f293fb95975723ba15c9eac3eaa38ff770f329267fe2b9f1ee1d87b99e",
+  "patch_sha256": "7960e59efba8df145078dec59a04240fc1f5a6064718d9d817f3088fb06b1648",
+  "source_receipt": "provider-prefix-authentication-source.json",
+  "input_manifest": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/input-custody-before.json",
+  "input_manifest_sha256": "b78f2956b99079d6447aacb51c95e087093b858d90b47f65f601e0b3d53748b3",
+  "environment": {
+    "RUST_MIN_STACK": "67108864",
+    "OPENWEPP_B01_PINNED_SEED": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1/snow_accuracy_continuous_1789528435904586137/case.run.snow_stage3_v11_owner_seed.json",
+    "OPENWEPP_B01_ORIGINAL_CLIMATE": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1/snow_accuracy_continuous_1789528435904586137/p102.cli",
+    "OPENWEPP_B01_GSI_AUTH_EXPECTED_JSON": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/position-gsi-operands.json"
+  },
+  "pinned_files": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/run_recorded.py": "5e762d9f11230e05cb1d2c7ab6e80cf2660970077910c4a5cd828ec1d3f3aa04",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1/snow_accuracy_continuous_1789528435904586137/case.run.snow_stage3_v11_owner_seed.json": "d1c467265dc5c718cc6d1a18fd1fbf71289e3ad5760967f9556f33109283f515",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-fixture-20260916-1/snow_accuracy_continuous_1789528435904586137/p102.cli": "5af208853205300ab2cc606070407fccccba3b4c8d770f5e242613033fa2508a",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/authority-domain-attribution-20260916/position-gsi-operands.json": "e0c1ab912aa2e30ca85769a7df2e3aeaaed9be07878d26e9597c49b126e310fd"
+  },
+  "timeout_seconds": 300,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/provider-prefix-v1.frozen",
+  "binary_sha256": "709a2a828d361986ce578af749fc923a9b43ec1d83ee7e81f9b1d4218ae81cfa",
+  "process_group": 2132760,
+  "exit_code": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.31757179414853454,
+  "end_utc": "2026-09-16T20:47:07.417864+00:00",
+  "source_unchanged": true,
+  "binary_unchanged": true,
+  "pinned_files_unchanged": true,
+  "inputs_unchanged": true
+}

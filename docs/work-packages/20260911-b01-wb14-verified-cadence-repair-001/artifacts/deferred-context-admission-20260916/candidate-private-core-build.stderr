@@ -1,0 +1,42 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0277]: the trait bound `!: serde::de::DeserializeOwned` is not satisfied
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:638:13
+    |
+638 |             diagnostic_native_field(captured, "vegetation_configuration")?;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `for<'de> Deserialize<'de>` is not implemented for `!`
+    |
+    = help: the following other types implement trait `Deserialize<'de>`:
+              &'a Path
+              &'a [u8]
+              &'a str
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+            and 667 others
+    = note: this error might have been caused by changes to Rust's type-inference algorithm (see issue #148922 <https://github.com/rust-lang/rust/issues/148922> for more information)
+    = help: you might have intended to use the type `()` here instead
+    = note: required for `!` to implement `DeserializeOwned`
+note: required by a bound in `diagnostic_native_field`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:363:31
+    |
+363 | fn diagnostic_native_field<T: serde::de::DeserializeOwned>(
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `diagnostic_native_field`
+    = note: the full name for the type has been written to '/tmp/openwepp-b01-wb14-deferred-admission-target/debug/deps/openwepp_hillslope_orchestrator-6acf9a74daf335ab.long-type-2582471535688514859.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+warning: variable does not need to be mutable
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:954:13
+    |
+954 |         let mut restored = Self::diagnostic_restore_native_consumer_from_proof_v1(
+    |             ----^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0277`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 1 warning
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error; 1 warning emitted

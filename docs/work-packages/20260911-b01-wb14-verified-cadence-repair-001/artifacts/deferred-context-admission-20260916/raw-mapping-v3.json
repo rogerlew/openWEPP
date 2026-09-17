@@ -1,0 +1,57 @@
+{
+  "label": "raw-mapping-v3",
+  "argv": [
+    "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/mapping-v3.frozen",
+    "deferred_context_raw_",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/raw-mapping-v3.resources",
+    "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/mapping-v3.frozen",
+    "deferred_context_raw_",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916",
+  "start_utc": "2026-09-16T21:23:17.197653+00:00",
+  "source_tree_sha256": "ff1281ee583253c3edab4ab5f43763a9689a2ef3eecd24f87f2a11b1c39f639f",
+  "patch_sha256": "96bc3bc0b7889b08a06bc2ba8b433137b26c75dc93be37a30a03ce74046dd705",
+  "source_receipt": "raw-mapping-v3-source.json",
+  "input_manifest": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/input-custody-before.json",
+  "input_manifest_sha256": "b78f2956b99079d6447aacb51c95e087093b858d90b47f65f601e0b3d53748b3",
+  "environment": {
+    "RUST_MIN_STACK": "67108864",
+    "OPENWEPP_B01_MEMBER_EXPORT": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1",
+    "OPENWEPP_B01_RETAINED_SOIL_TRIAL_PRIMITIVES": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-soil-trial-primitives.json",
+    "OPENWEPP_B01_RETAINED_SUBSLAB_PRIMITIVES": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-subslab-primitives.json"
+  },
+  "pinned_files": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/run_recorded.py": "e71a846924237331efcaf3e114fc24f2076679b99466f56a6c1b0dbb58bff5c2",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/summary.json": "cf5f6612d65c3b5a2a53583560730e8d5c551795efc73ff6b3fd5735e41c17bb",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-soil-trial-primitives.json": "dfb4185058d7115727382b96a3bd879c255f888c6947863f015daceb2b987dc4",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-subslab-primitives.json": "e2434197840c651db67cc52769cf1076d62905e5fcbe80b46cdd14cb05599114"
+  },
+  "timeout_seconds": 300,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/mapping-v3.frozen",
+  "binary_sha256": "d50b49648c9d3a5e796d31aad4db79d129ad1a5be2cd4e2bf9a5a10af8ace5c9",
+  "process_group": 2184117,
+  "exit_code": 101,
+  "timed_out": false,
+  "elapsed_seconds": 1.6715784599073231,
+  "end_utc": "2026-09-16T21:23:19.099086+00:00",
+  "source_unchanged": true,
+  "binary_unchanged": true,
+  "pinned_files_unchanged": true,
+  "inputs_unchanged": true
+}

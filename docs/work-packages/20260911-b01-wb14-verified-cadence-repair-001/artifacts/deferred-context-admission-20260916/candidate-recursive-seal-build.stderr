@@ -1,0 +1,27 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0282]: type annotations needed for `Vec<_>`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:971:9
+     |
+ 971 |     let mut seals = Vec::with_capacity(chain.len());
+     |         ^^^^^^^^^
+...
+1025 |             TrialPredecessor::UnpublishedTrial(seals[index - 1].clone())
+     |                                                ---------------- type must be known at this point
+     |
+help: consider giving `seals` an explicit type, where the placeholders `_` are specified
+     |
+ 971 |     let mut seals: Vec<T> = Vec::with_capacity(chain.len());
+     |                  ++++++++
+
+error[E0308]: mismatched types
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:1049:34
+     |
+1049 |         let seal: Sha256Digest = digest_bytes(&python_exponents(&bytes));
+     |                   ------------   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Sha256Digest`, found `Digest32`
+     |                   |
+     |                   expected due to this
+
+Some errors have detailed explanations: E0282, E0308.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 2 previous errors

@@ -1,0 +1,341 @@
+{
+  "evidence_class": "Ran: retained byte-array decode only",
+  "rotation_bytes": 35977529,
+  "rotation_sha256": "c28c36ef949a1a8e3a76f7e90f63c07efac612a8a1c2701b9123bb693f7d3241",
+  "resident_support_count": 668,
+  "selected_path": "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/publication-tail-660-667.json",
+  "selected_sha256": "75813d76bc8457d18c37ad7b579096f07f3d21a5adc2ea2d5791f075701ed447",
+  "selected_keys": [
+    "day_index",
+    "interval_index",
+    "parent_transaction_id",
+    "support",
+    "accepted_slab_sha256",
+    "beginning_complete_owner_set_sha256",
+    "ending_complete_owner_set_sha256",
+    "lse_support_receipt",
+    "lse_forcing",
+    "vegetation_forcing",
+    "wb14_parameters",
+    "resource_debits",
+    "material_transfers",
+    "run_identity",
+    "beginning_lane_carries",
+    "beginning_subsurface_layers_by_lane",
+    "ending_subsurface_layers_by_lane",
+    "surface_beginning_state",
+    "surface_ending_state",
+    "open_ingress_parcels",
+    "ingress_receipts",
+    "ingress_ledgers",
+    "accepted_snow_liquid_outputs",
+    "wb14_child_replay_bytes",
+    "wb14_parent_replay_bytes",
+    "finalized_water_uses",
+    "condensation_credits",
+    "receiver_operands_sha256",
+    "rollback_hashes",
+    "hydrology_transaction_id",
+    "wb14_child_receipt_set_sha256",
+    "operands_sha256",
+    "receipt_sha256"
+  ],
+  "selected_noncontainer_fields": [
+    {
+      "day_index": 4,
+      "interval_index": 22,
+      "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+      "accepted_slab_sha256": "d3250edcbf76ad904fc96d3b790217a8bcabf8bf308950d24449d30da87dadd3",
+      "beginning_complete_owner_set_sha256": "fd834ae94c54a92ef906f8b660acc971a5df595de3e4edd1679268b1ef34b857",
+      "ending_complete_owner_set_sha256": "bce83ce41e19b1956d3b623427dd4c51d4ea7bab5970786c7aff6d68c81ac35a",
+      "wb14_parent_replay_bytes": null,
+      "receiver_operands_sha256": "25811243901d564b582e43ce0c52c5be803fde7e45b726e86f0352df86f65fe9",
+      "hydrology_transaction_id": 255,
+      "wb14_child_receipt_set_sha256": "c35c04f8a80faabcd2e5f1ff8d952ec4a5bbe4cbeba17166e9978dc9616ee17a",
+      "operands_sha256": "7cc6dc94f06036d69dc5eb904b7265abb181cbfa304abb2f5452ca155331caac",
+      "receipt_sha256": "662a6d64bd0d962b8e542d327539d2fc4b04076aae505ccf1a520224a6355c28"
+    },
+    {
+      "day_index": 4,
+      "interval_index": 22,
+      "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+      "accepted_slab_sha256": "8dc7a25a056bfb007ce57c3ca66415ae256153091f6bdc554233ce92d71db578",
+      "beginning_complete_owner_set_sha256": "bce83ce41e19b1956d3b623427dd4c51d4ea7bab5970786c7aff6d68c81ac35a",
+      "ending_complete_owner_set_sha256": "0c6d2a1769a96af1d09b57c80bddb7c0c245e6bcf9f100cfe0461e585c66dee7",
+      "wb14_parent_replay_bytes": null,
+      "receiver_operands_sha256": "321e4931c9425581b2066aef18ac9362416a12ce8f94ed69c0bbdcaf38026a14",
+      "hydrology_transaction_id": 255,
+      "wb14_child_receipt_set_sha256": "526cad1af29ca584ea3d3440efe5052ede72a92d0c50ecb21dd3614dfe52888b",
+      "operands_sha256": "dd43aea06190f931045b1cfb8e26774460ab98d253bcc8eb0a7813f650372c38",
+      "receipt_sha256": "30676dce26c8e200df7748690ee9382965f116a56b7d7e406d809ca81be00449"
+    },
+    {
+      "day_index": 4,
+      "interval_index": 22,
+      "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+      "accepted_slab_sha256": "0841326c90b4b6d375bb3a9f8ce2391d3b504d597d68a258a32cb38bf79245fc",
+      "beginning_complete_owner_set_sha256": "0c6d2a1769a96af1d09b57c80bddb7c0c245e6bcf9f100cfe0461e585c66dee7",
+      "ending_complete_owner_set_sha256": "423925dbfc4cf4f6a595e5d637437ce6fcf82440dbef7a72edde66044f54adf7",
+      "wb14_parent_replay_bytes": null,
+      "receiver_operands_sha256": "bb5affe1fa89694a3f317cafddff9725b9f9993ec2aaae1ac14bca55b287f048",
+      "hydrology_transaction_id": 255,
+      "wb14_child_receipt_set_sha256": "6d16d4dd66cd0751cc63f645dd52550f000cccebfc9713007d3806099e586960",
+      "operands_sha256": "0cf57747b089d8caa7c0931faa72349062d51a19b8c2336d896941d9937cc314",
+      "receipt_sha256": "bdbb8247c78294fc170c63f6d32bb6b1b43d0968e323693edcb89cb6293a2f0a"
+    },
+    {
+      "day_index": 4,
+      "interval_index": 22,
+      "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+      "accepted_slab_sha256": "0759cd8a795f39bfb3bd04fa4cf01459c9274107b928089fe755779375437648",
+      "beginning_complete_owner_set_sha256": "423925dbfc4cf4f6a595e5d637437ce6fcf82440dbef7a72edde66044f54adf7",
+      "ending_complete_owner_set_sha256": "048afbe8da08b3a1ca1a409731653bfa91d4de69b15e115819f114a4fcb1a6b8",
+      "wb14_parent_replay_bytes": null,
+      "receiver_operands_sha256": "35af9a2d2120cade42e57d71945f2a31e7c6b2d08ceb94d4db658242f7dac841",
+      "hydrology_transaction_id": 255,
+      "wb14_child_receipt_set_sha256": "7a501fc7c6d0c1c10f9232539e2d0c656af4df010a8ef12d5e7bc3cc740b7f8f",
+      "operands_sha256": "f99f27aca0f931a686b49a90a4f1de2e9be9deb8d864bb1bf4bf07a41b2cb5e4",
+      "receipt_sha256": "00b3535062859088ada139f9edfcf9c6839ba96695255764a09dc4bdfa723181"
+    },
+    {
+      "day_index": 4,
+      "interval_index": 22,
+      "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+      "accepted_slab_sha256": "435712574e68e6301da9131754e977357b00cf4761772cbc862a0b58caa06a71",
+      "beginning_complete_owner_set_sha256": "048afbe8da08b3a1ca1a409731653bfa91d4de69b15e115819f114a4fcb1a6b8",
+      "ending_complete_owner_set_sha256": "8ebb7558ea3f8dadc9c2dd0f42f4c5c8288113e587f8d5f712ec05bacd9e89e5",
+      "wb14_parent_replay_bytes": null,
+      "receiver_operands_sha256": "4c6a9fc6900502d1a0c2a7bd084937faa840b867570a6dbde9d566c5df8d77e1",
+      "hydrology_transaction_id": 255,
+      "wb14_child_receipt_set_sha256": "6e0b0dcec54c46cb7fb71f51255720e27fc224e37d4cb85442f777e8243ba7f3",
+      "operands_sha256": "f8f366b41243b1f938312a37ffbb6b8cc51ddcca8098857f9c1881307752dcec",
+      "receipt_sha256": "7da592b3af93b74619aa3aa6ba33d02cd5aa433d2b0d1c65b33580d3cc63318c"
+    },
+    {
+      "day_index": 4,
+      "interval_index": 22,
+      "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+      "accepted_slab_sha256": "e89fa2c10890ea495d7fc1214b48f8d0a8437cdb01556d483550555c49fb93f8",
+      "beginning_complete_owner_set_sha256": "8ebb7558ea3f8dadc9c2dd0f42f4c5c8288113e587f8d5f712ec05bacd9e89e5",
+      "ending_complete_owner_set_sha256": "59729e6545a4972795c3ba190008594d5f3a3c56dddb786de1295a67422d7928",
+      "wb14_parent_replay_bytes": null,
+      "receiver_operands_sha256": "c0eec5df5588373e52b36a892e2bc3f2a63b1b145d87f9a79e56394ec54b1cf6",
+      "hydrology_transaction_id": 255,
+      "wb14_child_receipt_set_sha256": "48a57c5ac8e26f0f6cfd8f0ea891b336460bbf4bf2e2b2c018677a983452dc89",
+      "operands_sha256": "163314f953732988e3d83b92b9f2917c6dedd08874da597741f5eb3dedeef67d",
+      "receipt_sha256": "8c98d66cad5baab9aad140eba115bc9ce63bdfedfc12edb52d8c7d695da4deb2"
+    },
+    {
+      "day_index": 4,
+      "interval_index": 22,
+      "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+      "accepted_slab_sha256": "4096ef6ca574d1b4666f5542faac713699e0f87c3658dcf82df8f5cdd06b1122",
+      "beginning_complete_owner_set_sha256": "59729e6545a4972795c3ba190008594d5f3a3c56dddb786de1295a67422d7928",
+      "ending_complete_owner_set_sha256": "eccea1b6048dae260d5f68aa2758c3a7bc241b65837e7d1a86943b0a6efa7e79",
+      "wb14_parent_replay_bytes": null,
+      "receiver_operands_sha256": "50a8bbe9419ce985d8f4a233394fffdcd88820a362a998a407c7f0866670878b",
+      "hydrology_transaction_id": 255,
+      "wb14_child_receipt_set_sha256": "5405f384fc9be18797f5adf8cd65b53d4aa6991896b0529997b3bbe9e9b1aede",
+      "operands_sha256": "66d830616d8bc30f0f8c2b6f749df29c0f268409f7fd2ef9aca005d08f062d60",
+      "receipt_sha256": "3fcb3ef775242c955962dc96059855c3683c4fd632fb0cdae9d8fbd94074a6bb"
+    },
+    {
+      "day_index": 4,
+      "interval_index": 22,
+      "parent_transaction_id": "955d60719213d7ff317a5243c7094fa8a0c20d4b7afef7d186f626bf6e109d35",
+      "accepted_slab_sha256": "be7d3fd988afef69d65dfb6bb919e258981712ca6643c7a93279829d8a903097",
+      "beginning_complete_owner_set_sha256": "eccea1b6048dae260d5f68aa2758c3a7bc241b65837e7d1a86943b0a6efa7e79",
+      "ending_complete_owner_set_sha256": "45ec2996472f27b636ca11f788e28c2702a40836651436f450b63b9d29b057af",
+      "wb14_parent_replay_bytes": null,
+      "receiver_operands_sha256": "187a855343c8c1c595e3d7aa75b5d506f212eccdcad6e3c2280a6688b3c06306",
+      "hydrology_transaction_id": 255,
+      "wb14_child_receipt_set_sha256": "81d32173612d3b45e725fdf4f761d6e45c9bf19b42198d64c447879bec43dfd6",
+      "operands_sha256": "947052c8b3902c2f89e6ae6dafea11300796474866b08ef24182421ea01a9c8f",
+      "receipt_sha256": "39d58e94d24ece4ad6e1a62dcef1f8898f036ebb7a9e1b993232daa05eaad74e"
+    }
+  ],
+  "selected_container_summaries": {
+    "support": {
+      "type": "dict",
+      "size": 2,
+      "keys": [
+        "start_ns",
+        "end_ns"
+      ]
+    },
+    "lse_support_receipt": {
+      "type": "dict",
+      "size": 17,
+      "keys": [
+        "parent_transaction_id",
+        "segment_id",
+        "accepted_slab_id",
+        "slab_ordinal",
+        "support_start_ns",
+        "support_end_ns",
+        "model_version",
+        "model_definition_sha256",
+        "configuration_sha256",
+        "beginning_state_sha256",
+        "beginning_soil_thermal_state_sha256",
+        "tolerance_policy_sha256",
+        "numerical_policy_sha256",
+        "requested_support_ns",
+        "duration_s_bits",
+        "minimum_support_ns",
+        "receipt_sha256"
+      ]
+    },
+    "lse_forcing": {
+      "type": "dict",
+      "size": 18,
+      "keys": [
+        "forcing_sha256",
+        "transaction_id",
+        "interval_s",
+        "air_temperature_k",
+        "air_specific_humidity_kg_kg",
+        "air_pressure_pa",
+        "reference_wind_m_s",
+        "neutral_stability",
+        "snow_present_at_beginning",
+        "snow_present_at_end",
+        "snow_terminal_payload_present",
+        "direct_vis_w_m2",
+        "diffuse_vis_w_m2",
+        "direct_nir_w_m2",
+        "diffuse_nir_w_m2",
+        "atmospheric_downward_longwave_w_m2",
+        "precipitation_parcels",
+        "runon_parcels"
+      ]
+    },
+    "vegetation_forcing": {
+      "type": "dict",
+      "size": 19,
+      "keys": [
+        "air_temperature_k",
+        "pressure_pa",
+        "co2_pa",
+        "vapor_pressure_deficit_kpa",
+        "wind_m_s",
+        "rain_kg_m2",
+        "direct_par_w_m2",
+        "diffuse_par_w_m2",
+        "direct_nir_w_m2",
+        "diffuse_nir_w_m2",
+        "solar_zenith_cosine",
+        "ground_albedo_vis",
+        "ground_albedo_nir",
+        "longwave_down_w_m2",
+        "longwave_up_w_m2",
+        "specific_humidity",
+        "reference_height_m",
+        "soil_layers",
+        "gsi"
+      ]
+    },
+    "wb14_parameters": {
+      "type": "list",
+      "size": 1,
+      "keys": null
+    },
+    "resource_debits": {
+      "type": "list",
+      "size": 36,
+      "keys": null
+    },
+    "material_transfers": {
+      "type": "list",
+      "size": 32,
+      "keys": null
+    },
+    "run_identity": {
+      "type": "dict",
+      "size": 4,
+      "keys": [
+        "run_id",
+        "hillslope_id",
+        "lane_count",
+        "day_count"
+      ]
+    },
+    "beginning_lane_carries": {
+      "type": "list",
+      "size": 1,
+      "keys": null
+    },
+    "beginning_subsurface_layers_by_lane": {
+      "type": "list",
+      "size": 1,
+      "keys": null
+    },
+    "ending_subsurface_layers_by_lane": {
+      "type": "list",
+      "size": 1,
+      "keys": null
+    },
+    "surface_beginning_state": {
+      "type": "dict",
+      "size": 5,
+      "keys": [
+        "owner_id",
+        "configuration_sha256",
+        "state_sha256",
+        "records",
+        "continuations"
+      ]
+    },
+    "surface_ending_state": {
+      "type": "dict",
+      "size": 5,
+      "keys": [
+        "owner_id",
+        "configuration_sha256",
+        "state_sha256",
+        "records",
+        "continuations"
+      ]
+    },
+    "open_ingress_parcels": {
+      "type": "list",
+      "size": 0,
+      "keys": null
+    },
+    "ingress_receipts": {
+      "type": "list",
+      "size": 0,
+      "keys": null
+    },
+    "ingress_ledgers": {
+      "type": "list",
+      "size": 0,
+      "keys": null
+    },
+    "accepted_snow_liquid_outputs": {
+      "type": "list",
+      "size": 1,
+      "keys": null
+    },
+    "wb14_child_replay_bytes": {
+      "type": "list",
+      "size": 756,
+      "keys": null
+    },
+    "finalized_water_uses": {
+      "type": "list",
+      "size": 14,
+      "keys": null
+    },
+    "condensation_credits": {
+      "type": "list",
+      "size": 0,
+      "keys": null
+    },
+    "rollback_hashes": {
+      "type": "list",
+      "size": 3,
+      "keys": null
+    }
+  }
+}

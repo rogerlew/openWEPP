@@ -1,0 +1,215 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0425]: cannot find value `lane_maps` in this scope
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1092:13
+     |
+1092 |             lane_maps,
+     |             ^^^^^^^^^ not found in this scope
+
+error[E0061]: this function takes 3 arguments but 1 argument was supplied
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:312:21
+    |
+312 |                     capture_direct_run_frame_dynamic(frame).map_err(|error| error.to_string())?,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^------- two arguments of type `&direct_runtime::DirectRunConstructorInputs` and `&surface_liquid_owner::DirectSurfaceLiquidConfiguration` are missing
+    |
+note: function defined here
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:196:15
+    |
+196 | pub(crate) fn capture_direct_run_frame_dynamic(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+197 |     frame: &crate::DirectRunFrame,
+198 |     pinned: &crate::DirectRunConstructorInputs,
+    |     ------------------------------------------
+199 |     surface_configuration: &crate::DirectSurfaceLiquidConfiguration,
+    |     ---------------------------------------------------------------
+help: provide the arguments
+    |
+312 |                     capture_direct_run_frame_dynamic(frame, /* &direct_runtime::DirectRunConstructorInputs */, /* &surface_liquid_owner::DirectSurfaceLiquidConfiguration */).map_err(|error| error.to_string())?,
+    |                                                           ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+error[E0308]: `?` operator has incompatible types
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:312:21
+    |
+312 |                     capture_direct_run_frame_dynamic(frame).map_err(|error| error.to_string())?,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&_`, found `DirectRunFrameDynamicCaptureV1`
+    |
+    = note: `?` operator cannot convert from `DirectRunFrameDynamicCaptureV1` to `&_`
+    = note: expected reference `&_`
+                  found struct `DirectRunFrameDynamicCaptureV1`
+help: consider borrowing here
+    |
+312 |                     &capture_direct_run_frame_dynamic(frame).map_err(|error| error.to_string())?,
+    |                     +
+
+error[E0308]: mismatched types
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:317:37
+     |
+ 317 |                 &serde_json::to_vec(capture_direct_run_constructor_inputs(inputs))
+     |                  ------------------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&_`, found `Value`
+     |                  |
+     |                  arguments to this function are incorrect
+     |
+     = note: expected reference `&_`
+                     found enum `Value`
+note: function defined here
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/ser.rs:2213:8
+     |
+2213 | pub fn to_vec<T>(value: &T) -> Result<Vec<u8>>
+     |        ^^^^^^
+help: consider borrowing here
+     |
+ 317 |                 &serde_json::to_vec(&capture_direct_run_constructor_inputs(inputs))
+     |                                     +
+
+error[E0061]: this function takes 3 arguments but 1 argument was supplied
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:353:25
+    |
+353 |                         capture_direct_run_frame_dynamic(frame)
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^------- two arguments of type `&direct_runtime::DirectRunConstructorInputs` and `&surface_liquid_owner::DirectSurfaceLiquidConfiguration` are missing
+    |
+note: function defined here
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:196:15
+    |
+196 | pub(crate) fn capture_direct_run_frame_dynamic(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+197 |     frame: &crate::DirectRunFrame,
+198 |     pinned: &crate::DirectRunConstructorInputs,
+    |     ------------------------------------------
+199 |     surface_configuration: &crate::DirectSurfaceLiquidConfiguration,
+    |     ---------------------------------------------------------------
+help: provide the arguments
+    |
+353 |                         capture_direct_run_frame_dynamic(frame, /* &direct_runtime::DirectRunConstructorInputs */, /* &surface_liquid_owner::DirectSurfaceLiquidConfiguration */)
+    |                                                               ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+error[E0308]: `?` operator has incompatible types
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:353:25
+    |
+353 | /                         capture_direct_run_frame_dynamic(frame)
+354 | |                             .map_err(|error| error.to_string())?,
+    | |________________________________________________________________^ expected `&_`, found `DirectRunFrameDynamicCaptureV1`
+    |
+    = note: `?` operator cannot convert from `DirectRunFrameDynamicCaptureV1` to `&_`
+    = note: expected reference `&_`
+                  found struct `DirectRunFrameDynamicCaptureV1`
+help: consider borrowing here
+    |
+353 |                         &capture_direct_run_frame_dynamic(frame)
+    |                         +
+
+error[E0308]: mismatched types
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:360:41
+     |
+ 360 |                     &serde_json::to_vec(capture_direct_run_constructor_inputs(inputs))
+     |                      ------------------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&_`, found `Value`
+     |                      |
+     |                      arguments to this function are incorrect
+     |
+     = note: expected reference `&_`
+                     found enum `Value`
+note: function defined here
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/ser.rs:2213:8
+     |
+2213 | pub fn to_vec<T>(value: &T) -> Result<Vec<u8>>
+     |        ^^^^^^
+help: consider borrowing here
+     |
+ 360 |                     &serde_json::to_vec(&capture_direct_run_constructor_inputs(inputs))
+     |                                         +
+
+error[E0061]: this function takes 14 arguments but 13 arguments were supplied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:956:23
+     |
+ 956 |         let refusal = DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_with_deferred_composite_v1(
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 957 |             native, target_soil.clone(), committed_bootstrap.clone(), &altered_phase,
+ 958 |             lane_maps_value, &clock_parent.clock, frame.clone(), surface,
+     |                                                   ------------- argument #7 of type `&direct_runtime::DirectRunConstructorInputs` is missing
+     |
+note: associated function defined here
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1003:19
+     |
+1003 |     pub(crate) fn diagnostic_restore_native_consumer_with_deferred_composite_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1010 |         pinned_hydrology_constructor_inputs_ref: &DirectRunConstructorInputs,
+     |         --------------------------------------------------------------------
+help: provide the argument
+     |
+ 956 -         let refusal = DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_with_deferred_composite_v1(
+ 957 -             native, target_soil.clone(), committed_bootstrap.clone(), &altered_phase,
+ 958 -             lane_maps_value, &clock_parent.clock, frame.clone(), surface,
+ 959 -             &pin.lse, &frozen_lse, provider_configuration, std::sync::Arc::new(inputs.clone()),
+ 960 -             &mut admission_slot,
+ 961 -         );
+ 956 +         let refusal = DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_with_deferred_composite_v1(native, target_soil.clone(), committed_bootstrap.clone(), &altered_phase, lane_maps_value, &clock_parent.clock, /* &direct_runtime::DirectRunConstructorInputs */, frame.clone(), surface, &frozen_lse, &pin.lse, provider_configuration, std::sync::Arc::new(inputs.clone()), &mut admission_slot);
+     |
+
+error[E0061]: this function takes 14 arguments but 13 arguments were supplied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:979:24
+     |
+ 979 |         let consumed = DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_with_deferred_composite_v1(
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 980 |             native, target_soil.clone(), committed_bootstrap.clone(), original_phase,
+ 981 |             lane_maps_value, &clock_parent.clock, frame.clone(), surface,
+     |                                                   ------------- argument #7 of type `&direct_runtime::DirectRunConstructorInputs` is missing
+     |
+note: associated function defined here
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1003:19
+     |
+1003 |     pub(crate) fn diagnostic_restore_native_consumer_with_deferred_composite_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1010 |         pinned_hydrology_constructor_inputs_ref: &DirectRunConstructorInputs,
+     |         --------------------------------------------------------------------
+help: provide the argument
+     |
+ 979 -         let consumed = DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_with_deferred_composite_v1(
+ 980 -             native, target_soil.clone(), committed_bootstrap.clone(), original_phase,
+ 981 -             lane_maps_value, &clock_parent.clock, frame.clone(), surface,
+ 982 -             &pin.lse, &frozen_lse, provider_configuration, std::sync::Arc::new(inputs.clone()),
+ 983 -             &mut admission_slot,
+ 984 -         );
+ 979 +         let consumed = DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_with_deferred_composite_v1(native, target_soil.clone(), committed_bootstrap.clone(), original_phase, lane_maps_value, &clock_parent.clock, /* &direct_runtime::DirectRunConstructorInputs */, frame.clone(), surface, &frozen_lse, &pin.lse, provider_configuration, std::sync::Arc::new(inputs.clone()), &mut admission_slot);
+     |
+
+error[E0061]: this function takes 14 arguments but 13 arguments were supplied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:1014:9
+     |
+1014 |         DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_with_deferred_composite_v1(
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1021 |             frame,
+     |             ----- argument #7 of type `&direct_runtime::DirectRunConstructorInputs` is missing
+     |
+note: associated function defined here
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1003:19
+     |
+1003 |     pub(crate) fn diagnostic_restore_native_consumer_with_deferred_composite_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1010 |         pinned_hydrology_constructor_inputs_ref: &DirectRunConstructorInputs,
+     |         --------------------------------------------------------------------
+help: provide the argument
+     |
+1014 ~         DirectV10RealConsumerShadow::diagnostic_restore_native_consumer_with_deferred_composite_v1(
+1015 +             native,
+1016 +             target_soil,
+1017 +             committed_bootstrap,
+1018 +             required(target, "phase_diagnostics")?,
+1019 +             lane_maps_value,
+1020 +             &clock_parent.clock,
+1021 +             /* &direct_runtime::DirectRunConstructorInputs */,
+1022 +             frame,
+1023 +             surface,
+1024 +             &frozen_lse,
+1025 +             &pin.lse,
+1026 +             provider_configuration,
+1027 +             std::sync::Arc::new(inputs),
+1028 +             &mut admission_slot,
+1029 +         )
+     |
+
+Some errors have detailed explanations: E0061, E0308, E0425.
+For more information about an error, try `rustc --explain E0061`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 10 previous errors

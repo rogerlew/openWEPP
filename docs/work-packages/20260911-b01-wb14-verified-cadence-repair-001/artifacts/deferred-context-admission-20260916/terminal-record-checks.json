@@ -1,0 +1,10 @@
+{
+  "as_of_utc": "2026-09-17T00:06:07.539433+00:00",
+  "python_syntax_files": 12,
+  "json_files": 172,
+  "source_reconstruction": "PASS exact743 scoped entries",
+  "draft_promotion": "NONE; four main canonical documents restored",
+  "pending_command_receipts": [],
+  "staged_scope_files": 456,
+  "staged_whitespace": "4370 diagnostics confined to exact raw stdout(33) and patches(4337); authored prose/scripts have no diagnostics. Raw bytes preserved."
+}

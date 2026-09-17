@@ -1,0 +1,500 @@
+{
+  "baseline_errors": [
+    [
+      [
+        "E0425",
+        "cannot find function `restore_provider_bound_context_from_file` in module `crate::snow_stage3_v11_current_context_capture`"
+      ],
+      2
+    ],
+    [
+      [
+        "E0425",
+        "cannot find function `restart_authority_v11_bgc_debit_scope_v1` in module `crate::v9_real_consumer_shadow`"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_restore_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_restore_native_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      3
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_install_scheduler_position` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      2
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_install_native_inactive_scheduler_position` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      2
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_accepted_interval_count` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      2
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_restore_parent_finalization_logical_owners` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_restore_native_parent_finalization_logical_owners` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope"
+      ],
+      5
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_hydrology_constructor_inputs_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      2
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_hydrology_frame` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      5
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_constructor_inputs_snapshot_v1` found for struct `direct_runtime::DirectRunFrame` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_install_hydrology_continuation_inputs_v3` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_install_hydrology_constructor_inputs_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_complete_commit_and_stage_archive_day_v3` found for struct `snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `direct_runtime::DirectPublicationFrame: serde::Serialize` is not satisfied"
+      ],
+      2
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `subsurface::DirectSubsurfaceLayerState: serde::Serialize` is not satisfied"
+      ],
+      3
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `evapotranspiration::DirectEvapotranspirationStageState: serde::Serialize` is not satisfied"
+      ],
+      2
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `growth::DirectGrowthStateSurface: serde::Serialize` is not satisfied"
+      ],
+      2
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `direct_runtime::DirectSnowRuntimeCarry: serde::Serialize` is not satisfied"
+      ],
+      4
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `direct_runtime::DirectFrostRuntimeCarry: serde::Serialize` is not satisfied"
+      ],
+      4
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `direct_runtime::DirectDayConstructorInputs: serde::Serialize` is not satisfied"
+      ],
+      2
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_lane_maps_v1` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_soil_v2` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_hydrology_constructor_inputs_v1` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_hydrology_frame` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_consumer_constructor_operands_v1` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_consumer_constructor_operands_v1` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_lane_maps_v1` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_soil_v2` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_hydrology_frame` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_hydrology_constructor_inputs_v1` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "",
+        "could not compile `openwepp-hillslope-orchestrator` (lib test) due to 61 previous errors; 2 warnings emitted"
+      ],
+      1
+    ]
+  ],
+  "candidate_errors": [
+    [
+      [
+        "E0425",
+        "cannot find function `restore_provider_bound_context_from_file` in module `crate::snow_stage3_v11_current_context_capture`"
+      ],
+      2
+    ],
+    [
+      [
+        "E0425",
+        "cannot find function `restart_authority_v11_bgc_debit_scope_v1` in module `crate::v9_real_consumer_shadow`"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_restore_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_restore_native_wb14_parent_canonical_bytes` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      3
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_install_scheduler_position` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      2
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_install_native_inactive_scheduler_position` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      2
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_accepted_interval_count` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      2
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_restore_parent_finalization_logical_owners` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_restore_native_parent_finalization_logical_owners` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_validate_native_exact_adoption` found for struct `FrozenLitterV4Resident` in the current scope"
+      ],
+      5
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_hydrology_constructor_inputs_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      2
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_hydrology_frame` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      5
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_constructor_inputs_snapshot_v1` found for struct `direct_runtime::DirectRunFrame` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_install_hydrology_continuation_inputs_v3` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_install_hydrology_constructor_inputs_v1` found for struct `v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_complete_commit_and_stage_archive_day_v3` found for struct `snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `direct_runtime::DirectPublicationFrame: serde::Serialize` is not satisfied"
+      ],
+      2
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `subsurface::DirectSubsurfaceLayerState: serde::Serialize` is not satisfied"
+      ],
+      3
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `evapotranspiration::DirectEvapotranspirationStageState: serde::Serialize` is not satisfied"
+      ],
+      2
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `growth::DirectGrowthStateSurface: serde::Serialize` is not satisfied"
+      ],
+      2
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `direct_runtime::DirectSnowRuntimeCarry: serde::Serialize` is not satisfied"
+      ],
+      4
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `direct_runtime::DirectFrostRuntimeCarry: serde::Serialize` is not satisfied"
+      ],
+      4
+    ],
+    [
+      [
+        "E0277",
+        "the trait bound `direct_runtime::DirectDayConstructorInputs: serde::Serialize` is not satisfied"
+      ],
+      2
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_lane_maps_v1` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_soil_v2` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_hydrology_constructor_inputs_v1` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_hydrology_frame` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_consumer_constructor_operands_v1` found for reference `&&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_consumer_constructor_operands_v1` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_lane_maps_v1` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_native_soil_v2` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `restart_authority_hydrology_frame` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "E0599",
+        "no method named `diagnostic_hydrology_constructor_inputs_v1` found for reference `&v9_real_consumer_shadow::DirectV10RealConsumerShadow` in the current scope"
+      ],
+      1
+    ],
+    [
+      [
+        "",
+        "could not compile `openwepp-hillslope-orchestrator` (lib test) due to 61 previous errors; 3 warnings emitted"
+      ],
+      1
+    ]
+  ],
+  "error_code_message_multisets_equal": false,
+  "limitation": "Compiler error code/message comparison only; locations retained in full stderr.",
+  "coded_compiler_error_multisets_equal": true,
+  "difference": "Only terminal Cargo summary changes 2 warnings to 3; all 61 coded compiler errors match."
+}

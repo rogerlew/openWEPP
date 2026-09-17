@@ -1,0 +1,164 @@
+{
+  "evidence_class": "Ran: independent Python Fraction reconstruction from retained operands; no physical evolution",
+  "inputs": {
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.26.json": "443aa08f5e2d9d11939754901253196d63e74ac9d85481f719e4ac640047e3fd",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-soil-trial-primitives.json": "dfb4185058d7115727382b96a3bd879c255f888c6947863f015daceb2b987dc4"
+  },
+  "groups": [
+    {
+      "group": 0,
+      "support": [
+        385200000000000,
+        385260000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "49df4bee555b8e27002ffc63bf62415821c3365d27e3d3c51103a07fe8668bb6",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 1,
+      "support": [
+        385260000000000,
+        385320000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "ad1f5dbced6f8ce8463db4eb402c01ae72ec5ce56b1f34190766e946ce065e97",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 2,
+      "support": [
+        385320000000000,
+        385380000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "730c35bd3eb40e593aeb228c2d8fdd130e0c8d18020c5f45240b0c0f77b4281e",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 3,
+      "support": [
+        385380000000000,
+        385440000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "d9aa6e111af21a19a836aafc1b955f0156235b4752d5d10f662c4dbdb09821b4",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 4,
+      "support": [
+        385440000000000,
+        385500000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "61b846035328b477ee4e1dad411c7fc0f2470d0168308b448f33cdbd9962b19d",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 5,
+      "support": [
+        385500000000000,
+        385560000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "00962ae31833d1a0767807b95ee7aa346e3bc11e2df59b1a4d05897d5f510d18",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 6,
+      "support": [
+        385560000000000,
+        385620000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "c08f2d17c9de92839da573aecb5851f38b24ef8beb5e8f74d9162713d7d0bc7c",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 7,
+      "support": [
+        385620000000000,
+        385680000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 8,
+      "support": [
+        385680000000000,
+        385740000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 9,
+      "support": [
+        385740000000000,
+        385800000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 10,
+      "support": [
+        385800000000000,
+        385860000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c",
+      "exact_energy_and_carry": "PASS"
+    },
+    {
+      "group": 11,
+      "support": [
+        385860000000000,
+        385920000000000
+      ],
+      "layers": 6,
+      "operand_count": 13,
+      "primitive_transaction": 255,
+      "receipt": "20aaac2a1501b558e9feabfbf8d774503c7e456a5fd99a0378a2a156a0c6cd65",
+      "exact_energy_and_carry": "PASS"
+    }
+  ],
+  "terminal_child_groups": [
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "terminal_ordered_snow_heat": -427.7599471251433,
+  "terminal_event_snow_heat": -427.7599471251433,
+  "regrouping_residual": 0.0,
+  "limitations": "Energy/state continuity and support coverage only. Not canonical receipt/trial-seal validation, source/event capability, historical conservation, or admission."
+}

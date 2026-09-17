@@ -1,0 +1,14 @@
+{
+  "as_of_utc": "2026-09-17T00:06:07.539433+00:00",
+  "anchor_utc": "2026-09-16T20:17:45+00:00",
+  "carried_seconds": 64327.6,
+  "supplement_elapsed_seconds": 13702.539433,
+  "cumulative_consumed_seconds": 78030.139433,
+  "cumulative_ceiling_seconds": 78727.6,
+  "remaining_seconds": 697.4605670000019,
+  "wait_deductions": 0,
+  "concurrent_wall_time_counted_once": true,
+  "failed_command_floor_excluding_planned_red": 137,
+  "publication_pending": true,
+  "terminal_disposition": "INCOMPLETE/HOLD: constructor accepted; native six-owner projection mismatch; integrated late rollback/precedence unproved; lint and qualification remain non-green"
+}

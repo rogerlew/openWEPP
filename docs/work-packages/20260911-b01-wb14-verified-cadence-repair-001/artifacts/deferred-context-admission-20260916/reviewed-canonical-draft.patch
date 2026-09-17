@@ -1,0 +1,159 @@
+diff --git a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md
+index 717d0f742..14043ac62 100644
+--- a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md
++++ b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md
+@@ -62,6 +62,14 @@ chapter's Dependencies and introduction. Uncertainty expands reading.
+ 
+ <a id="change-log"></a>
+ ## Change Log
++2026-09-16 draft amendment (unpromoted): B01 private deferred-context
++composite-admission proposal in soil-custody.md. The promoted contract remains
++v34. The proposal preserves ordinary resident-only rejection, non-owner deferred
++custody, receipt-phase independence, source-defined correspondence and one
++existing promotion boundary. Dual authority review and contract-derived red
++tests remain required before any implementation; diagnostic and production
++activation remain HOLD.
++
+ 2026-09-08 v34: isolated owner-approved zero-input-area sun/shade affine-column
+ experiment with complete dependency proof, coordinate-aware assembly and
+ candidate-independent resolution routes. See inactive-jacobian.md. Production
+diff --git a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md
+index 6d7c273b0..8117f46eb 100644
+--- a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md
++++ b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md
+@@ -35,6 +35,7 @@ Structural schema/definition and original-span preservation locators. Scientific
+ | `LSE-V33-EXPERIMENTAL-RESIDUAL-JACOBIAN` | [Version 33 experimental method](numerical-methods.md#version-33-experimental-residual-jacobian-representation) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-165, OBL-LANDSURFACEENERGY-C-021` | `flagged-binding-addition` | Isolated active dry-stem analytic derivative block of the actual normalized residual, with smooth-branch admission, independent multistep oracle, hybrid FD boundary, frozen cost criteria and no production activation. |
+ | `LSE-DIRECTORY-HISTORY` | [Original change log](history.md#history) | `historical` | `historical-or-superseded` | `none` | `none` | Original history retained; no authority demotion. |
+ | `LSE-V34-INACTIVE-LEAF-JACOBIAN` | [Version 34 experimental method](inactive-jacobian.md#inactive-jacobian) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-166, OBL-LANDSURFACEENERGY-C-022` | `flagged-binding-addition` | Isolated affine zero-input-area sun/shade columns; prospective reference, assembly and consumer obligations; no production activation. |
++| `LSE-B01-DEFERRED-COMPOSITE-ADMISSION-DRAFT` | [Draft B01 deferred-context composite admission](soil-custody.md#draft-b01-deferred-context-composite-admission-2026-09-16-authority-review-required) | `active` | `unpromoted-binding` | `INV-LANDSURFACEENERGY-167, OBL-LANDSURFACEENERGY-C-023` | `science-review-follow-on` | Private diagnostic composite only. owner: land-surface-energy/hydrology reviewers; next evidence gate: dual authority review plus contract-derived red admission tests; retained: soil-custody.md#draft-b01-deferred-context-composite-admission-2026-09-16-authority-review-required; no runtime, wire, ordinary restart, or production activation authority. |
+ 
+ 
+ ## Binding definitions
+@@ -116,6 +117,7 @@ Structural schema/definition and original-span preservation locators. Scientific
+ | `INV-LANDSURFACEENERGY-164` | dependency-replay.md#INV-LANDSURFACEENERGY-164 |
+ | `INV-LANDSURFACEENERGY-165` | numerical-methods.md#INV-LANDSURFACEENERGY-165 |
+ | `INV-LANDSURFACEENERGY-166` | inactive-jacobian.md#INV-LANDSURFACEENERGY-166 |
++| `INV-LANDSURFACEENERGY-167` | soil-custody.md#INV-LANDSURFACEENERGY-167 |
+ | `OBL-LANDSURFACEENERGY-C-001` | water-vapor.md#OBL-LANDSURFACEENERGY-C-001 |
+ | `OBL-LANDSURFACEENERGY-C-002` | water-vapor.md#OBL-LANDSURFACEENERGY-C-002 |
+ | `OBL-LANDSURFACEENERGY-C-003` | soil-coupling.md#OBL-LANDSURFACEENERGY-C-003 |
+@@ -138,6 +140,7 @@ Structural schema/definition and original-span preservation locators. Scientific
+ | `OBL-LANDSURFACEENERGY-C-020` | dependency-replay.md#OBL-LANDSURFACEENERGY-C-020 |
+ | `OBL-LANDSURFACEENERGY-C-021` | numerical-methods.md#OBL-LANDSURFACEENERGY-C-021 |
+ | `OBL-LANDSURFACEENERGY-C-022` | inactive-jacobian.md#OBL-LANDSURFACEENERGY-C-022 |
++| `OBL-LANDSURFACEENERGY-C-023` | soil-custody.md#OBL-LANDSURFACEENERGY-C-023 |
+ | `OBL-LANDSURFACEENERGY-P-001` | water-vapor.md#OBL-LANDSURFACEENERGY-P-001 |
+ | `OBL-LANDSURFACEENERGY-P-002` | water-vapor.md#OBL-LANDSURFACEENERGY-P-002 |
+ | `OBL-LANDSURFACEENERGY-P-003` | water-vapor.md#OBL-LANDSURFACEENERGY-P-003 |
+diff --git a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md
+index e2beb6bf1..7d7f833c5 100644
+--- a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md
++++ b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md
+@@ -190,6 +190,7 @@ of rebinding/substitution/dual acceptance, and byte-exact rollback.
+ |---|---|---|---|---|---|
+ | <a id="INV-LANDSURFACEENERGY-150"></a> `INV-LANDSURFACEENERGY-150` | Every soil layer retains exact receiver-owned enthalpy `E=exact(H_hi)+R`. Each candidate exactly aggregates the beginning total plus every canonical accepted soil-internal, top-boundary, and infiltration operand, rounds once to finite binary64 nearest-even `H_hi`, and stores the exact normalized signed-dyadic remainder `R`; versioned identity, receipt, restart/checkpoint, downgrade refusal, independent reconstruction, and byte-exact rollback are mandatory. | `REF-LANDSURFACEENERGY-009/011` + `SC-SURFACELIQUID-001#INV-SURFACELIQUID-022` | `[DIRECT][Static] + [INFERENCE][Static]` | runtime/test/real-consumer | `LSEB-E-049` or hard `HOLD` pending real adoption |
+ | <a id="INV-LANDSURFACEENERGY-155"></a> `INV-LANDSURFACEENERGY-155` | A V2 unpublished soil continuation may enter a charged candidate-only LSE/V3 evaluation solely through its authenticated read-only `SoilThermalUnpublishedPhysicalBeginningV2`. It remains a non-owner and supplies no restart, checkpoint, accepted receipt, or publishable projection bytes. Final acceptance reconstructs once from the original prepared owner, the complete canonical accumulated operands, and the exact selected physical ending, then seals one V2 owner/receipt/restart bundle. | `INV-LANDSURFACEENERGY-150`, `SC-SURFACELIQUID-001#INV-SURFACELIQUID-027`, `SC-SNOWENERGY-001#INV-SNOWENERGY-084` | `[DIRECT][Static] + [INFERENCE][Static]` | typed candidate/runtime/projection/finalization/test | `LSEB-E-049` with complete rollback |
++| <a id="INV-LANDSURFACEENERGY-167"></a> `INV-LANDSURFACEENERGY-167` | The B01 deferred-context posture may be decoded only as inert operands and may receive one private, process-local composite-admission proof only after fresh semantic authentication joins the immutable accepted resident, separately non-owner deferred continuation, complete coupled clock/history, source/build/map allowance, configuration and ordered topology, a complete retained-record support/event/credit correspondence, authenticated inactive physical-counter custody, and independently authenticated committed and prepared provider/GSI receipt phases. The proof binds this exact composite and is neither a wire value nor a restart capability. It is invalid after one attempted private promotion boundary or if it crosses a later decode/reconstruction boundary. | `INV-LANDSURFACEENERGY-155`, `SC-SURFACELIQUID-001#INV-SURFACELIQUID-027`, `SC-COUPLEDTIME-001#INV-COUPLEDTIME-031`, `SC-SNOWFREEFORCING-001#other-fields-and-receipt-identity` | `[DIRECT][Static] + [INFERENCE][Static]`; B01 Q source custody and capture observations | private admission/test/governance | Preserve the owning typed failure and source-defined precedence for each failed join; `LSEB-E-049` applies only to soil-custody failures. No implementation or diagnostic promotion before dual authority review and contract-derived red evidence. |
+ 
+ <a id="canonical-obligations"></a>
+ ## Canonical obligations
+@@ -198,6 +199,7 @@ of rebinding/substitution/dual acceptance, and byte-exact rollback.
+ | <a id="OBL-LANDSURFACEENERGY-P-005"></a> `OBL-LANDSURFACEENERGY-P-005` | expose every accepted soil-internal, top-boundary, and infiltration energy operand with exact layer/support/source identity; never supply a rounded aggregate, residual, or carry. | Producers delivering accepted soil thermal credits | v31:L319-L321 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#exact-soil); named fixtures/tests/real consumers |
+ | <a id="OBL-LANDSURFACEENERGY-C-005"></a> `OBL-LANDSURFACEENERGY-C-005` | soil thermal V2 alone owns the exact high/carry representation, credit receipt, restart/checkpoint state, and atomic commit. | Consumers of exact soil thermal enthalpy credits | v31:L334-L335 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#exact-soil); named fixtures/tests/real consumers |
+ | <a id="OBL-LANDSURFACEENERGY-C-010"></a> `OBL-LANDSURFACEENERGY-C-010` | prove an unpublished V2 continuation enters LSE/V3 only as its typed authenticated physical read, emits no owner/restart bytes and performs no intermediate install, rejects support/predecessor/ receipt substitution, and accepts only through one complete original-owner replay and one atomic V2 owner/receipt/restart seal with full rollback. | Candidate-only exact-soil non-owner beginning consumers | v31:L345-L349 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](#soil-beginning); named fixtures/tests/real consumers |
++| <a id="OBL-LANDSURFACEENERGY-C-023"></a> `OBL-LANDSURFACEENERGY-C-023` | prove composite admission authenticates every required join before minting an opaque proof; preserves the ordinary accepted-resident-only rejection; keeps deferred custody non-owner; proves a complete retained-record support/event/credit correspondence rather than cardinality; independently validates committed and prepared receipt phases; proves lawful inactive physical count separately from outer position; consumes/invalidate-on-attempts the proof; and permits exactly one existing replay/install boundary with atomic rollback. If retained records lack sufficient per-credit provenance to construct the correspondence, this obligation fails closed before proof minting or promotion. Source-defined precedence controls must cover ordinary-entry versus composite failure, each committed/prepared receipt failure independently, and a custody poison combined with a later promotion poison; each proves no proof is minted and byte-exact rollback. | Private B01 deferred-context diagnostic admission only | `INV-LANDSURFACEENERGY-167` | owning typed failure + blocked promotion | Contract-derived red tests before implementation; focused semantic controls, explicit precedence controls, and fresh-process diagnostic only after authority gates |
+ 
+ 
+ ## Isolated B01 native soil restart admission
+@@ -364,3 +366,78 @@ foreign position/counter/surface and reordered/missing OFE, changed continuation
+ lineage/flux, populated WB14 and reset-history negatives, atomic refusal, final
+ frame equality and fresh-process resumed completion. This custody clarification
+ changes no physical equations or execution chronology.
++
++<a id="draft-b01-deferred-context-composite-admission-2026-09-16-authority-review-required"></a>
++### Draft B01 deferred-context composite admission (2026-09-16; authority review required)
++
++This draft defines a distinct private diagnostic admission posture. It does not
++amend ordinary native restart admission: an accepted resident presented without
++the complete authenticated deferred composite continues to take the existing
++resident-only guard and refuse. It does not authorize physical evaluation, a
++provider invocation, a public API, a persisted schema, a general restart path,
++or production activation.
++
++The composite contains the immutable accepted soil resident and its exact
++soil-owner projection in the coupled clock, while the original prepared
++continuation remains separate non-owner custody. The committed bootstrap is a
++third, distinct lineage value. Authentication must bind source/build/map
++allowance; run, policy, configuration, ordered OFE/layer topology and logical
++revision; original prepared support, transaction, predecessor, state and
++receipt-chain lineage; every ordered accumulated operand, trial seal,
++high-plus-carry state and predecessor variant; complete accepted clock slab,
++event, snow/phase, pending-parcel and exact-next-support history; and the
++physical-counter proof already required for the inactive native posture.
++Native physical transaction identifiers and logical revisions remain in their
++respective domains and must not be rebased or compared as interchangeable
++counters.
++
++The required clock-to-credit relationship is source-defined correspondence,
++not equality of aggregates. The current serialized deferred credit groups retain
++the original owner, final trial, accumulated operands and ordered layer-credit
++chain, but do not by themselves establish a per-child support, transaction or
++event key. No admission may infer that mapping from eight accepted clock slabs,
++twelve credit groups, ordinal proximity, or aggregate totals. Before any proof
++may be minted, an independently retained record must establish the complete
++mapping and its owner, support, transaction, event and receipt-chain joins. If
++such evidence is absent, incomplete, foreign, duplicated, reordered or altered,
++the diagnostic must fail closed with the owning custody/clock error and preserve
++every owner byte. The observed eight slabs and twelve credit groups establish no
++count equality rule and no supported admission relation.
++
++Provider/GSI phase authority is independent from these joins. The prior
++committed receipt must be authenticated from an authoritative retained preimage
++or the separately authorized deterministic native provider-prefix procedure;
++the captured tuple alone is insufficient. The current prepared receipt is
++separately validated against its forcing and beginning state/cursor. Both may
++coexist without advancing a live owner. An unavailable authoritative prior
++receipt leaves this admission posture `HOLD`; it may not be repaired by copying
++the prepared digest or by choosing a new seed.
++
++Only after all joins succeed may semantic validation mint an opaque,
++process-local proof for this exact composite. Decoding or digest comparison
++alone never mints it. The proof cannot be serialized, copied to an ordinary
++entrypoint, reused after reconstruction, or retained after any attempt to use
++the existing later replay/install boundary. It admits no resident replacement:
++the resident remains unchanged and deferred custody remains non-owner until
++that one existing boundary completes its canonical full replay and atomic
++install. Any failed validation or failed promotion preserves every live and
++captured owner byte and invalidates the proof. A successful canonical boundary
++installs only its canonical owner/receipt/restart bundle and also invalidates
++the proof; it never installs deferred custody directly.
++
++`INV-LANDSURFACEENERGY-167` and `OBL-LANDSURFACEENERGY-C-023` are draft
++binding additions. They require two independent authority reviews and
++contract-derived red evidence before implementation. The applicable existing
++cross-contract constraints remain `INV-SURFACELIQUID-027` for owner/receiver
++custody, `INV-COUPLEDTIME-031` for inactive-prefix chronology, and
++`SC-SNOWFREEFORCING-001` section 7 for daily receipt identity; this amendment
++does not redefine any of them.
++
++| Profile surface | Draft binding |
++| --- | --- |
++| algorithm state and step | Decode inertly; authenticate every composite join; mint one non-wire proof; reach only the existing later canonical replay/install boundary; invalidate on attempt or reconstruction boundary. |
++| branch and guard | Ordinary resident-only entry always rejects this posture. Missing/foreign/reordered custody, receipt phase, counter, topology, support/event/credit correspondence, proof reuse, or premature promotion preserves the owning typed error and source-defined precedence with atomic refusal; `LSEB-E-049` is reserved for soil-custody failures. |
++| aliases, units, constants and tolerance | No new boundary symbol, dimensional quantity, conversion, parameter, tolerance, numerical method or normalization is introduced. Existing source identifiers retain their owning-contract units and identities. |
++| calibration and identifiability | `CALIBRATION_NOT_APPLICABLE`: this is custody/admission authority with no parameter or observation operator change. It makes no calibration, physical-validity, conservation or restart-qualification claim. |
++| test vector | Before implementing the distinct private constructor, specify the complete matrix and run source-bound controls executable at existing seams: authenticated captured bundle, retained correspondence, ordinary resident-only typed refusal and unchanged-state rollback, current receipt/counter/owner poisons, and an expected-red at the test-only private composition reader demonstrating its current delegation to ordinary native soil admission after all preceding joins pass. Record the exact reached soil guard. The matrix includes absent mapping, missing/foreign/duplicate/reordered deferred credits, invalid support/predecessor/carry/state, independently valid committed/prepared receipts swapped at their semantic phase join, and proof nonserialization, reuse/invalidation, premature promotion, complete join/precedence and atomic rollback. The correspondence reconstruction may use only retained bytes, canonical decoding, exact carry/state/seal reconstruction and validation; it must not invoke a physical solver/provider, accepted-child advance, owner install or promotion. After introducing the distinct private proof and constructor, execute every specified lifecycle and remaining join/precedence control before any positive diagnostic acceptance or authority promotion. Direct ordinary resident-only entrypoints continue to refuse; missing-symbol compile errors and fabricated stand-ins are not runtime red evidence. |
++| binding exposure and change | `LSE-B01-DEFERRED-COMPOSITE-ADMISSION-DRAFT` is `unpromoted-binding` in the Binding Exposure Index; the promoted contract remains v34. |
+diff --git a/docs/specifications/science-contracts/index.md b/docs/specifications/science-contracts/index.md
+index d707b6269..a229bec31 100644
+--- a/docs/specifications/science-contracts/index.md
++++ b/docs/specifications/science-contracts/index.md
+@@ -53,7 +53,7 @@ Unit governance remains mandatory for science contracts, runtime boundary symbol
+ | `SC-HYDRAULICS-001` | Overland Hydraulics Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md` | `static` | `2026-05-25` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
+ | `SC-IMPOUND-001` | Surface Impoundment Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-IMPOUND-001.md` | `static` | `2026-05-28` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
+ | `SC-IRRIG-001` | Irrigation Event Coupling Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-IRRIG-001.md` | `static` | `2026-05-23` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
+-| `SC-LANDSURFACEENERGY-001` | Land-Surface Energy-Balance Process Contract | `approved` | `active` | openWEPP maintainers + land-surface-energy/hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md` | `static+independent_oracle+contract_vectors` | `2026-09-08` |  | v34 isolated inactive-leaf numerical experiment; production HOLD. Experimental authority and immutable historical v33 policy reside in the canonical contract. |
++| `SC-LANDSURFACEENERGY-001` | Land-Surface Energy-Balance Process Contract | `approved` | `active` | openWEPP maintainers + land-surface-energy/hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md` | `static+independent_oracle+contract_vectors` | `2026-09-08` |  | v34 remains promoted. An unpromoted private B01 deferred-context admission binding addition is recorded in `soil-custody.md`; dual authority review and contract-derived red tests gate implementation. Production HOLD. |
+ | `SC-OFEROUTE-001` | Hillslope OFE-by-OFE Overland-Flow Routing Process Contract | `approved` | `active` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md` | `static` | `2026-09-01` |  | v52 requires accepted Stage 3 publication to traverse the real Lane-D OFE-day route exactly once with typed incomplete/mixed-authority rejection. |
+ | `SC-OFEROUTE-002` | Hybrid Implicit-Explicit Kinematic-Wave Stepping Contract | `withdrawn` | `deprecated` | openWEPP maintainers + hydrology reviewer | `abandoned/hybrid-implicit-stepping:docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md` | `static` | `2026-07-07` |  | Withdrawn by ADR-0037; contract deleted from main with final working state archived on branch `abandoned/hybrid-implicit-stepping` at `b1d5fd4410b700012d857ef4056000163e6aa6a0`. |
+ | `SC-OUTPUT-WAT5-001` | Five-Minute Hillslope Water Diagnostic Output Contract | `approved` | `active` | openWEPP maintainers + hydrology/output reviewer | `docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md` | `static` | `2026-09-02` |  | v5 projects receipt-complete Stage-3 sources from the sealed SurfaceLiquid ingress ledger while retaining precipitation/non-rain lineage; v4 admits bounded source-supported closing-ledger placement and v3 retains exact typed segment replay. |

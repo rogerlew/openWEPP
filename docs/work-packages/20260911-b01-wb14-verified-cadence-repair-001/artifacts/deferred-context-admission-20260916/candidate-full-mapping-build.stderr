@@ -1,0 +1,184 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-coupled-time v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916/crates/openwepp-coupled-time)
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916/crates/openwepp-land-surface-energy)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916/crates/openwepp-vegetation)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0433]: cannot find `v11_covered` in `crate`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5356:24
+     |
+5356 |     ) -> Result<crate::v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1, String>
+     |                        ^^^^^^^^^^^ unresolved import
+     |
+note: module `crate::v9_real_consumer_shadow::tests::physical_outcome_ledger` exists but is inaccessible
+    --> crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:15:1
+     |
+  15 | pub(crate) mod physical_outcome_ledger;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+help: a similar path exists
+     |
+5356 |     ) -> Result<crate::v9_real_consumer_shadow::v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1, String>
+     |                        +++++++++++++++++++++++++
+
+error[E0433]: cannot find `v11_covered` in `crate`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5359:20
+     |
+5359 |             crate::v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1 {
+     |                    ^^^^^^^^^^^ unresolved import
+     |
+note: module `crate::v9_real_consumer_shadow::tests::physical_outcome_ledger` exists but is inaccessible
+    --> crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs:15:1
+     |
+  15 | pub(crate) mod physical_outcome_ledger;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+help: a similar path exists
+     |
+5359 |             crate::v9_real_consumer_shadow::v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1 {
+     |                    +++++++++++++++++++++++++
+
+error[E0308]: mismatched types
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4938:28
+     |
+4938 |                 return Err("duplicate raw receipt support");
+     |                        --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `&str`
+     |                        |
+     |                        arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4938:24
+     |
+4938 |                 return Err("duplicate raw receipt support");
+     |                        ^^^^-------------------------------^
+     |                            |
+     |                            this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+help: try using a conversion method
+     |
+4938 |                 return Err("duplicate raw receipt support".to_string());
+     |                                                           ++++++++++++
+
+error[E0308]: mismatched types
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5191:29
+     |
+5191 | / ...                   record["receipt"]["snow_heat_j_m2"]
+5192 | | ...                       .as_f64()
+5193 | | ...                       .ok_or("terminal raw child heat")
+     | |___________________________________________________________^ expected `Option<_>`, found `Result<f64, &str>`
+     |
+     = note: expected enum `std::option::Option<_>`
+                found enum `Result<f64, &str>`
+help: try wrapping the expression in `Some`
+     |
+5191 ~                             Some(record["receipt"]["snow_heat_j_m2"]
+5192 |                                 .as_f64()
+5193 ~                                 .ok_or("terminal raw child heat"))
+     |
+
+error[E0277]: the `?` operator can only be used on `Option`s, not `Result`s, in a closure that returns `Option`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5188:68
+     |
+5183 |                 let snow_heat = selected.iter().try_fold(0.0, |sum, (_, support)| {
+     |                                                               ------------------- this function returns an `Option`
+...
+5188 |                                 .ok_or("terminal raw child lookup")?,
+     |                                                                    ^ use `.ok()?` if you want to discard the `Result<Infallible, &str>` error information
+
+error[E0277]: the `?` operator can only be used on `Result`s, not `Option`s, in a function that returns `Result`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5196:19
+     |
+4854 | /     fn validate_b01_retained_soil_trial_correspondence_v1(
+4855 | |         export: &std::path::Path,
+4856 | |         primitives: &serde_json::Value,
+4857 | |         subslabs: &serde_json::Value,
+4858 | |     ) -> Result<(), String> {
+     | |___________________________- this function returns a `Result`
+...
+5196 |                   })?;
+     |                     ^ use `.ok_or(...)?` to provide an error compatible with `Result<(), std::string::String>`
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5209:76
+     |
+5209 |                     || final_receipt.snow_heat_j_m2.to_bits() != snow_heat.to_bits()
+     |                                                                            ^^^^^^^
+     |
+help: you must specify a type for this binding, like `f32`
+     |
+5183 |                 let snow_heat: f32 = selected.iter().try_fold(0.0, |sum, (_, support)| {
+     |                              +++++
+
+error[E0308]: mismatched types
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5311:24
+     |
+5311 |             return Err("raw trial experimental bulk");
+     |                    --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `&str`
+     |                    |
+     |                    arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5311:20
+     |
+5311 |             return Err("raw trial experimental bulk");
+     |                    ^^^^-----------------------------^
+     |                        |
+     |                        this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+help: try using a conversion method
+     |
+5311 |             return Err("raw trial experimental bulk".to_string());
+     |                                                     ++++++++++++
+
+error[E0599]: the method `as_deref` exists for enum `Result<(), std::string::String>`, but its trait bounds were not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5453:18
+     |
+5452 | /             validate_b01_retained_soil_trial_correspondence_v1(export, &missing, &subslabs)
+5453 | |                 .as_deref(),
+     | |_________________-^^^^^^^^
+     |
+     = note: the following trait bounds were not satisfied:
+             `(): Deref`
+
+error[E0599]: the method `as_deref` exists for enum `Result<(), std::string::String>`, but its trait bounds were not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5463:18
+     |
+5462 | /             validate_b01_retained_soil_trial_correspondence_v1(export, &foreign, &subslabs)
+5463 | |                 .as_deref(),
+     | |_________________-^^^^^^^^
+     |
+     = note: the following trait bounds were not satisfied:
+             `(): Deref`
+
+error[E0599]: the method `as_deref` exists for enum `Result<(), std::string::String>`, but its trait bounds were not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5477:18
+     |
+5476 | /             validate_b01_retained_soil_trial_correspondence_v1(export, &support, &subslabs)
+5477 | |                 .as_deref(),
+     | |_________________-^^^^^^^^
+     |
+     = note: the following trait bounds were not satisfied:
+             `(): Deref`
+
+error[E0599]: the method `as_deref` exists for enum `Result<(), std::string::String>`, but its trait bounds were not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5492:18
+     |
+5491 | /             validate_b01_retained_soil_trial_correspondence_v1(export, &carry, &subslabs)
+5492 | |                 .as_deref(),
+     | |_________________-^^^^^^^^
+     |
+     = note: the following trait bounds were not satisfied:
+             `(): Deref`
+
+error[E0599]: the method `as_deref` exists for enum `Result<(), std::string::String>`, but its trait bounds were not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5504:18
+     |
+5503 | /             validate_b01_retained_soil_trial_correspondence_v1(export, &primitives, &event)
+5504 | |                 .as_deref(),
+     | |_________________-^^^^^^^^
+     |
+     = note: the following trait bounds were not satisfied:
+             `(): Deref`
+
+Some errors have detailed explanations: E0277, E0308, E0433, E0599, E0689.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 13 previous errors

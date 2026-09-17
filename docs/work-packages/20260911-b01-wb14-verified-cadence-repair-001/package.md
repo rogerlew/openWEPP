@@ -1,18 +1,245 @@
 # B01 WB14 verified parent cadence repair
 
-**Status: INCOMPLETE / HOLD; bounded authority-domain attribution COMPLETE.**
-Position compares different counters; GSI compares prepared and committed phases.
-The prior GSI receipt still needs independent authentication. The deferred soil
-composite has no proven supported restoration path and needs canonical admission
-authority. Both independent attribution reviews accept these bounded conclusions.
-The accepted file-only negative diagnostic and acquisition remain complete;
-production, scientific qualification, restart, conservation and cadence remain HOLD.
+**Status: INCOMPLETE / HOLD; private diagnostic admission remains unaccepted.**
+Prior authority-domain attribution remains complete. The bounded original-bootstrap
+provider prefix now authenticates the prior committed GSI receipt independently;
+the prepared day-4 receipt remains a distinct phase. Canonical composite admission
+is an unpromoted draft. Raw records for all twelve deferred credit groups have been
+recovered and source-defined correspondence has passed canonical component checks.
+The complete-bundle expected-RED and both independent preimplementation reviews
+permitted the bounded private prototype. Its constructor accepted the original operands,
+but the full probe failed the subsequent six-owner projection comparison. Production, scientific qualification,
+restart, conservation and cadence remain HOLD.
 
 Authentic capture, witness and corrected-recorder acquisition allowances remain
 exhausted (1/1 each). Bounded native diagnostics have executed under the adopted
 amendment below; they do not release a physical successor.
 
 Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
+
+## Deferred-context admission — adopted 2026-09-16
+
+**INCOMPLETE / HOLD.** The private candidate has passed its component, complete-bundle
+expected-red, capability-trait and early lifecycle controls. The full private probe
+FAILED at the six-owner projection comparison after constructor acceptance. Integrated
+receipt/combined-custody error precedence and byte-exact late-failure rollback remain
+unproved. There is no canonical promotion, source adoption or qualification claim.
+
+Owner execution of `/tmp/openwepp_b01_wb14_deferred_context_admission_authorization.md`
+adopts this continuation of **B01-WB14-CURRENT-CONTEXT-CAPTURE / A-001**, starting at
+`3c6affe43317dc7825f24b971aa55e1c07a39026`. Intent declared before edits: draft the narrow
+composite admission invariant, obtain two independent authority reviews and source-bound
+contract-derived red evidence, then implement the detached private proof/constructor;
+authenticate prior GSI separately and correct counter/phase comparisons. No physical
+producer, numerical method, public API/wire, dependency, production activation, new
+acquisition, model/collector invocation or physical successor is authorized.
+
+All current evidence is under [deferred-context admission artifacts](artifacts/deferred-context-admission-20260916/).
+Individual attempt JSON files bind commands, source patches, input hashes, limits,
+exit status and elapsed time; corresponding stdout/stderr/resources preserve raw results.
+Failed attempts are retained, including the v13 static rejection. Historical attribution,
+ordinary-refusal and original scientific-regression results are not rewritten.
+
+### Authority and independent review
+
+The reviewed draft adds **INV-LANDSURFACEENERGY-167 / OBL-LANDSURFACEENERGY-C-023**,
+with the explicitly unpromoted binding `LSE-B01-DEFERRED-COMPOSITE-ADMISSION-DRAFT`.
+It requires complete resident/bootstrap/deferred-non-owner, clock/history/event,
+source/configuration/topology, prior/prepared GSI, physical-counter and use-bound joins;
+opaque non-wire one-use proof; unchanged ordinary admission; the existing later
+replay/install boundary; and atomic refusal. Binding/A0 draft checks pass their bounded
+draft posture. They do not approve promotion.
+
+Both independent reviewers accepted the draft and complete-bundle expected-red evidence
+as the preimplementation gate for the private prototype. Final promotion remains HOLD.
+The exact [reviewed draft patch](artifacts/deferred-context-admission-20260916/reviewed-canonical-draft.patch)
+SHA-256 is `0be23fc073d31503f34cda01ea7dc485634d44d890a6bbcc371a657d117d43d1`.
+The four main authority documents were verified to match that saved diff, then restored
+to their original promoted **v34** contents. No unpromoted normative edit is installed
+on main; [disposition](artifacts/deferred-context-admission-20260916/canonical-draft-disposition.json)
+retains the reason and paths.
+
+[Astra-orchestrated correctness review](artifacts/deferred-context-admission-20260916/authority-correctness-review.md)
+is by reused `/root/event_correctness_attribution` (Sol/high), and
+[independent QA](artifacts/deferred-context-admission-20260916/authority-qa-review.md)
+by reused `/root/event_qa_attribution` (Terra). Both are distinct from each other,
+authors and orchestrator. Original findings and same-reviewer verification remain
+in those artifacts. One source writer at a time: deferred_writer, then
+deferred_mapping_writer, inactive_custody_writer and custody_finish; Astra integrated
+compiler/wiring corrections and owned commands, evidence and disposition. No nested agents.
+
+| Finding | Disposition and evidence boundary |
+| --- | --- |
+| DC-C1: successful promotion cannot preserve every old live byte | CLOSED draft: failure rollback is distinct from canonical successful install. |
+| DC-C2/C3: eight slabs/twelve credits and producer-state digests were unproved | CLOSED for pinned component: recovered raw preimages, independent exact operands, typed state/seal joins and semantic poisons. Does not establish admission. |
+| DC-C4: private-type lifecycle RED cannot precede the type | CLOSED sequencing: existing-seam RED before implementation; complete lifecycle matrix before acceptance/promotion. |
+| DC-Q1: v35 approval metadata contradicted draft | CLOSED: v34 remains promoted; draft remains unpromoted. |
+| DC-Q2: precise typed error precedence missing | CLOSED wording; integrated execution obligation remains OPEN. |
+| DC-Q3: historical excluded test misattributed as new RED | Withdrawn by QA after inspecting the actual new selectable test. |
+| v13 generic bypass/mapping outside entrypoint/unbound typed inputs | Rejected and corrected. Same correctness reviewer verified actual mapping, opaque private mint, raw-derived lanes and exact-use binding. |
+| v15 no-default compiler errors initially called introduced by QA | Withdrawn after baseline comparison: all61 are inherited; required mode remains FAIL. |
+| Complete late rollback / owning receipt and combined promotion precedence | OPEN; both final acceptance dispositions HOLD. |
+
+### Executed evidence and private implementation
+
+Ran: deterministic pinned provider prefix through day3, plus separate day4 preparation,
+PASS **0.317572s**. Four local prefix commits independently reproduce prior receipt
+`e1ca5d7e2f8088c68d3acdd0a7a8073bd3b5c7b6a1b632d58782d01ebc961887`;
+prepared day4 remains distinct. Preimages are retained in
+[authenticated-gsi-preimages.json](artifacts/deferred-context-admission-20260916/authenticated-gsi-preimages.json).
+This is **provider/GSI computation**, including canonical receipt validation, not
+zero-computation decoding. No LSE/soil/WB14 physical operation or live-owner advance
+was performed by that bounded prefix operation. It was not rerun during terminal checks.
+
+Ran: exact raw correspondence and independent reconstruction for all12 credit groups,
+24 retained raw trial records and8 subslab records. The source-defined slab mapping is
+`[[0],[1],[2],[3],[4],[5],[6],[7,8,9,10,11]]`; native transactions5763..5774,
+raw trial255, outer position214 and physical counter0 are distinct quantities.
+All72 high-plus-carry credits and the final five-child event heat reconstruct exactly;
+terminal event residual0 is an operand check, not a historical conservation claim.
+Canonical component tests bind all12 typed producer states and the terminal OFE digest
+`374c9dc66fab2bbee88a4821bab63ce8cc3dc682c7490b1416a0ca4114261ce4`.
+Missing/reordered/foreign credit, predecessor/support/carry/state and phase poisons are
+retained in the component records and reviewed within that scope.
+
+Ran: frozen v10 counter controls PASS **69.792090s**, GSI controls PASS **18.280969s**,
+and complete-bundle expected-red PASS-as-expected-red, process exit101 **224.722115s**.
+The exact refusal is `Identity("native soil proof accepted support or exact bootstrap")`
+after archive0–3, original climate/GSI, counter and deferred-phase authentication.
+Ordinary resident-only admission remains unchanged and rejects the original deferred
+composite without mutation. The original RED source/binary remain preserved.
+
+Ran: v12 complete frozen-history preflight PASS **265.136647s** after independently
+deriving the existing canonical V3 frozen configuration from the pinned V2 seed.
+The earlier v11 wrong-pin refusal remains recorded. Typed V3/V4 histories pass existing
+semantic replay; no alternative equations or captured-self-pin authority were introduced.
+Canonical historical Drain accounting operates only on local candidates; it is computation,
+not physical integration. Original source/input bytes and all physical-work counters remain unchanged.
+
+Static: the test-only reader now performs actual correspondence and all preliminary joins,
+then mints a private, non-Clone/non-Serde context bound to native JSON, accepted soil,
+clock, phase, raw lane maps, committed bootstrap, full dynamic frame, constructor inputs
+and pinned surface configuration. Actual constructor use consumes an Option slot first,
+decodes typed lanes from the bound raw lanes, validates use identity and consumes the
+fully validated composite proof. The proof carries typed independently authenticated
+prior/prepared GSI and validated V3/V4 residents. Existing inactive-custody installation
+and typed prior-GSI installation precede captured equality. Existing later replay/install
+semantics remain; accepted soil stays resident and deferred ending stays non-owner.
+Ordinary `NativeSoilRestartAdmissionV1::authenticate` is unchanged.
+
+Ran: final selected-feature build PASS **20.132983s**; frozen v15 trait test PASS1/1
+**0.005420s**, proving both capability types are not Clone/Copy/Serialize/DeserializeOwned.
+Original-corpus lifecycle control PASS1/1 **401.636619s** on the same source/binary:
+full preliminary authentication; native/stage/bootstrap/lane/frame/input substitutions;
+actual-entry altered wire-promotion posture refusal; consumed capability reuse refusal;
+byte-equal native, soil and dynamic frame after refusal. Audits show12 harmless frame
+constructions, GSI prepare0/validator7, and zero mechanism/native physical calls,
+direct compute/mutations, commits and publication. This is **early bound-use refusal**,
+not byte-exact late rollback after full proof construction.
+
+**Terminal private-restoration probe: FAIL exit101, 502.507037s, no timeout.**
+[Exact receipt](artifacts/deferred-context-admission-20260916/candidate-v15-private-restoration-probe.json),
+[stdout](artifacts/deferred-context-admission-20260916/candidate-v15-private-restoration-probe.stdout)
+and [stderr](artifacts/deferred-context-admission-20260916/candidate-v15-private-restoration-probe.stderr)
+bind unchanged v15 source, binary, pinned files and49 original members. The private
+constructor reports **accepted original operands**, so its full token/GSI/frozen-history/
+soil/inactive custody and construction path was reached. The subsequent native six-owner
+byte comparison fails with exactly **`native six-owner projection`**. The test does not
+reach success or a physical successor. No owner-key or byte-offset difference was
+emitted, so the particular owner and cause remain UNRESOLVED.
+
+Static: the producer and restored reader both call
+`canonical_v11_parent_owner_state_bytes()`, which emits vegetation, LSE, surface-liquid,
+hydrology, biogeochemistry and soil-thermal keys. This is not an observed mismatch of
+native-versus-clock representation functions. A differing underlying owner byte is
+established; a specific missing field or producer defect is not. Both independent
+reviewers verified this narrower terminal failure and retain HOLD.
+
+Ran: terminal audits show **7** harmless run-frame constructions, GSI **prepare0 /
+validator9**, and zero mechanism/native physical calls, direct compute/state mutations,
+commits, publication and downstream operand production. Canonical history/receipt
+validation remains real computation. No downstream WB14 ingress, accepted physical
+child, conservation/restart simulation, model publication or cadence repair ran.
+The new failure is preserved without bypass or positive reinterpretation. Resolving
+its exact owner-byte cause requires additional diagnostic work; the remaining fixed
+allowance is reserved for review, source/evidence preservation and publication rather
+than another approximately8.4-minute build/probe cycle without adequate closure time.
+
+### Terminal source, qualification and preservation
+
+Detached S: `/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916`.
+Tree SHA-256 **`ab221bc5280eaee458be9a6066ba628efe292c0a17394ed1e754ff8f265d8eed`**;
+frozen v15 binary SHA-256 **`d9158bba8e25413aa15bc316ee5f09618a11de3f3f5ef3daf62076e02ef05e96`**.
+[Exact reconstruction](artifacts/deferred-context-admission-20260916/terminal-source-reconstruction.json)
+PASS: retained R plus [terminal incremental patch](artifacts/deferred-context-admission-20260916/terminal-incremental-from-R.patch),
+SHA-256 `6f2cdb52ecfe7213b3afe0ac296837462802e1ce43ce8f94940439c7953d875d`,
+reproduces all743 scoped source entries in a separate durable copy.
+The [cumulative patch](artifacts/deferred-context-admission-20260916/terminal-cumulative.patch)
+SHA-256 is `771bb7a789bac8caededba8c1624bfb9ddaec0c1f8ccafb3d20fb5fe74e15b11`.
+R itself is Q plus historical reader-incremental.patch, **not cumulative atop Q**.
+R/Q/original terminal binary remain pinned and unchanged. Full source bases, binaries,
+1.8GB49-member export and8.7GB original raw observations remain local, not remotely
+published by the scoped evidence commit. Original seed/climate/member hashes are checked
+before and after each run. The raw observation SHA remains
+`1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c`.
+
+Exact diff reconciliation:67 source files differ from R. **61 equal rustfmt(R) exactly**;
+only six intended semantic files remain: member restoration, current-context capture,
+v9 consumer, native-soil admission, runtime forcing audit, and provider/GSI prefix test.
+[Formatting reconciliation](artifacts/deferred-context-admission-20260916/terminal-format-reconciliation.json)
+records every path. The frozen test retains a stale historical RED doc comment; its
+renamed test, actual constructor call and terminal execution define the current probe.
+This comment debt does not recast the historical RED or establish a passing result.
+
+[Quality assessment](artifacts/deferred-context-admission-20260916/terminal-quality-assessment.json):
+
+| Check | Terminal result |
+| --- | --- |
+| Selected-feature test build / v15 capability traits / v15 rustfmt | PASS. |
+| Default-feature cargo check, R and S | PASS. |
+| No-default-features test compilation, R and S | FAIL61 inherited coded errors each; no introduced coded error. Warnings2→3. |
+| Strict Clippy, R and S | FAIL27 errors each; changed diagnostic text is confined to verified formatting-only files. |
+| Capped observational Clippy | Exit0 with2860→2892 diagnostics, net+32;70 introduced/changed and38 removed/changed under primary-source comparison. Includes new private-helper/provider-test lint debt. **Not strict-lint or no-new-lint acceptance.** |
+| Dependency deny / external-authority anti-evasion | NOT TRIGGERED: no dependency/manifest or suite/cohort/required-case binding change. |
+| Critical full correctness campaign / full workspace qualification | BLOCKED/NOT RUN by the physical/coupled-model envelope. |
+| Original scientific regression / production restart/conservation/cadence | Original FAIL retained; qualification remains HOLD. |
+
+No production Rust is adopted into main. Publication covers only this package and
+scoped evidence/scripts/patches/reviews. Unique failed attempts remain preserved:
+recursive/mapping build errors, semantic mapping refusals, large-Value GSI control
+failure, wrong V2/V3 frozen pin, private-core inference/wiring/array errors, manifest-path
+typo, draft checks and static v13 rejection. Repeated partial writer returns and S's
+ancillary symlink loops are recorded tooling limitations; immutable R/Q were not repaired.
+
+### Budget and terminal disposition
+
+Anchor **2026-09-16 20:17:45 UTC**, carry **64,327.60s**, fixed ceiling **78,727.60s**,
+supplement **14,400s**, hard deadline **2026-09-17 00:17:45 UTC**. The prior receipt was
+read once (64,327.599851s); its smaller precision does not reclaim time. All wall time,
+reviews, waits, preservation, publication and return charge concurrently once. Internal
+60/120/180-minute reassessments retained supported next actions without renewing the cap.
+All three physical acquisition/witness allowances remain separately exhausted1/1.
+Terminal probe and reviews are complete. The [attempt summary](artifacts/deferred-context-admission-20260916/terminal-attempt-summary.json)
+records73 completed command receipts and25 nonzero exits: one planned complete-bundle
+expected-red, plus24 failed commands including inherited qualification failures.
+Conservatively carry historical floor113 plus24 = **at least137** observed failures;
+additional navigation/tooling/static-rejection events and historical uncertainty are
+not converted into an invented exact unsuccessful-correction count.
+
+Preservation at **2026-09-17 00:06:07 UTC**: supplement consumption
+**13702.54s**, cumulative **78030.14s**, remaining **697.46s**.
+Scoped evidence is being committed/pushed on existing main. Exact-commit remote byte
+verification and the final charged-time ledger are retained outside the commit at
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/deferred-context-admission-final-20260916.json`
+and `deferred-context-admission-remote-20260916.json` in the same directory, avoiding
+recursive publication claims. Publication time remains charged; no cap renewal.
+
+Required continuation within this same checkpoint, if separately authorized beyond the
+fixed cap: identify and resolve the six-owner byte mismatch; complete integrated prior/prepared
+receipt and custody-plus-promotion typed precedence/late rollback evidence; address introduced lint debt, and obtain both final
+acceptance reviews before canonical promotion. Full campaign/production qualification
+requires its own released run scope. This is not a scientific impossibility finding,
+physical successor permission or WB14 cadence repair.
 
 ## Authority-domain attribution — adopted 2026-09-16
 

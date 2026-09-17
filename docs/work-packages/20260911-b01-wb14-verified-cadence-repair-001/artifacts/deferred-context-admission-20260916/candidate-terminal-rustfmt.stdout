@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/deferred-context-admission-20260916-c907c45fc184
+  scratch: /tmp/openwepp-roger-deferred-context-admission-20260916-c907c45fc184
+  cache:   /workdir/.cache/openwepp

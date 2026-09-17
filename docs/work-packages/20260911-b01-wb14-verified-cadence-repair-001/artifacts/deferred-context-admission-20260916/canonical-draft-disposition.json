@@ -1,0 +1,12 @@
+{
+  "status": "UNPROMOTED; preserved reviewed patch; main authority restored to existing v34",
+  "draft_patch_sha256": "0be23fc073d31503f34cda01ea7dc485634d44d890a6bbcc371a657d117d43d1",
+  "paths": [
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "docs/specifications/science-contracts/index.md"
+  ],
+  "restored_from": "3c6affe43317dc7825f24b971aa55e1c07a39026",
+  "reason": "Required integrated precedence/late-failure matrix and qualification remain incomplete; no dual promotion GO"
+}

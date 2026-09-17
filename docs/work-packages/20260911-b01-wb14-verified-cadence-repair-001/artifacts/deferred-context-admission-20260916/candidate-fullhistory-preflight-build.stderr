@@ -1,0 +1,15 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0282]: type annotations needed
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:868:57
+    |
+868 |         let frozen: DiagnosticFrozenLitterResidentsV1 = diagnostic_native_field(
+    |                                                         ^^^^^^^^^^^^^^^^^^^^^^^ cannot infer type of the type parameter `T` declared on the function `diagnostic_native_field`
+    |
+help: consider specifying the generic argument
+    |
+868 |         let frozen: DiagnosticFrozenLitterResidentsV1 = diagnostic_native_field::<T>(
+    |                                                                                +++++
+
+For more information about this error, try `rustc --explain E0282`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error

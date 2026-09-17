@@ -1,0 +1,54 @@
+{
+  "label": "raw-correspondence-v1",
+  "argv": [
+    "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/correspondence-v1.frozen",
+    "deferred_context_raw_primitives_authenticate_credit_correspondence_before_admission",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/raw-correspondence-v1.resources",
+    "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/correspondence-v1.frozen",
+    "deferred_context_raw_primitives_authenticate_credit_correspondence_before_admission",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916",
+  "start_utc": "2026-09-16T20:56:44.970737+00:00",
+  "source_tree_sha256": "4b66543c7464187de843012cd6009987a2f0cc13eab09ef885932cbfb98dfb50",
+  "patch_sha256": "4364a6a169dd89a21c432f6abb403dd751facb82c824832f0f1debca57af0622",
+  "source_receipt": "raw-correspondence-v1-source.json",
+  "input_manifest": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/input-custody-before.json",
+  "input_manifest_sha256": "b78f2956b99079d6447aacb51c95e087093b858d90b47f65f601e0b3d53748b3",
+  "environment": {
+    "RUST_MIN_STACK": "67108864",
+    "OPENWEPP_B01_MEMBER_EXPORT": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1",
+    "OPENWEPP_B01_RETAINED_SOIL_TRIAL_PRIMITIVES": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-soil-trial-primitives.json"
+  },
+  "pinned_files": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/run_recorded.py": "5e762d9f11230e05cb1d2c7ab6e80cf2660970077910c4a5cd828ec1d3f3aa04",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/summary.json": "cf5f6612d65c3b5a2a53583560730e8d5c551795efc73ff6b3fd5735e41c17bb"
+  },
+  "timeout_seconds": 300,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-deferred-context-admission-20260916/correspondence-v1.frozen",
+  "binary_sha256": "b12cb33ff310c373c2f890fb73a346b654ad7d2a00bc7439287228cb556e3b6d",
+  "process_group": 2146326,
+  "exit_code": 101,
+  "timed_out": false,
+  "elapsed_seconds": 0.6183074908331037,
+  "end_utc": "2026-09-16T20:56:45.813176+00:00",
+  "source_unchanged": true,
+  "binary_unchanged": true,
+  "pinned_files_unchanged": true,
+  "inputs_unchanged": true
+}

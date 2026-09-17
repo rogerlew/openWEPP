@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/reconstruct_candidate_state_hashes.py", line 40, in <module>
+    assert ending_state == custody['candidate']['ending_state']
+                           ~~~~~~~^^^^^^^^^^^^^
+KeyError: 'candidate'

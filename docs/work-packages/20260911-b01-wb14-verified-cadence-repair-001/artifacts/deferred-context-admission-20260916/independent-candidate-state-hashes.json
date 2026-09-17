@@ -1,0 +1,61 @@
+{
+  "evidence_class": "Ran: independent retained-state producer-tuple hashing; no physical work",
+  "inputs": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-soil-trial-primitives.json": "dfb4185058d7115727382b96a3bd879c255f888c6947863f015daceb2b987dc4",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-subslab-primitives.json": "e2434197840c651db67cc52769cf1076d62905e5fcbe80b46cdd14cb05599114",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.26.json": "443aa08f5e2d9d11939754901253196d63e74ac9d85481f719e4ac640047e3fd"
+  },
+  "trial_candidates": {
+    "49df4bee555b8e27002ffc63bf62415821c3365d27e3d3c51103a07fe8668bb6": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "8c9ae6fb0c08a576ce5c88cc2c2421e85f572ac7a75ccccba72de7afeb36e9aa"
+    },
+    "ad1f5dbced6f8ce8463db4eb402c01ae72ec5ce56b1f34190766e946ce065e97": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "8be1966523288365fd4e928b4a1cdd62b60903961befcb127c590156d9de64b9"
+    },
+    "730c35bd3eb40e593aeb228c2d8fdd130e0c8d18020c5f45240b0c0f77b4281e": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "49dc3cb9c6b10c496a8b989b010e1e5dfb3e73ab5443b4151e26e30480203a50"
+    },
+    "d9aa6e111af21a19a836aafc1b955f0156235b4752d5d10f662c4dbdb09821b4": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "3f84d144ce5ff9afb4c80ee1181f8c3d33b5354e1700ad349e45d6f221176376"
+    },
+    "61b846035328b477ee4e1dad411c7fc0f2470d0168308b448f33cdbd9962b19d": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "902dfb278598fe401b433f6305be0c5ed799b4c2e8808da0448dbb3e9dad749d"
+    },
+    "00962ae31833d1a0767807b95ee7aa346e3bc11e2df59b1a4d05897d5f510d18": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "589377679ef7785669f1dfb77d659695d480180b6b46e06d2a44b0b2a92bac80"
+    },
+    "c08f2d17c9de92839da573aecb5851f38b24ef8beb5e8f74d9162713d7d0bc7c": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "cbaae8512815390eb10c846afb3f020d1fcb4610c33f92a4dc1c35331f9f1388"
+    },
+    "367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "af09e4a3cc5b93dca7469d7bbd7912a90949522ff1d802402792ff5b9559808f"
+    },
+    "a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "80305cc61a3b37ddbe21035bc5da0c22f90505b0e4fc3fde592a93949685123e"
+    },
+    "38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "cc6c4fc893c9647920605bac634f0f88fc719fc42aa0e8cb6c671c7fb6e47a32"
+    },
+    "543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "4d552cbb106d0341d2f2bc7242e692ba472fb1977382c441c06d4348cb61f442"
+    },
+    "20aaac2a1501b558e9feabfbf8d774503c7e456a5fd99a0378a2a156a0c6cd65": {
+      "physical_transaction_id": 255,
+      "candidate_sha256": "d90a7deeec7b5416ab1734c1188bda453042be00673416446a9dade66ee35800"
+    }
+  },
+  "terminal_ending_ofe_sha256": "374c9dc66fab2bbee88a4821bab63ce8cc3dc682c7490b1416a0ca4114261ce4",
+  "final_native_transaction_id": 5774,
+  "limits": "Independent operand hash joins only; typed canonical validators, semantic controls and composite admission remain separate."
+}

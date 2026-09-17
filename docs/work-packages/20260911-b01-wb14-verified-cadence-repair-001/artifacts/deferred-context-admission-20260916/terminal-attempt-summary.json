@@ -1,0 +1,137 @@
+{
+  "as_of_utc": "2026-09-17T00:05:32.111267+00:00",
+  "complete_recorded_commands": 73,
+  "recorded_nonzero_exits": 25,
+  "planned_expected_red_nonzero_exits": 1,
+  "carried_failure_floor": 113,
+  "conservative_observed_failure_floor_excluding_planned_red": 137,
+  "definition": "Carried floor plus completed recorded nonzero exits in this supplement, excluding the planned complete-bundle expected-red. Includes inherited qualification FAILs. Not an exact unsuccessful-correction count; additional navigation/tooling/static-rejection events are not added.",
+  "nonzero_receipts": [
+    {
+      "receipt": "baseline-strict-clippy.json",
+      "exit_code": 101,
+      "elapsed_seconds": 21.49099112395197
+    },
+    {
+      "receipt": "independent-candidate-state-reconstruction.json",
+      "exit_code": 1,
+      "elapsed_seconds": 0.03387436596676707
+    },
+    {
+      "receipt": "baseline-no-default-tests-check.json",
+      "exit_code": 101,
+      "elapsed_seconds": 27.51709332782775
+    },
+    {
+      "receipt": "raw-mapping-v4.json",
+      "exit_code": 101,
+      "elapsed_seconds": 3.828517197165638
+    },
+    {
+      "receipt": "candidate-rustfmt-preflight.json",
+      "exit_code": 1,
+      "elapsed_seconds": 4.531165733933449
+    },
+    {
+      "receipt": "raw-correspondence-v1.json",
+      "exit_code": 101,
+      "elapsed_seconds": 0.6183074908331037
+    },
+    {
+      "receipt": "candidate-private-core-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 23.990868703927845
+    },
+    {
+      "receipt": "candidate-full-mapping-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 35.99071358889341
+    },
+    {
+      "receipt": "fullhistory-v11-member-preflight.json",
+      "exit_code": 101,
+      "elapsed_seconds": 37.10402478976175
+    },
+    {
+      "receipt": "raw-mapping-v3.json",
+      "exit_code": 101,
+      "elapsed_seconds": 1.6715784599073231
+    },
+    {
+      "receipt": "candidate-fullhistory-preflight-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 19.938231552019715
+    },
+    {
+      "receipt": "raw-mapping-v5.json",
+      "exit_code": 101,
+      "elapsed_seconds": 3.9292659610509872
+    },
+    {
+      "receipt": "preimplementation-v9-counter-poisons.json",
+      "exit_code": 101,
+      "elapsed_seconds": 50.89824742311612
+    },
+    {
+      "receipt": "binding-draft.json",
+      "exit_code": 1,
+      "elapsed_seconds": null
+    },
+    {
+      "receipt": "a0-draft.json",
+      "exit_code": 1,
+      "elapsed_seconds": null
+    },
+    {
+      "receipt": "custody-v8-gsi-poisons.json",
+      "exit_code": 134,
+      "elapsed_seconds": 37.66086857998744
+    },
+    {
+      "receipt": "candidate-terminal-no-default-tests-check.json",
+      "exit_code": 101,
+      "elapsed_seconds": 26.51824463903904
+    },
+    {
+      "receipt": "preimplementation-v10-complete-bundle-red.json",
+      "exit_code": 101,
+      "elapsed_seconds": 224.72211516881362
+    },
+    {
+      "receipt": "candidate-private-lifecycle-fixed-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 0.7681449260562658
+    },
+    {
+      "receipt": "candidate-v15-private-restoration-probe.json",
+      "exit_code": 101,
+      "elapsed_seconds": 502.507037403062
+    },
+    {
+      "receipt": "raw-mapping-v6.json",
+      "exit_code": 101,
+      "elapsed_seconds": 3.3258624272421002
+    },
+    {
+      "receipt": "candidate-terminal-strict-clippy.json",
+      "exit_code": 101,
+      "elapsed_seconds": 10.862203021999449
+    },
+    {
+      "receipt": "candidate-private-lifecycle-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 23.75342366285622
+    },
+    {
+      "receipt": "candidate-private-controls-complete-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 7.24129629926756
+    },
+    {
+      "receipt": "candidate-recursive-seal-build.json",
+      "exit_code": 101,
+      "elapsed_seconds": 5.884701426606625
+    }
+  ],
+  "probe_still_running": false
+}

@@ -1,0 +1,8 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "tools/check_sc_binding_exposure.py",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+  ],
+  "exit_code": 1
+}

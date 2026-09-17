@@ -1,0 +1,4 @@
+
+thread 'snow_stage3_v11_current_context_capture::member_restoration::actual_member_frozen_litter_history_preflight_is_pure' (2269601) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:1084:6:
+complete retained frozen-litter history preflight: Runtime(Identity("diagnostic frozen-litter LSE configuration/pinned authority join"))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

@@ -1,0 +1,123 @@
+{
+  "evidence_class": "Ran: complete raw byte search, no model/physics",
+  "path": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/observations.json",
+  "bytes": 8701419029,
+  "sha256": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+  "targets": [
+    {
+      "credit_group_index": 7,
+      "receipt": "367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc"
+    },
+    {
+      "credit_group_index": 8,
+      "receipt": "a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8"
+    },
+    {
+      "credit_group_index": 9,
+      "receipt": "38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739"
+    },
+    {
+      "credit_group_index": 10,
+      "receipt": "543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c"
+    }
+  ],
+  "matches": [
+    {
+      "offset": 8235998626,
+      "credit_group_index": 7,
+      "receipt": "367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc",
+      "context": "e4a3cc5b93dca7469d7bbd7912a90949522ff1d802402792ff5b9559808f\",\"ending_soil_temperature_k\":272.3497173431717,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc\",\"snow_heat_j_m2\":-155.85450528944543,\"soil_heat_j_m2\":155.85450528944543,\"support\":{\"end_ns\":\"385680000000000\",\"start_ns\":\"385620000000000\"}},\"resistance_m2_k_w\":0.09126295407988"
+    },
+    {
+      "offset": 8236000683,
+      "credit_group_index": 7,
+      "receipt": "367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc",
+      "context": "e4a3cc5b93dca7469d7bbd7912a90949522ff1d802402792ff5b9559808f\",\"ending_soil_temperature_k\":272.3497173431717,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc\",\"snow_heat_j_m2\":-155.85450528944543,\"soil_heat_j_m2\":155.85450528944543,\"support\":{\"end_ns\":\"385680000000000\",\"start_ns\":\"385620000000000\"}},\"resistance_m2_k_w\":0.09126295407988"
+    },
+    {
+      "offset": 8236015068,
+      "credit_group_index": 8,
+      "receipt": "a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8",
+      "context": "5cc61a3b37ddbe21035bc5da0c22f90505b0e4fc3fde592a93949685123e\",\"ending_soil_temperature_k\":272.3507723327326,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8\",\"snow_heat_j_m2\":-126.59874731114166,\"soil_heat_j_m2\":126.59874731114166,\"support\":{\"end_ns\":\"385740000000000\",\"start_ns\":\"385680000000000\"}},\"resistance_m2_k_w\":0.09117594056326"
+    },
+    {
+      "offset": 8236017122,
+      "credit_group_index": 8,
+      "receipt": "a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8",
+      "context": "5cc61a3b37ddbe21035bc5da0c22f90505b0e4fc3fde592a93949685123e\",\"ending_soil_temperature_k\":272.3507723327326,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8\",\"snow_heat_j_m2\":-126.59874731114166,\"soil_heat_j_m2\":126.59874731114166,\"support\":{\"end_ns\":\"385740000000000\",\"start_ns\":\"385680000000000\"}},\"resistance_m2_k_w\":0.09117594056326"
+    },
+    {
+      "offset": 8236031517,
+      "credit_group_index": 9,
+      "receipt": "38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739",
+      "context": "4fc893c9647920605bac634f0f88fc719fc42aa0e8cb6c671c7fb6e47a32\",\"ending_soil_temperature_k\":272.3515414121607,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739\",\"snow_heat_j_m2\":-92.28953136841174,\"soil_heat_j_m2\":92.28953136841174,\"support\":{\"end_ns\":\"385800000000000\",\"start_ns\":\"385740000000000\"}},\"resistance_m2_k_w\":0.0910884554949078"
+    },
+    {
+      "offset": 8236033571,
+      "credit_group_index": 9,
+      "receipt": "38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739",
+      "context": "4fc893c9647920605bac634f0f88fc719fc42aa0e8cb6c671c7fb6e47a32\",\"ending_soil_temperature_k\":272.3515414121607,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739\",\"snow_heat_j_m2\":-92.28953136841174,\"soil_heat_j_m2\":92.28953136841174,\"support\":{\"end_ns\":\"385800000000000\",\"start_ns\":\"385740000000000\"}},\"resistance_m2_k_w\":0.0910884554949078"
+    },
+    {
+      "offset": 8236047986,
+      "credit_group_index": 10,
+      "receipt": "543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c",
+      "context": "cbb106d0341d2f2bc7242e692ba472fb1977382c441c06d4348cb61f442\",\"ending_soil_temperature_k\":272.35196960745645,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c\",\"snow_heat_j_m2\":-51.38343548714928,\"soil_heat_j_m2\":51.38343548714928,\"support\":{\"end_ns\":\"385860000000000\",\"start_ns\":\"385800000000000\"}},\"resistance_m2_k_w\":0.0910004174219026"
+    },
+    {
+      "offset": 8236050045,
+      "credit_group_index": 10,
+      "receipt": "543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c",
+      "context": "cbb106d0341d2f2bc7242e692ba472fb1977382c441c06d4348cb61f442\",\"ending_soil_temperature_k\":272.35196960745645,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c\",\"snow_heat_j_m2\":-51.38343548714928,\"soil_heat_j_m2\":51.38343548714928,\"support\":{\"end_ns\":\"385860000000000\",\"start_ns\":\"385800000000000\"}},\"resistance_m2_k_w\":0.0910004174219026"
+    },
+    {
+      "offset": 8701085551,
+      "credit_group_index": 7,
+      "receipt": "367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc",
+      "context": "\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":6,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"},{\"basis\":\"ofe_ground\",\"debit_credit_identity_sha256\":\"367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc\",\"energy_j_m2_ofe_ground\":155.85450528944543,\"layer_id\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":7,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"}"
+    },
+    {
+      "offset": 8701085850,
+      "credit_group_index": 8,
+      "receipt": "a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8",
+      "context": "\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":7,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"},{\"basis\":\"ofe_ground\",\"debit_credit_identity_sha256\":\"a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8\",\"energy_j_m2_ofe_ground\":126.59874731114166,\"layer_id\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":8,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"}"
+    },
+    {
+      "offset": 8701086149,
+      "credit_group_index": 9,
+      "receipt": "38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739",
+      "context": "\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":8,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"},{\"basis\":\"ofe_ground\",\"debit_credit_identity_sha256\":\"38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739\",\"energy_j_m2_ofe_ground\":92.28953136841174,\"layer_id\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":9,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"},"
+    },
+    {
+      "offset": 8701086447,
+      "credit_group_index": 10,
+      "receipt": "543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c",
+      "context": "\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":9,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"},{\"basis\":\"ofe_ground\",\"debit_credit_identity_sha256\":\"543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c\",\"energy_j_m2_ofe_ground\":51.38343548714928,\"layer_id\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":10,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"}"
+    },
+    {
+      "offset": 8701168262,
+      "credit_group_index": 7,
+      "receipt": "367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc",
+      "context": "id\":\"ofe-1\",\"ordinal\":1,\"source_kind\":\"soil_internal\",\"source_owner_id\":\"land-surface-energy-v1\",\"units\":\"J m^-2 OFE-ground\"},{\"basis\":\"ofe_ground\",\"debit_credit_identity_sha256\":\"367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc\",\"energy_j_m2_ofe_ground\":155.85450528944543,\"layer_id\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":0,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"}"
+    },
+    {
+      "offset": 8701174583,
+      "credit_group_index": 8,
+      "receipt": "a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8",
+      "context": "id\":\"ofe-1\",\"ordinal\":1,\"source_kind\":\"soil_internal\",\"source_owner_id\":\"land-surface-energy-v1\",\"units\":\"J m^-2 OFE-ground\"},{\"basis\":\"ofe_ground\",\"debit_credit_identity_sha256\":\"a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8\",\"energy_j_m2_ofe_ground\":126.59874731114166,\"layer_id\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":0,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"}"
+    },
+    {
+      "offset": 8701180903,
+      "credit_group_index": 9,
+      "receipt": "38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739",
+      "context": "id\":\"ofe-1\",\"ordinal\":1,\"source_kind\":\"soil_internal\",\"source_owner_id\":\"land-surface-energy-v1\",\"units\":\"J m^-2 OFE-ground\"},{\"basis\":\"ofe_ground\",\"debit_credit_identity_sha256\":\"38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739\",\"energy_j_m2_ofe_ground\":92.28953136841174,\"layer_id\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":0,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"}]"
+    },
+    {
+      "offset": 8701187222,
+      "credit_group_index": 10,
+      "receipt": "543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c",
+      "context": "id\":\"ofe-1\",\"ordinal\":1,\"source_kind\":\"soil_internal\",\"source_owner_id\":\"land-surface-energy-v1\",\"units\":\"J m^-2 OFE-ground\"},{\"basis\":\"ofe_ground\",\"debit_credit_identity_sha256\":\"543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c\",\"energy_j_m2_ofe_ground\":51.38343548714928,\"layer_id\":\"thermal-1\",\"ofe_id\":\"ofe-1\",\"ordinal\":0,\"source_kind\":\"top_boundary\",\"source_owner_id\":\"snow\",\"units\":\"J m^-2 OFE-ground\"}]"
+    }
+  ],
+  "limitation": "Literal occurrences distinguish retained receipt claims only; no missing support inferred from count alone. Byte-encoded publication histories separately decoded in correspondence-search.json."
+}

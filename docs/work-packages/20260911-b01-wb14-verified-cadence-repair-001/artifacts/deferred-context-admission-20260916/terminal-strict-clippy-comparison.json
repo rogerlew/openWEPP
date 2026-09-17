@@ -1,0 +1,727 @@
+{
+  "evidence_class": "Ran: matched diagnostic content comparison, not strict-lint acceptance",
+  "baseline": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/baseline-strict-clippy.stdout",
+  "candidate": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/candidate-terminal-strict-clippy.stdout",
+  "baseline_count": 27,
+  "candidate_count": 27,
+  "introduced_or_changed": [
+    {
+      "code": "clippy::assigning_clones",
+      "level": "error",
+      "message": "assigning the result of `Clone::clone()` may be inefficient",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "        expected.configuration_sha256 = self.configuration_sha256.clone();"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::collapsible_if",
+      "level": "error",
+      "message": "this `if` statement can be collapsed",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "        if l.transparent_passage.is_some() {",
+            "            if l.stemflow_kg_m2_tile.to_bits()",
+            "                != product(occupancy.stemflow_fraction, l.incident_rain_kg_m2_tile)?.to_bits()",
+            "                || l.throughfall_kg_m2_tile.to_bits()",
+            "                    != product(",
+            "                        1.0 - occupancy.stemflow_fraction,",
+            "                        l.incident_rain_kg_m2_tile,",
+            "                    )?",
+            "                    .to_bits()",
+            "            {",
+            "                return Err(LandSurfaceEnergyError::StateLineage(",
+            "                    \"transparent passage unchanged E04 splits\",",
+            "                ));",
+            "            }",
+            "        }"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "error",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "text": [
+            "        && ground_sensible != boundary.sensible_to_canopy_air_w_m2"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "error",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "text": [
+            "        && ground_vapor != boundary.vapor_to_canopy_air_kg_m2_s"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn bind_transparent_liquid(",
+            "        &mut self,",
+            "        forcing: &LandSurfaceForcing,",
+            "        identity: &RuntimeTileIdentity,",
+            "    ) -> Result<(), LandSurfaceEnergyError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn rebind_transparent_liquid_native_configuration(",
+            "        &mut self,",
+            "        forcing: &LandSurfaceForcing,",
+            "        predecessor: &RuntimeTileIdentity,",
+            "        native: &RuntimeTileIdentity,",
+            "    ) -> Result<(), LandSurfaceEnergyError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn try_new(",
+            "        forcing: &LandSurfaceForcing,",
+            "        ofe_id: &OfeId,",
+            "        tile_id: &TileId,",
+            "        tile_fraction: f64,",
+            "    ) -> Result<Self, LandSurfaceEnergyError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn validate_against_actual_forcing(",
+            "        &self,",
+            "        forcing: &LandSurfaceForcing,",
+            "        ofe: &OfeId,",
+            "        tile: &TileId,",
+            "        fraction: f64,",
+            "    ) -> Result<(), LandSurfaceEnergyError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn validate_transparent_liquid(",
+            "        &self,",
+            "        identity: Option<&RuntimeTileIdentity>,",
+            "    ) -> Result<(), LandSurfaceEnergyError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "text": [
+            "    pub fn accuracy_observation_beginning(&self) -> &CoveredColumnInputs {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "text": [
+            "    pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "text": [
+            "    pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn is_wholly_transparent_canopy(&self) -> bool {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::redundant_closure_for_method_calls",
+      "level": "error",
+      "message": "redundant closure",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/covered_liquid.rs",
+          "text": [
+            "    let temperature = proof.map_or(numerical_wet_temperature_k, |p| p.release_temperature_k());"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::unused_self",
+      "level": "error",
+      "message": "unused `self` argument",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub(crate) fn inactive_component_anchor_k(&self, component: usize, canopy: f64) -> f64 {"
+          ]
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "removed_or_changed": [
+    {
+      "code": "clippy::assigning_clones",
+      "level": "error",
+      "message": "assigning the result of `Clone::clone()` may be inefficient",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "        expected.configuration_sha256=self.configuration_sha256.clone();"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::collapsible_if",
+      "level": "error",
+      "message": "this `if` statement can be collapsed",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "        if l.transparent_passage.is_some() {",
+            "            if l.stemflow_kg_m2_tile.to_bits()!=product(occupancy.stemflow_fraction,l.incident_rain_kg_m2_tile)?.to_bits()",
+            "                || l.throughfall_kg_m2_tile.to_bits()!=product(1.0-occupancy.stemflow_fraction,l.incident_rain_kg_m2_tile)?.to_bits() {",
+            "                return Err(LandSurfaceEnergyError::StateLineage(\"transparent passage unchanged E04 splits\"));",
+            "            }",
+            "        }"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "error",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "text": [
+            "        && ground_sensible != boundary.sensible_to_canopy_air_w_m2 {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "error",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "text": [
+            "        && ground_vapor != boundary.vapor_to_canopy_air_kg_m2_s {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn bind_transparent_liquid(&mut self,forcing:&LandSurfaceForcing,identity:&RuntimeTileIdentity)",
+            "        ->Result<(),LandSurfaceEnergyError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn rebind_transparent_liquid_native_configuration(",
+            "        &mut self,forcing:&LandSurfaceForcing,predecessor:&RuntimeTileIdentity,native:&RuntimeTileIdentity,",
+            "    )->Result<(),LandSurfaceEnergyError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn try_new(forcing:&LandSurfaceForcing,ofe_id:&OfeId,tile_id:&TileId,tile_fraction:f64)",
+            "        ->Result<Self,LandSurfaceEnergyError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn validate_against_actual_forcing(&self,forcing:&LandSurfaceForcing,ofe:&OfeId,tile:&TileId,fraction:f64)",
+            "        ->Result<(),LandSurfaceEnergyError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn validate_transparent_liquid(&self,identity:Option<&RuntimeTileIdentity>)->Result<(),LandSurfaceEnergyError> {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "text": [
+            "    pub fn accuracy_observation_beginning(&self) -> &CoveredColumnInputs { &self.beginning }"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "text": [
+            "    pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem { &self.beginning }"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "text": [
+            "    pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem { &self.beginning }"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub fn is_wholly_transparent_canopy(&self)->bool {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::redundant_closure_for_method_calls",
+      "level": "error",
+      "message": "redundant closure",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/covered_liquid.rs",
+          "text": [
+            "    let temperature=proof.map_or(numerical_wet_temperature_k,|p|p.release_temperature_k());"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "clippy::unused_self",
+      "level": "error",
+      "message": "unused `self` argument",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "text": [
+            "    pub(crate) fn inactive_component_anchor_k(&self,component:usize,canopy:f64)->f64 {"
+          ]
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "candidate_locations": [
+    {
+      "code": "clippy::redundant_closure_for_method_calls",
+      "level": "error",
+      "message": "redundant closure",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/covered_liquid.rs",
+          "line": 217,
+          "text": [
+            "    let temperature = proof.map_or(numerical_wet_temperature_k, |p| p.release_temperature_k());"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "error",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "line": 2193,
+          "text": [
+            "        && ground_vapor != boundary.vapor_to_canopy_air_kg_m2_s"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::float_cmp",
+      "level": "error",
+      "message": "strict comparison of `f32` or `f64`",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "line": 2201,
+          "text": [
+            "        && ground_sensible != boundary.sensible_to_canopy_air_w_m2"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "line": 2981,
+          "text": [
+            "    pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "line": 2988,
+          "text": [
+            "    pub fn accuracy_observation_beginning(&self) -> &CoveredColumnInputs {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "line": 359,
+          "text": [
+            "    pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "line": 45,
+          "text": [
+            "    pub fn try_new(",
+            "        forcing: &LandSurfaceForcing,",
+            "        ofe_id: &OfeId,",
+            "        tile_id: &TileId,",
+            "        tile_fraction: f64,",
+            "    ) -> Result<Self, LandSurfaceEnergyError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "line": 109,
+          "text": [
+            "    pub fn validate_against_actual_forcing(",
+            "        &self,",
+            "        forcing: &LandSurfaceForcing,",
+            "        ofe: &OfeId,",
+            "        tile: &TileId,",
+            "        fraction: f64,",
+            "    ) -> Result<(), LandSurfaceEnergyError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::assigning_clones",
+      "level": "error",
+      "message": "assigning the result of `Clone::clone()` may be inefficient",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "line": 117,
+          "text": [
+            "        expected.configuration_sha256 = self.configuration_sha256.clone();"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::must_use_candidate",
+      "level": "error",
+      "message": "this method could have a `#[must_use]` attribute",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "line": 136,
+          "text": [
+            "    pub fn is_wholly_transparent_canopy(&self) -> bool {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "line": 151,
+          "text": [
+            "    pub fn bind_transparent_liquid(",
+            "        &mut self,",
+            "        forcing: &LandSurfaceForcing,",
+            "        identity: &RuntimeTileIdentity,",
+            "    ) -> Result<(), LandSurfaceEnergyError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "line": 171,
+          "text": [
+            "    pub fn validate_transparent_liquid(",
+            "        &self,",
+            "        identity: Option<&RuntimeTileIdentity>,",
+            "    ) -> Result<(), LandSurfaceEnergyError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::unused_self",
+      "level": "error",
+      "message": "unused `self` argument",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "line": 212,
+          "text": [
+            "    pub(crate) fn inactive_component_anchor_k(&self, component: usize, canopy: f64) -> f64 {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::collapsible_if",
+      "level": "error",
+      "message": "this `if` statement can be collapsed",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "line": 333,
+          "text": [
+            "        if l.transparent_passage.is_some() {",
+            "            if l.stemflow_kg_m2_tile.to_bits()",
+            "                != product(occupancy.stemflow_fraction, l.incident_rain_kg_m2_tile)?.to_bits()",
+            "                || l.throughfall_kg_m2_tile.to_bits()",
+            "                    != product(",
+            "                        1.0 - occupancy.stemflow_fraction,",
+            "                        l.incident_rain_kg_m2_tile,",
+            "                    )?",
+            "                    .to_bits()",
+            "            {",
+            "                return Err(LandSurfaceEnergyError::StateLineage(",
+            "                    \"transparent passage unchanged E04 splits\",",
+            "                ));",
+            "            }",
+            "        }"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::missing_errors_doc",
+      "level": "error",
+      "message": "docs for function returning `Result` missing `# Errors` section",
+      "spans": [
+        {
+          "file": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "line": 355,
+          "text": [
+            "    pub fn rebind_transparent_liquid_native_configuration(",
+            "        &mut self,",
+            "        forcing: &LandSurfaceForcing,",
+            "        predecessor: &RuntimeTileIdentity,",
+            "        native: &RuntimeTileIdentity,",
+            "    ) -> Result<(), LandSurfaceEnergyError> {"
+          ]
+        }
+      ]
+    }
+  ]
+}

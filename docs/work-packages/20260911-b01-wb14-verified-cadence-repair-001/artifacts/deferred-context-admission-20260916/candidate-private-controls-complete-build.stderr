@@ -1,0 +1,12 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916/crates/openwepp-hillslope-orchestrator)
+error[E0368]: binary assignment operation `+=` cannot be applied to type `[f64; 24]`
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_member_restoration.rs:1037:9
+     |
+1037 |         changed_frame.lanes[0].transfer.surface_carry_m += 0.000_001;
+     |         -----------------------------------------------^^^^^^^^^^^^^
+     |         |
+     |         cannot use `+=` on type `[f64; 24]`
+
+For more information about this error, try `rustc --explain E0368`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error

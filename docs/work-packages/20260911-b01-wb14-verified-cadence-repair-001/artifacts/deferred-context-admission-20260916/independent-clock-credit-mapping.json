@@ -1,0 +1,112 @@
+{
+  "evidence_class": "Ran: independent Python framing/support/receipt join, no physical evolution",
+  "inputs": {
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.26.json": "443aa08f5e2d9d11939754901253196d63e74ac9d85481f719e4ac640047e3fd",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-export-20260916-1/rows/123091.12.json": "6c59860507007a0ac6f4baebdff76df718352a4e1830623336c329a13aa186a1",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-subslab-primitives.json": "e2434197840c651db67cc52769cf1076d62905e5fcbe80b46cdd14cb05599114",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/retained-soil-trial-primitives.json": "dfb4185058d7115727382b96a3bd879c255f888c6947863f015daceb2b987dc4"
+  },
+  "mapping": [
+    {
+      "slab": 0,
+      "accepted_slab_id": "d3250edcbf76ad904fc96d3b790217a8bcabf8bf308950d24449d30da87dadd3",
+      "children": [
+        0
+      ],
+      "support": {
+        "end_ns": "385260000000000",
+        "start_ns": "385200000000000"
+      },
+      "terminal_set_sha256": "e0c6b3b9fc2686ba8071b37b0d44bc539a04093e5f78219cbeb7153e64f0e820"
+    },
+    {
+      "slab": 1,
+      "accepted_slab_id": "8dc7a25a056bfb007ce57c3ca66415ae256153091f6bdc554233ce92d71db578",
+      "children": [
+        1
+      ],
+      "support": {
+        "end_ns": "385320000000000",
+        "start_ns": "385260000000000"
+      },
+      "terminal_set_sha256": "0995db62e47311290522b003bda10034c91414a813ad7d8d0b3b8a7c80ab6132"
+    },
+    {
+      "slab": 2,
+      "accepted_slab_id": "0841326c90b4b6d375bb3a9f8ce2391d3b504d597d68a258a32cb38bf79245fc",
+      "children": [
+        2
+      ],
+      "support": {
+        "end_ns": "385380000000000",
+        "start_ns": "385320000000000"
+      },
+      "terminal_set_sha256": "28852b81f231c91831551d54bb1b086442d4ab6193b74a28c8d44cf42067751a"
+    },
+    {
+      "slab": 3,
+      "accepted_slab_id": "0759cd8a795f39bfb3bd04fa4cf01459c9274107b928089fe755779375437648",
+      "children": [
+        3
+      ],
+      "support": {
+        "end_ns": "385440000000000",
+        "start_ns": "385380000000000"
+      },
+      "terminal_set_sha256": "dd8a86b139543db9deece32069a5bf27a638926c7b047446ea277d822b976ff6"
+    },
+    {
+      "slab": 4,
+      "accepted_slab_id": "435712574e68e6301da9131754e977357b00cf4761772cbc862a0b58caa06a71",
+      "children": [
+        4
+      ],
+      "support": {
+        "end_ns": "385500000000000",
+        "start_ns": "385440000000000"
+      },
+      "terminal_set_sha256": "aad27eaa7877af18452cfbd785bf776a4bb9d35d702832f962fe9198766d5014"
+    },
+    {
+      "slab": 5,
+      "accepted_slab_id": "e89fa2c10890ea495d7fc1214b48f8d0a8437cdb01556d483550555c49fb93f8",
+      "children": [
+        5
+      ],
+      "support": {
+        "end_ns": "385560000000000",
+        "start_ns": "385500000000000"
+      },
+      "terminal_set_sha256": "80d4e39513a9186574655ca2613732d012654f7b089d606a0c85e664abff1f34"
+    },
+    {
+      "slab": 6,
+      "accepted_slab_id": "4096ef6ca574d1b4666f5542faac713699e0f87c3658dcf82df8f5cdd06b1122",
+      "children": [
+        6
+      ],
+      "support": {
+        "end_ns": "385620000000000",
+        "start_ns": "385560000000000"
+      },
+      "terminal_set_sha256": "2c73ad6f387198c5ab3941330a8e6bc704cf1eda2f3d38d3f570fc550e9a57ea"
+    },
+    {
+      "slab": 7,
+      "accepted_slab_id": "be7d3fd988afef69d65dfb6bb919e258981712ca6643c7a93279829d8a903097",
+      "children": [
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "support": {
+        "end_ns": "385920000000000",
+        "start_ns": "385620000000000"
+      },
+      "terminal_set_sha256": "858cbde15ffbc27cdfde00213d47da6e96804876f4c34184575279b36826b3f0"
+    }
+  ],
+  "limits": "Retained JSON operand join only; canonical Rust receipt validators, semantic negative controls, opaque capability, and live admission are separate obligations."
+}

@@ -1,0 +1,2256 @@
+{
+  "evidence_class": "Ran: exact raw-record extraction; no physics or admission",
+  "source": "/workdir/openwepp-experiments/b01-wb14-cadence/corrected-recorder-capture-20260916-1/observations.json",
+  "source_bytes": 8701419029,
+  "source_sha256": "1555efe1b592081a3dd67639d71a18e4e67f518e24b93a95ddfe18de2023d87c",
+  "literal_occurrences": 75,
+  "records": [
+    {
+      "source_start": 8234567707,
+      "source_end": 8234569764,
+      "source_record_sha256": "6c7a1a10991bc23e89ff5a2110ba93a91cd7f1012ec12ae10e86d37c2e3f98af",
+      "credit_group_index": 0,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "b3421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97847.27904993317,
+            "last_accepted_transaction_id": 5762,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.33460600791733
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "13c7d75f94c7768d7cd733fc758d4581c645a35bb9199d68116ff09c240bb328",
+        "capture": {
+          "ordinal": 122934,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.885785355202943,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "6d421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97563.9042991535,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3369674641738
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.33460600791733,
+          "canonical_source_sha256": "b2dd575008ece63a625191fbb0b43a13283008192b6cbff78c46142052b8c3c9",
+          "ending_snow_temperature_k": 272.38929451543095,
+          "ending_soil_candidate_sha256": "8c9ae6fb0c08a576ce5c88cc2c2421e85f572ac7a75ccccba72de7afeb36e9aa",
+          "ending_soil_temperature_k": 272.3369674641738,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "49df4bee555b8e27002ffc63bf62415821c3365d27e3d3c51103a07fe8668bb6",
+          "snow_heat_j_m2": -283.37475077967775,
+          "soil_heat_j_m2": 283.37475077967775,
+          "support": {
+            "end_ns": "385260000000000",
+            "start_ns": "385200000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09186291731556534,
+        "snow_capacity_j_m2_k": 372.51571932626996,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0017738843777441464,
+          "ice_kg_m2": 0.17738843777441426,
+          "liquid_kg_m2": 0.953841675243397,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"b3421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-97847.27904993317,\"last_accepted_transaction_id\":5762,\"layer_id\":\"thermal-1\",\"temperature_k\":272.33460600791733}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"13c7d75f94c7768d7cd733fc758d4581c645a35bb9199d68116ff09c240bb328\",\"capture\":{\"ordinal\":122934,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.885785355202943,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"6d421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-97563.9042991535,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3369674641738}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.33460600791733,\"canonical_source_sha256\":\"b2dd575008ece63a625191fbb0b43a13283008192b6cbff78c46142052b8c3c9\",\"ending_snow_temperature_k\":272.38929451543095,\"ending_soil_candidate_sha256\":\"8c9ae6fb0c08a576ce5c88cc2c2421e85f572ac7a75ccccba72de7afeb36e9aa\",\"ending_soil_temperature_k\":272.3369674641738,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"49df4bee555b8e27002ffc63bf62415821c3365d27e3d3c51103a07fe8668bb6\",\"snow_heat_j_m2\":-283.37475077967775,\"soil_heat_j_m2\":283.37475077967775,\"support\":{\"end_ns\":\"385260000000000\",\"start_ns\":\"385200000000000\"}},\"resistance_m2_k_w\":0.09186291731556534,\"snow_capacity_j_m2_k\":372.51571932626996,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0017738843777441464,\"ice_kg_m2\":0.17738843777441426,\"liquid_kg_m2\":0.953841675243397,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234569765,
+      "source_end": 8234571822,
+      "source_record_sha256": "36362a84745725275a8da9b8d33bc86c565c0ffcd88d8ed4f77b47fa223c466e",
+      "credit_group_index": 0,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "b3421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97847.27904993317,
+            "last_accepted_transaction_id": 5762,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.33460600791733
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "13c7d75f94c7768d7cd733fc758d4581c645a35bb9199d68116ff09c240bb328",
+        "capture": {
+          "ordinal": 122935,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.885785355202943,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "6d421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97563.9042991535,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3369674641738
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.33460600791733,
+          "canonical_source_sha256": "b2dd575008ece63a625191fbb0b43a13283008192b6cbff78c46142052b8c3c9",
+          "ending_snow_temperature_k": 272.38929451543095,
+          "ending_soil_candidate_sha256": "8c9ae6fb0c08a576ce5c88cc2c2421e85f572ac7a75ccccba72de7afeb36e9aa",
+          "ending_soil_temperature_k": 272.3369674641738,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "49df4bee555b8e27002ffc63bf62415821c3365d27e3d3c51103a07fe8668bb6",
+          "snow_heat_j_m2": -283.37475077967775,
+          "soil_heat_j_m2": 283.37475077967775,
+          "support": {
+            "end_ns": "385260000000000",
+            "start_ns": "385200000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09186291731556534,
+        "snow_capacity_j_m2_k": 372.51571932626996,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0017738843777441464,
+          "ice_kg_m2": 0.17738843777441426,
+          "liquid_kg_m2": 0.953841675243397,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"b3421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-97847.27904993317,\"last_accepted_transaction_id\":5762,\"layer_id\":\"thermal-1\",\"temperature_k\":272.33460600791733}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"13c7d75f94c7768d7cd733fc758d4581c645a35bb9199d68116ff09c240bb328\",\"capture\":{\"ordinal\":122935,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.885785355202943,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"6d421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-97563.9042991535,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3369674641738}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.33460600791733,\"canonical_source_sha256\":\"b2dd575008ece63a625191fbb0b43a13283008192b6cbff78c46142052b8c3c9\",\"ending_snow_temperature_k\":272.38929451543095,\"ending_soil_candidate_sha256\":\"8c9ae6fb0c08a576ce5c88cc2c2421e85f572ac7a75ccccba72de7afeb36e9aa\",\"ending_soil_temperature_k\":272.3369674641738,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"49df4bee555b8e27002ffc63bf62415821c3365d27e3d3c51103a07fe8668bb6\",\"snow_heat_j_m2\":-283.37475077967775,\"soil_heat_j_m2\":283.37475077967775,\"support\":{\"end_ns\":\"385260000000000\",\"start_ns\":\"385200000000000\"}},\"resistance_m2_k_w\":0.09186291731556534,\"snow_capacity_j_m2_k\":372.51571932626996,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0017738843777441464,\"ice_kg_m2\":0.17738843777441426,\"liquid_kg_m2\":0.953841675243397,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234584143,
+      "source_end": 8234586196,
+      "source_record_sha256": "e85fc5bf6e7e59539097199bb65ae3cf3b287bb04ef492abd8b60b3a487a8726",
+      "credit_group_index": 1,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "6d421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97563.9042991535,
+            "last_accepted_transaction_id": 5763,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3369674641738
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "a0c012ae1edd9056030c732dc90f85c0cae079f3b45930cca3bf808f0f81e8d8",
+        "capture": {
+          "ordinal": 122942,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.895862238472535,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "babdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97293.54840061137,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.339220429995
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3369674641738,
+          "canonical_source_sha256": "3ba42a1b8a45523c17aa89cd1cfb59c5b238c03e116b60c1462dbbbfca2ebd17",
+          "ending_snow_temperature_k": 272.35327831505515,
+          "ending_soil_candidate_sha256": "8be1966523288365fd4e928b4a1cdd62b60903961befcb127c590156d9de64b9",
+          "ending_soil_temperature_k": 272.339220429995,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "ad1f5dbced6f8ce8463db4eb402c01ae72ec5ce56b1f34190766e946ce065e97",
+          "snow_heat_j_m2": -270.35589854211753,
+          "soil_heat_j_m2": 270.35589854211753,
+          "support": {
+            "end_ns": "385320000000000",
+            "start_ns": "385260000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09177795920262917,
+        "snow_capacity_j_m2_k": 339.3354337541812,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0016158830178770569,
+          "ice_kg_m2": 0.16158830178770534,
+          "liquid_kg_m2": 0.969751027912003,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"6d421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-97563.9042991535,\"last_accepted_transaction_id\":5763,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3369674641738}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"a0c012ae1edd9056030c732dc90f85c0cae079f3b45930cca3bf808f0f81e8d8\",\"capture\":{\"ordinal\":122942,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.895862238472535,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"babdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-97293.54840061137,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.339220429995}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3369674641738,\"canonical_source_sha256\":\"3ba42a1b8a45523c17aa89cd1cfb59c5b238c03e116b60c1462dbbbfca2ebd17\",\"ending_snow_temperature_k\":272.35327831505515,\"ending_soil_candidate_sha256\":\"8be1966523288365fd4e928b4a1cdd62b60903961befcb127c590156d9de64b9\",\"ending_soil_temperature_k\":272.339220429995,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"ad1f5dbced6f8ce8463db4eb402c01ae72ec5ce56b1f34190766e946ce065e97\",\"snow_heat_j_m2\":-270.35589854211753,\"soil_heat_j_m2\":270.35589854211753,\"support\":{\"end_ns\":\"385320000000000\",\"start_ns\":\"385260000000000\"}},\"resistance_m2_k_w\":0.09177795920262917,\"snow_capacity_j_m2_k\":339.3354337541812,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0016158830178770569,\"ice_kg_m2\":0.16158830178770534,\"liquid_kg_m2\":0.969751027912003,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234586197,
+      "source_end": 8234588250,
+      "source_record_sha256": "afd92add831a72a1ab474e786d68ade815a167c235d68e764d27ba2131219464",
+      "credit_group_index": 1,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "6d421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97563.9042991535,
+            "last_accepted_transaction_id": 5763,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3369674641738
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "a0c012ae1edd9056030c732dc90f85c0cae079f3b45930cca3bf808f0f81e8d8",
+        "capture": {
+          "ordinal": 122943,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.895862238472535,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "babdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97293.54840061137,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.339220429995
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3369674641738,
+          "canonical_source_sha256": "3ba42a1b8a45523c17aa89cd1cfb59c5b238c03e116b60c1462dbbbfca2ebd17",
+          "ending_snow_temperature_k": 272.35327831505515,
+          "ending_soil_candidate_sha256": "8be1966523288365fd4e928b4a1cdd62b60903961befcb127c590156d9de64b9",
+          "ending_soil_temperature_k": 272.339220429995,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "ad1f5dbced6f8ce8463db4eb402c01ae72ec5ce56b1f34190766e946ce065e97",
+          "snow_heat_j_m2": -270.35589854211753,
+          "soil_heat_j_m2": 270.35589854211753,
+          "support": {
+            "end_ns": "385320000000000",
+            "start_ns": "385260000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09177795920262917,
+        "snow_capacity_j_m2_k": 339.3354337541812,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0016158830178770569,
+          "ice_kg_m2": 0.16158830178770534,
+          "liquid_kg_m2": 0.969751027912003,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"6d421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-97563.9042991535,\"last_accepted_transaction_id\":5763,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3369674641738}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"a0c012ae1edd9056030c732dc90f85c0cae079f3b45930cca3bf808f0f81e8d8\",\"capture\":{\"ordinal\":122943,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.895862238472535,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"babdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-97293.54840061137,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.339220429995}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3369674641738,\"canonical_source_sha256\":\"3ba42a1b8a45523c17aa89cd1cfb59c5b238c03e116b60c1462dbbbfca2ebd17\",\"ending_snow_temperature_k\":272.35327831505515,\"ending_soil_candidate_sha256\":\"8be1966523288365fd4e928b4a1cdd62b60903961befcb127c590156d9de64b9\",\"ending_soil_temperature_k\":272.339220429995,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"ad1f5dbced6f8ce8463db4eb402c01ae72ec5ce56b1f34190766e946ce065e97\",\"snow_heat_j_m2\":-270.35589854211753,\"soil_heat_j_m2\":270.35589854211753,\"support\":{\"end_ns\":\"385320000000000\",\"start_ns\":\"385260000000000\"}},\"resistance_m2_k_w\":0.09177795920262917,\"snow_capacity_j_m2_k\":339.3354337541812,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0016158830178770569,\"ice_kg_m2\":0.16158830178770534,\"liquid_kg_m2\":0.969751027912003,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234600581,
+      "source_end": 8234602632,
+      "source_record_sha256": "0e73bda975300d7a9f376c96e0fe472a2dcff5907d6ff3e5495323b4c2230432",
+      "credit_group_index": 2,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "babdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97293.54840061137,
+            "last_accepted_transaction_id": 5764,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.339220429995
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "2bcb5097d99218bab81569f12c044b977f9c6640a5397037fedb20d584d3685c",
+        "capture": {
+          "ordinal": 122950,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.905982753753857,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "bd421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97037.45689422316,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34135452588157
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.339220429995,
+          "canonical_source_sha256": "757a1598e46c258cfd4305362a7bbd5e12e73c499d18dbba974d77a5d0dc4fe3",
+          "ending_snow_temperature_k": 272.3132997904025,
+          "ending_soil_candidate_sha256": "49dc3cb9c6b10c496a8b989b010e1e5dfb3e73ab5443b4151e26e30480203a50",
+          "ending_soil_temperature_k": 272.34135452588157,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "730c35bd3eb40e593aeb228c2d8fdd130e0c8d18020c5f45240b0c0f77b4281e",
+          "snow_heat_j_m2": -256.0915063882237,
+          "soil_heat_j_m2": 256.0915063882237,
+          "support": {
+            "end_ns": "385380000000000",
+            "start_ns": "385320000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.0916927912485281,
+        "snow_capacity_j_m2_k": 306.0731949755613,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0014574914046455332,
+          "ice_kg_m2": 0.145749140464553,
+          "liquid_kg_m2": 0.9856994059170523,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"babdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-97293.54840061137,\"last_accepted_transaction_id\":5764,\"layer_id\":\"thermal-1\",\"temperature_k\":272.339220429995}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"2bcb5097d99218bab81569f12c044b977f9c6640a5397037fedb20d584d3685c\",\"capture\":{\"ordinal\":122950,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.905982753753857,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"bd421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-97037.45689422316,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34135452588157}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.339220429995,\"canonical_source_sha256\":\"757a1598e46c258cfd4305362a7bbd5e12e73c499d18dbba974d77a5d0dc4fe3\",\"ending_snow_temperature_k\":272.3132997904025,\"ending_soil_candidate_sha256\":\"49dc3cb9c6b10c496a8b989b010e1e5dfb3e73ab5443b4151e26e30480203a50\",\"ending_soil_temperature_k\":272.34135452588157,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"730c35bd3eb40e593aeb228c2d8fdd130e0c8d18020c5f45240b0c0f77b4281e\",\"snow_heat_j_m2\":-256.0915063882237,\"soil_heat_j_m2\":256.0915063882237,\"support\":{\"end_ns\":\"385380000000000\",\"start_ns\":\"385320000000000\"}},\"resistance_m2_k_w\":0.0916927912485281,\"snow_capacity_j_m2_k\":306.0731949755613,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0014574914046455332,\"ice_kg_m2\":0.145749140464553,\"liquid_kg_m2\":0.9856994059170523,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234602633,
+      "source_end": 8234604684,
+      "source_record_sha256": "a6afbd9bad4cf27029d3bd60d81ff0715f16bb59de594d179982b0bf19bd5908",
+      "credit_group_index": 2,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "babdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97293.54840061137,
+            "last_accepted_transaction_id": 5764,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.339220429995
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "2bcb5097d99218bab81569f12c044b977f9c6640a5397037fedb20d584d3685c",
+        "capture": {
+          "ordinal": 122951,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.905982753753857,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "bd421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97037.45689422316,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34135452588157
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.339220429995,
+          "canonical_source_sha256": "757a1598e46c258cfd4305362a7bbd5e12e73c499d18dbba974d77a5d0dc4fe3",
+          "ending_snow_temperature_k": 272.3132997904025,
+          "ending_soil_candidate_sha256": "49dc3cb9c6b10c496a8b989b010e1e5dfb3e73ab5443b4151e26e30480203a50",
+          "ending_soil_temperature_k": 272.34135452588157,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "730c35bd3eb40e593aeb228c2d8fdd130e0c8d18020c5f45240b0c0f77b4281e",
+          "snow_heat_j_m2": -256.0915063882237,
+          "soil_heat_j_m2": 256.0915063882237,
+          "support": {
+            "end_ns": "385380000000000",
+            "start_ns": "385320000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.0916927912485281,
+        "snow_capacity_j_m2_k": 306.0731949755613,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0014574914046455332,
+          "ice_kg_m2": 0.145749140464553,
+          "liquid_kg_m2": 0.9856994059170523,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"babdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-97293.54840061137,\"last_accepted_transaction_id\":5764,\"layer_id\":\"thermal-1\",\"temperature_k\":272.339220429995}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"2bcb5097d99218bab81569f12c044b977f9c6640a5397037fedb20d584d3685c\",\"capture\":{\"ordinal\":122951,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.905982753753857,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"bd421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-97037.45689422316,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34135452588157}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.339220429995,\"canonical_source_sha256\":\"757a1598e46c258cfd4305362a7bbd5e12e73c499d18dbba974d77a5d0dc4fe3\",\"ending_snow_temperature_k\":272.3132997904025,\"ending_soil_candidate_sha256\":\"49dc3cb9c6b10c496a8b989b010e1e5dfb3e73ab5443b4151e26e30480203a50\",\"ending_soil_temperature_k\":272.34135452588157,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"730c35bd3eb40e593aeb228c2d8fdd130e0c8d18020c5f45240b0c0f77b4281e\",\"snow_heat_j_m2\":-256.0915063882237,\"soil_heat_j_m2\":256.0915063882237,\"support\":{\"end_ns\":\"385380000000000\",\"start_ns\":\"385320000000000\"}},\"resistance_m2_k_w\":0.0916927912485281,\"snow_capacity_j_m2_k\":306.0731949755613,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0014574914046455332,\"ice_kg_m2\":0.145749140464553,\"liquid_kg_m2\":0.9856994059170523,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234617039,
+      "source_end": 8234619096,
+      "source_record_sha256": "e3bbaa52fd59d2cea38dc6ab0ace35af077d00ed7feff60c0bd4e6df3367a9cf",
+      "credit_group_index": 3,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "bd421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97037.45689422316,
+            "last_accepted_transaction_id": 5765,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34135452588157
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "34599c6d6a6a51f03005a30bedb003c20a2d263d422c0b8349c6d256f32c867d",
+        "capture": {
+          "ordinal": 122958,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.9161494845833,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "1c421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96797.09841512475,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34335751320737
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.34135452588157,
+          "canonical_source_sha256": "0f983be0022ca474fb8e3d658d8c93e199577e1c042790ed1fb787fced8dbff4",
+          "ending_snow_temperature_k": 272.2686658306338,
+          "ending_soil_candidate_sha256": "3f84d144ce5ff9afb4c80ee1181f8c3d33b5354e1700ad349e45d6f221176376",
+          "ending_soil_temperature_k": 272.34335751320737,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "d9aa6e111af21a19a836aafc1b955f0156235b4752d5d10f662c4dbdb09821b4",
+          "snow_heat_j_m2": -240.35847909839774,
+          "soil_heat_j_m2": 240.35847909839774,
+          "support": {
+            "end_ns": "385440000000000",
+            "start_ns": "385380000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09160739337733362,
+        "snow_capacity_j_m2_k": 272.72116236143995,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0012986722017211455,
+          "ice_kg_m2": 0.12986722017211427,
+          "liquid_kg_m2": 1.001690542891388,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"bd421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-97037.45689422316,\"last_accepted_transaction_id\":5765,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34135452588157}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"34599c6d6a6a51f03005a30bedb003c20a2d263d422c0b8349c6d256f32c867d\",\"capture\":{\"ordinal\":122958,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.9161494845833,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"1c421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-96797.09841512475,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34335751320737}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.34135452588157,\"canonical_source_sha256\":\"0f983be0022ca474fb8e3d658d8c93e199577e1c042790ed1fb787fced8dbff4\",\"ending_snow_temperature_k\":272.2686658306338,\"ending_soil_candidate_sha256\":\"3f84d144ce5ff9afb4c80ee1181f8c3d33b5354e1700ad349e45d6f221176376\",\"ending_soil_temperature_k\":272.34335751320737,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"d9aa6e111af21a19a836aafc1b955f0156235b4752d5d10f662c4dbdb09821b4\",\"snow_heat_j_m2\":-240.35847909839774,\"soil_heat_j_m2\":240.35847909839774,\"support\":{\"end_ns\":\"385440000000000\",\"start_ns\":\"385380000000000\"}},\"resistance_m2_k_w\":0.09160739337733362,\"snow_capacity_j_m2_k\":272.72116236143995,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0012986722017211455,\"ice_kg_m2\":0.12986722017211427,\"liquid_kg_m2\":1.001690542891388,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234619097,
+      "source_end": 8234621154,
+      "source_record_sha256": "b76bc2d3d7db5d3616b6c556802825e12bde6bcd83ea18e1e5a1878ee22c8180",
+      "credit_group_index": 3,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "bd421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -97037.45689422316,
+            "last_accepted_transaction_id": 5765,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34135452588157
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "34599c6d6a6a51f03005a30bedb003c20a2d263d422c0b8349c6d256f32c867d",
+        "capture": {
+          "ordinal": 122959,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.9161494845833,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "1c421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96797.09841512475,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34335751320737
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.34135452588157,
+          "canonical_source_sha256": "0f983be0022ca474fb8e3d658d8c93e199577e1c042790ed1fb787fced8dbff4",
+          "ending_snow_temperature_k": 272.2686658306338,
+          "ending_soil_candidate_sha256": "3f84d144ce5ff9afb4c80ee1181f8c3d33b5354e1700ad349e45d6f221176376",
+          "ending_soil_temperature_k": 272.34335751320737,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "d9aa6e111af21a19a836aafc1b955f0156235b4752d5d10f662c4dbdb09821b4",
+          "snow_heat_j_m2": -240.35847909839774,
+          "soil_heat_j_m2": 240.35847909839774,
+          "support": {
+            "end_ns": "385440000000000",
+            "start_ns": "385380000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09160739337733362,
+        "snow_capacity_j_m2_k": 272.72116236143995,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0012986722017211455,
+          "ice_kg_m2": 0.12986722017211427,
+          "liquid_kg_m2": 1.001690542891388,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"bd421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-97037.45689422316,\"last_accepted_transaction_id\":5765,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34135452588157}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"34599c6d6a6a51f03005a30bedb003c20a2d263d422c0b8349c6d256f32c867d\",\"capture\":{\"ordinal\":122959,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.9161494845833,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"1c421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-96797.09841512475,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34335751320737}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.34135452588157,\"canonical_source_sha256\":\"0f983be0022ca474fb8e3d658d8c93e199577e1c042790ed1fb787fced8dbff4\",\"ending_snow_temperature_k\":272.2686658306338,\"ending_soil_candidate_sha256\":\"3f84d144ce5ff9afb4c80ee1181f8c3d33b5354e1700ad349e45d6f221176376\",\"ending_soil_temperature_k\":272.34335751320737,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"d9aa6e111af21a19a836aafc1b955f0156235b4752d5d10f662c4dbdb09821b4\",\"snow_heat_j_m2\":-240.35847909839774,\"soil_heat_j_m2\":240.35847909839774,\"support\":{\"end_ns\":\"385440000000000\",\"start_ns\":\"385380000000000\"}},\"resistance_m2_k_w\":0.09160739337733362,\"snow_capacity_j_m2_k\":272.72116236143995,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0012986722017211455,\"ice_kg_m2\":0.12986722017211427,\"liquid_kg_m2\":1.001690542891388,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234633511,
+      "source_end": 8234635570,
+      "source_record_sha256": "e42c93db58b5f44517a920582710e88440452b5f60bf044589c175f96699f17a",
+      "credit_group_index": 4,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "1c421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96797.09841512475,
+            "last_accepted_transaction_id": 5766,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34335751320737
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "d0899832e322db56af7e0185b0c0b720148b3e5a14dfaa04989ffd69d3ee88b8",
+        "capture": {
+          "ordinal": 122966,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.926365463023792,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "4d421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96574.22083455567,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34521482637876
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.34335751320737,
+          "canonical_source_sha256": "6e7fdb76e33a888666071d53058e316fc7335eafba1de5ebda2d41aaed435290",
+          "ending_snow_temperature_k": 272.2185104865187,
+          "ending_soil_candidate_sha256": "902dfb278598fe401b433f6305be0c5ed799b4c2e8808da0448dbb3e9dad749d",
+          "ending_soil_temperature_k": 272.34521482637876,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "61b846035328b477ee4e1dad411c7fc0f2470d0168308b448f33cdbd9962b19d",
+          "snow_heat_j_m2": -222.87758056908345,
+          "soil_heat_j_m2": 222.87758056908345,
+          "support": {
+            "end_ns": "385500000000000",
+            "start_ns": "385440000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09152174191721181,
+        "snow_capacity_j_m2_k": 239.27009090646538,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0011393813852688852,
+          "ice_kg_m2": 0.11393813852688828,
+          "liquid_kg_m2": 1.017728841218511,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"1c421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-96797.09841512475,\"last_accepted_transaction_id\":5766,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34335751320737}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"d0899832e322db56af7e0185b0c0b720148b3e5a14dfaa04989ffd69d3ee88b8\",\"capture\":{\"ordinal\":122966,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.926365463023792,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"4d421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-96574.22083455567,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34521482637876}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.34335751320737,\"canonical_source_sha256\":\"6e7fdb76e33a888666071d53058e316fc7335eafba1de5ebda2d41aaed435290\",\"ending_snow_temperature_k\":272.2185104865187,\"ending_soil_candidate_sha256\":\"902dfb278598fe401b433f6305be0c5ed799b4c2e8808da0448dbb3e9dad749d\",\"ending_soil_temperature_k\":272.34521482637876,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"61b846035328b477ee4e1dad411c7fc0f2470d0168308b448f33cdbd9962b19d\",\"snow_heat_j_m2\":-222.87758056908345,\"soil_heat_j_m2\":222.87758056908345,\"support\":{\"end_ns\":\"385500000000000\",\"start_ns\":\"385440000000000\"}},\"resistance_m2_k_w\":0.09152174191721181,\"snow_capacity_j_m2_k\":239.27009090646538,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0011393813852688852,\"ice_kg_m2\":0.11393813852688828,\"liquid_kg_m2\":1.017728841218511,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234635571,
+      "source_end": 8234637630,
+      "source_record_sha256": "4142d03bc756aa82f204d0da62e6ea9fddba96f9e66a4c352ce2e81ae2164126",
+      "credit_group_index": 4,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "1c421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96797.09841512475,
+            "last_accepted_transaction_id": 5766,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34335751320737
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "d0899832e322db56af7e0185b0c0b720148b3e5a14dfaa04989ffd69d3ee88b8",
+        "capture": {
+          "ordinal": 122967,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.926365463023792,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "4d421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96574.22083455567,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34521482637876
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.34335751320737,
+          "canonical_source_sha256": "6e7fdb76e33a888666071d53058e316fc7335eafba1de5ebda2d41aaed435290",
+          "ending_snow_temperature_k": 272.2185104865187,
+          "ending_soil_candidate_sha256": "902dfb278598fe401b433f6305be0c5ed799b4c2e8808da0448dbb3e9dad749d",
+          "ending_soil_temperature_k": 272.34521482637876,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "61b846035328b477ee4e1dad411c7fc0f2470d0168308b448f33cdbd9962b19d",
+          "snow_heat_j_m2": -222.87758056908345,
+          "soil_heat_j_m2": 222.87758056908345,
+          "support": {
+            "end_ns": "385500000000000",
+            "start_ns": "385440000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09152174191721181,
+        "snow_capacity_j_m2_k": 239.27009090646538,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0011393813852688852,
+          "ice_kg_m2": 0.11393813852688828,
+          "liquid_kg_m2": 1.017728841218511,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"1c421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-96797.09841512475,\"last_accepted_transaction_id\":5766,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34335751320737}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"d0899832e322db56af7e0185b0c0b720148b3e5a14dfaa04989ffd69d3ee88b8\",\"capture\":{\"ordinal\":122967,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.926365463023792,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"4d421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-96574.22083455567,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34521482637876}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.34335751320737,\"canonical_source_sha256\":\"6e7fdb76e33a888666071d53058e316fc7335eafba1de5ebda2d41aaed435290\",\"ending_snow_temperature_k\":272.2185104865187,\"ending_soil_candidate_sha256\":\"902dfb278598fe401b433f6305be0c5ed799b4c2e8808da0448dbb3e9dad749d\",\"ending_soil_temperature_k\":272.34521482637876,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"61b846035328b477ee4e1dad411c7fc0f2470d0168308b448f33cdbd9962b19d\",\"snow_heat_j_m2\":-222.87758056908345,\"soil_heat_j_m2\":222.87758056908345,\"support\":{\"end_ns\":\"385500000000000\",\"start_ns\":\"385440000000000\"}},\"resistance_m2_k_w\":0.09152174191721181,\"snow_capacity_j_m2_k\":239.27009090646538,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0011393813852688852,\"ice_kg_m2\":0.11393813852688828,\"liquid_kg_m2\":1.017728841218511,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234649987,
+      "source_end": 8234652046,
+      "source_record_sha256": "eef55ae37266cbc239b5da4c6f920b7f460669a9a069b19356f06fb51e23c2d7",
+      "credit_group_index": 5,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "4d421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96574.22083455567,
+            "last_accepted_transaction_id": 5767,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34521482637876
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "48e1c8473d35835bb99730a790db947f81299efa4d2f701746780da3feec95fc",
+        "capture": {
+          "ordinal": 122974,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.936634282197609,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "4bbdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96370.92629154399,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3469089475705
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.34521482637876,
+          "canonical_source_sha256": "3b5cd8799880697ec21524246f46fde7d8e17614b1eeb0e3c6c7be70ecb6697d",
+          "ending_snow_temperature_k": 272.16173713873803,
+          "ending_soil_candidate_sha256": "589377679ef7785669f1dfb77d659695d480180b6b46e06d2a44b0b2a92bac80",
+          "ending_soil_temperature_k": 272.3469089475705,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "00962ae31833d1a0767807b95ee7aa346e3bc11e2df59b1a4d05897d5f510d18",
+          "snow_heat_j_m2": -203.29454301167718,
+          "soil_heat_j_m2": 203.29454301167718,
+          "support": {
+            "end_ns": "385560000000000",
+            "start_ns": "385500000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.0914358086955304,
+        "snow_capacity_j_m2_k": 205.70897782405837,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0009795665610669467,
+          "ice_kg_m2": 0.09795665610669446,
+          "liquid_kg_m2": 1.0338195403206019,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"4d421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-96574.22083455567,\"last_accepted_transaction_id\":5767,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34521482637876}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"48e1c8473d35835bb99730a790db947f81299efa4d2f701746780da3feec95fc\",\"capture\":{\"ordinal\":122974,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.936634282197609,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"4bbdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96370.92629154399,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3469089475705}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.34521482637876,\"canonical_source_sha256\":\"3b5cd8799880697ec21524246f46fde7d8e17614b1eeb0e3c6c7be70ecb6697d\",\"ending_snow_temperature_k\":272.16173713873803,\"ending_soil_candidate_sha256\":\"589377679ef7785669f1dfb77d659695d480180b6b46e06d2a44b0b2a92bac80\",\"ending_soil_temperature_k\":272.3469089475705,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"00962ae31833d1a0767807b95ee7aa346e3bc11e2df59b1a4d05897d5f510d18\",\"snow_heat_j_m2\":-203.29454301167718,\"soil_heat_j_m2\":203.29454301167718,\"support\":{\"end_ns\":\"385560000000000\",\"start_ns\":\"385500000000000\"}},\"resistance_m2_k_w\":0.0914358086955304,\"snow_capacity_j_m2_k\":205.70897782405837,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0009795665610669467,\"ice_kg_m2\":0.09795665610669446,\"liquid_kg_m2\":1.0338195403206019,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234652047,
+      "source_end": 8234654106,
+      "source_record_sha256": "5addc8928d806df41bc9b12a512ed910ddd27e93178dbbfe9770faa9d6341c71",
+      "credit_group_index": 5,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "4d421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96574.22083455567,
+            "last_accepted_transaction_id": 5767,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.34521482637876
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "48e1c8473d35835bb99730a790db947f81299efa4d2f701746780da3feec95fc",
+        "capture": {
+          "ordinal": 122975,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.936634282197609,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "4bbdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96370.92629154399,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3469089475705
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.34521482637876,
+          "canonical_source_sha256": "3b5cd8799880697ec21524246f46fde7d8e17614b1eeb0e3c6c7be70ecb6697d",
+          "ending_snow_temperature_k": 272.16173713873803,
+          "ending_soil_candidate_sha256": "589377679ef7785669f1dfb77d659695d480180b6b46e06d2a44b0b2a92bac80",
+          "ending_soil_temperature_k": 272.3469089475705,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "00962ae31833d1a0767807b95ee7aa346e3bc11e2df59b1a4d05897d5f510d18",
+          "snow_heat_j_m2": -203.29454301167718,
+          "soil_heat_j_m2": 203.29454301167718,
+          "support": {
+            "end_ns": "385560000000000",
+            "start_ns": "385500000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.0914358086955304,
+        "snow_capacity_j_m2_k": 205.70897782405837,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0009795665610669467,
+          "ice_kg_m2": 0.09795665610669446,
+          "liquid_kg_m2": 1.0338195403206019,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"4d421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-96574.22083455567,\"last_accepted_transaction_id\":5767,\"layer_id\":\"thermal-1\",\"temperature_k\":272.34521482637876}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"48e1c8473d35835bb99730a790db947f81299efa4d2f701746780da3feec95fc\",\"capture\":{\"ordinal\":122975,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.936634282197609,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"4bbdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96370.92629154399,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3469089475705}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.34521482637876,\"canonical_source_sha256\":\"3b5cd8799880697ec21524246f46fde7d8e17614b1eeb0e3c6c7be70ecb6697d\",\"ending_snow_temperature_k\":272.16173713873803,\"ending_soil_candidate_sha256\":\"589377679ef7785669f1dfb77d659695d480180b6b46e06d2a44b0b2a92bac80\",\"ending_soil_temperature_k\":272.3469089475705,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"00962ae31833d1a0767807b95ee7aa346e3bc11e2df59b1a4d05897d5f510d18\",\"snow_heat_j_m2\":-203.29454301167718,\"soil_heat_j_m2\":203.29454301167718,\"support\":{\"end_ns\":\"385560000000000\",\"start_ns\":\"385500000000000\"}},\"resistance_m2_k_w\":0.0914358086955304,\"snow_capacity_j_m2_k\":205.70897782405837,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0009795665610669467,\"ice_kg_m2\":0.09795665610669446,\"liquid_kg_m2\":1.0338195403206019,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234654107,
+      "source_end": 8234656164,
+      "source_record_sha256": "4f1073c8e34301298489c1b8e2814cad7ac3c8d6d071c4880ad0e0a8289709b5",
+      "credit_group_index": 6,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "4bbdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96370.92629154399,
+            "last_accepted_transaction_id": 5768,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3469089475705
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "46c1146ed6ad1738256771e5df89d6a83d3c943a622f786bd896990f6e7fea78",
+        "capture": {
+          "ordinal": 122976,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.94696024662502,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "57bdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96189.77332469595,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3484185556276
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3469089475705,
+          "canonical_source_sha256": "19ba7b6d0763e472f7d414852074f8dc1e2b1896be61a5c3d0de4192bf4366e1",
+          "ending_snow_temperature_k": 272.0969356293105,
+          "ending_soil_candidate_sha256": "cbaae8512815390eb10c846afb3f020d1fcb4610c33f92a4dc1c35331f9f1388",
+          "ending_soil_temperature_k": 272.3484185556276,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "c08f2d17c9de92839da573aecb5851f38b24ef8beb5e8f74d9162713d7d0bc7c",
+          "snow_heat_j_m2": -181.15296684803582,
+          "soil_heat_j_m2": 181.15296684803582,
+          "support": {
+            "end_ns": "385620000000000",
+            "start_ns": "385560000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09134955982947895,
+        "snow_capacity_j_m2_k": 172.02459022465322,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0008191647153554933,
+          "ice_kg_m2": 0.08191647153554915,
+          "liquid_kg_m2": 1.0499689415736442,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"4bbdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96370.92629154399,\"last_accepted_transaction_id\":5768,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3469089475705}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"46c1146ed6ad1738256771e5df89d6a83d3c943a622f786bd896990f6e7fea78\",\"capture\":{\"ordinal\":122976,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.94696024662502,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"57bdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96189.77332469595,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3484185556276}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3469089475705,\"canonical_source_sha256\":\"19ba7b6d0763e472f7d414852074f8dc1e2b1896be61a5c3d0de4192bf4366e1\",\"ending_snow_temperature_k\":272.0969356293105,\"ending_soil_candidate_sha256\":\"cbaae8512815390eb10c846afb3f020d1fcb4610c33f92a4dc1c35331f9f1388\",\"ending_soil_temperature_k\":272.3484185556276,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"c08f2d17c9de92839da573aecb5851f38b24ef8beb5e8f74d9162713d7d0bc7c\",\"snow_heat_j_m2\":-181.15296684803582,\"soil_heat_j_m2\":181.15296684803582,\"support\":{\"end_ns\":\"385620000000000\",\"start_ns\":\"385560000000000\"}},\"resistance_m2_k_w\":0.09134955982947895,\"snow_capacity_j_m2_k\":172.02459022465322,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0008191647153554933,\"ice_kg_m2\":0.08191647153554915,\"liquid_kg_m2\":1.0499689415736442,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8234656165,
+      "source_end": 8234658222,
+      "source_record_sha256": "a600977b2061afbafa602a1cafaaaa98d1d2d753ce69849acbc52cb5042ac124",
+      "credit_group_index": 6,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "4bbdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96370.92629154399,
+            "last_accepted_transaction_id": 5768,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3469089475705
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "46c1146ed6ad1738256771e5df89d6a83d3c943a622f786bd896990f6e7fea78",
+        "capture": {
+          "ordinal": 122977,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.94696024662502,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "57bdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96189.77332469595,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3484185556276
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3469089475705,
+          "canonical_source_sha256": "19ba7b6d0763e472f7d414852074f8dc1e2b1896be61a5c3d0de4192bf4366e1",
+          "ending_snow_temperature_k": 272.0969356293105,
+          "ending_soil_candidate_sha256": "cbaae8512815390eb10c846afb3f020d1fcb4610c33f92a4dc1c35331f9f1388",
+          "ending_soil_temperature_k": 272.3484185556276,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "c08f2d17c9de92839da573aecb5851f38b24ef8beb5e8f74d9162713d7d0bc7c",
+          "snow_heat_j_m2": -181.15296684803582,
+          "soil_heat_j_m2": 181.15296684803582,
+          "support": {
+            "end_ns": "385620000000000",
+            "start_ns": "385560000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09134955982947895,
+        "snow_capacity_j_m2_k": 172.02459022465322,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0008191647153554933,
+          "ice_kg_m2": 0.08191647153554915,
+          "liquid_kg_m2": 1.0499689415736442,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"4bbdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96370.92629154399,\"last_accepted_transaction_id\":5768,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3469089475705}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"46c1146ed6ad1738256771e5df89d6a83d3c943a622f786bd896990f6e7fea78\",\"capture\":{\"ordinal\":122977,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.94696024662502,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"57bdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96189.77332469595,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3484185556276}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3469089475705,\"canonical_source_sha256\":\"19ba7b6d0763e472f7d414852074f8dc1e2b1896be61a5c3d0de4192bf4366e1\",\"ending_snow_temperature_k\":272.0969356293105,\"ending_soil_candidate_sha256\":\"cbaae8512815390eb10c846afb3f020d1fcb4610c33f92a4dc1c35331f9f1388\",\"ending_soil_temperature_k\":272.3484185556276,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"c08f2d17c9de92839da573aecb5851f38b24ef8beb5e8f74d9162713d7d0bc7c\",\"snow_heat_j_m2\":-181.15296684803582,\"soil_heat_j_m2\":181.15296684803582,\"support\":{\"end_ns\":\"385620000000000\",\"start_ns\":\"385560000000000\"}},\"resistance_m2_k_w\":0.09134955982947895,\"snow_capacity_j_m2_k\":172.02459022465322,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0008191647153554933,\"ice_kg_m2\":0.08191647153554915,\"liquid_kg_m2\":1.0499689415736442,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8235997331,
+      "source_end": 8235999387,
+      "source_record_sha256": "60927e5fb03c8a4edd3fdd44af2f575462916f4ceb9e7bcc61556c1b9fcf07a0",
+      "credit_group_index": 7,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "57bdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96189.77332469595,
+            "last_accepted_transaction_id": 5769,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3484185556276
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "256b207aa4fc56cdc3d12c97702b8e8cb4b426a2cd202d8d92830892e3aab25e",
+        "capture": {
+          "ordinal": 123059,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.957348576780635,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "acbdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96033.9188194065,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3497173431717
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3484185556276,
+          "canonical_source_sha256": "97685ebcaad231dce569e0bcce96e3c533413be234c7dd14a355a4f2bb25a18e",
+          "ending_snow_temperature_k": 272.0222606507784,
+          "ending_soil_candidate_sha256": "af09e4a3cc5b93dca7469d7bbd7912a90949522ff1d802402792ff5b9559808f",
+          "ending_soil_temperature_k": 272.3497173431717,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc",
+          "snow_heat_j_m2": -155.85450528944543,
+          "soil_heat_j_m2": 155.85450528944543,
+          "support": {
+            "end_ns": "385680000000000",
+            "start_ns": "385620000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09126295407988277,
+        "snow_capacity_j_m2_k": 138.2008221997571,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0006580991533321781,
+          "ice_kg_m2": 0.06580991533321767,
+          "liquid_kg_m2": 1.0661847144578727,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"57bdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96189.77332469595,\"last_accepted_transaction_id\":5769,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3484185556276}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"256b207aa4fc56cdc3d12c97702b8e8cb4b426a2cd202d8d92830892e3aab25e\",\"capture\":{\"ordinal\":123059,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.957348576780635,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"acbdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96033.9188194065,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3497173431717}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3484185556276,\"canonical_source_sha256\":\"97685ebcaad231dce569e0bcce96e3c533413be234c7dd14a355a4f2bb25a18e\",\"ending_snow_temperature_k\":272.0222606507784,\"ending_soil_candidate_sha256\":\"af09e4a3cc5b93dca7469d7bbd7912a90949522ff1d802402792ff5b9559808f\",\"ending_soil_temperature_k\":272.3497173431717,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc\",\"snow_heat_j_m2\":-155.85450528944543,\"soil_heat_j_m2\":155.85450528944543,\"support\":{\"end_ns\":\"385680000000000\",\"start_ns\":\"385620000000000\"}},\"resistance_m2_k_w\":0.09126295407988277,\"snow_capacity_j_m2_k\":138.2008221997571,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0006580991533321781,\"ice_kg_m2\":0.06580991533321767,\"liquid_kg_m2\":1.0661847144578727,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8235999388,
+      "source_end": 8236001444,
+      "source_record_sha256": "36276d53d61d66769b6e89bee523e599524828628d9fb21c2e3adbf09d67b3e1",
+      "credit_group_index": 7,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "57bdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96189.77332469595,
+            "last_accepted_transaction_id": 5769,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3484185556276
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "256b207aa4fc56cdc3d12c97702b8e8cb4b426a2cd202d8d92830892e3aab25e",
+        "capture": {
+          "ordinal": 123060,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.957348576780635,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "acbdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96033.9188194065,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3497173431717
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3484185556276,
+          "canonical_source_sha256": "97685ebcaad231dce569e0bcce96e3c533413be234c7dd14a355a4f2bb25a18e",
+          "ending_snow_temperature_k": 272.0222606507784,
+          "ending_soil_candidate_sha256": "af09e4a3cc5b93dca7469d7bbd7912a90949522ff1d802402792ff5b9559808f",
+          "ending_soil_temperature_k": 272.3497173431717,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc",
+          "snow_heat_j_m2": -155.85450528944543,
+          "soil_heat_j_m2": 155.85450528944543,
+          "support": {
+            "end_ns": "385680000000000",
+            "start_ns": "385620000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09126295407988277,
+        "snow_capacity_j_m2_k": 138.2008221997571,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0006580991533321781,
+          "ice_kg_m2": 0.06580991533321767,
+          "liquid_kg_m2": 1.0661847144578727,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"57bdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96189.77332469595,\"last_accepted_transaction_id\":5769,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3484185556276}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"256b207aa4fc56cdc3d12c97702b8e8cb4b426a2cd202d8d92830892e3aab25e\",\"capture\":{\"ordinal\":123060,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.957348576780635,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"acbdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96033.9188194065,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3497173431717}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3484185556276,\"canonical_source_sha256\":\"97685ebcaad231dce569e0bcce96e3c533413be234c7dd14a355a4f2bb25a18e\",\"ending_snow_temperature_k\":272.0222606507784,\"ending_soil_candidate_sha256\":\"af09e4a3cc5b93dca7469d7bbd7912a90949522ff1d802402792ff5b9559808f\",\"ending_soil_temperature_k\":272.3497173431717,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"367438c07d350279549b6ec74c5285ccd27544ff986e775e36ccdfd7dc5a8bcc\",\"snow_heat_j_m2\":-155.85450528944543,\"soil_heat_j_m2\":155.85450528944543,\"support\":{\"end_ns\":\"385680000000000\",\"start_ns\":\"385620000000000\"}},\"resistance_m2_k_w\":0.09126295407988277,\"snow_capacity_j_m2_k\":138.2008221997571,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0006580991533321781,\"ice_kg_m2\":0.06580991533321767,\"liquid_kg_m2\":1.0661847144578727,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8236013775,
+      "source_end": 8236015828,
+      "source_record_sha256": "cc4dd80b575b883eaf0273de10992a40f49611c9aab07245d4ba05ed94890457",
+      "credit_group_index": 8,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "acbdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96033.9188194065,
+            "last_accepted_transaction_id": 5770,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3497173431717
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "fcd998cbca0880f84b526fc5355c1960199df58894508d50aac801b0b41f0807",
+        "capture": {
+          "ordinal": 123067,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.96780569328108,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "cf421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95907.32007209538,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3507723327326
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3497173431717,
+          "canonical_source_sha256": "f69c1b48baa5636814fd6d8ba87ad15182cfb7620a469a614437a8dd835481b7",
+          "ending_snow_temperature_k": 271.9352483379118,
+          "ending_soil_candidate_sha256": "80305cc61a3b37ddbe21035bc5da0c22f90505b0e4fc3fde592a93949685123e",
+          "ending_soil_temperature_k": 272.3507723327326,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8",
+          "snow_heat_j_m2": -126.59874731114166,
+          "soil_heat_j_m2": 126.59874731114166,
+          "support": {
+            "end_ns": "385740000000000",
+            "start_ns": "385680000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09117594056326178,
+        "snow_capacity_j_m2_k": 104.21780126936662,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.000496275244139842,
+          "ice_kg_m2": 0.0496275244139841,
+          "liquid_kg_m2": 1.0824763220590032,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"acbdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96033.9188194065,\"last_accepted_transaction_id\":5770,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3497173431717}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"fcd998cbca0880f84b526fc5355c1960199df58894508d50aac801b0b41f0807\",\"capture\":{\"ordinal\":123067,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.96780569328108,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"cf421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95907.32007209538,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3507723327326}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3497173431717,\"canonical_source_sha256\":\"f69c1b48baa5636814fd6d8ba87ad15182cfb7620a469a614437a8dd835481b7\",\"ending_snow_temperature_k\":271.9352483379118,\"ending_soil_candidate_sha256\":\"80305cc61a3b37ddbe21035bc5da0c22f90505b0e4fc3fde592a93949685123e\",\"ending_soil_temperature_k\":272.3507723327326,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8\",\"snow_heat_j_m2\":-126.59874731114166,\"soil_heat_j_m2\":126.59874731114166,\"support\":{\"end_ns\":\"385740000000000\",\"start_ns\":\"385680000000000\"}},\"resistance_m2_k_w\":0.09117594056326178,\"snow_capacity_j_m2_k\":104.21780126936662,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.000496275244139842,\"ice_kg_m2\":0.0496275244139841,\"liquid_kg_m2\":1.0824763220590032,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8236015829,
+      "source_end": 8236017882,
+      "source_record_sha256": "d897226da4d8e38f894b8a6c5a5d3780da773c21356dedfee0aad2af0843805c",
+      "credit_group_index": 8,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "acbdf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -96033.9188194065,
+            "last_accepted_transaction_id": 5770,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3497173431717
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "fcd998cbca0880f84b526fc5355c1960199df58894508d50aac801b0b41f0807",
+        "capture": {
+          "ordinal": 123068,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.96780569328108,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "cf421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95907.32007209538,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3507723327326
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3497173431717,
+          "canonical_source_sha256": "f69c1b48baa5636814fd6d8ba87ad15182cfb7620a469a614437a8dd835481b7",
+          "ending_snow_temperature_k": 271.9352483379118,
+          "ending_soil_candidate_sha256": "80305cc61a3b37ddbe21035bc5da0c22f90505b0e4fc3fde592a93949685123e",
+          "ending_soil_temperature_k": 272.3507723327326,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8",
+          "snow_heat_j_m2": -126.59874731114166,
+          "soil_heat_j_m2": 126.59874731114166,
+          "support": {
+            "end_ns": "385740000000000",
+            "start_ns": "385680000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09117594056326178,
+        "snow_capacity_j_m2_k": 104.21780126936662,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.000496275244139842,
+          "ice_kg_m2": 0.0496275244139841,
+          "liquid_kg_m2": 1.0824763220590032,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"acbdf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-96033.9188194065,\"last_accepted_transaction_id\":5770,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3497173431717}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"fcd998cbca0880f84b526fc5355c1960199df58894508d50aac801b0b41f0807\",\"capture\":{\"ordinal\":123068,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.96780569328108,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"cf421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95907.32007209538,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3507723327326}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3497173431717,\"canonical_source_sha256\":\"f69c1b48baa5636814fd6d8ba87ad15182cfb7620a469a614437a8dd835481b7\",\"ending_snow_temperature_k\":271.9352483379118,\"ending_soil_candidate_sha256\":\"80305cc61a3b37ddbe21035bc5da0c22f90505b0e4fc3fde592a93949685123e\",\"ending_soil_temperature_k\":272.3507723327326,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"a0c2f0e20aafe2876dca8345075dfefd91417fc771d8f7d3a385da5047154cf8\",\"snow_heat_j_m2\":-126.59874731114166,\"soil_heat_j_m2\":126.59874731114166,\"support\":{\"end_ns\":\"385740000000000\",\"start_ns\":\"385680000000000\"}},\"resistance_m2_k_w\":0.09117594056326178,\"snow_capacity_j_m2_k\":104.21780126936662,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.000496275244139842,\"ice_kg_m2\":0.0496275244139841,\"liquid_kg_m2\":1.0824763220590032,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8236030223,
+      "source_end": 8236032276,
+      "source_record_sha256": "d225a39dd405c768d4e82f6f5b1db43cf8140568273f3c4b81833ae0312f2d56",
+      "credit_group_index": 9,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "cf421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95907.32007209538,
+            "last_accepted_transaction_id": 5771,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3507723327326
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "a2266590018436f9a671eec9d418888a34751bd21ac58aacf16182b71575266d",
+        "capture": {
+          "ordinal": 123075,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.978339621269612,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "a2c21",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95815.03054072696,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3515414121607
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3507723327326,
+          "canonical_source_sha256": "309aa259391f31ed156d40ad4ed77158fbc1304507806428d6779c20c195f45c",
+          "ending_snow_temperature_k": 271.8325307739166,
+          "ending_soil_candidate_sha256": "cc6c4fc893c9647920605bac634f0f88fc719fc42aa0e8cb6c671c7fb6e47a32",
+          "ending_soil_temperature_k": 272.3515414121607,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739",
+          "snow_heat_j_m2": -92.28953136841174,
+          "soil_heat_j_m2": 92.28953136841174,
+          "support": {
+            "end_ns": "385800000000000",
+            "start_ns": "385740000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.0910884554949078,
+        "snow_capacity_j_m2_k": 70.05061639486789,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.00033357436378508593,
+          "ice_kg_m2": 0.03335743637850852,
+          "liquid_kg_m2": 1.0988556267763758,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"cf421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95907.32007209538,\"last_accepted_transaction_id\":5771,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3507723327326}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"a2266590018436f9a671eec9d418888a34751bd21ac58aacf16182b71575266d\",\"capture\":{\"ordinal\":123075,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.978339621269612,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"a2c21\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95815.03054072696,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3515414121607}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3507723327326,\"canonical_source_sha256\":\"309aa259391f31ed156d40ad4ed77158fbc1304507806428d6779c20c195f45c\",\"ending_snow_temperature_k\":271.8325307739166,\"ending_soil_candidate_sha256\":\"cc6c4fc893c9647920605bac634f0f88fc719fc42aa0e8cb6c671c7fb6e47a32\",\"ending_soil_temperature_k\":272.3515414121607,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739\",\"snow_heat_j_m2\":-92.28953136841174,\"soil_heat_j_m2\":92.28953136841174,\"support\":{\"end_ns\":\"385800000000000\",\"start_ns\":\"385740000000000\"}},\"resistance_m2_k_w\":0.0910884554949078,\"snow_capacity_j_m2_k\":70.05061639486789,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.00033357436378508593,\"ice_kg_m2\":0.03335743637850852,\"liquid_kg_m2\":1.0988556267763758,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8236032277,
+      "source_end": 8236034330,
+      "source_record_sha256": "fc42acd4c0dbfc7907686758ee868ec25e7e17d603ef34b67e22137b7c48fde1",
+      "credit_group_index": 9,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "cf421",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95907.32007209538,
+            "last_accepted_transaction_id": 5771,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3507723327326
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "a2266590018436f9a671eec9d418888a34751bd21ac58aacf16182b71575266d",
+        "capture": {
+          "ordinal": 123076,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.978339621269612,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "a2c21",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95815.03054072696,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3515414121607
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3507723327326,
+          "canonical_source_sha256": "309aa259391f31ed156d40ad4ed77158fbc1304507806428d6779c20c195f45c",
+          "ending_snow_temperature_k": 271.8325307739166,
+          "ending_soil_candidate_sha256": "cc6c4fc893c9647920605bac634f0f88fc719fc42aa0e8cb6c671c7fb6e47a32",
+          "ending_soil_temperature_k": 272.3515414121607,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739",
+          "snow_heat_j_m2": -92.28953136841174,
+          "soil_heat_j_m2": 92.28953136841174,
+          "support": {
+            "end_ns": "385800000000000",
+            "start_ns": "385740000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.0910884554949078,
+        "snow_capacity_j_m2_k": 70.05061639486789,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.00033357436378508593,
+          "ice_kg_m2": 0.03335743637850852,
+          "liquid_kg_m2": 1.0988556267763758,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"cf421\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95907.32007209538,\"last_accepted_transaction_id\":5771,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3507723327326}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"a2266590018436f9a671eec9d418888a34751bd21ac58aacf16182b71575266d\",\"capture\":{\"ordinal\":123076,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.978339621269612,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"a2c21\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95815.03054072696,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3515414121607}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3507723327326,\"canonical_source_sha256\":\"309aa259391f31ed156d40ad4ed77158fbc1304507806428d6779c20c195f45c\",\"ending_snow_temperature_k\":271.8325307739166,\"ending_soil_candidate_sha256\":\"cc6c4fc893c9647920605bac634f0f88fc719fc42aa0e8cb6c671c7fb6e47a32\",\"ending_soil_temperature_k\":272.3515414121607,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"38a1da5dfa891630a91d91b92a20f743a65dbe5fa219906c64c7026136d9d739\",\"snow_heat_j_m2\":-92.28953136841174,\"soil_heat_j_m2\":92.28953136841174,\"support\":{\"end_ns\":\"385800000000000\",\"start_ns\":\"385740000000000\"}},\"resistance_m2_k_w\":0.0910884554949078,\"snow_capacity_j_m2_k\":70.05061639486789,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.00033357436378508593,\"ice_kg_m2\":0.03335743637850852,\"liquid_kg_m2\":1.0988556267763758,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8236046689,
+      "source_end": 8236048747,
+      "source_record_sha256": "138146076899b3eaaca4f668cad8a84b6a14e1dcb1e73248c58a8de5a033795a",
+      "credit_group_index": 10,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "a2c21",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95815.03054072696,
+            "last_accepted_transaction_id": 5772,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3515414121607
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "0356ba0af239d04a76c9d4281db71c1e1f50f160c50085c24b61e9a831dbc749",
+        "capture": {
+          "ordinal": 123083,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.988960582056764,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "75821",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95763.64710523981,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.35196960745645
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3515414121607,
+          "canonical_source_sha256": "19975a98130c6d9f70ff5e1496427e92328e3bd7ba292b72ae0373c4e02a81ce",
+          "ending_snow_temperature_k": 271.70937482221393,
+          "ending_soil_candidate_sha256": "4d552cbb106d0341d2f2bc7242e692ba472fb1977382c441c06d4348cb61f442",
+          "ending_soil_temperature_k": 272.35196960745645,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c",
+          "snow_heat_j_m2": -51.38343548714928,
+          "soil_heat_j_m2": 51.38343548714928,
+          "support": {
+            "end_ns": "385860000000000",
+            "start_ns": "385800000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09100041742190267,
+        "snow_capacity_j_m2_k": 35.667456240154436,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0001698450297150215,
+          "ice_kg_m2": 0.016984502971502113,
+          "liquid_kg_m2": 1.1153377768652792,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"a2c21\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95815.03054072696,\"last_accepted_transaction_id\":5772,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3515414121607}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"0356ba0af239d04a76c9d4281db71c1e1f50f160c50085c24b61e9a831dbc749\",\"capture\":{\"ordinal\":123083,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.988960582056764,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"75821\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95763.64710523981,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.35196960745645}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3515414121607,\"canonical_source_sha256\":\"19975a98130c6d9f70ff5e1496427e92328e3bd7ba292b72ae0373c4e02a81ce\",\"ending_snow_temperature_k\":271.70937482221393,\"ending_soil_candidate_sha256\":\"4d552cbb106d0341d2f2bc7242e692ba472fb1977382c441c06d4348cb61f442\",\"ending_soil_temperature_k\":272.35196960745645,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c\",\"snow_heat_j_m2\":-51.38343548714928,\"soil_heat_j_m2\":51.38343548714928,\"support\":{\"end_ns\":\"385860000000000\",\"start_ns\":\"385800000000000\"}},\"resistance_m2_k_w\":0.09100041742190267,\"snow_capacity_j_m2_k\":35.667456240154436,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0001698450297150215,\"ice_kg_m2\":0.016984502971502113,\"liquid_kg_m2\":1.1153377768652792,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8236048748,
+      "source_end": 8236050806,
+      "source_record_sha256": "d9fee53d8836492d35cb7bf65b7c2dfe1747f18f76d56a7d099c18183407c094",
+      "credit_group_index": 10,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "a2c21",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95815.03054072696,
+            "last_accepted_transaction_id": 5772,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3515414121607
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "0356ba0af239d04a76c9d4281db71c1e1f50f160c50085c24b61e9a831dbc749",
+        "capture": {
+          "ordinal": 123084,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.988960582056764,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "75821",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95763.64710523981,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.35196960745645
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.3515414121607,
+          "canonical_source_sha256": "19975a98130c6d9f70ff5e1496427e92328e3bd7ba292b72ae0373c4e02a81ce",
+          "ending_snow_temperature_k": 271.70937482221393,
+          "ending_soil_candidate_sha256": "4d552cbb106d0341d2f2bc7242e692ba472fb1977382c441c06d4348cb61f442",
+          "ending_soil_temperature_k": 272.35196960745645,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c",
+          "snow_heat_j_m2": -51.38343548714928,
+          "soil_heat_j_m2": 51.38343548714928,
+          "support": {
+            "end_ns": "385860000000000",
+            "start_ns": "385800000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09100041742190267,
+        "snow_capacity_j_m2_k": 35.667456240154436,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 0.0001698450297150215,
+          "ice_kg_m2": 0.016984502971502113,
+          "liquid_kg_m2": 1.1153377768652792,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"a2c21\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95815.03054072696,\"last_accepted_transaction_id\":5772,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3515414121607}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"0356ba0af239d04a76c9d4281db71c1e1f50f160c50085c24b61e9a831dbc749\",\"capture\":{\"ordinal\":123084,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.988960582056764,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"75821\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95763.64710523981,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.35196960745645}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.3515414121607,\"canonical_source_sha256\":\"19975a98130c6d9f70ff5e1496427e92328e3bd7ba292b72ae0373c4e02a81ce\",\"ending_snow_temperature_k\":271.70937482221393,\"ending_soil_candidate_sha256\":\"4d552cbb106d0341d2f2bc7242e692ba472fb1977382c441c06d4348cb61f442\",\"ending_soil_temperature_k\":272.35196960745645,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"543332e572954b37246247074da4e89316b403df29d386856ab1e4dcf9534e7c\",\"snow_heat_j_m2\":-51.38343548714928,\"soil_heat_j_m2\":51.38343548714928,\"support\":{\"end_ns\":\"385860000000000\",\"start_ns\":\"385800000000000\"}},\"resistance_m2_k_w\":0.09100041742190267,\"snow_capacity_j_m2_k\":35.667456240154436,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":0.0001698450297150215,\"ice_kg_m2\":0.016984502971502113,\"liquid_kg_m2\":1.1153377768652792,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8236050807,
+      "source_end": 8236052866,
+      "source_record_sha256": "257f33048081644c1bd8e58c3e2898dda6cb280da5cc2f70a8e73a32b424a040",
+      "credit_group_index": 11,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "75821",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95763.64710523981,
+            "last_accepted_transaction_id": 5773,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.35196960745645
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "c268e49d49bad7010927b0eed4129490a8fde46e4a37144306a8fd0a78a47ac3",
+        "capture": {
+          "ordinal": 123085,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.999681887498474,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "983bf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95762.01337757081,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3519832218537
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.35196960745645,
+          "canonical_source_sha256": "e3fd4e218440e4d131a04f9db9017e76f4177d4f7e56e5804d1ea09a7029f9f8",
+          "ending_snow_temperature_k": 271.55890366239095,
+          "ending_soil_candidate_sha256": "d90a7deeec7b5416ab1734c1188bda453042be00673416446a9dade66ee35800",
+          "ending_soil_temperature_k": 272.3519832218537,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "20aaac2a1501b558e9feabfbf8d774503c7e456a5fd99a0378a2a156a0c6cd65",
+          "snow_heat_j_m2": -1.633727668995171,
+          "soil_heat_j_m2": 1.633727668995171,
+          "support": {
+            "end_ns": "385920000000000",
+            "start_ns": "385860000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09091172001406107,
+        "snow_capacity_j_m2_k": 1.0267936833103342,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 4.8894937300492205e-06,
+          "ice_kg_m2": 0.000488949373004921,
+          "liquid_kg_m2": 1.1319425471456734,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"75821\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95763.64710523981,\"last_accepted_transaction_id\":5773,\"layer_id\":\"thermal-1\",\"temperature_k\":272.35196960745645}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"c268e49d49bad7010927b0eed4129490a8fde46e4a37144306a8fd0a78a47ac3\",\"capture\":{\"ordinal\":123085,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.999681887498474,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"983bf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-95762.01337757081,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3519832218537}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.35196960745645,\"canonical_source_sha256\":\"e3fd4e218440e4d131a04f9db9017e76f4177d4f7e56e5804d1ea09a7029f9f8\",\"ending_snow_temperature_k\":271.55890366239095,\"ending_soil_candidate_sha256\":\"d90a7deeec7b5416ab1734c1188bda453042be00673416446a9dade66ee35800\",\"ending_soil_temperature_k\":272.3519832218537,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"20aaac2a1501b558e9feabfbf8d774503c7e456a5fd99a0378a2a156a0c6cd65\",\"snow_heat_j_m2\":-1.633727668995171,\"soil_heat_j_m2\":1.633727668995171,\"support\":{\"end_ns\":\"385920000000000\",\"start_ns\":\"385860000000000\"}},\"resistance_m2_k_w\":0.09091172001406107,\"snow_capacity_j_m2_k\":1.0267936833103342,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":4.8894937300492205e-6,\"ice_kg_m2\":0.000488949373004921,\"liquid_kg_m2\":1.1319425471456734,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    },
+    {
+      "source_start": 8236052867,
+      "source_end": 8236054926,
+      "source_record_sha256": "e83e419e2400c1bc7158eaf6f414f4ce71fec90682c30f73ad123316740cb000",
+      "credit_group_index": 11,
+      "record": {
+        "beginning_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "75821",
+              "exponent2": -57,
+              "sign": 1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95763.64710523981,
+            "last_accepted_transaction_id": 5773,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.35196960745645
+          }
+        },
+        "beginning_soil_owner_id": "soil-thermal",
+        "beginning_soil_state_sha256": "c268e49d49bad7010927b0eed4129490a8fde46e4a37144306a8fd0a78a47ac3",
+        "capture": {
+          "ordinal": 123086,
+          "process": 996446,
+          "session": 1,
+          "thread": "ThreadId(2)"
+        },
+        "conductance_w_m2_k": 10.999681887498474,
+        "disposition": "trial_only_select_by_committed_final_receipt",
+        "duration_s": 60.0,
+        "ending_soil": {
+          "v2": {
+            "enthalpy_carry": {
+              "coefficient_hex": "983bf",
+              "exponent2": -57,
+              "sign": -1
+            },
+            "enthalpy_hi_j_m2_ofe_ground": -95762.01337757081,
+            "last_accepted_transaction_id": 255,
+            "layer_id": "thermal-1",
+            "temperature_k": 272.3519832218537
+          }
+        },
+        "kind": "soil_trial_primitive",
+        "receipt": {
+          "beginning_snow_temperature_k": 273.15,
+          "beginning_soil_temperature_k": 272.35196960745645,
+          "canonical_source_sha256": "e3fd4e218440e4d131a04f9db9017e76f4177d4f7e56e5804d1ea09a7029f9f8",
+          "ending_snow_temperature_k": 271.55890366239095,
+          "ending_soil_candidate_sha256": "d90a7deeec7b5416ab1734c1188bda453042be00673416446a9dade66ee35800",
+          "ending_soil_temperature_k": 272.3519832218537,
+          "experimental_bulk": null,
+          "lane_id": 1,
+          "ofe_id": "ofe-1",
+          "receipt_sha256": "20aaac2a1501b558e9feabfbf8d774503c7e456a5fd99a0378a2a156a0c6cd65",
+          "snow_heat_j_m2": -1.633727668995171,
+          "soil_heat_j_m2": 1.633727668995171,
+          "support": {
+            "end_ns": "385920000000000",
+            "start_ns": "385860000000000"
+          }
+        },
+        "resistance_m2_k_w": 0.09091172001406107,
+        "snow_capacity_j_m2_k": 1.0267936833103342,
+        "snow_conductivity_w_m_k": 0.9298779975597719,
+        "snow_inputs": {
+          "atmospheric_pressure_pa": 87633.52548751776,
+          "cold_content_j_m2": 0.0,
+          "density_kg_m3": 99.99999999999979,
+          "depth_m": 4.8894937300492205e-06,
+          "ice_kg_m2": 0.000488949373004921,
+          "liquid_kg_m2": 1.1319425471456734,
+          "temperature_k": 273.15
+        },
+        "soil_capacity_j_m2_k": 120000.0,
+        "soil_configuration": {
+          "areal_heat_capacity_j_m2_k": 120000.0,
+          "layer_id": "thermal-1",
+          "thermal_conductivity_w_m_k": 1.1,
+          "thickness_m": 0.2
+        },
+        "transaction_id": 255
+      },
+      "source_canonical_json": "{\"beginning_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"75821\",\"exponent2\":-57,\"sign\":1},\"enthalpy_hi_j_m2_ofe_ground\":-95763.64710523981,\"last_accepted_transaction_id\":5773,\"layer_id\":\"thermal-1\",\"temperature_k\":272.35196960745645}},\"beginning_soil_owner_id\":\"soil-thermal\",\"beginning_soil_state_sha256\":\"c268e49d49bad7010927b0eed4129490a8fde46e4a37144306a8fd0a78a47ac3\",\"capture\":{\"ordinal\":123086,\"process\":996446,\"session\":1,\"thread\":\"ThreadId(2)\"},\"conductance_w_m2_k\":10.999681887498474,\"disposition\":\"trial_only_select_by_committed_final_receipt\",\"duration_s\":60.0,\"ending_soil\":{\"v2\":{\"enthalpy_carry\":{\"coefficient_hex\":\"983bf\",\"exponent2\":-57,\"sign\":-1},\"enthalpy_hi_j_m2_ofe_ground\":-95762.01337757081,\"last_accepted_transaction_id\":255,\"layer_id\":\"thermal-1\",\"temperature_k\":272.3519832218537}},\"kind\":\"soil_trial_primitive\",\"receipt\":{\"beginning_snow_temperature_k\":273.15,\"beginning_soil_temperature_k\":272.35196960745645,\"canonical_source_sha256\":\"e3fd4e218440e4d131a04f9db9017e76f4177d4f7e56e5804d1ea09a7029f9f8\",\"ending_snow_temperature_k\":271.55890366239095,\"ending_soil_candidate_sha256\":\"d90a7deeec7b5416ab1734c1188bda453042be00673416446a9dade66ee35800\",\"ending_soil_temperature_k\":272.3519832218537,\"experimental_bulk\":null,\"lane_id\":1,\"ofe_id\":\"ofe-1\",\"receipt_sha256\":\"20aaac2a1501b558e9feabfbf8d774503c7e456a5fd99a0378a2a156a0c6cd65\",\"snow_heat_j_m2\":-1.633727668995171,\"soil_heat_j_m2\":1.633727668995171,\"support\":{\"end_ns\":\"385920000000000\",\"start_ns\":\"385860000000000\"}},\"resistance_m2_k_w\":0.09091172001406107,\"snow_capacity_j_m2_k\":1.0267936833103342,\"snow_conductivity_w_m_k\":0.9298779975597719,\"snow_inputs\":{\"atmospheric_pressure_pa\":87633.52548751776,\"cold_content_j_m2\":0.0,\"density_kg_m3\":99.99999999999979,\"depth_m\":4.8894937300492205e-6,\"ice_kg_m2\":0.000488949373004921,\"liquid_kg_m2\":1.1319425471456734,\"temperature_k\":273.15},\"soil_capacity_j_m2_k\":120000.0,\"soil_configuration\":{\"areal_heat_capacity_j_m2_k\":120000.0,\"layer_id\":\"thermal-1\",\"thermal_conductivity_w_m_k\":1.1,\"thickness_m\":0.2},\"transaction_id\":255}"
+    }
+  ],
+  "occurrences_outside_extracted_primitives": [
+    {
+      "offset": 739680,
+      "credit_group_index": 6
+    },
+    {
+      "offset": 2516331,
+      "credit_group_index": 3
+    },
+    {
+      "offset": 2568700,
+      "credit_group_index": 4
+    },
+    {
+      "offset": 9428990,
+      "credit_group_index": 11
+    },
+    {
+      "offset": 11716906,
+      "credit_group_index": 2
+    },
+    {
+      "offset": 13086904,
+      "credit_group_index": 5
+    },
+    {
+      "offset": 17011188,
+      "credit_group_index": 0
+    },
+    {
+      "offset": 24926276,
+      "credit_group_index": 1
+    },
+    {
+      "offset": 8234816466,
+      "credit_group_index": 0
+    },
+    {
+      "offset": 8234831160,
+      "credit_group_index": 0
+    },
+    {
+      "offset": 8234990119,
+      "credit_group_index": 1
+    },
+    {
+      "offset": 8235004809,
+      "credit_group_index": 1
+    },
+    {
+      "offset": 8235163767,
+      "credit_group_index": 2
+    },
+    {
+      "offset": 8235178477,
+      "credit_group_index": 2
+    },
+    {
+      "offset": 8235337450,
+      "credit_group_index": 3
+    },
+    {
+      "offset": 8235352165,
+      "credit_group_index": 3
+    },
+    {
+      "offset": 8235511134,
+      "credit_group_index": 4
+    },
+    {
+      "offset": 8235525829,
+      "credit_group_index": 4
+    },
+    {
+      "offset": 8235684797,
+      "credit_group_index": 5
+    },
+    {
+      "offset": 8235699511,
+      "credit_group_index": 5
+    },
+    {
+      "offset": 8235858470,
+      "credit_group_index": 6
+    },
+    {
+      "offset": 8235873146,
+      "credit_group_index": 6
+    },
+    {
+      "offset": 8236484531,
+      "credit_group_index": 11
+    },
+    {
+      "offset": 8236485615,
+      "credit_group_index": 11
+    },
+    {
+      "offset": 8701070032,
+      "credit_group_index": 11
+    },
+    {
+      "offset": 8701083459,
+      "credit_group_index": 0
+    },
+    {
+      "offset": 8701083758,
+      "credit_group_index": 1
+    },
+    {
+      "offset": 8701084057,
+      "credit_group_index": 2
+    },
+    {
+      "offset": 8701084355,
+      "credit_group_index": 3
+    },
+    {
+      "offset": 8701084654,
+      "credit_group_index": 4
+    },
+    {
+      "offset": 8701084953,
+      "credit_group_index": 5
+    },
+    {
+      "offset": 8701085252,
+      "credit_group_index": 6
+    },
+    {
+      "offset": 8701085551,
+      "credit_group_index": 7
+    },
+    {
+      "offset": 8701085850,
+      "credit_group_index": 8
+    },
+    {
+      "offset": 8701086149,
+      "credit_group_index": 9
+    },
+    {
+      "offset": 8701086447,
+      "credit_group_index": 10
+    },
+    {
+      "offset": 8701086746,
+      "credit_group_index": 11
+    },
+    {
+      "offset": 8701124015,
+      "credit_group_index": 0
+    },
+    {
+      "offset": 8701130335,
+      "credit_group_index": 1
+    },
+    {
+      "offset": 8701136654,
+      "credit_group_index": 2
+    },
+    {
+      "offset": 8701142974,
+      "credit_group_index": 3
+    },
+    {
+      "offset": 8701149296,
+      "credit_group_index": 4
+    },
+    {
+      "offset": 8701155618,
+      "credit_group_index": 5
+    },
+    {
+      "offset": 8701161940,
+      "credit_group_index": 6
+    },
+    {
+      "offset": 8701168262,
+      "credit_group_index": 7
+    },
+    {
+      "offset": 8701174583,
+      "credit_group_index": 8
+    },
+    {
+      "offset": 8701180903,
+      "credit_group_index": 9
+    },
+    {
+      "offset": 8701187222,
+      "credit_group_index": 10
+    },
+    {
+      "offset": 8701193542,
+      "credit_group_index": 11
+    },
+    {
+      "offset": 8701203597,
+      "credit_group_index": 11
+    },
+    {
+      "offset": 8701216031,
+      "credit_group_index": 11
+    }
+  ],
+  "limitation": "Trial-only records require selection by committed credit receipt and complete lineage; a record alone is not accepted-work authority."
+}

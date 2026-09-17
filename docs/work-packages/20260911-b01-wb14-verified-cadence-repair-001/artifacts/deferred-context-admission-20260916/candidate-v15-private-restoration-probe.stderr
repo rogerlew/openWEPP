@@ -1,0 +1,4 @@
+
+thread 'snow_stage3_v11_current_context_capture::member_backed_restore_tests::deferred_context_complete_bundle_private_diagnostic_restoration' (2334906) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5664:14:
+private deferred composite admission after complete component bundle: "native six-owner projection"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

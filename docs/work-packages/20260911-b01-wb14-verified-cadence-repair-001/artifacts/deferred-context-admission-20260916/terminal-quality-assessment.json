@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: source and diagnostic comparison; qualification remains FAIL",
+  "strict_baseline_errors": 27,
+  "strict_candidate_errors": 27,
+  "changed_text_diagnostic_code_message_file_multisets_equal": true,
+  "all_changed_strict_diagnostic_files_are_verified_format_only": true,
+  "no_default_coded_errors_equal": true,
+  "no_default_errors_each": 61,
+  "default_feature_check": "PASS",
+  "selected_feature_build": "PASS",
+  "v15_rustfmt": "PASS",
+  "capped_lint_baseline": 2860,
+  "capped_lint_candidate": 2892,
+  "capped_lint_net_increase": 32,
+  "capped_lint_introduced_or_changed": 70,
+  "capped_lint_removed_or_changed": 38,
+  "capped_lint_status": "Observational only. Introduced warnings remain, including provider-test casts and private helper size/argument warnings. No strict or no-new-lint acceptance.",
+  "campaign": "BLOCKED by explicit no coupled-model/physical successor envelope",
+  "dependency_deny": "NOT TRIGGERED: no dependency/manifest changes",
+  "anti_evasion": "NOT TRIGGERED: no external authority suite/cohort/required-case binding change"
+}

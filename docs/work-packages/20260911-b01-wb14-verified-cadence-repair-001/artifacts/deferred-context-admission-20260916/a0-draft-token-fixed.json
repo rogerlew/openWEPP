@@ -1,0 +1,10 @@
+{
+  "command": [
+    "bash",
+    "tools/release/check_science_contract_admission.sh",
+    "--base-ref",
+    "3c6affe43317dc7825f24b971aa55e1c07a39026",
+    "--worktree"
+  ],
+  "exit_code": 0
+}

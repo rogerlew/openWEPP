@@ -1,0 +1,24 @@
+Command exited with non-zero status 101
+	Command being timed: "nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-deferred-admission-target CARGO_BUILD_JOBS=2 cargo test --manifest-path /workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916/Cargo.toml -p openwepp-hillslope-orchestrator --features persisted-restart-v1,restart-authority-evidence --locked --lib --no-run"
+	User time (seconds): 6.45
+	System time (seconds): 0.73
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:07.19
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1898096
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 2
+	Minor (reclaiming a frame) page faults: 478112
+	Voluntary context switches: 327
+	Involuntary context switches: 77
+	Swaps: 0
+	File system inputs: 632
+	File system outputs: 323776
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 101

@@ -1,0 +1,43 @@
+{
+  "label": "correspondence-decoded",
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/inspect_correspondence.py"
+  ],
+  "executed_argv": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/correspondence-decoded.resources",
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/inspect_correspondence.py"
+  ],
+  "cwd": "/workdir/openwepp-experiments/b01-wb14-cadence/deferred-context-admission-20260916",
+  "start_utc": "2026-09-16T20:32:04.588214+00:00",
+  "source_tree_sha256": "556f3540ec8946a71e987f53b08de0b1dd7033e19d43b6fd853f7791fcec945f",
+  "patch_sha256": "b7f7625e9ff86205efa856770a098d2b37bf72d83d8531e55941ece1a30a773c",
+  "source_receipt": "correspondence-decoded-source.json",
+  "input_manifest": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/native-context-restoration-20260916/input-custody-before.json",
+  "input_manifest_sha256": "b78f2956b99079d6447aacb51c95e087093b858d90b47f65f601e0b3d53748b3",
+  "environment": {},
+  "pinned_files": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/deferred-context-admission-20260916/run_recorded.py": "b8923a06366cb0d0206da2ca87c37a7f44f36c27e6145a5f5a8af6e54f8484fc",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6"
+  },
+  "timeout_seconds": 300,
+  "address_space_bytes": 17179869184,
+  "output_file_limit_bytes": 1073741824,
+  "automatic_retries": 0,
+  "binary": null,
+  "binary_sha256": null,
+  "process_group": 2112898,
+  "exit_code": 0,
+  "timed_out": false,
+  "elapsed_seconds": 95.45569675182924,
+  "end_utc": "2026-09-16T20:33:40.044060+00:00",
+  "source_unchanged": false,
+  "binary_unchanged": null,
+  "pinned_files_unchanged": true,
+  "inputs_unchanged": true
+}

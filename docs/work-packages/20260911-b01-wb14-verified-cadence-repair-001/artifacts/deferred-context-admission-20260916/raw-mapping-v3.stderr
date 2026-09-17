@@ -1,0 +1,9 @@
+
+thread 'snow_stage3_v11_current_context_capture::member_backed_restore_tests::deferred_context_raw_correspondence_refuses_semantic_poison' (2184119) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5460:9:
+assertion `left == right` failed
+  left: Err("raw receipt/subslab identity correspondence")
+ right: Err("raw trial receipt seal")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'snow_stage3_v11_current_context_capture::member_backed_restore_tests::deferred_context_raw_primitives_authenticate_credit_correspondence_before_admission' (2184132) panicked at crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:5424:10:
+complete raw receipt/credit/carry correspondence: "subslab phase/accepted clock owner join"
