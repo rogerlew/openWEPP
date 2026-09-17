@@ -23,7 +23,7 @@ Scaffold source: `17a1261fade4bb43d7b85c1fac6b42720fe4709a`.
 
 ## Integrated promotion completion — adopted 2026-09-17
 
-**BOUNDED LOCAL CONTROLS COMPLETE; scoped evidence publication in progress. A-001 and qualification remain HOLD.** The owner's instruction to execute
+**BOUNDED LOCAL CONTROLS COMPLETE; primary evidence published and byte-verified. A-001 and qualification remain HOLD.** The owner's instruction to execute
 [the completion authorization](artifacts/integrated-completion-20260917/owner-authorization.md)
 adopts its bounded local-control scope. Evidence baseline is
 `654c62e71c05dbb28905e379a36dfa4a710ba9be`; starting executable source was the
@@ -164,7 +164,24 @@ where large, command/source/patch/result records, scripts and both reviews. Froz
 binaries and full source/recovery trees stay local. The final return ledger is
 `/workdir/openwepp-experiments/b01-wb14-cadence/logs/integrated-completion-final-20260917.json`;
 it charges through publication/return under the unchanged106,868.925s ceiling.
-Exact commit IDs and remote verification are recorded after publication.
+Primary evidence commit **`fc1db359a0fa0f7434c2f6216a197063143e54f3`** was
+[pushed to main](artifacts/integrated-completion-20260917/publication-primary-push.json).
+[Independent exact-commit HTTPS verification](artifacts/integrated-completion-20260917/remote-primary-verification.json)
+compares all**1,419** changed files (**90,901,023 bytes**) with their local Git
+objects: **all byte-equal**. The supplemental commit contains only these publication
+receipts, the budget checkpoint and this maintained disposition. Its terminal
+verification is recorded outside the self-referential commit at
+`/workdir/openwepp-experiments/b01-wb14-cadence/logs/integrated-completion-remote-final-20260917.json`;
+the final return ledger named above binds both published commits and charges all
+remaining publication/verification/return time once.
+
+At the180-minute management checkpoint, all authorized local execution,
+reconstruction, same-reviewer fixes and both independent reviews were complete;
+only final publication metadata/verification and return accounting remained.
+Continue those supported actions under the same20:27 UTC stop and fixed cumulative
+ceiling; no new allowance, inherited-reserve reclamation or physical run follows.
+The [publication checkpoint](artifacts/integrated-completion-20260917/publication-ledger-checkpoint.json)
+is explicitly earlier than the final external ledger.
 
 ### Adopted scope and initial intent
 

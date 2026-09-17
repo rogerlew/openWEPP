@@ -1,0 +1,26 @@
+{
+  "utc": "2026-09-17T19:28:58.625517+00:00",
+  "anchor_utc": "2026-09-17T16:27:00+00:00",
+  "prior_charged_seconds": 92468.924918,
+  "continuation_charged_seconds": 10918.625517,
+  "cumulative_charged_seconds": 103387.55043500001,
+  "cumulative_ceiling_seconds": 106868.925,
+  "remaining_seconds": 3481.3745649999983,
+  "failure_floor": 251,
+  "primary_commit": "fc1db359a0fa0f7434c2f6216a197063143e54f3",
+  "primary_remote_files_verified": 1419,
+  "primary_remote_all_match": true,
+  "local_matrix": "PASS14/14",
+  "reconstruction_controls": "PASS40/40 and28/28",
+  "reviews": "Distinct correctness and QA approve bounded local scope",
+  "holds": [
+    "WB14-RQ1",
+    "A-001",
+    "E008",
+    "original-input/full scientific/conservation/restart qualification",
+    "global production installation",
+    "cadence"
+  ],
+  "scope": "Publication checkpoint, not final return consumption; no wait deductions or reclaimed reserves",
+  "final_ledger": "/workdir/openwepp-experiments/b01-wb14-cadence/logs/integrated-completion-final-20260917.json"
+}
