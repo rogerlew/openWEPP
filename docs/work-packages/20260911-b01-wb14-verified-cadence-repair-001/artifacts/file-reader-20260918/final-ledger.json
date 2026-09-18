@@ -1,0 +1,30 @@
+{
+  "accounted_utc": "2026-09-18T21:11:42.517649+00:00",
+  "anchor_utc": "2026-09-18T21:00:00+00:00",
+  "carried_seconds": 122122.412,
+  "continuation_elapsed_seconds": 702.517649,
+  "final_publication_return_reserve_seconds": 60,
+  "reserve_charged": true,
+  "charged_seconds": 122884.929649,
+  "ceiling_seconds": 128300.205,
+  "remaining_seconds": 5415.275351000004,
+  "failure_floor": 334,
+  "failure_uncertainty": "At least334 mixed historical/new outcomes; see failure-accounting.json; no corrective-cycle reinterpretation",
+  "wait_deductions": 0,
+  "historical_overrun_or_reserve_reclaimed": false,
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "binary_sha256": "9cf75b7337097df3454e2b301e2734565a36a3bdedbb5039b5df50d37abf0a49",
+  "result": "COMPLETE negative diagnostic; reader NOT REACHED; successful integration acceptance unmet",
+  "reviewers": {
+    "correctness": "APPROVE negative diagnostic only",
+    "qa": "PASS diagnostic disposition"
+  },
+  "engineering_jobs_running": [],
+  "primary_commit": "fdb3712269a489a036a5aae8535d9c1c62fa4494",
+  "primary_remote_verification": {
+    "files": 27,
+    "bytes": 738254,
+    "all_match": true
+  },
+  "final_external_receipt": "/home/roger/openwepp-experiments/b01-wb14-file-reader-evidence-20260918/final-remote-verification.json"
+}

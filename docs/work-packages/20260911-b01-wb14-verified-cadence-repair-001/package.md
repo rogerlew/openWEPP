@@ -5535,3 +5535,12 @@ Independent replacements were necessary because the prior observer agents were n
 
 
 Both [same-reviewer clarification checks](artifacts/file-reader-20260918/same-reviewer-clarification.json) resolve the metadata ambiguity with unchanged verdicts. [Record checks](artifacts/file-reader-20260918/record-checks.json) pass JSON/Python syntax and all10 new primary artifact links; scoped maintained-text whitespace check passes. The preserved failed recorder source and raw logs retain literal original bytes. Failure floor is now **at least334**, including6 explicitly retained mixed navigation/tool/infrastructure/physical outcomes, not six correction cycles. No scientific/model jobs remain running. Publication below covers the bounded evidence/record only; the immutable source, binary and empty fixture directories remain in their established local custody.
+
+
+### File-reader publication and final accounting
+
+Primary commit `fdb3712269a489a036a5aae8535d9c1c62fa4494` was pushed to existing main. [Exact-commit remote verification](artifacts/file-reader-20260918/primary-remote-verification.json) compared all27 changed files /738254 bytes via independent HTTPS retrieval; all byte-equal. Source/binary custody remains local and bound to the preexisting published recovery recipe; no main Rust adoption or original-run mutation.
+
+At **2026-09-18T21:11:42.517649+00:00**, [final ledger](artifacts/file-reader-20260918/final-ledger.json) charges **122884.929649 /128300.205 seconds**, leaving **5415.275351 seconds**. This includes 702.517649s concurrent wall time once and a charged60s final publication/return reserve; no wait or historical-reserve deductions. Failure floor **at least334**. Both independent reviews and the bounded negative diagnostic are complete; successful file-owned-reader integration, A-001/RQ1 and broader qualifications remain unmet. No automatic follow-on execution.
+
+The final custody/accounting supplement is committed/pushed and exact-byte verified next. Its terminal external receipt is `/home/roger/openwepp-experiments/b01-wb14-file-reader-evidence-20260918/final-remote-verification.json`, avoiding circular self-verification. Any observed reserve overrun is added before return.
