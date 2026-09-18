@@ -1,0 +1,15 @@
+Independent /root/reader_correctness; rust_code_reviewer (Sol/high), distinct from orchestrator and QA. Returned 2026-09-18.
+
+Final independent correctness verdict (Static + supplied Ran evidence; I ran no Rust/tests):
+
+HIGH / blocking successful integration acceptance: exact cut02 run selected1/executed1 and failed at `v9_real_consumer_shadow_tests.rs:1569` while staging day0’s first [0,60s] covered-direct support. Typed chain is LandSurface `LsebE034` / `NumericalBacktrackingLimit`, `JointCanopyGround` Potential, transaction41, ofe-1/forest, 6 iterations/65 backtracks. The complete diagnostic is byte-equal after indentation trim to retained 2026-09-14 `binding-connected.stderr`, so this is a stable canonical physical refusal on the unchanged source-defined fixture, not reader behavior. Source order proves five climate/hydrology inputs and native setup completed, day0 provider/bind and all48 destination checks completed, and staging was attempted. It proves 0 completed/committed/archived/acknowledged days. Both PID fixture directories are empty; `finish_to_file` (test:1617), producer-scope exit (1627), actual reader (1631-1640), native reconstruction, comparisons and negative litter control were NOT REACHED. No solver/input/tolerance correction is authorized.
+
+No additional correctness/source finding in the unchanged reader was exposed. Static reader route is genuine: actual file parse/authority validation at current_context_capture.rs:4144-4177; prepared/current-child/native-consumer/snow/archive composition at 3598-3645; canonical archived record authentication at 3173-3315; ordered days0-3 and archive-prefix joins at 3977-4139. None ran here.
+
+LOW / evidence metadata only: `reader-exact-02.json.executed_argv` correctly proves `RUST_MIN_STACK=67108864`, but its `explicit_environment` object omits that variable. The argv and `/usr/bin/time` receipt make the corrected environment reviewable, so this does not invalidate execution; include/correct it before publication if the field is claimed exhaustive.
+
+The preserved first exit134 is correctly classified infrastructure-invalid. It establishes only test entry plus fixture-directory creation, not a physical boundary. The one deliberate 64MiB-stack reproduction was justified prospectively, retained the first result, used unchanged source/binary/selector/fixture and automatic_retries=0.
+
+Residual risk/missing tests: actual observation-file write/read, native constructors, archive reconstruction comparisons, missing-frozen-litter refusal, fresh-process restart, archive poison/rollback, memory residency, global conservation, and full INV-026/OBL-009 remain unexecuted. Strict Clippy and broader A-001/RQ1/cadence qualifications remain as previously dispositioned.
+
+APPROVE `COMPLETE — useful negative diagnostic` for this bounded study only. Successful file-owned reader integration remains UNMET/HOLD; report `reader NOT REACHED`, not reader FAIL. No rerun or reader/plumbing change is supported by this result.

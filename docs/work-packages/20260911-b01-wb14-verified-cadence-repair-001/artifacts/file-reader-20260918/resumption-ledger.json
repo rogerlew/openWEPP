@@ -1,0 +1,13 @@
+{
+  "anchor_utc": "2026-09-18T21:00:00+00:00",
+  "anchor_policy": "Conservative rounded-down anchor includes initial reading",
+  "carried_seconds": 122122.412,
+  "ceiling_seconds": 128300.205,
+  "remaining_at_anchor_seconds": 6177.793,
+  "deadline_utc": "2026-09-18T22:42:57.793000+00:00",
+  "failure_floor": 328,
+  "wait_deductions": 0,
+  "minimum_review_preservation_return_reserve_seconds": 900,
+  "previous_external_receipt_utc": "2026-09-18T18:40:27.136350+00:00",
+  "greater_prior_consumption_found": false
+}

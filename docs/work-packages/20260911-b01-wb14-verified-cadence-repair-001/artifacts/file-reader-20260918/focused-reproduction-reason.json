@@ -1,0 +1,10 @@
+{
+  "utc": "2026-09-18T21:06:52.136581+00:00",
+  "remaining_seconds": 5765.656419,
+  "reason": "Restore historical explicit RUST_MIN_STACK=67108864 after preserved exit134 stack overflow",
+  "first_result": "reader-exact-01.json",
+  "source_and_fixture_unchanged": true,
+  "automatic_retries": 0,
+  "next": "reader-exact-02",
+  "first_fixture_files": []
+}

@@ -1,0 +1,21 @@
+{
+  "utc": "2026-09-18T21:03:00.523500+00:00",
+  "source": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "entries_verified": 747,
+  "starting_recovery_verified": "/home/roger/openwepp-experiments/b01-wb14-feature-terminal-reconstruction-20260918-02",
+  "starting_sha256": "d354ccc6ba947c6b0a9e3eed1cdedd0417ae1d5c2896288efbc828beca2f873b",
+  "patch_verified": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/observer-cut02-from-start.patch",
+  "patch_sha256": "8571f75af138eb6b960f80ad3947bb802c6f3377c7587822a228dc183b6d918d",
+  "existing_recovery_receipt": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/source-custody-cut02.json",
+  "binary": {
+    "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+    "binary": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/observer-cut02.frozen",
+    "binary_sha256": "9cf75b7337097df3454e2b301e2734565a36a3bdedbb5039b5df50d37abf0a49",
+    "build_receipt": "observer-selected-no-run-01.json",
+    "build_executable": "/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-8b0a144f1f4a5757",
+    "same_binary": true,
+    "utc": "2026-09-18T18:22:22.172578+00:00"
+  },
+  "source_unchanged": true
+}

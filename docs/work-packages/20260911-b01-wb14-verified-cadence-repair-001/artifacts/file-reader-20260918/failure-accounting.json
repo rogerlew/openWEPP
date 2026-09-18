@@ -1,0 +1,31 @@
+{
+  "carried_failure_floor": 328,
+  "increment_outcomes": [
+    {
+      "kind": "navigation",
+      "detail": "rg two guessed fixture paths absent; actual module paths located"
+    },
+    {
+      "kind": "navigation",
+      "detail": "cgroup v2 memory.max path unavailable; host memory bound used"
+    },
+    {
+      "kind": "tooling",
+      "detail": "inventory recorder print KeyError after saved successful receipt; corrected before test"
+    },
+    {
+      "kind": "infrastructure",
+      "detail": "reader-exact-01 stack overflow exit134"
+    },
+    {
+      "kind": "navigation",
+      "detail": "stack-setting rg no-match exit1; explicit historical shell runner yielded setting"
+    },
+    {
+      "kind": "physical",
+      "detail": "reader-exact-02 canonical LsebE034 exit101"
+    }
+  ],
+  "failure_floor": 334,
+  "uncertainty": "Conservative mixed-outcome floor; historical uncertainty/overruns retained; not a corrective-cycle count"
+}

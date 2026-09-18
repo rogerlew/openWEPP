@@ -1,0 +1,4 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+
+thread 'v9_real_consumer_shadow::tests::native_recorder_file_owned_reader_restores_local_fixture' (1028001) has overflowed its stack
+fatal runtime error: stack overflow, aborting

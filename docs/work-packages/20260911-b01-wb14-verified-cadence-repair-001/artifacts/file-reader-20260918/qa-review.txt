@@ -1,0 +1,14 @@
+Independent /root/reader_qa; rust_qa_reviewer (Terra/medium), distinct from orchestrator and correctness. Returned 2026-09-18.
+
+**Ran + Static QA review — frozen cut02 and reader receipts**
+
+Findings: none blocking the bounded negative diagnostic.
+
+Non-blocking debt:
+
+- `reader-exact-02.json`: `explicit_environment` omits `RUST_MIN_STACK=67108864`, although its full recorded argv includes it. Keep the argv as the authoritative launch record; include it in the summary field in future receipts.
+- No new `fmt`, Clippy, test-suite, or deny gate applies because no Rust, configuration, or dependency changed. Strict Clippy remains historically failed and does not become acceptance evidence.
+
+QA pass for the diagnostic disposition. The exact selector was inventory-confirmed as one test and ran serially on retained binary `9cf…0a49` against source tree `85b…9963`; source, binary, and pinned host inputs remained unchanged. `reader-exact-01` is an infrastructure stack abort and proves only test entry plus fixture-directory creation. The deliberately recorded 64 MiB stack correction matches the historical runner and produced `reader-exact-02`: exit 101, one failed test, no timeout, and no generated fixture files.
+
+The source-defined failure occurs during day 0 staging, after preparation and 48 destination checks, at covered-direct `JointCanopyGround` support `[0, 60s]`: `LsebE034` / `NumericalBacktrackingLimit`, 6 iterations and 65 backtracks. The retained diagnostic matches the historical binding failure after indentation normalization. No day completed, committed, archived, or acknowledged; `observations.json`, file-reader construction, reader comparisons, and missing-litter refusal were all **NOT REACHED**. This completes the authorized negative diagnostic; successful file-owned reader integration remains unmet.

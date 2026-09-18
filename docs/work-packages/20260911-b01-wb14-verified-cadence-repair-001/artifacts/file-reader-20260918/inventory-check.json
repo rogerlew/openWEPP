@@ -1,0 +1,8 @@
+{
+  "selector": "v9_real_consumer_shadow::tests::native_recorder_file_owned_reader_restores_local_fixture",
+  "selected_count": 1,
+  "inventory_exit": 0,
+  "harness": "retained libtest executable: exact selection, serial execution, source/feature identity from explicit detached-manifest Nix build receipt",
+  "wrapper_reporting_error": "Initial inventory recorder saved full successful receipt then print accessed removed frozen_T_unchanged key; failed script preserved and print corrected; no result-bearing test ran.",
+  "fail_on_empty": true
+}

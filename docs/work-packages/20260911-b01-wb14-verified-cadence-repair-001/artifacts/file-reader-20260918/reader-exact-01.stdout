@@ -1,0 +1,7 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-observer-source-cut02-20260918-1ca322d1f9e8
+  scratch: /tmp/openwepp-roger-b01-wb14-observer-source-cut02-20260918-1ca322d1f9e8
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test v9_real_consumer_shadow::tests::native_recorder_file_owned_reader_restores_local_fixture ... 
