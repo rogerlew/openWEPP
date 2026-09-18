@@ -1,0 +1,5 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-feature-compatibility-20260917-017af43e8043
+  scratch: /tmp/openwepp-roger-b01-wb14-feature-compatibility-20260917-017af43e8043
+  cache:   /workdir/.cache/openwepp
+{"changed_rust_files": 4, "introduced_unformatted": [["crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs", 1]]}

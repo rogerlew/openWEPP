@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Ran: exact normal-vs-forced-error parent result bytes and fail-closed checker disposition",
+  "parent_result_byte_identical": true,
+  "parent_result_sha256": "3b34edd03169f0b0434e021e74d9db0dc94ad49ccd64b66e92b3bde1d14e6868",
+  "positive_test": "PASS 1/1",
+  "negative_control_test": "PASS 1/1",
+  "negative_control_measurement": "FAIL as intended: zero successful observation records and one counted observation error",
+  "unchanged_checker": "EXPECTED_REFUSAL exit1; missing required parent-replay record",
+  "error": "ValueError: B01_INTEGRATED_ACCEPTED_PARENT_REPLAY: expected exactly one record, got 0",
+  "interpretation": "Negative measurement is never accepted evidence; only the separate normal positive stream may satisfy parent reconstruction."
+}

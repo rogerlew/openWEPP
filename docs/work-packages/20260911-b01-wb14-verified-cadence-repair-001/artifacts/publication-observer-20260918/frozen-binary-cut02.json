@@ -1,0 +1,9 @@
+{
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/observer-cut02.frozen",
+  "binary_sha256": "9cf75b7337097df3454e2b301e2734565a36a3bdedbb5039b5df50d37abf0a49",
+  "build_receipt": "observer-selected-no-run-01.json",
+  "build_executable": "/tmp/openwepp-b01-wb14-six-owner-target/debug/deps/openwepp_hillslope_orchestrator-8b0a144f1f4a5757",
+  "same_binary": true,
+  "utc": "2026-09-18T18:22:22.172578+00:00"
+}

@@ -1,0 +1,17 @@
+{
+  "accounted_utc": "2026-09-18T18:35:41.428571+00:00",
+  "anchor_utc": "2026-09-18T18:04:00+00:00",
+  "deadline_utc": "2026-09-18T20:24:02.613188+00:00",
+  "carried_seconds": 119897.591812,
+  "charged_seconds": 121799.020383,
+  "ceiling_seconds": 128300.205,
+  "remaining_seconds": 6501.184617000003,
+  "failure_floor": 327,
+  "failure_uncertainty": "At least315 carried +5 recorded nonzero outcomes (3 strict-lint exits, one corrected formatting FAIL, one intentional checker refusal) +3 root navigation/parser failures +3 writer-reported environment failures +1 statically rejected observation-site proposal. These broad categories are not failed corrective-cycle counts; historical uncertainty retained.",
+  "status": "Bounded observer/feature disposition accepted by both independent reviewers; scoped publication pending",
+  "wait_deductions": 0,
+  "reserve_reclaimed": false,
+  "engineering_jobs_running": [],
+  "reviews_complete": true,
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963"
+}

@@ -1,0 +1,106 @@
+{
+  "evidence_class": "Ran: matched diagnostic content comparison, not strict-lint acceptance",
+  "baseline": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/completion-terminal-quality-nodeps-03.stdout",
+  "candidate": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/observer-quality-nodeps-02.stdout",
+  "baseline_count": 2849,
+  "candidate_count": 2849,
+  "introduced_or_changed": [
+    {
+      "code": "clippy::struct_field_names",
+      "level": "error",
+      "message": "all fields have the same postfix: `count`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+          "text": [
+            "pub(crate) struct IntegratedPromotionBoundaryAuditV1 {",
+            "    pub deferred_completion_count: u32,",
+            "    pub v4_runtime_entry_count: u32,",
+            "    pub v4_runtime_success_count: u32,",
+            "    pub final_replay_entry_count: u32,",
+            "    pub final_replay_success_count: u32,",
+            "    pub projection_promotion_entry_count: u32,",
+            "    pub projection_promotion_success_count: u32,",
+            "    pub promotion_attempt_count: u32,",
+            "    pub promotion_entry_count: u32,",
+            "    pub promotion_success_count: u32,",
+            "    pub candidate_only_promotion_entry_count: u32,",
+            "    pub snow_free_litter_low_level_count: u32,",
+            "    pub snow_free_surface_low_level_count: u32,",
+            "    pub snow_free_wb14_low_level_count: u32,",
+            "    pub accepted_parent_replay_observation_count: u32,",
+            "    pub accepted_parent_replay_observation_error_count: u32,",
+            "    pub accepted_parent_replay_observation_inside_trusted_append_count: u32,",
+            "}"
+          ]
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "removed_or_changed": [
+    {
+      "code": "clippy::struct_field_names",
+      "level": "error",
+      "message": "all fields have the same postfix: `count`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+          "text": [
+            "pub(crate) struct IntegratedPromotionBoundaryAuditV1 {",
+            "    pub deferred_completion_count: u32,",
+            "    pub v4_runtime_entry_count: u32,",
+            "    pub v4_runtime_success_count: u32,",
+            "    pub final_replay_entry_count: u32,",
+            "    pub final_replay_success_count: u32,",
+            "    pub projection_promotion_entry_count: u32,",
+            "    pub projection_promotion_success_count: u32,",
+            "    pub promotion_attempt_count: u32,",
+            "    pub promotion_entry_count: u32,",
+            "    pub promotion_success_count: u32,",
+            "    pub candidate_only_promotion_entry_count: u32,",
+            "    pub snow_free_litter_low_level_count: u32,",
+            "    pub snow_free_surface_low_level_count: u32,",
+            "    pub snow_free_wb14_low_level_count: u32,",
+            "}"
+          ]
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "candidate_locations": [
+    {
+      "code": "clippy::struct_field_names",
+      "level": "error",
+      "message": "all fields have the same postfix: `count`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+          "line": 176,
+          "text": [
+            "pub(crate) struct IntegratedPromotionBoundaryAuditV1 {",
+            "    pub deferred_completion_count: u32,",
+            "    pub v4_runtime_entry_count: u32,",
+            "    pub v4_runtime_success_count: u32,",
+            "    pub final_replay_entry_count: u32,",
+            "    pub final_replay_success_count: u32,",
+            "    pub projection_promotion_entry_count: u32,",
+            "    pub projection_promotion_success_count: u32,",
+            "    pub promotion_attempt_count: u32,",
+            "    pub promotion_entry_count: u32,",
+            "    pub promotion_success_count: u32,",
+            "    pub candidate_only_promotion_entry_count: u32,",
+            "    pub snow_free_litter_low_level_count: u32,",
+            "    pub snow_free_surface_low_level_count: u32,",
+            "    pub snow_free_wb14_low_level_count: u32,",
+            "    pub accepted_parent_replay_observation_count: u32,",
+            "    pub accepted_parent_replay_observation_error_count: u32,",
+            "    pub accepted_parent_replay_observation_inside_trusted_append_count: u32,",
+            "}"
+          ]
+        }
+      ]
+    }
+  ]
+}

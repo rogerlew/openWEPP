@@ -1,0 +1,198 @@
+{
+  "evidence_class": "Ran: every completed recorded command, including failed earlier cut and intentional measurement refusal",
+  "count": 32,
+  "outcomes": [
+    {
+      "label": "observer-both-controls-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-both-controls-02.json"
+    },
+    {
+      "label": "observer-error-measurement-refusal-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 1,
+      "receipt": "observer-error-measurement-refusal-02.json"
+    },
+    {
+      "label": "observer-evidence-controls-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-evidence-controls-02.json"
+    },
+    {
+      "label": "observer-evidence-tests-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-evidence-tests-02.json"
+    },
+    {
+      "label": "observer-format-cut01",
+      "source_tree_sha256": "fdb4d0402a18fbe31096c54a102959361464c99ae7c422d67c9f5b3d768c7028",
+      "exit_code": 1,
+      "receipt": "observer-format-cut01.json"
+    },
+    {
+      "label": "observer-format-cut02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-format-cut02.json"
+    },
+    {
+      "label": "observer-lib-both-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-lib-both-02.json"
+    },
+    {
+      "label": "observer-lib-evidence-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-lib-evidence-02.json"
+    },
+    {
+      "label": "observer-lib-persisted-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-lib-persisted-02.json"
+    },
+    {
+      "label": "observer-list-both-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-list-both-02.json"
+    },
+    {
+      "label": "observer-list-evidence-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-list-evidence-02.json"
+    },
+    {
+      "label": "observer-list-none-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-list-none-02.json"
+    },
+    {
+      "label": "observer-list-persisted-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-list-persisted-02.json"
+    },
+    {
+      "label": "observer-native-positive-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-native-positive-02.json"
+    },
+    {
+      "label": "observer-native-refusal-n2-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-native-refusal-n2-02.json"
+    },
+    {
+      "label": "observer-native-rollback-n12-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-native-rollback-n12-02.json"
+    },
+    {
+      "label": "observer-native-write-error-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-native-write-error-02.json"
+    },
+    {
+      "label": "observer-no-default-tests-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-no-default-tests-02.json"
+    },
+    {
+      "label": "observer-none-controls-01",
+      "source_tree_sha256": "fdb4d0402a18fbe31096c54a102959361464c99ae7c422d67c9f5b3d768c7028",
+      "exit_code": 0,
+      "receipt": "observer-none-controls-01.json"
+    },
+    {
+      "label": "observer-none-controls-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-none-controls-02.json"
+    },
+    {
+      "label": "observer-persisted-controls-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-persisted-controls-02.json"
+    },
+    {
+      "label": "observer-persisted-tests-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-persisted-tests-02.json"
+    },
+    {
+      "label": "observer-quality-nodeps-01",
+      "source_tree_sha256": "fdb4d0402a18fbe31096c54a102959361464c99ae7c422d67c9f5b3d768c7028",
+      "exit_code": 101,
+      "receipt": "observer-quality-nodeps-01.json"
+    },
+    {
+      "label": "observer-quality-nodeps-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 101,
+      "receipt": "observer-quality-nodeps-02.json"
+    },
+    {
+      "label": "observer-quality-strict-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 101,
+      "receipt": "observer-quality-strict-02.json"
+    },
+    {
+      "label": "observer-reconstruct-corruption-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-reconstruct-corruption-02.json"
+    },
+    {
+      "label": "observer-reconstruct-credits-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-reconstruct-credits-02.json"
+    },
+    {
+      "label": "observer-reconstruct-donors-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-reconstruct-donors-02.json"
+    },
+    {
+      "label": "observer-reconstruct-install-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-reconstruct-install-02.json"
+    },
+    {
+      "label": "observer-reconstruct-parent-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-reconstruct-parent-02.json"
+    },
+    {
+      "label": "observer-selected-no-run-01",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-selected-no-run-01.json"
+    },
+    {
+      "label": "observer-standalone-lib-02",
+      "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+      "exit_code": 0,
+      "receipt": "observer-standalone-lib-02.json"
+    }
+  ]
+}

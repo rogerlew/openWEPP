@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Ran: verified original recovered source, integrated-relative patch and frozen binary",
+  "utc": "2026-09-18T18:08:12.941177+00:00",
+  "recovery": "/home/roger/openwepp-experiments/b01-wb14-feature-terminal-reconstruction-20260918-02",
+  "entries": 747,
+  "all_entry_bytes_equal": true,
+  "source_sha256": "d354ccc6ba947c6b0a9e3eed1cdedd0417ae1d5c2896288efbc828beca2f873b",
+  "patch": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/completion-terminal-from-integrated-02.patch",
+  "patch_sha256": "eeb200a77152e5da2f86842895978cb96d67eacb2b0b486b4d90f4fb11608c3e",
+  "frozen_binary_sha256": "3ee09e2d800d145494dd38280e26a89fb95447284120112041bfef3e00b65169"
+}

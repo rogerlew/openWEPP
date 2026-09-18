@@ -1,0 +1,6 @@
+{
+  "evidence_class": "Ran: unchanged entire guard/control file byte comparison",
+  "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability_tests.rs",
+  "sha256": "24e5e610be3eab8e4a9da7653dd0d78c90595ff924dd630ece611f51e5ac3642",
+  "entire_file_unchanged": true
+}

@@ -1,0 +1,49 @@
+{
+  "evidence_class": "Ran: exact emitted record comparison and local control stream inventory",
+  "baseline": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-case-01.stdout",
+  "candidate": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/observer-native-positive-02.stdout",
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "entire_record_value_equal": true,
+  "raw_record_sha256_equal": true,
+  "baseline_record_sha256": "ffd2498b8288ec9f793b8b468ba8925bcf498904dc2f72cb8188a79b1bd3dd8b",
+  "new_record_sha256": "ffd2498b8288ec9f793b8b468ba8925bcf498904dc2f72cb8188a79b1bd3dd8b",
+  "schema": [
+    "accepted_support",
+    "boundary",
+    "record_version"
+  ],
+  "baseline_line": 25,
+  "new_line": 25,
+  "ordered_integrated_tags_equal": true,
+  "controls": {
+    "positive": {
+      "records": 1,
+      "exact_test_count": 1,
+      "passed": 1,
+      "record_payload_sha256": [
+        "ffd2498b8288ec9f793b8b468ba8925bcf498904dc2f72cb8188a79b1bd3dd8b"
+      ]
+    },
+    "refusal-n2": {
+      "records": 0,
+      "exact_test_count": 1,
+      "passed": 1,
+      "record_payload_sha256": []
+    },
+    "rollback-n12": {
+      "records": 1,
+      "exact_test_count": 1,
+      "passed": 1,
+      "record_payload_sha256": [
+        "ffd2498b8288ec9f793b8b468ba8925bcf498904dc2f72cb8188a79b1bd3dd8b"
+      ]
+    },
+    "write-error": {
+      "records": 0,
+      "exact_test_count": 1,
+      "passed": 1,
+      "record_payload_sha256": []
+    }
+  },
+  "meaning": "Specific local support append only. N12 still emits one record despite outer rollback; refusal and failed measurement emit none. No global commit/installation inference."
+}

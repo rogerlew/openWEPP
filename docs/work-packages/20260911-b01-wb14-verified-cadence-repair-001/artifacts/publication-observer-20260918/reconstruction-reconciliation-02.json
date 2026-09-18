@@ -1,0 +1,22 @@
+{
+  "evidence_class": "Ran: unchanged exact checker scripts and observed corruption inventories",
+  "utc": "2026-09-18T18:28:36.771554+00:00",
+  "scripts": {
+    "reconstruct_parent.py": "81dcf50531a0f69f9f1d2f6f19dfe254cae60ce994872ea7e92d0191d5a0e570",
+    "reconstruct_credits.py": "0a52fa7f3b6d801aa180c1550223fc52381d59708a0f965a1ded8743a0f2a56b",
+    "reconstruct_donors.py": "644b47584f370b9a4d7991722bd3cd55b9f3b79f12b90a54787345a9b863ce84",
+    "reconstruct_install.py": "ea6cb09b1e9a3bc72d135b34b064d73333a8e853c53917a7795cc59f532e1aa6",
+    "test_reconstruction_controls.py": "8a18226b48935d0e912d3c5a77225669849a7259a0596ce4cea223d316f233dd",
+    "source_digest_helpers.py": "01e1ce3d97516e41b8ab96c067a4d270840a0dc7ca28bce65c25f84fc1d8b031"
+  },
+  "scripts_unchanged": true,
+  "parent_corruptions": 28,
+  "other_corruptions": 40,
+  "all_other_rejected": true,
+  "positive_reconstructions": {
+    "parent": true,
+    "credits": true,
+    "donors": true,
+    "install": true
+  }
+}

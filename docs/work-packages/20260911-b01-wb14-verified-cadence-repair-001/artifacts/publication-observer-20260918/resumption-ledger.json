@@ -1,0 +1,10 @@
+{
+  "anchor_utc": "2026-09-18T18:04:00+00:00",
+  "deadline_utc": "2026-09-18T20:24:02.613188+00:00",
+  "carried_seconds": 119897.591812,
+  "ceiling_seconds": 128300.205,
+  "failure_floor": 315,
+  "wait_deductions": 0,
+  "preservation_reserve_seconds": 360,
+  "anchor_note": "Conservative resumption rounded earlier than first observed 18:05:31 UTC; includes initial reading."
+}

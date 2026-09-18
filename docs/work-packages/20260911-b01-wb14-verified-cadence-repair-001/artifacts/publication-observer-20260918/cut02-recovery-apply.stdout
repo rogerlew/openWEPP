@@ -1,0 +1,4 @@
+patching file crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
+patching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+patching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs
+patching file crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs

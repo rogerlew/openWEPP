@@ -1,0 +1,1 @@
+{"passed": false, "error": "ValueError: B01_INTEGRATED_ACCEPTED_PARENT_REPLAY: expected exactly one record, got 0", "input": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/observer-native-write-error-02.stdout"}

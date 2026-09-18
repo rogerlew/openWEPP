@@ -1,0 +1,9 @@
+{
+  "evidence_class": "Ran: staged scope, human-readable record/script/JSON whitespace and preserved raw-evidence classification",
+  "staged_files": 239,
+  "all_scoped": true,
+  "checked_files": 106,
+  "structured_diff_check_exit": 0,
+  "raw_evidence_note": "Initial unfiltered staged git diff --check reported trailing-space context lines in retained literal unified patch evidence. Exact patch bytes are preserved, not reformatted. Raw command output/patch whitespace is not Rust source formatting; final changed-line Rust formatting passes independently.",
+  "main_rust_changed": false
+}

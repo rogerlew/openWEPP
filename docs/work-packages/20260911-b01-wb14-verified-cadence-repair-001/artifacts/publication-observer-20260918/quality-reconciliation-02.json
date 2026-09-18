@@ -1,0 +1,28 @@
+{
+  "evidence_class": "Ran: matched diagnostics; Static: terminal-diff attribution reviewed independently",
+  "baseline_source_sha256": "d354ccc6ba947c6b0a9e3eed1cdedd0417ae1d5c2896288efbc828beca2f873b",
+  "candidate_source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "strict": {
+    "baseline": 27,
+    "candidate": 27,
+    "exit_code": 101,
+    "changed": 0,
+    "status": "FAIL"
+  },
+  "nodeps": {
+    "baseline": 2849,
+    "candidate": 2849,
+    "exit_code": 101,
+    "status": "FAIL",
+    "changed_span": "Existing clippy::struct_field_names span expands over three new audit counter fields; same code, message and existing all-count postfix naming property. Not a count-only acceptance."
+  },
+  "bounded_criterion": "No new relevant diagnostics under adopted existing bounded exception; exact one span independently adjudicated. Does not make strict Clippy green.",
+  "attribution_files": [
+    "quality-nodeps-attribution-02.json",
+    "quality-strict-attribution-02.json"
+  ],
+  "review_files": [
+    "correctness-review.md",
+    "qa-review.md"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "policy": "Every changed Rust file; formatter hunks intersecting actual baseline-to-candidate changed lines must be clean. Unchanged lines are not reformatted or claimed clean.",
+  "files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    }
+  ]
+}

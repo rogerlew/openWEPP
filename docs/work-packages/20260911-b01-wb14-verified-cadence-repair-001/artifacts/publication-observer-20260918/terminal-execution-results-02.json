@@ -1,0 +1,86 @@
+{
+  "evidence_class": "Ran: exact terminal selector set reconciled with every nextest PASS record",
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "modes": [
+    {
+      "mode": "none",
+      "expected_count": 13,
+      "passed_count": 13,
+      "exact_names": [
+        "direct_runtime::stage3_committed_publication::tests::committed_capability_rejects_missing_incomplete_and_poisoned_frames",
+        "snow_stage3_v11_current_context_capture::b01_pre_child_selector_requires_every_exact_coordinate",
+        "snow_stage3_v11_current_context_capture::constructor_encoder_matches_independent_serde_and_literal_enum_names_v1",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_rotation_invalidates_pre_rotation_support_capability",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_is_private_move_only_non_wire",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_rejects_stale_foreign_replayed_and_restart_revisions_atomically",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_validates_once_and_appends_by_exact_live_tail",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_forbidden_append_work_audit_is_non_vacuous",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_tail_revision_poison_matrix_is_exhaustive",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_untrusted_restore_revalidates_every_support_and_never_restores_capability",
+        "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_covered_producer_recorder_controls_are_independently_selectable",
+        "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_first_snow_free_producer_recorder_controls_are_independently_selectable",
+        "v9_real_consumer_shadow::tests::snow_free_publication_reseal_mints_one_fresh_validated_support_capability"
+      ],
+      "all_expected_selected": true,
+      "no_tests_policy": "fail",
+      "receipt": "observer-none-controls-02.json"
+    },
+    {
+      "mode": "both",
+      "expected_count": 17,
+      "passed_count": 17,
+      "exact_names": [
+        "direct_runtime::stage3_committed_publication::tests::committed_capability_rejects_missing_incomplete_and_poisoned_frames",
+        "snow_stage3_v11_current_context_capture::b01_pre_child_selector_requires_every_exact_coordinate",
+        "snow_stage3_v11_current_context_capture::constructor_encoder_matches_independent_serde_and_literal_enum_names_v1",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_rotation_invalidates_pre_rotation_support_capability",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_is_private_move_only_non_wire",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_rejects_stale_foreign_replayed_and_restart_revisions_atomically",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_validates_once_and_appends_by_exact_live_tail",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_forbidden_append_work_audit_is_non_vacuous",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_tail_revision_poison_matrix_is_exhaustive",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_untrusted_restore_revalidates_every_support_and_never_restores_capability",
+        "v9_real_consumer_shadow::deferred_composite_capability_traits::deferred_capabilities_are_non_wire_and_non_copyable",
+        "v9_real_consumer_shadow::direct_v10_soil_thermal_v2_tests::native_soil_restart_proof_constructor_and_both_restore_hooks_preserve_exact_custody",
+        "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_covered_producer_recorder_controls_are_independently_selectable",
+        "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_first_snow_free_producer_recorder_controls_are_independently_selectable",
+        "v9_real_consumer_shadow::tests::b01_current_context_importer_restores_fixture_without_physics",
+        "v9_real_consumer_shadow::tests::snow_free_publication_reseal_mints_one_fresh_validated_support_capability",
+        "v9_real_consumer_shadow::v3_publication_retention_tests::native_restart_full_exact_adoption_rejects_resealed_initial_carry"
+      ],
+      "all_expected_selected": true,
+      "no_tests_policy": "fail",
+      "receipt": "observer-both-controls-02.json"
+    },
+    {
+      "mode": "evidence",
+      "expected_count": 2,
+      "passed_count": 2,
+      "exact_names": [
+        "snow_stage3_v11_current_context_capture::b01_pre_child_selector_requires_every_exact_coordinate",
+        "snow_stage3_v11_current_context_capture::constructor_encoder_matches_independent_serde_and_literal_enum_names_v1"
+      ],
+      "all_expected_selected": true,
+      "no_tests_policy": "fail",
+      "receipt": "observer-evidence-controls-02.json"
+    },
+    {
+      "mode": "persisted",
+      "expected_count": 5,
+      "passed_count": 5,
+      "exact_names": [
+        "snow_stage3_v11_current_context_capture::b01_pre_child_selector_requires_every_exact_coordinate",
+        "snow_stage3_v11_current_context_capture::constructor_encoder_matches_independent_serde_and_literal_enum_names_v1",
+        "v9_real_consumer_shadow::deferred_composite_capability_traits::deferred_capabilities_are_non_wire_and_non_copyable",
+        "v9_real_consumer_shadow::direct_v10_soil_thermal_v2_tests::native_soil_restart_proof_constructor_and_both_restore_hooks_preserve_exact_custody",
+        "v9_real_consumer_shadow::v3_publication_retention_tests::native_restart_full_exact_adoption_rejects_resealed_initial_carry"
+      ],
+      "all_expected_selected": true,
+      "no_tests_policy": "fail",
+      "receipt": "observer-persisted-controls-02.json"
+    }
+  ],
+  "total_mode_test_executions": 37,
+  "no_automatic_retries": true,
+  "parser_friction": "First ad hoc regex asserted failure after missing9 padded ( 1/13) records; corrected whitespace pattern. Raw execution logs unchanged; no command rerun or result narrowing."
+}

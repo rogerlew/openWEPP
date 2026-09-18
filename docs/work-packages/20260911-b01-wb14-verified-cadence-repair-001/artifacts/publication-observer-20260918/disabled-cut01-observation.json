@@ -1,0 +1,9 @@
+{
+  "evidence_class": "Ran: actual no-feature controls streams inspected",
+  "source_sha256": "fdb4d0402a18fbe31096c54a102959361464c99ae7c422d67c9f5b3d768c7028",
+  "counts": {
+    "stdout": 0,
+    "stderr": 0
+  },
+  "scope": "Observer-disabled existing real wrapper append controls, not enabled NativeMixedPhase evidence"
+}

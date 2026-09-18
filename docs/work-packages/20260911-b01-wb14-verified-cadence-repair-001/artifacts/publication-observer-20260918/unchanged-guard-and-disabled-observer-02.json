@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Ran: final guard/control file byte comparison and disabled streams",
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "guard_file_sha256": "24e5e610be3eab8e4a9da7653dd0d78c90595ff924dd630ece611f51e5ac3642",
+  "entire_guard_and_detection_control_file_unchanged": true,
+  "disabled_record_counts": {
+    "stdout": 0,
+    "stderr": 0
+  }
+}

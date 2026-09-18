@@ -1,0 +1,6 @@
+{
+  "evidence_class": "Ran",
+  "refused": "Review/preservation reserve reached",
+  "command_launched": false,
+  "deadline_override": "past only for this control; recorder source unchanged"
+}

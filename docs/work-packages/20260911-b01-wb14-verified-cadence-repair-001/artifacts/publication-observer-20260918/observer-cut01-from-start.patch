@@ -1,0 +1,188 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs
+@@ -901,6 +901,12 @@
+     assert_eq!(promotion_audit.snow_free_litter_low_level_count, 2);
+     assert_eq!(promotion_audit.snow_free_surface_low_level_count, 2);
+     assert_eq!(promotion_audit.snow_free_wb14_low_level_count, 3);
++    assert_eq!(promotion_audit.accepted_parent_replay_observation_count, 1);
++    assert_eq!(promotion_audit.accepted_parent_replay_observation_error_count, 0);
++    assert_eq!(
++        promotion_audit.accepted_parent_replay_observation_inside_trusted_append_count,
++        0
++    );
+     assert!(!value.carrier_live_audit.carrier_rows.is_empty());
+     assert_native_mixed_phase_transition(&value.fixture);
+     println!(
+@@ -991,6 +997,12 @@
+     assert!(audit.promotion_attempt_count >= 1);
+     assert!(audit.promotion_entry_count >= 1);
+     assert_eq!(audit.promotion_success_count, 0);
++    assert_eq!(audit.accepted_parent_replay_observation_count, 0);
++    assert_eq!(audit.accepted_parent_replay_observation_error_count, 0);
++    assert_eq!(
++        audit.accepted_parent_replay_observation_inside_trusted_append_count,
++        0
++    );
+ }
+ 
+ fn run_native_mixed_phase_original_custody_control_v1(
+@@ -1316,6 +1328,12 @@
+         (1, 1),
+         (1, 1),
+         1,
++    );
++    assert_eq!(audit.accepted_parent_replay_observation_count, 1);
++    assert_eq!(audit.accepted_parent_replay_observation_error_count, 0);
++    assert_eq!(
++        audit.accepted_parent_replay_observation_inside_trusted_append_count,
++        0
+     );
+ }
+ 
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs
+@@ -188,6 +188,9 @@
+     pub snow_free_litter_low_level_count: u32,
+     pub snow_free_surface_low_level_count: u32,
+     pub snow_free_wb14_low_level_count: u32,
++    pub accepted_parent_replay_observation_count: u32,
++    pub accepted_parent_replay_observation_error_count: u32,
++    pub accepted_parent_replay_observation_inside_trusted_append_count: u32,
+ }
+ 
+ #[cfg(test)]
+@@ -208,6 +211,9 @@
+             snow_free_litter_low_level_count: 0,
+             snow_free_surface_low_level_count: 0,
+             snow_free_wb14_low_level_count: 0,
++            accepted_parent_replay_observation_count: 0,
++            accepted_parent_replay_observation_error_count: 0,
++            accepted_parent_replay_observation_inside_trusted_append_count: 0,
+         })
+     };
+ }
+@@ -3566,7 +3572,75 @@
+         capability: ValidatedStage3AcceptedPublicationSupportV1,
+     ) -> Result<(), DirectV11RealConsumerError> {
+         self.accepted_publication_history
+-            .push_validated_support(capability)
++            .push_validated_support(capability)?;
++        #[cfg(test)]
++        self.observe_integrated_accepted_parent_replay_after_append_v1();
++        Ok(())
++    }
++
++    /// Records the installed immutable support only after its consuming trusted
++    /// append has returned. Observation never affects the accepted transition.
++    #[cfg(test)]
++    fn observe_integrated_accepted_parent_replay_after_append_v1(&self) {
++        if !integrated_promotion_boundary_audit_enabled_v1() {
++            return;
++        }
++        if accepted_publication_support_capability::
++            trusted_accepted_publication_append_audit_scope_is_active_v1()
++        {
++            INTEGRATED_PROMOTION_BOUNDARY_AUDIT.with(|audit| {
++                audit
++                    .borrow_mut()
++                    .accepted_parent_replay_observation_inside_trusted_append_count += 1;
++            });
++            return;
++        }
++        let Some(accepted) = self.accepted_publication_history.supports().last() else {
++            return;
++        };
++        if accepted.wb14_parent_replay_bytes.is_none() {
++            return;
++        }
++        let accepted_support = accepted.accuracy_observation_wire();
++        if accepted_support.is_null() {
++            INTEGRATED_PROMOTION_BOUNDARY_AUDIT.with(|audit| {
++                audit
++                    .borrow_mut()
++                    .accepted_parent_replay_observation_error_count += 1;
++            });
++            return;
++        }
++        match serde_json::to_string(&serde_json::json!({
++            "record_version": 1,
++            "boundary": "accepted publication-history support with retained WB14 parent replay",
++            "accepted_support": accepted_support,
++        })) {
++            Ok(record) => {
++                use std::io::Write;
++
++                let stdout = std::io::stdout();
++                let mut stdout = stdout.lock();
++                if writeln!(stdout, "B01_INTEGRATED_ACCEPTED_PARENT_REPLAY {record}")
++                    .and_then(|()| stdout.flush())
++                    .is_ok()
++                {
++                    INTEGRATED_PROMOTION_BOUNDARY_AUDIT.with(|audit| {
++                        audit.borrow_mut().accepted_parent_replay_observation_count += 1;
++                    });
++                } else {
++                    INTEGRATED_PROMOTION_BOUNDARY_AUDIT.with(|audit| {
++                        audit
++                            .borrow_mut()
++                            .accepted_parent_replay_observation_error_count += 1;
++                    });
++                }
++            }
++            Err(_) => INTEGRATED_PROMOTION_BOUNDARY_AUDIT.with(|audit| {
++                audit
++                    .borrow_mut()
++                    .accepted_parent_replay_observation_error_count += 1;
++            }),
++        }
+     }
+ 
+     pub(crate) fn accepted_publication_supports_for_day(
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs
+@@ -610,19 +610,6 @@
+                     record_canonical_covered_successful_history_append_v1(
+                         accepted.receipt_sha256,
+                     );
+-                if crate::v9_real_consumer_shadow::integrated_promotion_boundary_audit_enabled_v1()
+-                    && accepted.wb14_parent_replay_bytes.is_some()
+-                {
+-                    println!(
+-                        "B01_INTEGRATED_ACCEPTED_PARENT_REPLAY {}",
+-                        serde_json::to_string(&serde_json::json!({
+-                            "record_version": 1,
+-                            "boundary": "accepted publication-history support with retained WB14 parent replay",
+-                            "accepted_support": accepted.accuracy_observation_wire(),
+-                        }))
+-                        .expect("integrated accepted parent replay JSON")
+-                    );
+-                }
+             }
+         }
+         if let Some(started) = telemetry_started {
+@@ -737,6 +724,11 @@
+ }
+ 
+ #[cfg(test)]
++pub(super) fn trusted_accepted_publication_append_audit_scope_is_active_v1() -> bool {
++    inside_trusted_accepted_publication_append_v1()
++}
++
++#[cfg(test)]
+ fn increment(field: fn(&mut AcceptedPublicationSupportCapabilityAuditV1) -> &mut u64) {
+     ACCEPTED_PUBLICATION_SUPPORT_CAPABILITY_AUDIT_V1.with(|slot| {
+         let mut slot = slot.borrow_mut();
+--- a/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/snow_free_physical_reuse.rs
+@@ -1330,10 +1330,7 @@
+                 ));
+             }
+         };
+-        if let Err(error) = ending
+-            .accepted_publication_history
+-            .push_validated_support(capability)
+-        {
++        if let Err(error) = ending.push_validated_accepted_publication_support(capability) {
+             self.snow_free_physical_reuse_seed = Some(SnowFreePhysicalReuseSeedV1::Refused);
+             return Err(error);
+         }
