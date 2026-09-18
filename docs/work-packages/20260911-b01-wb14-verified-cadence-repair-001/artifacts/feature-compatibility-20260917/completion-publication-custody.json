@@ -1,0 +1,22 @@
+{
+  "evidence_class": "Ran: authorized current-main push and exact-commit remote byte verification",
+  "primary_commit": "1f5ddf14886c51f4d47d684c99c696a7461ebff4",
+  "parent_commit": "65d82e2fa6396deb76be0aff8eff06e50a104389",
+  "remote_head_observed": "1f5ddf14886c51f4d47d684c99c696a7461ebff4",
+  "verified_files": 655,
+  "verified_bytes": 44926794,
+  "all_bytes_equal": true,
+  "verification_receipt": "completion-primary-remote-verification.json",
+  "verification_receipt_sha256": "f06a63c5aad605e4555e37c0b184ba3235619ca208334d32e6f0ce9c8cd8a380",
+  "terminal_source_tree_sha256": "d354ccc6ba947c6b0a9e3eed1cdedd0417ae1d5c2896288efbc828beca2f873b",
+  "source_rechecked_before_custody_commit": true,
+  "source_adoption": false,
+  "branch": "main",
+  "publication_scope": "Package narrative, evidence, scripts and recovery patches only; frozen executable/source/corpus retained locally.",
+  "final_ledger": "final-ledger.json",
+  "accounted_utc": "2026-09-18T03:50:57.386812+00:00",
+  "charged_seconds": 119897.591812,
+  "remaining_seconds": 8402.613188000003,
+  "final_verification_destination": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/completion-final-remote-verification.json",
+  "final_verification_policy": "After this supplement is pushed, independently fetch its changed files at its exact commit and compare with git show. That last receipt stays external; this record does not claim to have verified its own future commit."
+}

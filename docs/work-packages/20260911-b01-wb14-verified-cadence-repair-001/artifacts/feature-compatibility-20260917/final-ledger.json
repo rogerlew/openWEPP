@@ -1,13 +1,13 @@
 {
-  "accounted_utc": "2026-09-18T03:47:20.935327+00:00",
+  "accounted_utc": "2026-09-18T03:50:57.386812+00:00",
   "return_and_final_publication_reserve_seconds": 60,
-  "charged_seconds": 119621.140327,
+  "charged_seconds": 119897.591812,
   "ceiling_seconds": 128300.205,
-  "remaining_seconds": 8679.064673,
+  "remaining_seconds": 8402.613188000003,
   "failure_floor": 315,
-  "failure_uncertainty": "Conservative floor: prior268 + recorded nonzero continuation commands +4 invalid/rejected source/execution dispositions +at least10 root navigation/attribution failures +2 capacity failures. It is not a ceiling or a claim of a complete historical error census.",
+  "failure_uncertainty": "Conservative observed floor315: prior268 +31 recorded nonzero continuation command outcomes +5 invalid/rejected source or execution dispositions +at least9 root navigation/attribution failures +2 capacity failures. Categories include static rejected cuts and tool friction, not just corrective cycles; historical/worker uncertainty remains.",
   "clock_gap": "All historical charge including previous gap and reserve carried unchanged; this continuation charges full wall time with no wait deductions.",
-  "status": "HOLD: attributable inherited required capability-control failure; authorized checks finished, publication pending",
+  "status": "HOLD: bounded continuation finished at attributable inherited capability blocker; primary evidence pushed and exact bytes verified",
   "terminal_source_sha256": "d354ccc6ba947c6b0a9e3eed1cdedd0417ae1d5c2896288efbc828beca2f873b",
   "prior_final_ledger": {
     "accounted_utc": "2026-09-17T22:51:59.436964+00:00",
@@ -27,7 +27,7 @@
   "anchor_utc": "2026-09-18T02:12:00+00:00",
   "deadline_utc": "2026-09-18T06:12:00+00:00",
   "carried_seconds": 113900.205,
-  "worker_state": "Both independent reviewers completed HOLD; sole writer idle; no build/test jobs running; root scoped publication",
+  "worker_state": "Sole writer idle; both independent reviewers completed HOLD; no engineering jobs running; final custody publication and return only",
   "continuation_nonzero_commands": [
     {
       "receipt": "completion-final-changed-format-01.json",
@@ -158,10 +158,14 @@
     "cut04 rejected C1/C2 semantic omissions despite compilation PASS",
     "parity01 invalid zero-test selection despite exit0",
     "c7-covered-control-01 invalid zero-test selection",
-    "c7-snow-free-control-01 invalid zero-test selection"
+    "c7-snow-free-control-01 invalid zero-test selection",
+    "f057 rejected ordinary recorder setup C7 by static review before execution"
   ],
   "running_jobs": [],
-  "continuation_elapsed_seconds": 5720.935327,
-  "publication_status": "Scoped current-main commit, authorized push and exact remote verification pending",
-  "reserve_charged": false
+  "continuation_elapsed_seconds": 5937.386812,
+  "publication_status": "Primary exact bytes verified; this custody supplement is committed/pushed next, with its exact remote receipt retained externally to avoid circular self-verification.",
+  "reserve_charged": true,
+  "primary_commit": "1f5ddf14886c51f4d47d684c99c696a7461ebff4",
+  "remote_primary_verified_files": 655,
+  "remote_primary_all_byte_equal": true
 }
