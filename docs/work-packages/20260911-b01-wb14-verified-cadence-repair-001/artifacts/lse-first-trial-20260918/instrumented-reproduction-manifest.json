@@ -1,0 +1,19 @@
+{
+  "schema": "openwepp.b01-wb14-lse-first-trial-manifest.v1",
+  "question": "Which exact line-search predicate rejects each final iteration trial, and do the actual initial inputs, V11 branch, raw residuals, normalizers, linear system, and terminal mixed-state diagnostics agree with the canonical solver path?",
+  "run_allowance": 1,
+  "automatic_retries": 0,
+  "source": "/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-source-20260918",
+  "immutable_baseline": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "test": "v9_real_consumer_shadow::tests::native_recorder_file_owned_reader_restores_local_fixture",
+  "features": ["persisted-restart-v1", "restart-authority-evidence"],
+  "resources": {"cargo_jobs": 2, "address_space_bytes": 17179869184, "rust_min_stack": 67108864},
+  "support_links": {
+    "docs": "/workdir/openWEPP/docs",
+    "tests": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests",
+    ".config": "/workdir/openWEPP/.config",
+    "src": "/workdir/openWEPP/src",
+    "tools": "/workdir/openWEPP/tools"
+  },
+  "trajectory_changes": "none; test-support-only opt-in observation records existing operands and emits only after existing typed failure"
+}

@@ -1,0 +1,2144 @@
+{
+  "active_event_rows": [
+    {
+      "beginning": 1.0,
+      "beginning_tag": "POSITIVE",
+      "case": "smooth_same_tag",
+      "ending_tag": "POSITIVE",
+      "ending_unconstrained": 0.4,
+      "family": "active_set",
+      "result": "evaluated",
+      "selected": true
+    },
+    {
+      "beginning": 0.3,
+      "beginning_tag": "POSITIVE",
+      "case": "interior_switch",
+      "ending_tag": "EXHAUSTED",
+      "ending_unconstrained": -0.3,
+      "family": "active_set",
+      "result": "typed_unsupported_across_switch",
+      "selected": false
+    },
+    {
+      "beginning_storage": 0.0,
+      "case": "cursor",
+      "computed_tick_s": 0.0,
+      "family": "event",
+      "floor_estimator_result": "not_evaluated_across_switch",
+      "positive_constitutive_calls": 0,
+      "rate": -1.0,
+      "support_s": 0.6
+    },
+    {
+      "beginning_storage": 0.3,
+      "case": "interior",
+      "computed_tick_s": 0.3,
+      "family": "event",
+      "floor_estimator_result": "not_evaluated_across_switch",
+      "positive_constitutive_calls": 1,
+      "rate": -1.0,
+      "support_s": 0.6
+    },
+    {
+      "beginning_storage": 0.6,
+      "case": "end",
+      "computed_tick_s": 0.6,
+      "family": "event",
+      "floor_estimator_result": "not_evaluated_across_switch",
+      "positive_constitutive_calls": 1,
+      "rate": -1.0,
+      "support_s": 0.6
+    }
+  ],
+  "all_supports_admitted": true,
+  "analytical_floor_candidate_pass": true,
+  "candidate": "hermite_gauss_dynamic_error_transport",
+  "evaluated_floor_count": 48,
+  "evaluated_numeric_count": 83,
+  "failed_numeric_count": 0,
+  "forcing_rows": [
+    {
+      "amount_reinterpreted_as_rate": false,
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000599809897681,
+      "family": "forcing_path",
+      "forcing_mode": "canonical_cumulative_path",
+      "gauss_defects": [
+        -2.9126213592328698e-05,
+        -2.912621359224543e-05
+      ],
+      "installed": 0.941747572815534,
+      "installed_with_amount": 1.141747572815534,
+      "minimum_support_ok": true,
+      "parameter": 0.2,
+      "prescribed_amount": 0.2,
+      "reference": 0.9417645335842487,
+      "reference_with_amount": 1.1417645335842488,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 1.696178603840804e-05,
+      "signed_reference_error": 1.6960768714713303e-05,
+      "support_s": 0.6
+    },
+    {
+      "amount_reinterpreted_as_rate": false,
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000599809829949,
+      "family": "forcing_path",
+      "forcing_mode": "canonical_cumulative_path",
+      "gauss_defects": [
+        -2.912621368773849e-05,
+        -2.9126213687835634e-05
+      ],
+      "installed": 0.9417475727212744,
+      "installed_with_amount": 1.1417475727212745,
+      "minimum_support_ok": true,
+      "parameter": 0.2,
+      "prescribed_amount": 0.2,
+      "reference": 0.9417645334900723,
+      "reference_with_amount": 1.1417645334900723,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 1.696178612145385e-05,
+      "signed_reference_error": 1.6960768797869008e-05,
+      "support_s": 0.600000001
+    },
+    {
+      "amount_reinterpreted_as_rate": false,
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0001349050485553,
+      "family": "forcing_path",
+      "forcing_mode": "canonical_cumulative_path",
+      "gauss_defects": [
+        -6.459330143529507e-05,
+        -6.459330143529507e-05
+      ],
+      "installed": 0.9138755980861244,
+      "installed_with_amount": 1.1138755980861244,
+      "minimum_support_ok": true,
+      "parameter": 0.2,
+      "prescribed_amount": 0.2,
+      "reference": 0.9139311852712282,
+      "reference_with_amount": 1.1139311852712281,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 5.5594684095694714e-05,
+      "signed_reference_error": 5.558718510378924e-05,
+      "support_s": 0.9
+    },
+    {
+      "amount_reinterpreted_as_rate": false,
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0002397039549982,
+      "family": "forcing_path",
+      "forcing_mode": "canonical_cumulative_path",
+      "gauss_defects": [
+        -0.00011320754698655733,
+        -0.00011320754698643243
+      ],
+      "installed": 0.8867924529191883,
+      "installed_with_amount": 1.0867924529191884,
+      "minimum_support_ok": true,
+      "parameter": 0.2,
+      "prescribed_amount": 0.2,
+      "reference": 0.8869204368058495,
+      "reference_with_amount": 1.0869204368058496,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.00012801456490505134,
+      "signed_reference_error": 0.0001279838866612426,
+      "support_s": 1.199999999
+    },
+    {
+      "amount_reinterpreted_as_rate": false,
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000599809897681,
+      "family": "forcing_path",
+      "forcing_mode": "exact_endpoint_increment",
+      "gauss_defects": [
+        -2.9126213592328698e-05,
+        -2.912621359224543e-05
+      ],
+      "installed": 0.941747572815534,
+      "installed_with_amount": 1.141747572815534,
+      "minimum_support_ok": true,
+      "parameter": 0.2,
+      "prescribed_amount": 0.2,
+      "reference": 0.9417645335842487,
+      "reference_with_amount": 1.1417645335842488,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 1.696178603840804e-05,
+      "signed_reference_error": 1.6960768714713303e-05,
+      "support_s": 0.6
+    },
+    {
+      "amount_reinterpreted_as_rate": false,
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000599809829949,
+      "family": "forcing_path",
+      "forcing_mode": "exact_endpoint_increment",
+      "gauss_defects": [
+        -2.912621368773849e-05,
+        -2.9126213687835634e-05
+      ],
+      "installed": 0.9417475727212744,
+      "installed_with_amount": 1.1417475727212745,
+      "minimum_support_ok": true,
+      "parameter": 0.2,
+      "prescribed_amount": 0.2,
+      "reference": 0.9417645334900723,
+      "reference_with_amount": 1.1417645334900723,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 1.696178612145385e-05,
+      "signed_reference_error": 1.6960768797869008e-05,
+      "support_s": 0.600000001
+    },
+    {
+      "amount_reinterpreted_as_rate": false,
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0001349050485553,
+      "family": "forcing_path",
+      "forcing_mode": "exact_endpoint_increment",
+      "gauss_defects": [
+        -6.459330143529507e-05,
+        -6.459330143529507e-05
+      ],
+      "installed": 0.9138755980861244,
+      "installed_with_amount": 1.1138755980861244,
+      "minimum_support_ok": true,
+      "parameter": 0.2,
+      "prescribed_amount": 0.2,
+      "reference": 0.9139311852712282,
+      "reference_with_amount": 1.1139311852712281,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 5.5594684095694714e-05,
+      "signed_reference_error": 5.558718510378924e-05,
+      "support_s": 0.9
+    },
+    {
+      "amount_reinterpreted_as_rate": false,
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0002397039549982,
+      "family": "forcing_path",
+      "forcing_mode": "exact_endpoint_increment",
+      "gauss_defects": [
+        -0.00011320754698655733,
+        -0.00011320754698643243
+      ],
+      "installed": 0.8867924529191883,
+      "installed_with_amount": 1.0867924529191884,
+      "minimum_support_ok": true,
+      "parameter": 0.2,
+      "prescribed_amount": 0.2,
+      "reference": 0.8869204368058495,
+      "reference_with_amount": 1.0869204368058496,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.00012801456490505134,
+      "signed_reference_error": 0.0001279838866612426,
+      "support_s": 1.199999999
+    }
+  ],
+  "gamma_frozen": false,
+  "numeric_rows": [
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000006007471396,
+      "family": "affine",
+      "gauss_defects": [
+        1.084247258087423e-06,
+        1.0842472579208895e-06
+      ],
+      "installed": 1.4668494516450648,
+      "minimum_support_ok": true,
+      "parameter": -0.01,
+      "reference": 1.4668488030448472,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -6.486006071790485e-07,
+      "signed_reference_error": -6.486002175343231e-07,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000005990945768,
+      "family": "affine",
+      "gauss_defects": [
+        1.0842472619176924e-06,
+        1.084247261751159e-06
+      ],
+      "installed": 1.4668494520053996,
+      "minimum_support_ok": true,
+      "parameter": -0.01,
+      "reference": 1.4668488034051776,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -6.486006105480907e-07,
+      "signed_reference_error": -6.486002219752152e-07,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000013515525559,
+      "family": "affine",
+      "gauss_defects": [
+        2.4359133898865792e-06,
+        2.435913389775557e-06
+      ],
+      "installed": 1.5747884519661524,
+      "minimum_support_ok": true,
+      "parameter": -0.01,
+      "reference": 1.5747862694829706,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -2.1824861314748073e-06,
+      "signed_reference_error": -2.182483181734085e-06,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.000002399088043,
+      "family": "affine",
+      "gauss_defects": [
+        4.324055658810888e-06,
+        4.3240556585888434e-06
+      ],
+      "installed": 1.6824055662422088,
+      "minimum_support_ok": true,
+      "parameter": -0.01,
+      "reference": 1.6824004083968376,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -5.1578577453760146e-06,
+      "signed_reference_error": -5.157845371250858e-06,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.000021531886797,
+      "family": "affine",
+      "gauss_defects": [],
+      "installed": 1.682401698195543,
+      "minimum_support_ok": true,
+      "parameter": -0.01,
+      "reference": 1.6824004087550222,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -1.2894682848892576e-06,
+      "signed_reference_error": -1.2894405208019322e-06,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.000052462575864,
+      "family": "affine",
+      "gauss_defects": [],
+      "installed": 1.9233599549158422,
+      "minimum_support_ok": true,
+      "parameter": -0.01,
+      "reference": 1.9233550691430779,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -4.886029084586833e-06,
+      "signed_reference_error": -4.885772764362528e-06,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0002087942984865,
+      "family": "affine",
+      "gauss_defects": [],
+      "installed": 2.5842407192631005,
+      "minimum_support_ok": true,
+      "parameter": -0.01,
+      "reference": 2.5842023576202067,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -3.8369652586152846e-05,
+      "signed_reference_error": -3.8361642893836034e-05,
+      "support_s": 3.75
+    },
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000599809882522,
+      "family": "affine",
+      "gauss_defects": [
+        7.28155339804748e-05,
+        7.281553398016949e-05
+      ],
+      "installed": 1.395631067961165,
+      "minimum_support_ok": true,
+      "parameter": -0.1,
+      "reference": 1.3955886660393784,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -4.240446509578928e-05,
+      "signed_reference_error": -4.2401921786616725e-05,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000599809855835,
+      "family": "affine",
+      "gauss_defects": [
+        7.281553421967235e-05,
+        7.28155342196446e-05
+      ],
+      "installed": 1.395631068196814,
+      "minimum_support_ok": true,
+      "parameter": -0.1,
+      "reference": 1.3955886662748194,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -4.240446530374439e-05,
+      "signed_reference_error": -4.240192199467252e-05,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.000134905049831,
+      "family": "affine",
+      "gauss_defects": [
+        0.0001614832535885291,
+        0.00016148325358836257
+      ],
+      "installed": 1.465311004784689,
+      "minimum_support_ok": true,
+      "parameter": -0.1,
+      "reference": 1.4651720368219294,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -0.00013898671023941406,
+      "signed_reference_error": -0.0001389679627594731,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.000239703954652,
+      "family": "affine",
+      "gauss_defects": [
+        0.00028301886746615046,
+        0.0002830188674659284
+      ],
+      "installed": 1.533018867702029,
+      "minimum_support_ok": true,
+      "parameter": -0.1,
+      "reference": 1.5326989079853761,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -0.00032003641226240656,
+      "signed_reference_error": -0.0003199597166529955,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.002093483898967,
+      "family": "affine",
+      "gauss_defects": [],
+      "installed": 1.5327787727401263,
+      "minimum_support_ok": true,
+      "parameter": -0.1,
+      "reference": 1.5326989082071063,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -8.003172813397796e-05,
+      "signed_reference_error": -7.986453302000207e-05,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0050305736896532,
+      "family": "affine",
+      "gauss_defects": [],
+      "installed": 1.677712185341947,
+      "minimum_support_ok": true,
+      "parameter": -0.1,
+      "reference": 1.6774272045489989,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -0.0002864144098272033,
+      "signed_reference_error": -0.0002849807929481418,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.019370078160346,
+      "family": "affine",
+      "gauss_defects": [],
+      "installed": 2.033673469387755,
+      "minimum_support_ok": true,
+      "parameter": -0.1,
+      "reference": 2.031776803022569,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -0.0019334049409237923,
+      "signed_reference_error": -0.0018966663651860394,
+      "support_s": 3.75
+    },
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0058496411581126,
+      "family": "affine",
+      "gauss_defects": [
+        -0.02019230769230773,
+        -0.02019230769230762
+      ],
+      "installed": 0.8461538461538461,
+      "minimum_support_ok": true,
+      "parameter": -1.0,
+      "reference": 0.855210181582273,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.009109311740890675,
+      "signed_reference_error": 0.009056335428426876,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.005849641177161,
+      "family": "affine",
+      "gauss_defects": [
+        -0.020192307751848992,
+        -0.02019230775184877
+      ],
+      "installed": 0.8461538456360947,
+      "minimum_support_ok": true,
+      "parameter": -1.0,
+      "reference": 0.8552101811020629,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.009109311778824089,
+      "signed_reference_error": 0.00905633546596818,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0128255381353146,
+      "family": "affine",
+      "gauss_defects": [
+        -0.040732758620689924,
+        -0.04073275862068959
+      ],
+      "installed": 0.7068965517241379,
+      "minimum_support_ok": true,
+      "parameter": -1.0,
+      "reference": 0.7307484522730242,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.024157814008975778,
+      "signed_reference_error": 0.023851900548886307,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0220995585072652,
+      "family": "affine",
+      "gauss_defects": [
+        -0.06562499991113291,
+        -0.06562499991113274
+      ],
+      "installed": 0.5937500003417968,
+      "minimum_support_ok": true,
+      "parameter": -1.0,
+      "reference": 0.6385449356867217,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.04578488363940918,
+      "signed_reference_error": 0.04479493534492485,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.1830761349082044,
+      "family": "affine",
+      "gauss_defects": [],
+      "installed": 0.628698224852071,
+      "minimum_support_ok": true,
+      "parameter": -1.0,
+      "reference": 0.6385449354231769,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.011649408284023685,
+      "signed_reference_error": 0.009846710571105866,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.4585813702250996,
+      "family": "affine",
+      "gauss_defects": [],
+      "installed": 0.48947487550928026,
+      "minimum_support_ok": true,
+      "parameter": -1.0,
+      "reference": 0.5091855959893123,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.02874968968588913,
+      "signed_reference_error": 0.019710720480032085,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 4.528869398855191,
+      "family": "affine",
+      "gauss_defects": [],
+      "installed": 0.3759105098855359,
+      "minimum_support_ok": true,
+      "parameter": -1.0,
+      "reference": 0.39557802762400796,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.08907161923720762,
+      "signed_reference_error": 0.01966751773847203,
+      "support_s": 3.75
+    },
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.279371794473653,
+      "family": "stiff_affine",
+      "gauss_defects": [
+        -9.093749999999998,
+        -9.093750000000002
+      ],
+      "installed": -0.56875,
+      "minimum_support_ok": true,
+      "parameter": -10.0,
+      "reference": 0.04050548701420796,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.7794642857142865,
+      "signed_reference_error": 0.609255487014208,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.2793717950015708,
+      "family": "stiff_affine",
+      "gauss_defects": [
+        -9.093750018945311,
+        -9.093750018945311
+      ],
+      "installed": -0.5687500007578125,
+      "minimum_support_ok": true,
+      "parameter": -10.0,
+      "reference": 0.04050548698415309,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.779464286966996,
+      "signed_reference_error": 0.6092554877419656,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.416634893422506,
+      "family": "stiff_affine",
+      "gauss_defects": [
+        -14.880681818181818,
+        -14.880681818181827
+      ],
+      "installed": -0.7340909090909091,
+      "minimum_support_ok": true,
+      "parameter": -10.0,
+      "reference": 0.0376496343874551,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 1.0932745825602992,
+      "signed_reference_error": 0.7717405434783642,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.5157764348516418,
+      "family": "stiff_affine",
+      "gauss_defects": [
+        -20.78571426591837,
+        -20.78571426591838
+      ],
+      "installed": -0.8285714283239797,
+      "minimum_support_ok": true,
+      "parameter": -10.0,
+      "reference": 0.03750744985755291,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 1.312781954270313,
+      "signed_reference_error": 0.8660788781815326,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.2857458852972925,
+      "family": "stiff_affine",
+      "gauss_defects": [],
+      "installed": 0.34062499999999996,
+      "minimum_support_ok": true,
+      "parameter": -10.0,
+      "reference": 0.037507449857478406,
+      "same_sign_or_zero": false,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.3897321428571428,
+      "signed_reference_error": -0.30311755014252156,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "direct_magnitude_enclosure": false,
+      "effectivity": 0.9734427678425592,
+      "family": "stiff_affine",
+      "gauss_defects": [],
+      "installed": 0.5471863301533632,
+      "minimum_support_ok": true,
+      "parameter": -10.0,
+      "reference": 0.0375000087228863,
+      "same_sign_or_zero": false,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.4961504634647757,
+      "signed_reference_error": -0.5096863214304769,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "direct_magnitude_enclosure": false,
+      "effectivity": 0.7930778753126491,
+      "family": "stiff_affine",
+      "gauss_defects": [],
+      "installed": 0.8275874582668021,
+      "minimum_support_ok": true,
+      "parameter": -10.0,
+      "reference": 0.03750000000000006,
+      "same_sign_or_zero": false,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.6266008827134066,
+      "signed_reference_error": -0.790087458266802,
+      "support_s": 3.75
+    },
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.8751953328471258,
+      "family": "stiff_affine",
+      "gauss_defects": [
+        -1206.0483870967744,
+        -1206.0483870967744
+      ],
+      "installed": -1.1620967741935484,
+      "minimum_support_ok": true,
+      "parameter": -100.0,
+      "reference": 0.00375,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 2.1861904297826187,
+      "signed_reference_error": 1.1658467741935483,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.8751953330415159,
+      "family": "stiff_affine",
+      "gauss_defects": [
+        -1206.048389171696,
+        -1206.0483891716963
+      ],
+      "installed": -1.162096774323231,
+      "minimum_support_ok": true,
+      "parameter": -100.0,
+      "reference": 0.00375,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 2.186190430252428,
+      "signed_reference_error": 1.165846774323231,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.9149539780607863,
+      "family": "stiff_affine",
+      "gauss_defects": [
+        -1828.736413043478,
+        -1828.7364130434787
+      ],
+      "installed": -1.1883152173913043,
+      "minimum_support_ok": true,
+      "parameter": -100.0,
+      "reference": 0.00375,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 2.282750030151374,
+      "signed_reference_error": 1.1920652173913042,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.9355098858344852,
+      "family": "stiff_affine",
+      "gauss_defects": [
+        -2451.6393421857697,
+        -2451.6393421857706
+      ],
+      "installed": -1.2016393442288027,
+      "minimum_support_ok": true,
+      "parameter": -100.0,
+      "reference": 0.00375,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 2.333042992034395,
+      "signed_reference_error": 1.2053893442288026,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "direct_magnitude_enclosure": false,
+      "effectivity": 0.7017407068088339,
+      "family": "stiff_affine",
+      "gauss_defects": [],
+      "installed": 1.0943808532778356,
+      "minimum_support_ok": true,
+      "parameter": -100.0,
+      "reference": 0.00375,
+      "same_sign_or_zero": false,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.7653400658467101,
+      "signed_reference_error": -1.0906308532778357,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "direct_magnitude_enclosure": false,
+      "effectivity": 0.6887017803214052,
+      "family": "stiff_affine",
+      "gauss_defects": [],
+      "installed": 1.1480496151722352,
+      "minimum_support_ok": true,
+      "parameter": -100.0,
+      "reference": 0.00375,
+      "same_sign_or_zero": false,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.7880811821902173,
+      "signed_reference_error": -1.1442996151722353,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "direct_magnitude_enclosure": false,
+      "effectivity": 0.6775063572619632,
+      "family": "stiff_affine",
+      "gauss_defects": [],
+      "installed": 1.1979431360126984,
+      "minimum_support_ok": true,
+      "parameter": -100.0,
+      "reference": 0.00375,
+      "same_sign_or_zero": false,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.8090734414472035,
+      "signed_reference_error": -1.1941931360126985,
+      "support_s": 3.75
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000599809818171,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        7.281553398061358e-05,
+        7.281553398061358e-05
+      ],
+      "installed": 1.3956310679611654,
+      "minimum_support_ok": true,
+      "parameter": 10.0,
+      "reference": 1.3955886660393784,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -4.240446509596054e-05,
+      "signed_reference_error": -4.2401921787060814e-05,
+      "support_s": 0.6
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.000059980979331,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        7.281553421986664e-05,
+        7.281553421931153e-05
+      ],
+      "installed": 1.3956310681968143,
+      "minimum_support_ok": true,
+      "parameter": 10.0,
+      "reference": 1.3955886662748194,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -4.240446530370133e-05,
+      "signed_reference_error": -4.2401921994894565e-05,
+      "support_s": 0.600000001
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0001349050491481,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        0.00016148325358839033,
+        0.0001614832535882793
+      ],
+      "installed": 1.4653110047846893,
+      "minimum_support_ok": true,
+      "parameter": 10.0,
+      "reference": 1.4651720368219299,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -0.00013898671023931917,
+      "signed_reference_error": -0.0001389679627594731,
+      "support_s": 0.9
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0002397039546478,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        0.000283018867466317,
+        0.00028301886746615046
+      ],
+      "installed": 1.5330188677020298,
+      "minimum_support_ok": true,
+      "parameter": 10.0,
+      "reference": 1.5326989079853766,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": -0.0003200364122626273,
+      "signed_reference_error": -0.00031995971665321754,
+      "support_s": 1.199999999
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.002093483896181,
+      "family": "index1_linear_dae",
+      "gauss_defects": [],
+      "installed": 1.532778772740127,
+      "minimum_support_ok": true,
+      "parameter": 10.0,
+      "reference": 1.5326989082071067,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -8.003172813397796e-05,
+      "signed_reference_error": -7.986453302022412e-05,
+      "support_s": 1.2
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0050305736912195,
+      "family": "index1_linear_dae",
+      "gauss_defects": [],
+      "installed": 1.6777121853419479,
+      "minimum_support_ok": true,
+      "parameter": 10.0,
+      "reference": 1.6774272045490002,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -0.0002864144098272033,
+      "signed_reference_error": -0.00028498079294769774,
+      "support_s": 1.875
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0193700781605848,
+      "family": "index1_linear_dae",
+      "gauss_defects": [],
+      "installed": 2.033673469387757,
+      "minimum_support_ok": true,
+      "parameter": 10.0,
+      "reference": 2.0317768030225714,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -0.0019334049409237923,
+      "signed_reference_error": -0.0018966663651855953,
+      "support_s": 3.75
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0058496411581126,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        -0.02019230769230773,
+        -0.02019230769230762
+      ],
+      "installed": 0.8461538461538461,
+      "minimum_support_ok": true,
+      "parameter": 100.0,
+      "reference": 0.855210181582273,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.009109311740890675,
+      "signed_reference_error": 0.009056335428426876,
+      "support_s": 0.6
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.005849641177161,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        -0.020192307751848992,
+        -0.02019230775184877
+      ],
+      "installed": 0.8461538456360947,
+      "minimum_support_ok": true,
+      "parameter": 100.0,
+      "reference": 0.8552101811020629,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.009109311778824089,
+      "signed_reference_error": 0.00905633546596818,
+      "support_s": 0.600000001
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0128255381353146,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        -0.040732758620689924,
+        -0.04073275862068959
+      ],
+      "installed": 0.7068965517241379,
+      "minimum_support_ok": true,
+      "parameter": 100.0,
+      "reference": 0.7307484522730242,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.024157814008975778,
+      "signed_reference_error": 0.023851900548886307,
+      "support_s": 0.9
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0220995585072652,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        -0.06562499991113291,
+        -0.06562499991113274
+      ],
+      "installed": 0.5937500003417968,
+      "minimum_support_ok": true,
+      "parameter": 100.0,
+      "reference": 0.6385449356867217,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.04578488363940918,
+      "signed_reference_error": 0.04479493534492485,
+      "support_s": 1.199999999
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.1830761349082044,
+      "family": "index1_linear_dae",
+      "gauss_defects": [],
+      "installed": 0.628698224852071,
+      "minimum_support_ok": true,
+      "parameter": 100.0,
+      "reference": 0.6385449354231769,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.011649408284023685,
+      "signed_reference_error": 0.009846710571105866,
+      "support_s": 1.2
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.4585813702250996,
+      "family": "index1_linear_dae",
+      "gauss_defects": [],
+      "installed": 0.48947487550928026,
+      "minimum_support_ok": true,
+      "parameter": 100.0,
+      "reference": 0.5091855959893123,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.02874968968588913,
+      "signed_reference_error": 0.019710720480032085,
+      "support_s": 1.875
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 4.528869398855191,
+      "family": "index1_linear_dae",
+      "gauss_defects": [],
+      "installed": 0.3759105098855359,
+      "minimum_support_ok": true,
+      "parameter": 100.0,
+      "reference": 0.39557802762400796,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.08907161923720762,
+      "signed_reference_error": 0.01966751773847203,
+      "support_s": 3.75
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.279371794473653,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        -9.093749999999998,
+        -9.093750000000002
+      ],
+      "installed": -0.56875,
+      "minimum_support_ok": true,
+      "parameter": 1000.0,
+      "reference": 0.04050548701420796,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.7794642857142865,
+      "signed_reference_error": 0.609255487014208,
+      "support_s": 0.6
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.2793717950015708,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        -9.093750018945311,
+        -9.093750018945311
+      ],
+      "installed": -0.5687500007578125,
+      "minimum_support_ok": true,
+      "parameter": 1000.0,
+      "reference": 0.04050548698415309,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.779464286966996,
+      "signed_reference_error": 0.6092554877419656,
+      "support_s": 0.600000001
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.416634893422506,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        -14.880681818181818,
+        -14.880681818181827
+      ],
+      "installed": -0.7340909090909091,
+      "minimum_support_ok": true,
+      "parameter": 1000.0,
+      "reference": 0.0376496343874551,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 1.0932745825602992,
+      "signed_reference_error": 0.7717405434783642,
+      "support_s": 0.9
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.5157764348516418,
+      "family": "index1_linear_dae",
+      "gauss_defects": [
+        -20.78571426591837,
+        -20.78571426591838
+      ],
+      "installed": -0.8285714283239797,
+      "minimum_support_ok": true,
+      "parameter": 1000.0,
+      "reference": 0.03750744985755291,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 1.312781954270313,
+      "signed_reference_error": 0.8660788781815326,
+      "support_s": 1.199999999
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.2857458852972925,
+      "family": "index1_linear_dae",
+      "gauss_defects": [],
+      "installed": 0.34062499999999996,
+      "minimum_support_ok": true,
+      "parameter": 1000.0,
+      "reference": 0.037507449857478406,
+      "same_sign_or_zero": false,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.3897321428571428,
+      "signed_reference_error": -0.30311755014252156,
+      "support_s": 1.2
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": false,
+      "effectivity": 0.9734427678425592,
+      "family": "index1_linear_dae",
+      "gauss_defects": [],
+      "installed": 0.5471863301533632,
+      "minimum_support_ok": true,
+      "parameter": 1000.0,
+      "reference": 0.0375000087228863,
+      "same_sign_or_zero": false,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.4961504634647757,
+      "signed_reference_error": -0.5096863214304769,
+      "support_s": 1.875
+    },
+    {
+      "algebraic_residual_max": 0.0,
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "dae_definition": "x'=-lambda*x+z; z-alpha*x-q=0",
+      "direct_magnitude_enclosure": false,
+      "effectivity": 0.7930778753126491,
+      "family": "index1_linear_dae",
+      "gauss_defects": [],
+      "installed": 0.8275874582668021,
+      "minimum_support_ok": true,
+      "parameter": 1000.0,
+      "reference": 0.03750000000000006,
+      "same_sign_or_zero": false,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.6266008827134066,
+      "signed_reference_error": -0.790087458266802,
+      "support_s": 3.75
+    },
+    {
+      "beginning_total": 3.0,
+      "conservation_residual": 0.0,
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.014507109990022,
+      "ending_total": 3.0,
+      "family": "conservative_two_node",
+      "gauss_defects": [
+        -0.41513513513513356,
+        -0.41513513513513356
+      ],
+      "generated_transfer_pair": [
+        1.6216216216216215,
+        -1.6216216216216215
+      ],
+      "installed": 1.7567567567567568,
+      "minimum_support_ok": true,
+      "parameter": 0.8,
+      "reference": 1.9144644298755602,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.15999555567900833,
+      "signed_reference_error": 0.1577076731188034,
+      "support_s": 0.6
+    },
+    {
+      "beginning_total": 3.0,
+      "conservation_residual": 0.0,
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0145071100360707,
+      "ending_total": 3.0,
+      "family": "conservative_two_node",
+      "gauss_defects": [
+        -0.4151351362945226,
+        -0.41513513629452037
+      ],
+      "generated_transfer_pair": [
+        1.621621623447772,
+        -1.621621623447772
+      ],
+      "installed": 1.756756753104456,
+      "minimum_support_ok": true,
+      "parameter": 0.8,
+      "reference": 1.914464426812417,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.15999555628397516,
+      "signed_reference_error": 0.15770767370796102,
+      "support_s": 0.600000001
+    },
+    {
+      "beginning_total": 3.0,
+      "conservation_residual": 0.0,
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.030950208061697,
+      "ending_total": 3.0,
+      "family": "conservative_two_node",
+      "gauss_defects": [
+        -0.8037209302325552,
+        -0.8037209302325556
+      ],
+      "generated_transfer_pair": [
+        2.093023255813953,
+        -2.093023255813953
+      ],
+      "installed": 0.8139534883720932,
+      "minimum_support_ok": true,
+      "parameter": 0.8,
+      "reference": 1.1846387934106086,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.3821580923548711,
+      "signed_reference_error": 0.3706853050385154,
+      "support_s": 0.9
+    },
+    {
+      "beginning_total": 3.0,
+      "conservation_residual": 0.0,
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0517712962644001,
+      "ending_total": 3.0,
+      "family": "conservative_two_node",
+      "gauss_defects": [
+        -1.2538775494423966,
+        -1.2538775494423984
+      ],
+      "generated_transfer_pair": [
+        2.448979590795502,
+        -2.448979590795502
+      ],
+      "installed": 0.10204081840899626,
+      "minimum_support_ok": true,
+      "parameter": 0.8,
+      "reference": 0.7330348118246062,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.6636613703897865,
+      "signed_reference_error": 0.6309939934156099,
+      "support_s": 1.199999999
+    },
+    {
+      "beginning_total": 3.0,
+      "conservation_residual": 0.0,
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.4830629321111302,
+      "ending_total": 3.0,
+      "family": "conservative_two_node",
+      "gauss_defects": [],
+      "generated_transfer_pair": [
+        2.191380569758948,
+        -2.191380569758948
+      ],
+      "installed": 0.6172388604821037,
+      "minimum_support_ok": true,
+      "parameter": 0.8,
+      "reference": 0.7330348106517508,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.17173268138519107,
+      "signed_reference_error": 0.11579595016964706,
+      "support_s": 1.2
+    },
+    {
+      "beginning_total": 3.0,
+      "conservation_residual": 0.0,
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 2.5007530913296563,
+      "ending_total": 3.0,
+      "family": "conservative_two_node",
+      "gauss_defects": [],
+      "generated_transfer_pair": [
+        2.4489795918367347,
+        -2.4489795918367347
+      ],
+      "installed": 0.10204081632653068,
+      "minimum_support_ok": true,
+      "parameter": 0.8,
+      "reference": 0.24893534183931973,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.3673469387755102,
+      "signed_reference_error": 0.14689452551278903,
+      "support_s": 1.875
+    },
+    {
+      "beginning_total": 3.0,
+      "conservation_residual": 0.0,
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 4.797281818758222,
+      "ending_total": 3.0,
+      "family": "conservative_two_node",
+      "gauss_defects": [],
+      "generated_transfer_pair": [
+        2.4,
+        -2.4
+      ],
+      "installed": 0.20000000000000004,
+      "minimum_support_ok": true,
+      "parameter": 0.8,
+      "reference": 0.012393760883331793,
+      "same_sign_or_zero": false,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.9,
+      "signed_reference_error": -0.18760623911666824,
+      "support_s": 3.75
+    },
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000017835819193,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -1.6239640481774745e-05,
+        -1.587900703912612e-05
+      ],
+      "installed": 0.09433052558297209,
+      "minimum_support_ok": true,
+      "parameter": 0.1,
+      "reference": 0.09433962264150944,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 9.097074762704221e-06,
+      "signed_reference_error": 9.097058537355096e-06,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000017835833752,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -1.6239640533282154e-05,
+        -1.5879007088881458e-05
+      ],
+      "installed": 0.09433052557402911,
+      "minimum_support_ok": true,
+      "parameter": 0.1,
+      "reference": 0.09433962263260946,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 9.09707480571093e-06,
+      "signed_reference_error": 9.097058580348483e-06,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0000083674152722,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -3.483544592866421e-05,
+        -3.369573594124223e-05
+      ],
+      "installed": 0.09171477963816525,
+      "minimum_support_ok": true,
+      "parameter": 0.1,
+      "reference": 0.09174311926605505,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 2.8339865019233147e-05,
+      "signed_reference_error": 2.8339627889797936e-05,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.000024586160598,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -5.916847312080302e-05,
+        -5.663100912434854e-05
+      ],
+      "installed": 0.08922350021464841,
+      "minimum_support_ok": true,
+      "parameter": 0.1,
+      "reference": 0.08928571429368622,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 6.221560864314764e-05,
+      "signed_reference_error": 6.221407903780896e-05,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0116484550168026,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [],
+      "installed": 0.08927029546995617,
+      "minimum_support_ok": true,
+      "parameter": 0.1,
+      "reference": 0.08928571428571429,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 1.559842113988778e-05,
+      "signed_reference_error": 1.5418815758116988e-05,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0257390032349334,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [],
+      "installed": 0.08416101041636483,
+      "minimum_support_ok": true,
+      "parameter": 0.1,
+      "reference": 0.08421052631578947,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 5.0790389320117445e-05,
+      "signed_reference_error": 4.951589942464585e-05,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0820265626273111,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [],
+      "installed": 0.07246878631826874,
+      "minimum_support_ok": true,
+      "parameter": 0.1,
+      "reference": 0.07272727272727274,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.0002796891606204749,
+      "signed_reference_error": 0.00025848640900399955,
+      "support_s": 3.75
+    },
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.000655636918423,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -0.007284083974614275,
+        -0.006567935713152895
+      ],
+      "installed": 0.3813676212407513,
+      "minimum_support_ok": true,
+      "parameter": 0.5,
+      "reference": 0.3846153846153846,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.003249892728203995,
+      "signed_reference_error": 0.0032477633746332835,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0006556369221657,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -0.007284083994571394,
+        -0.006567935730104418
+      ],
+      "installed": 0.3813676210798485,
+      "minimum_support_ok": true,
+      "parameter": 0.5,
+      "reference": 0.38461538446745563,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.003249892741198501,
+      "signed_reference_error": 0.0032477633876071277,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.002553937966078,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -0.013895550617630925,
+        -0.011959731740164598
+      ],
+      "installed": 0.3365349134217092,
+      "minimum_support_ok": true,
+      "parameter": 0.5,
+      "reference": 0.3448275862068966,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.008313851757053712,
+      "signed_reference_error": 0.00829267278518736,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0064514821205028,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -0.02139114454866181,
+        -0.017600488494466396
+      ],
+      "installed": 0.29705499731222224,
+      "minimum_support_ok": true,
+      "parameter": 0.5,
+      "reference": 0.3125000000976562,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.015544645944755324,
+      "signed_reference_error": 0.015445002785433981,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.1705840343069795,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [],
+      "installed": 0.3090767173239735,
+      "minimum_support_ok": true,
+      "parameter": 0.5,
+      "reference": 0.3125,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.004007240045476275,
+      "signed_reference_error": 0.0034232826760264845,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.330658918597873,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [],
+      "installed": 0.25047482819203626,
+      "minimum_support_ok": true,
+      "parameter": 0.5,
+      "reference": 0.25806451612903225,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.01009928594273841,
+      "signed_reference_error": 0.007589687936995992,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 11.317423856161037,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [],
+      "installed": 0.1528313562424244,
+      "minimum_support_ok": true,
+      "parameter": 0.5,
+      "reference": 0.17391304347826086,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.23859039005098137,
+      "signed_reference_error": 0.021081687235836477,
+      "support_s": 3.75
+    },
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0064514821375363,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -0.0855645782986536,
+        -0.07040195405297817
+      ],
+      "installed": 0.5941099943750894,
+      "minimum_support_ok": true,
+      "parameter": 1.0,
+      "reference": 0.625,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.03108929194442813,
+      "signed_reference_error": 0.03089000562491062,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0064514821716097,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -0.08556457850666632,
+        -0.07040195420320317
+      ],
+      "installed": 0.5941099938763793,
+      "minimum_support_ok": true,
+      "parameter": 1.0,
+      "reference": 0.624999999609375,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.031089292054263064,
+      "signed_reference_error": 0.030890005732995718,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.022764902756635,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -0.15086307139665078,
+        -0.11358143617862354
+      ],
+      "installed": 0.45630399774065383,
+      "minimum_support_ok": true,
+      "parameter": 1.0,
+      "reference": 0.5263157894736842,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.07160560336365057,
+      "signed_reference_error": 0.07001179173303035,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.0549404433852372,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [
+        -0.2189047070818666,
+        -0.1504780086293618
+      ],
+      "installed": 0.33333333373015867,
+      "minimum_support_ok": true,
+      "parameter": 1.0,
+      "reference": 0.4545454547520661,
+      "same_sign_or_zero": true,
+      "selector": "hermite_gauss_dynamic_transport",
+      "signed_estimate": 0.12787156869451605,
+      "signed_reference_error": 0.12121212102190743,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 1.4735973508988511,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [],
+      "installed": 0.4321848622124901,
+      "minimum_support_ok": true,
+      "parameter": 1.0,
+      "reference": 0.45454545454545453,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.03295050962638557,
+      "signed_reference_error": 0.022360592332964446,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "direct_magnitude_enclosure": true,
+      "effectivity": 11.317423856161037,
+      "family": "nonlinear_manufactured",
+      "gauss_defects": [],
+      "installed": 0.3056627124848488,
+      "minimum_support_ok": true,
+      "parameter": 1.0,
+      "reference": 0.34782608695652173,
+      "same_sign_or_zero": true,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.47718078010196274,
+      "signed_reference_error": 0.042163374471672954,
+      "support_s": 1.875
+    },
+    {
+      "expected_root_absence": true,
+      "family": "nonlinear_manufactured",
+      "parameter": 1.0,
+      "support_s": 3.75,
+      "typed_unsupported": "CN nonlinear solve did not converge"
+    },
+    {
+      "expected_root_absence": true,
+      "family": "nonlinear_manufactured",
+      "parameter": 5.0,
+      "support_s": 0.6,
+      "typed_unsupported": "CN nonlinear solve did not converge"
+    },
+    {
+      "expected_root_absence": true,
+      "family": "nonlinear_manufactured",
+      "parameter": 5.0,
+      "support_s": 0.600000001,
+      "typed_unsupported": "CN nonlinear solve did not converge"
+    },
+    {
+      "expected_root_absence": true,
+      "family": "nonlinear_manufactured",
+      "parameter": 5.0,
+      "support_s": 0.9,
+      "typed_unsupported": "CN nonlinear solve did not converge"
+    },
+    {
+      "expected_root_absence": true,
+      "family": "nonlinear_manufactured",
+      "parameter": 5.0,
+      "support_s": 1.199999999,
+      "typed_unsupported": "CN nonlinear solve did not converge"
+    },
+    {
+      "expected_root_absence": true,
+      "family": "nonlinear_manufactured",
+      "parameter": 5.0,
+      "support_s": 1.2,
+      "typed_unsupported": "CN nonlinear solve did not converge"
+    },
+    {
+      "expected_root_absence": true,
+      "family": "nonlinear_manufactured",
+      "parameter": 5.0,
+      "support_s": 1.875,
+      "typed_unsupported": "CN nonlinear solve did not converge"
+    },
+    {
+      "expected_root_absence": true,
+      "family": "nonlinear_manufactured",
+      "parameter": 5.0,
+      "support_s": 3.75,
+      "typed_unsupported": "CN nonlinear solve did not converge"
+    }
+  ],
+  "overall_candidate_pass": false,
+  "production_operator_changed": false,
+  "real_candidate_complete": false,
+  "real_carrier_rows": [
+    {
+      "candidate_cn_receipts_available": false,
+      "candidate_effectivity": null,
+      "case": "current_real_1.875_second_rejected_pair",
+      "current_receipts_retained": true,
+      "disposition": "matrix_incomplete",
+      "physical_result": "BelowCarrierDomain"
+    }
+  ],
+  "schema": "openwepp-child1-hermite-gauss-candidate-matrix-v1",
+  "status": "ANALYTICAL_PASS_REAL_INCOMPLETE",
+  "typed_unsupported_count": 8
+}

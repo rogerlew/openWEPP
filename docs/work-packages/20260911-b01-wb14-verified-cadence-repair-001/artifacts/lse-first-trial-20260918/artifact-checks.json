@@ -1,0 +1,12 @@
+{
+  "evidence_class": "Ran: offline syntax/JSON/hash/link checks; no scientific workflow",
+  "json_files": 36,
+  "python_ast": "PASS",
+  "inventory_files": 100,
+  "inventory_hashes": "PASS",
+  "new_primary_links": 20,
+  "links": "PASS",
+  "scoped_narrative_whitespace": "PASS via git diff --check",
+  "source_scope": "Only package.md and new bounded evidence directory; three unrelated untracked Clippy logs preserved",
+  "limitations": "Literal raw historical patch/source/stdout whitespace retained; no full campaign executed."
+}

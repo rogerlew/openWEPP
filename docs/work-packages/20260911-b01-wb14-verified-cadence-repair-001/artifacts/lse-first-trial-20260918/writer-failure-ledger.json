@@ -1,0 +1,104 @@
+{
+  "schema": "openwepp.lse-first-trial-writer-failure-ledger.v1",
+  "minimum_non_success_contribution": 9,
+  "counting_rule": "Counts individually identified retained process failures and individually identified tooling/evidence non-successes. Early build support/space observations are retained separately because their exact command-event multiplicity is not fully recorded; they are not needed to reach the lower bound.",
+  "counted_events": [
+    {
+      "id": "clippy-baseline",
+      "class": "retained-process",
+      "outcome": "exit 101; 27 compiler errors",
+      "evidence": [
+        "clippy-baseline.exit",
+        "clippy-baseline.stderr",
+        "clippy-baseline-errors.json"
+      ]
+    },
+    {
+      "id": "clippy-candidate",
+      "class": "retained-process",
+      "outcome": "exit 101; same 27 compiler errors",
+      "evidence": [
+        "clippy-candidate.exit",
+        "clippy-candidate.stderr",
+        "clippy-candidate-errors.json"
+      ]
+    },
+    {
+      "id": "first-physical-reproduction",
+      "class": "retained-process-expected-refusal",
+      "outcome": "exit 101; LsebE034/NumericalBacktrackingLimit",
+      "evidence": [
+        "instrumented-first-trial.exit",
+        "instrumented-first-trial.stderr",
+        "instrumented-first-trial-trace.json"
+      ]
+    },
+    {
+      "id": "directional-followup",
+      "class": "retained-process-expected-refusal",
+      "outcome": "exit 101; LsebE034/NumericalBacktrackingLimit",
+      "evidence": [
+        "directional-followup.exit",
+        "directional-followup.stderr",
+        "directional-followup-trace.json"
+      ]
+    },
+    {
+      "id": "compile-correction-e0425",
+      "class": "reconstructed-compiler",
+      "outcome": "out-of-scope allow_v10_initial_final_acceptance metadata reference; corrected to literal false",
+      "raw_log_status": "not retained"
+    },
+    {
+      "id": "compile-correction-serialize",
+      "class": "reconstructed-compiler",
+      "outcome": "missing Serialize derive import; corrected to serde::Serialize",
+      "raw_log_status": "not retained"
+    },
+    {
+      "id": "malformed-js-exec",
+      "class": "tooling",
+      "outcome": "source-selection JSON attempt had JavaScript syntax error; no intended artifact",
+      "raw_log_status": "tool response only, not retained as evidence file"
+    },
+    {
+      "id": "patch-command-policy-rejection",
+      "class": "tooling",
+      "outcome": "patch verification command rejected before shell execution because it contained rm -rf; safe rerun passed",
+      "raw_log_status": "tool response only, not retained as evidence file"
+    },
+    {
+      "id": "manifest-generator-env",
+      "class": "tooling",
+      "outcome": "first external-support manifest generator raised KeyError SRC because shell variables were not exported; no manifest written; rerun succeeded",
+      "raw_log_status": "tool response only, not retained as evidence file"
+    }
+  ],
+  "separately_retained_uncertain_multiplicity": [
+    {
+      "observation": "early candidate build had missing external build-support inputs before authorized support-link restoration",
+      "raw_log_status": "complete redirected log not retained; exact event/command count not asserted"
+    },
+    {
+      "observation": "early build target encountered ENOSPC in /workdir",
+      "raw_log_status": "complete redirected log not retained; exact event/command count not asserted"
+    }
+  ],
+  "successful_quality_actions_not_counted": [
+    {
+      "action": "initial rustfmt check",
+      "evidence": "rustfmt-check.exit",
+      "exit_code": 0
+    },
+    {
+      "action": "final rustfmt check",
+      "evidence": "rustfmt-final-check.exit",
+      "exit_code": 0
+    },
+    {
+      "action": "final patch application verification",
+      "evidence": "final-patch-apply.exit",
+      "exit_code": 0
+    }
+  ]
+}

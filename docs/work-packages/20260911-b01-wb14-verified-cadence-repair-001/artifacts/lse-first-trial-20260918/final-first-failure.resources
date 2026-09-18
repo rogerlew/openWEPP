@@ -1,0 +1,24 @@
+Command exited with non-zero status 101
+	Command being timed: "nix develop /workdir/openWEPP --command env RUST_MIN_STACK=67108864 TMPDIR=/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/tmp OPENWEPP_LSE_FIRST_TRIAL_TRACE=/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/final-first-failure-trace.json /home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/final-diagnostic.frozen v9_real_consumer_shadow::tests::native_recorder_file_owned_reader_restores_local_fixture --exact --nocapture --test-threads=1"
+	User time (seconds): 1.16
+	System time (seconds): 0.17
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.34
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 208124
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 29088
+	Voluntary context switches: 140
+	Involuntary context switches: 31
+	Swaps: 0
+	File system inputs: 608
+	File system outputs: 11008
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 101

@@ -1,0 +1,19 @@
+{
+  "schema": "openwepp.lse-first-trial-clippy-comparison.v1",
+  "status": "strict-targeted-clippy-fail-inherited",
+  "baseline_error_count": 27,
+  "candidate_error_count": 27,
+  "diagnostics_identical": true,
+  "scope": {
+    "package": "openwepp-land-surface-energy",
+    "target": "lib",
+    "features": [
+      "test-support"
+    ],
+    "default_features": true,
+    "locked": true,
+    "deny_warnings": true,
+    "default_features_note": "No --no-default-features argument was supplied; Cargo defaults were enabled."
+  },
+  "conclusion": "Matched strict targeted Clippy fails with the same 27 compiler-error diagnostics in baseline and candidate; defaults were enabled. This comparison does not establish workspace-wide Clippy status."
+}

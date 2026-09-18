@@ -1,0 +1,23 @@
+{
+  "evidence_class": "Ran: file identity checks only",
+  "supersedes_field": "source-custody-manifest.json historical_measurement_cut_before_private_api_policy_correction.preserved_files",
+  "reason": "Writer receipt looked for nested original paths in the flattened three-file preservation directory and incorrectly reported absent. Actual preserved files follow. Original receipt retained.",
+  "preserved_files": [
+    {
+      "path": "pre-private-source/lib.rs",
+      "sha256": "fb053d64909db8b080399d30a097c12d9f93f711b22be361969d2855862d1a49",
+      "bytes": 14361
+    },
+    {
+      "path": "pre-private-source/lse_first_trial_diagnosis.rs",
+      "sha256": "7ab63376ff78f5348120d233b65bd77b8419a68dcec0f2271c7a999ac5aaab3f",
+      "bytes": 1790
+    },
+    {
+      "path": "pre-private-source/solver_covered_solve.rs",
+      "sha256": "c49f8efadc83bb21d54b606113b57cee257d4a20f332d4322b009b5b5c4d2e5a",
+      "bytes": 67535
+    }
+  ],
+  "historical_scope": "These files/patch are the second directional-run measurement cut. The first no-probe run lacks a separately retained complete source cut; its raw trace and identical95canonical records remain evidence. Final source/binary/run are fully contemporaneously bound."
+}

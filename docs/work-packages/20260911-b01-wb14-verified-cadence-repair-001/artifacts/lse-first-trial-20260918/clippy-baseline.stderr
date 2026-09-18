@@ -1,0 +1,3 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918/crates/openwepp-land-surface-energy)
+error: could not compile `openwepp-land-surface-energy` (lib) due to 27 previous errors

@@ -1,0 +1,8 @@
+{
+  "schema": "openwepp.b01-wb14-lse-first-trial-followup.v1",
+  "recorded_before_launch": true,
+  "run_number": 2,
+  "question": "At final iteration 6, are b=21, b=22, and b=23 domain-valid under the same frozen water branches used for the final Jacobian, and what are their canonical primal residuals? Does b=21's unfrozen primal evaluator differ from that frozen branch evaluation?",
+  "allowed_computation": "three frozen canonical primal evaluator calls, plus one unfrozen b=21 canonical primal evaluator call if b=21 is domain-valid",
+  "trajectory_change": "none; all calls occur after the existing b=0..20 terminal refusal and are never installed or used by canonical acceptance"
+}

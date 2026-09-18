@@ -1,0 +1,299 @@
+--- a/crates/openwepp-land-surface-energy/src/lib.rs
++++ b/crates/openwepp-land-surface-energy/src/lib.rs
+@@ -16,6 +16,8 @@
+ pub mod litter_phase;
+ pub mod litter_phase_closure;
+ pub mod litter_phase_output;
++#[cfg(any(test, feature = "test-support"))]
++pub mod lse_first_trial_diagnosis;
+ mod numerics;
+ pub mod owner_envelope;
+ pub mod physics;
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+@@ -509,6 +509,17 @@
+     caps: Option<&CoveredWaterCaps>,
+     initial_trial: Vec<f64>,
+ ) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
++    #[cfg(any(test, feature = "test-support"))]
++    crate::lse_first_trial_diagnosis::begin_if_requested();
++    #[cfg(any(test, feature = "test-support"))]
++    crate::lse_first_trial_diagnosis::record("solver_input", || {
++        serde_json::json!({
++                "inputs": beginning,
++                "caps": caps,
++                "initial_trial": initial_trial,
++                "allow_v10_initial_final_acceptance": false,
++        })
++    });
+     solve_covered_column_impl(beginning, caps, initial_trial, false)
+ }
+ 
+@@ -595,6 +606,14 @@
+         };
+         let detail = &iteration_map.evaluation;
+         let norm = normalized_infinity_norm(&detail.normalized_residuals);
++        #[cfg(any(test, feature = "test-support"))]
++        crate::lse_first_trial_diagnosis::record("accepted_base", || {
++            serde_json::json!({
++                "iteration": iteration, "coordinates": &x, "raw_residuals": &detail.raw_residuals,
++                "applied_normalizers": &detail.tolerances, "normalized_residuals": &detail.normalized_residuals,
++                "infinity_norm": norm, "evaluation": detail,
++            })
++        });
+         let v10_nonpositive_assimilation = beginning.authority.admits_nonpositive_assimilation()
+             && v10_nonpositive_assimilation_active(detail);
+         let v10_initial_final_acceptance = allow_v10_initial_final_acceptance
+@@ -802,10 +821,8 @@
+                 let row_index = 10 * occupancy_index + 6 + component_index;
+                 jacobian[row_index].fill(0.0);
+                 jacobian[row_index][row_index] = 1.0 / units[row_index];
+-                let target = beginning.inactive_component_anchor_k(
+-                    component_index,
+-                    x[canopy_air_temperature_index],
+-                );
++                let target = beginning
++                    .inactive_component_anchor_k(component_index, x[canopy_air_temperature_index]);
+                 rhs[row_index] = (target - x[row_index]) / units[row_index];
+             }
+         }
+@@ -851,6 +868,14 @@
+         }
+         pivot = Some(current_pivot);
+         matrix_norm = Some(current_matrix_norm);
++        #[cfg(any(test, feature = "test-support"))]
++        crate::lse_first_trial_diagnosis::record("linear_system", || {
++            serde_json::json!({
++                "iteration": iteration, "jacobian": &jacobian, "rhs": &rhs, "direction": &delta,
++                "pivot_magnitude": current_pivot, "matrix_infinity_norm": current_matrix_norm,
++                "v10_scaled_potential": v10_scaled_potential,
++            })
++        });
+         let _cost_trial = crate::solver_mechanism_audit::compact_cost::scope(
+             crate::solver_mechanism_audit::compact_cost::Bucket::Trial,
+         );
+@@ -868,6 +893,14 @@
+             covered_complete_residuals_pass(&detail.normalized_residuals);
+         let mut full_trial_refusal =
+             (!full_trial_is_valid).then_some(CoveredFullTrialNoUpdateRefusal::DomainInvalid);
++        #[cfg(any(test, feature = "test-support"))]
++        crate::lse_first_trial_diagnosis::record("full_trial", || {
++            serde_json::json!({
++                "iteration": iteration, "factor": 1.0, "domain_valid": full_trial_is_valid,
++                "current_residuals_pass": complete_current_residuals_pass,
++                "coordinates": &prospective,
++            })
++        });
+         if complete_current_residuals_pass && full_trial_is_valid {
+             let prospective_detail = evaluate_covered_column_validated(
+                 &validated_evaluation_inputs,
+@@ -954,18 +987,52 @@
+                 beginning.occupancies.len(),
+                 ground_uses_liquid_vapor_phase_domain,
+             ) {
++                #[cfg(any(test, feature = "test-support"))]
++                crate::lse_first_trial_diagnosis::record("line_search_attempt", || {
++                    serde_json::json!({
++                        "iteration": iteration, "exponent": exponent, "factor": factor,
++                        "coordinates": &trial, "domain_valid": false,
++                        "acceptance_predicate": "domain_valid && normalized_infinity_norm(trial) < normalized_infinity_norm(base)",
++                        "accepted": false,
++                    })
++                });
+                 continue;
+             }
+             let Ok(trial_detail) =
+                 evaluate_covered_column_validated(&validated_evaluation_inputs, &trial, None, None)
+             else {
++                #[cfg(any(test, feature = "test-support"))]
++                crate::lse_first_trial_diagnosis::record("line_search_attempt", || {
++                    serde_json::json!({
++                        "iteration": iteration, "exponent": exponent, "factor": factor,
++                        "coordinates": &trial, "domain_valid": true, "evaluation_complete": false,
++                        "acceptance_predicate": "domain_valid && normalized_infinity_norm(trial) < normalized_infinity_norm(base)",
++                        "accepted": false,
++                    })
++                });
+                 continue;
+             };
+             let applied: Vec<f64> = delta.iter().map(|value| factor * value).collect();
+             let steps =
+                 covered_step_norms(&applied, beginning.occupancies.len(), detail, &trial_detail);
+             rejected_step_norms = Some(steps);
+-            if is_strict_residual_decrease(norm, &trial_detail.normalized_residuals) {
++            let strict_decrease =
++                is_strict_residual_decrease(norm, &trial_detail.normalized_residuals);
++            #[cfg(any(test, feature = "test-support"))]
++            crate::lse_first_trial_diagnosis::record("line_search_attempt", || {
++                serde_json::json!({
++                    "iteration": iteration, "exponent": exponent, "factor": factor,
++                    "coordinates": &trial, "domain_valid": true, "evaluation_complete": true,
++                    "raw_residuals": &trial_detail.raw_residuals,
++                    "applied_normalizers": &trial_detail.tolerances,
++                    "normalized_residuals": &trial_detail.normalized_residuals,
++                    "infinity_norm": normalized_infinity_norm(&trial_detail.normalized_residuals),
++                    "step_norms": steps.diagnostics(),
++                    "acceptance_predicate": "domain_valid && normalized_infinity_norm(trial) < normalized_infinity_norm(base)",
++                    "strict_decrease": strict_decrease, "accepted": strict_decrease,
++                })
++            });
++            if strict_decrease {
+                 accepted = Some((trial, steps, exponent));
+                 break;
+             }
+@@ -976,7 +1043,7 @@
+             backtracking_count += exponent;
+         } else {
+             let (occupancy_id, active_bounds) = covered_failure_metadata(beginning, detail, &x);
+-            return Ok(CoveredColumnSolveOutcome::Rejected(NumericalFailure {
++            let failure = NumericalFailure {
+                 kind: NumericalFailureKind::BacktrackingLimit,
+                 iterations: iteration,
+                 ordered_residuals: covered_failure_residuals(beginning, detail),
+@@ -990,7 +1057,82 @@
+                     .map_or_else(empty_step_norms, CoveredStepNorms::diagnostics),
+                 pivot_magnitude: pivot,
+                 matrix_norm,
+-            }));
++            };
++            #[cfg(any(test, feature = "test-support"))]
++            {
++                // These are opt-in post-refusal observations.  They are not
++                // canonical line-search candidates and never affect `failure`.
++                if crate::lse_first_trial_diagnosis::enabled() {
++                    for exponent in MAX_BACKTRACKING_HALVINGS + 1..=MAX_BACKTRACKING_HALVINGS + 3 {
++                        let factor = 0.5_f64.powf(f64::from(exponent));
++                        let trial: Vec<f64> = failure
++                            .failed_solution
++                            .iter()
++                            .zip(delta.iter())
++                            .map(|(value, change)| value + factor * change)
++                            .collect();
++                        let domain_valid = covered_trial_is_valid(
++                            &trial,
++                            beginning.occupancies.len(),
++                            ground_uses_liquid_vapor_phase_domain,
++                        );
++                        let frozen_evaluation = domain_valid
++                            .then(|| {
++                                evaluate_covered_column_validated(
++                                    &validated_evaluation_inputs,
++                                    &trial,
++                                    Some(&jacobian_base.frozen),
++                                    None,
++                                )
++                            })
++                            .transpose();
++                        let unfrozen_evaluation = (exponent == MAX_BACKTRACKING_HALVINGS + 1
++                            && domain_valid)
++                            .then(|| {
++                                evaluate_covered_column_validated(
++                                    &validated_evaluation_inputs,
++                                    &trial,
++                                    None,
++                                    None,
++                                )
++                            })
++                            .transpose();
++                        crate::lse_first_trial_diagnosis::record(
++                            "diagnostic_directional_probe",
++                            || {
++                                serde_json::json!({
++                                    "frozen_canonical_evaluator_calls": u64::from(domain_valid),
++                                    "unfrozen_canonical_evaluator_calls": u64::from(
++                                        exponent == MAX_BACKTRACKING_HALVINGS + 1 && domain_valid),
++                                    "iteration": iteration, "exponent": exponent, "factor": factor,
++                                    "coordinates": trial, "domain_valid": domain_valid,
++                                    "base_normalized_residuals": &detail.normalized_residuals,
++                                    "applied_direction": delta.iter().map(|value| factor * value).collect::<Vec<_>>(),
++                                    "frozen_evaluation": frozen_evaluation.as_ref().ok(),
++                                    "unfrozen_evaluation": unfrozen_evaluation.as_ref().ok(),
++                                })
++                            },
++                        );
++                    }
++                }
++                crate::lse_first_trial_diagnosis::record("terminal_failure", || {
++                    serde_json::json!({
++                        "failure": {
++                            "kind": format!("{:?}", failure.kind), "iterations": failure.iterations,
++                            "normalized_residuals": &failure.normalized_residuals,
++                            "ordered_residuals": &failure.ordered_residuals,
++                            "failed_solution": &failure.failed_solution,
++                            "occupancy_id": &failure.occupancy_id, "active_bounds": &failure.active_bounds,
++                            "backtracking_count": failure.backtracking_count, "step_norms": failure.step_norms,
++                            "pivot_magnitude": failure.pivot_magnitude, "matrix_norm": failure.matrix_norm,
++                        },
++                        "terminal_residual_state": "current_accepted_base",
++                        "terminal_step_state": "last_domain-valid_rejected_trial_or_previous_accepted_step",
++                    })
++                });
++                crate::lse_first_trial_diagnosis::finish();
++            }
++            return Ok(CoveredColumnSolveOutcome::Rejected(failure));
+         }
+     }
+     Err(LandSurfaceEnergyError::NumericalAcceptedResidual)
+--- a/crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs
++++ b/crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs
+@@ -0,0 +1,60 @@
++//! Opt-in, test-support-only operand recording for one bounded LSE diagnosis.
++//!
++//! The recorder is observational: the solver never reads its state and this
++//! module only allocates/serializes after the caller sets its private path.
++
++use std::{cell::RefCell, fs, path::PathBuf};
++
++#[derive(serde::Serialize)]
++struct Trace {
++    schema: &'static str,
++    records: Vec<serde_json::Value>,
++}
++
++thread_local! {
++    static ACTIVE: RefCell<Option<(PathBuf, Trace)>> = const { RefCell::new(None) };
++}
++
++pub fn begin_if_requested() {
++    ACTIVE.with(|active| {
++        if active.borrow().is_none() {
++            if let Some(path) = std::env::var_os("OPENWEPP_LSE_FIRST_TRIAL_TRACE") {
++                *active.borrow_mut() = Some((
++                    PathBuf::from(path),
++                    Trace {
++                        schema: "openwepp.lse-first-trial-diagnosis.v1",
++                        records: Vec::new(),
++                    },
++                ));
++            }
++        }
++    });
++}
++
++pub fn enabled() -> bool {
++    ACTIVE.with(|active| active.borrow().is_some())
++}
++
++pub fn record(kind: &'static str, build: impl FnOnce() -> serde_json::Value) {
++    ACTIVE.with(|active| {
++        if let Some((_, trace)) = active.borrow_mut().as_mut() {
++            trace
++                .records
++                .push(serde_json::json!({"kind": kind, "value": build()}));
++        }
++    });
++}
++
++pub fn finish() {
++    ACTIVE.with(|active| {
++        let Some((path, trace)) = active.borrow_mut().take() else {
++            return;
++        };
++        if let Ok(bytes) = serde_json::to_vec_pretty(&trace) {
++            let temporary = path.with_extension("partial");
++            if fs::write(&temporary, bytes).is_ok() {
++                let _ = fs::rename(temporary, path);
++            }
++        }
++    });
++}

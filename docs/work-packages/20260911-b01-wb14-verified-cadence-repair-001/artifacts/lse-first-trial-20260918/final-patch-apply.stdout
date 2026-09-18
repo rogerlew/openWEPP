@@ -1,0 +1,3 @@
+patching file crates/openwepp-land-surface-energy/src/lib.rs
+patching file crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+patching file crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs

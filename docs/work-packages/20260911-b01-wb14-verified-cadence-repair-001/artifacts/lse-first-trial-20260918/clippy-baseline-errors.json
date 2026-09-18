@@ -1,0 +1,245 @@
+[
+  {
+    "code": "clippy::assigning_clones",
+    "message": "assigning the result of `Clone::clone()` may be inefficient",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+      "line_start": 117,
+      "column_start": 9
+    }
+  },
+  {
+    "code": "clippy::cast_precision_loss",
+    "message": "casting `u128` to `f64` may cause a loss of precision (`u128` is 128 bits wide, but `f64`'s mantissa is only 52 bits wide)",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+      "line_start": 1990,
+      "column_start": 29
+    }
+  },
+  {
+    "code": "clippy::collapsible_if",
+    "message": "this `if` statement can be collapsed",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+      "line_start": 333,
+      "column_start": 9
+    }
+  },
+  {
+    "code": "clippy::doc_markdown",
+    "message": "item in documentation is missing backticks",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+      "line_start": 73,
+      "column_start": 51
+    }
+  },
+  {
+    "code": "clippy::doc_markdown",
+    "message": "item in documentation is missing backticks",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+      "line_start": 75,
+      "column_start": 20
+    }
+  },
+  {
+    "code": "clippy::doc_markdown",
+    "message": "item in documentation is missing backticks",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+      "line_start": 75,
+      "column_start": 42
+    }
+  },
+  {
+    "code": "clippy::doc_markdown",
+    "message": "item in documentation is missing backticks",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+      "line_start": 428,
+      "column_start": 60
+    }
+  },
+  {
+    "code": "clippy::float_cmp",
+    "message": "strict comparison of `f32` or `f64`",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transaction.rs",
+      "line_start": 2193,
+      "column_start": 12
+    }
+  },
+  {
+    "code": "clippy::float_cmp",
+    "message": "strict comparison of `f32` or `f64`",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transaction.rs",
+      "line_start": 2201,
+      "column_start": 12
+    }
+  },
+  {
+    "code": "clippy::items_after_statements",
+    "message": "adding items after statements is confusing, since items exist from the start of the scope",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+      "line_start": 217,
+      "column_start": 5
+    }
+  },
+  {
+    "code": "clippy::large_enum_variant",
+    "message": "large size difference between variants",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+      "line_start": 440,
+      "column_start": 1
+    }
+  },
+  {
+    "code": "clippy::large_types_passed_by_value",
+    "message": "this argument (360 byte) is passed by value, but might be more efficient if passed by reference (limit: 256 byte)",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+      "line_start": 164,
+      "column_start": 16
+    }
+  },
+  {
+    "code": "clippy::missing_errors_doc",
+    "message": "docs for function returning `Result` missing `# Errors` section",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+      "line_start": 45,
+      "column_start": 5
+    }
+  },
+  {
+    "code": "clippy::missing_errors_doc",
+    "message": "docs for function returning `Result` missing `# Errors` section",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+      "line_start": 109,
+      "column_start": 5
+    }
+  },
+  {
+    "code": "clippy::missing_errors_doc",
+    "message": "docs for function returning `Result` missing `# Errors` section",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+      "line_start": 151,
+      "column_start": 5
+    }
+  },
+  {
+    "code": "clippy::missing_errors_doc",
+    "message": "docs for function returning `Result` missing `# Errors` section",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+      "line_start": 171,
+      "column_start": 5
+    }
+  },
+  {
+    "code": "clippy::missing_errors_doc",
+    "message": "docs for function returning `Result` missing `# Errors` section",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+      "line_start": 355,
+      "column_start": 5
+    }
+  },
+  {
+    "code": "clippy::must_use_candidate",
+    "message": "this method could have a `#[must_use]` attribute",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transaction.rs",
+      "line_start": 2981,
+      "column_start": 12
+    }
+  },
+  {
+    "code": "clippy::must_use_candidate",
+    "message": "this method could have a `#[must_use]` attribute",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transaction.rs",
+      "line_start": 2988,
+      "column_start": 12
+    }
+  },
+  {
+    "code": "clippy::must_use_candidate",
+    "message": "this method could have a `#[must_use]` attribute",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+      "line_start": 15,
+      "column_start": 12
+    }
+  },
+  {
+    "code": "clippy::must_use_candidate",
+    "message": "this method could have a `#[must_use]` attribute",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+      "line_start": 18,
+      "column_start": 12
+    }
+  },
+  {
+    "code": "clippy::must_use_candidate",
+    "message": "this method could have a `#[must_use]` attribute",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+      "line_start": 21,
+      "column_start": 12
+    }
+  },
+  {
+    "code": "clippy::must_use_candidate",
+    "message": "this method could have a `#[must_use]` attribute",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+      "line_start": 359,
+      "column_start": 12
+    }
+  },
+  {
+    "code": "clippy::must_use_candidate",
+    "message": "this method could have a `#[must_use]` attribute",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+      "line_start": 136,
+      "column_start": 12
+    }
+  },
+  {
+    "code": "clippy::redundant_closure_for_method_calls",
+    "message": "redundant closure",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/covered_liquid.rs",
+      "line_start": 217,
+      "column_start": 65
+    }
+  },
+  {
+    "code": "clippy::unused_self",
+    "message": "unused `self` argument",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+      "line_start": 212,
+      "column_start": 47
+    }
+  },
+  {
+    "code": "clippy::wildcard_imports",
+    "message": "usage of wildcard import",
+    "primary": {
+      "file_name": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+      "line_start": 4,
+      "column_start": 5
+    }
+  }
+]

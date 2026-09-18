@@ -1,0 +1,108 @@
+Independent correctness review — preliminary scientific/operand disposition
+Reviewer: /root/reader_correctness (primary correctness; no source authorship or scientific advising)
+Date: 2026-09-18 UTC
+
+Evidence class
+
+Static: inspected the immutable cut02 caller/solver/evaluator implementation and the governing SC-LANDSURFACEENERGY-001 interface, solve-boundary, nonlinear-solve, numerical-method, terminal-support, represented-snow, water/vapor, surface-energy, soil-coupling, and dependency obligations. No production, configuration, fixture, science-authority, or diagnostic source was edited by this reviewer.
+
+Ran: independent offline arithmetic on captured operands only. The reviewer did not run the physical model, solver, canonical evaluator, test binary, or a surrogate evaluator. Execution statements below are inspection of retained run evidence. The primary trace is instrumented-first-trial-trace.json, SHA-256 9fc75466226757e8832c40d6f41d4b9cae362f54950afc45982ddbd0d6b0aaf2. The directional trace is directional-followup-trace.json, SHA-256 ebba788be942f223956573b52133096799226fc395bbc57fc3ccc92eed11c5e9.
+
+Findings
+
+HIGH — The actual admitted starting problem reaches a lawful local descent step immediately beyond the contracted search range; the current implementation correctly fails the current authority, while the authority/globalization coverage is insufficient for this case.
+
+The selected path is V11SnowCovered represented snow, Potential pass, caps=None, at the exact admitted 60-second support floor. The 29-coordinate initial warm start has two occupancy blocks, shared canopy air/ground coordinates, and six soil temperatures. Its finite values satisfy the implemented trial bounds: beta=0.67, active/inactive liquid-vapor temperatures above 273.15 K, dry-stem/canopy/ground/soil temperatures within 200..350 K, and q_canopy=0.011 within 0..0.1. The same-call validated evaluator accepts the immutable inputs before Newton. The snow boundary is 265.15 K, within its separate 200..350 K boundary domain. This establishes an admitted input and starting problem; it does not establish that an admissible converged root exists.
+
+Both occupancies have zero sun leaf area and approximately unit shade leaf area with zero PAR. Their final gas branches are [Inactive, ExactZeroPar]. The limiting coordinate is index 7, the first occupancy's active shade-leaf temperature, so its 273.15 K minimum is the physical liquid-vapor constitutive bound rather than an inactive-coordinate anchor. At accepted base iteration 6:
+
+  x[7] = 273.1500099353981 K
+  delta[7] = -11.264912352652773 K
+  maximum lawful positive factor = (x[7]-273.15)/(-delta[7])
+                                  = 8.819774002945046e-7
+  2^-20 = 9.5367431640625e-7 (domain-invalid)
+  2^-21 = 4.76837158203125e-7 (domain-valid)
+
+All 21 production attempts b=0..20 at iteration 6 are domain-invalid. At b=18, b=19, and b=20 the sole remaining bound violation is index 7; b=20 projects it to 273.1499991923405 K. The acceptance predicate therefore rejects on domain admission before evaluator execution. It does not reject an equal or increased residual norm.
+
+The accepted exponent history is [1,2,5,5,12,20]. Each captured accepted trial equals the next captured base in coordinates and normalized residuals. Their sum is 45. The terminal count 65 is 45 plus the solver's terminal MAX_BACKTRACKING_HALVINGS convention; it is not 65 attempts in the final search.
+
+The separately counted canonical diagnostic probes show b=21, b=22, and b=23 are domain-valid and strictly decrease the normalized infinity norm. At b=21 the norm falls from 10502497301.076118 to 10502492293.095144, a decrease of 5007.980974197388. Its frozen and natural-branch canonical evaluations are equal in full, with unchanged [Inactive, ExactZeroPar] gas branches and ConstitutiveLaw wet branches. Thus b=21 would satisfy the production update predicate if that factor were authorized and examined.
+
+The exact source behavior follows SC-LANDSURFACEENERGY-001/solve-boundary.md: factors b=0..20, strict normalized-infinity-norm decrease, and backtracking limit after b=20. The immediate cause of this refusal is the finite deterministic factor grid ending before the first domain-valid local descent factor. This is not evidence of an input-admission, regime-selection, branch-switch, derivative, coordinate-scaling, or linear-solve defect.
+
+The smallest demonstrated correction locus is contract-first globalization authority in SC-LANDSURFACEENERGY-001/solve-boundary.md, with corresponding implementation in crates/openwepp-land-surface-energy/src/solver_covered_solve.rs:945-972 and the shared MAX_BACKTRACKING_HALVINGS in numerics.rs. Admitting b=21 would clear only this recorded line-search decision. That proposal is provisional: the evidence does not show that subsequent Newton iterations converge, and repeated approach to the active shade-temperature bound could expose a later domain obstruction. No input tuning is justified by these operands, and no numerical change is authorized by this diagnosis.
+
+MEDIUM — The terminal residual presentation assigns physical flux/energy names and units to branch-specific identity rows, materially obscuring the state that failed.
+
+In solver_covered_solve.rs:372 onward, covered_failure_residuals uses a fixed row-name/unit table. For this actual branch state, rows 0 and 10 are psi_sun-psi_stem anchors in millimetres, rows 2/3 and 12/13 are beta-1 anchors and dimensionless, and rows 6 and 16 are inactive sun-temperature anchors in kelvin. Under represented snow, row 22 is T_ground-T_snow and rows 23..28 are T_soil-T_soil_beginning, all in kelvin. The current report instead labels rows 0..5 as kg m^-2 s^-1 and component/ground/soil rows as W m^-2. In particular, the dominant terminal row is not ground surface energy: it is
+
+  T_ground - T_snow = 275.6524973010761 - 265.15
+                    = 10.502497301076119 K,
+  normalized by 1e-9 K to 10502497301.076118.
+
+The smallest diagnostic correction is branch-aware identity/unit construction in covered_failure_residuals. It is separate from the causal line-search failure and requires no physics change.
+
+MEDIUM — The terminal diagnostic combines current-base residuals with a previous accepted step, so the reported small step norms do not describe the rejected iteration-6 direction.
+
+The final search has no domain-valid trial, leaving rejected_step_norms unset. The failure construction at solver_covered_solve.rs:978-990 therefore falls back to last_steps. The terminal step_norms are bit/value-equal to the accepted iteration-5 b=20 trial: beta 1.1072933290279254e-7, ci 6.028895073768581e-4 Pa, humidity 1.74688298947796e-9 kg/kg, hydraulic 2.3101710022908428e-4 mm, and temperature 1.6300757154968134e-5 K. The residual vector and failed_solution are the current accepted iteration-6 base. Step provenance should be reported explicitly or an unavailable final-trial step should not be presented as if it belonged to the failed direction.
+
+Algorithm and derivative/linear-solve assessment
+
+The selected canonical method is a normalized finite-difference Newton solve. It uses sqrt(epsilon)*max(abs(x_i), unit_i) perturbations, minus-then-plus centered differences for two lawful probes, an inward one-sided difference only at a closed bound, frozen Jacobian branches, V10/V11 uncapped-potential coordinate scaling, deterministic partial-pivot Gaussian elimination, factors 2^-b for b=0..20, and strict normalized infinity-norm decrease.
+
+At the decisive base the active shade-temperature finite-difference perturbation is 4.070252328148456e-6 K. Its minus point is 273.1500058651458 K and plus point 273.1500140056504 K, so the contracted centered stencil is lawful. There is no evidence of a boundary-stencil violation.
+
+The scaled coordinate convention is independently reconstructed as four 1000-mm hydraulic scales and six unit beta/temperature scales per occupancy, followed by [1 K, 0.001 kg/kg, 1 K] and six unit soil-temperature scales. For iterations 0..6, independently computed infinity residuals of J*(direction/units)-rhs are respectively 1.90735e-6, 2.38419e-7, 3.57628e-7, 2.98023e-7, 2.38419e-7, 3.57628e-7, and 4.76837e-7. Relative to ||rhs||_infinity these are at most 6.39e-17; normwise backward errors are at most 2.50e-18. Independent Decimal-80 partial-pivot solutions agree with captured physical directions to at most 3.48e-9 absolute across all iterations and 9.54e-10 at the decisive base. The captured matrix infinity norms also recompute exactly. A minimum reported pivot of 1.0 and matrix infinity norm near 2.0e10 therefore do not establish a failed linear solve.
+
+After applying the actual normalized-row convention for inactive sun-temperature solver rows, the maximum absolute defects between alpha*J*delta and canonical primal residual changes are 1.552281082e-4, 4.453347626e-5, and 1.647515489e-5 normalized units at b=21, b=22, and b=23. Relative to the largest predicted change they are 3.10e-8, 1.78e-8, and 1.32e-8. These bounded one-sided directional checks support the final Jacobian along the actual Newton direction; they are not global Jacobian qualification.
+
+Input/regime and physical interpretation
+
+The actual exact-selector test contains no snow_accuracy_policy installation. Policy::current() therefore takes its R0 default in that one-test process, identity None. The trace's absent native_snow_exchange is admissible under R0; it would be an identity rejection under policy 14. The B01 package/test name must not be used to relabel this call as policy 14. Final custody evidence should bind the effective policy explicitly or preserve the exact selector/source proof.
+
+The V11SnowCovered dispatch, Stage-3 lower-boundary and optical inputs, exact 60-second support, uncapped Potential solve, two occupancy topology, and six soil nodes agree with the selected source path. Initial and accepted coordinates remain finite and within the trial domain. Negative root-law flow is not forbidden for V11 by the HistoricalV8-only redistribution rejection. The retained tile fraction, interval, and root request conversion follow the evaluator's tile/rate mapping; no contradictory unit or area operand was found.
+
+Hydraulic source-term reconstruction from the final captured base also reproduces the evaluator rows exactly. This is primitive arithmetic on retained inputs and outputs, not a substitute coupled evaluator. The source uses
+
+  g_s = g0 * 1e-6 * R * T_leaf / pressure,
+  rho = pressure / (287.05 * T_canopy),
+  E_shade = rho * (q_surface-q_canopy) / (1/g_b + 1/g_s) * A_dry_shade,
+  q1 = k1 * area * vulnerability(psi_stem) * (psi_stem-psi_leaf),
+  q2 = k2/height * vulnerability(psi_root) * SAI
+       * (psi_root-psi_stem-1000*height),
+  q3_layer = series(k_root,k_soil) * root_area
+             * (psi_soil-psi_root+gravity_head).
+
+Common captured operands are pressure 87633.52548751776 Pa, T_canopy 272.7626444416753 K, q_canopy 0.0015407091010350908 kg/kg, rho 1.119251899674694 kg/m3, wet fraction 0.1542922233230148, tile fraction 0.38, and interval 60 s. Thus the rate-to-stand-ground amount multiplier used for positive root requests is 0.38*60=22.8. The two occupancy reconstructions are:
+
+  quantity                                      upper occupancy              lower occupancy
+  active shade T (K)                           273.1500099353981            273.2011969227114
+  g0 (umol m^-2 s^-1)                          25.0                         25.0
+  converted g_s (m s^-1)                       6.478957494068696e-7         6.480171619285572e-7
+  dry shade area (m2 m^-2 tile)                0.8457077766769854           0.8457077766769854
+  q_surface (kg/kg)                            0.004349705267356817        0.004365948940349697
+  E_shade (kg m^-2 tile s^-1)                 1.7226368963002523e-9       1.7329226429840324e-9
+  q1_sun                                       0.0                          0.0
+  q1_shade (kg m^-2 tile s^-1)                0.0012146903390329827       0.0012494686441517479
+  q2 (kg m^-2 tile s^-1)                      1.1656833162234018e-9       1.1544448385030335e-9
+  q3 soil-1 (kg m^-2 tile s^-1)              -2.3756304867988928e-8      -2.439490910267902e-8
+  q3 soil-2 (kg m^-2 tile s^-1)              -1.4505028371426226e-8      -1.4894944757571547e-8
+  q3 dry/frozen zero-root layers               0.0, 0.0                     0.0, 0.0
+  root-source sum (kg m^-2 tile s^-1)         -3.826133323941515e-8       -3.9289853860250565e-8
+  hydraulic water scale                        0.0012146903390329827       0.0012494686441517479
+  water normalizer (kg m^-2 tile s^-1)        2.214690339032983e-12      2.249468644151748e-12
+
+For the upper occupancy these primitives give rows 1, 4, and 5 as E_shade-q1_shade=-0.0012146886163960865, q1_sun+q1_shade-q2=0.0012146891733496666, and q2-root_sum=3.942701655563855e-8. For the lower occupancy they give -0.0012494669112291048, 0.0012494674897069093, and 4.04442986987536e-8. All six values exactly match the captured raw evaluator rows; the computed water normalizers also exactly match. The apparently large normalized shade-hydraulic values therefore arise from a far-from-balance accepted Newton base divided by the contracted water tolerance, not from evidence of a rate/unit conversion defect.
+
+Both active root-layer laws are negative. Under caps=None the captured requests and finalized stand-ground uses are consequently zero because request construction applies max(final_flux,0)*0.38*60. No negative water amount is consumed. For scale only, E_shade*0.38*60 is 3.927612123564575e-8 and 3.951063626003594e-8 kg m^-2 stand ground for the upper and lower occupancy. These conversions distinguish the real rate rows from the mislabeled identities: rows 0/10 are potential differences in millimetres and rows 2/3/12/13 are dimensionless beta anchors; neither belongs in the water-rate decomposition.
+
+The initial dominant value 2.985e10 comes from the admitted numerical warm-start ground temperature 295.0 K minus the represented-snow anchor 265.15 K, divided by 1e-9 K. It is not a 29.85 W/m2 energy imbalance. At the terminal base the same exact identity remains dominant. The final active shade energy residual is -31.612004389316958 W/m2 while its temperature lies near the 273.15 K domain floor. That fact makes existence of an admissible coupled root a material unresolved question, but it does not by itself prove nonexistence because the other coupled coordinates can still move.
+
+Residual risk and missing evidence
+
+1. No run follows an accepted b=21 update. The evidence proves only that the first extra factor is lawful, locally derivative-consistent, branch-stable, and descending. It does not prove convergence, a physically admissible root, completion of day 0, reader reachability, or correction of the original B01 E008.
+2. The directional probes qualify the captured final direction locally, not every Jacobian column or every later iterate. The exact linear-system reconstruction and lawful final centered stencil make a derivative defect unsupported for this refusal, but they are not a broad solver campaign.
+3. Effective R0 policy identity should be explicit in final custody because the package name can invite a false policy-14 inference.
+4. The diagnostic label and step-provenance defects must remain separate from the numerical cause. Fixing presentation cannot establish convergence.
+5. Final correctness acceptance remains pending the stable private diagnostic patch, recorded correction run, source/build/input identity, terminal byte-parity/noninterference evidence, and terminal artifact reconciliation. No blocker is found in the scientific interpretation above.

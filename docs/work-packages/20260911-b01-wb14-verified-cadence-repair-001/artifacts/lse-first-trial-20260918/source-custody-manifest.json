@@ -1,0 +1,89 @@
+{
+  "schema": "openwepp.lse-first-trial-source-custody.v1",
+  "immutable_baseline": {
+    "path": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+    "tree_digest": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+    "relevant_files": [
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+        "sha256": "4717e41d5b7c42873fcd7c5794865d577c1e7170f2aa5d72305eb4bfc92d8544",
+        "bytes": 14282
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs",
+        "baseline_status": "absent"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs",
+        "sha256": "9265a70fc8448fbadab6a33d42ce373ac41710e0eb6f489aa2bcd27a92fd6626",
+        "bytes": 59211
+      }
+    ]
+  },
+  "historical_measurement_cut_before_private_api_policy_correction": {
+    "preserved_files": [
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+        "baseline_status": "absent"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs",
+        "baseline_status": "absent"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs",
+        "baseline_status": "absent"
+      }
+    ],
+    "recoverable_patch": {
+      "path": "pre-private-from-baseline-relative.patch",
+      "sha256": "59beb1bf4ec75a8dca0e1bd5da420c3c4fc1ce273e43655a084ed5a75c450eaf"
+    },
+    "built_test_executable": {
+      "path": "pre-private-instrumented-test-binary",
+      "sha256": "059aa3b103d3f0b4e76c6250297acfe9e677f8ca22d53271426f162d6c9a83c5"
+    },
+    "limitation": "The first and second physical runs lack contemporaneous recorder command metadata; command-receipts.json is explicitly reconstructed."
+  },
+  "final_source_cut_for_root_owned_recording": {
+    "path": "/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-source-20260918",
+    "changed_or_added_files": [
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+        "sha256": "08433cbd4118a1dca7fbe3c9d38d7ea0da79b99ad150e0ec3f74b5ee962cc1b8",
+        "bytes": 14357
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs",
+        "sha256": "6fc01975ed7ef4c93ef473a9c888c567f837ebdc8df176ba4e031995e7297fa3",
+        "bytes": 1818
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs",
+        "sha256": "dd6681b525fe177da60089fe9e1712d147dbc7f8ad3cb47143b8c253b7c0760c",
+        "bytes": 67640
+      }
+    ],
+    "recoverable_patch": {
+      "path": "final-from-baseline-relative.patch",
+      "sha256": "214a32362cd53708330843120a3bd59c1ee025928738ce201dae74ff82058fde"
+    },
+    "patch_application_receipt": {
+      "exit_file": "final-patch-apply.exit",
+      "applied_file_hashes": "final-patch-applied-files.sha256",
+      "result": "PASS; patch -p1 --fuzz=0 against selected baseline files"
+    },
+    "format_receipt": {
+      "exit_file": "rustfmt-final-check.exit",
+      "result": "PASS"
+    },
+    "compile_include_support_manifest": {
+      "path": "external-build-support-manifest.json",
+      "sha256": "57020a4102e697afd746511e428ae72b816b99104f629a8f84048af257da5494"
+    }
+  },
+  "historical_invalid_artifact": {
+    "path": "from-baseline.patch",
+    "reason": "diff -ur without -N omitted the added diagnosis module; retained as failed evidence, not a recovery mechanism"
+  }
+}

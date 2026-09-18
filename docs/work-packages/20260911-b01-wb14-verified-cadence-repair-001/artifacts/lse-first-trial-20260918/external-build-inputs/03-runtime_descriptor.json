@@ -1,0 +1,53 @@
+{
+  "architecture": "x86_64",
+  "cpu_identity": {
+    "AT_HWCAP": "0xbfebfbff",
+    "AT_HWCAP2": "0x2",
+    "cpu_family": "6",
+    "flags": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize arch_lbr ibt flush_l1d arch_capabilities",
+    "model": "186",
+    "stepping": "2",
+    "vendor_id": "GenuineIntel"
+  },
+  "directory_closures": {
+    "python_stdlib": {
+      "manifest_algorithm": "sorted-relative-path-NUL-file-sha256-LF",
+      "manifest_sha256": "460108dff1dca1ef967c1cae9f48e2855410feb7ead557b1c032727ef0709de2",
+      "path": "/usr/lib/python3.14"
+    }
+  },
+  "dynamic_objects": {
+    "ld-linux-x86-64.so.2": {"path": "/lib64/ld-linux-x86-64.so.2", "sha256": "sha256:c5e80a563850d6ab5c2f2482e4202d9c1b71fbf44854b8c399e63527202c64e1"},
+    "libc.so.6": {"path": "/usr/lib/x86_64-linux-gnu/libc.so.6", "sha256": "sha256:a3947513a02831ec692ebf13053c07614882ab54a2101fb91a1b15724062ed0c"},
+    "libcrypto.so.3": {"path": "/usr/lib/x86_64-linux-gnu/libcrypto.so.3", "sha256": "sha256:0cd331307536a397ab9c83c6dbeeb3474d0a5114f397ce03d1762adb96d3c781"},
+    "libexpat.so.1": {"path": "/usr/lib/x86_64-linux-gnu/libexpat.so.1", "sha256": "sha256:093e973baf0b0c786d32fd89d1f6904b794af28e489d20198b9fe0729fd39765"},
+    "libm.so.6": {"path": "/usr/lib/x86_64-linux-gnu/libm.so.6", "sha256": "sha256:beea4eeacfcfa2cd96011b959a826c97cf4a774017e214f6a34d7eea3d49cd88"},
+    "libz.so.1": {"path": "/usr/lib/x86_64-linux-gnu/libz.so.1", "sha256": "sha256:fbf56b0e59287033b6579bbbeae2f9de2fe86ad5bf2bd44d44aad67a15109318"},
+    "libzstd.so.1": {"path": "/usr/lib/x86_64-linux-gnu/libzstd.so.1", "sha256": "sha256:060eeb79531d435306665fd78329d8a9dd579f95876c5960bb67937825362a80"}
+  },
+  "generation_command": ["/usr/bin/python3.14", "-I", "-S", "-B", "reference_calculator_v9.py"],
+  "locale": "C.UTF-8",
+  "model_version": "OPENWEPP_C3_WOODY_V9",
+  "operating_system": "Linux 7.0.0-29-generic",
+  "python": {
+    "executable": "/usr/bin/python3.14",
+    "executable_sha256": "b8d8288faefdd300201f43fcf00f6f539a27218eeed3a3dff5ab10b9c4c99700",
+    "implementation": "CPython",
+    "version": "3.14.4"
+  },
+  "runtime_files": {
+    "LC_CTYPE": {"path": "/usr/lib/locale/C.utf8/LC_CTYPE", "sha256": "40680545df4f92443c15e7c6f51a7fdc9154ebedd9eff1ed5c48437039add365"},
+    "gconv-modules.cache": {"path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "sha256": "52c227df9d53248238602c1ddaccd2c8ddc4cc6a61aa45d7c425af590b8806a5"},
+    "locale-archive": {"path": "/usr/lib/locale/locale-archive", "sha256": "dc0d80629dd3c805aff420244f479eefb5f8a0c096a0eb30763961a080149c8a"},
+    "openssl.cnf": {"path": "/usr/lib/ssl/openssl.cnf", "sha256": "d244aaf05e647054247fb41489ddf086d35349325c7c8b1340f4f639b8e53017"}
+  },
+  "serialization": {
+    "allow_nan": false,
+    "encoding": "UTF-8",
+    "ensure_ascii": true,
+    "json_separators": [",", ":"],
+    "newline": "LF",
+    "sort_keys": true
+  },
+  "source_date_epoch": "0"
+}

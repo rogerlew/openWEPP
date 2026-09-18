@@ -1,0 +1,90 @@
+{
+  "evidence_class": "Ran: offline source/trace/hash reconstruction only; physical execution is the linked final-first-failure receipt",
+  "utc": "2026-09-18T23:50:37.057390+00:00",
+  "baseline_immutable": true,
+  "source_sha256": "8cd4866f66b06d6cf96403753cdb3d41ba75f6ca87652341ebe082a86a1b4bc5",
+  "source_entries": 748,
+  "external_build_inputs": 19,
+  "changed_source_paths": [
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs"
+  ],
+  "binary_sha256": "551738aa5123cffa9b24f3e7e7b193cfaa95f2c16a803df5f2eb278ed9c12ba0",
+  "fixture_file_sha256": "9f36aca34529734d807f25a644c755f3929030f13b7ea2cda57ce0863d560d85",
+  "fixture_file_byte_equal_baseline": true,
+  "prior_test_body_sha256": "ee1830a7d073b8faae671c1b7df41a43b58175766d12d6c7f1d16054073954a1",
+  "prior_climate_rust_literal_sha256": "0164d7ed616995b81037ae687e3456568493dd8f67e7333396ae4893a79d15ef",
+  "test_hash_basis": "Prior published extraction hashes carried through whole-fixture-file byte equality, plus unchanged remaining747 baseline entries except two observed LSE files and one added module.",
+  "effective_policy": "R0",
+  "final_trace_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+  "final_trace_equals_second_except_policy_header": true,
+  "ordinary_records_identical_all_runs": true,
+  "ordinary_record_count": 95,
+  "record_counts": {
+    "solver_input": 1,
+    "accepted_base": 7,
+    "linear_system": 7,
+    "full_trial": 7,
+    "line_search_attempt": 72,
+    "diagnostic_directional_probe": 3,
+    "terminal_failure": 1
+  },
+  "full_terminal_diagnostic_byte_equal_baseline": true,
+  "accepted_exponents": [
+    1,
+    2,
+    5,
+    5,
+    12,
+    20
+  ],
+  "final_search_exponents": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "final_trial_evaluator_calls": 0,
+  "diagnostic_calls_by_run": {
+    "instrumented-first-trial": 0,
+    "directional-followup": 4,
+    "final-first-failure": 4
+  },
+  "total_diagnostic_calls": {
+    "frozen": 6,
+    "unfrozen": 2,
+    "total": 8
+  },
+  "diagnostic_points_installed": 0,
+  "physical_first_failure_executions": 3,
+  "completed_days": 0,
+  "reader": "NOT REACHED",
+  "observation_file_written": false,
+  "fixture_directories": [
+    {
+      "directory": "/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/tmp/openwepp_native_owned_reader_1215282",
+      "files": []
+    }
+  ],
+  "owner_rollback_evidence": "Original reported before/after hashes byte-identical; not independent global rollback or conservation.",
+  "automatic_retries": 0,
+  "limits": "No converged root, later iteration, day1-4, reader, original E008 or promotion claim; first two command receipts reconstructed, final receipt contemporaneous."
+}

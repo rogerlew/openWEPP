@@ -1,0 +1,111 @@
+{
+  "evidence_class": "Ran: offline independent Decimal(80-digit) linear residual and bound calculation; no physical/evaluator execution",
+  "trace_sha256": "9fc75466226757e8832c40d6f41d4b9cae362f54950afc45982ddbd0d6b0aaf2",
+  "coordinate_convention": "Consumed J is J_x D; physical direction divided by [1000mm x4,1 x6] per occupancy, shared [1K,.001kg/kg,1K], soil 1K before matrix multiplication. No solver helper called.",
+  "linear_checks": [
+    {
+      "iteration": 0,
+      "dimension": 29,
+      "scaled": true,
+      "residual_infinity": "4.1414651919081870091951852015811916029716290850461338852254280476E-7",
+      "normwise_backward_error": "5.4150389747738466067230769531459237460419015216217494558067115485755691456983343E-19",
+      "relative_rhs_residual": "1.3874255249273649456921296824812475942545285303145066380387623502347749753135092E-17",
+      "max_residual_row": 1,
+      "ground_direction": -29.85000000000002,
+      "ground_diagonal": 1000000000.0
+    },
+    {
+      "iteration": 1,
+      "dimension": 29,
+      "scaled": true,
+      "residual_infinity": "0.00000154772639155334023469690052365876908879727125167846679687500000000",
+      "normwise_backward_error": "4.0054615441970395406594224321927690971801305103680188559643623259485113409556567E-18",
+      "relative_rhs_residual": "1.0370026074059224427029465958571791868405312663200117456054263729870247606527479E-16",
+      "max_residual_row": 10,
+      "ground_direction": -14.92499995907383,
+      "ground_diagonal": 1000000002.7421227
+    },
+    {
+      "iteration": 2,
+      "dimension": 29,
+      "scaled": true,
+      "residual_infinity": "4.19521582326978760706689790260792705112180556170642375946044922E-7",
+      "normwise_backward_error": "1.1385437335277245169912948703854570558550299482086851723363117056362523299558471E-18",
+      "relative_rhs_residual": "3.7478198275244538251707404797909093785224259030186668842478183073799016516552615E-17",
+      "max_residual_row": 22,
+      "ground_direction": -11.193750012590316,
+      "ground_diagonal": 999999999.7892786
+    },
+    {
+      "iteration": 3,
+      "dimension": 29,
+      "scaled": true,
+      "residual_infinity": "4.70304240556951794877387634796761517463892232626676559448242188E-7",
+      "normwise_backward_error": "1.2927220627432352310172193855858591859443280219324125916942209909692936140821756E-18",
+      "relative_rhs_residual": "4.3370215044163154767397745943869168155217784151980439325760980092653151121407370E-17",
+      "max_residual_row": 22,
+      "ground_direction": -10.843945293826497,
+      "ground_diagonal": 1000000002.6292675
+    },
+    {
+      "iteration": 4,
+      "dimension": 29,
+      "scaled": true,
+      "residual_infinity": "4.97406555586253368989035905656237446237355470657348632812500000E-7",
+      "normwise_backward_error": "1.4113218183852651119992446988341211441973744492269623438739626196938125463116412E-18",
+      "relative_rhs_residual": "4.7349180860019733698035187108120679445437796971840706267727755356603299556210645E-17",
+      "max_residual_row": 22,
+      "ground_direction": -10.505072059951022,
+      "ground_diagonal": 999999997.3303375
+    },
+    {
+      "iteration": 5,
+      "dimension": 29,
+      "scaled": true,
+      "residual_infinity": "5.7230568007412694916703495617595477294764555728234360611825853791E-7",
+      "normwise_backward_error": "1.6242341996189567377026628805660093241132197407757495282370082770750505785960072E-18",
+      "relative_rhs_residual": "5.4492290535724108171014784379417109692188065880669808174439429476258899085760109E-17",
+      "max_residual_row": 11,
+      "ground_direction": -10.502507299561284,
+      "ground_diagonal": 1000000001.6649673
+    },
+    {
+      "iteration": 6,
+      "dimension": 29,
+      "scaled": true,
+      "residual_infinity": "7.14713941460603150547048825758089662940619746223092079162597656E-7",
+      "normwise_backward_error": "2.0283984086400094134106680730624587247879388114886786274296371692405588411072728E-18",
+      "relative_rhs_residual": "6.8051809105189804895629560678016081671819496416507167564199396379067999173556209E-17",
+      "max_residual_row": 22,
+      "ground_direction": -10.502497338455607,
+      "ground_diagonal": 999999996.4408953
+    }
+  ],
+  "decisive_bound": {
+    "coordinate_index": 7,
+    "name": "stratum-z-upper::forest T_shade",
+    "unit": "K",
+    "base": 273.1500099353981,
+    "lower_bound": 273.15,
+    "base_margin_exact_decimal": "0.0000099353981113381450995802879333496093750",
+    "physical_direction": -11.264912352652773,
+    "maximum_feasible_factor": "8.8197740029450463111949661956501125701063806475625909485271447035290873818175596E-7",
+    "minimum_canonical_factor": 9.5367431640625e-07,
+    "smallest_trial_temperature": 273.1499991923405,
+    "violation_below_bound": "8.076594895101152360439300537109375000E-7",
+    "first_smaller_diagnostic_factor": 4.76837158203125e-07,
+    "first_smaller_projected_temperature": 273.1500045638693
+  },
+  "all_final_attempts_domain_invalid": true,
+  "final_attempt_count": 21,
+  "canonical_trial_evaluations_final_search": 0,
+  "accepted_exponents": [
+    1,
+    2,
+    5,
+    5,
+    12,
+    20
+  ],
+  "limitation": "Small backward error only verifies the consumed linear system. It does not qualify Jacobian derivatives or establish existence/nonexistence of a physical root. Projected smaller step is arithmetic only, not an accepted advance or evaluator result."
+}

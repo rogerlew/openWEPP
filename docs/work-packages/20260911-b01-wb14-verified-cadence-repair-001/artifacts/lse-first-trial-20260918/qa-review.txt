@@ -1,0 +1,68 @@
+QA review — final first-LSE-trial diagnostic disposition
+
+Evidence class: Static and Ran (reviewer did not run the model/evaluator).
+Scope: source/build/input identity, observation noninterference, trace accounting,
+quality gates, and reproducibility for the bounded diagnosis only.
+
+Findings
+
+- No blocking QA finding. The final source is bound by root-freeze.json to
+  8cd4866f66b06d6cf96403753cdb3d41ba75f6ca87652341ebe082a86a1b4bc5:
+  748 source entries, five restored support links, and 19 hashed external build
+  inputs. The final executable is 551738aa5123cffa9b24f3e7e7b193cfaa95f2c16a803df5f2eb278ed9c12ba0.
+  final-build.json records the explicit detached manifest, locked resolution,
+  both required features, two build jobs, 16 GiB address-space limit, and 64 MiB
+  stack; it passed. final-inventory.json lists exactly the selected test.
+
+- No blocking QA finding. The frozen baseline remains the 747-entry
+  85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963 cut.
+  The unchanged test source hashes 9f36aca34529734d807f25a644c755f3929030f13b7ea2cda57ce0863d560d85
+  in baseline, final freeze, and diagnostic source. The established test-body
+  and climate-literal identities therefore remain preserved; the actual climate
+  literal was read during QA.
+
+- No blocking QA finding. final-first-failure.json records one selected execution,
+  exit 101, 1.367 s, no timeout, no automatic retry, and unchanged source,
+  binary, pins, support links, and external inputs. The typed refusal remains
+  LsebE034/NumericalBacktrackingLimit at iteration 6 with 65 backtracks. Its
+  final terminal trace payload is byte-equal to the earlier instrumented trace.
+  Removing the three new post-refusal probe records and the new
+  snow_accuracy_policy=R0 header makes the remaining 95 canonical trace records
+  byte-equal to the earlier trace. This demonstrates observation noninterference
+  for the retained terminal solver result and recorded owner-state evidence; it
+  does not establish global rollback or conservation.
+
+- No blocking QA finding. The final trace has seven accepted bases, seven
+  Jacobian/RHS/direction records, seven full trials, 72 canonical line-search
+  records, and one terminal failure. Final iteration 6 has exactly b=0..20,
+  all domain-invalid and with zero canonical evaluator calls. It separately
+  records three post-refusal factors b=21..23: three frozen canonical evaluator
+  calls plus one unfrozen b=21 call. Together with the previously retained
+  directional run, diagnostics total eight calls (six frozen, two unfrozen);
+  the initial trace made none. None is installed as a canonical candidate or
+  counted as a physical advancement.
+
+- Non-blocking debt — targeted strict Clippy remains FAIL, not PASS.
+  quality-command-reconciliation.json corrects the earlier feature metadata:
+  both baseline and candidate actually used default features plus test-support,
+  not --no-default-features. Each `cargo clippy --lib --features test-support
+  --locked --message-format=json -- -D warnings` exited 101 with the same 27
+  normalized diagnostics. This is a valid bounded inherited-debt comparison,
+  not a workspace-wide quality result. rustfmt final check passed. cargo deny is
+  not applicable because manifests, lockfile, dependencies, and toolchain were
+  unchanged.
+
+- Non-blocking debt — preserve the earlier incomplete/reconstructed command
+  receipts and failed instrumentation/build artifacts. The final patch is the
+  only recovery patch: final-from-baseline-relative.patch
+  (214a32362cd53708330843120a3bd59c1ee025928738ce201dae74ff82058fde)
+  applies with `--fuzz=0` and includes the added private recorder module. The
+  earlier from-baseline.patch omitted that module and remains invalid historical
+  evidence.
+
+QA pass: The final private observation patch and recording-correction run meet
+the bounded diagnosis's QA/evidence requirements. This passes neither a
+numerical repair nor the file-reader integration: reader-exact-01 remains the
+separate stack abort, reader-exact-02/final remain numerical refusals, and no
+reader, completed day, original E008 resolution, convergence, scientific
+acceptance, or production promotion is established.

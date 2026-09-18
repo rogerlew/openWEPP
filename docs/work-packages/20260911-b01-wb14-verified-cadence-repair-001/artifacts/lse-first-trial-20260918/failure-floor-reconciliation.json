@@ -1,0 +1,30 @@
+{
+  "carried_floor": 334,
+  "writer_lower_bound": 9,
+  "writer_evidence": "writer-failure-ledger.json",
+  "root_identified_events": [
+    {
+      "event": "final-first-failure expected physical refusal",
+      "count": 1,
+      "evidence": "final-first-failure.json"
+    },
+    {
+      "event": "read-only rg guessed nonexistent source path",
+      "count": 1,
+      "evidence": "tool transcript only"
+    },
+    {
+      "event": "required correctness reviewer resumption/replacement rejected by thread limit",
+      "count": 6,
+      "evidence": "tool transcript and review-closure-status.json"
+    },
+    {
+      "event": "read-only ls confirmed absent .cargo directory with nonzero status",
+      "count": 1,
+      "evidence": "tool transcript only"
+    }
+  ],
+  "new_floor_at_least": 352,
+  "meaning": "Mixed process/tool/expected-refusal lower bound, NOT a correction-cycle count.",
+  "uncertainty": "Historical uncertainty retained; early missing-include and ENOSPC build multiplicity uncounted, as are unidentified prior-turn navigation/tool failures. All known writer outcomes separately retained."
+}

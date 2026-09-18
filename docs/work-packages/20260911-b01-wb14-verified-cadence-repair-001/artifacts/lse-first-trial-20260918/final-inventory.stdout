@@ -1,0 +1,7 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-lse-first-trial-source-20260918-e04fd469969e
+  scratch: /tmp/openwepp-roger-b01-wb14-lse-first-trial-source-20260918-e04fd469969e
+  cache:   /workdir/.cache/openwepp
+v9_real_consumer_shadow::tests::native_recorder_file_owned_reader_restores_local_fixture: test
+
+1 test, 0 benchmarks

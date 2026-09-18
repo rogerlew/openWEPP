@@ -1,0 +1,9 @@
+{
+  "utc": "2026-09-18T23:23:23.751120+00:00",
+  "source": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "entries": 747,
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/observer-cut02.frozen",
+  "binary_sha256": "9cf75b7337097df3454e2b301e2734565a36a3bdedbb5039b5df50d37abf0a49",
+  "immutable_baseline_verified": true
+}

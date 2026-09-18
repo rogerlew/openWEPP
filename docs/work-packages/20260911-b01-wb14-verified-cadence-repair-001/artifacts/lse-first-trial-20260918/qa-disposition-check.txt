@@ -1,0 +1,32 @@
+QA disposition consistency check
+
+Evidence class: Static. Reviewed the final First-trial diagnostic disposition in
+package.md and its copied external artifacts. No model/evaluator execution or
+source edit was performed.
+
+No material narrative, source-custody, unit, accounting, or scope mismatch found.
+
+- package.md correctly distinguishes reader-exact-01's infrastructure stack abort
+  from reader-exact-02 and the three bounded numerical first-refusal executions.
+- The published final reconciliation agrees with the frozen final source
+  8cd4866f66b06d6cf96403753cdb3d41ba75f6ca87652341ebe082a86a1b4bc5,
+  748 source entries, 19 external build inputs, five support links, final binary
+  551738aa5123cffa9b24f3e7e7b193cfaa95f2c16a803df5f2eb278ed9c12ba0,
+  95 ordinary records, b0..20 final domain refusals, and eight separately
+  counted nonadvancing diagnostic evaluator calls.
+- The narrative preserves correct dimensions and scope: row/normalizer caveats,
+  failed-iterate rate interpretation, no accepted b21 advance, no completed day,
+  reader NOT REACHED, and no claim of an original E008 or numerical repair.
+- The source-custody erratum narrows itself to the false flattened-path absence
+  report. It preserves the historical measurement-cut limitation and does not
+  alter final recovery or source identity.
+- Failure floor at least 352 is consistently labeled a mixed-outcome lower bound,
+  not a correction-cycle count.
+- The copied package artifacts exactly match their external counterparts for
+  final-reconciliation.json, source-custody-erratum.json, review-closure-status.json,
+  and qa-review.txt.
+
+QA confirmation: the final narrative truthfully retains terminal independent
+correctness sign-off as UNMET/HOLD after documented thread-limit attempts. This
+QA confirmation does not replace that correctness review and does not close the
+package, accept a numerical correction, or qualify reader integration/science.

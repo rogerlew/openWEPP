@@ -1,0 +1,80 @@
+{
+  "schema": "openwepp.lse-first-trial-quality-command-reconciliation.v1",
+  "commands": {
+    "baseline": {
+      "cwd": "/workdir/openWEPP",
+      "argv": [
+        "nix",
+        "develop",
+        "/workdir/openWEPP",
+        "--command",
+        "env",
+        "CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-six-owner-target",
+        "CARGO_BUILD_JOBS=2",
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "<baseline-or-candidate>/Cargo.toml",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--lib",
+        "--features",
+        "test-support",
+        "--locked",
+        "--message-format=json",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "manifest_path": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918/Cargo.toml",
+      "result": {
+        "exit_code": 101,
+        "compiler_error_count": 27,
+        "stdout": "clippy-baseline.stdout",
+        "stderr": "clippy-baseline.stderr",
+        "exit_file": "clippy-baseline.exit"
+      }
+    },
+    "candidate": {
+      "cwd": "/workdir/openWEPP",
+      "argv": [
+        "nix",
+        "develop",
+        "/workdir/openWEPP",
+        "--command",
+        "env",
+        "CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-six-owner-target",
+        "CARGO_BUILD_JOBS=2",
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "<baseline-or-candidate>/Cargo.toml",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--lib",
+        "--features",
+        "test-support",
+        "--locked",
+        "--message-format=json",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "manifest_path": "/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-source-20260918/Cargo.toml",
+      "result": {
+        "exit_code": 101,
+        "compiler_error_count": 27,
+        "stdout": "clippy-candidate.stdout",
+        "stderr": "clippy-candidate.stderr",
+        "exit_file": "clippy-candidate.exit"
+      }
+    }
+  },
+  "feature_reconciliation": {
+    "default_features_enabled": true,
+    "evidence": "No --no-default-features argument appeared in either actual argv; the former comparison metadata false value was corrected without rerunning.",
+    "test_support_feature_enabled": true
+  },
+  "comparison": "clippy-comparison.json records identical normalized 27-error diagnostic arrays.",
+  "limits": "This is a targeted LSE library Clippy comparison only; it is not a workspace-wide quality result. Existing command receipts for historical reproduction were reconstructed after execution and are separately labelled."
+}

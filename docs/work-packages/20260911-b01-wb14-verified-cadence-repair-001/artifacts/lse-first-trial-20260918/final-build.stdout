@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-lse-first-trial-source-20260918-e04fd469969e
+  scratch: /tmp/openwepp-roger-b01-wb14-lse-first-trial-source-20260918-e04fd469969e
+  cache:   /workdir/.cache/openwepp

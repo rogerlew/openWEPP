@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Static: retained review/tool outcomes",
+  "utc": "2026-09-18T23:52:02.615298+00:00",
+  "correctness_reviewer": "/root/reader_correctness",
+  "correctness_primary": "correctness-primary-evidence.txt",
+  "correctness_scope": "Independent scientific/source/operand review and Decimal80 solve; no scientific blocker; explicitly preliminary pending final private patch/recorded-run custody.",
+  "qa_reviewer": "/root/reader_qa",
+  "qa": "qa-review.txt",
+  "qa_verdict": "PASS bounded diagnostic evidence only including final source/trace/custody",
+  "terminal_correctness_signoff": "UNMET",
+  "recovery_attempts": {
+    "followup_task": 4,
+    "send_message": 1,
+    "replacement_spawn": 1,
+    "result": "agent thread limit reached"
+  },
+  "recovery_note": "Original writer and QA completed; interrupting completed writer did not release the unavailable thread. No source author substituted as independent reviewer. Original correctness evidence remains reusable for unchanged scientific scope.",
+  "disposition": "Scientific first-refusal explanation established; terminal independent-correctness closure HOLD. No numerical fix or reader acceptance."
+}

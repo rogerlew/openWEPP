@@ -1,0 +1,3 @@
+08433cbd4118a1dca7fbe3c9d38d7ea0da79b99ad150e0ec3f74b5ee962cc1b8  /tmp/lse-patch-verify-1212416/crates/openwepp-land-surface-energy/src/lib.rs
+6fc01975ed7ef4c93ef473a9c888c567f837ebdc8df176ba4e031995e7297fa3  /tmp/lse-patch-verify-1212416/crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs
+dd6681b525fe177da60089fe9e1712d147dbc7f8ad3cb47143b8c253b7c0760c  /tmp/lse-patch-verify-1212416/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
